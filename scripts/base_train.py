@@ -25,7 +25,6 @@ import wandb
 import torch
 import torch.distributed as dist
 
-from nanochat.cwc_instrumentation import ActivatedComputeCounter, EnergySampler
 from nanochat.gpt import GPT, GPTConfig, Linear
 from nanochat.dataloader import tokenizing_distributed_data_loader_bos_bestfit, tokenizing_distributed_data_loader_with_state_bos_bestfit
 from nanochat.common import compute_init, compute_cleanup, print0, DummyWandb, print_banner, get_base_dir, autodetect_device_type, get_peak_flops, COMPUTE_DTYPE, COMPUTE_DTYPE_REASON, is_ddp_initialized
@@ -387,14 +386,6 @@ def get_weight_decay(it):
     return weight_decay_scaled * 0.5 * (1 + math.cos(math.pi * it / num_iterations))
 
 # -----------------------------------------------------------------------------
-# CWC WP-1 instrumentation (additive telemetry only; does not affect training
-# numerics). See nanochat/cwc_instrumentation.py and
-# research/EXPERIMENTAL_SUBSTRATE_NANOCHAT.md in the cognitive-weave-kernel repo.
-cwc_energy_sampler = EnergySampler()
-cwc_energy_sampler.start()
-cwc_activated_counter = ActivatedComputeCounter()
-
-# -----------------------------------------------------------------------------
 # Training loop
 
 # Loop state (variables updated by the training loop)
@@ -561,9 +552,6 @@ while True:
     tok_per_sec = int(total_batch_size / dt)
     flops_per_sec = num_flops_per_token * total_batch_size / dt
     mfu = 100 * flops_per_sec / (gpu_peak_flops * ddp_world_size)
-    # CWC WP-1: dense model, no routing yet, so activated == dense (honest 1.0 fraction).
-    # WP-3 will switch this to record_routed_step() once conditional compute exists.
-    cwc_activated_counter.record_dense_step(num_flops_per_token * total_batch_size)
     if step > 10:
         total_training_time += dt # only count the time after the first 10 steps
     # Calculate ETA based on average time per step (excluding first 10 steps)
@@ -588,8 +576,6 @@ while True:
             "train/tok_per_sec": tok_per_sec,
             "train/mfu": mfu,
             "train/epoch": epoch,
-            "train/cwc_energy_joules": cwc_energy_sampler.joules_since_start(),
-            "train/cwc_activated_flops_fraction": cwc_activated_counter.activated_fraction,
         }
         wandb_run.log(log_data)
 
@@ -608,9 +594,6 @@ while True:
         gc.collect() # manually collect, just to be safe for very, very long runs
 
 # print a few more stats
-cwc_energy_sampler.stop()
-print0(f"CWC WP-1 total energy: {cwc_energy_sampler.joules_since_start():.1f}J "
-       f"(NVML available: {cwc_energy_sampler.available})")
 print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")
 print0(f"Total training time: {total_training_time/60:.2f}m")
 if val_bpb is not None:
