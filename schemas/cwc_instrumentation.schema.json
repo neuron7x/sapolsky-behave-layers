@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cognitive-weave.local/schemas/cwc_instrumentation.schema.json",
+  "title": "CWC WP-1 Instrumentation Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run",
+    "environment",
+    "model",
+    "workload",
+    "instrumentation",
+    "latency",
+    "throughput",
+    "vram",
+    "flops",
+    "energy",
+    "routing",
+    "validity"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "run": { "type": "object" },
+    "environment": { "type": "object" },
+    "model": { "type": "object" },
+    "workload": { "type": "object" },
+    "instrumentation": { "type": "object" },
+    "latency": { "type": "object" },
+    "throughput": { "type": "object" },
+    "vram": { "type": "object" },
+    "flops": { "type": "object" },
+    "energy": { "type": "object" },
+    "routing": { "type": "object" },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_match",
+        "warmup_complete",
+        "overhead_gate_passed",
+        "energy_available",
+        "energy_confidence",
+        "profiler_disabled_for_claim_run",
+        "trace_disabled_for_claim_run",
+        "claimable",
+        "reasons"
+      ],
+      "properties": {
+        "environment_match": { "type": "boolean" },
+        "warmup_complete": { "type": "boolean" },
+        "overhead_gate_passed": { "type": ["boolean", "null"] },
+        "energy_available": { "type": "boolean" },
+        "energy_confidence": {
+          "enum": ["high", "low_confidence", "unavailable"]
+        },
+        "profiler_disabled_for_claim_run": { "type": "boolean" },
+        "trace_disabled_for_claim_run": { "type": "boolean" },
+        "claimable": { "type": "boolean" },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
