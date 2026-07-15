@@ -26,6 +26,18 @@ def test_environment_manifest_flags_mismatch_against_expected_torch():
     assert manifest["expected_torch_version"] == "99.99.99"
 
 
+def test_environment_manifest_tolerates_cuda_build_metadata_suffix(monkeypatch):
+    """"2.9.1+cu128" must match expected "2.9.1" — the "+cuXXX" suffix is CUDA
+    build metadata, not a different torch release.
+    """
+    import types
+
+    fake_torch = types.SimpleNamespace(__version__="2.9.1+cu128")
+    monkeypatch.setitem(__import__("sys").modules, "torch", fake_torch)
+    manifest = environment_manifest(expected_torch_version="2.9.1")
+    assert manifest["environment_match"] is True
+
+
 def test_environment_manifest_hostname_is_hashed_not_raw():
     import socket
 

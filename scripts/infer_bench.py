@@ -43,6 +43,28 @@ from nanochat.common import compute_init, compute_cleanup, autodetect_device_typ
 from nanochat.checkpoint_manager import load_model
 from nanochat.engine import Engine
 
+# CWC WP-1: additive instrumentation only (Act 5.3) — existing CLI, existing
+# top-level payload fields, and the "last stdout line is valid JSON" contract
+# are all preserved unchanged. No CUDA synchronization is added beyond what
+# bench_generate() already performs (Act 5.3: reuse existing sync boundaries).
+from cwc.instrumentation.config import InstrumentationMode
+from cwc.instrumentation.energy import EnergySampler as CwcEnergySampler
+from cwc.instrumentation.flops import FlopLedger as CwcFlopLedger
+from cwc.instrumentation.noop import NullEnergySampler as CwcNullEnergySampler
+
+
+def _percentile(values, q):
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return ordered[0]
+    index = (len(ordered) - 1) * q
+    lower = int(index)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = index - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
 # -----------------------------------------------------------------------------
 # Measurement
 # (the architecture-side cost accounting - FLOPs, KV cache bytes - lives on the
@@ -103,7 +125,16 @@ def main():
     parser.add_argument("--decode-tokens", type=int, default=256, help="Tokens to generate per row")
     parser.add_argument("--batch-sizes", type=str, default="1,8,32,128", help="Comma-separated decode batch sizes")
     parser.add_argument("-t", "--temperature", type=float, default=0.0)
+    parser.add_argument("--instrumentation-mode", type=str, default="off", choices=["off", "counters"], help="CWC WP-1 measurement mode (adds a nested 'cwc_instrumentation' field, existing fields unchanged)")
+    parser.add_argument("--instrumentation-energy", action="store_true", help="enable GPU energy sampling (NVML) around the timed sweep")
     args = parser.parse_args()
+
+    cwc_mode = InstrumentationMode(args.instrumentation_mode)
+    cwc_energy_sampler = (
+        CwcEnergySampler() if (cwc_mode is not InstrumentationMode.OFF and args.instrumentation_energy)
+        else CwcNullEnergySampler()
+    )
+    cwc_flop_ledger = CwcFlopLedger()
 
     device_type = autodetect_device_type()
     assert device_type == "cuda", "infer_bench currently assumes a CUDA GPU (for timing and VRAM measurement)"
@@ -202,6 +233,7 @@ def main():
     header = f"{'batch':>6} {'TTFT ms':>9} {'TPOT ms':>9} {'tok/s':>10} {'MBU %':>7} {'MFU %':>7} {'VRAM GiB':>9} {'steps':>6}"
     print(header)
     print("-" * len(header))
+    cwc_energy_sampler.start()
     for batch_size in batch_sizes:
         # warmup (cublas autotune, allocator warm, attention kernels)
         bench_generate(engine, prompt_tokens, batch_size, 8, args.temperature)
@@ -235,8 +267,58 @@ def main():
             "peak_vram_bytes": result["peak_vram"],
             "decode_steps": num_steps,
         })
+        # CWC WP-1: additive per-batch-size detail, reusing bench_generate's
+        # already-synchronized step_times rather than adding new CUDA events.
+        if cwc_mode is not InstrumentationMode.OFF:
+            ttlt = result["ttft"] + sum(step_times)
+            cwc_flop_ledger.add(
+                f"decode_bs{batch_size}", "decode_estimate", int(flops_per_step * num_steps),
+            )
+            payload["sweep"][-1]["cwc"] = {
+                "ttlt_sec": round(ttlt, 6),
+                "tpot_p50_sec": round(_percentile(step_times, 0.50), 6),
+                "tpot_p95_sec": round(_percentile(step_times, 0.95), 6),
+                "tpot_p99_sec": round(_percentile(step_times, 0.99), 6),
+                "peak_vram_reserved_bytes": int(torch.cuda.max_memory_reserved(device)),
+            }
 
-    # The last line of stdout is the machine-readable version of the whole run
+    cwc_energy_record = cwc_energy_sampler.stop()
+    total_output_tokens = sum(entry.get("decode_steps", 0) * entry.get("batch_size", 0) for entry in payload["sweep"])
+
+    # The last line of stdout is the machine-readable version of the whole run.
+    # cwc_instrumentation is purely additive: existing top-level keys above are
+    # untouched, so any consumer reading the pre-existing fields is unaffected.
+    payload["cwc_instrumentation"] = {
+        "schema_version": "1.0.0",
+        "mode": cwc_mode.value,
+        "validity": {
+            "environment_match": None,  # not computed here; see cwc.instrumentation.manifest for base_train.py
+            "warmup_complete": True,
+            "overhead_gate_passed": None,
+            "energy_available": cwc_energy_record.available,
+            "energy_confidence": cwc_energy_record.confidence,
+            "profiler_disabled_for_claim_run": True,
+            "trace_disabled_for_claim_run": True,
+            "claimable": False,
+            "reasons": ["infer_bench.py sweep is a single run, not a preregistered overhead-gated benchmark"],
+        },
+        "latency": {"note": "see payload.sweep[*].cwc for per-batch-size TTLT/TPOT percentiles"},
+        "vram": {"note": "see payload.sweep[*].cwc.peak_vram_reserved_bytes"},
+        "energy": {
+            "available": cwc_energy_record.available,
+            "method": cwc_energy_record.method,
+            "joules": cwc_energy_record.joules,
+            "joules_per_request": (
+                cwc_energy_record.joules / len(batch_sizes) if cwc_energy_record.available and batch_sizes else None
+            ),
+            "joules_per_token": (
+                cwc_energy_record.joules / total_output_tokens
+                if cwc_energy_record.available and total_output_tokens > 0 else None
+            ),
+        },
+        "flops": cwc_flop_ledger.to_dict(),
+        "overhead_gate": None,
+    }
     print("-" * len(header))
     print(json.dumps(payload))
 

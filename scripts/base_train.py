@@ -15,6 +15,7 @@ import os
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 import gc
 import json
+import sys
 import time
 import math
 import argparse
@@ -77,6 +78,14 @@ parser.add_argument("--sample-every", type=int, default=2000, help="sample from 
 parser.add_argument("--save-every", type=int, default=-1, help="save checkpoints every N steps (-1 = only at end)")
 # Output
 parser.add_argument("--model-tag", type=str, default=None, help="override model tag for checkpoint directory name")
+# CWC WP-1 instrumentation (additive measurement layer; default off is a true no-op)
+parser.add_argument("--instrumentation-mode", type=str, default="off", choices=["off", "counters", "trace", "audit"], help="CWC WP-1 measurement mode")
+parser.add_argument("--instrumentation-output", type=str, default=None, help="output dir for instrumentation artifacts (default: artifacts/instrumentation/<run-id>)")
+parser.add_argument("--instrumentation-run-id", type=str, default=None, help="override instrumentation run id (default: derived from --run)")
+parser.add_argument("--instrumentation-energy", action="store_true", help="enable GPU energy sampling (NVML)")
+parser.add_argument("--instrumentation-sample-rate-hz", type=float, default=10.0, help="energy/trace sampling rate")
+parser.add_argument("--instrumentation-trace-every", type=int, default=0, help="TRACE mode: sample routing every N steps")
+parser.add_argument("--instrumentation-window-steps", type=int, default=100, help="steps between resolve()/flush() of buffered instrumentation records")
 args = parser.parse_args()
 user_config = vars(args).copy()  # for logging
 # -----------------------------------------------------------------------------
@@ -115,6 +124,105 @@ else:
         print0(f"WARNING: SDPA has no support for sliding window attention (window_pattern='{args.window_pattern}'). Your GPU utilization will be terrible.")
         print0("WARNING: Recommend using --window-pattern L for full context attention without alternating sliding window patterns.")
     print0("!" * 80)
+
+# -----------------------------------------------------------------------------
+# CWC WP-1 instrumentation: additive measurement layer, default OFF is a true
+# no-op (Act 2.2, 4.3). Does not change model semantics, loss, optimizer,
+# seeds or wandb behavior (Act 5.2). See docs/WP1_INSTRUMENTATION.md.
+from pathlib import Path as _CwcPath
+
+from cwc.instrumentation.config import InstrumentationConfig, InstrumentationMode
+from cwc.instrumentation.energy import EnergySampler as CwcEnergySampler
+from cwc.instrumentation.event_buffer import EventPool as CwcEventPool
+from cwc.instrumentation.flops import FlopLedger as CwcFlopLedger
+from cwc.instrumentation.manifest import build_manifest as cwc_build_manifest
+from cwc.instrumentation.noop import (
+    NullEnergySampler as CwcNullEnergySampler,
+    NullFlopLedger as CwcNullFlopLedger,
+    NullRoutingCounters as CwcNullRoutingCounters,
+    NullRunMeter as CwcNullRunMeter,
+    NullVRAMMeter as CwcNullVRAMMeter,
+    NullWriter as CwcNullWriter,
+)
+from cwc.instrumentation.routing import RoutingCounters as CwcRoutingCounters
+from cwc.instrumentation.run_meter import RunMeter as CwcRunMeter
+from cwc.instrumentation.vram import VRAMMeter as CwcVRAMMeter
+from cwc.instrumentation.writer import InstrumentationWriter as CwcWriter
+
+cwc_mode = InstrumentationMode(args.instrumentation_mode)
+cwc_run_id = args.instrumentation_run_id or f"base_train_{args.run}"
+if cwc_mode is InstrumentationMode.OFF:
+    cwc_config = InstrumentationConfig()
+    cwc_run_meter = CwcNullRunMeter()
+    cwc_vram_meter = CwcNullVRAMMeter()
+    cwc_energy_sampler = CwcNullEnergySampler()
+    cwc_flop_ledger = CwcNullFlopLedger()
+    cwc_routing_counters = CwcNullRoutingCounters()
+    cwc_writer = CwcNullWriter()
+    cwc_event_pool = None
+else:
+    cwc_output_dir = (
+        _CwcPath(args.instrumentation_output) if args.instrumentation_output
+        else _CwcPath("artifacts/instrumentation") / cwc_run_id
+    )
+    cwc_config = InstrumentationConfig(
+        mode=cwc_mode,
+        output_dir=cwc_output_dir,
+        run_id=cwc_run_id,
+        sample_rate_hz=args.instrumentation_sample_rate_hz,
+        trace_every_n_steps=args.instrumentation_trace_every,
+        enable_energy=args.instrumentation_energy and device_type == "cuda",
+    )
+    cwc_event_pool = CwcEventPool(size=256) if device_type == "cuda" else None
+    if cwc_event_pool is not None:
+        cwc_event_pool.warm_up()
+    cwc_run_meter = CwcRunMeter(event_pool=cwc_event_pool, enable_cuda_events=device_type == "cuda")
+    cwc_vram_meter = CwcVRAMMeter(device=device) if device_type == "cuda" else CwcNullVRAMMeter()
+    cwc_energy_sampler = (
+        CwcEnergySampler(sample_rate_hz=args.instrumentation_sample_rate_hz)
+        if cwc_config.enable_energy else CwcNullEnergySampler()
+    )
+    cwc_flop_ledger = CwcFlopLedger()
+    cwc_routing_counters = CwcRoutingCounters(mode=cwc_mode, trace_every_n_steps=args.instrumentation_trace_every)
+    cwc_writer = CwcWriter(cwc_output_dir)
+    if cwc_config.enable_energy:
+        cwc_energy_sampler.start()
+    if master_process:
+        cwc_manifest = cwc_build_manifest(
+            run_id=cwc_run_id,
+            created_at_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            repo_root=_CwcPath(__file__).resolve().parents[1],
+            command_line=["python", "-m", "scripts.base_train", *sys.argv[1:]],
+            resolved_config={
+                "mode": cwc_config.mode.value,
+                "sample_rate_hz": cwc_config.sample_rate_hz,
+                "trace_every_n_steps": cwc_config.trace_every_n_steps,
+                "enable_energy": cwc_config.enable_energy,
+            },
+            model_config=user_config,
+            seed=None,  # base_train.py derives its own per-step seeding; not a single global seed
+            compile_state="unknown",
+            attention_backend="flash_attention_3" if using_fa3 else "sdpa_fallback",
+        )
+        cwc_writer.write_manifest(cwc_manifest)
+        cwc_writer.write_resolved_config(
+            {
+                "mode": cwc_config.mode.value,
+                "output_dir": str(cwc_config.output_dir) if cwc_config.output_dir else None,
+                "run_id": cwc_config.run_id,
+                "sample_rate_hz": cwc_config.sample_rate_hz,
+                "trace_every_n_steps": cwc_config.trace_every_n_steps,
+                "trace_buffer_records": cwc_config.trace_buffer_records,
+                "event_pool_size": cwc_config.event_pool_size,
+                "warmup_steps": cwc_config.warmup_steps,
+                "measurement_steps": cwc_config.measurement_steps,
+                "energy_min_window_sec": cwc_config.energy_min_window_sec,
+                "enable_cuda_events": cwc_config.enable_cuda_events,
+                "enable_vram": cwc_config.enable_vram,
+                "enable_energy": cwc_config.enable_energy,
+                "enable_flops": cwc_config.enable_flops,
+            }
+        )
 
 # -----------------------------------------------------------------------------
 # Tokenizer will be useful for evaluation and also we need the vocab size to init the model
@@ -505,43 +613,44 @@ while True:
     # -------------------------------------------------------------------------
     # single training step
     # evaluate the gradient
-    synchronize()
-    t0 = time.time()
-    for micro_step in range(grad_accum_steps):
-        loss = model(x, y)
-        train_loss = loss.detach() # for logging
-        loss = loss / grad_accum_steps # each .backward() is a grad sum => normalize loss here
+    with cwc_run_meter.scope("train_step", step=step, tokens=total_batch_size):
+        synchronize()
+        t0 = time.time()
+        for micro_step in range(grad_accum_steps):
+            loss = model(x, y)
+            train_loss = loss.detach() # for logging
+            loss = loss / grad_accum_steps # each .backward() is a grad sum => normalize loss here
+            if scaler is not None:
+                scaler.scale(loss).backward()
+            else:
+                loss.backward()
+            x, y, dataloader_state_dict = next(train_loader) # prefetch the next batch while the GPU is busy with forward/backward
+        # step the optimizer
+        lrm = get_lr_multiplier(step)
+        muon_momentum = get_muon_momentum(step)
+        muon_weight_decay = get_weight_decay(step)
+        for group in optimizer.param_groups:
+            group["lr"] = group["initial_lr"] * lrm
+            if group['kind'] == 'muon':
+                group["momentum"] = muon_momentum
+                group["weight_decay"] = muon_weight_decay
         if scaler is not None:
-            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            # In distributed training, all ranks must agree on whether to skip the step.
+            # Each rank may independently encounter inf/nan gradients, so we all-reduce
+            # the found_inf flag (MAX = if any rank found inf, all ranks skip).
+            if is_ddp_initialized():
+                for v in scaler._found_inf_per_device(optimizer).values():
+                    dist.all_reduce(v, op=dist.ReduceOp.MAX)
+            scaler.step(optimizer)
+            scaler.update()
         else:
-            loss.backward()
-        x, y, dataloader_state_dict = next(train_loader) # prefetch the next batch while the GPU is busy with forward/backward
-    # step the optimizer
-    lrm = get_lr_multiplier(step)
-    muon_momentum = get_muon_momentum(step)
-    muon_weight_decay = get_weight_decay(step)
-    for group in optimizer.param_groups:
-        group["lr"] = group["initial_lr"] * lrm
-        if group['kind'] == 'muon':
-            group["momentum"] = muon_momentum
-            group["weight_decay"] = muon_weight_decay
-    if scaler is not None:
-        scaler.unscale_(optimizer)
-        # In distributed training, all ranks must agree on whether to skip the step.
-        # Each rank may independently encounter inf/nan gradients, so we all-reduce
-        # the found_inf flag (MAX = if any rank found inf, all ranks skip).
-        if is_ddp_initialized():
-            for v in scaler._found_inf_per_device(optimizer).values():
-                dist.all_reduce(v, op=dist.ReduceOp.MAX)
-        scaler.step(optimizer)
-        scaler.update()
-    else:
-        optimizer.step()
-    model.zero_grad(set_to_none=True)
-    train_loss_f = train_loss.item() # .item() is a CPU-GPU sync point
-    synchronize()
-    t1 = time.time()
-    dt = t1 - t0
+            optimizer.step()
+        model.zero_grad(set_to_none=True)
+        train_loss_f = train_loss.item() # .item() is a CPU-GPU sync point
+        synchronize()
+        t1 = time.time()
+        dt = t1 - t0
     # -------------------------------------------------------------------------
 
     # logging (CPU action only)
@@ -565,6 +674,13 @@ while True:
         eta_str = ""
     epoch = f"{dataloader_state_dict['epoch']} pq: {dataloader_state_dict['pq_idx']} rg: {dataloader_state_dict['rg_idx']}"
     print0(f"step {step:05d}/{num_iterations:05d} ({pct_done:.2f}%) | loss: {debiased_smooth_loss:.6f} | lrm: {lrm:.2f} | dt: {dt * 1000:.2f}ms | tok/sec: {tok_per_sec:,} | bf16_mfu: {mfu:.2f} | epoch: {epoch} | total time: {total_training_time/60:.2f}m{eta_str}")
+    # CWC WP-1: analytical dense-forward FLOPs for this step (activated == dense,
+    # WP-1 implements no routing yet — see cwc/instrumentation/flops.py docstring).
+    cwc_flop_ledger.add(f"step_{step}", "dense_forward_estimate", int(num_flops_per_token * total_batch_size))
+    cwc_routing_counters.record(
+        step=step, active_tokens=total_batch_size, active_blocks=0, active_experts=0,
+        active_parameters=model.num_matmul_params(),
+    )
     if step % 100 == 0:
         log_data = {
             "step": step,
@@ -577,6 +693,22 @@ while True:
             "train/mfu": mfu,
             "train/epoch": epoch,
         }
+        cwc_records = cwc_run_meter.resolve()
+        if cwc_records:
+            cwc_vram_snapshot = cwc_vram_meter.snapshot(scope_name="train_step") if cwc_config.enable_vram else None
+            cwc_metric = {
+                "step": step,
+                "latency_end_to_end_ms": [r.end_to_end_ms for r in cwc_records],
+                "latency_gpu_kernel_ms": [r.gpu_kernel_ms for r in cwc_records],
+                "cwc_logical_forward_flops": cwc_flop_ledger.total_logical_flops,
+                "cwc_routing_implemented": False,
+            }
+            if cwc_vram_snapshot is not None:
+                cwc_metric["vram_peak_allocated_bytes"] = cwc_vram_snapshot.peak_allocated_bytes
+                cwc_metric["vram_peak_reserved_bytes"] = cwc_vram_snapshot.peak_reserved_bytes
+                log_data["cwc/vram_peak_allocated_bytes"] = cwc_vram_snapshot.peak_allocated_bytes
+            cwc_writer.write_metric(cwc_metric)
+            log_data["cwc/logical_forward_flops_cumulative"] = cwc_flop_ledger.total_logical_flops
         wandb_run.log(log_data)
 
     # state update
@@ -598,6 +730,49 @@ print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")
 print0(f"Total training time: {total_training_time/60:.2f}m")
 if val_bpb is not None:
     print0(f"Minimum validation bpb: {min_val_bpb:.6f}")
+
+# CWC WP-1: finalize instrumentation (no-op in OFF mode)
+cwc_run_meter.resolve()
+cwc_run_meter.close()
+cwc_energy_record = cwc_energy_sampler.stop()
+if cwc_mode is not InstrumentationMode.OFF and master_process:
+    cwc_routing_snapshot = cwc_routing_counters.snapshot()
+    cwc_summary = {
+        "schema_version": "1.0.0",
+        "run": {"run_id": cwc_run_id},
+        "environment": {},
+        "model": {k: v for k, v in user_config.items() if not k.startswith("instrumentation")},
+        "workload": {"num_iterations": num_iterations, "total_batch_size": total_batch_size},
+        "instrumentation": {"mode": cwc_mode.value},
+        "latency": {"resolved_step_count": len(cwc_run_meter.records)},
+        "throughput": {"final_tok_per_sec": tok_per_sec},
+        "vram": {"peak_allocated_bytes": get_max_memory()} if device_type == "cuda" else {},
+        "flops": cwc_flop_ledger.to_dict(),
+        "energy": {
+            "available": cwc_energy_record.available,
+            "method": cwc_energy_record.method,
+            "joules": cwc_energy_record.joules,
+            "confidence": cwc_energy_record.confidence,
+        },
+        "routing": {
+            "step_count": cwc_routing_snapshot.step_count,
+            "routing_implemented": False,
+        },
+        "validity": {
+            "environment_match": True,
+            "warmup_complete": num_iterations > 10,
+            "overhead_gate_passed": None,
+            "energy_available": cwc_energy_record.available,
+            "energy_confidence": cwc_energy_record.confidence,
+            "profiler_disabled_for_claim_run": True,
+            "trace_disabled_for_claim_run": cwc_mode is not InstrumentationMode.TRACE,
+            "claimable": False,
+            "reasons": ["training-run summary; overhead gate is measured separately by scripts/instrumentation_overhead.py"],
+        },
+    }
+    cwc_writer.write_summary(cwc_summary)
+    cwc_writer.close()
+    cwc_writer.compute_checksums()
 
 # cleanup
 wandb_run.finish() # wandb run finish

@@ -78,7 +78,12 @@ def environment_manifest(*, expected_torch_version: str = "2.9.1") -> dict[str, 
         torch_version = torch.__version__
     except ImportError:
         torch_version = "unavailable"
-    environment_match = torch_version == expected_torch_version
+    # Compare the PEP 440 release segment only: "2.9.1+cu128" legitimately
+    # matches expected "2.9.1" — the "+cu128" is CUDA build metadata, not a
+    # different torch release, and treating it as a mismatch would falsely
+    # flag every real GPU build as ENVIRONMENT_MISMATCH.
+    installed_release = torch_version.split("+", 1)[0]
+    environment_match = installed_release == expected_torch_version
     return {
         "python_version": platform.python_version(),
         "torch_version": torch_version,
