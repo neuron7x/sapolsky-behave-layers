@@ -1,0 +1,33 @@
+{
+  "git_commit": "dfbe5c7d1d231afa85f41052dfdd17efd1e1293e",
+  "git_tree_status": "M experiments/wp2_routing_v2/src/runner_final.py\n M experiments/wp2_routing_v2/src/runner_oracle.py\n?? artifacts/wp2-routing-v2/",
+  "repository_remote": "origin\thttps://github.com/karpathy/nanochat.git (fetch)",
+  "dependency_lock_checksum": "de7891b832854162111208644ddb72685069ce8128e2bed9dbb7993aa6af5861",
+  "hardware_model": "NVIDIA GeForce RTX 3050 Laptop GPU, 4096 MiB",
+  "driver_version": "595.71.05",
+  "cuda_version": "12.8",
+  "pytorch_version": "2.9.1+cu128",
+  "python_version": "3.10.20",
+  "platform": "Linux-6.8.0-134-lowlatency-x86_64-with-glibc2.39",
+  "precision": "fp32",
+  "compile_state": "eager",
+  "start_timestamp_utc": "2026-07-16T12:40:06Z",
+  "experiment": "wp2_routing_v2_typed_semantic",
+  "oracle_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "final_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "present": true,
+  "mean_oracle_gain": 0.9982394776157347,
+  "gain_ci95": [
+    0.9975523285451166,
+    0.998787189209855
+  ],
+  "mean_hard_gap": 0.40617761611938474,
+  "oracle_hard_exact": 1.0,
+  "oracle_easy_exact": 1.0,
+  "oracle_budget_violations": 0,
+  "isolation": {
+    "parser_subject": 1.0,
+    "parser_relation": 1.0,
+    "parser_object": 1.0,
+    "parser_polarity": 1.0,
+    "parser_tuple": 1.0,
+    "renderer_exact": 1.0,
+    "direct_easy_exact": 1.0,
+    "direct_hard_exact": 0.00193050189409405
+  },
+  "IDENTIFIABLE": true,
+  "ISOLATION_PASS": true
+}

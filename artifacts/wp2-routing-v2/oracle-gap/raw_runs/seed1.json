@@ -1,0 +1,56 @@
+{
+  "seed": 1,
+  "capacity": 518,
+  "modes": {
+    "DENSE_SEMANTIC": {
+      "canonical_ce": 0.000198970505152829,
+      "exact_match": 1.0,
+      "hard_exact": 1.0,
+      "easy_exact": 1.0,
+      "budget_violations": 1,
+      "semantic_used": 1024
+    },
+    "DIRECT_ONLY": {
+      "canonical_ce": 0.9480103254318237,
+      "exact_match": 0.494140625,
+      "hard_exact": 0.0,
+      "easy_exact": 1.0,
+      "budget_violations": 0,
+      "semantic_used": 0
+    },
+    "ORACLE": {
+      "canonical_ce": 0.0005245991633273661,
+      "exact_match": 1.0,
+      "hard_exact": 1.0,
+      "easy_exact": 1.0,
+      "budget_violations": 0,
+      "semantic_used": 518
+    },
+    "RANDOM": {
+      "canonical_ce": 0.49212342500686646,
+      "exact_match": 0.7373046875,
+      "hard_exact": 0.480694979429245,
+      "easy_exact": 1.0,
+      "budget_violations": 0,
+      "semantic_used": 518
+    },
+    "FROZEN": {
+      "canonical_ce": 0.812303364276886,
+      "exact_match": 0.55859375,
+      "hard_exact": 0.12741312384605408,
+      "easy_exact": 1.0,
+      "budget_violations": 0,
+      "semantic_used": 518
+    }
+  },
+  "isolation": {
+    "parser_subject": 1.0,
+    "parser_relation": 1.0,
+    "parser_object": 1.0,
+    "parser_polarity": 1.0,
+    "parser_tuple": 1.0,
+    "renderer_exact": 1.0,
+    "direct_easy_exact": 1.0,
+    "direct_hard_exact": 0.0
+  }
+}

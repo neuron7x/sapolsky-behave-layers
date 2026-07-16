@@ -167,7 +167,9 @@ def run_seed(seed, capacity, device, path_steps, ctrl_steps):
     g = _train_controller(g, seed, capacity, device, ctrl_steps)
     gv = torch.Generator().manual_seed(999_999)
     vx, vgt, vcanon, vkind = generate_batch(VAL, gv, "test", 0.5, device)
-    eval_cap = VAL * capacity // BATCH   # scale the 50% capacity to the eval set
+    # capacity = actual HARD count -> ORACLE fills budget exactly, all modes
+    # compute-matched, and a perfect learned router has 0 budget violations.
+    eval_cap = int((vkind == int(TaskKind.HARD_SEMANTIC)).sum().item())
     caus = _causality(g, eval_cap, vx, vgt, vcanon, vkind, seed, device)
     les = _lesions(g, vx, vgt, vcanon, vkind, device)
     return {"seed": seed, "capacity": capacity, "causality": caus, "lesions": les}

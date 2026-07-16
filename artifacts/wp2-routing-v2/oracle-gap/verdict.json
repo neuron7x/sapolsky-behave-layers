@@ -1,0 +1,5 @@
+{
+  "verdict": "ROUTING_CAUSALITY_SUPPORTED",
+  "oracle_identifiable": true,
+  "isolation_pass": true
+}

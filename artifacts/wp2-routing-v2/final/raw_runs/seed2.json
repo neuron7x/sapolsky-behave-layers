@@ -1,0 +1,63 @@
+{
+  "seed": 2,
+  "capacity": 32,
+  "causality": {
+    "learned_loss": 0.0005508539034053683,
+    "random_loss": 0.4651985764503479,
+    "shuffled_loss": 0.4592658281326294,
+    "forced_correct_loss": 0.0005508539034053683,
+    "forced_wrong_loss": 0.952698290348053,
+    "route_balanced_acc": 1.0,
+    "route_nmi": 1.0,
+    "route_auroc": 1.0,
+    "cre": 1729.4935816166326,
+    "shuffling_loss_ratio": 833.7343627656204,
+    "budget_violation": 0,
+    "semantic_used": 518
+  },
+  "lesions": {
+    "none": {
+      "canonical_exact": 1.0,
+      "tuple_correct": 1.0,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 0.0
+    },
+    "semantic_parser_off": {
+      "canonical_exact": 0.0,
+      "tuple_correct": 0.0,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 1.0
+    },
+    "semantic_state_permuted": {
+      "canonical_exact": 0.001953125,
+      "tuple_correct": 0.001953125,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 0.998046875
+    },
+    "polarity_corrupted": {
+      "canonical_exact": 0.0,
+      "tuple_correct": 0.0,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 1.0
+    },
+    "subject_object_swapped": {
+      "canonical_exact": 0.0,
+      "tuple_correct": 0.0,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 1.0
+    },
+    "renderer_off": {
+      "canonical_exact": 0.0,
+      "tuple_correct": 0.0,
+      "syntax_valid": 0.0,
+      "fnr_syntax_valid_wrong_tuple": 0.0
+    },
+    "channel_zeroed": {
+      "canonical_exact": 0.0,
+      "tuple_correct": 0.0,
+      "syntax_valid": 1.0,
+      "fnr_syntax_valid_wrong_tuple": 1.0
+    },
+    "_intact_exact": 1.0
+  }
+}

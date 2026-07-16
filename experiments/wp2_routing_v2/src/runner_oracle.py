@@ -112,7 +112,9 @@ def run_seed(seed, capacity, device, steps):
     g, _ = _train_paths(seed, device, steps)
     gv = torch.Generator().manual_seed(999_999)
     vx, vgt, vcanon, vkind = generate_batch(VAL, gv, "test", 0.5, device)
-    eval_cap = VAL * capacity // BATCH   # scale the 50% capacity to the eval set
+    # capacity = actual HARD count so ORACLE (route-by-kind) exactly fills the
+    # budget with 0 violations and every mode is compute-matched at that budget.
+    eval_cap = int((vkind == int(TaskKind.HARD_SEMANTIC)).sum().item())
     modes = ["DENSE_SEMANTIC", "DIRECT_ONLY", "ORACLE", "RANDOM", "FROZEN"]
     return {"seed": seed, "capacity": eval_cap,
            "modes": {m: _eval_mode(g, m, vx, vgt, vcanon, vkind, eval_cap, seed, device) for m in modes},
