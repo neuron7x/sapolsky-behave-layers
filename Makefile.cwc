@@ -5,10 +5,10 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
-verify: lint typecheck test coverage mutation
+verify: lint typecheck test coverage mutation experiment-tests
 	@echo "CWC-VERIFY: ALL GATES PASSED"
 
 lint:
@@ -39,7 +39,7 @@ mutation:
 
 # Act v2.0 A0 — experiment reproduction + evidence verification
 experiment-tests:
-	PYTHONPATH=. $(PY) -m pytest -q experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/
+	PYTHONPATH=. $(PY) -m pytest -q experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/ experiments/wp2_routing_v2/tests/
 
 reproduce-mechanism:
 	PYTHONPATH=. $(PY) experiments/wp2_mechanism_v2/src/runner_mech.py --seeds 0 1 2 3 4 5 6 7 --out artifacts/wp2-mechanism-v2/raw_runs

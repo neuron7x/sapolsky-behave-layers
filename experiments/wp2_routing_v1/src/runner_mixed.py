@@ -41,7 +41,10 @@ def _make_val(device):
     while rem > 0:
         b = min(256, rem)
         x, y, r = generate_batch(TASK, b, g, "cpu")
-        xs.append(x); ys.append(y); rs.append(r); rem -= b
+        xs.append(x)
+        ys.append(y)
+        rs.append(r)
+        rem -= b
     x = torch.cat(xs)[:VAL_SEQ].to(device)
     y = torch.cat(ys)[:VAL_SEQ].to(device)
     r = torch.cat(rs)[:VAL_SEQ].to(device)
@@ -52,31 +55,38 @@ def _make_val(device):
 @torch.no_grad()
 def _evaluate(model, x, y, is_recall, amask, device):
     model.eval()
-    ce_sum = 0.0; n = 0
-    correct = 0; correct_r = 0; correct_c = 0; nr = 0; nc = 0
-    util_r = torch.zeros(MCFG.n_layer, device=device); util_c = torch.zeros(MCFG.n_layer, device=device)
-    cnt_r = 0; cnt_c = 0; viol = 0
+    ce_sum = 0.0
+    n = 0
+    correct = correct_r = correct_c = nr = nc = 0
+    util_r = torch.zeros(MCFG.n_layer, device=device)
+    util_c = torch.zeros(MCFG.n_layer, device=device)
+    cnt_r = cnt_c = viol = 0
     for i in range(0, x.shape[0], 256):
         xb, yb, rb, mb = x[i:i+256], y[i:i+256], is_recall[i:i+256], amask[i:i+256]
         logits = model(xb, seq_seed=None)
         sel = mb.view(-1)
         ll = logits.view(-1, MCFG.vocab_size)[sel]
         tt = yb.view(-1)[sel]
-        ce_sum += float(F.cross_entropy(ll, tt, reduction="sum")); n += int(sel.sum())
+        ce_sum += float(F.cross_entropy(ll, tt, reduction="sum"))
+        n += int(sel.sum())
         pred = ll.argmax(-1)
         ok = pred == tt
         correct += int(ok.sum())
         rr = rb
-        correct_r += int(ok[rr].sum()); nr += int(rr.sum())
-        correct_c += int(ok[~rr].sum()); nc += int((~rr).sum())
+        correct_r += int(ok[rr].sum())
+        nr += int(rr.sum())
+        correct_c += int(ok[~rr].sum())
+        nc += int((~rr).sum())
         mask = model._last_mask
-        util_r += mask[rr].sum(0); cnt_r += int(rr.sum())
-        util_c += mask[~rr].sum(0); cnt_c += int((~rr).sum())
+        util_r += mask[rr].sum(0)
+        cnt_r += int(rr.sum())
+        util_c += mask[~rr].sum(0)
+        cnt_c += int((~rr).sum())
         viol += int((model.last_active_counts() > MCFG.budget_k).sum())
     ur = (util_r / max(cnt_r, 1)).tolist()
     uc = (util_c / max(cnt_c, 1)).tolist()
     # routing divergence between the two types: L1 distance of utilization
-    route_div = sum(abs(a - b) for a, b in zip(ur, uc))
+    route_div = sum(abs(a - b) for a, b in zip(ur, uc, strict=True))
     return {
         "answer_ce": ce_sum / max(n, 1),
         "acc_overall": correct / max(n, 1),
@@ -96,7 +106,8 @@ def run_one(mode, seed, device):
     opt = torch.optim.AdamW(params, lr=LR, weight_decay=WD, betas=(0.9, 0.95))
     gen = torch.Generator().manual_seed(seed)
     vx, vy, vr, vm = _make_val(device)
-    best_ce = float("inf"); best = None
+    best_ce = float("inf")
+    best = None
     t0 = time.perf_counter()
     for step in range(TRAIN_STEPS):
         model.train()
@@ -107,12 +118,15 @@ def run_one(mode, seed, device):
         nonpad = yb.view(-1) != TASK.pad_token
         logits = model(xb, seq_seed=seed * 100000 + step)
         loss = F.cross_entropy(logits.view(-1, MCFG.vocab_size)[nonpad], yb.view(-1)[nonpad])
-        opt.zero_grad(set_to_none=True); loss.backward()
-        torch.nn.utils.clip_grad_norm_(params, GRAD_CLIP); opt.step()
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(params, GRAD_CLIP)
+        opt.step()
         if (step + 1) % EVAL_EVERY == 0 or step == TRAIN_STEPS - 1:
             ev = _evaluate(model, vx, vy, vr, vm, device)
             if ev["answer_ce"] < best_ce:
-                best_ce = ev["answer_ce"]; best = ev
+                best_ce = ev["answer_ce"]
+                best = ev
     train_s = time.perf_counter() - t0
     active = MCFG.n_layer if mode == RoutingMode.DENSE else MCFG.budget_k
     has_ctrl = mode in (RoutingMode.LEARNED, RoutingMode.FROZEN)

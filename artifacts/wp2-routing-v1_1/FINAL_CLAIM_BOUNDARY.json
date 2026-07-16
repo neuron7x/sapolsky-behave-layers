@@ -1,0 +1,10 @@
+{
+  "claim": "input-dependent adaptive routing",
+  "status": "NOT_SUPPORTED",
+  "failure_mode": "ROUTER_COLLAPSE",
+  "route_divergence": 1.1920928955078125e-7,
+  "learned_beats_random": true,
+  "learned_beats_frozen": false,
+  "learned_beats_fixed_depth": false,
+  "maximum_claim_level": 1
+}

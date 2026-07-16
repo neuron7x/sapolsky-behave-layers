@@ -12,6 +12,7 @@ on:
       - "scripts/mutation_probe.py"
       - "tests/test_instrumentation_*.py"
       - "tests/test_mutation_kill_rate.py"
+      - "experiments/**"
       - "ruff.toml"
       - "mypy.ini"
       - "cwc-requirements-dev.txt"
@@ -21,6 +22,7 @@ on:
       - "cwc/**"
       - "scripts/instrumentation_*.py"
       - "tests/test_instrumentation_*.py"
+      - "experiments/**"
 
 jobs:
   quality:
