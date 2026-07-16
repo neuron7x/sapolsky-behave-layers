@@ -1,0 +1,6 @@
+task: {name: typed_operations, n_symbols: 16, n_roles: 8, seq_len: 8, ops: fixed_random_permutations}
+model: {operator: linear_no_nonlinearity, d_model: 64, primitive_bank_K: 8, primitive_rank: 2}
+modes: [shared_no_role, static_lora, fixed_role, disel_gated, separate_modules, rcfr]
+training: {steps: 2000, batch: 128, lr: 0.002}
+seeds: [0,1,2,3,4,5,6,7]
+f5_gate: {rcfr_acc_seen: 0.95, follows_wrong: 0.85, permute_removes: 0.80, rcfr_acc_unseen: 0.95, beats_disel: paired_ci_gt_0}

@@ -1,0 +1,86 @@
+{
+  "n_seeds": 8,
+  "per_mode": {
+    "shared_no_role": {
+      "acc_seen": 0.23799896240234375,
+      "acc_unseen": 0.23702239990234375,
+      "n_params": 8768
+    },
+    "static_lora": {
+      "acc_seen": 0.22982025146484375,
+      "acc_unseen": 0.2309722900390625,
+      "n_params": 8776
+    },
+    "fixed_role": {
+      "acc_seen": 0.22982025146484375,
+      "acc_unseen": 0.2309722900390625,
+      "n_params": 8776
+    },
+    "disel_gated": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 17544
+    },
+    "separate_modules": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 41536
+    },
+    "rcfr": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 13448
+    }
+  },
+  "rcfr_vs": {
+    "shared_no_role": {
+      "mean_delta": 0.7620010375976562,
+      "ci95": [
+        0.7620010375976562,
+        0.7620010375976562
+      ],
+      "a_better": true
+    },
+    "static_lora": {
+      "mean_delta": 0.7701797485351562,
+      "ci95": [
+        0.7701797485351562,
+        0.7701797485351562
+      ],
+      "a_better": true
+    },
+    "disel_gated": {
+      "mean_delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "a_better": false
+    },
+    "separate_modules": {
+      "mean_delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "a_better": false
+    }
+  },
+  "interventions_mean": {
+    "acc_true": 1.0,
+    "acc_forced_wrong_role": 0.0772705078125,
+    "follows_wrong_role_fn": 1.0,
+    "acc_module_swapped": 0.0009613037109375,
+    "acc_random_role": 0.17015838623046875,
+    "advantage_removed_by_role_permute": 0.9842447916666667,
+    "chance": 0.0625
+  },
+  "f5": {
+    "same_module_multifunction": true,
+    "role_predictable": true,
+    "transfers_to_unseen": true,
+    "beats_strongest_adapter_disel": false
+  },
+  "verdict": "RCFR_NOT_SUPPORTED",
+  "verdict_note": "RCFR works (one module = R functions, role-only changes function predictably, beats no-role/static) BUT is NOT novel over a fair input-gated rank baseline (DISeL-with-role) in isolation. Confirms RCFR_FALSIFICATION_CONTRACT: conditional low-rank modulation is prior art; RCFR's only possible value is INTEGRATION (Act I)."
+}

@@ -1,0 +1,44 @@
+{
+  "seed": 0,
+  "modes": {
+    "shared_no_role": {
+      "acc_seen": 0.2401123046875,
+      "acc_unseen": 0.23675537109375,
+      "n_params": 8768
+    },
+    "static_lora": {
+      "acc_seen": 0.23040771484375,
+      "acc_unseen": 0.228271484375,
+      "n_params": 8776
+    },
+    "fixed_role": {
+      "acc_seen": 0.23040771484375,
+      "acc_unseen": 0.228271484375,
+      "n_params": 8776
+    },
+    "disel_gated": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 17544
+    },
+    "separate_modules": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 41536
+    },
+    "rcfr": {
+      "acc_seen": 1.0,
+      "acc_unseen": 1.0,
+      "n_params": 13448
+    }
+  },
+  "rcfr_interventions": {
+    "acc_true": 1.0,
+    "acc_forced_wrong_role": 0.0772705078125,
+    "follows_wrong_role_fn": 1.0,
+    "acc_module_swapped": 0.0,
+    "acc_random_role": 0.16436767578125,
+    "advantage_removed_by_role_permute": 0.9842447916666667,
+    "chance": 0.0625
+  }
+}

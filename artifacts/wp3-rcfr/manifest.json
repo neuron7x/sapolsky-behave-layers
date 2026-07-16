@@ -1,0 +1,26 @@
+{
+  "git_commit": "e7846ba8cd3008795feb7d4a51537883222a6f14",
+  "git_tree_status": "?? artifacts/wp3-rcfr/",
+  "repository_remote": "origin\thttps://github.com/karpathy/nanochat.git (fetch)",
+  "dependency_lock_checksum": "de7891b832854162111208644ddb72685069ce8128e2bed9dbb7993aa6af5861",
+  "hardware_model": "NVIDIA GeForce RTX 3050 Laptop GPU, 4096 MiB",
+  "driver_version": "595.71.05",
+  "cuda_version": "12.8",
+  "pytorch_version": "2.9.1+cu128",
+  "python_version": "3.10.20",
+  "platform": "Linux-6.8.0-134-lowlatency-x86_64-with-glibc2.39",
+  "precision": "fp32",
+  "compile_state": "eager",
+  "start_timestamp_utc": "2026-07-16T13:23:04Z",
+  "experiment": "wp3_rcfr_act_f",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}
