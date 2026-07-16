@@ -1,0 +1,18 @@
+{
+  "mode": "oracle",
+  "seed": 0,
+  "stage": "B_inferred",
+  "train_seconds": 7.85,
+  "eval": {
+    "answer_ce": 0.0022499337792396545,
+    "acc": 1.0,
+    "acc_local": 1.0,
+    "acc_far": 1.0,
+    "route_label_agreement": 1.0,
+    "mi_mi_nats": 0.6923058038147805,
+    "mi_h_t_nats": 0.6923058038147805,
+    "mi_i_norm": 1.0
+  },
+  "total_params": 75776,
+  "controller_params": 0
+}
