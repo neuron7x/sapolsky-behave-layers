@@ -1,0 +1,175 @@
+{
+  "per_config": {
+    "dense": {
+      "n": 5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "answer_ce": [
+        0.0075338461771607395,
+        0.9231050643920898,
+        0.0027159174950793386,
+        0.013331498424056917,
+        0.9109958953857422
+      ],
+      "mean_ce": 0.3715364443748258,
+      "mean_acc": 0.8425,
+      "mean_acc_recall": 0.6761316872427984,
+      "mean_acc_copy": 0.9998054474708171,
+      "mean_routing_divergence": 4.76837158203125e-07,
+      "active_blocks": 8,
+      "active_inference_flops": 219152384
+    },
+    "random": {
+      "n": 5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "answer_ce": [
+        0.0552855224609375,
+        0.03544003939628601,
+        0.024404337286949157,
+        0.03828946715593338,
+        0.02589306026697159
+      ],
+      "mean_ce": 0.03586248531341553,
+      "mean_acc": 0.9925,
+      "mean_acc_recall": 0.984567901234568,
+      "mean_acc_copy": 1.0,
+      "mean_routing_divergence": 0.10673967003822327,
+      "active_blocks": 2,
+      "active_inference_flops": 55574528
+    },
+    "frozen": {
+      "n": 5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "answer_ce": [
+        9.364359662868082e-06,
+        0.005197113836184144,
+        0.00763956392928958,
+        0.0012123864144086838,
+        3.7003006436862055e-05
+      ],
+      "mean_ce": 0.0028190863091964277,
+      "mean_acc": 0.9994,
+      "mean_acc_recall": 0.9987654320987653,
+      "mean_acc_copy": 1.0,
+      "mean_routing_divergence": 1.1920928955078125e-07,
+      "active_blocks": 2,
+      "active_inference_flops": 55707648
+    },
+    "learned": {
+      "n": 5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "answer_ce": [
+        0.002951790135353804,
+        5.099019256886095e-05,
+        6.464369548484683e-05,
+        0.00017814407241530716,
+        0.0038586698826402425
+      ],
+      "mean_ce": 0.0014208475956926122,
+      "mean_acc": 0.9996,
+      "mean_acc_recall": 0.9991769547325102,
+      "mean_acc_copy": 1.0,
+      "mean_routing_divergence": 1.1920928955078125e-07,
+      "active_blocks": 2,
+      "active_inference_flops": 55707648
+    },
+    "fixed_depth": {
+      "n": 5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "answer_ce": [
+        0.00027372123673558235,
+        0.0025499908621422944,
+        0.0003344483964610845,
+        0.00035680513898842035,
+        0.0032303305314853787
+      ],
+      "mean_ce": 0.001349059233162552,
+      "mean_acc": 0.9998000000000001,
+      "mean_acc_recall": 0.9995884773662551,
+      "mean_acc_copy": 1.0,
+      "mean_routing_divergence": 1.1920928955078125e-07,
+      "active_blocks": 2,
+      "active_inference_flops": 55574528
+    }
+  },
+  "comparisons": {
+    "learned_vs_random": {
+      "n": 5,
+      "mean_delta": -0.03444163771772292,
+      "ci95": [
+        -0.04389044273034669,
+        -0.025627443431061693
+      ],
+      "learned_better": true,
+      "indistinguishable": false
+    },
+    "learned_vs_frozen": {
+      "n": 5,
+      "mean_delta": -0.0013982387135038157,
+      "ci95": [
+        -0.005295266019366682,
+        0.002498788592359051
+      ],
+      "learned_better": false,
+      "indistinguishable": true
+    },
+    "learned_vs_fixed_depth": {
+      "n": 5,
+      "mean_delta": 7.178836253006018e-05,
+      "ci95": [
+        -0.001427693471708335,
+        0.0015353769125416878
+      ],
+      "learned_better": false,
+      "indistinguishable": true
+    },
+    "learned_vs_dense": {
+      "n": 5,
+      "mean_delta": -0.3701155967791332,
+      "ci95": [
+        -0.7361763008286945,
+        -0.005524002806888892
+      ],
+      "learned_better": true,
+      "indistinguishable": false
+    }
+  },
+  "adaptivity": {
+    "learned_routing_divergence": 1.1920928955078125e-07,
+    "static_divergence": 1.1920928955078125e-07,
+    "learned_is_adaptive": false
+  },
+  "compute_parity_within_1pct": true,
+  "budget_violations": 0,
+  "n_seeds": 5,
+  "verdict": "ROUTING_NOT_SUPPORTED_COLLAPSE"
+}

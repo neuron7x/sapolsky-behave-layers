@@ -1,0 +1,40 @@
+{
+  "mode": "fixed_depth",
+  "seed": 2,
+  "device": "cuda",
+  "train_steps": 2500,
+  "train_seconds": 80.8,
+  "best_answer_ce": 0.0003344483964610845,
+  "final_eval": {
+    "answer_ce": 0.0003344483964610845,
+    "acc_overall": 1.0,
+    "acc_recall": 1.0,
+    "acc_copy": 1.0,
+    "util_recall": [
+      0.9999999403953552,
+      0.9999999403953552,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "util_copy": [
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "routing_divergence_copy_vs_recall": 1.1920928955078125e-07,
+    "budget_violations": 0
+  },
+  "active_blocks": 2,
+  "active_inference_flops": 55574528,
+  "controller_flops": 0,
+  "budget_k": 2
+}

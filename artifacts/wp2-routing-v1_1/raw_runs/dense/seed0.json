@@ -1,0 +1,40 @@
+{
+  "mode": "dense",
+  "seed": 0,
+  "device": "cuda",
+  "train_steps": 2500,
+  "train_seconds": 79.09,
+  "best_answer_ce": 0.0075338461771607395,
+  "final_eval": {
+    "answer_ce": 0.0075338461771607395,
+    "acc_overall": 0.999,
+    "acc_recall": 0.9979423868312757,
+    "acc_copy": 1.0,
+    "util_recall": [
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552,
+      0.9999999403953552
+    ],
+    "util_copy": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "routing_divergence_copy_vs_recall": 4.76837158203125e-07,
+    "budget_violations": 2000
+  },
+  "active_blocks": 8,
+  "active_inference_flops": 219152384,
+  "controller_flops": 0,
+  "budget_k": 2
+}
