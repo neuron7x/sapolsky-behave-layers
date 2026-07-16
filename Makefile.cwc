@@ -5,11 +5,21 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence reproduce-primary make-release
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence reproduce-primary make-release doc-gate docs-regen
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
-verify: lint typecheck test coverage mutation experiment-tests
+verify: lint typecheck test coverage mutation experiment-tests doc-gate
 	@echo "CWC-VERIFY: ALL GATES PASSED"
+
+# Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
+# commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.
+doc-gate:
+	PYTHONPATH=. $(PY) scripts/doc_status_gate.py
+
+# Regenerate the machine-derived docs from real state (ledger + 63-doc register).
+docs-regen:
+	PYTHONPATH=. $(PY) scripts/build_experiment_ledger.py
+	PYTHONPATH=. $(PY) scripts/build_document_register.py
 
 lint:
 	$(PY) -m ruff check .

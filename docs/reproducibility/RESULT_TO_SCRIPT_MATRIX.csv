@@ -1,0 +1,9 @@
+result_id,claim_id,generation_command,analysis_script,expected_output,artifact_path,hardware
+R1-jensen-gap,CWC-L2p-jensen-gap,python -m experiments.wp4_adaptive_depth.src.runner,experiments/wp4_adaptive_depth/src/analyze.py,gap=P(m>K) max err 0.0000,artifacts/wp4-adaptive-depth/,CPU/RTX3050
+R2-oracle-gap,CWC-L1-identifiability,python -m experiments.wp2_routing_v2.src.runner_oracle,experiments/wp2_routing_v2/src/runner_oracle.py,oracle gap 99.8%,artifacts/wp2-routing-v2/oracle-gap/,CPU/RTX3050
+R3-routing-narrowed,CWC-L2-routing-causality,python -m experiments.wp2_routing_v2.src.runner_final,experiments/wp2_routing_v2/src/runner_final.py,bal_acc 1.0 AUROC 1.0,artifacts/wp2-routing-v2/,CPU/RTX3050
+R4-r3c-collapse,CWC-L2c-e2e-straightthrough,python -m experiments.wp2_routing_v2.src.runner_r3c,experiments/wp2_routing_v2/src/runner_r3c.py,learned 0.91 > random 0.48,artifacts/wp2-routing-v3-r3c/,CPU/RTX3050
+R5-r3c-reinforce,CWC-L2a-e2e-reinforce,python -m experiments.wp2_routing_v2.src.runner_r3c_reinforce --seeds 0 1 2 3 4 5 6 7 --lambda-use 1.0,experiments/wp2_routing_v2/src/analyze_r3c_reinforce.py,learned 0.009 vs random 0.48 AUROC 1.0,artifacts/wp2-routing-v3-r3c-reinforce/,CPU/RTX3050
+R6-surface-matched,CWC-L2b-route-decision-cost,python -m experiments.wp2_routing_v2.src.surface_matched_routing --seeds 0 1 2 3 4 5 6 7,experiments/wp2_routing_v2/src/analyze_surface_matched.py,AUROC ~0.51 chance; ROUTE_DECISION_IS_THE_COMPUTATION,artifacts/wp2-routing-v3-surface-matched/,CPU/RTX3050
+R7-rcfr,CWC-L3-rcfr,python -m experiments.wp3_rcfr.src.runner,experiments/wp3_rcfr/,RCFR_NOT_SUPPORTED,artifacts/wp3-rcfr/,CPU/RTX3050
+R8-plasticity,CWC-L4-plasticity,python -m experiments.wp3_plasticity_v1.src.runner_oracle,experiments/wp3_plasticity_v1/,PLASTICITY_BENCHMARK_NOT_IDENTIFIABLE,artifacts/wp3-plasticity-v1/,CPU/RTX3050

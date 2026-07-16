@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cwc/hypothesis.schema.json",
+  "title": "CWC Hypothesis",
+  "type": "object",
+  "required": ["hypothesis_id", "type", "H0", "H1", "status"],
+  "properties": {
+    "hypothesis_id": {"type": "string", "pattern": "^H-"},
+    "research_question_id": {"type": "string"},
+    "type": {"enum": ["confirmatory", "exploratory"]},
+    "H0": {"type": "string"},
+    "H1": {"type": "string"},
+    "estimand": {"type": "string"},
+    "population": {"type": "string"},
+    "scope": {"type": "string"},
+    "primary_endpoint": {"type": "string"},
+    "experimental_unit": {"type": "string"},
+    "decision_rule": {"type": "string"},
+    "minimum_meaningful_effect": {"type": "string"},
+    "preregistration": {"type": "string"},
+    "protocol_id": {"type": "string"},
+    "status": {"enum": ["SUPPORTED", "SUPPORTED_NARROWED", "NOT_SUPPORTED", "NOT_TESTED", "NOT_IDENTIFIABLE"]},
+    "claim_id": {"type": "string"},
+    "amendments": {"type": "array"}
+  },
+  "additionalProperties": false
+}

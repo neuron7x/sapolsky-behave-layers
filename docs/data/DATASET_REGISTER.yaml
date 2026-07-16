@@ -1,0 +1,46 @@
+# CWC Dataset Register — synthetic generators (schema: schemas/dataset.schema.json)
+# Every dataset is a deterministic generator; commit + seed reproduce it exactly.
+
+datasets:
+  - dataset_id: semantic-route
+    version: "1.0"
+    generator: experiments/wp2_routing_v2/src/task_semantic_route.py
+    kind: synthetic-generator
+    construct: "S-R-O-polarity routing; EASY canonical vs HARD passive+distractor+negation"
+    license: MIT
+    known_limitations: ["surface-leaky (length/histogram AUROC=1.0) — see leakage_probe"]
+    associated_experiments: [wp2-routing-v2, wp2-routing-v3-r3c, wp2-routing-v3-r3c-reinforce]
+
+  - dataset_id: surface-matched-duplicate
+    version: "1.0"
+    generator: experiments/wp2_routing_v2/src/surface_matched_task.py
+    kind: synthetic-generator
+    construct: "one duplicated value; NEAR vs FAR = distance class; identical length/histogram"
+    license: MIT
+    known_limitations: ["difficulty is structural, not cheaply computable (by design)"]
+    associated_experiments: [wp2-routing-v3-surface-matched]
+
+  - dataset_id: hop-funnel
+    version: "1.0"
+    generator: experiments/wp4_adaptive_depth/src/task_hops.py
+    kind: synthetic-generator
+    construct: "funnel-graph pointer-chase; m(x)=hops to absorbing fixed point"
+    license: MIT
+    known_limitations: ["exact-operator substrate; allocation isolated from a learned operator"]
+    associated_experiments: [wp4-adaptive-depth]
+
+  - dataset_id: rcfr-roles
+    version: "1.0"
+    generator: experiments/wp3_rcfr/src/
+    kind: synthetic-generator
+    construct: "role-conditioned functional reuse tasks"
+    license: MIT
+    associated_experiments: [wp3-rcfr]
+
+  - dataset_id: plasticity-tasks
+    version: "1.0"
+    generator: experiments/wp3_plasticity_v1/src/
+    kind: synthetic-generator
+    construct: "continual-learning importance/interference tasks"
+    license: MIT
+    associated_experiments: [wp3-plasticity-v1]

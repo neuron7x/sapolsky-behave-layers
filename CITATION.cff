@@ -6,12 +6,15 @@ authors:
   - given-names: Yaroslav
     family-names: Vasylenko
 repository-code: "local: nanochat-cwc-baseline (fork of karpathy/nanochat)"
-version: "1.0.0-526c6a5"
+version: "1.0.0-d920f79"
 date-released: "2026-07-16"
 license: MIT
 abstract: >
   A verified measurement substrate and falsification harness for causally
-  validating adaptive-computation mechanisms. Contains one narrowed positive
-  (routing under value distillation), one clean positive (adaptive-compute
-  Jensen gap = P(m>K)), several preserved negatives, and a unifying
-  identifiability theory. Not yet a proven Pareto-superior architecture.
+  validating adaptive-computation mechanisms. Contains claim-tier positives
+  (a benchmark with a real oracle gap; adaptive-compute Jensen gap = P(m>K);
+  end-to-end routing learnable under a binding budget) and negatives (RCFR ties
+  prior art; surface-matched routing shows the route decision is the computation;
+  fractal emergence unsupported), plus a unifying identifiability theory
+  (V_realized = oracle_gap - route_decision_cost). Not yet a proven
+  Pareto-superior architecture; no independent replication.

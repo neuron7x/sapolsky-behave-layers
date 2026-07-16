@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cwc/verdict.schema.json",
+  "title": "CWC Experiment Verdict",
+  "type": "object",
+  "required": ["verdict"],
+  "properties": {
+    "experiment": {"type": "string"},
+    "verdict": {"type": "string"},
+    "question": {"type": "string"},
+    "resolves": {"type": "string"},
+    "n_seeds": {"type": "integer", "minimum": 1},
+    "interpretation": {"type": "string"}
+  },
+  "additionalProperties": true
+}

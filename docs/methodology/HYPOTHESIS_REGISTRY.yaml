@@ -1,0 +1,150 @@
+# CWC Hypothesis Registry (schema: schemas/hypothesis.schema.json)
+# Every claim in claim_registry.json links here via hypothesis_id.
+# Preregistrations are the experiments/*/PREREGISTRATION*.md committed before each run.
+
+hypotheses:
+  - hypothesis_id: H-L0
+    research_question_id: RQ-measure
+    type: confirmatory
+    H0: "Instrumentation measurements are non-deterministic or internally invalid."
+    H1: "Instrumentation records deterministic, internally-validated resource measurements."
+    estimand: "test/coverage/mutation pass rates on the instrumentation package"
+    experimental_unit: "instrumentation test case"
+    decision_rule: "SUPPORTED iff determinism + mutation + coverage gates all pass"
+    preregistration: docs/WP1_INSTRUMENTATION.md
+    status: SUPPORTED
+    claim_id: CWC-L0-measurement
+
+  - hypothesis_id: H-L1
+    research_question_id: RQ-identifiable
+    type: confirmatory
+    H0: "No benchmark has a real adaptive-compute advantage (oracle <= best-fixed)."
+    H1: "A benchmark exists where an oracle strictly beats the best fixed policy at equal budget."
+    estimand: "oracle_gap = U_oracle - U_best_fixed"
+    experimental_unit: "benchmark instance"
+    decision_rule: "SUPPORTED iff LCB95(oracle - best_fixed) > 0"
+    preregistration: experiments/wp2_routing_v2/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L1-identifiability
+
+  - hypothesis_id: H-L2
+    research_question_id: RQ-routing
+    type: confirmatory
+    H0: "A learned controller does not beat random/frozen/shuffled controls."
+    H1: "A learned controller routes causally and beats all controls."
+    estimand: "balanced routing accuracy, AUROC, counterfactual route effect"
+    experimental_unit: "model seed (paired)"
+    decision_rule: "SUPPORTED iff learned < random,frozen,shuffled AND forced-route interventions establish causality"
+    minimum_meaningful_effect: "bal_acc lift > 0.05 over best control"
+    preregistration: experiments/wp2_routing_v2/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-L2-routing-causality
+    amendments: ["narrowed after review: value distillation, label-derived capacity, surface cues, no physical saving"]
+
+  - hypothesis_id: H-L2a
+    research_question_id: RQ-routing
+    type: confirmatory
+    H0: "No leakage-free-target controller routes above chance (H_deep)."
+    H1: "A REINFORCE controller routes at oracle level under a binding budget (H_opt)."
+    estimand: "learned_loss vs random_loss; route AUROC at fixed label-free budget"
+    experimental_unit: "model seed (paired), 8 seeds"
+    decision_rule: "SUPPORTED iff mean(learned)<mean(random), paired 95% UB<0, worst-seed AUROC>0.5"
+    preregistration: experiments/wp2_routing_v2/PREREGISTRATION_R3C_REINFORCE.md
+    status: SUPPORTED
+    claim_id: CWC-L2a-e2e-reinforce
+
+  - hypothesis_id: H-L2b
+    research_question_id: RQ-routing
+    type: confirmatory
+    H0: "A cheap controller can route on a surface-matched task (H_cheap-route)."
+    H1: "The route decision costs ~the expensive computation (H_route-is-compute)."
+    estimand: "eval AUROC + loss saving for cheap and attn controllers; supervised-probe AUROC"
+    experimental_unit: "model seed, 8 seeds x 4 arms"
+    decision_rule: "H_route-is-compute iff no arm clears AUROC LB>0.5 with loss saving, and probes at chance"
+    preregistration: experiments/wp2_routing_v2/PREREGISTRATION_SURFACE_MATCHED.md
+    status: SUPPORTED
+    claim_id: CWC-L2b-route-decision-cost
+
+  - hypothesis_id: H-L2p
+    research_question_id: RQ-allocation
+    type: confirmatory
+    H0: "Adaptive allocation does not beat best-static beyond capacity/compute/optimization."
+    H1: "Adaptive allocation beats best-static by exactly P(m>K)."
+    estimand: "measured_gap - P(m>K)"
+    experimental_unit: "seed x difficulty regime (8 x 4)"
+    decision_rule: "SUPPORTED iff |measured_gap - P(m>K)| ~ 0 across regimes AND beats input-blind random"
+    preregistration: experiments/wp4_adaptive_depth/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L2p-jensen-gap
+
+  - hypothesis_id: H-L2c
+    research_question_id: RQ-routing
+    type: confirmatory
+    H0: "Straight-through top-K end-to-end routing is not causal."
+    H1: "Straight-through top-K end-to-end routing is causal."
+    estimand: "learned_loss vs random_loss at fixed label-free budget"
+    experimental_unit: "model seed, 8 seeds"
+    decision_rule: "SUPPORTED iff learned<random; result NOT_SUPPORTED (collapse), superseded by H-L2a"
+    preregistration: experiments/wp2_routing_v2/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-L2c-e2e-straightthrough
+
+  - hypothesis_id: H-L3
+    research_question_id: RQ-reuse
+    type: confirmatory
+    H0: "Role-conditioned functional reuse is not novel / not better than prior art."
+    H1: "RCFR is a novel mechanism beyond DISeL/HyperFormer."
+    estimand: "RCFR vs role-conditioned prior-art baseline"
+    experimental_unit: "model seed"
+    decision_rule: "SUPPORTED iff RCFR strictly beats matched prior art; result NOT_SUPPORTED (ties)"
+    preregistration: experiments/wp3_rcfr/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-L3-rcfr
+
+  - hypothesis_id: H-L4
+    research_question_id: RQ-plasticity
+    type: exploratory
+    H0: "A budgeted metaplasticity governor does not help."
+    H1: "A budgeted metaplasticity governor helps under a cost budget."
+    estimand: "oracle allocation gap under cost budget"
+    experimental_unit: "model seed"
+    decision_rule: "unbudgeted gap ~0 -> NOT_IDENTIFIABLE; cost-aware confirmatory run pending"
+    preregistration: experiments/wp3_plasticity_v1/PREREGISTRATION.md
+    status: NOT_TESTED
+    claim_id: CWC-L4-plasticity
+
+  - hypothesis_id: H-fractal
+    research_question_id: RQ-multiscale
+    type: confirmatory
+    H0: "No emergent multiscale/fractal organization (null)."
+    H1: "Emergent multiscale/fractal organization."
+    estimand: "fractal report vs null gate"
+    experimental_unit: "run"
+    decision_rule: "SUPPORTED iff null rejected; result NOT_SUPPORTED (insufficient evidence)"
+    preregistration: artifacts/history/fractal/
+    status: NOT_SUPPORTED
+    claim_id: CWC-fractal
+
+  - hypothesis_id: H-L7
+    research_question_id: RQ-pareto
+    type: confirmatory
+    H0: "CWC does not Pareto-dominate MoD/MoE at equal budget on real workloads."
+    H1: "CWC Pareto-dominates MoD/MoE at equal budget on >=2 real workloads."
+    estimand: "compute-equivalent Pareto dominance vector"
+    experimental_unit: "system x seed x scale"
+    decision_rule: "SUPPORTED iff CWC dominates on the primary vector with CI support"
+    preregistration: PENDING
+    status: NOT_TESTED
+    claim_id: CWC-L7-pareto
+
+  - hypothesis_id: H-L8
+    research_question_id: RQ-replication
+    type: confirmatory
+    H0: "An independent operator cannot reproduce the primary result."
+    H1: "An independent operator reproduces the primary result within tolerance."
+    estimand: "independent reproduction of the primary verdict"
+    experimental_unit: "independent replication run"
+    decision_rule: "SUPPORTED iff independent operator matches primary conclusion"
+    preregistration: docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md
+    status: NOT_TESTED
+    claim_id: CWC-L8-replication
