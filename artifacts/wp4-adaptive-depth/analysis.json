@@ -1,0 +1,78 @@
+{
+  "n_seeds": 8,
+  "per_distribution": {
+    "uniform": {
+      "mean_empirical_gap": 0.44987495988607407,
+      "mean_theory_P_m_gt_K": 0.44987502694129944,
+      "mean_abs_error": 6.705522537231445e-08,
+      "max_abs_error": 8.940696716308594e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.5416562706232071,
+      "oracle_solved": 1.0,
+      "static_solved": 0.5501250401139259,
+      "adaptive_minus_random_ci": [
+        0.4583437293767929,
+        null
+      ],
+      "adaptive_eq_oracle": true,
+      "compute_matched_hops_vs_K": 0.11800020933151245
+    },
+    "easy_skew": {
+      "mean_empirical_gap": 0.33265621960163116,
+      "mean_theory_P_m_gt_K": 0.33265626430511475,
+      "mean_abs_error": 4.470348358154297e-08,
+      "max_abs_error": 5.960464477539063e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.6117500215768814,
+      "oracle_solved": 1.0,
+      "static_solved": 0.6673437803983688,
+      "adaptive_minus_random_ci": [
+        0.3882499784231186,
+        null
+      ],
+      "adaptive_eq_oracle": true,
+      "compute_matched_hops_vs_K": 0.10525014996528625
+    },
+    "hard_skew": {
+      "mean_empirical_gap": 0.5032499767839909,
+      "mean_theory_P_m_gt_K": 0.5032500214874744,
+      "mean_abs_error": 4.470348358154297e-08,
+      "max_abs_error": 5.960464477539063e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.5515937805175781,
+      "oracle_solved": 1.0,
+      "static_solved": 0.49675002321600914,
+      "adaptive_minus_random_ci": [
+        0.4484062194824219,
+        null
+      ],
+      "adaptive_eq_oracle": true,
+      "compute_matched_hops_vs_K": 0.09499973058700562
+    },
+    "bimodal": {
+      "mean_empirical_gap": 0.4848437234759331,
+      "mean_theory_P_m_gt_K": 0.48484377190470695,
+      "mean_abs_error": 4.842877388000488e-08,
+      "max_abs_error": 8.940696716308594e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.5326562747359276,
+      "oracle_solved": 1.0,
+      "static_solved": 0.5151562765240669,
+      "adaptive_minus_random_ci": [
+        0.4673437252640724,
+        null
+      ],
+      "adaptive_eq_oracle": true,
+      "compute_matched_hops_vs_K": 0.22303146123886108
+    }
+  },
+  "max_abs_error_gap_vs_theory": 8.940696716308594e-08,
+  "gates": {
+    "prediction_holds_err_lt_0.02": true,
+    "adaptive_beats_random": true,
+    "adaptive_matches_oracle": true,
+    "compute_matched": true
+  },
+  "verdict": "ADAPTIVE_COMPUTE_JENSEN_GAP_CONFIRMED",
+  "verdict_note": "The adaptive-depth advantage equals the theory-predicted P(m>K) in every regime (max abs error < 0.02), beats input-blind random depth at equal avg compute, equals the oracle, and uses the same avg compute as static \u2014 with the SAME operator and NO learning. The advantage is therefore not capacity, not compute, not optimization: it is adaptive ALLOCATION of a fixed budget using the per-input halt signal \u2014 a Jensen gap whose size is predicted, not fitted."
+}

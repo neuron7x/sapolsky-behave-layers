@@ -1,0 +1,26 @@
+{
+  "git_commit": "526c6a53d59b61eac3effb1faa7518138a76da07",
+  "git_tree_status": "?? artifacts/wp4-adaptive-depth/\n?? experiments/wp4_adaptive_depth/",
+  "repository_remote": "origin\thttps://github.com/karpathy/nanochat.git (fetch)",
+  "dependency_lock_checksum": "de7891b832854162111208644ddb72685069ce8128e2bed9dbb7993aa6af5861",
+  "hardware_model": "NVIDIA GeForce RTX 3050 Laptop GPU, 4096 MiB",
+  "driver_version": "595.71.05",
+  "cuda_version": "12.8",
+  "pytorch_version": "2.9.1+cu128",
+  "python_version": "3.10.20",
+  "platform": "Linux-6.8.0-134-lowlatency-x86_64-with-glibc2.39",
+  "precision": "fp32",
+  "compile_state": "eager",
+  "start_timestamp_utc": "2026-07-16T14:32:56Z",
+  "experiment": "wp4_adaptive_depth_jensen_gap",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}

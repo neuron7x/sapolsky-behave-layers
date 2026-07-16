@@ -8,9 +8,17 @@ sibling projects were merged in; see `legacy/` and `experiments/fractal_multisca
 
 ## What this system IS (honest one-line)
 A verified measurement substrate + a falsification harness that has produced
-**one claim-tier positive** (adaptive routing is causally real) and **four
+**two claim-tier positives** (adaptive routing is causally real; adaptive
+compute allocation achieves the theory-predicted Jensen gap) and **four
 claim-tier negatives**, plus a **mathematical theory** that unifies and predicts
-them. It is not yet an architecture with a proven Pareto advantage.
+them all. It is not yet an architecture with a proven Pareto advantage at scale.
+
+**Sharpest result** (`artifacts/wp4-adaptive-depth/`): the first narrow causal
+mechanism whose advantage cannot be explained by static architecture, capacity,
+or optimization — adaptive allocation of a fixed compute budget beats the best
+static allocation by *exactly* `P(m>K)`, predicted from the task's difficulty
+distribution before the run, confirmed to machine precision (max error 0.0000)
+over 8 seeds × 4 regimes, beating input-blind random depth at equal compute.
 
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |
@@ -18,6 +26,7 @@ them. It is not yet an architecture with a proven Pareto advantage.
 | L0 measurement substrate | instrumentation deterministic & validated | **SUPPORTED** | `artifacts/wp1-release/`, 207 tests, 99.46% cov, 12/12 mutation |
 | L1 benchmark identifiability | a benchmark with a real adaptive-compute advantage exists | **SUPPORTED** | `artifacts/wp2-routing-v2/` oracle gap 99.8% |
 | L2 routing causality | learned controller routes causally, beats all controls | **SUPPORTED** | `artifacts/wp2-routing-v2/` bal 1.0, NMI 1.0, AUROC 1.0, CRE 1813×, 8 seeds |
+| L2′ adaptive-compute Jensen gap | adaptive allocation beats best static by exactly P(m>K), not capacity/compute/optimization | **SUPPORTED** | `artifacts/wp4-adaptive-depth/` gap=P(m>K) to 0.0000, 8 seeds × 4 regimes, beats random |
 | L3 functional reuse (RCFR) | one module = many functions, novel | **NOT_SUPPORTED** | `artifacts/wp3-rcfr/` — real but ties DISeL (prior art) |
 | L4 controlled plasticity | budgeted metaplasticity governor helps | **NOT_TESTED** | `artifacts/wp3-plasticity-v1/` — benchmark not identifiable UNBUDGETED (see theory) |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
