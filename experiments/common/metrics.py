@@ -11,16 +11,26 @@ import torch
 
 
 def _counts(x: torch.Tensor, k: int) -> torch.Tensor:
+    """Occupancy counts of integer labels in [0, k) as float — the empirical histogram
+    the entropy/MI estimators are built on (`minlength=k` keeps empty classes present so
+    the support is fixed, not data-dependent)."""
     return torch.bincount(x.long(), minlength=k).float()
 
 
 def entropy(x: torch.Tensor, k: int) -> float:
+    """Shannon entropy H(X) in nats over k classes, from the empirical distribution.
+    Zero-probability classes are dropped before the log (0*log0 := 0). This is the
+    normalizer that makes NMI comparable across variables of different base rates."""
     p = _counts(x, k)
     p = p / p.sum().clamp_min(1e-12)
     return float(-(p[p > 0] * p[p > 0].log()).sum())
 
 
 def mutual_information(r: torch.Tensor, t: torch.Tensor, kr: int, kt: int) -> float:
+    """Mutual information I(R;T) in nats from the empirical joint, summed over the
+    kr x kt cells with the standard `p_rt * log(p_rt / (p_r p_t))` term (cells with any
+    zero marginal/joint contribute 0). Symmetric in R and T; the building block of both
+    NMI variants below."""
     mi = 0.0
     for rv in range(kr):
         for tv in range(kt):

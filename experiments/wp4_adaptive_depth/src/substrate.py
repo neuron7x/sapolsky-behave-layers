@@ -36,6 +36,15 @@ def _final_node(table: torch.Tensor, start: torch.Tensor, hops: torch.Tensor) ->
 
 
 def _metrics(cur, values, target, m, alloc):
+    """Score a finished run. Two distinct quantities, deliberately not merged:
+      - `solved` = fraction that reached the absorbing fixed point = mean(m <= alloc).
+        This is the CAUSAL metric: it is a pure function of the allocation vs difficulty
+        and cannot be inflated by luck, so the Jensen-gap claim rests on it.
+      - `acc`    = fraction whose read-out value matches the target. `acc >= solved`
+        because an unsolved input can still collide with the right value by chance; `acc`
+        is reported for transparency but is NOT the basis of the claim.
+    `avg_hops` = mean allocated compute, the x-axis of the compute/quality trade-off.
+    """
     B = cur.shape[0]
     idx = torch.arange(B, device=cur.device)
     pred = values[idx, cur]
@@ -45,6 +54,22 @@ def _metrics(cur, values, target, m, alloc):
 
 
 def run_policy(policy: str, K: int, table, values, start, target, m, gen) -> dict:
+    """Allocate hops by `policy`, run the exact operator, and score.
+
+    The operator is identical across policies, so the ONLY thing that varies is the
+    per-input hop count `alloc` — this is what isolates *allocation* from capacity or
+    operator quality. The four policies form the causal ladder:
+      - "static":   alloc = K everywhere -> solved = P(m <= K) exactly (best fixed).
+      - "oracle":   alloc = m(x)         -> solved = 1 at the minimum sufficient compute.
+      - "random":   alloc ~ U[1, 2K-1], mean ~K, INPUT-BLIND -> the control proving that
+                    mere depth *variability* does not help; only variability correlated
+                    with m(x) does.
+      - "adaptive": halt-on-convergence -> alloc = m(x) realized WITHOUT being told m,
+                    by hopping until the successor is a self-loop (the absorber). This is
+                    the mechanism under test; at equal average compute E[m] it lifts
+                    solved from P(m<=K) to 1, i.e. by exactly the Jensen gap P(m>K).
+    Returns the `_metrics` dict; `gen` seeds only the random policy.
+    """
     B = start.shape[0]
     if policy == "static":
         alloc = torch.full((B,), K, dtype=torch.long, device=start.device)

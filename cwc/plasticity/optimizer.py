@@ -1,7 +1,22 @@
-"""Plasticity-aware optimizer wrapper (spec §9, Gate F). Before the wrapped
-optimizer steps, each parameter's gradient is scaled by its group's mask and
-LR multiplier, given a consolidation pull toward the reference, and norm-bounded
-per group. requires_grad is NEVER toggled per step (spec §9)."""
+"""Plasticity-aware optimizer wrapper (spec §9, Gate F): executes one decision.
+
+WHAT (per `apply_and_step`). For each active group g, transform its parameters'
+gradients in place: (1) scale by `lr_multiplier[g]`; (2) add the consolidation pull
+`lambda_g . Omega . (theta - theta_ref)` toward the reference weights; (3) clip to
+`max_update_norm[g]`. Then step the wrapped optimizer once.
+
+WHY the snapshot-and-restore, not `requires_grad=False`. Toggling `requires_grad`
+per step is fragile (it interacts with graph construction and does not stop a base
+optimizer's *weight decay* or *momentum* from moving a zero-gradient parameter). So
+instead we keep `requires_grad` fixed (spec §9) and, around the single `opt.step()`,
+snapshot every inactive/unregistered parameter and copy it back afterwards.
+
+INVARIANT (Gate F, byte-exact). A group whose mask bit is 0 is *identical* before and
+after the step — bit for bit — for ANY base optimizer configuration, because its value
+is restored from the pre-step snapshot. This is what lets "freeze this group" mean
+literally frozen, not "frozen up to weight-decay drift". A budget violation
+(`not decision.budget_ok()`) raises before any parameter is touched.
+"""
 from __future__ import annotations
 
 import torch
@@ -11,6 +26,11 @@ from cwc.plasticity.registry import ParameterGroupRegistry
 
 
 class PlasticityOptimizer:
+    """Wraps a base `torch.optim.Optimizer` and a `ParameterGroupRegistry`, translating
+    a length-G `PlasticityDecision` into per-parameter gradient edits guarded by the
+    byte-exact freeze invariant. `named_params` is the name->Parameter map the decision
+    indices resolve against (the same names the registry grouped)."""
+
     def __init__(self, optimizer: torch.optim.Optimizer, registry: ParameterGroupRegistry,
                  named_params: dict[str, torch.nn.Parameter]):
         self.opt = optimizer

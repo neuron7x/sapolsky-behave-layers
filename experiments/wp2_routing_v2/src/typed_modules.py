@@ -1,10 +1,17 @@
 """Two physically different paths (Act §5). A different block index is not a
-different mechanism — these are structurally distinct.
+different mechanism — these are structurally distinct, and the distinction is a
+hard *architectural* constraint, not a difference in training.
 
-DirectPath   : one local-window (w=4) block, reads positions 0-3 -> 4 heads.
-               Structurally cannot use info >4 positions away -> fails HARD.
-SemanticParser: global attention -> pooled -> 4 supervised field heads + conf.
-SemanticRenderer: canonical tokens from SemanticState ONLY (no raw input).
+DirectPath    : one LOCAL-attention block (window LOCAL_W = ±1, see below) whose L_OUT
+                output heads read positions 0..L_OUT-1. Because attention is masked to a
+                ±1 neighbourhood, a head *cannot* route information from tokens farther
+                away, no matter how it is trained -> it is structurally incapable of the
+                HARD task (which places the decisive content out of window). This is what
+                makes the benchmark mechanism-separable: HARD failure is by construction.
+SemanticParser: GLOBAL attention -> mean-pool -> 4 supervised field heads (S,R,O,polarity)
+                + a confidence scalar; comprehension is unconstrained in range.
+SemanticRenderer: emits canonical tokens from the discrete SemanticState ONLY — it never
+                sees the raw input, so it cannot leak surface form into the output.
 """
 from __future__ import annotations
 
@@ -26,6 +33,12 @@ def _rms(x):
 
 
 class _Attn(nn.Module):
+    """Multi-head self-attention, optionally *masked to a local ±LOCAL_W window*.
+    The mask is the load-bearing part: when `local=True`, positions farther than
+    LOCAL_W apart are set to -inf before softmax, so the block has literally zero
+    weight on distant tokens. This is a structural capacity limit (a property of the
+    architecture), which is why DirectPath's HARD failure cannot be trained away."""
+
     def __init__(self, local: bool):
         super().__init__()
         self.local = local
@@ -60,7 +73,10 @@ class _Embed(nn.Module):
 
 
 class DirectPath(nn.Module):
-    """Cheap local path. Reads positions 0..L_OUT-1 through a w=4 window."""
+    """Cheap LOCAL path: embed -> one ±LOCAL_W attention block -> MLP -> one head per
+    output position. Its receptive field is bounded by the local mask, so it solves EASY
+    (in-window content) but is structurally unable to solve HARD (out-of-window content).
+    Returns per-position vocab logits `[B, L_OUT, VOCAB_SIZE]`."""
 
     def __init__(self):
         super().__init__()
@@ -122,6 +138,12 @@ class SemanticRenderer(nn.Module):
 
 
 class SemanticPath(nn.Module):
+    """The expensive path = parse-then-render: global comprehension into a discrete
+    SemanticState, then canonical output from that state alone. The intermediate state
+    is returned alongside the logits so lesion studies (typed_graph) can corrupt a single
+    field (polarity, subject/object, ...) and observe the predicted downstream failure —
+    the composition is what makes the mechanism *inspectable*, not a black box."""
+
     def __init__(self):
         super().__init__()
         self.parser = SemanticParser()
