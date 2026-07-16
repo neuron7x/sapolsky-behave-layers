@@ -1,3 +1,16 @@
+> **⚠ CLAIM NARROWED (2026-07-16 review). See `claim_boundary.json`.**
+> This result is `ROUTING_CAUSALITY_SUPPORTED` **UNDER COUNTERFACTUAL VALUE
+> DISTILLATION ON A SYNTHETIC MECHANISM-SEPARABLE BENCHMARK**, not a general
+> proof of autonomous adaptive compute. Three simplifications: (1) the controller
+> trains on `direct_loss − sem_loss` using the ground-truth target and both paths
+> (value distillation, not end-to-end task loss); (2) test capacity =
+> `(vkind==HARD).sum()` is derived from task labels; (3) EASY/HARD carry surface
+> markers (flags, NOT, length) so the controller may classify format, not
+> mechanism need. Both paths are also run in full, so this router does **not**
+> physically save compute. A strong mechanistic prototype; superseded by Routing
+> v3 (end-to-end R3-C, pre-fixed capacity, surface-matched pairs, sparse
+> dispatch). Artifact FROZEN, not deleted.
+
 # WP-2 Typed Semantic Routing — RESULTS (Integration Act v2.0)
 
 Oracle-gap 5 seeds, final 8 seeds. Preregistered before analysis
