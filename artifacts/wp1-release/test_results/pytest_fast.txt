@@ -1,0 +1,16 @@
+sssssssss...s........................................................... [ 26%]
+........................................................................ [ 53%]
+........................................................................ [ 80%]
+...................................................                      [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_attention_fallback.py:58: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:72: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:86: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:101: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:118: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:132: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:155: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:182: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:215: FA3 required to compare implementations
+SKIPPED [1] tests/test_attention_fallback.py:343: FA3 required
+257 passed, 10 skipped, 1 deselected in 22.25s

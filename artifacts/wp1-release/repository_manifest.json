@@ -1,0 +1,15 @@
+{
+  "timestamp_utc": "2026-07-16T08:33:57Z",
+  "toplevel": "/home/neuro7/Desktop/Системи в системах /sapolsky-behave-layers/nanochat-cwc-baseline",
+  "head_commit": "ce94541e53b18d25f9d6a119650d5c2cafe5d27d",
+  "branch": "wp1-instrumentation",
+  "baseline_commit": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
+  "baseline_expected_by_act": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
+  "baseline_integrity": "PASS",
+  "tags": [
+    "wp0-fixation-2026-07-16"
+  ],
+  "dirty": "?? .coverage\n?? artifacts/instrumentation/energy_liveness_probe.json\n?? artifacts/instrumentation/overhead_report_confirmatory_L2.json\n?? artifacts/wp1-release/",
+  "diff_stat_baseline_to_head": "59 files changed, 6425 insertions(+), 36 deletions(-)",
+  "remote": "origin\thttps://github.com/karpathy/nanochat.git (fetch)"
+}

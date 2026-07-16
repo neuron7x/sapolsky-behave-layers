@@ -1,0 +1,15 @@
+[01/12] killed    ✓  percentile interpolation weight sign flip
+[02/12] killed    ✓  percentile upper index off-by-one
+[03/12] killed    ✓  bootstrap CI tail probability wrong (one-sided)
+[04/12] killed    ✓  dense linear FLOPs drops the 2-MAC factor
+[05/12] killed    ✓  causal pair count off (n-1 instead of n+1)
+[06/12] killed    ✓  attention-core QK+AV factor halved
+[07/12] killed    ✓  MLP FLOPs missing the down-projection term
+[08/12] killed    ✓  sliding-window pair count off-by-one per query
+[09/12] killed    ✓  trapezoidal rule drops the 0.5 factor
+[10/12] killed    ✓  total-energy delta loses the negative clamp
+[11/12] killed    ✓  routing running-min computes max instead
+[12/12] killed    ✓  routing token-sum accumulates the wrong field
+
+MUTATION KILL RATE: 12/12 = 100.0%
+ALL MUTANTS KILLED

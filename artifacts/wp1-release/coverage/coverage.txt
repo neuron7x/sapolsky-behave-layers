@@ -1,0 +1,28 @@
+sssssssss...s........................................................... [ 26%]
+........................................................................ [ 53%]
+........................................................................ [ 80%]
+...................................................                      [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.10.20-final-0 _______________
+
+Name                                  Stmts   Miss Branch BrPart  Cover   Missing
+---------------------------------------------------------------------------------
+cwc/__init__.py                           0      0      0      0   100%
+cwc/instrumentation/__init__.py           4      0      0      0   100%
+cwc/instrumentation/audit.py             57      1     26      3    95%   42->45, 53->51, 75
+cwc/instrumentation/clock.py             40      0      8      0   100%
+cwc/instrumentation/config.py            56      0     20      0   100%
+cwc/instrumentation/energy.py           145      3     34      1    98%   29-31, 228->230
+cwc/instrumentation/event_buffer.py      40      0      8      0   100%
+cwc/instrumentation/flops.py             84      0     20      0   100%
+cwc/instrumentation/manifest.py          50      0      2      0   100%
+cwc/instrumentation/noop.py              60      0      0      0   100%
+cwc/instrumentation/routing.py           81      0     12      0   100%
+cwc/instrumentation/run_meter.py         75      0     12      0   100%
+cwc/instrumentation/stats.py             34      0     12      0   100%
+cwc/instrumentation/types.py            117      0      0      0   100%
+cwc/instrumentation/vram.py              22      0      4      0   100%
+cwc/instrumentation/writer.py            65      0     16      0   100%
+---------------------------------------------------------------------------------
+TOTAL                                   930      4    174      4    99%
+257 passed, 10 skipped, 1 deselected in 23.29s

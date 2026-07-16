@@ -1,0 +1,8 @@
+{
+  "flop_ledger_total_logical": 42949672960,
+  "median_gpu_kernel_ms": 0.0922,
+  "peak_vram_allocated_bytes": 12713984,
+  "peak_vram_reserved_bytes": 25165824,
+  "resolved_records": 20,
+  "steps": 20
+}

@@ -1,0 +1,40 @@
+{
+  "ci_lower_fraction": 0.009810517573986443,
+  "ci_upper_fraction": 0.014353625646944887,
+  "counters_p50_ms": 51.61482800031081,
+  "counters_p95_ms": 52.547475007304456,
+  "counters_p99_ms": 52.65023290878162,
+  "cycles": 5,
+  "device": "cuda",
+  "e2e_gate_passed": false,
+  "gate_passed": false,
+  "gpu_gate_passed": true,
+  "gpu_overhead_fraction": 0.005787129602316414,
+  "max_overhead_ci_fraction": 0.02,
+  "max_overhead_fraction": 0.01,
+  "measurement_steps_per_cycle": 100,
+  "model_config": {
+    "batch_size": 4,
+    "n_embd": 768,
+    "n_head": 6,
+    "n_layer": 12,
+    "seq_len": 256
+  },
+  "off_p50_ms": 51.089632499497384,
+  "off_p95_ms": 52.33894101111218,
+  "off_p99_ms": 55.06686275592073,
+  "ordering": [
+    "off",
+    "counters",
+    "off",
+    "counters",
+    "off",
+    "counters",
+    "off",
+    "counters",
+    "off",
+    "counters"
+  ],
+  "relative_overhead_fraction": 0.010279884100136978,
+  "sample_count": 500
+}

@@ -1,0 +1,3 @@
+OFF: no-op scope executed 5 times, no errors
+COUNTERS (cuda): 5 steps resolved, evidence bundle written to artifacts/instrumentation/smoke-cuda
+SMOKE PASS (cuda)

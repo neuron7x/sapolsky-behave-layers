@@ -1,0 +1,36 @@
+{
+  "probe": "WP1_L2 energy-liveness (preregistered in docs/WP1_L2_PREREGISTRATION.md)",
+  "date": "2026-07-16",
+  "environment_deviation": {
+    "package_installed": "nvidia-ml-py (pynvml import name)",
+    "reason": "absent from uv.lock; required to exercise the real NVML path",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU, 4096 MiB"
+  },
+  "raw": {
+    "idle_window": {
+      "duration_s": 2.0,
+      "delta_mj": 33317,
+      "implied_avg_power_w": 16.577,
+      "monotonic": true,
+      "power_rate_reading_w": 3.415
+    },
+    "load_window": {
+      "workload": "torch 2048x2048 matmul loop, cuda, 5.09 s",
+      "delta_mj": 817858,
+      "implied_avg_power_w": 160.816,
+      "monotonic": true,
+      "n_samples": 58,
+      "power_rate_reading_w": 79.814
+    },
+    "nvidia_smi_power_draw_anomaly_pre_run_w": 749.67
+  },
+  "criteria_evaluation": {
+    "1_counters_readable": "PASS",
+    "2_delta_positive_finite_monotonic": "PASS (both windows)",
+    "3_physical_plausibility": "FAIL — load implied 160.816 W > 120 W bound (RTX 3050 Laptop TGP <= 80 W); simultaneous instantaneous rate reading 79.814 W sits AT the TGP cap, so the energy counter over-reports by ~2x; idle cross-check: counter implies 16.6 W vs rate 3.4 W (~4.8x)"
+  },
+  "verdict": "ENERGY_STATUS = INSTRUMENT_INVALID",
+  "consequence": "No energy figure (joules/token, joules/request) may ever be derived from nvmlDeviceGetTotalEnergyConsumption on this hardware+driver. The counter exists and lies — worse than absent. Energy comparisons for CWC require different hardware or an external power meter.",
+  "note": "This is the fourth independent manifestation of untrusted power telemetry on this machine (749.67 W idle power.draw recorded twice, prior session anomaly noted in WP1_INSTRUMENTATION.md, and this 2x energy-counter inflation)."
+}

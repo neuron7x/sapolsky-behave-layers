@@ -1,0 +1,21 @@
+{
+  "baseline": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
+  "wp1_commits": [
+    "ce94541 prereg: WP-1 L2 confirmatory overhead run (N=1, thresholds unchanged)",
+    "f86aa55 docs: DCSA v2.0 protocol + audit 0002 (evidence-gated, claim-leveled)",
+    "cb0fa6a docs: DCSA audit 0001 — formal semiotic layer bound to semantic contract",
+    "ec29365 docs: CWC semantic contract — capability terms gated by tier ladder",
+    "10ece4c WP-1 quality: reference-quality report + refreshed deliverable checksums",
+    "46bfd56 WP-1 quality: determinism gate, verification Makefile, scoped CI workflow",
+    "04a7fb9 WP-1 quality: mutation probe (12/12 kill rate) + stale-pyc hardening",
+    "1e0956e WP-1 quality: strict types, Hypothesis property tests, 99% coverage, canonical stats",
+    "643bc10 WP-1: final SHA256SUMS over all 36 deliverable files (cwc/ package, schema, tests, scripts, base_train.py/infer_bench.py integration diffs, docs, ADR-0001)",
+    "ec5471a WP-1 Phase 10: docs/WP1_INSTRUMENTATION.md, remaining scripts, evidence bundle export",
+    "be42c80 WP-1 Phase 9: overhead qualification — BORDERLINE, not a clean pass",
+    "6ebc4bc WP-1 Phase 8: audit.py profiler/roofline adapters, scripts/instrumentation_audit.py",
+    "6695324 WP-1 Phase 7: integrate cwc/instrumentation into base_train.py and infer_bench.py",
+    "9d69d8c WP-1 Phases 2-6: cwc/instrumentation package (config/types/noop/clock/event_buffer/run_meter/vram/flops/energy/writer/manifest/routing) + 148 tests",
+    "b44b43c WP-1: supersede earlier lightweight instrumentation with CWC-NANOCHAT-WP1-INSTRUMENTATION-ACT v1.0.0",
+    "e25b9d1 WP-1: additive instrumentation (energy via NVML background sampler, activated-FLOPs counter, routing telemetry placeholder)"
+  ]
+}
