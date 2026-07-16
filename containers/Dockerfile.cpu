@@ -1,0 +1,12 @@
+# Hermetic CPU environment for CWC pure-logic gates + CPU experiment smoke.
+FROM python:3.10-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+WORKDIR /cwc
+COPY . /cwc
+# CPU torch build; frozen lock for reproducibility
+RUN uv sync --frozen --extra cpu || pip install --no-cache-dir -r cwc-requirements-dev.txt
+ENV PYTHONPATH=/cwc PYTHONDONTWRITEBYTECODE=1
+CMD ["make", "-f", "Makefile.cwc", "verify"]

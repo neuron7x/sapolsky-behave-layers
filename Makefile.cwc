@@ -5,7 +5,7 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence reproduce-primary make-release
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test coverage mutation experiment-tests
@@ -48,6 +48,12 @@ reproduce-mechanism:
 verify-evidence:
 	@for d in artifacts/wp1-release artifacts/wp2-routing-v1 artifacts/wp2-routing-v1_1 artifacts/wp2-mechanism-v2 artifacts/wp2-mechanism-v2_1 artifacts/wp2-routing-v2 artifacts/wp3-rcfr artifacts/wp3-plasticity-v1 artifacts/wp4-adaptive-depth artifacts/wp2-routing-v3-r3c; do \
 		if [ -f $$d/SHA256SUMS ]; then echo "checking $$d"; (cd $$d && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; fi; done
+
+reproduce-primary:
+	PYTHONPATH=. $(PY) scripts/reproduce_primary.py
+
+make-release:
+	PYTHONPATH=. $(PY) scripts/make_release.py --out release-build
 
 clean-pyc:
 	find . -path ./.git -prune -o -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true

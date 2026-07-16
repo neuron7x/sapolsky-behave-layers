@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "Cognitive Wiring Core (CWC): evidence-first adaptive computation"
+message: "If you use this system or its evidence, please cite it."
+type: software
+authors:
+  - given-names: Yaroslav
+    family-names: Vasylenko
+repository-code: "local: nanochat-cwc-baseline (fork of karpathy/nanochat)"
+version: "1.0.0-526c6a5"
+date-released: "2026-07-16"
+license: MIT
+abstract: >
+  A verified measurement substrate and falsification harness for causally
+  validating adaptive-computation mechanisms. Contains one narrowed positive
+  (routing under value distillation), one clean positive (adaptive-compute
+  Jensen gap = P(m>K)), several preserved negatives, and a unifying
+  identifiability theory. Not yet a proven Pareto-superior architecture.

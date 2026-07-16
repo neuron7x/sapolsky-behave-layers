@@ -1,0 +1,11 @@
+# Hermetic CUDA environment for CWC GPU numerical-equivalence + full reproduction.
+FROM nvidia/cuda:12.8.0-runtime-ubuntu22.04
+RUN apt-get update && apt-get install -y --no-install-recommends python3.10 python3-pip git curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+WORKDIR /cwc
+COPY . /cwc
+RUN uv sync --frozen --extra gpu || pip install --no-cache-dir -r cwc-requirements-dev.txt
+ENV PYTHONPATH=/cwc PYTHONDONTWRITEBYTECODE=1
+CMD ["make", "-f", "Makefile.cwc", "reproduce-primary"]
