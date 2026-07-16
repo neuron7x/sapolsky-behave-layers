@@ -5,12 +5,14 @@
   "target_privileged_during_controller_training": true,
   "target_privilege_detail": "controller regresses need_score to (direct_loss - sem_loss), computed with the ground-truth canonical target and by running BOTH paths. This is counterfactual value distillation (R3-B), not fully end-to-end task-loss routing (R3-C).",
   "test_capacity_derived_from_task_labels": true,
-  "test_capacity_detail": "eval_cap = int((vkind == HARD_SEMANTIC).sum()) — ground-truth task labels indirectly set test-time semantic capacity.",
+  "test_capacity_detail": "eval_cap = int((vkind == HARD_SEMANTIC).sum()) \u2014 ground-truth task labels indirectly set test-time semantic capacity.",
   "surface_task_cues_present": true,
   "surface_cues_detail": "EASY/HARD differ by explicit markers (flag tokens, NOT, F_DIST, F_IS) and by length/first-token; the controller may classify FORMAT rather than estimate mechanism need.",
   "physical_compute_saving": false,
   "physical_compute_detail": "TypedCognitiveGraph.forward runs BOTH paths and selects by mask -> routing does not save forward compute; 'compute-saving router' wording is PROHIBITED until sparse dispatch is implemented.",
   "real_workload_generalization": "NOT_TESTED",
   "batch_composition_independence": "NOT_TESTED",
-  "artifact_status": "FROZEN, not deleted. Superseded by Routing v3 (end-to-end R3-C, fixed pre-eval capacity, surface-matched pairs, real sparse execution) when built."
+  "artifact_status": "FROZEN, not deleted. Superseded by Routing v3 (end-to-end R3-C, fixed pre-eval capacity, surface-matched pairs, real sparse execution) when built.",
+  "end_to_end_R3C_tested": true,
+  "end_to_end_R3C_result": "ROUTING_END_TO_END_NOT_SUPPORTED \u2014 removing the leaks collapses routing (learned 0.91 > random 0.48, bal_acc ~0, inverse), 8 seeds. The narrowing is load-bearing, not precautionary. See ../wp2-routing-v3-r3c/."
 }

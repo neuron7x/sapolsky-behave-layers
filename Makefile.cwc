@@ -46,7 +46,7 @@ reproduce-mechanism:
 	PYTHONPATH=. $(PY) experiments/wp2_mechanism_v2/src/analyze_mech.py
 
 verify-evidence:
-	@for d in artifacts/wp1-release artifacts/wp2-routing-v1 artifacts/wp2-routing-v1_1 artifacts/wp2-mechanism-v2 artifacts/wp2-mechanism-v2_1 artifacts/wp2-routing-v2 artifacts/wp3-rcfr artifacts/wp3-plasticity-v1 artifacts/wp4-adaptive-depth; do \
+	@for d in artifacts/wp1-release artifacts/wp2-routing-v1 artifacts/wp2-routing-v1_1 artifacts/wp2-mechanism-v2 artifacts/wp2-mechanism-v2_1 artifacts/wp2-routing-v2 artifacts/wp3-rcfr artifacts/wp3-plasticity-v1 artifacts/wp4-adaptive-depth artifacts/wp2-routing-v3-r3c; do \
 		if [ -f $$d/SHA256SUMS ]; then echo "checking $$d"; (cd $$d && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; fi; done
 
 clean-pyc:

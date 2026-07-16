@@ -1,0 +1,9 @@
+{
+  "verdict": "ROUTING_END_TO_END_NOT_SUPPORTED",
+  "n_seeds": 8,
+  "learned_loss_mean": 0.9106455966830254,
+  "random_loss_mean": 0.47975150868296623,
+  "route_balanced_acc_mean": 0.04485937126446515,
+  "route_auroc_mean": 0.011173352205960902,
+  "learned_worse_than_random_all_seeds": true
+}
