@@ -8,7 +8,7 @@ try:
 except ImportError:  # Python < 3.11 (canonical venv is 3.10) — behaviour-identical shim
     from enum import Enum
 
-    class StrEnum(str, Enum):  # type: ignore[no-redef]
+    class StrEnum(str, Enum):  # type: ignore[no-redef]  # noqa: UP042 (enum.StrEnum is the thing missing on 3.10)
         __str__ = str.__str__
 
 
