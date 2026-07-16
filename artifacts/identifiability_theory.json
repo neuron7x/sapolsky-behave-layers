@@ -1,0 +1,122 @@
+{
+  "plasticity": {
+    "gap": 6.103515625e-05,
+    "gap_formula": 6.103515625e-05,
+    "beta": [
+      0.1241363525390625,
+      -0.1651947021484375,
+      0.12192687988281249,
+      -0.0808685302734375
+    ],
+    "gamma_rms": 0.11962328508366343,
+    "beta_spread": 0.2893310546875,
+    "quality_dominant_choice": false,
+    "per_context_argmax": [
+      1,
+      0
+    ],
+    "explanation": "gap~0: attention has the largest choice main-effect (beta) and its interaction is never overtaken -> weak-interaction collapse regime."
+  },
+  "routing_unconstrained": {
+    "gap": 0.0,
+    "gap_formula": 0.0,
+    "beta": [
+      -0.249,
+      0.249
+    ],
+    "gamma_rms": 0.249,
+    "beta_spread": 0.498,
+    "quality_dominant_choice": false,
+    "per_context_argmax": [
+      0,
+      1
+    ],
+    "explanation": "gap=0 on quality alone: the semantic path dominates (solves EASY and HARD) -> quality-dominance collapse."
+  },
+  "routing_budget_kappa_0.5": {
+    "v_oracle": 1.0,
+    "v_fixed": 0.751,
+    "constrained_gap": 0.249,
+    "v_all_cheap": 0.502,
+    "v_random_kappa": 0.751,
+    "explanation": "gap>0: the 50% budget forbids the dominant semantic path everywhere; the oracle spends it on HARD. This is why routing v2 was identifiable \u2014 cost, not quality."
+  },
+  "plasticity_cost_budget_sweep": {
+    "lambda_0.0": {
+      "gap": 7.324218749993339e-05,
+      "oracle_choice": {
+        "lexical": "mlp",
+        "relational": "attn"
+      },
+      "per_seed_gaps": [
+        6.103515625e-05,
+        6.103515625e-05,
+        0.00018310546875,
+        0.0,
+        6.103515625e-05
+      ],
+      "min_seed_gap": 0.0
+    },
+    "lambda_0.5": {
+      "gap": 0.10944824218749993,
+      "oracle_choice": {
+        "lexical": "head",
+        "relational": "attn"
+      },
+      "per_seed_gaps": [
+        0.10943603515625,
+        0.10943603515625,
+        0.10955810546875,
+        0.109375,
+        0.10943603515625
+      ],
+      "min_seed_gap": 0.109375
+    },
+    "lambda_1.0": {
+      "gap": 0.19057617187499998,
+      "oracle_choice": {
+        "lexical": "head",
+        "relational": "attn"
+      },
+      "per_seed_gaps": [
+        0.19073486328125,
+        0.1904296875,
+        0.18951416015625,
+        0.19110107421875,
+        0.19110107421875
+      ],
+      "min_seed_gap": 0.18951416015625
+    },
+    "lambda_2.0": {
+      "gap": 0.0,
+      "oracle_choice": {
+        "lexical": "head",
+        "relational": "head"
+      },
+      "per_seed_gaps": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min_seed_gap": 0.0
+    }
+  },
+  "plasticity_cost_budget_note": "REVIVAL: the original \u03bb=0 gap is ~0, but for \u03bb\u2208[0.5,1.0] the cost-weighted oracle allocates the CHEAP 'head' group to lexical (which it can solve) and reserves the expensive 'attn' only for relational (structurally necessary) \u2014 beating any fixed group. gap\u22480.19 at \u03bb=1, identical across all 5 seeds. EPISTEMIC STATUS: EXPLORATORY (\u03bb chosen post-hoc). Generates a preregisterable hypothesis; requires a fresh confirmatory run with a cost-aware oracle objective and \u03bb frozen before execution.",
+  "ideal_specialized": {
+    "gap": 0.5,
+    "gap_formula": 0.5,
+    "beta": [
+      0.0,
+      0.0
+    ],
+    "gamma_rms": 0.5,
+    "beta_spread": 0.0,
+    "quality_dominant_choice": false,
+    "per_context_argmax": [
+      0,
+      1
+    ]
+  }
+}
