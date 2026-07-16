@@ -1,0 +1,27 @@
+# Act CWC-LAB-DOC-2026-01 §11 — documentation & evidence gates.
+# NOTE: the GitHub org is currently suspended; this workflow is committed so it runs
+# automatically once CI is restored. It is also runnable locally via `make -f Makefile.cwc`.
+name: cwc-doc-gates
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+jobs:
+  doc-and-evidence-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0                       # doc-gate needs history for ancestry check
+      - name: Install uv
+        run: pipx install uv || pip install uv
+      - name: Sync frozen environment
+        run: uv sync --frozen
+      - name: Documentation status gate (schema, traceability, freshness)
+        run: PYTHONPATH=. .venv/bin/python scripts/doc_status_gate.py
+      - name: Evidence checksum gate
+        run: make -f Makefile.cwc verify-evidence
+      - name: Regenerated docs are in sync (ledger + register)
+        run: |
+          make -f Makefile.cwc docs-regen
+          git diff --exit-code docs/lab/EXPERIMENT_LEDGER.jsonl docs/vnv/DOCUMENT_STATUS_REGISTER.csv

@@ -1,0 +1,24 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "name": "cognitive-wiring-core",
+  "documentNamespace": "cwc/sbom/d920f79",
+  "creationInfo": {
+    "created": "2026-07-16T00:00:00Z",
+    "creators": ["Tool: CWC-manual", "Person: Yaroslav Vasylenko"],
+    "comment": "Advisory SBOM. Authoritative, hash-pinned dependency set is uv.lock."
+  },
+  "packages": [
+    {"SPDXID": "SPDXRef-Package-cwc", "name": "cognitive-wiring-core", "versionInfo": "1.0.0-d920f79", "licenseDeclared": "MIT"},
+    {"SPDXID": "SPDXRef-Package-python", "name": "python", "versionInfo": "3.10.20", "licenseDeclared": "PSF-2.0"},
+    {"SPDXID": "SPDXRef-Package-torch", "name": "torch", "versionInfo": "2.9.1+cu128", "licenseDeclared": "BSD-3-Clause"},
+    {"SPDXID": "SPDXRef-Package-numpy", "name": "numpy", "versionInfo": "1.26.4", "licenseDeclared": "BSD-3-Clause"},
+    {"SPDXID": "SPDXRef-Package-tiktoken", "name": "tiktoken", "versionInfo": "see uv.lock", "licenseDeclared": "MIT"},
+    {"SPDXID": "SPDXRef-Package-pyarrow", "name": "pyarrow", "versionInfo": "see uv.lock", "licenseDeclared": "Apache-2.0"}
+  ],
+  "relationships": [
+    {"spdxElementId": "SPDXRef-Package-cwc", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Package-torch"},
+    {"spdxElementId": "SPDXRef-Package-cwc", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Package-numpy"}
+  ],
+  "note": "Full transitive closure with hashes: uv.lock (authoritative)."
+}

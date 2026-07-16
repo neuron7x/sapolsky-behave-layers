@@ -1,0 +1,12 @@
+{
+  "schema": "cwc-negative-results/1.0",
+  "policy": "Negatives are frozen immutably (artifacts/history/ + SHA256SUMS) and never recomputed or deleted.",
+  "negatives": [
+    {"id":"NEG-rcfr","claim_id":"CWC-L3-rcfr","verdict":"RCFR_NOT_SUPPORTED","artifact":"artifacts/wp3-rcfr/","reason":"mechanism works but ties DISeL-with-role (prior art); not novel in isolation"},
+    {"id":"NEG-plasticity","claim_id":"CWC-L4-plasticity","verdict":"PLASTICITY_BENCHMARK_NOT_IDENTIFIABLE","artifact":"artifacts/wp3-plasticity-v1/","reason":"unbudgeted oracle gap ~0 (weak dominance); exploratory revival at lambda~1 needs a confirmatory cost-aware run"},
+    {"id":"NEG-r3c-straightthrough","claim_id":"CWC-L2c-e2e-straightthrough","verdict":"ROUTING_END_TO_END_NOT_SUPPORTED","artifact":"artifacts/wp2-routing-v3-r3c/","reason":"straight-through top-K collapses; SUPERSEDED by CWC-L2a (REINFORCE recovers it -> estimator artifact)"},
+    {"id":"NEG-surface-matched","claim_id":"CWC-L2b-route-decision-cost","verdict":"ROUTE_DECISION_IS_THE_COMPUTATION","artifact":"artifacts/wp2-routing-v3-surface-matched/","reason":"structural difficulty not cheaply routable even under supervision; a productive negative that bounds the routing claim"},
+    {"id":"NEG-fractal","claim_id":"CWC-fractal","verdict":"INSUFFICIENT_EVIDENCE","artifact":"artifacts/history/fractal/","reason":"null not rejected; archival frozen negative"},
+    {"id":"NEG-routing-v1","claim_id":"CWC-L2-routing-causality","verdict":"ROUTER_COLLAPSE","artifact":"artifacts/wp2-routing-v1/","reason":"early router collapse (weak dominance) before the identifiable benchmark was built"}
+  ]
+}

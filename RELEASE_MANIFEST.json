@@ -1,0 +1,26 @@
+{
+  "project": "Cognitive Wiring Core",
+  "version": "1.0.0",
+  "git_commit": "01a7d08681def7bb64dbd91a3619fcfb66a3939d",
+  "git_tree": "a4010183a88df4f95d4c93c0e6968ff2e4c64f44",
+  "upstream_commit": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
+  "generated": "2026-07-16",
+  "note": "Full source+evidence archives with per-archive SHA-256 are built by scripts/make_release.py (make -f Makefile.cwc make-release). This root manifest records provenance for the current tree.",
+  "supported_claims": [
+    "CWC-L0-measurement",
+    "CWC-L1-identifiability",
+    "CWC-L2p-jensen-gap",
+    "CWC-L2a-e2e-reinforce",
+    "CWC-L2b-route-decision-cost"
+  ],
+  "narrowed_claims": [
+    "CWC-L2-routing-causality"
+  ],
+  "prohibited_claims": [
+    "autonomous adaptive routing",
+    "compute-equivalent Pareto",
+    "energy efficiency",
+    "independent replication",
+    "deployment-ready"
+  ]
+}
