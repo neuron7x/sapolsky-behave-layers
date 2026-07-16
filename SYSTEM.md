@@ -57,7 +57,10 @@ experiments/
   wp2_routing_v2/      typed semantic routing — ROUTING_CAUSALITY_SUPPORTED
   wp3_rcfr/            role-conditioned functional reuse — RCFR_NOT_SUPPORTED
   wp3_plasticity_v1/   metaplasticity oracle-gap — NOT_IDENTIFIABLE (unbudgeted)
-  fractal_multiscale/  multiscale diagnostic — INSUFFICIENT_EVIDENCE
+  fractal_multiscale/  multiscale diagnostic — INSUFFICIENT_EVIDENCE (ARCHIVAL: sealed
+                       frozen negative in artifacts/history/fractal/ with SHA256SUMS;
+                       NOT in the live gate per "never recompute frozen negatives";
+                       own harness needs py3.11+jsonschema, StrEnum shimmed for 3.10 import)
 docs/                  protocols, contracts, audits, IDENTIFIABILITY_THEORY, vision/
 artifacts/             one evidence bundle per experiment (RESULTS, verdict, SHA256SUMS)
   history/             immutable frozen negatives (wp1, wp2-routing-collapse, fractal)

@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Any
+
+try:
+    from enum import StrEnum
+except ImportError:  # Python < 3.11 (canonical venv is 3.10) — behaviour-identical shim
+    from enum import Enum
+
+    class StrEnum(str, Enum):  # type: ignore[no-redef]
+        __str__ = str.__str__
 
 
 class Scale(StrEnum):
