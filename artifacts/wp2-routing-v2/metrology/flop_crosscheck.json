@@ -1,0 +1,80 @@
+{
+  "FLOPS_STATUS": "PARTIALLY_ESTIMATED",
+  "act": "B2 \u2014 profiler FLOP cross-check",
+  "batch_size": 64,
+  "coverage_complete": false,
+  "device": "cuda",
+  "e_F_threshold": 0.03,
+  "modules": {
+    "DirectPath": {
+      "F_logical": 54001664,
+      "F_logical_per_sample": 843776,
+      "F_profiler_adjusted": 51889664,
+      "F_profiler_raw": 51889664,
+      "e_F": 0.03910990594660194,
+      "e_F_within_threshold": false,
+      "has_attention_core": true,
+      "profiler_counted_ops": {
+        "aten::add": 148992,
+        "aten::addmm": 26476544,
+        "aten::mm": 25165824,
+        "aten::mul": 98304
+      },
+      "profiler_uncounted_compute_ops": [
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::scaled_dot_product_attention",
+        "fmha_cutlassF_f32_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<float, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)"
+      ]
+    },
+    "SemanticParser": {
+      "F_logical": 53698560,
+      "F_logical_per_sample": 839040,
+      "F_profiler_adjusted": 51586560,
+      "F_profiler_raw": 51586560,
+      "e_F": 0.03933066361556064,
+      "e_F_within_threshold": false,
+      "has_attention_core": true,
+      "profiler_counted_ops": {
+        "aten::add": 148992,
+        "aten::addmm": 26173440,
+        "aten::mm": 25165824,
+        "aten::mul": 98304
+      },
+      "profiler_uncounted_compute_ops": [
+        "aten::_efficient_attention_forward",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::scaled_dot_product_attention",
+        "fmha_cutlassF_f32_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<float, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)"
+      ]
+    },
+    "SemanticRenderer": {
+      "F_logical": 5242880,
+      "F_logical_per_sample": 81920,
+      "F_profiler_adjusted": 5242880,
+      "F_profiler_raw": 5242880,
+      "e_F": 0.0,
+      "e_F_within_threshold": true,
+      "has_attention_core": false,
+      "profiler_counted_ops": {
+        "aten::addmm": 5242880
+      },
+      "profiler_uncounted_compute_ops": []
+    }
+  },
+  "profiler_convention": {
+    "calibration_expected_mac": 262144,
+    "calibration_ratio_raw_over_mac": 2.0,
+    "calibration_raw_flops": 524288,
+    "convention": "FLOP(2*MAC)",
+    "note": "ratio~1 => profiler reports MACs, multiply by 2 for logical 2*MAC; ratio~2 => profiler already reports 2*MAC, multiply by 1",
+    "profiler_to_logical_multiplier": 1
+  },
+  "profiler_uncounted_compute_ops": [
+    "aten::_efficient_attention_forward",
+    "aten::_scaled_dot_product_efficient_attention",
+    "aten::scaled_dot_product_attention",
+    "fmha_cutlassF_f32_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<float, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)"
+  ],
+  "seed": 0
+}

@@ -1,0 +1,5 @@
+{
+  "v1_homogeneous_K4": "artifacts/wp2-routing-v1/ (ROUTING_NOT_SUPPORTED, 3-seed pilot)",
+  "v1_1_binding_K2_heterogeneous": "artifacts/wp2-routing-v1_1/ (5-seed, NOT_SUPPORTED_COLLAPSE, route_divergence ~1.2e-7)",
+  "note": "Superseded by mechanism-separable benchmark (artifacts/wp2-mechanism-v2) and typed-semantic routing (artifacts/wp2-routing-v2, ROUTING_CAUSALITY_SUPPORTED). These NEGATIVE results are preserved immutable per Act A; they showed the collapse was benchmark-unidentifiability + optimization, not a routing-mechanism deficit."
+}

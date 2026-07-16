@@ -1,0 +1,8 @@
+{
+  "learned_beats_random": true,
+  "learned_beats_frozen": false,
+  "learned_beats_fixed": false,
+  "input_dependent_routing": false,
+  "failure_mode": "ROUTER_COLLAPSE",
+  "claim_level": 1
+}

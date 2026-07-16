@@ -1,0 +1,22 @@
+{
+  "wp1_instrumentation_modules": [
+    "cwc/instrumentation/__init__.py",
+    "cwc/instrumentation/audit.py",
+    "cwc/instrumentation/clock.py",
+    "cwc/instrumentation/config.py",
+    "cwc/instrumentation/energy.py",
+    "cwc/instrumentation/event_buffer.py",
+    "cwc/instrumentation/flops.py",
+    "cwc/instrumentation/manifest.py",
+    "cwc/instrumentation/noop.py",
+    "cwc/instrumentation/routing.py",
+    "cwc/instrumentation/run_meter.py",
+    "cwc/instrumentation/stats.py",
+    "cwc/instrumentation/types.py",
+    "cwc/instrumentation/vram.py",
+    "cwc/instrumentation/writer.py"
+  ],
+  "count": 15,
+  "release_bundle": "artifacts/wp1-release/",
+  "verdict": "artifacts/wp1-release/WP1_RELEASE_VERDICT.md"
+}
