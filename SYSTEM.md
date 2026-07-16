@@ -87,6 +87,9 @@ recursive baselines on ≥2 real workloads at cloud scale, then independent
 replication. This is the only path from "causally-verified mechanism" to
 "undeniable architectural result".
 
+## Audit status
+Stanford-grade checklist audit: `docs/CHECKLIST_STATUS.md` (+ .json). All four fundamental validity defects addressed locally; G0-G5 PASS/PARTIAL; G6-G8 cloud-blocked. Routing claim NARROWED (R-B value distillation; R-C autonomous collapses).
+
 ## Provenance
 Branch `wp1-instrumentation`, baseline `92d63d4e` (== upstream karpathy/nanochat,
 verified pristine). Full backup: `~/CWC_CONSOLIDATION_BACKUP_2026-07-16/`.

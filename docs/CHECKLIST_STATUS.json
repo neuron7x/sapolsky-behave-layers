@@ -1,0 +1,30 @@
+{
+  "schema": "cwc-stanford-checklist-status/1.0",
+  "git_commit": "a5df831cfc76975c60661db8d3463cb8c031228d",
+  "audited": "2026-07-16",
+  "legend": "PASS | PARTIAL | FAIL | BLOCKED | NOT_TESTED",
+  "gates": {
+    "G0_artifact_integrity": {"status": "PARTIAL", "done": ["clean-release script (0 cache leak)", "RELEASE_MANIFEST.json", "CITATION.cff", "claim_registry.json", "git commit+tree fixed", "upstream diff clean"], "todo": ["run make-release for the signed release tarballs on the release branch"]},
+    "G1_software_verification": {"status": "PARTIAL", "done": ["ruff+mypy strict clean", "65 experiment tests + unit/property/mutation/determinism", "containers/{Dockerfile.cpu,cuda,apptainer.def}", "CI covers all 6 experiment suites", "checkpoint/determinism tests"], "todo": ["actually build+run the containers (no docker in dev env)", "CI matrix py3.10+py3.12 x CPU+CUDA (CI infra)", "CPU/GPU numerical-equivalence test"], "blocked": ["GPU CI runner", "GitHub CI (account suspended)"]},
+    "G2_measurement_validation": {"status": "PARTIAL", "done": ["physical sparse dispatch (forward_sparse) + 5 tests: matches dense, gradient isolation, empty cases, FLOPs track K", "FLOP profiler cross-check (e_F=3.9%, PARTIALLY_ESTIMATED, SDPA uncounted listed)", "overhead gate PASS"], "todo": ["reference unfused-attention kernel for <=1% FLOP gate", "full latency protocol (batch/seqlen sweep, p50-p99, 3 launches)", "VRAM breakdown"], "energy": "NOT_MEASURED (INSTRUMENT_INVALID)"},
+    "G3_benchmark_identifiability": {"status": "PASS_with_caveat", "done": ["oracle-necessity gate (oracle gap 99.8%, LCB95>0)", "surface-leakage probe: ORIGINAL benchmark AUROC 1.0 = BENCHMARK_INVALID_SURFACE_LEAKAGE (defect #4 confirmed)", "surface_matched_task (probes ~0.5)"], "todo": ["3rd mechanism family (iterative/symbolic)", "retrain routing on the surface-matched task"]},
+    "G4_routing_causality": {"status": "PARTIAL", "done": ["R-A/R-B/R-C separated", "R-C end-to-end (no leak, fixed budget) tested: ROUTING_END_TO_END_NOT_SUPPORTED (collapses)", "corrected NMI/AUROC", "causal interventions (forced/shuffled/frozen/module-swap)"], "finding": "the SUPPORTED routing result is R-B (value distillation) only; R-C (autonomous) collapses -> claim narrowed", "todo": ["better credit-assignment for R-C (REINFORCE/advantage, not gt-benefit)", "batch-composition invariance tests", "capacity sweep 10-100%"]},
+    "G5_statistical_validity": {"status": "PARTIAL", "done": ["8 model seeds", "paired bootstrap CIs", "reliability/bimodal analysis (mechanism study)", "wp4 varies data seed per model seed (multi-corpus by construction)"], "todo": ["5 explicitly-independent evaluation corpora", "power analysis / MDE preregistration", "hierarchical bootstrap seed->corpus->example"]},
+    "G6_strong_baselines": {"status": "NOT_TESTED", "blocked": ["MoD/BUDDY/MoE/recursive baselines + efficient sparse dispatch (MegaBlocks-grade) -> compute; cloud scale"]},
+    "G7_generalization": {"status": "NOT_TESTED", "blocked": ["unseen-template/complexity extrapolation, 2 real workloads, multi-scale -> cloud"]},
+    "G8_pareto_independent_replication": {"status": "NOT_TESTED", "blocked": ["compute-equivalent Pareto (cloud) + independent operator (not self-certifiable)"]}
+  },
+  "four_fundamental_defects": {
+    "1_privileged_counterfactual_target": {"status": "ADDRESSED", "evidence": "R3-C tested without it -> collapses (artifacts/wp2-routing-v3-r3c); claim narrowed in claim_boundary.json"},
+    "2_test_label_derived_capacity": {"status": "FIXED", "evidence": "R3-C uses fixed pre-eval budget (FIXED_CAP_FRAC), label-free"},
+    "3_no_physical_compute_saving": {"status": "FIXED", "evidence": "TypedCognitiveGraph.forward_sparse + 5 tests (compute scales with K, gradient isolation)"},
+    "4_surface_shortcuts": {"status": "CONFIRMED+FIXED", "evidence": "leakage audit (AUROC 1.0 = invalid) + surface_matched_task (probes ~0.5)"}
+  },
+  "priority_status": {
+    "P0_validity_fixes": "MOSTLY_DONE (claim narrowed, NMI/AUROC fixed, physical dispatch, surface audit+matched task, CI complete, clean release, containers, claim registry, reproduce-primary; remaining: independent eval corpora, run container builds)",
+    "P1_routing_proof": "NOT_STARTED (Routing v3 on 3 mechanism families + real workloads + MoD/MoE baselines + Pareto -> cloud)",
+    "P2_cognitive_mechanisms": "PARTIAL (plasticity core+oracle done NOT_IDENTIFIABLE unbudgeted; theory shows revival under cost budget; RCFR NOT_SUPPORTED; memory/structure NOT_STARTED)",
+    "P3_full_core": "NOT_STARTED (joint controller, factorial, multi-scale, replication)"
+  },
+  "honest_summary": "All four fundamental validity defects are now addressed locally. G0-G5 are PASS/PARTIAL; G6-G8 (strong baselines, real-workload generalization, compute-equivalent Pareto, independent replication) are NOT_TESTED and require cloud compute + an independent operator, which cannot be done on this hardware. The highest-value next step remains Routing v3 at cloud scale with the four fixes already in place."
+}
