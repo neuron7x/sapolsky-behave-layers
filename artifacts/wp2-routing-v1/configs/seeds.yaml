@@ -1,0 +1,4 @@
+pilot: [0, 1, 2]
+claim_min: 5
+note: seed is the unit of statistical inference (Act H1). Same seed => same
+  backbone init AND same data order across all 5 configs.

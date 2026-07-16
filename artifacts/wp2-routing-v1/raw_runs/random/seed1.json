@@ -1,0 +1,62 @@
+{
+  "mode": "random",
+  "seed": 1,
+  "device": "cuda",
+  "train_steps": 2500,
+  "train_seconds": 158.87,
+  "best_query_ce": 0.02044570964574814,
+  "final_eval": {
+    "query_ce": 0.02044570964574814,
+    "full_ce": 0.02044570964574814,
+    "mean_active_blocks": 4.0,
+    "per_layer_utilization": [
+      0.49500003457069397,
+      0.5,
+      0.5100000500679016,
+      0.4870000183582306,
+      0.4650000333786011,
+      0.5595000386238098,
+      0.5049999952316284,
+      0.47850000858306885
+    ],
+    "normalized_entropy": 0.9993446469306946,
+    "gini": 0.027437503118375783,
+    "dead_layer_fraction": 0.0,
+    "budget_violations": 0
+  },
+  "val_curve": [
+    {
+      "step": 500,
+      "query_ce": 2.178594024658203,
+      "full_ce": 2.178594024658203
+    },
+    {
+      "step": 1000,
+      "query_ce": 2.0944502868652344,
+      "full_ce": 2.0944502868652344
+    },
+    {
+      "step": 1500,
+      "query_ce": 0.06908739256858826,
+      "full_ce": 0.06908739256858826
+    },
+    {
+      "step": 2000,
+      "query_ce": 0.026052475184202194,
+      "full_ce": 0.026052475184202194
+    },
+    {
+      "step": 2500,
+      "query_ce": 0.02044570964574814,
+      "full_ce": 0.02044570964574814
+    }
+  ],
+  "active_inference_flops": 236978176,
+  "controller_flops": 0,
+  "active_blocks": 4,
+  "e2e_latency_ms_per_256batch": 40.8482,
+  "peak_vram_allocated_bytes": 187027456,
+  "total_params": 1605632,
+  "trainable_params": 1605632,
+  "controller_params": 0
+}

@@ -1,0 +1,22 @@
+quality:
+  - full_seq_val_ce
+  - query_position_val_ce   # primary discriminator
+compute:
+  - logical_active_flops
+  - controller_flops
+  - active_blocks_per_sequence
+systems:
+  - gpu_latency_ms
+  - e2e_latency_ms
+  - peak_vram_allocated_bytes
+  - peak_vram_reserved_bytes
+  - throughput_seq_per_s
+routing:
+  - normalized_entropy
+  - gini
+  - per_layer_utilization
+  - dead_layer_fraction
+  - budget_violations   # MUST be 0
+  - seed_stability_utilization
+energy:
+  status: EXCLUDED

@@ -1,0 +1,62 @@
+{
+  "mode": "learned",
+  "seed": 2,
+  "device": "cuda",
+  "train_steps": 2500,
+  "train_seconds": 162.57,
+  "best_query_ce": 0.005791012838482857,
+  "final_eval": {
+    "query_ce": 0.005791012838482857,
+    "full_ce": 0.005791012838482857,
+    "mean_active_blocks": 4.0,
+    "per_layer_utilization": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "normalized_entropy": 0.6666666865348816,
+    "gini": 0.49999999994921884,
+    "dead_layer_fraction": 0.5,
+    "budget_violations": 0
+  },
+  "val_curve": [
+    {
+      "step": 500,
+      "query_ce": 1.7764469604492188,
+      "full_ce": 1.7764469604492188
+    },
+    {
+      "step": 1000,
+      "query_ce": 0.005791012838482857,
+      "full_ce": 0.005791012838482857
+    },
+    {
+      "step": 1500,
+      "query_ce": 0.006655055217444896,
+      "full_ce": 0.006655055217444896
+    },
+    {
+      "step": 2000,
+      "query_ce": 0.018729584902524948,
+      "full_ce": 0.018729584902524948
+    },
+    {
+      "step": 2500,
+      "query_ce": 0.01138228969089687,
+      "full_ce": 0.01138228969089687
+    }
+  ],
+  "active_inference_flops": 237111296,
+  "controller_flops": 133120,
+  "active_blocks": 4,
+  "e2e_latency_ms_per_256batch": 35.4149,
+  "peak_vram_allocated_bytes": 251785216,
+  "total_params": 1614017,
+  "trainable_params": 1614017,
+  "controller_params": 8385
+}
