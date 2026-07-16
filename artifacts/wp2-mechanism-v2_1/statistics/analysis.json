@@ -1,0 +1,238 @@
+{
+  "A_marker": {
+    "stage": "A_marker",
+    "per_config": {
+      "dense": {
+        "n": 8,
+        "mean_ce": 0.0023357025638688356,
+        "mean_acc": 1.0,
+        "mean_acc_local": 0.9999999403953552,
+        "mean_acc_far": 1.0
+      },
+      "random": {
+        "n": 8,
+        "mean_ce": 2.0893473625183105,
+        "mean_acc": 0.5096435546875,
+        "mean_acc_local": 0.5100308582186699,
+        "mean_acc_far": 0.5092936754226685
+      },
+      "frozen": {
+        "n": 8,
+        "mean_ce": 1.9751747101545334,
+        "mean_acc": 0.5167236328125,
+        "mean_acc_local": 0.4110082075931132,
+        "mean_acc_far": 0.6122211888432503
+      },
+      "fixed": {
+        "n": 8,
+        "mean_ce": 2.5298792719841003,
+        "mean_acc": 0.474609375,
+        "mean_acc_local": 0.9999999403953552,
+        "mean_acc_far": 0.0
+      },
+      "oracle": {
+        "n": 8,
+        "mean_ce": 0.0021941437444183975,
+        "mean_acc": 1.0,
+        "mean_acc_local": 0.9999999403953552,
+        "mean_acc_far": 1.0
+      },
+      "learned": {
+        "n": 8,
+        "mean_ce": 0.004194741835817695,
+        "mean_acc": 0.9998779296875,
+        "mean_acc_local": 0.9997427389025688,
+        "mean_acc_far": 1.0
+      }
+    },
+    "A2_oracle_gap": {
+      "mean_relative_gain": 0.9988403659605334,
+      "ci95": [
+        0.9988403659605334,
+        0.9988403659605334
+      ],
+      "oracle_acc": 1.0,
+      "best_fixed_acc": 0.5167236328125,
+      "acc_gap_pp": 48.32763671875,
+      "PASS": true
+    },
+    "A3_routing_causality": {
+      "comparisons": {
+        "learned_vs_random": {
+          "mean_delta": -2.085152620682493,
+          "ci95": [
+            -2.085152620682493,
+            -2.085152620682493
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_frozen": {
+          "mean_delta": -1.9709799683187157,
+          "ci95": [
+            -1.9709799683187157,
+            -1.9709799683187157
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_fixed": {
+          "mean_delta": -2.5256845301482826,
+          "ci95": [
+            -2.5256845301482826,
+            -2.5256845301482826
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_oracle": {
+          "mean_delta": 0.002000598091399297,
+          "ci95": [
+            0.002000598091399297,
+            0.002000598091399297
+          ],
+          "learned_better": false,
+          "n": 8
+        }
+      },
+      "mean_i_norm": 0.998713976706282,
+      "i_norm_ci95": [
+        0.998713976706282,
+        0.998713976706282
+      ],
+      "max_permutation_p": 0.000999000999000999,
+      "mean_route_label_agreement": 0.9998779296875,
+      "interventions_mean": {
+        "ce_natural": 0.004194741835817695,
+        "ce_force_correct": 0.0037190932780504227,
+        "ce_force_incorrect": 7.701999008655548,
+        "ce_route_permuted": 3.718630939722061,
+        "ce_module_swapped": 7.7015233635902405,
+        "incorrect_over_correct_ratio": 2078.180371937954
+      },
+      "beats_all_static": true,
+      "mi_gate": true,
+      "intervention_gate": true,
+      "n_seeds": 8,
+      "VERDICT": "ROUTING_CAUSALITY_SUPPORTED"
+    }
+  },
+  "B_inferred": {
+    "stage": "B_inferred",
+    "per_config": {
+      "dense": {
+        "n": 8,
+        "mean_ce": 0.0022644240816589445,
+        "mean_acc": 1.0,
+        "mean_acc_local": 1.0,
+        "mean_acc_far": 1.0
+      },
+      "random": {
+        "n": 8,
+        "mean_ce": 2.0846546292304993,
+        "mean_acc": 0.510498046875,
+        "mean_acc_local": 0.5106925070285797,
+        "mean_acc_far": 0.51031893491745
+      },
+      "frozen": {
+        "n": 8,
+        "mean_ce": 1.9802679419517517,
+        "mean_acc": 0.5152587890625,
+        "mean_acc_local": 0.41344195744022727,
+        "mean_acc_far": 0.6090525388717651
+      },
+      "fixed": {
+        "n": 8,
+        "mean_ce": 2.511227607727051,
+        "mean_acc": 0.4794921875,
+        "mean_acc_local": 1.0,
+        "mean_acc_far": 0.0
+      },
+      "oracle": {
+        "n": 8,
+        "mean_ce": 0.002187974750995636,
+        "mean_acc": 1.0,
+        "mean_acc_local": 1.0,
+        "mean_acc_far": 1.0
+      },
+      "learned": {
+        "n": 8,
+        "mean_ce": 0.5656499032629654,
+        "mean_acc": 0.8704833984375,
+        "mean_acc_local": 0.8655804665759206,
+        "mean_acc_far": 0.875
+      }
+    },
+    "A2_oracle_gap": {
+      "mean_relative_gain": 0.9988522719340029,
+      "ci95": [
+        0.9988522719340028,
+        0.9988522719340028
+      ],
+      "oracle_acc": 1.0,
+      "best_fixed_acc": 0.5152587890625,
+      "acc_gap_pp": 48.47412109375,
+      "PASS": true
+    },
+    "A3_routing_causality": {
+      "comparisons": {
+        "learned_vs_random": {
+          "mean_delta": -1.5190047259675339,
+          "ci95": [
+            -1.5190047259675339,
+            -1.5190047259675339
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_frozen": {
+          "mean_delta": -1.4146180386887863,
+          "ci95": [
+            -1.4146180386887863,
+            -1.4146180386887863
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_fixed": {
+          "mean_delta": -1.9455777044640854,
+          "ci95": [
+            -1.9455777044640854,
+            -1.9455777044640854
+          ],
+          "learned_better": true,
+          "n": 8
+        },
+        "learned_vs_oracle": {
+          "mean_delta": 0.5634619285119697,
+          "ci95": [
+            0.5634619285119697,
+            0.5634619285119697
+          ],
+          "learned_better": false,
+          "n": 8
+        }
+      },
+      "mean_i_norm": 0.714080698909572,
+      "i_norm_ci95": [
+        0.714080698909572,
+        0.714080698909572
+      ],
+      "max_permutation_p": 1.0,
+      "mean_route_label_agreement": 0.8673095703125,
+      "interventions_mean": {
+        "ce_natural": 0.5656499032629654,
+        "ce_force_correct": 0.2041175867198035,
+        "ce_force_incorrect": 6.254726558923721,
+        "ce_route_permuted": 3.315106838941574,
+        "ce_module_swapped": 5.893194153904915,
+        "incorrect_over_correct_ratio": 856.777211926196
+      },
+      "beats_all_static": true,
+      "mi_gate": false,
+      "intervention_gate": true,
+      "n_seeds": 8,
+      "VERDICT": "NOT_SUPPORTED"
+    }
+  }
+}

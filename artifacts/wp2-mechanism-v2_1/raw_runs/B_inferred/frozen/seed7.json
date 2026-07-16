@@ -1,0 +1,18 @@
+{
+  "mode": "frozen",
+  "seed": 7,
+  "stage": "B_inferred",
+  "train_seconds": 7.8,
+  "eval": {
+    "answer_ce": 1.648179292678833,
+    "acc": 0.5458984375,
+    "acc_local": 0.0773930773139,
+    "acc_far": 0.9774859547615051,
+    "route_label_agreement": 0.5263671875,
+    "mi_mi_nats": 0.0008807619039173627,
+    "mi_h_t_nats": 0.6923058038147805,
+    "mi_i_norm": 0.0012722151093695032
+  },
+  "total_params": 77922,
+  "controller_params": 2146
+}

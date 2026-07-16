@@ -1,0 +1,14 @@
+{
+  "mode": "dense",
+  "seed": 5,
+  "stage": "B_inferred",
+  "train_seconds": 6.68,
+  "eval": {
+    "answer_ce": 0.0022955704480409622,
+    "acc": 1.0,
+    "acc_local": 1.0,
+    "acc_far": 1.0
+  },
+  "total_params": 75776,
+  "controller_params": 0
+}

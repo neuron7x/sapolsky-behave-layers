@@ -1,0 +1,18 @@
+{
+  "mode": "random",
+  "seed": 1,
+  "stage": "A_marker",
+  "train_seconds": 7.13,
+  "eval": {
+    "answer_ce": 2.0850629806518555,
+    "acc": 0.5078125,
+    "acc_local": 0.5061728358268738,
+    "acc_far": 0.5092936754226685,
+    "route_label_agreement": 0.501953125,
+    "mi_mi_nats": 4.858443693409433e-06,
+    "mi_h_t_nats": 0.6918572581554296,
+    "mi_i_norm": 7.022320913944876e-06
+  },
+  "total_params": 75776,
+  "controller_params": 0
+}

@@ -5,6 +5,16 @@ under the Act's own rubric. **No score is claimed for a gate that did not
 pass.** The purpose (Act §15) is to make future positive claims hard to fake —
 so this report reports the true score, not the target.
 
+> **UPDATE (A3.1, `artifacts/wp2-mechanism-v2_1/`):** the preregistered
+> load-balance anti-collapse loss (lb=0.01) lifted **Stage A to 8/8 seeds →
+> A3 ROUTING_CAUSALITY_SUPPORTED at claim tier** (learned = oracle, I_norm=1.0,
+> perm-p=0.001 all seeds, force-incorrect 2078× worse, module-swap
+> catastrophic). Stage B (inferred label) remains 6/8 → NOT_SUPPORTED. The
+> adaptive-routing dimension rises 10→14 and the total to **57/100**. The
+> routing-causality hard cap (59) is retained conservatively because full A3
+> requires the inference regime (Stage B) too; it lifts to 86 once Stage B is
+> reliable AND compute-equivalent Pareto (A7) is done.
+
 ## Package verdicts
 | Pkg | Objective | Verdict | Evidence |
 |---|---|---|---|

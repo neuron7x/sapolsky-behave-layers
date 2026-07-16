@@ -1,0 +1,27 @@
+{
+  "mode": "learned",
+  "seed": 4,
+  "stage": "B_inferred",
+  "train_seconds": 7.53,
+  "eval": {
+    "answer_ce": 0.015493768267333508,
+    "acc": 0.998046875,
+    "acc_local": 0.9959267377853394,
+    "acc_far": 1.0,
+    "route_label_agreement": 0.998046875,
+    "mi_mi_nats": 0.6794400849203972,
+    "mi_h_t_nats": 0.6923058038147805,
+    "mi_i_norm": 0.981416133125723
+  },
+  "total_params": 77922,
+  "controller_params": 2146,
+  "interventions": {
+    "ce_natural": 0.015493768267333508,
+    "ce_force_correct": 0.008424066938459873,
+    "ce_force_incorrect": 6.75230598449707,
+    "ce_route_permuted": 3.4881529808044434,
+    "ce_module_swapped": 6.745235919952393,
+    "incorrect_over_correct_ratio": 801.5494218914122
+  },
+  "permutation_p": 0.000999000999000999
+}
