@@ -3,6 +3,17 @@ Protocol: DCSA v2.0 (`DCSA_PROTOCOL_V2.md`). Supersedes `DCSA_AUDIT_0001.md`.
 Audit date: 2026-07-16. All gates re-executed fresh at the audited commit —
 no status below is inherited from prior sessions.
 
+> **UPDATE 2026-07-16 (post-confirmatory-run):** the "Critical blocker" below
+> is RESOLVED. The WP-1 L2 overhead gate PASSED (confirmatory N=2000: median
+> −0.46%, paired CI upper +0.306%, GPU −0.21% — all under the 1%/2%/1%
+> criteria). Energy is `UNAVAILABLE (INSTRUMENT_INVALID)` — NVML counter
+> over-reads ~2×. **WP-1 max supported level is now L2
+> (PASS_WITH_ENERGY_EXCLUDED)**, up from L1. Evidence bundle:
+> `artifacts/wp1-release/` (Gate A PASS, checksums valid). The §10 experiment
+> was executed as specified; its τ=1.05 figure was superseded by the stricter
+> Act 1% gate per `WP1_L2_PREREGISTRATION.md`. Phase C (WP-2 preregistration)
+> is unblocked.
+
 ## 0. EXECUTIVE VERDICT
 - Audit status: COMPLETED on available evidence (code level). All model-level
   stages (2–5) are NOT_TESTED by data sufficiency, not by omission.

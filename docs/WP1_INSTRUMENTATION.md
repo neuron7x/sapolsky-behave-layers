@@ -89,7 +89,27 @@ count — was caught by actually running it and fixed).
   exists in this environment (no `tok_train.py`/`base_train.py` run has
   completed here). This is a known, disclosed gap, not a silent one.
 
-## Overhead qualification (Act §4.14, §9) — **BLOCKED_BY_MEASUREMENT_OVERHEAD**
+## Overhead qualification (Act §4.14, §9) — **PASS (QUALIFIED_AT_DEPTH12_SCALE)**
+
+**2026-07-16 update — gate CLOSED.** A single preregistered confirmatory run
+(N=1 stopping rule, `docs/WP1_L2_PREREGISTRATION.md`) at 4× the power of the
+exploratory runs below decisively cleared all three criteria:
+
+| Confirmatory (10 cycles × 200 steps = 2000 paired samples) | Value | Gate | Status |
+|---|---|---|---|
+| median paired E2E overhead | **−0.46%** | ≤ 1.0% | PASS |
+| bootstrap 95% CI (paired), upper bound | **+0.306%** (CI [+0.086%, +0.306%]) | ≤ 2.0% | PASS |
+| GPU-specific overhead (cycle-averaged) | **−0.21%** | ≤ 1.0% | PASS |
+
+Evidence: `artifacts/instrumentation/overhead_report_confirmatory_L2.json`
+and `artifacts/wp1-release/overhead/`. The earlier `BLOCKED` verdict came from
+the point estimate sitting AT the 1.0% line (canonical run 1.03%) with only
+5 cycles; 10 cycles at 200 steps tightened the estimate to ~0.1–0.3% true
+cost, sub-millisecond against a ~52.5 ms step. WP-1 metrology closes as
+`PASS_WITH_ENERGY_EXCLUDED` (energy is INSTRUMENT_INVALID — see below).
+The exploratory history is retained unedited for provenance:
+
+### Exploratory history (superseded, retained for provenance)
 
 `scripts/instrumentation_overhead.py`: paired alternating OFF→COUNTERS→
 COUNTERS→OFF, 5 cycles, real nanochat `GPT` forward+backward+optimizer step,
@@ -125,17 +145,27 @@ criterion (≤1.0%) passes 2 of 3** — right at the noise floor, not decisively
 clear. The canonical run is saved at
 `artifacts/instrumentation/overhead_report_canonical_run.json`.
 
-**Verdict:** this is reported as `BLOCKED_BY_MEASUREMENT_OVERHEAD`, not rounded
-up to a pass, per the Act's own fail-closed instruction (§9, §12) — re-running
-until a passing sample appears would be exactly the kind of cherry-picking the
-whole CWC evidence discipline exists to prevent. What would resolve this
-honestly: (a) testing at nanochat's actual default scale (depth=20) on
-hardware with enough VRAM, where the fixed per-step overhead would be an even
-smaller fraction of a longer step; (b) more cycles for a tighter CI; (c) an
-isolated GPU with no other process contending for it (this RTX 3050 is a
-shared laptop GPU, and `nvidia-smi` showed an anomalous power reading at
-session start suggesting some background load or driver quirk, a plausible
-contributor to run-to-run noise at this fine a threshold).
+**Exploratory verdict (historical):** these 3 runs were reported
+`BLOCKED_BY_MEASUREMENT_OVERHEAD` — the point estimate sat at the 1% line and
+fail-closed forbade rounding up. The resolution path named here — "(b) more
+cycles for a tighter CI" — is exactly what the 2026-07-16 confirmatory run
+executed (10 cycles × 200 steps), clearing the gate. No thresholds were
+loosened; the same 1%/2%/1% criteria were applied to 4× the data.
+
+## Energy validation (Act §5 B6/B7) — **UNAVAILABLE (INSTRUMENT_INVALID)**
+
+Preregistered liveness probe (`docs/WP1_L2_PREREGISTRATION.md`, evidence
+`artifacts/instrumentation/energy_liveness_probe.json`): NVML counters are
+readable and monotonic, but `nvmlDeviceGetTotalEnergyConsumption` is
+physically implausible on this host — a 5 s matmul load implied **160.8 W**
+average power while the instantaneous rate read 79.8 W (RTX 3050 Laptop
+TGP ≤ 80 W). The counter over-reads ~2× under load, ~4.8× at idle. This is
+the fourth manifestation of untrusted power telemetry on this machine (idle
+`power.draw` = 749.67 W, physically impossible). Per Act B6, TDP fallback is
+forbidden, so `ENERGY_VALIDATION = UNAVAILABLE`, `ENERGY_METRICS =
+NON_CLAIMABLE`. A counter that exists and lies is reported as
+INSTRUMENT_INVALID, not silently used. This excludes energy from every CWC
+claim but does not block routing experiments on FLOPs/VRAM/latency.
 
 ## Known limitations
 
