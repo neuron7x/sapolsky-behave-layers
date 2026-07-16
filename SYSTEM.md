@@ -110,6 +110,18 @@ replication. This is the only path from "causally-verified mechanism" to
 ## Audit status
 Stanford-grade checklist audit: `docs/CHECKLIST_STATUS.md` (+ .json). All four fundamental validity defects addressed locally; G0-G5 PASS/PARTIAL; G6-G8 cloud-blocked. Routing claim NARROWED (R-B value distillation; R-C autonomous collapses).
 
+## Documentation-methodology system (Act CWC-LAB-DOC-2026-01)
+Constitutional docs in `docs/methodology/` (master methodology, hypothesis registry,
+protocol template, statistical analysis plan); data governance in `docs/data/`;
+evaluation+metrology in `docs/evaluation/`; V&V traceability in `docs/vnv/` (RTM,
+records, `DOCUMENT_STATUS_REGISTER.csv`); reproduction in `docs/reproducibility/`;
+publication package in `docs/publication/`; System Card in `docs/system_card/`; risk
+triggers in `docs/risk/`. Machine-verifiable spine: `scripts/doc_status_gate.py`
+(claim⟷hypothesis 0 orphans, registry schema-valid, commit ancestor of HEAD, artifacts
+exist) wired into `make -f Makefile.cwc verify`. Document register: **53 EXISTS / 0
+MISSING / 10 TRIGGER_NOT_REACHED** (P2 frontier-safety deferred by the trigger ladder,
+not fabricated). Deployment status: `LOCAL_RESEARCH_ONLY`.
+
 ## Provenance
 Branch `wp1-instrumentation`, baseline `92d63d4e` (== upstream karpathy/nanochat,
 verified pristine). Full backup: `~/CWC_CONSOLIDATION_BACKUP_2026-07-16/`.
