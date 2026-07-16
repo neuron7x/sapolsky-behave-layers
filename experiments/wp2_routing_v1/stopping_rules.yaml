@@ -1,0 +1,18 @@
+fail_closed:   # Act §15 — stop, report, do not advance
+  - baseline_changed
+  - tests_red
+  - budget_violation_gt_0
+  - controller_nondeterministic_in_eval
+  - controls_not_implemented
+  - raw_runs_missing
+  - compute_mismatch_gt_1pct
+  - checksum_fail
+thresholds_frozen: true   # no threshold chosen/changed after seeing results
+verdicts:
+  - ROUTING_SUPPORTED
+  - ROUTING_NOT_SUPPORTED
+  - ROUTER_COLLAPSE
+  - COMPUTE_MISMATCH
+  - INSUFFICIENT_SEEDS
+  - MEASUREMENT_INVALID
+  - PILOT_ONLY
