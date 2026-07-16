@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.instrumentation_overhead import _bootstrap_ci, _percentile  # noqa: E402
+from scripts.instrumentation_overhead import _bootstrap_ci, _percentile
 
 
 def test_percentile_median_of_odd_list():

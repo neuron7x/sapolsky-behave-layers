@@ -4,9 +4,10 @@ prefill/decode phases, or benchmark intervals.
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field
-from typing import Any, Callable, Iterator
+from dataclasses import dataclass
+from typing import Any
 
 from .clock import CudaWindow, cpu_elapsed_ms, cpu_start_ns, open_window, resolve_windows
 from .event_buffer import EventPool

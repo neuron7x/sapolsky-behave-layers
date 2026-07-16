@@ -153,7 +153,7 @@ def test_nanochat_estimator_agreement_on_dense_matmul_portion():
     is what this test compares — not the attention core, which is intentionally
     a different formula on each side (documented, not silently reconciled).
     """
-    torch = pytest.importorskip("torch")
+    pytest.importorskip("torch")
     from nanochat.gpt import GPT, GPTConfig
 
     cfg = GPTConfig(sequence_len=32, vocab_size=256, n_layer=2, n_head=2, n_kv_head=2, n_embd=32, window_pattern="L")

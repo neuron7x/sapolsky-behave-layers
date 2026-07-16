@@ -7,8 +7,9 @@ latency (Act 4.13: "не змішувати profiler latency з production laten
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 # Operators this module can compare analytically vs profiler-observed. Any
 # operator the profiler reports that is NOT in this set is left out of the

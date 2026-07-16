@@ -123,9 +123,8 @@ def test_run_meter_propagates_exceptions_and_tags_error_status():
     pool = EventPool(size=2)
     pool.warm_up()
     meter = RunMeter(event_pool=pool, device_index=0, enable_cuda_events=True)
-    with pytest.raises(RuntimeError, match="boom"):
-        with meter.scope("train_step", step=1):
-            raise RuntimeError("boom")
+    with pytest.raises(RuntimeError, match="boom"), meter.scope("train_step", step=1):
+        raise RuntimeError("boom")
     records = meter.flush()
     assert len(records) == 1
     assert records[0].status == "error"

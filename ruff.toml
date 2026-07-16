@@ -1,0 +1,31 @@
+# CWC WP-1 quality config. Scoped to CWC-owned code only — nanochat's own
+# source keeps its existing (unlinted) style; this raises the bar strictly for
+# the instrumentation subsystem so `ruff check .` is a clean CI gate here.
+line-length = 120
+target-version = "py310"
+
+# Only CWC-owned files are linted. Everything else is force-excluded so the
+# gate never fails on upstream nanochat style we deliberately do not touch.
+include = [
+    "cwc/**/*.py",
+    "scripts/instrumentation_smoke.py",
+    "scripts/instrumentation_overhead.py",
+    "scripts/instrumentation_audit.py",
+    "scripts/export_cwc_instrumentation_bundle.py",
+    "tests/test_instrumentation_*.py",
+]
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "PIE", "RET", "RUF"]
+# B008: FastAPI-style default-arg calls — not relevant here.
+# RUF001/RUF003: Cyrillic in strings/comments is intentional (Ukrainian docs).
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[lint.isort]
+known-first-party = ["cwc", "nanochat"]
+
+[lint.per-file-ignores]
+# E402: test modules legitimately call `pytest.importorskip("torch")` before
+# importing cwc modules that transitively need torch, so those imports cannot
+# sit at the very top. This is the standard pytest optional-dependency pattern.
+"tests/**/*.py" = ["E402"]

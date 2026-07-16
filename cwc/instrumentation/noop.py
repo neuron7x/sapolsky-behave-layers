@@ -6,9 +6,10 @@ from calling the wrapped code directly (Act 4.3, Gate B).
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Any
 
 from .types import EnergyRecord, FlopRecord, RoutingAggregate, VRAMRecord
 

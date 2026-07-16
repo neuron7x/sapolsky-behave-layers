@@ -1,0 +1,9 @@
+# CWC WP-1 quality tooling (dev-only, not runtime dependencies of nanochat).
+# Pinned into the exact torch==2.9.1+cu128 .venv resolved from nanochat's uv.lock.
+# Install: VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
+pytest-cov==7.1.0
+hypothesis==6.156.6
+mypy==2.3.0
+ruff==0.15.21
+mutmut==3.6.0
+coverage==7.15.2

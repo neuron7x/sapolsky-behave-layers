@@ -20,15 +20,14 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from nanochat.gpt import GPT, GPTConfig
-
 from cwc.instrumentation.config import InstrumentationConfig, InstrumentationMode
 from cwc.instrumentation.flops import FlopLedger
-from cwc.instrumentation.noop import NullFlopLedger, NullRoutingCounters, NullRunMeter, NullVRAMMeter, NullWriter
+from cwc.instrumentation.noop import NullFlopLedger, NullRoutingCounters, NullRunMeter, NullWriter
 from cwc.instrumentation.routing import RoutingCounters
 from cwc.instrumentation.run_meter import RunMeter
 from cwc.instrumentation.vram import VRAMMeter
 from cwc.instrumentation.writer import InstrumentationWriter
+from nanochat.gpt import GPT, GPTConfig
 
 
 def _micro_model_and_batch(seed: int = 1234):

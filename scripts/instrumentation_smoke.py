@@ -28,7 +28,7 @@ from cwc.instrumentation.vram import VRAMMeter
 from cwc.instrumentation.writer import InstrumentationWriter
 
 
-def _workload(device: str):
+def _workload(device: str) -> torch.Tensor:
     x = torch.randn(64, 64, device=device)
     return (x @ x).sum()
 
@@ -108,7 +108,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.device == "cuda" and not torch.cuda.is_available():
-        print(f"SMOKE SKIP: --device cuda requested but CUDA is not available on this host")
+        print("SMOKE SKIP: --device cuda requested but CUDA is not available on this host")
         return
 
     output_dir = Path("artifacts/instrumentation") / f"smoke-{args.device}"

@@ -32,7 +32,7 @@ def main() -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     weight = torch.randn(args.d_model, args.d_model, device=device)
 
-    def workload():
+    def workload() -> torch.Tensor:
         x = torch.randn(args.tokens, args.d_model, device=device)
         y = x @ weight
         return y.relu().sum()

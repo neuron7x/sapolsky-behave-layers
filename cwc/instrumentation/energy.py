@@ -15,6 +15,7 @@ available=False / confidence="unavailable".
 """
 from __future__ import annotations
 
+import itertools
 import statistics
 import threading
 import time
@@ -26,7 +27,7 @@ try:
     import pynvml
     _PYNVML_AVAILABLE = True
 except ImportError:
-    pynvml = None  # type: ignore[assignment]
+    pynvml = None
     _PYNVML_AVAILABLE = False
 
 
@@ -51,7 +52,7 @@ def _trapezoidal_joules(samples: list[tuple[float, float]]) -> float:
     if len(samples) < 2:
         return 0.0
     total = 0.0
-    for (t0, w0), (t1, w1) in zip(samples, samples[1:], strict=False):
+    for (t0, w0), (t1, w1) in itertools.pairwise(samples):
         dt = max(0.0, t1 - t0)
         total += 0.5 * (w0 + w1) * dt
     return total
@@ -140,7 +141,7 @@ class NVMLPowerSampler:
     def median_sampling_interval_sec(self) -> float:
         if len(self._samples) < 2:
             return 0.0
-        intervals = [b[0] - a[0] for a, b in zip(self._samples, self._samples[1:], strict=False)]
+        intervals = [b[0] - a[0] for a, b in itertools.pairwise(self._samples)]
         return statistics.median(intervals)
 
 

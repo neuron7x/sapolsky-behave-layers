@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import statistics
 import time
 from pathlib import Path
 
@@ -25,37 +24,20 @@ import torch
 from cwc.instrumentation.event_buffer import EventPool
 from cwc.instrumentation.noop import NullRunMeter
 from cwc.instrumentation.run_meter import RunMeter
+from cwc.instrumentation.stats import bootstrap_ci as _bootstrap_ci
+from cwc.instrumentation.stats import percentile as _percentile
 
 
-def _percentile(values: list[float], q: float) -> float:
-    if not values:
-        return 0.0
-    ordered = sorted(values)
-    if len(ordered) == 1:
-        return ordered[0]
-    index = (len(ordered) - 1) * q
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = index - lower
-    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
-
-
-def _bootstrap_ci(deltas: list[float], *, resamples: int = 2000, seed: int) -> tuple[float, float]:
-    import random
-
-    rng = random.Random(seed)
-    n = len(deltas)
-    means = []
-    for _ in range(resamples):
-        sample = [deltas[rng.randrange(n)] for _ in range(n)]
-        means.append(statistics.fmean(sample))
-    means.sort()
-    lower_idx = int(0.025 * len(means))
-    upper_idx = int(0.975 * len(means))
-    return means[lower_idx], means[min(upper_idx, len(means) - 1)]
-
-
-def _build_model_and_batch(device: str, seed: int, *, n_layer: int, n_embd: int, n_head: int, seq_len: int, batch_size: int):
+def _build_model_and_batch(
+    device: str,
+    seed: int,
+    *,
+    n_layer: int,
+    n_embd: int,
+    n_head: int,
+    seq_len: int,
+    batch_size: int,
+):
     from nanochat.gpt import GPT, GPTConfig
 
     torch.manual_seed(seed)
@@ -137,7 +119,13 @@ def main() -> None:
     args = parser.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_kwargs = dict(n_layer=args.depth, n_embd=args.n_embd, n_head=args.n_head, seq_len=args.seq_len, batch_size=args.batch_size)
+    model_kwargs = {
+        "n_layer": args.depth,
+        "n_embd": args.n_embd,
+        "n_head": args.n_head,
+        "seq_len": args.seq_len,
+        "batch_size": args.batch_size,
+    }
 
     off_e2e_all: list[float] = []
     counters_e2e_all: list[float] = []
@@ -145,7 +133,7 @@ def main() -> None:
     pooled_gpu_ms: list[float] = []
     ordering: list[str] = []
 
-    for cycle in range(args.cycles):
+    for _cycle in range(args.cycles):
         model, optimizer, x, y = _build_model_and_batch(device, args.seed, **model_kwargs)
         off_meter = NullRunMeter()
         for _ in range(args.warmup_steps):
@@ -172,12 +160,16 @@ def main() -> None:
             # Same cycle's model/batch, bare CUDA-event comparison — averaged
             # across all `cycles`, not a single one-shot measurement, so this
             # sub-gate gets the same statistical stability as the E2E gate.
-            bare_model, bare_optimizer, bare_x, bare_y = _build_model_and_batch(device, args.seed, **model_kwargs)
+            bare_model, bare_opt, bare_x, bare_y = _build_model_and_batch(device, args.seed, **model_kwargs)
             for _ in range(args.warmup_steps):
-                _bare_cuda_event_ms(bare_model, bare_optimizer, bare_x, bare_y, steps=1)
-            bare_gpu_ms.extend(_bare_cuda_event_ms(bare_model, bare_optimizer, bare_x, bare_y, steps=args.measurement_steps))
+                _bare_cuda_event_ms(bare_model, bare_opt, bare_x, bare_y, steps=1)
+            bare_gpu_ms.extend(
+                _bare_cuda_event_ms(bare_model, bare_opt, bare_x, bare_y, steps=args.measurement_steps)
+            )
 
-    off_p50, off_p95, off_p99 = _percentile(off_e2e_all, 0.50), _percentile(off_e2e_all, 0.95), _percentile(off_e2e_all, 0.99)
+    off_p50 = _percentile(off_e2e_all, 0.50)
+    off_p95 = _percentile(off_e2e_all, 0.95)
+    off_p99 = _percentile(off_e2e_all, 0.99)
     counters_p50, counters_p95, counters_p99 = (
         _percentile(counters_e2e_all, 0.50), _percentile(counters_e2e_all, 0.95), _percentile(counters_e2e_all, 0.99)
     )

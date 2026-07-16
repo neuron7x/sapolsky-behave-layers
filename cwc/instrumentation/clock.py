@@ -42,7 +42,7 @@ class CudaWindow:
         end_event.record()
 
 
-def open_window(pool: EventPool, *, device_index: int, stream: "torch.cuda.Stream | None" = None) -> CudaWindow | None:
+def open_window(pool: EventPool, *, device_index: int, stream: torch.cuda.Stream | None = None) -> CudaWindow | None:
     pair = pool.acquire()
     if pair is None:
         return None

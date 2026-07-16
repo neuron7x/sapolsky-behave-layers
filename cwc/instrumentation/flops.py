@@ -13,8 +13,9 @@ ignores per-expert capacity) and is not offered anywhere in this module.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from .types import FlopRecord
 
@@ -80,7 +81,15 @@ class FlopLedger:
     entries: list[FlopRecord] = field(default_factory=list)
     _expert_assignment_calls: list[dict[str, Any]] = field(default_factory=list)
 
-    def add(self, name: str, kind: str, logical_flops: int, *, executed_estimate_flops: int | None = None, **metadata: Any) -> FlopRecord:
+    def add(
+        self,
+        name: str,
+        kind: str,
+        logical_flops: int,
+        *,
+        executed_estimate_flops: int | None = None,
+        **metadata: Any,
+    ) -> FlopRecord:
         if logical_flops < 0:
             raise ValueError("logical_flops cannot be negative")
         executed = logical_flops if executed_estimate_flops is None else executed_estimate_flops

@@ -51,19 +51,7 @@ from cwc.instrumentation.config import InstrumentationMode
 from cwc.instrumentation.energy import EnergySampler as CwcEnergySampler
 from cwc.instrumentation.flops import FlopLedger as CwcFlopLedger
 from cwc.instrumentation.noop import NullEnergySampler as CwcNullEnergySampler
-
-
-def _percentile(values, q):
-    if not values:
-        return 0.0
-    ordered = sorted(values)
-    if len(ordered) == 1:
-        return ordered[0]
-    index = (len(ordered) - 1) * q
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = index - lower
-    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+from cwc.instrumentation.stats import percentile as _percentile
 
 # -----------------------------------------------------------------------------
 # Measurement

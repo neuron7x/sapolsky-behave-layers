@@ -1,5 +1,6 @@
 """python -m pytest tests/test_instrumentation_writer.py -v"""
 
+import contextlib
 import json
 import math
 from pathlib import Path
@@ -65,7 +66,7 @@ def test_allow_nan_false_rejects_infinity(tmp_path: Path):
 def test_no_pickle_import_in_writer_module():
     import cwc.instrumentation.writer as writer_module
 
-    source = open(writer_module.__file__, encoding="utf-8").read()
+    source = Path(writer_module.__file__).read_text(encoding="utf-8")
     assert "import pickle" not in source
 
 
@@ -93,9 +94,7 @@ def test_crash_between_writes_does_not_corrupt_prior_summary(tmp_path: Path):
     writer = InstrumentationWriter(tmp_path)
     writer.write_summary({"version": 1})
     first_content = (tmp_path / "summary.json").read_text()
-    try:
+    with contextlib.suppress(ValueError):
         writer.write_summary({"value": math.nan})  # simulated "crash" mid-write
-    except ValueError:
-        pass
     # the previously-written summary.json must be untouched, not half-written
     assert (tmp_path / "summary.json").read_text() == first_content

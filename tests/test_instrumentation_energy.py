@@ -72,10 +72,11 @@ def test_no_tdp_fallback_exists_in_module():
     with docstrings/comments stripped instead of a raw substring search.
     """
     import ast
+    from pathlib import Path
 
     import cwc.instrumentation.energy as energy_module
 
-    source = open(energy_module.__file__, encoding="utf-8").read()
+    source = Path(energy_module.__file__).read_text(encoding="utf-8")
     tree = ast.parse(source)
     code_only_lines = set(range(1, source.count("\n") + 2))
     for node in ast.walk(tree):

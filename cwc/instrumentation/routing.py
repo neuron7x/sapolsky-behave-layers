@@ -18,6 +18,14 @@ from .config import InstrumentationMode
 from .types import RoutingAggregate
 
 
+def _update_min(current: int | None, value: int) -> int:
+    return value if current is None else min(current, value)
+
+
+def _update_max(current: int | None, value: int) -> int:
+    return value if current is None else max(current, value)
+
+
 @dataclass
 class RoutingHistogram:
     """Bounded fixed-width histogram over active_tokens values."""
@@ -31,11 +39,8 @@ class RoutingHistogram:
         self._counts = [0] * self.num_bins
 
     def add(self, value: int) -> None:
-        if self.max_value <= 0:
-            bin_index = 0
-        else:
-            bin_index = min(self.num_bins - 1, int((value / self.max_value) * self.num_bins))
-        bin_index = max(0, bin_index)
+        raw = 0 if self.max_value <= 0 else min(self.num_bins - 1, int((value / self.max_value) * self.num_bins))
+        bin_index = max(0, raw)
         self._counts[bin_index] += 1
 
     @property
@@ -89,12 +94,12 @@ class RoutingCounters:
 
         self._step_count += 1
         self._active_tokens_sum += active_tokens
-        self._active_tokens_min = active_tokens if self._active_tokens_min is None else min(self._active_tokens_min, active_tokens)
-        self._active_tokens_max = active_tokens if self._active_tokens_max is None else max(self._active_tokens_max, active_tokens)
+        self._active_tokens_min = _update_min(self._active_tokens_min, active_tokens)
+        self._active_tokens_max = _update_max(self._active_tokens_max, active_tokens)
         self._active_blocks_sum += active_blocks
         self._active_experts_sum += active_experts
-        self._active_experts_min = active_experts if self._active_experts_min is None else min(self._active_experts_min, active_experts)
-        self._active_experts_max = active_experts if self._active_experts_max is None else max(self._active_experts_max, active_experts)
+        self._active_experts_min = _update_min(self._active_experts_min, active_experts)
+        self._active_experts_max = _update_max(self._active_experts_max, active_experts)
         self._active_parameters_sum += active_parameters
         self._dropped_tokens_sum += dropped_tokens
         self._padded_tokens_sum += padded_tokens
@@ -102,22 +107,26 @@ class RoutingCounters:
             self._entropy_values.append(entropy)
         self._histogram.add(active_tokens)
 
-        if self.mode == InstrumentationMode.TRACE and self.trace_every_n_steps > 0:
-            if step % self.trace_every_n_steps == 0:
-                if len(self._trace_buffer) == self._trace_buffer.maxlen:
-                    self._dropped_trace_count += 1
-                self._trace_buffer.append(
-                    {
-                        "step": step,
-                        "active_tokens": active_tokens,
-                        "active_blocks": active_blocks,
-                        "active_experts": active_experts,
-                        "active_parameters": active_parameters,
-                        "dropped_tokens": dropped_tokens,
-                        "padded_tokens": padded_tokens,
-                        "entropy": entropy,
-                    }
-                )
+        trace_this_step = (
+            self.mode == InstrumentationMode.TRACE
+            and self.trace_every_n_steps > 0
+            and step % self.trace_every_n_steps == 0
+        )
+        if trace_this_step:
+            if len(self._trace_buffer) == self._trace_buffer.maxlen:
+                self._dropped_trace_count += 1
+            self._trace_buffer.append(
+                {
+                    "step": step,
+                    "active_tokens": active_tokens,
+                    "active_blocks": active_blocks,
+                    "active_experts": active_experts,
+                    "active_parameters": active_parameters,
+                    "dropped_tokens": dropped_tokens,
+                    "padded_tokens": padded_tokens,
+                    "entropy": entropy,
+                }
+            )
 
     def snapshot(self) -> RoutingAggregate:
         entropy_mean = (

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class VRAMMeter:
-    def __init__(self, device: "torch.device | str | int" = "cuda") -> None:
+    def __init__(self, device: torch.device | str | int = "cuda") -> None:
         self.device = device
 
     @property
