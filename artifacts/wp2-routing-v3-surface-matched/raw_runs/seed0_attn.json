@@ -1,0 +1,18 @@
+{
+  "seed": 0,
+  "lambda_use": 1.0,
+  "local_w": 2,
+  "controller": "attn",
+  "eval": {
+    "fixed_capacity_K": 512,
+    "n_far": 516,
+    "learned_loss": 0.8875397443771362,
+    "random_loss": 0.9307480454444885,
+    "all_global_loss": 0.0017690499080345035,
+    "all_local_loss": 1.8597270250320435,
+    "route_balanced_acc": 0.5234389305114746,
+    "route_symmetric_nmi": 0.0015857049251491897,
+    "route_auroc": 0.5285433070866141,
+    "induced_route_fraction": 0.999996542930603
+  }
+}

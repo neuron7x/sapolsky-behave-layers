@@ -157,3 +157,41 @@ mechanism wins everything (`λ=2` above — over-penalized).
    constrained argmax varies before committing cloud compute.
 3. The plasticity direction is worth a fresh, cost-aware, preregistered oracle
    run — the math says the value is there once cost is in the objective.
+
+## 9. Route-decision cost — a necessary discount on the oracle gap
+
+Sections 1–8 treat the oracle gap `G` as the value of adaptive control. That is an
+*upper bound*: it assumes the controller can identify the right choice for free. A
+learned controller must actually *compute* which mechanism a context needs, at some
+cost `c_route`. The realized value is therefore
+
+```
+V_realized = G − c_route.
+```
+
+Two empirical anchors (`artifacts/wp2-routing-v3-*`, 8 seeds each) pin the extremes:
+
+- **`c_route ≈ 0` (surface-leaky benchmark).** On the S-R-O task, difficulty
+  correlates with cheap surface features (length, histogram; leakage_probe AUROC=1.0).
+  A REINFORCE controller with objective `L = L_task + λ·C_use` recovers oracle-level
+  routing (AUROC 1.0, learned loss 0.009 vs random 0.48) — but **only at λ ≥ 1**
+  (a binding budget), confirming §6: at λ ≤ 0.5 the quality-dominant mechanism wins
+  everywhere and the route inverts. Crucially, this also shows the earlier
+  straight-through *collapse* was an **optimization artifact**, not an absence of
+  signal — the identifiability was real, the estimator was too weak.
+
+- **`c_route ≈ c_expensive` (surface-matched benchmark).** When EASY/HARD are matched
+  in length, first token, and token histogram, and differ only in a structural
+  property (distance between the two occurrences of a duplicated value), no controller
+  — neither a cheap mean-pool MLP nor an O(L²) self-attention controller — routes
+  above chance (AUROC ~0.51, no loss saving), **even trained by direct supervision on
+  the route label**. The difficulty signal is not cheaply computable: deciding the
+  route requires ~the same search the expensive mechanism performs, so `V_realized ≈ 0`
+  despite a large `G`.
+
+**Consequence.** A positive oracle gap (§1–8) is necessary but not sufficient for a
+usable adaptive architecture. Before any compute-equivalent Pareto claim (Act J), the
+gap must be discounted by the *learned* route-decision cost on the target workload.
+The decisive question for real workloads is not merely "does difficulty vary?" but
+"is difficulty **cheaply predictable** from the input?" — an empirical property to
+measure with a cheap-probe-vs-oracle-probe gap before spending cloud compute.

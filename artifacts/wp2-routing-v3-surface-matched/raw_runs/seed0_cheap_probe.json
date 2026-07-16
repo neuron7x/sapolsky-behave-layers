@@ -1,0 +1,7 @@
+{
+  "seed": 0,
+  "controller": "cheap",
+  "mode": "supervised_probe",
+  "probe_auroc": 0.48105124214124395,
+  "probe_acc": 0.490234375
+}

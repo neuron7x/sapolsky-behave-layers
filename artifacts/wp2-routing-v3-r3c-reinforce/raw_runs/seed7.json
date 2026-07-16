@@ -1,0 +1,15 @@
+{
+  "seed": 7,
+  "lambda_use": 1.0,
+  "eval": {
+    "fixed_capacity_K": 512,
+    "n_hard": 518,
+    "learned_loss": 0.009245406836271286,
+    "random_loss": 0.47073230147361755,
+    "route_balanced_acc": 0.9942084848880768,
+    "route_symmetric_nmi": 0.9539565087207689,
+    "route_auroc": 1.0,
+    "semantic_used": 512,
+    "induced_route_fraction": 0.5060952305793762
+  }
+}

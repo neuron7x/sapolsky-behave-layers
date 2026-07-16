@@ -1,0 +1,57 @@
+{
+  "experiment": "wp2-routing-v3-surface-matched",
+  "verdict": "ROUTE_DECISION_IS_THE_COMPUTATION",
+  "resolves": "H_route-is-compute",
+  "arms": {
+    "cheap_reinforce": {
+      "n": 8,
+      "mean_auroc": 0.5081,
+      "auroc_ci95": [
+        0.5013,
+        0.5152
+      ],
+      "mean_learned_loss": 0.9127,
+      "mean_random_loss": 0.9244,
+      "paired_diff_ci95_upper": 0.0176,
+      "mean_balanced_acc": 0.5098,
+      "all_global_loss": 0.0018,
+      "all_local_loss": 1.8597
+    },
+    "cheap_probe": {
+      "n": 8,
+      "mean_probe_auroc": 0.4897,
+      "probe_auroc_ci95": [
+        0.4796,
+        0.5003
+      ]
+    },
+    "attn_reinforce": {
+      "n": 8,
+      "mean_auroc": 0.5137,
+      "auroc_ci95": [
+        0.5052,
+        0.5215
+      ],
+      "mean_learned_loss": 0.9114,
+      "mean_random_loss": 0.9244,
+      "paired_diff_ci95_upper": 0.0198,
+      "mean_balanced_acc": 0.5105,
+      "all_global_loss": 0.0018,
+      "all_local_loss": 1.8597
+    },
+    "attn_probe": {
+      "n": 8,
+      "mean_probe_auroc": 0.498,
+      "probe_auroc_ci95": [
+        0.4897,
+        0.5056
+      ]
+    }
+  },
+  "no_arm_demonstrates_routing": true,
+  "note_on_auroc": "AUROC ~0.51 is statistically a hair above 0.5 but carries NO loss saving (learned_loss not < random_loss, paired UB not < 0) and balanced acc ~0.5 \u2014 practically chance; not routing.",
+  "supervised_probe_at_chance_both_controllers": true,
+  "benchmark_sanity_ok": true,
+  "interpretation": "On a surface-matched benchmark (leakage_probe ~0.5), NEITHER a cheap mean-pool controller NOR a self-attention controller can route FAR->global above chance under REINFORCE, AND neither can even LEARN the NEAR/FAR property under DIRECT supervision. The failure is therefore not RL credit-assignment and not controller weakness: the structural difficulty signal is not cheaply computable. Predicting the route costs ~the same as running the expensive mechanism, so routing saves nothing. This BOUNDS the routing claim: adaptive routing has cheap value ONLY when the 'which mechanism is needed' signal is cheaply computable from the input (e.g. surface cues, as in the leaky S-R-O benchmark where the same REINFORCE controller reached AUROC 1.0). It extends the identifiability theorem with a route-decision-cost term the original omitted.",
+  "companion_positive": "artifacts/wp2-routing-v3-r3c-reinforce/ (AUROC 1.0 WITH surface cues) \u2014 the contrast that localizes the value to cheap route-signal computability."
+}

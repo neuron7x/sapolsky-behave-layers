@@ -1,0 +1,7 @@
+{
+  "seed": 6,
+  "controller": "attn",
+  "mode": "supervised_probe",
+  "probe_auroc": 0.49864188488066896,
+  "probe_acc": 0.5146484375
+}

@@ -67,15 +67,16 @@
       "status": "PARTIAL",
       "done": [
         "R-A/R-B/R-C separated",
-        "R-C end-to-end (no leak, fixed budget) tested: ROUTING_END_TO_END_NOT_SUPPORTED (collapses)",
-        "corrected NMI/AUROC",
-        "causal interventions (forced/shuffled/frozen/module-swap)"
+        "R-C straight-through end-to-end: collapses (artifacts/wp2-routing-v3-r3c/)",
+        "R-C REINFORCE end-to-end: RECOVERS oracle routing AUROC 1.0 under binding budget (artifacts/wp2-routing-v3-r3c-reinforce/) -> the collapse was an ESTIMATOR ARTIFACT, not absent signal",
+        "surface-matched route-decision-cost test: ROUTE_DECISION_IS_THE_COMPUTATION (artifacts/wp2-routing-v3-surface-matched/) -- cheap+attn controllers route at chance even under direct supervision",
+        "corrected NMI/AUROC; causal interventions (forced/shuffled/frozen/module-swap)"
       ],
-      "finding": "the SUPPORTED routing result is R-B (value distillation) only; R-C (autonomous) collapses -> claim narrowed",
+      "finding": "end-to-end routing IS learnable (REINFORCE) once credit-assignment is fixed, but its value is localized to CHEAP route-signal computability: on a surface-matched benchmark routing saves nothing (route decision costs ~the expensive compute). Theory extended with a route-decision-cost discount on the oracle gap.",
       "todo": [
-        "better credit-assignment for R-C (REINFORCE/advantage, not gt-benefit)",
         "batch-composition invariance tests",
-        "capacity sweep 10-100%"
+        "capacity sweep 10-100%",
+        "cloud: real-workload route-decision-cost (cheap-probe vs oracle-probe gap)"
       ]
     },
     "G5_statistical_validity": {
