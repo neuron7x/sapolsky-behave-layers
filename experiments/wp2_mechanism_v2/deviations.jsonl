@@ -1,0 +1,1 @@
+{"ts":"2026-07-16","phase":"A3.1","change":"load-balance aux loss lb_coef=0.01 to break routing collapse","reason":"A3 failed reliability via straight-through collapse basin; standard MoE anti-collapse fix; coef frozen on 3 prev-collapsed seeds before full run","status":"preregistered"}

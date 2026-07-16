@@ -28,6 +28,7 @@ STEPS = 1500
 BATCH = 64
 LR = 1e-3
 VAL = 1024
+LB_COEF = 0.0   # load-balance aux-loss coefficient (A3.1 anti-collapse); 0 = original
 CONFIGS = [Mode.DENSE, Mode.RANDOM, Mode.FROZEN, Mode.FIXED, Mode.ORACLE, Mode.LEARNED]
 
 
@@ -116,7 +117,15 @@ def run_one(mode, seed, stage_marker, device):
         xb, yb, lb = generate_batch(TC, BATCH, gen, "cpu", has_marker=stage_marker)
         xb, yb, lb = xb.to(device), yb.to(device), lb.to(device)
         nonpad = yb.view(-1) != TC.pad_token
-        loss = F.cross_entropy(model(xb, task_label=lb, seq_seed=s).view(-1, MC.vocab_size)[nonpad], yb.view(-1)[nonpad])
+        logits = model(xb, task_label=lb, seq_seed=s)
+        loss = F.cross_entropy(logits.view(-1, MC.vocab_size)[nonpad], yb.view(-1)[nonpad])
+        if LB_COEF > 0 and mode == Mode.LEARNED and hasattr(model, "_soft"):
+            # Switch-style load balance: N * sum_i f_i * P_i, minimized when the
+            # batch uses both blocks — breaks the constant-policy collapse basin.
+            soft = model._soft                       # (B,2) gate probs
+            f = (soft.argmax(1).float().unsqueeze(1) == torch.tensor([0.0, 1.0], device=soft.device)).float().mean(0)
+            p = soft.mean(0)
+            loss = loss + LB_COEF * 2.0 * (f * p).sum()
         opt.zero_grad(set_to_none=True); loss.backward()
         torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
     ev = _eval(model, vx, vy, vl, vm, device)
@@ -136,10 +145,12 @@ def main():
     ap.add_argument("--seeds", type=int, nargs="+", default=list(range(8)))
     ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-mechanism-v2/raw_runs"))
     ap.add_argument("--steps", type=int, default=None)
+    ap.add_argument("--lb-coef", type=float, default=0.0)
     args = ap.parse_args()
-    global STEPS
+    global STEPS, LB_COEF
     if args.steps:
         STEPS = args.steps
+    LB_COEF = args.lb_coef
     device = "cuda" if torch.cuda.is_available() else "cpu"
     man = run_manifest(extra={"experiment": "wp2_mechanism_v2_A3", "steps": STEPS, "seeds": args.seeds})
     args.out.mkdir(parents=True, exist_ok=True)
