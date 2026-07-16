@@ -1,0 +1,54 @@
+name: cwc-quality
+
+# Reference-grade quality gate for the CWC WP-1 instrumentation subsystem only.
+# Scoped by path so it never runs on unrelated nanochat changes, and never
+# lints/typechecks nanochat's own (deliberately unlinted) source.
+on:
+  push:
+    paths:
+      - "cwc/**"
+      - "scripts/instrumentation_*.py"
+      - "scripts/export_cwc_instrumentation_bundle.py"
+      - "scripts/mutation_probe.py"
+      - "tests/test_instrumentation_*.py"
+      - "tests/test_mutation_kill_rate.py"
+      - "ruff.toml"
+      - "mypy.ini"
+      - "cwc-requirements-dev.txt"
+      - ".github/workflows/cwc-quality.yml"
+  pull_request:
+    paths:
+      - "cwc/**"
+      - "scripts/instrumentation_*.py"
+      - "tests/test_instrumentation_*.py"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install CWC dev tooling (no torch needed for the pure-logic gates)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r cwc-requirements-dev.txt
+
+      # torch/pynvml are optional here: the CUDA-marked and torch-importing
+      # tests skip on a CPU runner, and ruff/mypy target only pure-Python CWC
+      # code. The gate below is the CPU-portable subset.
+      - name: Lint (ruff)
+        run: python -m ruff check .
+
+      - name: Type check (mypy --strict, cwc package)
+        run: python -m mypy --config-file mypy.ini cwc/
+
+      - name: Tests + branch coverage (floor 95%, CPU subset)
+        run: |
+          python -m pytest -q -m "not slow and not mutation and not cuda" \
+            tests/test_instrumentation_*.py \
+            --cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=95
+
+      - name: Mutation kill-rate gate (100% over mathematical cores)
+        run: python scripts/mutation_probe.py

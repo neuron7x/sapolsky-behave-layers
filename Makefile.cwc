@@ -1,0 +1,45 @@
+# CWC WP-1 verification closure. Namespaced Makefile.cwc so it never shadows
+# any Makefile nanochat itself might add. Invoke: `make -f Makefile.cwc verify`.
+#
+# PY defaults to the exact-pinned venv resolved from nanochat's uv.lock; override
+# with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
+PY ?= .venv/bin/python
+
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev
+
+# The full gate, ordered cheapest-first so a fast failure surfaces first.
+verify: lint typecheck test coverage mutation
+	@echo "CWC-VERIFY: ALL GATES PASSED"
+
+lint:
+	$(PY) -m ruff check .
+
+typecheck:
+	$(PY) -m mypy --config-file mypy.ini cwc/ scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
+
+# Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
+test:
+	$(PY) -m pytest -q -m "not slow and not mutation" tests/test_instrumentation_*.py
+
+# Coverage gate. Floor 95% tolerates a CPU-only runner (where @cuda tests skip,
+# ~97%); on a CUDA host this reports ~99%.
+coverage:
+	$(PY) -m pytest -q -m "not slow and not mutation" tests/test_instrumentation_*.py \
+		--cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=95
+
+properties:
+	$(PY) -m pytest -q tests/test_instrumentation_properties.py
+
+determinism:
+	$(PY) -m pytest -q tests/test_instrumentation_determinism.py
+
+# Mutation gate: asserts 100% kill rate over the curated mathematical-core mutants.
+mutation:
+	$(PY) scripts/mutation_probe.py
+
+clean-pyc:
+	find . -path ./.git -prune -o -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	find . -name "*.pyc" -not -path "./.git/*" -delete 2>/dev/null || true
+
+install-dev:
+	VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
