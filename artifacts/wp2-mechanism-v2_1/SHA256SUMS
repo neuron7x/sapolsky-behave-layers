@@ -97,4 +97,5 @@ bcb47c6ba08bdada36eebed342a117fe576d8dcff8395e389bdfbaa0acc3178b  ./raw_runs/B_i
 7878a9e3a49f9448df9d76660b55cc84f1b7880513ade45607e16dd3ab11cc90  ./raw_runs/B_inferred/random/seed6.json
 b01892c7d3fd2429146fda58bfe2ff0054b94e79a42f4f56003244651cb95a3f  ./raw_runs/B_inferred/random/seed7.json
 af87fd84cd6cbb48595fd076934e71dc6e1f1d0d5305eff1ecd0d6812be67d23  ./RESULTS.md
+2233ec51d3f21d9952586a26787783c71158846c8c5dcde44e9abeb806de83f9  ./STAGE_B_CLOSURE.md
 3b05115dbbde50539c352daafb155a827e105d1eac00a100ad5b8a58b2b24a65  ./statistics/analysis.json

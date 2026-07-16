@@ -23,6 +23,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 LOCAL_WINDOW = 2  # w
+ROUTER_NOISE = 0.0  # training-time gaussian noise on router logits (A3.2 anti-collapse)
 
 
 class Mode(enum.Enum):
@@ -143,6 +144,10 @@ class MechModel(nn.Module):
             return torch.randint(0, 2, (B,), generator=g).to(dev)
         # LEARNED / FROZEN
         scores = self.ctrl(pooled)             # (B,2)
+        if self.training and ROUTER_NOISE > 0:
+            # noisy top-k gating (Shazeer et al.) — exploration to escape the
+            # constant-policy collapse basin in the inference regime.
+            scores = scores + torch.randn_like(scores) * ROUTER_NOISE
         hard = scores.argmax(dim=1)
         if self.training:
             soft = F.softmax(scores, dim=1)
