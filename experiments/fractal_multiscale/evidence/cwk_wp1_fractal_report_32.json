@@ -1,0 +1,226 @@
+{
+  "schema_version": "cwc_fractal_evidence.v1",
+  "protocol_id": "cwc_fractal_multiscale_v1",
+  "input_jsonl": "evidence/cwk_wp1_trace_32.jsonl",
+  "series_counts_by_scale": {
+    "micro": 32,
+    "meso": 32,
+    "macro": 32
+  },
+  "minimum_series_length": 16,
+  "sufficient_series_length": true,
+  "fractal_report": {
+    "status": "ok",
+    "end_timestamp": 96,
+    "scale_reports": {
+      "micro": {
+        "scale": "micro",
+        "aggregate_pressure": 0.9658042918134764,
+        "feature_metrics": {
+          "active_token_fraction": {
+            "box_dimension": 0.9354950570314274,
+            "hurst": 0.5680431696333008,
+            "roughness": 1.100602387364171,
+            "multiscale_entropy": {
+              "1": 1.0,
+              "2": 0.8960382325345574,
+              "4": 1.0
+            }
+          },
+          "gpu_kernel_p95_ms": {
+            "box_dimension": 0.7521390118994308,
+            "hurst": 0.6733939756448817,
+            "roughness": 0.551727263045049,
+            "multiscale_entropy": {
+              "1": 0.4488644887230294,
+              "2": 0.5435644431995964,
+              "4": 0.8112781244591328
+            }
+          },
+          "tpot_p50_ms": {
+            "box_dimension": 0.8892693729103449,
+            "hurst": 0.6714752049649579,
+            "roughness": 0.8109058497444867,
+            "multiscale_entropy": {
+              "1": 0.8960382325345574,
+              "2": 0.8112781244591328,
+              "4": 0.8112781244591328
+            }
+          },
+          "ttft_p50_ms": {
+            "box_dimension": 0.8892693729103449,
+            "hurst": 0.6714752049649582,
+            "roughness": 0.8109058497444867,
+            "multiscale_entropy": {
+              "1": 0.8960382325345574,
+              "2": 0.8112781244591328,
+              "4": 0.8112781244591328
+            }
+          }
+        }
+      },
+      "meso": {
+        "scale": "meso",
+        "aggregate_pressure": 0.8656686909530392,
+        "feature_metrics": {
+          "communication_bytes": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          },
+          "memory_bytes": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          },
+          "operational_intensity": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          },
+          "route_expert_fraction": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          }
+        }
+      },
+      "macro": {
+        "scale": "macro",
+        "aggregate_pressure": 0.8660254037828845,
+        "feature_metrics": {
+          "end_to_end_p95_ms": {
+            "box_dimension": 0.8892693729103449,
+            "hurst": 0.6714752049649582,
+            "roughness": 0.8109058497444867,
+            "multiscale_entropy": {
+              "1": 0.8960382325345574,
+              "2": 0.8112781244591328,
+              "4": 0.8112781244591328
+            }
+          },
+          "joules": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          },
+          "peak_vram_bytes": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          },
+          "total_flops": {
+            "box_dimension": 1.0,
+            "hurst": 0.5,
+            "roughness": 0.0,
+            "multiscale_entropy": {
+              "1": 0.0,
+              "2": 0.0,
+              "4": 0.0
+            }
+          }
+        }
+      }
+    },
+    "cross_scale_reports": [
+      {
+        "source_scale": "micro",
+        "target_scale": "meso",
+        "coherence": 0.964030404608827,
+        "mapped_pairs": [
+          [
+            "active_token_fraction",
+            "route_expert_fraction"
+          ],
+          [
+            "gpu_kernel_p95_ms",
+            "operational_intensity"
+          ]
+        ]
+      },
+      {
+        "source_scale": "meso",
+        "target_scale": "macro",
+        "coherence": 0.0023739921256165832,
+        "mapped_pairs": [
+          [
+            "operational_intensity",
+            "total_flops"
+          ],
+          [
+            "memory_bytes",
+            "peak_vram_bytes"
+          ]
+        ]
+      }
+    ],
+    "boundary": {
+      "distance": 0.29417941276902804,
+      "active": false,
+      "drivers": {
+        "macro.end_to_end_p95_ms.roughness": 0.8109058497444867,
+        "macro.joules.roughness": 0.0,
+        "macro.peak_vram_bytes.roughness": 0.0,
+        "macro.pressure": 0.8660254037828845,
+        "macro.total_flops.roughness": 0.0,
+        "meso->macro.coherence": 0.0023739921256165832,
+        "meso.communication_bytes.roughness": 0.0,
+        "meso.memory_bytes.roughness": 0.0,
+        "meso.operational_intensity.roughness": 0.0,
+        "meso.pressure": 0.8656686909530392,
+        "meso.route_expert_fraction.roughness": 0.0,
+        "micro->meso.coherence": 0.964030404608827,
+        "micro.active_token_fraction.roughness": 1.100602387364171,
+        "micro.gpu_kernel_p95_ms.roughness": 0.551727263045049,
+        "micro.pressure": 0.9658042918134764,
+        "micro.tpot_p50_ms.roughness": 0.8109058497444867,
+        "micro.ttft_p50_ms.roughness": 0.8109058497444867
+      }
+    },
+    "warnings": [],
+    "interpretation": "multiscale_diagnostic_not_capability_claim"
+  },
+  "null_evaluation": {
+    "observed_mean_coherence": 0.48320219836722184,
+    "null_mean_coherence": 0.4636448776750546,
+    "delta": 0.019557320692167257,
+    "empirical_p_value": 0.15422885572139303,
+    "bootstrap_ci95": [
+      0.45338823279188356,
+      0.47287322892348166
+    ],
+    "passed": false
+  },
+  "verdict": "FAILED_NULL_GATE",
+  "claim_boundary": "A passing report is evidence of multiscale organization in the measured trace only. It is not a claim of intelligence, biological equivalence, model capability, or causal mechanism without intervention tests."
+}

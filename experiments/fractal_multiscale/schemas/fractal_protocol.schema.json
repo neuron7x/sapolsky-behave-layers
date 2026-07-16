@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cwc-fractal.local/schemas/fractal_protocol.schema.json",
+  "title": "CWC Fractal Multiscale Protocol",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_id",
+    "status",
+    "hypothesis",
+    "scales",
+    "minimum_series_length",
+    "feature_mappings",
+    "diagnostics",
+    "null_models",
+    "acceptance_gates",
+    "claim_boundary"
+  ],
+  "properties": {
+    "protocol_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+    "status": {"enum": ["draft", "frozen", "executed", "superseded"]},
+    "hypothesis": {"type": "string", "minLength": 40},
+    "scales": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"enum": ["micro", "meso", "macro"]}
+    },
+    "minimum_series_length": {"type": "integer", "minimum": 16},
+    "feature_mappings": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_scale", "target_scale", "pairs"],
+        "properties": {
+          "source_scale": {"enum": ["micro", "meso", "macro"]},
+          "target_scale": {"enum": ["micro", "meso", "macro"]},
+          "pairs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "box_counting_dimension",
+          "hurst_rs",
+          "multiscale_entropy",
+          "roughness",
+          "cross_scale_coherence",
+          "boundary_distance"
+        ]
+      }
+    },
+    "null_models": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "time_shuffle_within_scale",
+          "phase_shift_target_scale",
+          "feature_permutation",
+          "block_bootstrap"
+        ]
+      }
+    },
+    "acceptance_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "require_all_scales",
+        "require_semantic_mappings",
+        "require_null_model_separation",
+        "min_coherence_delta_vs_null",
+        "max_p_value"
+      ],
+      "properties": {
+        "require_all_scales": {"type": "boolean"},
+        "require_semantic_mappings": {"type": "boolean"},
+        "require_null_model_separation": {"type": "boolean"},
+        "min_coherence_delta_vs_null": {"type": "number", "minimum": 0},
+        "max_p_value": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      }
+    },
+    "claim_boundary": {"type": "string", "minLength": 20}
+  }
+}

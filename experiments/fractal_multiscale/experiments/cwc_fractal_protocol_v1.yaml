@@ -1,0 +1,41 @@
+protocol_id: cwc_fractal_multiscale_v1
+status: frozen
+hypothesis: >-
+  CWC runtime traces contain measurable micro-meso-macro organization only if
+  explicit semantic cross-scale mappings show stronger coherence than null
+  controls under causal windows and sufficient time-series length.
+scales: [micro, meso, macro]
+minimum_series_length: 16
+feature_mappings:
+  - source_scale: micro
+    target_scale: meso
+    pairs:
+      - [active_token_fraction, route_expert_fraction]
+      - [gpu_kernel_p95_ms, operational_intensity]
+  - source_scale: meso
+    target_scale: macro
+    pairs:
+      - [operational_intensity, total_flops]
+      - [memory_bytes, peak_vram_bytes]
+diagnostics:
+  - box_counting_dimension
+  - hurst_rs
+  - multiscale_entropy
+  - roughness
+  - cross_scale_coherence
+  - boundary_distance
+null_models:
+  - time_shuffle_within_scale
+  - phase_shift_target_scale
+  - feature_permutation
+  - block_bootstrap
+acceptance_gates:
+  require_all_scales: true
+  require_semantic_mappings: true
+  require_null_model_separation: true
+  min_coherence_delta_vs_null: 0.05
+  max_p_value: 0.05
+claim_boundary: >-
+  A passing report is evidence of multiscale organization in the measured trace
+  only. It is not a claim of intelligence, biological equivalence, model
+  capability, or causal mechanism without intervention tests.

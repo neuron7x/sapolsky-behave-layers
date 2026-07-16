@@ -1,0 +1,8 @@
+{
+  "experiment": "cwc_fractal_multiscale",
+  "claim": "emergent multiscale/fractal organization",
+  "status": "NOT_SUPPORTED",
+  "verdict": "INSUFFICIENT_EVIDENCE",
+  "note": "WP-1 fractal diagnostic did not pass its null-model gate; no evidence of emergent multiscale structure. Preserved immutable (Act A). Superseded direction: first demonstrate a causal adaptive mechanism (routing v2 SUPPORTED), only then test multiscale emergence.",
+  "source_experiment": "experiments/fractal_multiscale/"
+}

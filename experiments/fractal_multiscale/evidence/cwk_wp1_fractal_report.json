@@ -1,0 +1,81 @@
+{
+  "schema_version": "cwc_fractal_evidence.v1",
+  "protocol_id": "cwc_fractal_multiscale_v1",
+  "input_jsonl": "/home/neuro7/Desktop/Системи в системах /sapolsky-behave-layers/cognitive-weave-kernel-v0.1.0/cognitive-weave-kernel/evidence/runs/wp1-instrumentation-smoke/metrics.jsonl",
+  "series_counts_by_scale": {
+    "micro": 1,
+    "meso": 1,
+    "macro": 1
+  },
+  "minimum_series_length": 16,
+  "sufficient_series_length": false,
+  "fractal_report": {
+    "status": "ok",
+    "end_timestamp": 3,
+    "scale_reports": {
+      "micro": {
+        "scale": "micro",
+        "aggregate_pressure": 0.0,
+        "feature_metrics": {}
+      },
+      "meso": {
+        "scale": "meso",
+        "aggregate_pressure": 0.0,
+        "feature_metrics": {}
+      },
+      "macro": {
+        "scale": "macro",
+        "aggregate_pressure": 0.0,
+        "feature_metrics": {}
+      }
+    },
+    "cross_scale_reports": [
+      {
+        "source_scale": "micro",
+        "target_scale": "meso",
+        "coherence": 0.16364195767035364,
+        "mapped_pairs": [
+          [
+            "active_token_fraction",
+            "route_expert_fraction"
+          ],
+          [
+            "gpu_kernel_p95_ms",
+            "operational_intensity"
+          ]
+        ]
+      },
+      {
+        "source_scale": "meso",
+        "target_scale": "macro",
+        "coherence": 0.001893935997162142,
+        "mapped_pairs": [
+          [
+            "operational_intensity",
+            "total_flops"
+          ],
+          [
+            "memory_bytes",
+            "peak_vram_bytes"
+          ]
+        ]
+      }
+    ],
+    "boundary": {
+      "distance": 0.7168928212664969,
+      "active": false,
+      "drivers": {
+        "macro.pressure": 0.0,
+        "meso->macro.coherence": 0.001893935997162142,
+        "meso.pressure": 0.0,
+        "micro->meso.coherence": 0.16364195767035364,
+        "micro.pressure": 0.0
+      }
+    },
+    "warnings": [],
+    "interpretation": "multiscale_diagnostic_not_capability_claim"
+  },
+  "null_evaluation": null,
+  "verdict": "INSUFFICIENT_EVIDENCE",
+  "claim_boundary": "A passing report is evidence of multiscale organization in the measured trace only. It is not a claim of intelligence, biological equivalence, model capability, or causal mechanism without intervention tests."
+}
