@@ -1,4 +1,6 @@
 # COGNITIVE SEMIOTIC AUDIT REPORT (LEVEL: PRINCIPAL-RESEARCH)
+
+> **SUPERSEDED 2026-07-16 by `DCSA_PROTOCOL_V2.md` + `DCSA_AUDIT_0002.md`.** Kept for provenance; v2 restates "grounding ratio UNDEFINED" as NOT_TESTED and adds claim-level bounds.
 ## SYSTEM METADATA & MATHEMATICAL CORES
 *   Target Architecture: `nanochat-cwc-baseline` = unmodified dense GPT (karpathy/nanochat, fixed depth, no conditional computation) + verified WP-1 instrumentation substrate (15 modules). All six CWC capability terms are tier **ABSENT** (see `CWC_SEMANTIC_CONTRACT.md`).
 *   Mathematical Bounds Applied: information-theoretic channel capacity (routing), categorical existence analysis (grounding functor 𝔾), measurement-theoretic admissibility. Riemannian curvature / FIM / IB objectives are **procedure-defined only**: they require a trained checkpoint, which does not exist in this environment. Provenance rule (project-wide): a numeric value may appear in this report only with a runnable procedure and evidence artifact; otherwise the field carries `NOT_MEASURED(unlock condition)` or `UNDEFINED`. This rule is itself the audit's primary finding-preventer: any DCSA report printing curvature/FIM/RSI numbers for this system today would be fabrication.
