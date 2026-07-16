@@ -1,0 +1,7 @@
+model: {type: named_group_transformer, vocab: 16, seq_len: 8, d_model: 32, n_head: 4}
+groups: [token_embedding, position_embedding, attention.qkv, attention.output, mlp.up, mlp.down, language_head]
+benchmark: {base: identity, tasks: [lexical_permutation, relational_shift]}
+allocations: [attn, mlp, head, embed]
+training: {pretrain_steps: 1500, adapt_steps: 300, batch: 128, lr: 0.003, retention_alpha: 1.0}
+seeds: [0,1,2,3,4]
+gate: {identifiable_if: "mean_oracle_gap>=0.05 AND lcb95>0"}

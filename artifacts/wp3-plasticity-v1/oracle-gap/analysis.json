@@ -1,0 +1,75 @@
+{
+  "present": true,
+  "n_seeds": 5,
+  "tasks": [
+    "lexical",
+    "relational"
+  ],
+  "allocations": [
+    "attn",
+    "mlp",
+    "head",
+    "embed"
+  ],
+  "mean_oracle_gap": 6.103515625e-05,
+  "oracle_gap_ci95": [
+    2.44140625e-05,
+    9.765625e-05
+  ],
+  "per_task_best_allocation_counts": {
+    "lexical": {
+      "mlp": 4,
+      "attn": 1
+    },
+    "relational": {
+      "attn": 5
+    }
+  },
+  "mean_utility": {
+    "lexical": {
+      "attn": 0.058349609375,
+      "mlp": 0.0584716796875,
+      "head": 0.0584716796875,
+      "embed": 0.0
+    },
+    "relational": {
+      "attn": 0.1821044921875,
+      "mlp": -0.3966796875,
+      "head": 0.1775634765625,
+      "embed": -0.1695556640625
+    }
+  },
+  "mean_new_acc": {
+    "lexical": {
+      "attn": 0.999853515625,
+      "mlp": 1.0,
+      "head": 1.0,
+      "embed": 0.7930419921875
+    },
+    "relational": {
+      "attn": 0.9999755859375,
+      "mlp": 0.2847412109375,
+      "head": 0.1813232421875,
+      "embed": 0.1507080078125
+    }
+  },
+  "mean_retention_drop": {
+    "lexical": {
+      "attn": 0.94150390625,
+      "mlp": 0.9415283203125,
+      "head": 0.9415283203125,
+      "embed": 0.7930419921875
+    },
+    "relational": {
+      "attn": 0.81787109375,
+      "mlp": 0.6814208984375,
+      "head": 0.003759765625,
+      "embed": 0.320263671875
+    }
+  },
+  "registry_checksums": [
+    "c8018274ee0d5b68c3c9117fdd2f5e7196ca677d334de8a364d735cc3ea64292"
+  ],
+  "verdict": "PLASTICITY_BENCHMARK_NOT_IDENTIFIABLE",
+  "verdict_note": "Identifiable only if per-task oracle allocation beats the best FIXED allocation (LCB95>0, gap>=0.05). If one group (e.g. attention) is best for every task, adaptive per-group plasticity has no advantage over always updating that group \u2014 governor training is not justified (\u00a711.4)."
+}

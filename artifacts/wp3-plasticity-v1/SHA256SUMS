@@ -1,0 +1,11 @@
+890f74a2a70543684bb80afae6b4635b82ac159969e93bbe77741321a48273bc  ./manifest.json
+7af6be53b6c2b24dea5d3516c1c28e052b43a7d7f35b6cb01aa6f54acd8fbf34  ./oracle-gap/analysis.json
+8c63f20b184931c93c4ae4a2260c241c0782c2cfc5d4b67cf2cf6dcb4047420c  ./oracle-gap/raw_runs/seed0.json
+7ba55eee524033298090870d345dd1b9929eb764e7182efb0600d20ce5127247  ./oracle-gap/raw_runs/seed1.json
+824f55e781db3bf1a6a8dac55718c790c4cc317d147ced54855a6b51a9f89a96  ./oracle-gap/raw_runs/seed2.json
+757aa30b4978865c8a531103f4a82512d5dc7e6770ddaa80bbae7cc19b446d35  ./oracle-gap/raw_runs/seed3.json
+659d78f1fae72e82fe8dbd5c7e3d2576e22fa310733888ddad638e8370c94a60  ./oracle-gap/raw_runs/seed4.json
+5be4d37526002eed829aa61f1d49419f68c6e035aab0b30bbbe9902b47206632  ./oracle-gap/verdict.json
+59308cafda18a02192b7fae250ed84aead9ae74a369ed0e3a8f63b2cfdbd7b68  ./PREREGISTRATION.md
+d6527216e5a8b6e391fe6558045d6161e126c67f1145b4c621bb2a5a5258ede8  ./protocol.yaml
+d9e738b2fdeb7174ca87779b584790dfb041c373ce21d61f9c7802946ca22b32  ./RESULTS.md

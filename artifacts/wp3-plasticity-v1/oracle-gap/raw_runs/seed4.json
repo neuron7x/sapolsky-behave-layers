@@ -1,0 +1,76 @@
+{
+  "seed": 4,
+  "registry_checksum": "c8018274ee0d5b68c3c9117fdd2f5e7196ca677d334de8a364d735cc3ea64292",
+  "n_groups": 7,
+  "base_pretrain_acc": 1.0,
+  "tasks": {
+    "lexical": {
+      "attn": {
+        "new_acc": 0.9998779296875,
+        "base_before": 1.0,
+        "base_after": 0.0584716796875,
+        "retention_drop": 0.9415283203125,
+        "utility": 0.058349609375,
+        "cost_params": 4096
+      },
+      "mlp": {
+        "new_acc": 1.0,
+        "base_before": 1.0,
+        "base_after": 0.0584716796875,
+        "retention_drop": 0.9415283203125,
+        "utility": 0.0584716796875,
+        "cost_params": 8192
+      },
+      "head": {
+        "new_acc": 1.0,
+        "base_before": 1.0,
+        "base_after": 0.0584716796875,
+        "retention_drop": 0.9415283203125,
+        "utility": 0.0584716796875,
+        "cost_params": 512
+      },
+      "embed": {
+        "new_acc": 0.732666015625,
+        "base_before": 1.0,
+        "base_after": 0.21875,
+        "retention_drop": 0.78125,
+        "utility": -0.048583984375,
+        "cost_params": 512
+      }
+    },
+    "relational": {
+      "attn": {
+        "new_acc": 1.0,
+        "base_before": 1.0,
+        "base_after": 0.18212890625,
+        "retention_drop": 0.81787109375,
+        "utility": 0.18212890625,
+        "cost_params": 4096
+      },
+      "mlp": {
+        "new_acc": 0.26171875,
+        "base_before": 1.0,
+        "base_after": 0.3250732421875,
+        "retention_drop": 0.6749267578125,
+        "utility": -0.4132080078125,
+        "cost_params": 8192
+      },
+      "head": {
+        "new_acc": 0.1802978515625,
+        "base_before": 1.0,
+        "base_after": 1.0,
+        "retention_drop": 0.0,
+        "utility": 0.1802978515625,
+        "cost_params": 512
+      },
+      "embed": {
+        "new_acc": 0.126708984375,
+        "base_before": 1.0,
+        "base_after": 0.6505126953125,
+        "retention_drop": 0.3494873046875,
+        "utility": -0.2227783203125,
+        "cost_params": 512
+      }
+    }
+  }
+}
