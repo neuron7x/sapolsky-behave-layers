@@ -1,0 +1,10 @@
+{
+  "benchmark": "wp2_routing_v2 typed_semantic",
+  "surface_probe_auroc": {
+    "length": 1.0,
+    "first_token": 0.8335973218708793,
+    "histogram": 1.0
+  },
+  "verdict": "BENCHMARK_INVALID_SURFACE_LEAKAGE",
+  "note": "Surface-only probes (length, histogram) perfectly classify EASY vs HARD (AUROC 1.0) -> the routing benchmark leaks format; a router could classify surface rather than estimate mechanism need. Fixed by experiments/wp2_routing_v2/src/surface_matched_task.py (duplicate-distance task: identical length/histogram, structural NEAR/FAR class; probes ~0.5)."
+}
