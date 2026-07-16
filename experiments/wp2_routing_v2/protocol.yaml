@@ -1,0 +1,20 @@
+# WP-2 routing v2 — typed semantic routing. Frozen before analysis.
+task:
+  name: semantic_tuple_route
+  vocab_size: 40
+  seq_len: 12
+  l_out: 4
+  p_hard: 0.5
+  split: compositional  # test tuples never seen in training
+paths:
+  direct: {type: local_attention, window: 1, reads: [0,1,2,3]}   # fails HARD structurally
+  semantic: {parser: global+4heads+conf, renderer: state_only}
+controller: {need_score: scalar, selection: hard_topk, capacity: 32, batch: 64}
+training:
+  path_steps: 2000
+  ctrl_steps: 1500
+  lr: 0.001
+  ctrl_objective: benefit_regression   # need ~ (direct_loss - sem_loss); label-free
+modes: [DENSE_SEMANTIC, DIRECT_ONLY, ORACLE, RANDOM, FROZEN, LEARNED, SHUFFLED_LEARNED]
+seeds: {oracle_gap: [0,1,2,3,4], final: [0,1,2,3,4,5,6,7]}
+energy: {status: EXCLUDED, reason: INSTRUMENT_INVALID}
