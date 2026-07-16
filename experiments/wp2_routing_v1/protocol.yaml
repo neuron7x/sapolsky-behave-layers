@@ -3,7 +3,7 @@ task:
   name: in_context_associative_recall
   vocab_size: 64
   seq_len: 128
-  n_pairs: 24          # (key,value) pairs before the query
+  n_pairs: 6          # (key,value) pairs before the query
   key_range: [4, 34]   # 30 possible keys
   value_range: [34, 64] # 30 possible values
   query_token: 1
@@ -23,10 +23,10 @@ controller:
   deterministic_inference: true
 
 training:
-  steps: 3000
+  steps: 2500
   batch_size: 64
   optimizer: adamw
-  lr: 0.0003
+  lr: 0.001
   weight_decay: 0.01
   warmup_steps: 100
   grad_clip: 1.0
