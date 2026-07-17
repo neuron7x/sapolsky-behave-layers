@@ -1,5 +1,15 @@
 # Cognitive Wiring Core (CWC)
 
+> **Fork notice.** This repository is a fork of
+> [github.com/karpathy/nanochat](https://github.com/karpathy/nanochat) (MIT License —
+> full credit to Andrej Karpathy and nanochat's contributors for the base
+> implementation; the `master`/`baseline` branches here are the unmodified upstream
+> history). The original contribution in this repository — Cognitive Wiring Core
+> (CWC) / Sapolsky-behavioral-layers research — is by Yaroslav Vasylenko, primarily on
+> the `wp1-instrumentation` branch (this GitLab project's default branch). See
+> [`CITATION.cff`](CITATION.cff) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+> for full attribution detail.
+
 An **evidence-first research programme** investigating whether a causally-controlled
 adaptive-computation architecture beats static Transformers / MoE / dynamic-compute
 systems at equal budget. This repository is the laboratory: a verified measurement
