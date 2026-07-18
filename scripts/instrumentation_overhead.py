@@ -19,7 +19,10 @@ import json
 import time
 from pathlib import Path
 
-import torch
+try:
+    import torch
+except ModuleNotFoundError:  # CPU-only CI: the GPU benchmark below needs torch,
+    torch = None  # type: ignore[assignment]  # but the pure stat helpers re-exported here do not.
 
 from cwc.instrumentation.event_buffer import EventPool
 from cwc.instrumentation.noop import NullRunMeter
