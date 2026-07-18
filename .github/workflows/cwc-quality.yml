@@ -50,7 +50,7 @@ jobs:
         run: |
           python -m pytest -q -m "not slow and not mutation and not cuda" \
             tests/test_instrumentation_*.py \
-            --cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=95
+            --cov=cwc/instrumentation --cov-branch --cov-report=term-missing --cov-fail-under=95
 
       - name: Mutation kill-rate gate (100% over mathematical cores)
         run: python scripts/mutation_probe.py

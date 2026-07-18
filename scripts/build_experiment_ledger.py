@@ -21,9 +21,17 @@ def _sha_of_sums(d: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else ""
 
 
+def _evidence_commit(bundle: Path) -> str:
+    # The commit that last touched this evidence bundle — a property of the
+    # evidence itself, so regeneration is deterministic across later doc commits.
+    # (Recording live HEAD instead would make this file self-invalidating: every
+    # commit that includes the ledger advances HEAD, so the field could never be
+    # reproduced under `git diff --exit-code` in CI.)
+    return subprocess.run(["git", "log", "-1", "--format=%H", "--", str(bundle)],
+                          cwd=ROOT, capture_output=True, text=True).stdout.strip()
+
+
 def main() -> None:
-    head = subprocess.run("git rev-parse HEAD", shell=True, cwd=ROOT,
-                          capture_output=True, text=True).stdout.strip()
     records = []
     for d in sorted(ART.rglob("verdict.json")):
         bundle = d.parent
@@ -38,7 +46,7 @@ def main() -> None:
             "verdict": v.get("verdict", v.get("status", "SEE_verdict.json")),
             "experiment": v.get("experiment", bundle.name),
             "n_seeds": v.get("n_seeds"),
-            "git_commit_current": head,
+            "evidence_commit": _evidence_commit(bundle),
             "sha256sums_hash": _sha_of_sums(bundle),
             "has_checksums": (bundle / "SHA256SUMS").exists(),
         })

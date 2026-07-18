@@ -1,0 +1,53 @@
+# CWC evidence-substrate CI (GitLab).
+# Mirrors the two GitHub workflows (.github/workflows/cwc-*.yml), which stay
+# committed for portability. Two independent gates:
+#   quality  — ruff + mypy --strict + branch-coverage floor + mutation kill-rate
+#   docs     — doc-status gate + evidence checksums + regeneration determinism
+# Both are CPU-portable: torch/pynvml are optional (CUDA/torch tests skip), and
+# the doc scripts are pure stdlib, so no heavy environment sync is needed.
+
+stages:
+  - quality
+  - docs
+
+default:
+  image: python:3.10
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+quality:
+  stage: quality
+  cache:
+    key: pip-cwc
+    paths:
+      - .cache/pip
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install -r cwc-requirements-dev.txt
+  script:
+    - python -m ruff check .
+    - python -m mypy --config-file mypy.ini cwc/
+    - >
+      python -m pytest -q -m "not slow and not mutation and not cuda"
+      tests/test_instrumentation_*.py
+      --cov=cwc/instrumentation --cov-branch --cov-report=term-missing --cov-fail-under=95
+    - python scripts/mutation_probe.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+
+# Doc/evidence gate needs full history for the ledger's per-bundle commit lookup
+# and the doc-status ancestry check.
+docs:
+  stage: docs
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - PYTHONPATH=. python scripts/doc_status_gate.py
+    - make -f Makefile.cwc PY=python verify-evidence
+    - make -f Makefile.cwc PY=python docs-regen
+    - git diff --exit-code docs/lab/EXPERIMENT_LEDGER.jsonl docs/vnv/DOCUMENT_STATUS_REGISTER.csv
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
