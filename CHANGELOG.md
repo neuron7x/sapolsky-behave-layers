@@ -17,6 +17,16 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Unified adaptive-computation value theory** (`docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md`
+  + `experiments/common/adaptive_value_theory.py`): six proved theorems unifying the
+  oracle gap, the Pinsker information bound, and the route-decision cost into one
+  master inequality `V_net ≤ min{G(λ), Δu·√(I/2)} − c_route`. Strengthens the two
+  one-directional gap corollaries to an exact `⇔` (Theorem 2) and adds a bounded
+  identifiability window with an explicit cost-saturation threshold `λ★=Δu/δ`
+  (Theorem 5). Each theorem is independently re-derived and adversarially
+  falsification-tested to ≈10⁻¹⁵ over 10⁴ random decision problems; the exactness
+  assertions in the test suite kill any bound-loosening mutation. Mathematical
+  scaffolding only — no new `claim_registry.json` entry.
 - Read-only semantic evidence validator wired into CI and canonical verification.
 - Corrective WP4 v2 evidence bundle with strict <=1% compute parity reporting.
 - Exact-total-compute input-blind allocator and explicitly exploratory pilot.

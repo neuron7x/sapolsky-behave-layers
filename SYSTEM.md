@@ -49,6 +49,15 @@ dominance) and both positives (routing v2, and the plasticity revival — gap
 0.19 under a cost budget). Ships a cheap `O(|C||A|)` predictor to run on a pilot
 before spending cloud compute (`scripts/identifiability_theory.py`).
 
+**Unified value theory** (`docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md`): the oracle
+gap, the Pinsker information bound, and the route-decision cost are three faces of
+one master inequality `V_net ≤ min{ G(λ), Δu·√(I(C;Z)/2) } − c_route`. Adaptivity
+pays only in the intersection of three admissible regions (no mechanism dominance,
+enough signal information, decision cheaper than its value). Six theorems, each
+proved and adversarially falsification-tested to ≈10⁻¹⁵ over 10⁴ random problems by
+`experiments/common/adaptive_value_theory.py` (+ suite in `experiments/common/tests/`).
+It is a *mathematical* scaffolding under L1/L2b/L2p — no new empirical claim.
+
 **Route-decision-cost extension** (from `artifacts/wp2-routing-v3-*`): a positive
 oracle gap is necessary but NOT sufficient for *usable* adaptive routing. The
 controller must also be able to compute *which* mechanism is needed more cheaply
