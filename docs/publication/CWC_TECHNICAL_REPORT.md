@@ -7,9 +7,11 @@ committed evidence bundle; no result is claimed beyond its gate.
 We ask whether *causally-controlled* adaptive computation can beat static computation at
 equal budget. Rather than assert an architecture, we build a verified measurement
 substrate and a falsification harness, and report what survives. We contribute: (1) an
-**identifiability theorem** — the value of adaptive control is the context×choice
-interaction `γ`, realized only under a binding budget; (2) an exact verification that
-adaptive allocation beats best-static by **P(m>K)** (max error 0.0000, 8×4); (3) a
+**identifiability proposition** — under the stated additive model, the value of adaptive
+control is the context×choice interaction `γ`, realized only under a binding budget;
+(2) an executable positive control verifying the same-sample identity adaptive−static
+= **P_sample(m>K)** under an exact halt oracle (8×4), explicitly not an exactly
+compute-matched Pareto result; (3) a
 dissection of learned routing into **credit-assignment** and **route-decision cost**,
 showing a leakage-free controller recovers oracle routing under a binding budget but
 that on a surface-matched task **the route decision costs as much as the computation**;
@@ -46,8 +48,10 @@ an autonomous-routing claim.
 ## 6. Results
 - **Identifiability (L1):** oracle gap 99.8%, LCB95>0 — a benchmark with a real
   adaptive-compute advantage exists.
-- **Allocation (L2′):** adaptive allocation beats best-static by exactly `P(m>K)`, max
-  error 0.0000 across 8 seeds × 4 regimes, beating input-blind random depth.
+- **Allocation positive control (L2′):** the exact synthetic halt-oracle substrate
+  verifies adaptive−static = `P_sample(m>K)` across 8 seeds × 4 regimes. Because both
+  sides use the same sampled difficulties and `K=round(E_sample[m])`, this is an
+  executable identity, not an independent prediction or exact compute-parity result.
 - **Routing credit-assignment (L2a):** the earlier straight-through end-to-end *collapse*
   was an estimator artifact; a REINFORCE controller (`L=L_task+λ·C_use`, no privileged
   target, label-free capacity) reaches AUROC 1.0 (learned 0.009 vs random 0.48, 8 seeds)
@@ -70,14 +74,17 @@ All results reproduce in seconds–minutes on CPU / RTX 3050; $0. Energy INSTRUM
 → excluded. Cloud tiers for a scale claim: `EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
 
 ## 10. Limitations & claim boundary
-Synthetic-only, small-scale, no scale Pareto, no independent replication (see
-`LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md`, `claim_registry.json`).
+Synthetic-only, small-scale, no scale Pareto, no independent replication. Several
+historical protocols and results entered Git together and are not auditable
+preregistrations. WP4 uses an exact halt oracle and its archived compute match was
+approximate, not exact. See `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`,
+`LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md`, and `claim_registry.json`.
 
 ## 11. Reproducibility
 `make -f Makefile.cwc verify && make reproduce-primary`; per-result commands in
 `RESULT_TO_SCRIPT_MATRIX.csv`.
 
 ## 12. Conclusion
-CWC does not (yet) show an architecture that wins at scale. It shows, causally and
-reproducibly, *where* adaptive-compute value comes from and *when it vanishes* — a
-falsification-first foundation for the decisive cloud experiment.
+CWC does not (yet) show an architecture that wins at scale. It supplies a tested
+instrumentation substrate, narrow synthetic mechanisms, and falsification hypotheses
+for the decisive real-workload experiment.

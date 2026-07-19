@@ -5,10 +5,10 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence reproduce-primary make-release doc-gate docs-regen
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate docs-regen
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
-verify: lint typecheck test coverage mutation experiment-tests doc-gate
+verify: lint typecheck test coverage mutation experiment-tests validate-evidence doc-gate
 	@echo "CWC-VERIFY: ALL GATES PASSED"
 
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
@@ -29,12 +29,14 @@ typecheck:
 
 # Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
 test:
-	$(PY) -m pytest -q -m "not slow and not mutation" tests/test_instrumentation_*.py
+	$(PY) -m pytest -q -m "not slow and not mutation" \
+		tests/test_instrumentation_*.py tests/test_evidence_validation.py
 
 # Coverage gate. Floor 95% tolerates a CPU-only runner (where @cuda tests skip,
 # ~97%); on a CUDA host this reports ~99%.
 coverage:
-	$(PY) -m pytest -q -m "not slow and not mutation" tests/test_instrumentation_*.py \
+	$(PY) -m pytest -q -m "not slow and not mutation" \
+		tests/test_instrumentation_*.py experiments/wp3_plasticity_v1/tests/ \
 		--cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=95
 
 properties:
@@ -56,8 +58,11 @@ reproduce-mechanism:
 	PYTHONPATH=. $(PY) experiments/wp2_mechanism_v2/src/analyze_mech.py
 
 verify-evidence:
-	@for d in artifacts/wp1-release artifacts/wp2-routing-v1 artifacts/wp2-routing-v1_1 artifacts/wp2-mechanism-v2 artifacts/wp2-mechanism-v2_1 artifacts/wp2-routing-v2 artifacts/wp3-rcfr artifacts/wp3-plasticity-v1 artifacts/wp4-adaptive-depth artifacts/wp2-routing-v3-r3c artifacts/wp2-routing-v3-r3c-reinforce artifacts/wp2-routing-v3-surface-matched; do \
+	@for d in artifacts/wp1-release artifacts/wp2-routing-v1 artifacts/wp2-routing-v1_1 artifacts/wp2-mechanism-v2 artifacts/wp2-mechanism-v2_1 artifacts/wp2-routing-v2 artifacts/wp3-rcfr artifacts/wp3-plasticity-v1 artifacts/wp4-adaptive-depth artifacts/wp4-adaptive-depth-v2 artifacts/wp4-exact-compute-pilot artifacts/wp2-routing-v3-r3c artifacts/wp2-routing-v3-r3c-reinforce artifacts/wp2-routing-v3-surface-matched; do \
 		if [ -f $$d/SHA256SUMS ]; then echo "checking $$d"; (cd $$d && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; fi; done
+
+validate-evidence:
+	PYTHONPATH=. $(PY) scripts/validate_evidence.py
 
 reproduce-primary:
 	PYTHONPATH=. $(PY) scripts/reproduce_primary.py

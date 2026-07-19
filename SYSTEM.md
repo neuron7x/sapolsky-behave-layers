@@ -13,12 +13,11 @@ compute allocation achieves the theory-predicted Jensen gap) and **four
 claim-tier negatives**, plus a **mathematical theory** that unifies and predicts
 them all. It is not yet an architecture with a proven Pareto advantage at scale.
 
-**Sharpest result** (`artifacts/wp4-adaptive-depth/`): the first narrow causal
-mechanism whose advantage cannot be explained by static architecture, capacity,
-or optimization — adaptive allocation of a fixed compute budget beats the best
-static allocation by *exactly* `P(m>K)`, predicted from the task's difficulty
-distribution before the run, confirmed to machine precision (max error 0.0000)
-over 8 seeds × 4 regimes, beating input-blind random depth at equal compute.
+**WP4 corrected interpretation** (`docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`):
+the substrate verifies the algebraic identity adaptive−static =
+`P_sample(m>K)` under an exact halt oracle. It is a useful positive control, not
+an independently predicted empirical effect or an exactly compute-matched Pareto
+result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |
@@ -28,7 +27,7 @@ over 8 seeds × 4 regimes, beating input-blind random depth at equal compute.
 | L2 routing causality | learned controller routes causally, beats all controls | **SUPPORTED (NARROWED)** — under counterfactual value distillation, label-derived test capacity, surface cues present, no physical compute saving; see `artifacts/wp2-routing-v2/claim_boundary.json` | `artifacts/wp2-routing-v2/` bal 1.0, NMI 1.0, AUROC 1.0, 8 seeds |
 | L2a end-to-end routing (leaky benchmark) | leakage-free-*target* controller routes without value distillation | **SUPPORTED under a binding budget** — the earlier straight-through *collapse* was an estimator artifact; a REINFORCE controller (L=L_task+λ·C_use) reaches AUROC 1.0 with NO privileged target / NO label-derived capacity — but only at λ≥1 (binding budget), and surface cues are still present | `artifacts/wp2-routing-v3-r3c-reinforce/` learned 0.009 vs random 0.48, 8 seeds |
 | L2b route-decision cost (surface-matched) | can a cheap controller route when difficulty is purely structural? | **NO — ROUTE_DECISION_IS_THE_COMPUTATION** | `artifacts/wp2-routing-v3-surface-matched/` — on a surface-matched task neither a cheap nor an attention controller routes above chance (AUROC ~0.51, no loss saving) even under *direct supervision*; predicting the route costs ~the expensive computation |
-| L2′ adaptive-compute Jensen gap | adaptive allocation beats best static by exactly P(m>K), not capacity/compute/optimization | **SUPPORTED** | `artifacts/wp4-adaptive-depth/` gap=P(m>K) to 0.0000, 8 seeds × 4 regimes, beats random |
+| L2′ synthetic allocation identity | halt-oracle adaptive−static equals empirical tail mass P_sample(m>K) | **SUPPORTED_NARROWED** | archived WP4 bundle + epistemic correction; no exact compute-parity claim |
 | L3 functional reuse (RCFR) | one module = many functions, novel | **NOT_SUPPORTED** | `artifacts/wp3-rcfr/` — real but ties DISeL (prior art) |
 | L4 controlled plasticity | budgeted metaplasticity governor helps | **NOT_TESTED** | `artifacts/wp3-plasticity-v1/` — benchmark not identifiable UNBUDGETED (see theory) |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |

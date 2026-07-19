@@ -3,6 +3,27 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Unreleased remediation] — 2026-07-19
+
+### Corrected
+- Canonical coverage gate now includes plasticity and passes at 96.59% rather
+  than failing at 76.32%.
+- WP4 process-randomized seed derivation replaced by SHA-256-derived seeds;
+  reproduction now writes only to an isolated temporary directory.
+- Experiment-level LCG bootstrap replaced after it was shown to produce
+  degenerate intervals for `n=8`; two-sided intervals and regression tests added.
+- Archived WP4 interpretation narrowed to a same-sample synthetic identity;
+  approximate compute parity and historical same-commit preregistration claims
+  withdrawn in a superseding epistemic correction.
+
+### Added
+- Read-only semantic evidence validator wired into CI and canonical verification.
+- Corrective WP4 v2 evidence bundle with strict <=1% compute parity reporting.
+- Exact-total-compute input-blind allocator and explicitly exploratory pilot.
+- Fail-closed non-convergence behavior and adversarial cycle test.
+- Prospective preregistration integrity policy, debt register, and blocked v3
+  exact-compute/noisy-halt/controller-cost protocol draft.
+
 ## [1.0.0-d920f79] — 2026-07-16
 
 ### Added

@@ -7,6 +7,8 @@ construction. The ONLY free variable is how many hops each input receives:
 - static_K:      K hops for every input (best fixed allocation).
 - random_avgK:   a random number of hops per input with mean K (variable depth
                  that IGNORES the input -> control for "any variability helps").
+- random_exact:  input-blind floor/ceiling allocation whose TOTAL hops exactly
+                 match a caller-supplied budget; assignment is randomly permuted.
 - adaptive_halt: hop until the node stops changing (reached the absorbing
                  fixed point) -> uses the per-input HALT signal = information
                  about m(x). This is the mechanism under test.
@@ -35,6 +37,25 @@ def _final_node(table: torch.Tensor, start: torch.Tensor, hops: torch.Tensor) ->
     return cur
 
 
+def allocate_input_blind_exact(
+    batch_size: int,
+    total_hops: int,
+    gen: torch.Generator,
+    device: torch.device,
+) -> torch.Tensor:
+    """Allocate an integer total exactly without observing per-input difficulty."""
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    if total_hops < 0:
+        raise ValueError("total_hops must be non-negative")
+    base, remainder = divmod(total_hops, batch_size)
+    alloc = torch.full((batch_size,), base, dtype=torch.long)
+    if remainder:
+        alloc[:remainder] += 1
+    permutation = torch.randperm(batch_size, generator=gen)
+    return alloc[permutation].to(device)
+
+
 def _metrics(cur, values, target, m, alloc):
     """Score a finished run. Two distinct quantities, deliberately not merged:
       - `solved` = fraction that reached the absorbing fixed point = mean(m <= alloc).
@@ -50,10 +71,26 @@ def _metrics(cur, values, target, m, alloc):
     pred = values[idx, cur]
     solved = (m <= alloc).float().mean().item()       # reached absorber
     acc = (pred == target).float().mean().item()
-    return {"acc": acc, "solved": solved, "avg_hops": alloc.float().mean().item()}
+    return {
+        "acc": acc,
+        "solved": solved,
+        "avg_hops": alloc.float().mean().item(),
+        "total_hops": int(alloc.sum().item()),
+    }
 
 
-def run_policy(policy: str, K: int, table, values, start, target, m, gen) -> dict:
+def run_policy(
+    policy: str,
+    K: int,
+    table,
+    values,
+    start,
+    target,
+    m,
+    gen,
+    *,
+    total_hops: int | None = None,
+) -> dict:
     """Allocate hops by `policy`, run the exact operator, and score.
 
     The operator is identical across policies, so the ONLY thing that varies is the
@@ -78,10 +115,15 @@ def run_policy(policy: str, K: int, table, values, start, target, m, gen) -> dic
     elif policy == "random":
         # random per-input depth in [1, 2K-1] with mean ~K (ignores the input)
         alloc = torch.randint(1, 2 * K, (B,), generator=gen).to(start.device)
+    elif policy == "random_exact":
+        if total_hops is None:
+            raise ValueError("random_exact requires total_hops")
+        alloc = allocate_input_blind_exact(B, total_hops, gen, start.device)
     elif policy == "adaptive":
         # halt-on-convergence: number of hops until the node stops changing,
         # i.e. exactly m(x). Realised by following until the self-loop.
-        cur = start.clone(); idx = torch.arange(B, device=start.device)
+        cur = start.clone()
+        idx = torch.arange(B, device=start.device)
         hops = torch.zeros(B, dtype=torch.long, device=start.device)
         active = torch.ones(B, dtype=torch.bool, device=start.device)
         for _ in range(MAX_M + 2):
@@ -92,6 +134,10 @@ def run_policy(policy: str, K: int, table, values, start, target, m, gen) -> dic
             cur = torch.where(moved, nxt, cur)
             if not active.any():
                 break
+        if active.any():
+            raise RuntimeError(
+                f"adaptive halt did not converge for {int(active.sum().item())} inputs"
+            )
         alloc = hops
     else:
         raise ValueError(policy)

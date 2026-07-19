@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "status": "EXPLORATORY_PILOT_NOT_PREREGISTERED",
+  "base_commit": "cbae9c1a9f2c7396aa4f0f04488341b39a8a91c8",
+  "data_seed_indices": [0, 1, 2, 3, 4, 5, 6, 7],
+  "allocation_replicates_per_data_seed": 16,
+  "batch_size": 1024,
+  "compute_contract": "identical integer total_hops per paired cell",
+  "controller_cost_charged": false,
+  "halt_signal": "exact convergence oracle",
+  "independent_replication": false
+}

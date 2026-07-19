@@ -1,6 +1,10 @@
-# Preregistration — R3-C credit-assignment falsification (Routing v3 core, local)
+# Retrospective protocol — R3-C credit-assignment falsification (Routing v3 core, local)
 
-**Registered before confirmatory run.** Commit at registration: see git log.
+> Historical-status correction (2026-07-19): protocol, implementation and
+> results first entered Git in the same commit; this is not independently
+> timestamped preregistration evidence.
+
+**Original registration claim withdrawn:** Git history does not establish temporal priority.
 
 ## Question
 R3-C (end-to-end controller, label-free fixed budget, task loss only, no

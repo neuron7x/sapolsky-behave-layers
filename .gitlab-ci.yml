@@ -36,8 +36,8 @@ quality:
     # CPU-portable proof that the suite actually catches bugs.
     - >
       python -m pytest -q -m "not slow and not mutation and not cuda"
-      tests/test_instrumentation_*.py
-      --cov=cwc/instrumentation --cov-branch --cov-report=term-missing --cov-fail-under=85
+      tests/test_instrumentation_*.py experiments/wp3_plasticity_v1/tests/
+      --cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=95
     - python scripts/mutation_probe.py
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -55,6 +55,7 @@ docs:
     - pip install pyyaml
   script:
     - PYTHONPATH=. python scripts/doc_status_gate.py
+    - PYTHONPATH=. python scripts/validate_evidence.py
     - make -f Makefile.cwc PY=python verify-evidence
     - make -f Makefile.cwc PY=python docs-regen
     - git diff --exit-code docs/lab/EXPERIMENT_LEDGER.jsonl docs/vnv/DOCUMENT_STATUS_REGISTER.csv

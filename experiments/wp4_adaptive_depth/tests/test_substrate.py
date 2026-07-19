@@ -1,6 +1,9 @@
 import torch
-from experiments.wp4_adaptive_depth.src.task_hops import generate_batch, MAX_M
-from experiments.wp4_adaptive_depth.src.substrate import run_policy
+
+from experiments.wp4_adaptive_depth.src.runner import stable_distribution_seed
+from experiments.wp4_adaptive_depth.src.substrate import allocate_input_blind_exact, run_policy
+from experiments.wp4_adaptive_depth.src.task_hops import generate_batch
+
 
 def _batch(seed=0, w=None):
     g=torch.Generator().manual_seed(seed)
@@ -29,7 +32,64 @@ def test_adaptive_equals_oracle():
 
 def test_jensen_gap_equals_theory():
     tb,vv,st,tg,m=_batch(3)
-    K=int(round(m.float().mean().item()))
+    K=round(m.float().mean().item())
     g=torch.Generator().manual_seed(1)
     gap=run_policy("adaptive",K,tb,vv,st,tg,m,g)["solved"]-run_policy("static",K,tb,vv,st,tg,m,g)["solved"]
     assert abs(gap-(m>K).float().mean().item())<1e-6   # exact Jensen gap
+
+def test_distribution_seed_is_stable_and_namespaced():
+    assert stable_distribution_seed(0, "uniform") == stable_distribution_seed(0, "uniform")
+    assert stable_distribution_seed(0, "uniform") != stable_distribution_seed(1, "uniform")
+    assert stable_distribution_seed(0, "uniform") != stable_distribution_seed(0, "bimodal")
+
+
+def test_input_blind_exact_allocator_conserves_integer_budget():
+    for batch_size, total in [(1, 0), (7, 31), (512, 2307)]:
+        alloc = allocate_input_blind_exact(
+            batch_size, total, torch.Generator().manual_seed(9), torch.device("cpu")
+        )
+        assert len(alloc) == batch_size
+        assert int(alloc.sum()) == total
+        assert int(alloc.max()) - int(alloc.min()) <= 1
+
+
+def test_random_exact_matches_adaptive_total_compute():
+    table, values, start, target, m = _batch(5)
+    adaptive = run_policy(
+        "adaptive", 0, table, values, start, target, m, torch.Generator().manual_seed(1)
+    )
+    baseline = run_policy(
+        "random_exact", 0, table, values, start, target, m,
+        torch.Generator().manual_seed(2), total_hops=adaptive["total_hops"]
+    )
+    assert baseline["total_hops"] == adaptive["total_hops"]
+    assert baseline["avg_hops"] == adaptive["avg_hops"]
+
+
+def test_input_blind_exact_allocator_rejects_invalid_contracts():
+    gen = torch.Generator().manual_seed(0)
+    for batch_size, total in [(0, 1), (2, -1)]:
+        try:
+            allocate_input_blind_exact(batch_size, total, gen, torch.device("cpu"))
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid exact-allocation contract was accepted")
+
+
+def test_adaptive_halt_fails_closed_on_nonconvergent_cycle():
+    table, values, start, target, m = _batch(7)
+    # Force example 0 into a two-cycle, violating the absorbing-task contract.
+    first = int(start[0])
+    second = (first + 1) % table.shape[1]
+    table[0, first] = second
+    table[0, second] = first
+    try:
+        run_policy(
+            "adaptive", 0, table, values, start, target, m,
+            torch.Generator().manual_seed(1)
+        )
+    except RuntimeError as exc:
+        assert "did not converge" in str(exc)
+    else:
+        raise AssertionError("nonconvergent adaptive execution did not fail closed")

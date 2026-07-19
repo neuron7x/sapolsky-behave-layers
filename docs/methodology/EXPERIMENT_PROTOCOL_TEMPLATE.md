@@ -1,9 +1,9 @@
 # CWC Experiment Protocol Template
 
 Copy to `experiments/<exp>/PREREGISTRATION*.md` and commit **before** the confirmatory
-run (the run timestamp must be after the preregistration commit). Existing
-preregistrations (`experiments/wp2_routing_v2/PREREGISTRATION_*.md`,
-`experiments/wp4_adaptive_depth/PREREGISTRATION.md`) are conforming instances.
+run (the run timestamp must be after the preregistration commit). Historical
+same-commit protocol/result files are retrospective specifications, not conforming
+examples; see `PREREGISTRATION_INTEGRITY_POLICY.md`.
 
 ## Required sections
 1. **protocol_id** and immutable **version**

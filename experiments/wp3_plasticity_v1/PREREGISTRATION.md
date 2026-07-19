@@ -1,4 +1,8 @@
-# WP-3 Plasticity v1 — AMG oracle-gap gate — PREREGISTRATION
+# WP-3 Plasticity v1 — AMG oracle-gap gate — RETROSPECTIVE PROTOCOL
+
+> Historical-status correction (2026-07-19): this protocol, implementation and
+> results first entered Git in the same commit. It is not independently
+> timestamped preregistration evidence.
 
 Registered 2026-07-16. Authority: CWC Adaptive Metaplasticity Governor spec v1.0,
 Phase G+H. This is a BENCHMARK-VALIDITY gate (spec §11.4), not a governor claim:

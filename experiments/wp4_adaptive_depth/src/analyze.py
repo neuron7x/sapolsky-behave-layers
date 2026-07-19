@@ -24,7 +24,7 @@ def analyze(runs_dir: Path) -> dict:
     for d in DISTS:
         gaps = [r["distributions"][d]["solved_gap_adaptive_minus_static"] for r in runs]
         theory = [r["distributions"][d]["theory_P_m_gt_K"] for r in runs]
-        errs = [abs(g - t) for g, t in zip(gaps, theory)]
+        errs = [abs(g - t) for g, t in zip(gaps, theory, strict=True)]
         all_abs_err += errs
         adapt = [r["distributions"][d]["policies"]["adaptive"]["solved"] for r in runs]
         rand = [r["distributions"][d]["policies"]["random"]["solved"] for r in runs]
@@ -32,16 +32,24 @@ def analyze(runs_dir: Path) -> dict:
         stat = [r["distributions"][d]["policies"]["static"]["solved"] for r in runs]
         ah = [r["distributions"][d]["adaptive_avg_hops"] for r in runs]
         K = [r["distributions"][d]["K"] for r in runs]
-        adapt_minus_rand = [a - rn for a, rn in zip(adapt, rand)]
-        lo_ar, _ = _bootstrap_ci(adapt_minus_rand)
+        adapt_minus_rand = [a - rn for a, rn in zip(adapt, rand, strict=True)]
+        lo_ar, hi_ar = _bootstrap_ci(adapt_minus_rand)
+        mean_adaptive_hops = _mean(ah)
+        mean_static_hops = _mean(K)
+        compute_abs_mismatch = abs(mean_adaptive_hops - mean_static_hops)
+        compute_relative_mismatch = compute_abs_mismatch / mean_static_hops
         per_dist[d] = {
             "mean_empirical_gap": _mean(gaps), "mean_theory_P_m_gt_K": _mean(theory),
             "mean_abs_error": _mean(errs), "max_abs_error": max(errs),
             "adaptive_solved": _mean(adapt), "random_solved": _mean(rand),
             "oracle_solved": _mean(orac), "static_solved": _mean(stat),
-            "adaptive_minus_random_ci": [lo_ar, None],
+            "adaptive_minus_random_ci": [lo_ar, hi_ar],
             "adaptive_eq_oracle": abs(_mean(adapt) - _mean(orac)) < 1e-6,
-            "compute_matched_hops_vs_K": abs(_mean(ah) - _mean(K)),
+            "mean_adaptive_hops": mean_adaptive_hops,
+            "mean_static_hops": mean_static_hops,
+            "compute_abs_mismatch_hops": compute_abs_mismatch,
+            "compute_relative_mismatch": compute_relative_mismatch,
+            "compute_matched_within_1pct": compute_relative_mismatch <= 0.01,
         }
 
     # global gates
@@ -49,31 +57,29 @@ def analyze(runs_dir: Path) -> dict:
     prediction_holds = max_err < 0.02          # gap matches theory in every regime/seed
     beats_random = all(per_dist[d]["adaptive_minus_random_ci"][0] > 0.1 for d in DISTS)
     matches_oracle = all(per_dist[d]["adaptive_eq_oracle"] for d in DISTS)
-    compute_matched = all(per_dist[d]["compute_matched_hops_vs_K"] < 0.6 for d in DISTS)
+    compute_matched = all(per_dist[d]["compute_matched_within_1pct"] for d in DISTS)
 
-    if prediction_holds and beats_random and matches_oracle and compute_matched:
-        verdict = "ADAPTIVE_COMPUTE_JENSEN_GAP_CONFIRMED"
+    if prediction_holds and beats_random and matches_oracle:
+        verdict = "SYNTHETIC_HALT_IDENTITY_VERIFIED"
     else:
         verdict = "NOT_CONFIRMED"
-    return {"n_seeds": len(runs), "per_distribution": per_dist,
+    return {"analysis_version": "2.0.0", "n_seeds": len(runs), "per_distribution": per_dist,
             "max_abs_error_gap_vs_theory": max_err,
             "gates": {"prediction_holds_err_lt_0.02": prediction_holds,
                       "adaptive_beats_random": beats_random,
                       "adaptive_matches_oracle": matches_oracle,
                       "compute_matched": compute_matched},
             "verdict": verdict,
-            "verdict_note": ("The adaptive-depth advantage equals the theory-predicted P(m>K) in every "
-                             "regime (max abs error < 0.02), beats input-blind random depth at equal avg "
-                             "compute, equals the oracle, and uses the same avg compute as static — with the "
-                             "SAME operator and NO learning. The advantage is therefore not capacity, not "
-                             "compute, not optimization: it is adaptive ALLOCATION of a fixed budget using "
-                             "the per-input halt signal — a Jensen gap whose size is predicted, not fitted.")}
+            "verdict_note": ("The exact halt-oracle substrate verifies the same-sample identity "
+                             "adaptive-static = P_sample(m>K). This is an executable positive control, "
+                             "not an independent empirical prediction. Exact compute parity is reported "
+                             "as a separate <=1% gate and is not required for the identity verdict.")}
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp4-adaptive-depth/raw_runs"))
-    ap.add_argument("--out", type=Path, default=Path("artifacts/wp4-adaptive-depth"))
+    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp4-adaptive-depth-v2/raw_runs"))
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp4-adaptive-depth-v2"))
     args = ap.parse_args()
     res = analyze(args.runs)
     args.out.mkdir(parents=True, exist_ok=True)

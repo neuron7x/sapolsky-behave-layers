@@ -1,5 +1,11 @@
 # WP-4 Adaptive Compute Allocation — PREREGISTRATION
 
+> **Historical-status correction (2026-07-19):** this protocol and its results
+> first appeared in the same Git commit. The underlying theory predates the run,
+> but this file is not independently timestamped evidence of preregistration.
+> Treat it as a retrospective protocol specification. See
+> `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`.
+
 Registered 2026-07-16. The prediction under test was DERIVED in
 `docs/IDENTIFIABILITY_THEORY.md` (committed 6322bed) BEFORE this experiment, so
 it is a genuine prior prediction, not a fit.

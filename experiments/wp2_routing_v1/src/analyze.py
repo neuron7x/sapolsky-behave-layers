@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 from pathlib import Path
 
 CONFIGS = ["dense", "random", "frozen", "learned", "fixed_depth"]
@@ -28,24 +29,14 @@ def _load(runs: Path) -> dict[str, list[dict]]:
     return out
 
 
-def _lcg(seed: int):
-    state = {"s": seed & 0xFFFFFFFF}
-
-    def nxt(n: int) -> int:
-        state["s"] = (1103515245 * state["s"] + 12345) & 0x7FFFFFFF
-        return state["s"] % n
-
-    return nxt
-
-
 def _bootstrap_ci(deltas: list[float], iters: int = 10000, seed: int = 12345):
     if not deltas:
         return (None, None)
     n = len(deltas)
-    rnd = _lcg(seed)
+    rnd = random.Random(seed)
     means = []
     for _ in range(iters):
-        s = sum(deltas[rnd(n)] for _ in range(n))
+        s = sum(deltas[rnd.randrange(n)] for _ in range(n))
         means.append(s / n)
     means.sort()
     lo = means[int(0.025 * iters)]

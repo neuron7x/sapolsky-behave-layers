@@ -33,7 +33,7 @@ additive and the upstream baseline is recorded pristine.
 |---|---|---|
 | Instrumentation is deterministic & internally validated | **SUPPORTED** | `artifacts/wp1-release/` (207 tests, 99.46% cov, 12/12 mutation) |
 | A benchmark with a real adaptive-compute advantage exists | **SUPPORTED** | `artifacts/wp2-routing-v2/` (oracle gap 99.8%) |
-| Adaptive compute allocation beats best-static by exactly `P(m>K)` | **SUPPORTED** | `artifacts/wp4-adaptive-depth/` (gap=P(m>K) to 0.0000, 8 seeds × 4 regimes) |
+| Synthetic halt-oracle identity: adaptive−static = `P_sample(m>K)` | **SUPPORTED_NARROWED** | `artifacts/wp4-adaptive-depth/`; interpretation corrected in `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md` |
 | End-to-end routing is learnable once credit-assignment is fixed | **SUPPORTED (binding budget)** | `artifacts/wp2-routing-v3-r3c-reinforce/` (AUROC 1.0, 8 seeds) |
 | On a surface-matched task the route decision IS the computation | **ROUTE_DECISION_IS_THE_COMPUTATION** | `artifacts/wp2-routing-v3-surface-matched/` |
 | Functional reuse (RCFR) is novel | **NOT_SUPPORTED** (ties prior art) | `artifacts/wp3-rcfr/` |
@@ -51,6 +51,8 @@ only when the route signal is **cheaply computable** — `V_realized = oracle_ga
 - ❌ autonomous general adaptive intelligence;
 - ❌ independent replication (**NOT_TESTED** — not self-certifiable);
 - ❌ any frontier / deployment-grade capability.
+- ❌ an exactly compute-matched WP4 Pareto result (the archived static budget is
+  `round(E_sample[m])`, while adaptive compute is `E_sample[m]`).
 
 See the full non-claim boundary in [`SYSTEM.md`](SYSTEM.md) and per-claim scope in
 [`claim_registry.json`](claim_registry.json).

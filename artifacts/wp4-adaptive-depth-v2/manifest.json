@@ -1,0 +1,10 @@
+{
+  "schema_version": "2.0.0",
+  "experiment": "wp4_adaptive_depth_corrective_rerun",
+  "status": "POST_AUDIT_CORRECTIVE_NOT_PREREGISTERED",
+  "base_commit": "cbae9c1a9f2c7396aa4f0f04488341b39a8a91c8",
+  "seed_derivation": "sha256('wp4:{seed}:{distribution}')[:8] modulo 2^63-1",
+  "analysis_contract": "same-sample identity; compute parity reported separately at <=1%",
+  "seeds": [0, 1, 2, 3, 4, 5, 6, 7],
+  "independent_replication": false
+}

@@ -1,6 +1,10 @@
-# Preregistration — surface-matched end-to-end routing (Routing v3, fully clean)
+# Retrospective protocol — surface-matched end-to-end routing (Routing v3)
 
-**Registered before confirmatory run.** Closes the surface caveat left open by
+> Historical-status correction (2026-07-19): protocol, implementation and
+> results first entered Git in the same commit; this is not independently
+> timestamped preregistration evidence.
+
+The protocol addresses the surface caveat left open by
 `runner_r3c_reinforce` (which ran on a benchmark with length/histogram leakage).
 
 ## Question

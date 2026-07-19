@@ -1,0 +1,95 @@
+{
+  "analysis_version": "2.0.0",
+  "n_seeds": 8,
+  "per_distribution": {
+    "uniform": {
+      "mean_empirical_gap": 0.43587497621774673,
+      "mean_theory_P_m_gt_K": 0.4358750246465206,
+      "mean_abs_error": 4.842877388000488e-08,
+      "max_abs_error": 5.960464477539063e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.5555312819778919,
+      "oracle_solved": 1.0,
+      "static_solved": 0.5641250237822533,
+      "adaptive_minus_random_ci": [
+        0.4078749567270279,
+        0.48103122413158417
+      ],
+      "adaptive_eq_oracle": true,
+      "mean_adaptive_hops": 4.496062755584717,
+      "mean_static_hops": 4.5,
+      "compute_abs_mismatch_hops": 0.003937244415283203,
+      "compute_relative_mismatch": 0.0008749432033962674,
+      "compute_matched_within_1pct": true
+    },
+    "easy_skew": {
+      "mean_empirical_gap": 0.3294687196612358,
+      "mean_theory_P_m_gt_K": 0.3294687680900097,
+      "mean_abs_error": 4.842877388000488e-08,
+      "max_abs_error": 8.940696716308594e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.6154062673449516,
+      "oracle_solved": 1.0,
+      "static_solved": 0.6705312803387642,
+      "adaptive_minus_random_ci": [
+        0.3799687325954437,
+        0.39006248116493225
+      ],
+      "adaptive_eq_oracle": true,
+      "mean_adaptive_hops": 3.100250154733658,
+      "mean_static_hops": 3.0,
+      "compute_abs_mismatch_hops": 0.10025015473365784,
+      "compute_relative_mismatch": 0.03341671824455261,
+      "compute_matched_within_1pct": false
+    },
+    "hard_skew": {
+      "mean_empirical_gap": 0.49809372425079346,
+      "mean_theory_P_m_gt_K": 0.49809377267956734,
+      "mean_abs_error": 4.842877388000488e-08,
+      "max_abs_error": 8.940696716308594e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.552562527358532,
+      "oracle_solved": 1.0,
+      "static_solved": 0.5019062757492065,
+      "adaptive_minus_random_ci": [
+        0.44374997168779373,
+        0.4508124813437462
+      ],
+      "adaptive_eq_oracle": true,
+      "mean_adaptive_hops": 5.896750211715698,
+      "mean_static_hops": 6.0,
+      "compute_abs_mismatch_hops": 0.10324978828430176,
+      "compute_relative_mismatch": 0.017208298047383625,
+      "compute_matched_within_1pct": false
+    },
+    "bimodal": {
+      "mean_empirical_gap": 0.4742499738931656,
+      "mean_theory_P_m_gt_K": 0.47425002232193947,
+      "mean_abs_error": 4.842877388000488e-08,
+      "max_abs_error": 8.940696716308594e-08,
+      "adaptive_solved": 1.0,
+      "random_solved": 0.5690000280737877,
+      "oracle_solved": 1.0,
+      "static_solved": 0.5257500261068344,
+      "adaptive_minus_random_ci": [
+        0.39518745988607407,
+        0.4685937315225601
+      ],
+      "adaptive_eq_oracle": true,
+      "mean_adaptive_hops": 4.508812725543976,
+      "mean_static_hops": 4.625,
+      "compute_abs_mismatch_hops": 0.11618727445602417,
+      "compute_relative_mismatch": 0.02512157285535658,
+      "compute_matched_within_1pct": false
+    }
+  },
+  "max_abs_error_gap_vs_theory": 8.940696716308594e-08,
+  "gates": {
+    "prediction_holds_err_lt_0.02": true,
+    "adaptive_beats_random": true,
+    "adaptive_matches_oracle": true,
+    "compute_matched": false
+  },
+  "verdict": "SYNTHETIC_HALT_IDENTITY_VERIFIED",
+  "verdict_note": "The exact halt-oracle substrate verifies the same-sample identity adaptive-static = P_sample(m>K). This is an executable positive control, not an independent empirical prediction. Exact compute parity is reported as a separate <=1% gate and is not required for the identity verdict."
+}
