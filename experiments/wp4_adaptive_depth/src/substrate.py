@@ -90,6 +90,7 @@ def run_policy(
     gen,
     *,
     total_hops: int | None = None,
+    halt_false_positive_rate: float = 0.0,
 ) -> dict:
     """Allocate hops by `policy`, run the exact operator, and score.
 
@@ -107,7 +108,10 @@ def run_policy(
                     solved from P(m<=K) to 1, i.e. by exactly the Jensen gap P(m>K).
     Returns the `_metrics` dict; `gen` seeds only the random policy.
     """
+    if not 0.0 <= halt_false_positive_rate <= 1.0:
+        raise ValueError("halt_false_positive_rate must be in [0,1]")
     B = start.shape[0]
+    halt_evaluations = 0
     if policy == "static":
         alloc = torch.full((B,), K, dtype=torch.long, device=start.device)
     elif policy == "oracle":
@@ -119,7 +123,7 @@ def run_policy(
         if total_hops is None:
             raise ValueError("random_exact requires total_hops")
         alloc = allocate_input_blind_exact(B, total_hops, gen, start.device)
-    elif policy == "adaptive":
+    elif policy in {"adaptive", "adaptive_noisy"}:
         # halt-on-convergence: number of hops until the node stops changing,
         # i.e. exactly m(x). Realised by following until the self-loop.
         cur = start.clone()
@@ -127,14 +131,20 @@ def run_policy(
         hops = torch.zeros(B, dtype=torch.long, device=start.device)
         active = torch.ones(B, dtype=torch.bool, device=start.device)
         for _ in range(MAX_M + 2):
+            halt_evaluations += int(active.sum().item())
             nxt = table[idx, cur]
             moved = (nxt != cur) & active
+            if policy == "adaptive_noisy" and halt_false_positive_rate > 0.0:
+                false_halt = (
+                    torch.rand(B, generator=gen).to(start.device) < halt_false_positive_rate
+                ) & moved
+                moved &= ~false_halt
             hops += moved.long()
             active = moved
             cur = torch.where(moved, nxt, cur)
             if not active.any():
                 break
-        if active.any():
+        if policy == "adaptive" and active.any():
             raise RuntimeError(
                 f"adaptive halt did not converge for {int(active.sum().item())} inputs"
             )
@@ -142,4 +152,6 @@ def run_policy(
     else:
         raise ValueError(policy)
     cur = _final_node(table, start, alloc)
-    return _metrics(cur, values, target, m, alloc)
+    result = _metrics(cur, values, target, m, alloc)
+    result["halt_evaluations"] = halt_evaluations
+    return result

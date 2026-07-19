@@ -93,3 +93,30 @@ def test_adaptive_halt_fails_closed_on_nonconvergent_cycle():
         assert "did not converge" in str(exc)
     else:
         raise AssertionError("nonconvergent adaptive execution did not fail closed")
+
+
+def test_noisy_halt_degrades_or_matches_exact_halt_and_reports_evaluations():
+    table, values, start, target, m = _batch(11)
+    exact = run_policy(
+        "adaptive", 0, table, values, start, target, m,
+        torch.Generator().manual_seed(1)
+    )
+    noisy = run_policy(
+        "adaptive_noisy", 0, table, values, start, target, m,
+        torch.Generator().manual_seed(2), halt_false_positive_rate=0.25
+    )
+    assert noisy["solved"] <= exact["solved"]
+    assert noisy["halt_evaluations"] > 0
+
+
+def test_halt_noise_contract_rejects_invalid_probability():
+    table, values, start, target, m = _batch(12)
+    try:
+        run_policy(
+            "adaptive_noisy", 0, table, values, start, target, m,
+            torch.Generator().manual_seed(1), halt_false_positive_rate=1.01
+        )
+    except ValueError as exc:
+        assert "[0,1]" in str(exc)
+    else:
+        raise AssertionError("invalid halt probability accepted")

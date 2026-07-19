@@ -43,5 +43,5 @@ open until new independently ordered evidence exists.
 The exact-total-compute pilot narrows engineering uncertainty but does not close
 `P0-PARETO`: it is explicitly exploratory, uses a halt oracle, and does not
 charge controller cost. The prospective successor is drafted at
-`experiments/wp4_adaptive_depth/PROTOCOL_EXACT_COMPUTE_V3_DRAFT.md` and must not
+`experiments/wp4_adaptive_depth/PROTOCOL_EXACT_COMPUTE_V3.md` and must not
 be run confirmatorily until its own protocol-only commit and external timestamp.
