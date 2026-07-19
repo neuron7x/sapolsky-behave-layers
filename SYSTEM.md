@@ -58,6 +58,15 @@ proved and adversarially falsification-tested to ≈10⁻¹⁵ over 10⁴ random
 `experiments/common/adaptive_value_theory.py` (+ suite in `experiments/common/tests/`).
 It is a *mathematical* scaffolding under L1/L2b/L2p — no new empirical claim.
 
+**Physical substrate budget** (`docs/NEURON_INFORMATION_BUDGET.md`): a verified
+biophysical model of the biological system CWC is modelled on — a cortical neuron
+carries ≈10 bits/s (sensory up to ~150–300) at ≈2×10⁻¹⁰ W ⇒ ≈2×10⁸ ATP/bit ≈
+10⁹–10¹⁰ Landauer floors. Non-linear network scaling: information saturates
+(`I_∞=I_1/ρ`), energy is super-linear (wiring `N^α`), so bits/joule declines with
+scale — the thermodynamic root of the route-decision cost. Three independent power
+routes agree within ~15% (median); all draws respect the Landauer floor. Grounds the
+master inequality in physics (`experiments/common/neuron_information_budget.py`).
+
 **Route-decision-cost extension** (from `artifacts/wp2-routing-v3-*`): a positive
 oracle gap is necessary but NOT sufficient for *usable* adaptive routing. The
 controller must also be able to compute *which* mechanism is needed more cheaply

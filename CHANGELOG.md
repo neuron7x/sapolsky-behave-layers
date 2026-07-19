@@ -17,6 +17,18 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Verified neural information-budget model** (`docs/NEURON_INFORMATION_BUDGET.md`
+  + `experiments/common/neuron_information_budget.py`): estimates single-neuron
+  throughput (≈10 bits/s cortical, ~150 sensory), energy per bit (≈2×10⁻¹¹ J/bit ≈
+  2×10⁸ ATP/bit ≈ 10⁹–10¹⁰ Landauer floors), and a non-linear network extrapolation
+  (information saturates at `I_1/ρ`, energy super-linear `N^α`, bits/joule declines).
+  Uncertainty is Monte-Carlo-propagated over literature anchors (Attwell & Laughlin
+  2001; Laughlin et al. 1998; Strong et al. 1998); per-neuron power is cross-checked
+  by three independent routes agreeing within ~15% at the medians. A falsification
+  harness enforces the Landauer floor, positivity, and the saturation/super-linear/
+  efficiency-decline laws over 10⁴ draws; exactness assertions kill bound-dropping
+  mutations. Physical grounding of the value theory's route-decision cost — no new
+  `claim_registry.json` entry.
 - **Unified adaptive-computation value theory** (`docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md`
   + `experiments/common/adaptive_value_theory.py`): six proved theorems unifying the
   oracle gap, the Pinsker information bound, and the route-decision cost into one
