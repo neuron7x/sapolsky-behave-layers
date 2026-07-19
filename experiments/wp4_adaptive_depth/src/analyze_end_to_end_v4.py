@@ -7,7 +7,6 @@ from pathlib import Path
 
 from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci
 from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v3 import (
-    MINIMUM_MEANINGFUL_EFFECT,
     exact_positive_randomization_p,
     holm_adjust,
 )
@@ -15,6 +14,8 @@ from experiments.wp4_adaptive_depth.src.runner import DISTRIBUTIONS
 from experiments.wp4_adaptive_depth.src.runner_end_to_end_v4 import EXPECTED_SEEDS
 from experiments.wp4_adaptive_depth.src.runner_exact_compute_v3 import HELD_OUT_DISTRIBUTIONS
 from experiments.wp4_adaptive_depth.src.runner_exact_compute_v31 import FROZEN_TOTAL_HOPS
+
+MINIMUM_MEANINGFUL_EFFECT = 0.02
 
 
 def analyze(runs_dir: Path) -> dict:

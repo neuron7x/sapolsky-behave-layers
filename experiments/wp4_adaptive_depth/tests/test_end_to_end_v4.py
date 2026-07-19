@@ -1,6 +1,11 @@
 import torch
 
+from experiments.wp4_adaptive_depth.src.analyze_end_to_end_v4 import MINIMUM_MEANINGFUL_EFFECT
 from experiments.wp4_adaptive_depth.src.runner_end_to_end_v4 import run_paid_probe
+
+
+def test_v4_mde_matches_frozen_protocol():
+    assert MINIMUM_MEANINGFUL_EFFECT == 0.02
 
 
 def test_paid_probe_charges_terminal_observation_once():
