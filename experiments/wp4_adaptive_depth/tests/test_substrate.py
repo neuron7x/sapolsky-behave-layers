@@ -120,3 +120,27 @@ def test_halt_noise_contract_rejects_invalid_probability():
         assert "[0,1]" in str(exc)
     else:
         raise AssertionError("invalid halt probability accepted")
+
+
+def test_adaptive_budgeted_spends_exact_budget_above_and_below_required_sum():
+    table, values, start, target, m = _batch(13)
+    required = int(m.sum())
+    for budget in (required - 37, required + 37):
+        result = run_policy(
+            "adaptive_budgeted", 0, table, values, start, target, m,
+            torch.Generator().manual_seed(5), total_hops=budget
+        )
+        assert result["total_hops"] == budget
+
+
+def test_adaptive_budgeted_requires_explicit_budget():
+    table, values, start, target, m = _batch(14)
+    try:
+        run_policy(
+            "adaptive_budgeted", 0, table, values, start, target, m,
+            torch.Generator().manual_seed(5)
+        )
+    except ValueError as exc:
+        assert "requires total_hops" in str(exc)
+    else:
+        raise AssertionError("adaptive_budgeted accepted a missing budget")

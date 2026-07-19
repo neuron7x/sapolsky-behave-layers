@@ -123,6 +123,44 @@ def run_policy(
         if total_hops is None:
             raise ValueError("random_exact requires total_hops")
         alloc = allocate_input_blind_exact(B, total_hops, gen, start.device)
+    elif policy == "adaptive_budgeted":
+        if total_hops is None:
+            raise ValueError("adaptive_budgeted requires total_hops")
+        cur = start.clone()
+        idx = torch.arange(B, device=start.device)
+        hops = torch.zeros(B, dtype=torch.long, device=start.device)
+        active = torch.ones(B, dtype=torch.bool, device=start.device)
+        remaining = total_hops
+        for _ in range(MAX_M + 2):
+            if remaining == 0 or not active.any():
+                break
+            halt_evaluations += int(active.sum().item())
+            nxt = table[idx, cur]
+            candidates = (nxt != cur) & active
+            candidate_indices = torch.nonzero(candidates, as_tuple=False).flatten()
+            if len(candidate_indices) > remaining:
+                order = torch.randperm(len(candidate_indices), generator=gen).to(start.device)
+                chosen_indices = candidate_indices[order[:remaining]]
+                chosen = torch.zeros(B, dtype=torch.bool, device=start.device)
+                chosen[chosen_indices] = True
+            else:
+                chosen = candidates
+            spent = int(chosen.sum().item())
+            hops += chosen.long()
+            cur = torch.where(chosen, nxt, cur)
+            remaining -= spent
+            if spent < len(candidate_indices):
+                break
+            active = candidates
+        if remaining > 0:
+            if active.any():
+                raise RuntimeError("adaptive_budgeted failed to spend budget before convergence")
+            # All items converged; surplus is explicitly billed as self-loop no-op work.
+            hops += allocate_input_blind_exact(B, remaining, gen, start.device)
+            remaining = 0
+        if int(hops.sum().item()) != total_hops:
+            raise RuntimeError("adaptive_budgeted total-hop invariant violated")
+        alloc = hops
     elif policy in {"adaptive", "adaptive_noisy"}:
         # halt-on-convergence: number of hops until the node stops changing,
         # i.e. exactly m(x). Realised by following until the self-loop.
