@@ -1,0 +1,15 @@
+{
+  "status": "POSTHOC_DESCRIPTIVE_NOT_CLAIM_RAISING",
+  "metric": "halt_evaluations / billed_operator_hops",
+  "interpretation": "If one halt evaluation costs one hop, total adaptive cost multiplier is 1 + ratio.",
+  "per_distribution": {
+    "uniform": {"mean": 1.2066921657986112, "min": 1.1943901909722223, "max": 1.2221137152777777},
+    "easy_skew": {"mean": 1.3104890920505377, "min": 1.2996939496193989, "max": 1.3200188338695755},
+    "hard_skew": {"mean": 1.1379840180755358, "min": 1.1217611210148832, "max": 1.1688155549106587},
+    "bimodal": {"mean": 1.1808675130208333, "min": 1.1496310763888888, "max": 1.2205946180555556},
+    "extreme_easy": {"mean": 1.394437295852717, "min": 1.3783034742155795, "max": 1.4015638919132931},
+    "extreme_hard": {"mean": 1.1229471058630096, "min": 1.092971114681813, "max": 1.152199095698965},
+    "mid_peak": {"mean": 1.2175971137152777, "min": 1.2057834201388888, "max": 1.2220052083333333}
+  },
+  "conclusion": "Operator-hop parity does not imply end-to-end compute parity."
+}

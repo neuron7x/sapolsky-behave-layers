@@ -15,6 +15,7 @@ This is the authoritative audit closeout for the first remediation pass.
 | P1-DATA | checksums were treated as data validation | read-only semantic validator added to canonical gate |
 | P1-EXACT | rounded static budget prevented exact compute pairing | exact-total input-blind allocator + exploratory pilot added |
 | P1-HALT | malformed non-convergent graphs could silently exhaust the loop | adaptive halt now fails closed; adversarial cycle regression added |
+| P1-HOLDOUT | first v3 control budget read realized holdout difficulty | run invalidated; prospective v3.1 frozen analytic budgets + untouched seeds used |
 
 ## Resolved epistemically
 
@@ -40,8 +41,12 @@ This is the authoritative audit closeout for the first remediation pass.
 The open P0 items are scientific work, not documentation work. They must remain
 open until new independently ordered evidence exists.
 
-The exact-total-compute pilot narrows engineering uncertainty but does not close
-`P0-PARETO`: it is explicitly exploratory, uses a halt oracle, and does not
-charge controller cost. The prospective successor is drafted at
-`experiments/wp4_adaptive_depth/PROTOCOL_EXACT_COMPUTE_V3.md` and must not
-be run confirmatorily until its own protocol-only commit and external timestamp.
+The exact-total-compute pilot narrowed engineering uncertainty but did not close
+`P0-PARETO`. V3 was Git-ordered but invalidated for holdout-budget leakage. V3.1
+used a separately committed amendment, frozen analytic budgets and untouched
+seeds; it supports only an internal free-halt-oracle/operator-hop claim because
+no external timestamp or independent operator exists.
+
+V3.1 closes operator-hop matching under distribution-derived frozen budgets, but
+does **not** close `P0-PARETO`: halt evaluations are 1.12–1.39 per billed hop and
+are excluded from the primary ledger. End-to-end controller/halt cost remains open.

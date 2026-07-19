@@ -11,6 +11,7 @@ controls, statistics, leakage). Current at commit d920f79+.
 | CWC-L2a-e2e-reinforce | 8 seeds, paired diff UB −0.465, AUROC 1.0 | SUPPORTED (binding budget; surface caveat) |
 | CWC-L2b-route-decision-cost | 4 arms × 8 seeds chance; supervised probe chance | SUPPORTED |
 | CWC-L2p-jensen-gap | same-sample algebraic identity under exact halt oracle; compute mismatch disclosed | SUPPORTED_NARROWED |
+| CWC-L2p exact-hop successor | frozen budgets, 16 untouched seeds, 7 distributions, exact operator-hop equality | SUPPORTED_NARROWED_INTERNAL; free-halt scope only |
 | CWC-L2c-e2e-straightthrough | collapse; superseded by L2a | NOT_SUPPORTED |
 | CWC-L3-rcfr | ties prior art | NOT_SUPPORTED |
 | CWC-L4-plasticity | non-identifiable unbudgeted | NOT_TESTED |

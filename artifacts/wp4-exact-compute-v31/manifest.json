@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_amendment_commit": "760ebcd",
+  "implementation_commit": "2ef3da8",
+  "status": "INTERNAL_CONFIRMATORY_NOT_EXTERNALLY_PREREGISTERED",
+  "seeds": [200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215],
+  "excluded_seed_ranges": ["0..7 pilot", "100..115 invalid protocol deviation"],
+  "batch_size": 4096,
+  "allocation_replicates": 32,
+  "primary_compute_scope": "operator hops only; halt oracle treated as free",
+  "independent_replication": false
+}

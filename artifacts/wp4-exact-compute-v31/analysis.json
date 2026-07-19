@@ -1,0 +1,128 @@
+{
+  "analysis_version": "3.1.0",
+  "protocol_amendment_commit": "760ebcd",
+  "status": "INTERNAL_CONFIRMATORY_NOT_EXTERNALLY_PREREGISTERED",
+  "errors": [],
+  "per_distribution": {
+    "uniform": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 18432,
+      "mean_paired_solved_difference": 0.4268608093261719,
+      "bootstrap_ci95": [
+        0.42070627212524414,
+        0.43213748931884766
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.39778900146484375,
+      "mean_adaptive_budgeted_solved": 0.9905242919921875,
+      "mean_realized_budget_delta_vs_sum_m": 24.6875,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "easy_skew": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 12743,
+      "mean_paired_solved_difference": 0.308377742767334,
+      "bootstrap_ci95": [
+        0.3026456832885742,
+        0.31352710723876953
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.2818450927734375,
+      "mean_adaptive_budgeted_solved": 0.9900360107421875,
+      "mean_realized_budget_delta_vs_sum_m": 41.1875,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "hard_skew": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 24121,
+      "mean_paired_solved_difference": 0.5076909065246582,
+      "bootstrap_ci95": [
+        0.49871110916137695,
+        0.5147480964660645
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.45679473876953125,
+      "mean_adaptive_budgeted_solved": 0.986297607421875,
+      "mean_realized_budget_delta_vs_sum_m": -30.3125,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "bimodal": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 18432,
+      "mean_paired_solved_difference": 0.4624638557434082,
+      "bootstrap_ci95": [
+        0.4514951705932617,
+        0.47110509872436523
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.401214599609375,
+      "mean_adaptive_budgeted_solved": 0.98291015625,
+      "mean_realized_budget_delta_vs_sum_m": -14.375,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "extreme_easy": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 10103,
+      "mean_paired_solved_difference": 0.2642688751220703,
+      "bootstrap_ci95": [
+        0.26166820526123047,
+        0.2667655944824219
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.25449371337890625,
+      "mean_adaptive_budgeted_solved": 0.9962005615234375,
+      "mean_realized_budget_delta_vs_sum_m": 51.4375,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "extreme_hard": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 26761,
+      "mean_paired_solved_difference": 0.504641056060791,
+      "bootstrap_ci95": [
+        0.4931483268737793,
+        0.514312744140625
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.44905853271484375,
+      "mean_adaptive_budgeted_solved": 0.9775390625,
+      "mean_realized_budget_delta_vs_sum_m": -37.1875,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "mid_peak": {
+      "n_data_seeds": 16,
+      "frozen_total_hops": 18432,
+      "mean_paired_solved_difference": 0.35933828353881836,
+      "bootstrap_ci95": [
+        0.3554401397705078,
+        0.3629603385925293
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "exact_total_compute_all_cells": true,
+      "worst_seed_difference": 0.340179443359375,
+      "mean_adaptive_budgeted_solved": 0.988677978515625,
+      "mean_realized_budget_delta_vs_sum_m": -28.4375,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    }
+  },
+  "gates": {
+    "frozen_seed_set": true,
+    "all_development_distributions_pass": true,
+    "held_out_pass_count": 3,
+    "held_out_required": 2,
+    "invalid_v3_seeds_excluded": true
+  },
+  "verdict": "SUPPORTED_NARROWED_INTERNAL"
+}
