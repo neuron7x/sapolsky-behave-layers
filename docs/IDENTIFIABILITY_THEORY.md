@@ -196,6 +196,12 @@ The decisive question for real workloads is not merely "does difficulty vary?" b
 "is difficulty **cheaply predictable** from the input?" — an empirical property to
 measure with a cheap-probe-vs-oracle-probe gap before spending cloud compute.
 
+The intuition has a formal necessary condition. For utility range `Δu` and
+router-visible signal `Z`, signal value is at most `Δu·sqrt(I(C;Z)/2)` when
+information is measured in nats. If this upper bound does not exceed route cost,
+positive net adaptation is impossible. The proof, assumptions, limitations, and
+executable finite-case verifier are in `docs/ROUTABILITY_INFORMATION_BOUND.md`.
+
 ### 9.1 Paid stopping information on the exact-hop substrate
 
 WP4 v4 makes the information charge operational: one successor lookup both advances a

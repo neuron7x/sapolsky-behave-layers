@@ -25,7 +25,7 @@ lint:
 	$(PY) -m ruff check .
 
 typecheck:
-	$(PY) -m mypy --config-file mypy.ini cwc/ scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
+	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
 
 # Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
 test:
@@ -51,7 +51,7 @@ mutation:
 
 # Act v2.0 A0 — experiment reproduction + evidence verification
 experiment-tests:
-	PYTHONPATH=. $(PY) -m pytest -q experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/ experiments/wp2_routing_v2/tests/ experiments/wp3_rcfr/tests/ experiments/wp3_plasticity_v1/tests/ experiments/wp4_adaptive_depth/tests/
+	PYTHONPATH=. $(PY) -m pytest -q experiments/common/tests/ experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/ experiments/wp2_routing_v2/tests/ experiments/wp3_rcfr/tests/ experiments/wp3_plasticity_v1/tests/ experiments/wp4_adaptive_depth/tests/
 
 reproduce-mechanism:
 	PYTHONPATH=. $(PY) experiments/wp2_mechanism_v2/src/runner_mech.py --seeds 0 1 2 3 4 5 6 7 --out artifacts/wp2-mechanism-v2/raw_runs
