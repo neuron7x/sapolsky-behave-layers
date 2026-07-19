@@ -1,0 +1,428 @@
+{
+  "seed": 109,
+  "protocol_commit": "6245a6d",
+  "status": "INTERNAL_CONFIRMATORY_GIT_ORDERED",
+  "allocation_replicates": 32,
+  "distributions": {
+    "uniform": {
+      "data_seed": 5549074703215611968,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 18454,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 4.50537109375,
+        "total_hops": 18454,
+        "halt_evaluations": 22550
+      },
+      "input_blind_exact_solved_mean": 0.5593032836914062,
+      "paired_solved_difference": 0.44069671630859375,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.957275390625,
+          "solved": 0.954345703125,
+          "avg_hops": 4.349853515625,
+          "total_hops": 17817,
+          "halt_evaluations": 21913
+        },
+        "0.05": {
+          "acc": 0.809326171875,
+          "solved": 0.79833984375,
+          "avg_hops": 3.809326171875,
+          "total_hops": 15603,
+          "halt_evaluations": 19699
+        },
+        "0.1": {
+          "acc": 0.663818359375,
+          "solved": 0.64892578125,
+          "avg_hops": 3.25341796875,
+          "total_hops": 13326,
+          "halt_evaluations": 17422
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 18454,
+          "halt_evaluations": 22550,
+          "total_millihop_equivalents": 18679500
+        },
+        "50": {
+          "operator_hops": 18454,
+          "halt_evaluations": 22550,
+          "total_millihop_equivalents": 19581500
+        },
+        "100": {
+          "operator_hops": 18454,
+          "halt_evaluations": 22550,
+          "total_millihop_equivalents": 20709000
+        },
+        "250": {
+          "operator_hops": 18454,
+          "halt_evaluations": 22550,
+          "total_millihop_equivalents": 24091500
+        }
+      }
+    },
+    "easy_skew": {
+      "data_seed": 3282665532652011833,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 12859,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 3.139404296875,
+        "total_hops": 12859,
+        "halt_evaluations": 16955
+      },
+      "input_blind_exact_solved_mean": 0.6712646484375,
+      "paired_solved_difference": 0.3287353515625,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.970458984375,
+          "solved": 0.9697265625,
+          "avg_hops": 3.056640625,
+          "total_hops": 12520,
+          "halt_evaluations": 16616
+        },
+        "0.05": {
+          "acc": 0.857421875,
+          "solved": 0.850830078125,
+          "avg_hops": 2.7421875,
+          "total_hops": 11232,
+          "halt_evaluations": 15328
+        },
+        "0.1": {
+          "acc": 0.748291015625,
+          "solved": 0.739990234375,
+          "avg_hops": 2.40771484375,
+          "total_hops": 9862,
+          "halt_evaluations": 13958
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 12859,
+          "halt_evaluations": 16955,
+          "total_millihop_equivalents": 13028550
+        },
+        "50": {
+          "operator_hops": 12859,
+          "halt_evaluations": 16955,
+          "total_millihop_equivalents": 13706750
+        },
+        "100": {
+          "operator_hops": 12859,
+          "halt_evaluations": 16955,
+          "total_millihop_equivalents": 14554500
+        },
+        "250": {
+          "operator_hops": 12859,
+          "halt_evaluations": 16955,
+          "total_millihop_equivalents": 17097750
+        }
+      }
+    },
+    "hard_skew": {
+      "data_seed": 963957560148925328,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 24338,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 5.94189453125,
+        "total_hops": 24338,
+        "halt_evaluations": 28434
+      },
+      "input_blind_exact_solved_mean": 0.47429656982421875,
+      "paired_solved_difference": 0.5257034301757812,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.9462890625,
+          "solved": 0.94287109375,
+          "avg_hops": 5.712646484375,
+          "total_hops": 23399,
+          "halt_evaluations": 27495
+        },
+        "0.05": {
+          "acc": 0.7666015625,
+          "solved": 0.75439453125,
+          "avg_hops": 4.956787109375,
+          "total_hops": 20303,
+          "halt_evaluations": 24399
+        },
+        "0.1": {
+          "acc": 0.57421875,
+          "solved": 0.556884765625,
+          "avg_hops": 4.122802734375,
+          "total_hops": 16887,
+          "halt_evaluations": 20983
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 24338,
+          "halt_evaluations": 28434,
+          "total_millihop_equivalents": 24622340
+        },
+        "50": {
+          "operator_hops": 24338,
+          "halt_evaluations": 28434,
+          "total_millihop_equivalents": 25759700
+        },
+        "100": {
+          "operator_hops": 24338,
+          "halt_evaluations": 28434,
+          "total_millihop_equivalents": 27181400
+        },
+        "250": {
+          "operator_hops": 24338,
+          "halt_evaluations": 28434,
+          "total_millihop_equivalents": 31446500
+        }
+      }
+    },
+    "bimodal": {
+      "data_seed": 1070615260200730386,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 18351,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 4.480224609375,
+        "total_hops": 18351,
+        "halt_evaluations": 22447
+      },
+      "input_blind_exact_solved_mean": 0.5250625610351562,
+      "paired_solved_difference": 0.47493743896484375,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.95947265625,
+          "solved": 0.957275390625,
+          "avg_hops": 4.31640625,
+          "total_hops": 17680,
+          "halt_evaluations": 21776
+        },
+        "0.05": {
+          "acc": 0.814697265625,
+          "solved": 0.806884765625,
+          "avg_hops": 3.703369140625,
+          "total_hops": 15169,
+          "halt_evaluations": 19265
+        },
+        "0.1": {
+          "acc": 0.669921875,
+          "solved": 0.65869140625,
+          "avg_hops": 3.130126953125,
+          "total_hops": 12821,
+          "halt_evaluations": 16917
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 18351,
+          "halt_evaluations": 22447,
+          "total_millihop_equivalents": 18575470
+        },
+        "50": {
+          "operator_hops": 18351,
+          "halt_evaluations": 22447,
+          "total_millihop_equivalents": 19473350
+        },
+        "100": {
+          "operator_hops": 18351,
+          "halt_evaluations": 22447,
+          "total_millihop_equivalents": 20595700
+        },
+        "250": {
+          "operator_hops": 18351,
+          "halt_evaluations": 22447,
+          "total_millihop_equivalents": 23962750
+        }
+      }
+    },
+    "extreme_easy": {
+      "data_seed": 8479697445037505352,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 10085,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 2.462158203125,
+        "total_hops": 10085,
+        "halt_evaluations": 14181
+      },
+      "input_blind_exact_solved_mean": 0.7295761108398438,
+      "paired_solved_difference": 0.27042388916015625,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.9736328125,
+          "solved": 0.971923828125,
+          "avg_hops": 2.394775390625,
+          "total_hops": 9809,
+          "halt_evaluations": 13905
+        },
+        "0.05": {
+          "acc": 0.88427734375,
+          "solved": 0.8779296875,
+          "avg_hops": 2.1767578125,
+          "total_hops": 8916,
+          "halt_evaluations": 13012
+        },
+        "0.1": {
+          "acc": 0.799560546875,
+          "solved": 0.79248046875,
+          "avg_hops": 1.94677734375,
+          "total_hops": 7974,
+          "halt_evaluations": 12070
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 10085,
+          "halt_evaluations": 14181,
+          "total_millihop_equivalents": 10226810
+        },
+        "50": {
+          "operator_hops": 10085,
+          "halt_evaluations": 14181,
+          "total_millihop_equivalents": 10794050
+        },
+        "100": {
+          "operator_hops": 10085,
+          "halt_evaluations": 14181,
+          "total_millihop_equivalents": 11503100
+        },
+        "250": {
+          "operator_hops": 10085,
+          "halt_evaluations": 14181,
+          "total_millihop_equivalents": 13630250
+        }
+      }
+    },
+    "extreme_hard": {
+      "data_seed": 1769185727951944112,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 26733,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 6.526611328125,
+        "total_hops": 26733,
+        "halt_evaluations": 30829
+      },
+      "input_blind_exact_solved_mean": 0.4677734375,
+      "paired_solved_difference": 0.5322265625,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.94384765625,
+          "solved": 0.9404296875,
+          "avg_hops": 6.291015625,
+          "total_hops": 25768,
+          "halt_evaluations": 29864
+        },
+        "0.05": {
+          "acc": 0.724853515625,
+          "solved": 0.7099609375,
+          "avg_hops": 5.274658203125,
+          "total_hops": 21605,
+          "halt_evaluations": 25701
+        },
+        "0.1": {
+          "acc": 0.544921875,
+          "solved": 0.52490234375,
+          "avg_hops": 4.43115234375,
+          "total_hops": 18150,
+          "halt_evaluations": 22246
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 26733,
+          "halt_evaluations": 30829,
+          "total_millihop_equivalents": 27041290
+        },
+        "50": {
+          "operator_hops": 26733,
+          "halt_evaluations": 30829,
+          "total_millihop_equivalents": 28274450
+        },
+        "100": {
+          "operator_hops": 26733,
+          "halt_evaluations": 30829,
+          "total_millihop_equivalents": 29815900
+        },
+        "250": {
+          "operator_hops": 26733,
+          "halt_evaluations": 30829,
+          "total_millihop_equivalents": 34440250
+        }
+      }
+    },
+    "mid_peak": {
+      "data_seed": 1477497369962759761,
+      "batch_size": 4096,
+      "total_hops_each_primary_arm": 18260,
+      "exact_compute_contract": true,
+      "adaptive": {
+        "acc": 1.0,
+        "solved": 1.0,
+        "avg_hops": 4.4580078125,
+        "total_hops": 18260,
+        "halt_evaluations": 22356
+      },
+      "input_blind_exact_solved_mean": 0.633270263671875,
+      "paired_solved_difference": 0.366729736328125,
+      "noisy_halt_secondary": {
+        "0.01": {
+          "acc": 0.9599609375,
+          "solved": 0.957763671875,
+          "avg_hops": 4.33349609375,
+          "total_hops": 17750,
+          "halt_evaluations": 21846
+        },
+        "0.05": {
+          "acc": 0.810302734375,
+          "solved": 0.80126953125,
+          "avg_hops": 3.84521484375,
+          "total_hops": 15750,
+          "halt_evaluations": 19846
+        },
+        "0.1": {
+          "acc": 0.6376953125,
+          "solved": 0.62158203125,
+          "avg_hops": 3.24755859375,
+          "total_hops": 13302,
+          "halt_evaluations": 17398
+        }
+      },
+      "controller_cost_secondary": {
+        "10": {
+          "operator_hops": 18260,
+          "halt_evaluations": 22356,
+          "total_millihop_equivalents": 18483560
+        },
+        "50": {
+          "operator_hops": 18260,
+          "halt_evaluations": 22356,
+          "total_millihop_equivalents": 19377800
+        },
+        "100": {
+          "operator_hops": 18260,
+          "halt_evaluations": 22356,
+          "total_millihop_equivalents": 20495600
+        },
+        "250": {
+          "operator_hops": 18260,
+          "halt_evaluations": 22356,
+          "total_millihop_equivalents": 23849000
+        }
+      }
+    }
+  }
+}

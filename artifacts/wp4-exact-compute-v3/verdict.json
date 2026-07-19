@@ -1,0 +1,6 @@
+{
+  "verdict": "INVALID_PROTOCOL_DEVIATION",
+  "status": "EXCLUDED_FROM_INFERENCE",
+  "supersedes_provisional_analysis_verdict": true,
+  "deviation_id": "WP4-V3-D001"
+}
