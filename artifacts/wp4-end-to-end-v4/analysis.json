@@ -1,0 +1,120 @@
+{
+  "analysis_version": "4.0.0",
+  "protocol_commit": "b6bc531",
+  "status": "INTERNAL_CONFIRMATORY_NOT_EXTERNALLY_PREREGISTERED",
+  "errors": [],
+  "per_distribution": {
+    "uniform": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.12625837326049805,
+      "bootstrap_ci95": [
+        0.12396526336669922,
+        0.12863397598266602
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.11818695068359375,
+      "mean_adaptive_solved": 0.6915283203125,
+      "mean_unfinished_items": 1769.8125,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "easy_skew": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.0738525390625,
+      "bootstrap_ci95": [
+        0.07181358337402344,
+        0.07593870162963867
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.0683746337890625,
+      "mean_adaptive_solved": 0.7509765625,
+      "mean_unfinished_items": 1530.375,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "hard_skew": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.16948175430297852,
+      "bootstrap_ci95": [
+        0.1659536361694336,
+        0.17328691482543945
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.15807342529296875,
+      "mean_adaptive_solved": 0.6537017822265625,
+      "mean_unfinished_items": 2253.75,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "bimodal": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.10028219223022461,
+      "bootstrap_ci95": [
+        0.09702205657958984,
+        0.10365676879882812
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.09040069580078125,
+      "mean_adaptive_solved": 0.6230926513671875,
+      "mean_unfinished_items": 1789.9375,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "extreme_easy": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.042156219482421875,
+      "bootstrap_ci95": [
+        0.04111146926879883,
+        0.043204307556152344
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.0378570556640625,
+      "mean_adaptive_solved": 0.7700653076171875,
+      "mean_unfinished_items": 1616.6875,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "extreme_hard": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.16271591186523438,
+      "bootstrap_ci95": [
+        0.15862798690795898,
+        0.16642141342163086
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.1467132568359375,
+      "mean_adaptive_solved": 0.636322021484375,
+      "mean_unfinished_items": 2639.8125,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    },
+    "mid_peak": {
+      "n_data_seeds": 16,
+      "mean_paired_solved_difference": 0.07631731033325195,
+      "bootstrap_ci95": [
+        0.07478809356689453,
+        0.07775163650512695
+      ],
+      "exact_randomization_p_raw": 1.52587890625e-05,
+      "worst_seed_difference": 0.0715789794921875,
+      "mean_adaptive_solved": 0.7069244384765625,
+      "mean_unfinished_items": 2274.8125,
+      "paid_budget_contract_all_cells": true,
+      "holm_adjusted_p": 0.0001068115234375,
+      "primary_pass": true
+    }
+  },
+  "gates": {
+    "frozen_seed_set": true,
+    "all_development_distributions_pass": true,
+    "held_out_pass_count": 3,
+    "held_out_required": 2
+  },
+  "verdict": "SUPPORTED_END_TO_END_INTERNAL"
+}

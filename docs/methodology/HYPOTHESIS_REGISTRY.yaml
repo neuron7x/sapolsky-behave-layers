@@ -89,6 +89,18 @@ hypotheses:
     status: NOT_SUPPORTED
     claim_id: CWC-L2c-e2e-straightthrough
 
+  - hypothesis_id: H-L2q
+    research_question_id: RQ-allocation
+    type: confirmatory_internal
+    H0: "Paid halt information eliminates the adaptive allocation advantage."
+    H1: "Adaptive allocation beats input-blind allocation under an equal successor-lookup budget."
+    estimand: "solved(adaptive_paid_probe) - mean solved(input_blind_exact)"
+    experimental_unit: "seed x distribution (16 x 7)"
+    decision_rule: "All development and >=2/3 held-out cells: CI lower>0.02, Holm p<0.05, worst seed>0"
+    preregistration: experiments/wp4_adaptive_depth/PROTOCOL_END_TO_END_COST_V4.md
+    status: SUPPORTED_INTERNAL
+    claim_id: CWC-L2q-paid-halt-lookup
+
   - hypothesis_id: H-L3
     research_question_id: RQ-reuse
     type: confirmatory

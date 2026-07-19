@@ -1,0 +1,12 @@
+{
+  "experiment": "wp4-end-to-end-v4",
+  "protocol_commit": "b6bc531",
+  "implementation_commit": "9b9c262",
+  "threshold_repair_commit": "043ff5c",
+  "seeds": [300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315],
+  "batch_size": 4096,
+  "allocation_replicates": 32,
+  "cost_unit": "one successor lookup = 1000 millihops",
+  "externally_preregistered": false,
+  "independently_replicated": false
+}

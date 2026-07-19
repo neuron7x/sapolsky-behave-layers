@@ -7,3 +7,4 @@ R5-r3c-reinforce,CWC-L2a-e2e-reinforce,python -m experiments.wp2_routing_v2.src.
 R6-surface-matched,CWC-L2b-route-decision-cost,python -m experiments.wp2_routing_v2.src.surface_matched_routing --seeds 0 1 2 3 4 5 6 7,experiments/wp2_routing_v2/src/analyze_surface_matched.py,AUROC ~0.51 chance; ROUTE_DECISION_IS_THE_COMPUTATION,artifacts/wp2-routing-v3-surface-matched/,CPU/RTX3050
 R7-rcfr,CWC-L3-rcfr,python -m experiments.wp3_rcfr.src.runner,experiments/wp3_rcfr/,RCFR_NOT_SUPPORTED,artifacts/wp3-rcfr/,CPU/RTX3050
 R8-plasticity,CWC-L4-plasticity,python -m experiments.wp3_plasticity_v1.src.runner_oracle,experiments/wp3_plasticity_v1/,PLASTICITY_BENCHMARK_NOT_IDENTIFIABLE,artifacts/wp3-plasticity-v1/,CPU/RTX3050
+R9-paid-halt,CWC-L2q-paid-halt-lookup,python -m experiments.wp4_adaptive_depth.src.runner_end_to_end_v4,experiments/wp4_adaptive_depth/src/analyze_end_to_end_v4.py,SUPPORTED_END_TO_END_INTERNAL,artifacts/wp4-end-to-end-v4/,CPU/RTX3050

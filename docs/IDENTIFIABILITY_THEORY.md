@@ -195,3 +195,14 @@ gap must be discounted by the *learned* route-decision cost on the target worklo
 The decisive question for real workloads is not merely "does difficulty vary?" but
 "is difficulty **cheaply predictable** from the input?" — an empirical property to
 measure with a cheap-probe-vs-oracle-probe gap before spending cloud compute.
+
+### 9.1 Paid stopping information on the exact-hop substrate
+
+WP4 v4 makes the information charge operational: one successor lookup both advances a
+nonterminal state and reveals a self-loop, and the terminal observation is billed. At
+the same frozen number of lookups, adaptive active-set allocation beats input-blind
+allocation in all seven synthetic distributions (mean paired solved lift 0.042–0.169;
+16 untouched seeds). This refutes the narrow hypothesis that paying the exact halt
+lookup necessarily erases the allocation gain. It does not price a learned predictor,
+controller arithmetic, memory traffic, or physical execution, so it is not evidence
+that `c_route` is small on real inputs.

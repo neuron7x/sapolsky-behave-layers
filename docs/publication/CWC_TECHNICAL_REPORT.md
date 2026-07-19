@@ -10,8 +10,9 @@ substrate and a falsification harness, and report what survives. We contribute: 
 **identifiability proposition** — under the stated additive model, the value of adaptive
 control is the context×choice interaction `γ`, realized only under a binding budget;
 (2) an executable positive control verifying the same-sample identity adaptive−static
-= **P_sample(m>K)** under an exact halt oracle (8×4), explicitly not an exactly
-compute-matched Pareto result; (3) a
+= **P_sample(m>K)** under an exact halt oracle (8×4), followed by a prospective
+paid-terminal-probe test that retains a logical-lookup-budget advantage across 16×7
+cells; neither is a physical Pareto result; (3) a
 dissection of learned routing into **credit-assignment** and **route-decision cost**,
 showing a leakage-free controller recovers oracle routing under a binding budget but
 that on a surface-matched task **the route decision costs as much as the computation**;
@@ -52,6 +53,11 @@ an autonomous-routing claim.
   verifies adaptive−static = `P_sample(m>K)` across 8 seeds × 4 regimes. Because both
   sides use the same sampled difficulties and `K=round(E_sample[m])`, this is an
   executable identity, not an independent prediction or exact compute-parity result.
+- **Paid halt lookup (L2q):** with every successor observation, including the terminal
+  self-loop probe, inside the same frozen lookup budget, adaptive allocation retains a
+  paired solved lift of 0.042–0.169 across seven distributions and 16 untouched seeds.
+  This is logical-operation parity, not measured FLOP, latency, or learned-controller
+  parity.
 - **Routing credit-assignment (L2a):** the earlier straight-through end-to-end *collapse*
   was an estimator artifact; a REINFORCE controller (`L=L_task+λ·C_use`, no privileged
   target, label-free capacity) reaches AUROC 1.0 (learned 0.009 vs random 0.48, 8 seeds)
@@ -74,10 +80,11 @@ All results reproduce in seconds–minutes on CPU / RTX 3050; $0. Energy INSTRUM
 → excluded. Cloud tiers for a scale claim: `EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
 
 ## 10. Limitations & claim boundary
-Synthetic-only, small-scale, no scale Pareto, no independent replication. Several
+Synthetic-only, small-scale, no physical scale Pareto, no independent replication. Several
 historical protocols and results entered Git together and are not auditable
-preregistrations. WP4 uses an exact halt oracle and its archived compute match was
-approximate, not exact. See `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`,
+preregistrations. The first WP4 archive used an exact halt oracle and approximate
+compute matching; v4 pays the halt lookup exactly but still excludes controller and
+hardware costs. See `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`,
 `LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md`, and `claim_registry.json`.
 
 ## 11. Reproducibility

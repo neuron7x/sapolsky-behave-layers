@@ -16,6 +16,7 @@ from typing import Any
 
 from experiments.wp4_adaptive_depth.src.analyze import analyze as analyze_wp4
 from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v31 import analyze as analyze_wp4_v31
+from experiments.wp4_adaptive_depth.src.analyze_end_to_end_v4 import analyze as analyze_wp4_v4
 
 ROOT = Path(__file__).resolve().parents[1]
 SEED_FILE = re.compile(r"seed(?P<seed>\d+)(?P<arm>_[^.]+)?\.json$")
@@ -98,6 +99,13 @@ def validate(root: Path = ROOT) -> list[str]:
         saved = json.loads(v31_saved.read_text())
         if recomputed != saved:
             errors.append("artifacts/wp4-exact-compute-v31/analysis.json: does not recompute exactly")
+    v4_runs = root / "artifacts/wp4-end-to-end-v4/raw_runs"
+    v4_saved = root / "artifacts/wp4-end-to-end-v4/analysis.json"
+    if v4_runs.is_dir() and v4_saved.is_file():
+        recomputed = analyze_wp4_v4(v4_runs)
+        saved = json.loads(v4_saved.read_text())
+        if recomputed != saved:
+            errors.append("artifacts/wp4-end-to-end-v4/analysis.json: does not recompute exactly")
     return errors
 
 

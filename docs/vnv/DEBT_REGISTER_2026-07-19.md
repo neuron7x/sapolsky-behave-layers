@@ -16,6 +16,7 @@ This is the authoritative audit closeout for the first remediation pass.
 | P1-EXACT | rounded static budget prevented exact compute pairing | exact-total input-blind allocator + exploratory pilot added |
 | P1-HALT | malformed non-convergent graphs could silently exhaust the loop | adaptive halt now fails closed; adversarial cycle regression added |
 | P1-HOLDOUT | first v3 control budget read realized holdout difficulty | run invalidated; prospective v3.1 frozen analytic budgets + untouched seeds used |
+| P1-FREEHALT | v3.1 excluded convergence detection from the shared ledger | v4 bills every successor observation, including the terminal self-loop probe, under an exact frozen lookup budget |
 
 ## Resolved epistemically
 
@@ -31,7 +32,7 @@ This is the authoritative audit closeout for the first remediation pass.
 | Priority | Debt | Closure evidence required |
 |---|---|---|
 | P0-EXT | no real-workload external validity | >=2 real tasks, held-out distributions, strong baselines |
-| P0-PARETO | no exact end-to-end compute Pareto result | controller cost charged; <=1% FLOP mismatch; quality/latency frontier |
+| P0-PARETO | no physical end-to-end compute Pareto result | controller arithmetic/memory charged; <=1% measured FLOP mismatch; quality/latency frontier |
 | P0-REPL | no independent replication | clean-room third-party rerun |
 | P1-POWER | no pilot-derived confirmatory sample-size calculation | frozen pilot, MDE, variance, prospective n |
 | P1-RELATED | systematic literature review incomplete | databases, dates, search strings, inclusion/exclusion log |
@@ -50,3 +51,9 @@ no external timestamp or independent operator exists.
 V3.1 closes operator-hop matching under distribution-derived frozen budgets, but
 does **not** close `P0-PARETO`: halt evaluations are 1.12–1.39 per billed hop and
 are excluded from the primary ledger. End-to-end controller/halt cost remains open.
+
+V4 supersedes that specific free-halt limitation: the terminal observation is a paid
+successor lookup, and all seven frozen cells retain a positive >0.02 advantage. This
+closes `P1-FREEHALT` only at the logical-lookup level. `P0-PARETO` remains open because
+controller arithmetic, memory traffic, vectorization, measured FLOPs/latency, learning,
+and real workloads are not represented by this synthetic ledger.

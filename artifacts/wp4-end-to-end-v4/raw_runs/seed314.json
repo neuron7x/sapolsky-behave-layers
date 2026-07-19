@@ -1,0 +1,135 @@
+{
+  "seed": 314,
+  "protocol_commit": "b6bc531",
+  "status": "INTERNAL_CONFIRMATORY_GIT_ORDERED",
+  "allocation_replicates": 32,
+  "batch_size": 4096,
+  "distributions": {
+    "uniform": {
+      "data_seed": 7127366993154960918,
+      "frozen_lookup_budget": 18432,
+      "frozen_millihop_budget": 18432000,
+      "realized_sum_m_audit_only": 18363,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 18432,
+        "billed_millihops": 18432000,
+        "terminal_probes": 2345,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 1751,
+        "solved": 0.690185546875,
+        "total_moves": 16087
+      },
+      "input_blind_exact_solved_mean": 0.5680694580078125,
+      "paired_solved_difference": 0.1221160888671875
+    },
+    "easy_skew": {
+      "data_seed": 2653035775502572709,
+      "frozen_lookup_budget": 12743,
+      "frozen_millihop_budget": 12743000,
+      "realized_sum_m_audit_only": 12752,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 12743,
+        "billed_millihops": 12743000,
+        "terminal_probes": 2591,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 1505,
+        "solved": 0.750732421875,
+        "total_moves": 10152
+      },
+      "input_blind_exact_solved_mean": 0.6821365356445312,
+      "paired_solved_difference": 0.06859588623046875
+    },
+    "hard_skew": {
+      "data_seed": 5875616297623691064,
+      "frozen_lookup_budget": 24121,
+      "frozen_millihop_budget": 24121000,
+      "realized_sum_m_audit_only": 23995,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 24121,
+        "billed_millihops": 24121000,
+        "terminal_probes": 1874,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 2222,
+        "solved": 0.65576171875,
+        "total_moves": 22247
+      },
+      "input_blind_exact_solved_mean": 0.49205780029296875,
+      "paired_solved_difference": 0.16370391845703125
+    },
+    "bimodal": {
+      "data_seed": 2250214219500201773,
+      "frozen_lookup_budget": 18432,
+      "frozen_millihop_budget": 18432000,
+      "realized_sum_m_audit_only": 18659,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 18432,
+        "billed_millihops": 18432000,
+        "terminal_probes": 2245,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 1851,
+        "solved": 0.603271484375,
+        "total_moves": 16187
+      },
+      "input_blind_exact_solved_mean": 0.5110092163085938,
+      "paired_solved_difference": 0.09226226806640625
+    },
+    "extreme_easy": {
+      "data_seed": 4215801432555476378,
+      "frozen_lookup_budget": 10103,
+      "frozen_millihop_budget": 10103000,
+      "realized_sum_m_audit_only": 10236,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 10103,
+        "billed_millihops": 10103000,
+        "terminal_probes": 2479,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 1617,
+        "solved": 0.766845703125,
+        "total_moves": 7624
+      },
+      "input_blind_exact_solved_mean": 0.7219390869140625,
+      "paired_solved_difference": 0.0449066162109375
+    },
+    "extreme_hard": {
+      "data_seed": 8355842216754746982,
+      "frozen_lookup_budget": 26761,
+      "frozen_millihop_budget": 26761000,
+      "realized_sum_m_audit_only": 26912,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 26761,
+        "billed_millihops": 26761000,
+        "terminal_probes": 1420,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 2676,
+        "solved": 0.616455078125,
+        "total_moves": 25341
+      },
+      "input_blind_exact_solved_mean": 0.46599578857421875,
+      "paired_solved_difference": 0.15045928955078125
+    },
+    "mid_peak": {
+      "data_seed": 6236680244498387881,
+      "frozen_lookup_budget": 18432,
+      "frozen_millihop_budget": 18432000,
+      "realized_sum_m_audit_only": 18528,
+      "budget_was_derived_from_realized_m": false,
+      "adaptive_paid_probe": {
+        "billed_lookups": 18432,
+        "billed_millihops": 18432000,
+        "terminal_probes": 1776,
+        "paid_padding_lookups": 0,
+        "unfinished_items": 2320,
+        "solved": 0.70703125,
+        "total_moves": 16656
+      },
+      "input_blind_exact_solved_mean": 0.6335906982421875,
+      "paired_solved_difference": 0.0734405517578125
+    }
+  }
+}
