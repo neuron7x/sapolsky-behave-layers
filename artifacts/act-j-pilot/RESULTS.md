@@ -87,7 +87,14 @@ both, hard only by the expensive mechanism.
 At the binding budget the trained adaptive router **strictly dominates the static
 frontier by 0.25 at equal FLOPs** — precisely the constrained oracle gap the theory
 predicts (and the same 0.25 as budgeted routing-v2). When a mechanism weakly dominates,
-routing buys **no** compute advantage (gap 0). This is the compute-equivalent advantage
+routing buys **no** compute advantage (gap 0).
+
+**General theorem (verified, `compute_matched_advantage`).** For *any* number of
+mechanisms with arbitrary costs, the constrained oracle (adaptive) value is **never
+below** the best context-blind (static) value at matched compute — because any static
+policy is feasible for the adaptive fractional-knapsack LP. Adversarial check: 400
+random problems with `|A|` up to 4, worst `adaptive − static = 0.000000`; the
+`λ`-vertex concave-envelope oracle also dominates every pure per-context assignment. This is the compute-equivalent advantage
 question (L7), answered at tiny synthetic scale and matching the theory exactly — a
 proof of concept for the real Act J, not the cloud-scale result itself.
 

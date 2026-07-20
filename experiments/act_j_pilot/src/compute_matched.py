@@ -102,6 +102,56 @@ def static_value_at_compute(
     return best
 
 
+def constrained_oracle_at_compute(
+    utility: list[list[float]], cost: list[float], prior: list[float], budget: float,
+) -> float:
+    """The best CONTEXT-AWARE (adaptive) value at average compute ``<= budget`` [general |A|].
+
+    The oracle solves the fractional-knapsack LP
+    ``max sum_c p_c sum_a x[c,a] U[c,a]  s.t.  sum_c p_c sum_a x[c,a] K[a] <= B``, whose
+    optimum is the upper-concave envelope of the Lagrangian vertices: for each price
+    ``lambda`` each context picks ``argmax_a (U[c,a] - lambda K[a])``, giving a
+    (compute, value) point; time-sharing the two vertices bracketing ``B`` attains the
+    optimum. Because any context-blind policy is feasible here (set ``x[c,a]=q[a]``),
+    ``constrained_oracle_at_compute >= static_value_at_compute`` ALWAYS — the
+    compute-matched advantage is non-negative for any number of mechanisms.
+    """
+    n_c, n_a = len(utility), len(utility[0])
+    breakpoints = {0.0}
+    for c in range(n_c):
+        for a in range(n_a):
+            for b in range(n_a):
+                if cost[a] > cost[b]:
+                    breakpoints.add(max(0.0, (utility[c][a] - utility[c][b]) / (cost[a] - cost[b])))
+    vertices: set[tuple[float, float]] = set()
+    for lam in [*sorted(breakpoints), 1e9]:
+        compute = value = 0.0
+        for c in range(n_c):
+            a = max(range(n_a), key=lambda a: utility[c][a] - lam * cost[a] - 1e-12 * cost[a])
+            compute += prior[c] * cost[a]
+            value += prior[c] * utility[c][a]
+        vertices.add((round(compute, 10), round(value, 10)))
+    verts = sorted(vertices)
+    best = -1e18
+    for ci, vi in verts:
+        if ci <= budget + 1e-9:
+            best = max(best, vi)
+        for cj, vj in verts:
+            if ci <= budget <= cj and cj > ci:
+                t = (budget - ci) / (cj - ci)
+                best = max(best, (1 - t) * vi + t * vj)
+    return best
+
+
+def compute_matched_advantage(
+    utility: list[list[float]], cost: list[float], prior: list[float], budget: float,
+) -> dict[str, float]:
+    """Adaptive (constrained-oracle) minus best static value at the same compute (>= 0)."""
+    adaptive = constrained_oracle_at_compute(utility, cost, prior, budget)
+    static = static_value_at_compute(utility, cost, prior, budget)
+    return {"budget": budget, "adaptive": adaptive, "static": static, "advantage": adaptive - static}
+
+
 def compute_matched_gap(
     utility: list[list[float]], cost: list[float], prior: list[float],
     mus: list[float], *, steps: int = 4000, seed: int = 0,

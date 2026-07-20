@@ -11,7 +11,11 @@ from experiments.act_j_pilot.src.act_j_pilot import (
     train_controller,
     train_sensory_controller,
 )
-from experiments.act_j_pilot.src.compute_matched import compute_matched_gap
+from experiments.act_j_pilot.src.compute_matched import (
+    compute_matched_advantage,
+    compute_matched_gap,
+    constrained_oracle_at_compute,
+)
 from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
 REGULAR = [[1.0, 0.0], [0.0, 0.5]]
@@ -116,6 +120,34 @@ def test_static_baseline_is_the_true_lp_optimum():
         b = rng.uniform(min(cost), max(cost))
         worst = max(worst, abs(static_value_at_compute(u, cost, p, b) - brute(u, cost, p, b)))
     assert worst < 1e-2       # matches the LP optimum to grid resolution
+
+
+def test_adaptive_never_worse_than_static_for_general_mechanisms():
+    # THEOREM: constrained-oracle (adaptive) >= best context-blind (static) at matched
+    # compute, for ANY number of mechanisms with arbitrary costs (static feasible set is
+    # a subset of the adaptive one). Adversarial: 400 random problems, |A| up to 4.
+    import itertools
+    rng = random.Random(9)
+    worst = 0.0
+    worst_vs_pure = 0.0
+    for _ in range(400):
+        k, a = rng.randint(2, 4), rng.randint(2, 4)
+        u = [[rng.uniform(0.0, 1.0) for _ in range(a)] for _ in range(k)]
+        cost = [rng.uniform(1.0, 5.0) for _ in range(a)]
+        p = [1.0 / k] * k
+        b = rng.uniform(min(cost), max(cost))
+        adv = compute_matched_advantage(u, cost, p, b)
+        worst = min(worst, adv["advantage"])                      # must be >= 0
+        # the fractional oracle is >= any PURE per-context assignment within budget
+        pure_best = max(
+            (sum(p[c] * u[c][combo[c]] for c in range(k))
+             for combo in itertools.product(range(a), repeat=k)
+             if sum(p[c] * cost[combo[c]] for c in range(k)) <= b + 1e-9),
+            default=-1e18,
+        )
+        worst_vs_pure = min(worst_vs_pure, adv["adaptive"] - pure_best)
+    assert worst > -1e-6           # adaptive never worse than static (the theorem)
+    assert worst_vs_pure > -1e-6   # and the oracle solver dominates pure assignments
 
 
 def test_compute_matched_dominance_is_robust_across_seeds():
