@@ -95,11 +95,13 @@ For the decisive Act J step, the theory reduces to a checklist with a validity p
 
 ## 5. Honest frontier
 
-Proven and verified: everything in §3. **Not** claimed: any empirical CWC Pareto result
+Proven and verified: everything in §3, plus the **general critical constant**
+`c = std_p(D)/Δu` (Thm 4‴ — the routability-attainment factor on the whole indifference
+manifold, exact and tested). **Not** claimed: any empirical CWC Pareto result
 (`CWC-L7-pareto: NOT_TESTED` — this theory decides *whether to attempt* it, not its
-outcome); the exact critical constant `c` off the symmetric locus; a less-conservative
-inference certificate near the irregular boundary (double bootstrap / median-of-means);
-heavy-tailed pilots. These are the next markets to price, not results in hand.
+outcome); a less-conservative inference certificate near the irregular boundary (double
+bootstrap / median-of-means); heavy-tailed pilots; multi-way ties (codimension ≥ 2).
+These are the next markets to price, not results in hand.
 
 ## 6. Provenance
 

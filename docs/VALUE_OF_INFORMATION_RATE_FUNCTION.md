@@ -145,11 +145,21 @@ by `Δu√(R/2)` and using `√(R/2)`'s own expansion yields the ratio `1 − R/
 against): `1 − ratio = {1.67e-3, 1.67e-4, 1.67e-5}` at `R = {1e-2, 1e-3, 1e-4}`,
 matching `R/6` to every digit.
 
-General (non-symmetric) critical points keep `V*(R) = Θ(√R)` but with a constant
-`c ≤ 1` set by the local geometry — Pinsker is order-tight there and **exactly**
-tight only on the symmetric locus. This is the sharpest possible statement of *when*
-the routability bound is attained: not merely "on the indifference manifold," but
-"with equality only at its symmetric points."
+The general constant is now pinned exactly. At *any* two-action critical point (actions
+`a,b` tie, `D := U[·,a]−U[·,b]`, `𝔼_p D = 0`), the small-rate value is
+`V(Z) = ½·𝔼_z|𝔼[D|Z=z]|`, and its rate-constrained optimum is
+
+> **Theorem 4‴ (general critical constant).**
+> `V*(R) = √( R·Var_p(D)/2 )·(1+o(1))`, so the leading coefficient is
+> `κ = std_p(D)/√2` and the Pinsker-ratio limit is
+> `c = std_p(D)/Δu ≤ 1`, with equality iff `|D| = Δu` almost surely.
+
+*Verified* (`critical_leading_constant`): the formula predicts the RI-solved
+`V*(R)/√R` and `V*(R)/(Δu√(R/2))` to `2·10⁻³` on symmetric and asymmetric criticals
+(`c = 1.00, 0.47, 0.43`), and `c=1` **iff** the tie is symmetric. This is the sharpest
+statement of *how* tight the routability bound is on the whole indifference manifold:
+the attainment factor is the standard deviation of the tied-action utility gap, in
+units of the utility range.
 
 ## 4a. The transition is universal — general `|C| > 2`
 

@@ -12,6 +12,7 @@ from itertools import pairwise
 import pytest
 
 from experiments.common.value_of_information_rate import (
+    critical_leading_constant,
     critical_pinsker_tightness,
     falsify_rate_function,
     is_critical,
@@ -167,6 +168,31 @@ def test_exact_first_order_correction_is_R_over_six():
     for r in (1e-2, 1e-3, 1e-4):
         one_minus = critical_pinsker_tightness(r)["one_minus_ratio"]
         assert one_minus == pytest.approx(r / 6.0, rel=2e-2)
+
+
+def test_general_critical_constant_equals_std_D_over_root_two():
+    # V*(R) = sqrt(R*Var(D)/2): the leading constant kappa=std(D)/sqrt2 and c=std(D)/Du
+    # must predict the RI solver for any two-action critical point.
+    for dv in ([1.0, -1.0], [2.0, -1.0, -1.0], [3.0, -1.0, -1.0, -1.0]):
+        n = len(dv)
+        u, p = [[d, 0.0] for d in dv], [1.0 / n] * n
+        c = critical_leading_constant(u, p)
+        r = 1e-4
+        assert optimal_value_at_rate_ri(u, r, p) / math.sqrt(r) == pytest.approx(c["kappa"], rel=2e-3)
+        assert optimal_value_at_rate_ri(u, r, p) / pinsker_ceiling(u, r) == pytest.approx(
+            c["pinsker_ratio_c"], rel=2e-3
+        )
+        assert c["pinsker_ratio_c"] <= 1.0 + 1e-9        # c <= 1 always
+
+
+def test_critical_constant_is_one_iff_symmetric():
+    # symmetric [[1,0],[0,1]]: |D|=Du everywhere -> c=1 (Pinsker attained); else c<1
+    c_sym = critical_leading_constant([[1.0, 0.0], [0.0, 1.0]])
+    assert c_sym["pinsker_ratio_c"] == pytest.approx(1.0, abs=1e-12)
+    c_asym = critical_leading_constant([[2.0, 0.0], [-1.0, 0.0], [-1.0, 0.0]])
+    assert c_asym["pinsker_ratio_c"] < 0.9
+    with pytest.raises(ValueError):
+        critical_leading_constant(REGULAR)                # not critical -> no two tied actions
 
 
 def test_exact_solver_dominates_and_matches_the_grid():

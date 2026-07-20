@@ -481,6 +481,34 @@ def critical_pinsker_tightness(rate: float, utility_range: float = 1.0) -> dict[
             "ratio": v / ceil if ceil > _TOL else 0.0, "one_minus_ratio": 1.0 - (v / ceil if ceil > _TOL else 0.0)}
 
 
+def critical_leading_constant(utility: Matrix, prior: Vector | None = None) -> dict[str, float]:
+    """The exact leading constant of ``V*(R)`` at a (two-action) critical point.
+
+    When actions ``a, b`` tie for the prior optimum, let ``D = U[.,a] - U[.,b]`` (so
+    ``E_p[D] = 0``). Then the small-rate value is
+    ``V(Z) = (1/2) E_z |E[D|Z=z]|`` and its rate-constrained optimum obeys
+
+        V*(R) = sqrt( R * Var_p(D) / 2 ) * (1 + o(1)),
+
+    so the leading coefficient is ``kappa = std_p(D)/sqrt(2)`` and the Pinsker ratio
+    limit is ``c = std_p(D)/Delta_u <= 1``, with equality iff ``|D| = Delta_u`` almost
+    surely (the symmetric case, ``c=1``). Requires exactly two prior-optimal actions.
+    """
+    n_c = len(utility)
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    tied = prior_optimal_actions(utility, p)
+    if len(tied) != 2:
+        raise ValueError("critical_leading_constant needs exactly two tied prior-optimal actions")
+    a, b = tied
+    d = [utility[c][a] - utility[c][b] for c in range(n_c)]
+    mean_d = sum(p[c] * d[c] for c in range(n_c))
+    var_d = sum(p[c] * (d[c] - mean_d) ** 2 for c in range(n_c))
+    std_d = math.sqrt(var_d)
+    du = utility_range(utility)
+    return {"kappa": std_d / math.sqrt(2.0), "std_D": std_d, "utility_range": du,
+            "pinsker_ratio_c": std_d / du if du > _TOL else 0.0}
+
+
 # --------------------------------------------------------------------------- #
 # Adversarial falsification harness                                           #
 # --------------------------------------------------------------------------- #

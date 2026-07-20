@@ -77,6 +77,11 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   identifiable (G=0.248) — the most information-efficient regime, where the marginal
   value of a difficulty-signal is amplified ~17x (beta(1e-4)=17.6 vs ~1.05 regular).
   The theory now explains the empirical CE gap, not merely bounds it.
+  General critical constant (Theorem 4'''): at any two-action critical point with
+  D=U[.,a]-U[.,b], V*(R)=sqrt(R*Var(D)/2), so kappa=std(D)/sqrt2 and the Pinsker-ratio
+  limit is c=std(D)/Du <= 1, equality iff |D|=Du a.s. (recovers c=1 symmetric).
+  critical_leading_constant; the formula predicts the RI solver to 2e-3 (c=1.00,0.47,0.43).
+  The routability attainment factor on the whole indifference manifold, closed exactly.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master
