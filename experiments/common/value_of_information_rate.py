@@ -287,6 +287,20 @@ def _rational_inattention(
     return gross - v_fixed, max(0.0, info)
 
 
+def _solve_shadow_price(utility: Matrix, prior: Vector, rate: float) -> float:
+    """Bisect the rational-inattention shadow price ``beta`` so that ``I(beta) = rate``
+    (``I`` is decreasing in ``beta``)."""
+    b_lo, b_hi = 1e-4, 1e7
+    for _ in range(80):
+        b_mid = math.sqrt(b_lo * b_hi)
+        _v, info = _rational_inattention(utility, prior, b_mid)
+        if info > rate:            # too much information purchased -> raise the price
+            b_lo = b_mid
+        else:
+            b_hi = b_mid
+    return b_hi
+
+
 def optimal_value_at_rate_ri(
     utility: Matrix, rate: float, prior: Vector | None = None
 ) -> float:
@@ -304,16 +318,46 @@ def optimal_value_at_rate_ri(
         raise ValueError("rate must be finite and non-negative")
     if rate == 0.0:
         return 0.0
-    b_lo, b_hi = 1e-4, 1e7
-    for _ in range(80):
-        b_mid = math.sqrt(b_lo * b_hi)
-        _v, info = _rational_inattention(utility, p, b_mid)
-        if info > rate:            # too much information purchased -> raise the price
-            b_lo = b_mid
-        else:
-            b_hi = b_mid
-    value, _info = _rational_inattention(utility, p, b_hi)
+    value, _info = _rational_inattention(utility, p, _solve_shadow_price(utility, p, rate))
     return max(0.0, value)
+
+
+def marginal_value_of_information(
+    utility: Matrix, rate: float, prior: Vector | None = None
+) -> float:
+    """The marginal value of information ``beta(R) = dV*/dR`` [utility per nat].
+
+    This is the rational-inattention shadow price at rate ``R``. Since ``beta`` is the
+    Lagrange multiplier, ``beta = dV*/dR`` exactly; it is **decreasing** in ``R`` (so
+    ``V*`` is CONCAVE), finite as ``R->0`` at a regular problem (the information
+    sensitivity ``sigma``) and diverges as ``R->0`` at a critical one (the sqrt onset).
+    """
+    n_c = len(utility)
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    if rate <= 0 or not math.isfinite(rate):
+        raise ValueError("rate must be finite and positive to price the marginal nat")
+    return _solve_shadow_price(utility, p, rate)
+
+
+# Physical exchange rate: the marginal nat is worth `beta` utility, and every nat
+# costs at least k_B*T joules to acquire/erase irreversibly (Landauer, per nat).
+_K_B: float = 1.380649e-23  # J/K
+
+
+def utility_per_joule_ceiling(marginal_value_nats: float, temperature_k: float = 310.15) -> float:
+    """Thermodynamic ceiling on decision value per joule: ``beta / (k_B T)`` [utility/J].
+
+    Couples the rate function to the physical substrate (`NEURON_INFORMATION_BUDGET.md`):
+    a router that pays ``beta`` utility per nat cannot beat ``beta / (k_B T)`` utility
+    per joule, since one nat of erased information costs at least ``k_B T`` joules. The
+    same information-market price, now in physical units — the fractal link from the
+    abstract decision to the biological substrate.
+    """
+    if marginal_value_nats < 0 or not math.isfinite(marginal_value_nats):
+        raise ValueError("marginal value must be finite and non-negative")
+    if temperature_k <= 0:
+        raise ValueError("temperature must be positive")
+    return marginal_value_nats / (_K_B * temperature_k)
 
 
 # --------------------------------------------------------------------------- #

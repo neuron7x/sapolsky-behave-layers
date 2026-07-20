@@ -60,6 +60,12 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   reproduces the closed-form critical value to 1.7e-16, matches the exact binary grid,
   and strictly beats the binary-signal lower bound at |C|=|A|=3 (0.081>0.075), finding
   the optimal stochastic channel. Sharpened exponents: 0.97 regular, 0.498 critical.
+  Marginal value of information: the shadow price beta(R)=dV*/dR [utility/nat]
+  (marginal_value_of_information), verified to equal the numerical derivative of V*;
+  decreasing in R -> V* is concave (settles Prop 1); finite as R->0 (regular) vs
+  divergent (critical). Fractal energy link: decision value per joule <= beta/(k_B T)
+  (utility_per_joule_ceiling) couples the rate function to the neuron budget's J/bit
+  floor — the same information-market price from the abstract decision to the ion channel.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

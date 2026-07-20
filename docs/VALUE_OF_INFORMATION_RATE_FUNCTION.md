@@ -185,6 +185,26 @@ channel the grid cannot resolve. With it the phase-transition exponents sharpen 
 `0.97` (regular) and `0.498` (critical). The value of information under a Shannon cost
 is exactly the routing-market price of §0, now computed sharply at any scale.
 
+### 4c. The marginal value of a nat — and the fractal link to energy
+
+The rational-inattention shadow price is the **marginal value of information**
+`β(R) = dV*/dR` [utility per nat] (`marginal_value_of_information`), verified to equal
+the numerical derivative of `V*`. Because `β` is a Lagrange multiplier it is
+**decreasing in `R`**, so `V*` is **concave** (settling Prop 1 rigorously); it is
+finite as `R→0` at a regular problem (the information sensitivity `σ`) and **diverges**
+at a critical one (the √R onset, seen from the derivative side).
+
+`β` closes the loop with `NEURON_INFORMATION_BUDGET.md`. A physical router pays `β`
+utility per nat, and by Landauer every nat costs at least `k_B T` joules to acquire
+irreversibly, so
+
+> **decision value per joule ≤ β / (k_B T)** (`utility_per_joule_ceiling`).
+
+The same information-market price — `min{value, cost}` at §0, `β = dV*/dR` here — now
+in physical units, from the abstract decision down to the biological substrate. The
+market is fractal: it prices a bit the same way at the routing gate and at the ion
+channel, and the exchange rate `β/(k_B T)` is where the two scales meet.
+
 ## 5. Method and reproduction
 
 `V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a

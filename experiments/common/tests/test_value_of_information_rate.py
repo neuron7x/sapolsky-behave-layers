@@ -15,6 +15,7 @@ from experiments.common.value_of_information_rate import (
     critical_pinsker_tightness,
     falsify_rate_function,
     is_critical,
+    marginal_value_of_information,
     optimal_value_at_rate,
     optimal_value_at_rate_general,
     optimal_value_at_rate_ri,
@@ -25,6 +26,7 @@ from experiments.common.value_of_information_rate import (
     small_rate_exponent,
     symmetric_critical_information,
     symmetric_critical_value,
+    utility_per_joule_ceiling,
     value_and_information,
 )
 
@@ -237,6 +239,37 @@ def test_phase_transition_via_accurate_ri_solver():
         ) / (len(vs) - 1)
     assert expo(REG3, (0.02, 0.005, 0.00125)) > 0.85     # regular ~ linear
     assert 0.45 < expo(CRIT3, (0.02, 0.005, 0.00125)) < 0.56  # critical ~ sqrt
+
+
+# ---- MARGINAL VALUE beta = dV*/dR : concavity + physical exchange rate ----- #
+def test_marginal_value_equals_the_derivative_of_the_rate_function():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    for r in (0.01, 0.05, 0.2):
+        beta = marginal_value_of_information(u, r)
+        num = (optimal_value_at_rate_ri(u, r * 1.01) - optimal_value_at_rate_ri(u, r * 0.99)) / (0.02 * r)
+        assert beta == pytest.approx(num, rel=3e-2)     # beta is exactly dV*/dR
+
+
+def test_rate_function_is_concave_marginal_value_decreases():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    betas = [marginal_value_of_information(u, r) for r in (0.001, 0.01, 0.05, 0.2)]
+    assert all(a > b for a, b in pairwise(betas))       # decreasing -> V* concave
+
+
+def test_marginal_value_dichotomy_finite_regular_divergent_critical():
+    reg = [marginal_value_of_information([[1.0, 0.0], [0.0, 0.5]], r) for r in (0.05, 0.005, 0.0005)]
+    crit = [marginal_value_of_information([[1.0, 0.0], [0.0, 1.0]], r) for r in (0.05, 0.005, 0.0005)]
+    assert reg[-1] < 2.0                                 # regular: bounded (finite sigma)
+    assert crit[-1] > 3.0 * crit[0]                      # critical: diverges as R->0
+
+
+def test_utility_per_joule_ceiling_couples_to_landauer():
+    # a router paying beta utility/nat cannot beat beta/(kT) utility per joule
+    kT = 1.380649e-23 * 310.15
+    assert utility_per_joule_ceiling(1.0) == pytest.approx(1.0 / kT, rel=1e-9)
+    assert utility_per_joule_ceiling(2.0) == pytest.approx(2.0 * utility_per_joule_ceiling(1.0), rel=1e-12)
+    with pytest.raises(ValueError):
+        utility_per_joule_ceiling(-1.0)
 
 
 # ------------------------------ bundled harness ---------------------------- #
