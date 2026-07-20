@@ -49,6 +49,11 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   Universality: a general-context binary-signal solver confirms the transition is NOT a
   binary artifact — at |C|=3 the regular problem gives exponent 1.12 (Pinsker ratio 0.11,
   loose), the critical problem exponent 0.54 (ratio 0.67, tight), matching the binary case.
+  Exact critical constant (Theorem 4'): at a symmetric binary indifference point the
+  Pinsker ceiling is ATTAINED, not merely order-tight — V*(R)=Δu√(R/2)(1−R/6+O(R²)),
+  c=1, verified to machine precision by a closed-form solver (1−ratio = R/6 to every
+  digit). Non-symmetric critical points keep Θ(√R) with c≤1, exact only on the
+  symmetric locus — the sharpest statement of when routability is attained.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

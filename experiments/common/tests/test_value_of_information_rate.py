@@ -7,10 +7,12 @@ critical/indifference problem. Constructed so a mutant that breaks the solver,
 the bound, or the dichotomy is killed.
 """
 import math
+from itertools import pairwise
 
 import pytest
 
 from experiments.common.value_of_information_rate import (
+    critical_pinsker_tightness,
     falsify_rate_function,
     is_critical,
     optimal_value_at_rate,
@@ -20,6 +22,8 @@ from experiments.common.value_of_information_rate import (
     pinsker_tightness,
     prior_optimal_actions,
     small_rate_exponent,
+    symmetric_critical_information,
+    symmetric_critical_value,
     value_and_information,
 )
 
@@ -135,6 +139,50 @@ def test_phase_transition_holds_for_three_contexts():
 def test_general_solver_guards_against_intractable_size():
     with pytest.raises(ValueError):
         optimal_value_at_rate_general([[0.0, 1.0]] * 6, 0.1, grid=60)  # grid**|C| too large
+
+
+# ------- SHARP CRITICAL CONSTANT: Pinsker is ATTAINED (c = 1) -------------- #
+def test_symmetric_channel_information_expansion():
+    assert symmetric_critical_information(0.0) == 0.0
+    for t in (0.05, 0.01, 0.002):
+        # I(t) = 2 t^2 + O(t^4): leading coefficient is exactly 2
+        assert symmetric_critical_information(t) / (2 * t * t) == pytest.approx(1.0, abs=1e-2)
+    with pytest.raises(ValueError):
+        symmetric_critical_information(0.5)
+
+
+def test_pinsker_ceiling_is_asymptotically_attained_c_equals_one():
+    # V*(R)/(Du sqrt(R/2)) -> 1 : the critical constant is exactly 1
+    ratios = [critical_pinsker_tightness(r)["ratio"] for r in (1e-2, 1e-3, 1e-4, 1e-5)]
+    assert all(a < b for a, b in pairwise(ratios))          # increasing toward 1
+    assert ratios[-1] > 0.99999                              # essentially attained
+
+
+def test_exact_first_order_correction_is_R_over_six():
+    # V*/Pinsker = 1 - R/6 + O(R^2): the first correction coefficient is exactly 1/6
+    for r in (1e-2, 1e-3, 1e-4):
+        one_minus = critical_pinsker_tightness(r)["one_minus_ratio"]
+        assert one_minus == pytest.approx(r / 6.0, rel=2e-2)
+
+
+def test_exact_solver_dominates_and_matches_the_grid():
+    # the closed-form symmetric optimum is exact; the grid is a (slightly looser) lower bound
+    u = [[1.0, 0.0], [0.0, 1.0]]
+    for r in (0.05, 0.02):
+        exact = symmetric_critical_value(r, utility_range=1.0)
+        grid = optimal_value_at_rate(u, r, coarse=200, refine=60)
+        assert exact >= grid - 1e-9              # exact is optimal
+        assert exact == pytest.approx(grid, abs=3e-3)  # and close
+
+
+def test_symmetric_critical_value_is_monotone_and_fails_closed():
+    prev = -1.0
+    for r in (0.001, 0.01, 0.1, 0.4):
+        v = symmetric_critical_value(r, 2.0)
+        assert v >= prev
+        prev = v
+    with pytest.raises(ValueError):
+        symmetric_critical_value(-0.1)
 
 
 # ------------------------------ bundled harness ---------------------------- #

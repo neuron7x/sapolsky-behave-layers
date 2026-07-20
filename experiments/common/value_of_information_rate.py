@@ -277,6 +277,55 @@ def pinsker_tightness(utility: Matrix, prior: Vector = (0.5, 0.5), *, rate: floa
 
 
 # --------------------------------------------------------------------------- #
+# Exact critical constant: Pinsker is ATTAINED at symmetric indifference        #
+# --------------------------------------------------------------------------- #
+def symmetric_critical_information(t: float) -> float:
+    """Mutual information of the symmetric binary channel ``q0=1/2-t, q1=1/2+t``:
+    ``I(t) = (1/2+t) ln(1+2t) + (1/2-t) ln(1-2t)`` (nats). ``I(t) = 2 t^2 + O(t^4)``.
+    """
+    if not (0.0 <= t < 0.5):
+        raise ValueError("t must lie in [0, 1/2)")
+    if t == 0.0:
+        return 0.0
+    return (0.5 + t) * math.log(1.0 + 2.0 * t) + (0.5 - t) * math.log(1.0 - 2.0 * t)
+
+
+def symmetric_critical_value(rate: float, utility_range: float = 1.0) -> float:
+    """Exact ``V*(R)`` at a symmetric binary indifference point (``U = Δu·I_2``).
+
+    By symmetry the optimal channel is ``q0=1/2-t, q1=1/2+t`` with two signals; then
+    ``V(t) = Δu·t`` and ``I(t) = symmetric_critical_information(t)``. Solving
+    ``I(t) = R`` by bisection gives the exact rate function — the ground truth against
+    which the grid solver is validated. It obeys ``V*(R)/(Δu√(R/2)) = 1 - R/6 + O(R²)``,
+    so the Pinsker ceiling is asymptotically ATTAINED (leading constant exactly 1).
+    """
+    if rate < 0 or not math.isfinite(rate):
+        raise ValueError("rate must be finite and non-negative")
+    if utility_range < 0:
+        raise ValueError("utility_range must be non-negative")
+    if rate == 0.0:
+        return 0.0
+    lo, hi = 0.0, 0.5 - 1e-15
+    if symmetric_critical_information(hi) <= rate:
+        return utility_range * hi
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if symmetric_critical_information(mid) < rate:
+            lo = mid
+        else:
+            hi = mid
+    return utility_range * 0.5 * (lo + hi)
+
+
+def critical_pinsker_tightness(rate: float, utility_range: float = 1.0) -> dict[str, float]:
+    """Exact ``V*(R)`` vs the Pinsker ceiling at symmetric indifference: ratio -> 1."""
+    v = symmetric_critical_value(rate, utility_range)
+    ceil = utility_range * math.sqrt(rate / 2.0)
+    return {"rate": rate, "v_star": v, "pinsker_ceiling": ceil,
+            "ratio": v / ceil if ceil > _TOL else 0.0, "one_minus_ratio": 1.0 - (v / ceil if ceil > _TOL else 0.0)}
+
+
+# --------------------------------------------------------------------------- #
 # Adversarial falsification harness                                           #
 # --------------------------------------------------------------------------- #
 class _Rng:
