@@ -26,6 +26,20 @@ machine precision. Representative (seed 0):
 | critical | 0.3 | 0.543 | 0.466 | 0.466 | 0.0000 |
 | critical | 0.1 | 0.693 | 0.500 (=G) | 0.500 | 0.0000 |
 
+## It scales — machine precision at larger `|C|, |A|`
+
+Random utility problems beyond 2×2 land on the analytic ceiling just as tightly
+(β=0.3, seed 0):
+
+| `|C|` | `|A|` | I trained | V trained | V*(I) | gap |
+|---:|---:|---:|---:|---:|---:|
+| 4 | 3 | 0.361 | 0.2054 | 0.2054 | 0.00000 |
+| 6 | 4 | 0.536 | 0.3971 | 0.3971 | 0.00000 |
+| 8 | 5 | 0.506 | 0.4411 | 0.4411 | 0.00000 |
+
+Worst gap over the **entire** run (2 regimes × 3 seeds × 4 β + 3 scaling problems):
+`8.4·10⁻⁷`.
+
 ## The phase transition, in a trained model
 
 At a **high** information price (`β=3`): the *regular* controller acquires `I≈0` and

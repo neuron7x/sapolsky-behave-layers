@@ -14,7 +14,10 @@ import argparse
 import json
 from pathlib import Path
 
+import random
+
 from experiments.act_j_pilot.src.act_j_pilot import compare_to_theory, train_controller
+from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
 REGULAR = [[1.0, 0.0], [0.0, 0.5]]    # unique prior optimum (margin 0.25)
 CRITICAL = [[1.0, 0.0], [0.0, 1.0]]   # two actions tie -> indifference
@@ -46,6 +49,20 @@ def run() -> dict[str, object]:
         "critical_routes_regular_does_not": crit_hi.value > 10.0 * reg_hi.value + 1e-3,
     }
     results["phase_transition"] = phase
+
+    # scaling: random larger problems (|C|,|A| > 2) must also land on V*(I)
+    scaling = []
+    for k, a, sd in ((4, 3, 11), (6, 4, 7), (8, 5, 3)):
+        rng = random.Random(sd)
+        u = [[rng.uniform(-1.0, 1.0) for _ in range(a)] for _ in range(k)]
+        p = [1.0 / k] * k
+        res = train_controller(u, p, beta=0.3, steps=5000, seed=0)
+        v_star = optimal_value_at_rate_ri(u, res.information_nats, p)
+        gap = abs(res.value - v_star)
+        worst_gap = max(worst_gap, gap)
+        scaling.append({"n_contexts": k, "n_actions": a, "information": res.information_nats,
+                        "trained_value": res.value, "theory_v_star": v_star, "gap": gap})
+    results["scaling"] = scaling
     results["worst_gap_to_theory"] = worst_gap
     results["verdict"] = (
         "TRAINED_CONTROLLER_REALISES_V_STAR"

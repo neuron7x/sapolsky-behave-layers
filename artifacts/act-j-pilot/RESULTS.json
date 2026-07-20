@@ -226,6 +226,32 @@
     "critical_information": 0.013689562678337097,
     "critical_routes_regular_does_not": true
   },
-  "worst_gap_to_theory": 1.7445969535678785e-07,
+  "scaling": [
+    {
+      "n_contexts": 4,
+      "n_actions": 3,
+      "information": 0.3608907461166382,
+      "trained_value": 0.2054291750234588,
+      "theory_v_star": 0.20542925939044548,
+      "gap": 8.436698667457776e-08
+    },
+    {
+      "n_contexts": 6,
+      "n_actions": 4,
+      "information": 0.5359969139099121,
+      "trained_value": 0.3971444120229984,
+      "theory_v_star": 0.3971449311111512,
+      "gap": 5.190881527949998e-07
+    },
+    {
+      "n_contexts": 8,
+      "n_actions": 5,
+      "information": 0.5060229897499084,
+      "trained_value": 0.4410911199135652,
+      "theory_v_star": 0.44109195734733886,
+      "gap": 8.374337736594129e-07
+    }
+  ],
+  "worst_gap_to_theory": 8.374337736594129e-07,
   "verdict": "TRAINED_CONTROLLER_REALISES_V_STAR"
 }

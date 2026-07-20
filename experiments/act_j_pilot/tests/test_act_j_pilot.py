@@ -2,6 +2,10 @@
 phase transition. Small training budget so it runs on CPU in a few seconds; the full
 sweep lives in the runner + evidence bundle.
 """
+import random
+
+import pytest
+
 from experiments.act_j_pilot.src.act_j_pilot import train_controller
 from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
@@ -26,6 +30,17 @@ def test_phase_transition_in_the_trained_controller():
     assert reg.value < 1e-2                                # regular: routing does not pay
     assert crit.value > 5.0 * reg.value + 1e-2            # critical: it does (sqrt onset)
     assert crit.information_nats > reg.information_nats    # critical buys info, regular abstains
+
+
+def test_the_ceiling_is_realised_at_larger_scale():
+    # a random |C|=4,|A|=3 problem: the trained controller still lands on V*(I)
+    rng = random.Random(11)
+    k, a = 4, 3
+    u = [[rng.uniform(-1.0, 1.0) for _ in range(a)] for _ in range(k)]
+    p = [1.0 / k] * k
+    res = train_controller(u, p, beta=0.4, steps=3000, seed=0)
+    v_star = optimal_value_at_rate_ri(u, res.information_nats, p)
+    assert res.value == pytest.approx(v_star, abs=2e-2)
 
 
 def test_more_information_never_decreases_realised_value():
