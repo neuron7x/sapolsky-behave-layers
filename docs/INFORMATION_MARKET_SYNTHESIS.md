@@ -77,6 +77,16 @@ justification of a decision all the way down to thermodynamics. The same trade �
 | Economic optimum | `β(R*)=κ`; route iff `β(0⁺)>κ` | Thm 4″ |
 | Inference certificate | `G_lo`, FPR ≤ δ; sample complexity `n*` | `IDENTIFIABILITY_INFERENCE.md` |
 | CWC application | the budget tunes routing-v2 to near-criticality (17× value) | §4e |
+| Compute-axis theorem | adaptive ≥ static at matched compute for any `|A|` (= the budgeted oracle gap `G(B)`) | `compute_matched.py` |
+| Empirical bridge | a trained neural controller realises `V*(R)` to machine precision; compute-matched advantage on a real transformer (fragile, seed-dependent — honest) | `experiments/act_j_pilot/` |
+
+**Two cost axes, one gap.** The master inequality's `min{G(λ), Δu√(I/2)} − c_route` has
+two distinct costs: the *mechanism* compute cost `K[a]` (folded into `G(λ)` via the
+budget) and the *route-decision* cost `c_route`. The compute-matched advantage is exactly
+`G(B)` — the budgeted oracle gap on the compute axis — verified to vanish off the binding
+budget (all-cheap, or expensive-affordable-everywhere → dominance) and to equal the
+information-axis constrained gap at the binding budget. The information market prices both
+axes with the same non-negative gap.
 
 ## 4. The one decision it produces
 
