@@ -252,6 +252,76 @@
       "gap": 8.374337736594129e-07
     }
   ],
+  "sensory": {
+    "regular": [
+      {
+        "epsilon": 0.1,
+        "trained_value": 0.2124999761581421,
+        "channel_value": 0.21250000000000002,
+        "channel_information": 0.49463193721407284,
+        "v_star_at_channel_rate": 0.21920459348832866,
+        "inefficiency": 0.006704593488328636
+      },
+      {
+        "epsilon": 0.3,
+        "trained_value": 0.13750004768371582,
+        "channel_value": 0.13749999999999996,
+        "channel_information": 0.2704380927539544,
+        "v_star_at_channel_rate": 0.155367967916752,
+        "inefficiency": 0.017867967916752048
+      },
+      {
+        "epsilon": 0.5,
+        "trained_value": 0.0625,
+        "channel_value": 0.0625,
+        "channel_information": 0.13081203594113697,
+        "v_star_at_channel_rate": 0.09396441538196998,
+        "inefficiency": 0.03146441538196998
+      },
+      {
+        "epsilon": 0.7,
+        "trained_value": 0.0,
+        "channel_value": 0.0,
+        "channel_information": 0.04570054152531286,
+        "v_star_at_channel_rate": 0.040215847782759995,
+        "inefficiency": 0.040215847782759995
+      }
+    ],
+    "critical": [
+      {
+        "epsilon": 0.1,
+        "trained_value": 0.44999998807907104,
+        "channel_value": 0.45000000000000007,
+        "channel_information": 0.49463193721407284,
+        "v_star_at_channel_rate": 0.4499999999999966,
+        "inefficiency": -3.4416913763379853e-15
+      },
+      {
+        "epsilon": 0.3,
+        "trained_value": 0.3500000238418579,
+        "channel_value": 0.35,
+        "channel_information": 0.2704380927539544,
+        "v_star_at_channel_rate": 0.349999999999991,
+        "inefficiency": -8.992806499463768e-15
+      },
+      {
+        "epsilon": 0.5,
+        "trained_value": 0.25,
+        "channel_value": 0.25,
+        "channel_information": 0.13081203594113697,
+        "v_star_at_channel_rate": 0.24999999999999245,
+        "inefficiency": -7.549516567451064e-15
+      },
+      {
+        "epsilon": 0.7,
+        "trained_value": 0.1499999761581421,
+        "channel_value": 0.15000000000000002,
+        "channel_information": 0.04570054152531286,
+        "v_star_at_channel_rate": 0.14999999999999947,
+        "inefficiency": -5.551115123125783e-16
+      }
+    ]
+  },
   "worst_gap_to_theory": 8.374337736594129e-07,
   "verdict": "TRAINED_CONTROLLER_REALISES_V_STAR"
 }

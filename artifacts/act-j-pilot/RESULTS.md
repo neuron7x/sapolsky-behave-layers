@@ -47,6 +47,25 @@ adds no value (routing does not pay) — while the *critical* controller acquire
 `I=0.014` and captures `V=0.083` (routing always pays; the √R onset). This is the
 theoretical dominance/√-onset dichotomy realised by gradient descent, not asserted.
 
+## A noisy-sensor controller — bounded by the theory, and its inefficiency measured
+
+A second controller sees only a **noisy observation** `O` of the context (symmetric
+confusion channel, error `ε`) and learns `P(a|O)`. It converges to the Bayes value
+`V(O)` — and the rate function bounds it, `V(O) ≤ V*(I(C;O))`:
+
+| regime | ε | I(C;O) | trained V = V(O) | V*(I) | inefficiency `V*−V(O)` |
+|---|---:|---:|---:|---:|---:|
+| regular | 0.1 | 0.495 | 0.2125 | 0.2192 | 0.0067 |
+| regular | 0.3 | 0.270 | 0.1375 | 0.1554 | 0.0179 |
+| regular | 0.5 | 0.131 | 0.0625 | 0.0940 | 0.0315 |
+| regular | 0.7 | 0.046 | 0.0000 | 0.0402 | 0.0402 |
+| critical | any | — | = V*(I) | = V*(I) | **0.0000** |
+
+The trained value matches `V(O)` exactly, and the **symmetric sensor is rate-optimal
+only for the symmetric (critical) problem** — for a regular one it wastes value, and
+the waste grows monotonically with sensor noise. This is the measurable *cost of a
+channel not shaped to the decision*, realised in a trained network.
+
 ## Reproduce
 
 ```bash

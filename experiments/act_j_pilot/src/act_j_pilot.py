@@ -31,6 +31,7 @@ import torch.nn.functional as F
 from experiments.common.value_of_information_rate import (
     optimal_value_at_rate_ri,
     oracle_gap_value,
+    value_and_information,
 )
 
 _DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -114,6 +115,65 @@ def train_controller(
     vfix = _v_fixed(utility, prior)
     return ControllerResult(information_nats=max(0.0, info_v), value=gross_v - vfix,
                             gross_value=gross_v, v_fixed=vfix)
+
+
+def symmetric_confusion_channel(n_contexts: int, epsilon: float) -> list[list[float]]:
+    """P(o|c): stay on the true context w.p. ``1-eps+eps/K``, else uniform (a noisy sensor)."""
+    k = n_contexts
+    return [[(1.0 - epsilon) + epsilon / k if o == c else epsilon / k for o in range(k)] for c in range(k)]
+
+
+@dataclass
+class SensoryResult:
+    trained_value: float       # value realised by the trained controller on the sensor
+    channel_value: float       # V(O): Bayes-optimal value of the observation channel
+    channel_information: float  # I(C;O)
+    v_star_at_channel_rate: float  # V*(I(C;O)): the rate-optimal value at the same MI
+    inefficiency: float        # V*(I) - V(O): value lost by not shaping the sensor
+
+
+def train_sensory_controller(
+    utility: list[list[float]], prior: list[float], channel: list[list[float]], *,
+    steps: int = 4000, lr: float = 3e-3, seed: int = 0,
+) -> SensoryResult:
+    """Train a controller that sees only a noisy observation ``O`` and learns ``P(a|O)``.
+
+    The bottleneck is the sensor, not an explicit info penalty: the controller simply
+    maximises expected reward over the joint ``(C, O)``. It converges to the Bayes value
+    ``V(O)``, which the rate function bounds: ``V(O) ≤ V*(I(C;O))``. A symmetric sensor is
+    rate-optimal only for a symmetric problem; otherwise ``inefficiency = V*(I)−V(O) > 0``.
+    """
+    torch.manual_seed(seed)
+    n_c, n_a = len(utility), len(utility[0])
+    n_o = len(channel[0])
+    U = torch.tensor(utility, dtype=torch.float32, device=_DEVICE)          # [K, A]
+    weight = torch.tensor([[prior[c] * channel[c][o] for o in range(n_o)] for c in range(n_c)],
+                          dtype=torch.float32, device=_DEVICE)              # [K, O] = p(c)P(o|c)
+    obs = torch.arange(n_o, device=_DEVICE)
+    model = _Controller(n_o, n_a).to(_DEVICE)
+    opt = torch.optim.Adam(model.parameters(), lr=lr)
+
+    model.train()
+    for _step in range(steps):
+        p_a_given_o = F.softmax(model(obs), dim=1)                         # [O, A]
+        util_per_co = p_a_given_o @ U.t()                                  # [O, K]  E[U|o] per context
+        gross = (weight * util_per_co.t()).sum()                          # E_{c,o} sum_a P(a|o)U[c,a]
+        loss = -gross
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        opt.step()
+
+    model.eval()
+    with torch.no_grad():
+        p_a_given_o = F.softmax(model(obs), dim=1)
+        gross_v = float((weight * (p_a_given_o @ U.t()).t()).sum())
+    vfix = _v_fixed(utility, prior)
+    channel_v, channel_i = value_and_information(utility, channel, prior)
+    v_star = optimal_value_at_rate_ri(utility, channel_i, prior) if channel_i > 1e-9 else 0.0
+    return SensoryResult(
+        trained_value=gross_v - vfix, channel_value=channel_v, channel_information=channel_i,
+        v_star_at_channel_rate=v_star, inefficiency=v_star - channel_v,
+    )
 
 
 def compare_to_theory(

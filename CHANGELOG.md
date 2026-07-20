@@ -24,8 +24,12 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   rate function `V*(I)` to machine precision across 2 regimes × 3 seeds × 4 information
   prices (worst gap 0.0000, verdict `TRAINED_CONTROLLER_REALISES_V_STAR`), and exhibits the
   phase transition — at a high info price the critical problem routes (V=0.083) while the
-  regular one abstains (V≈0). Runnable in ~2 min; fast deterministic pytest. Scope: synthetic
-  2×2 oracle controller, NOT the L7 compute-equivalent Pareto (still cloud-blocked).
+  regular one abstains (V≈0). Scales to |C|=8,|A|=5 (worst gap 8.4e-7). A second, noisy-sensor
+  controller sees only a confused observation O and learns the Bayes value V(O), bounded by
+  V(O)<=V*(I(C;O)); the symmetric sensor is rate-optimal only for the symmetric (critical)
+  problem, else it wastes value that grows with noise (inefficiency 0.007->0.040) — the
+  measurable cost of a channel not shaped to the decision. Runnable in ~2 min; fast pytest (6).
+  Scope: synthetic 2×2/small controllers, NOT the L7 compute-equivalent Pareto (cloud-blocked).
 - **Inference breakthrough: a calibrated pilot identifiability certificate**
   (`docs/IDENTIFIABILITY_INFERENCE.md` + `experiments/common/identifiability_inference.py`):
   the step from converse-only upper bounds to a decidable, error-controlled action.

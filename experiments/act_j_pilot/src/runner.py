@@ -16,7 +16,12 @@ from pathlib import Path
 
 import random
 
-from experiments.act_j_pilot.src.act_j_pilot import compare_to_theory, train_controller
+from experiments.act_j_pilot.src.act_j_pilot import (
+    compare_to_theory,
+    symmetric_confusion_channel,
+    train_controller,
+    train_sensory_controller,
+)
 from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
 REGULAR = [[1.0, 0.0], [0.0, 0.5]]    # unique prior optimum (margin 0.25)
@@ -63,6 +68,18 @@ def run() -> dict[str, object]:
         scaling.append({"n_contexts": k, "n_actions": a, "information": res.information_nats,
                         "trained_value": res.value, "theory_v_star": v_star, "gap": gap})
     results["scaling"] = scaling
+
+    # sensory: a controller seeing only a noisy observation learns V(O) <= V*(I(C;O))
+    sensory: dict[str, list[dict[str, float]]] = {}
+    for name, u in (("regular", REGULAR), ("critical", CRITICAL)):
+        rows = []
+        for eps in (0.1, 0.3, 0.5, 0.7):
+            r = train_sensory_controller(u, PRIOR, symmetric_confusion_channel(2, eps), steps=4000, seed=0)
+            rows.append({"epsilon": eps, "trained_value": r.trained_value, "channel_value": r.channel_value,
+                         "channel_information": r.channel_information,
+                         "v_star_at_channel_rate": r.v_star_at_channel_rate, "inefficiency": r.inefficiency})
+        sensory[name] = rows
+    results["sensory"] = sensory
     results["worst_gap_to_theory"] = worst_gap
     results["verdict"] = (
         "TRAINED_CONTROLLER_REALISES_V_STAR"

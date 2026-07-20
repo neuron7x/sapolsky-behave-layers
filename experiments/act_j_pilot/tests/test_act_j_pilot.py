@@ -6,7 +6,11 @@ import random
 
 import pytest
 
-from experiments.act_j_pilot.src.act_j_pilot import train_controller
+from experiments.act_j_pilot.src.act_j_pilot import (
+    symmetric_confusion_channel,
+    train_controller,
+    train_sensory_controller,
+)
 from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
 REGULAR = [[1.0, 0.0], [0.0, 0.5]]
@@ -41,6 +45,23 @@ def test_the_ceiling_is_realised_at_larger_scale():
     res = train_controller(u, p, beta=0.4, steps=3000, seed=0)
     v_star = optimal_value_at_rate_ri(u, res.information_nats, p)
     assert res.value == pytest.approx(v_star, abs=2e-2)
+
+
+def test_sensory_controller_hits_channel_value_and_respects_the_ceiling():
+    # a controller seeing only a noisy observation learns V(O) and stays <= V*(I(C;O))
+    for u in (REGULAR, CRITICAL):
+        r = train_sensory_controller(u, PRIOR, symmetric_confusion_channel(2, 0.3), steps=2500, seed=0)
+        assert r.trained_value == pytest.approx(r.channel_value, abs=1e-2)     # reaches Bayes value
+        assert r.trained_value <= r.v_star_at_channel_rate + 1e-2              # under the rate ceiling
+
+
+def test_symmetric_sensor_is_rate_optimal_only_for_a_symmetric_problem():
+    # critical (symmetric) -> no inefficiency; regular -> inefficiency that grows with noise
+    crit = train_sensory_controller(CRITICAL, PRIOR, symmetric_confusion_channel(2, 0.4), steps=2500, seed=0)
+    assert abs(crit.inefficiency) < 5e-3                                       # symmetric sensor optimal
+    low = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.1), steps=2500, seed=0)
+    high = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.6), steps=2500, seed=0)
+    assert high.inefficiency > low.inefficiency > 1e-3                         # waste grows with noise
 
 
 def test_more_information_never_decreases_realised_value():
