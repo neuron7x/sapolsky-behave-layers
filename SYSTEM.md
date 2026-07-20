@@ -58,6 +58,14 @@ proved and adversarially falsification-tested to ≈10⁻¹⁵ over 10⁴ random
 `experiments/common/adaptive_value_theory.py` (+ suite in `experiments/common/tests/`).
 It is a *mathematical* scaffolding under L1/L2b/L2p — no new empirical claim.
 
+**Coherence & efficiency of the whole programme** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`):
+a machine-checked proof (Theorem C) that every recorded verdict equals the sign of
+its theoretical certificate `Γ = min{G(λ), Δu√(I/2)} − c_route` — 0 contradictions
+across the ladder; the three vetoes partition all negatives. Efficiency (Theorem E):
+the identifiability predictor is `Θ(|C||A|)` and provably optimal (must read every
+entry); measured `reads == |C||A|`. The auditor is falsifiable — it flags an injected
+incoherent claim. `experiments/common/coherence_audit.py`.
+
 **Physical substrate budget** (`docs/NEURON_INFORMATION_BUDGET.md`): a verified
 biophysical model of the biological system CWC is modelled on — a cortical neuron
 carries ≈10 bits/s (sensory up to ~150–300) at ≈2×10⁻¹⁰ W ⇒ ≈2×10⁸ ATP/bit ≈

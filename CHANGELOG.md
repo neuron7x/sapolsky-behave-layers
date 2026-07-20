@@ -17,6 +17,16 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
+  + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
+  is internally consistent — every recorded verdict equals the sign of its master
+  certificate `Γ = min{G(λ), Δu√(I/2)} − c_route`, reproduced from the programme's own
+  utility matrices (routing budgeted G=0.248, three dominance-negatives at G=0, one
+  computation veto); 0 contradictions, and the three vetoes partition all negatives.
+  Theorem E proves the identifiability predictor is `Θ(|C||A|)` and optimal (adversary
+  argument: every entry must be read), measured `reads == |C||A|`. The auditor is
+  falsifiable — `falsify_coherence` injects a weakly-dominant claim tagged SUPPORTED
+  and confirms it is flagged. Meta-theoretical; no `claim_registry.json` change.
 - **Verified neural information-budget model** (`docs/NEURON_INFORMATION_BUDGET.md`
   + `experiments/common/neuron_information_budget.py`): estimates single-neuron
   throughput (≈10 bits/s cortical, ~150 sensory), energy per bit (≈2×10⁻¹¹ J/bit ≈

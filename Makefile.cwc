@@ -25,7 +25,7 @@ lint:
 	$(PY) -m ruff check .
 
 typecheck:
-	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
+	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
 
 # Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
 test:
