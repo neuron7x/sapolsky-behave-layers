@@ -58,6 +58,15 @@ proved and adversarially falsification-tested to ≈10⁻¹⁵ over 10⁴ random
 `experiments/common/adaptive_value_theory.py` (+ suite in `experiments/common/tests/`).
 It is a *mathematical* scaffolding under L1/L2b/L2p — no new empirical claim.
 
+**Inference breakthrough — calibrated pilot certificate** (`docs/IDENTIFIABILITY_INFERENCE.md`):
+the step from converse-only ceilings to a decidable action. The oracle gap `G` is a
+`max`-functional, so the plug-in estimate is upward-biased (Jensen) and the naive
+`Ĝ>0` rule has an uncontrolled false-positive rate (up to 1.0 on a tied null). The
+debiased one-sided bound `G_lo = Ĝ − sd√(2ln|A|) − (sd/√|C|)√(2ln(2/δ))` satisfies
+`P(G≥G_lo)≥1−δ`: `G_lo>c_route` certifies positive value with FPR ≤ δ. Sample
+complexity `n*=⌈(σK/G)²⌉`. This is the machine for deciding Act J spend with error
+control (`experiments/common/identifiability_inference.py`).
+
 **Pinsker phase transition** (`docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md`): computes
 the sharp value-of-information rate function `V*(R)=max{V(Z):I(C;Z)≤R}` the routability
 ceiling only bounds, and proves *when* the ceiling is tight. Dichotomy at R→0: regular

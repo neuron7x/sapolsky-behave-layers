@@ -1,0 +1,230 @@
+"""From impossibility ceilings to statistical inference: a calibrated identifiability
+certificate that decides, from a finite pilot, whether adaptive compute can pay.
+
+Everything upstream (value theory, rate function, coherence audit) proves UPPER
+bounds — *when adaptation cannot pay*. This module supplies the missing inferential
+step: a one-sided, finite-sample, error-controlled certificate for whether a
+benchmark is identifiable (``G > 0``), so the decisive Act J cloud run can be
+committed or refused with a guaranteed false-positive rate.
+
+The mathematical obstruction it clears
+--------------------------------------
+The oracle gap ``G = E_c max_a U[c,a] - max_a E_c U[c,a]`` is a NON-SMOOTH functional
+of ``U``: the ``max`` makes the plug-in estimate from a noisy pilot **biased upward**
+(Jensen). So the naive rule "estimate G-hat, spend if G-hat > 0" has an *uncontrolled*
+false-positive rate — on a truly non-identifiable (``G=0``) benchmark it fires more
+than half the time at a small pilot. A valid certificate must subtract BOTH the
+max-operator's optimism AND the sampling fluctuation:
+
+    G_lo := G-hat  -  b(sd, |A|)  -  d(sd, |C|, delta),
+      b = sd * sqrt(2 ln|A|)                    (max-of-sub-Gaussians upward bias),
+      d = (sd / sqrt|C|) * sqrt(2 ln(2/delta))  (deviation of the context average),
+
+where ``sd = sigma / sqrt(n)`` is the per-cell standard error of the pilot mean.
+
+> **Theorem (valid one-sided certificate).** For sub-Gaussian pilot noise,
+> ``P(G >= G_lo) >= 1 - delta``. Hence ``G_lo > 0`` certifies identifiability, and
+> ``G_lo > c_route`` certifies positive net value, each with false-positive rate at
+> most ``delta``.
+
+Verified by simulation (`calibration_experiment`, `falsify_inference`): on null
+(``G=0``) problems the calibrated false-positive rate is ``<= delta`` while the naive
+rule's exceeds ``0.5`` at a small pilot; on separated alternatives the power ``-> 1``.
+A matching **sample-complexity** bound gives the pilot size that guarantees power.
+
+This is the break from a converse-only theory to a two-sided, decidable one: the
+same value-vs-cost inequality now yields an *action* — spend, or don't — with proof.
+"""
+from __future__ import annotations
+
+import math
+from collections.abc import Sequence
+
+Matrix = Sequence[Sequence[float]]
+Vector = Sequence[float]
+
+
+# --------------------------------------------------------------------------- #
+# Point estimate and its correction terms                                     #
+# --------------------------------------------------------------------------- #
+def plugin_gap(utility_hat: Matrix, prior: Vector | None = None) -> float:
+    """Plug-in oracle gap ``G-hat = E_c max_a U-hat - max_a E_c U-hat`` (upward biased)."""
+    n_c, n_a = len(utility_hat), len(utility_hat[0])
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    if len(p) != n_c or not math.isclose(sum(p), 1.0, abs_tol=1e-9):
+        raise ValueError("prior must be a distribution over contexts")
+    v_oracle = sum(p[c] * max(utility_hat[c]) for c in range(n_c))
+    v_fixed = max(sum(p[c] * utility_hat[c][a] for c in range(n_c)) for a in range(n_a))
+    return v_oracle - v_fixed
+
+
+def oracle_bias_bound(std_error: float, n_actions: int) -> float:
+    """Upper bound on the plug-in oracle term's upward bias: ``sd*sqrt(2 ln|A|)``."""
+    if std_error < 0 or n_actions < 1:
+        raise ValueError("std_error must be >= 0 and n_actions >= 1")
+    return std_error * math.sqrt(2.0 * math.log(max(2, n_actions)))
+
+
+def deviation_bound(std_error: float, n_contexts: int, delta: float) -> float:
+    """One-sided sub-Gaussian deviation of the context-averaged estimate at level delta."""
+    if not (0.0 < delta < 1.0):
+        raise ValueError("delta must lie in (0,1)")
+    if std_error < 0 or n_contexts < 1:
+        raise ValueError("std_error >= 0 and n_contexts >= 1 required")
+    return std_error / math.sqrt(n_contexts) * math.sqrt(2.0 * math.log(2.0 / delta))
+
+
+def gap_lower_confidence_bound(
+    gap_hat: float, std_error: float, n_contexts: int, n_actions: int, delta: float
+) -> float:
+    """Valid ``1-delta`` lower confidence bound ``G_lo`` on the true oracle gap."""
+    return gap_hat - oracle_bias_bound(std_error, n_actions) - deviation_bound(std_error, n_contexts, delta)
+
+
+def certify_identifiable(
+    gap_hat: float, std_error: float, n_contexts: int, n_actions: int, *, delta: float = 0.05
+) -> dict[str, float | bool]:
+    """Certify ``G>0`` (and optionally ``G>c_route``) with false-positive rate <= delta."""
+    g_lo = gap_lower_confidence_bound(gap_hat, std_error, n_contexts, n_actions, delta)
+    return {
+        "gap_hat": gap_hat,
+        "gap_lower_bound": g_lo,
+        "delta": delta,
+        "identifiable": g_lo > 0.0,
+    }
+
+
+def certifies_positive_value(
+    gap_hat: float, std_error: float, n_contexts: int, n_actions: int, route_cost: float, *, delta: float = 0.05
+) -> bool:
+    """True iff the pilot certifies ``G - c_route > 0`` at confidence ``1-delta``."""
+    if route_cost < 0:
+        raise ValueError("route_cost must be non-negative")
+    return gap_lower_confidence_bound(gap_hat, std_error, n_contexts, n_actions, delta) > route_cost
+
+
+def sample_complexity(true_gap: float, sigma: float, n_contexts: int, n_actions: int, delta: float) -> int:
+    """Pilot size ``n`` per cell that makes ``G_lo > 0`` at true gap ``true_gap``.
+
+    Solving ``G > (sigma/sqrt n)[sqrt(2 ln|A|) + sqrt(2 ln(2/delta))/sqrt|C|]`` for n:
+    ``n* = ceil( (sigma * K / G)^2 )`` with ``K`` the bracketed constant.
+    """
+    if true_gap <= 0:
+        raise ValueError("true_gap must be positive to be certifiable")
+    if sigma < 0:
+        raise ValueError("sigma must be non-negative")
+    k = math.sqrt(2.0 * math.log(max(2, n_actions))) + math.sqrt(2.0 * math.log(2.0 / delta)) / math.sqrt(n_contexts)
+    return max(1, math.ceil((sigma * k / true_gap) ** 2))
+
+
+# --------------------------------------------------------------------------- #
+# Deterministic Gaussian RNG (Box-Muller over an LCG)                          #
+# --------------------------------------------------------------------------- #
+class _Rng:
+    __slots__ = ("_s",)
+
+    def __init__(self, seed: int) -> None:
+        self._s = (seed ^ 0x2545F4914F6CDD1D) & 0xFFFFFFFFFFFFFFFF
+
+    def _unit(self) -> float:
+        self._s = (6364136223846793005 * self._s + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+        return (self._s >> 11) / float(1 << 53)
+
+    def gauss(self) -> float:
+        u1 = max(1e-12, self._unit())
+        u2 = self._unit()
+        return math.sqrt(-2.0 * math.log(u1)) * math.cos(2.0 * math.pi * u2)
+
+
+def _noisy(utility: Matrix, std_error: float, rng: _Rng) -> list[list[float]]:
+    return [[utility[c][a] + std_error * rng.gauss() for a in range(len(utility[0]))] for c in range(len(utility))]
+
+
+# --------------------------------------------------------------------------- #
+# Calibration and power (the empirical proof of validity)                      #
+# --------------------------------------------------------------------------- #
+def calibration_experiment(
+    null_utility: Matrix, alt_utility: Matrix, std_error: float, *, delta: float = 0.1,
+    trials: int = 3000, seed: int = 20260720,
+) -> dict[str, float]:
+    """Measure naive vs calibrated false-positive rate on a null and power on an alt.
+
+    Returns ``naive_fpr`` (uncontrolled), ``calibrated_fpr`` (must be <= delta), and
+    ``power`` (P[certify | alt]). Contexts/actions are read from the matrices.
+    """
+    n_c, n_a = len(null_utility), len(null_utility[0])
+    rng = _Rng(seed)
+    naive_fp = calib_fp = 0
+    for _ in range(trials):
+        g_hat = plugin_gap(_noisy(null_utility, std_error, rng))
+        if g_hat > 0.0:
+            naive_fp += 1
+        if gap_lower_confidence_bound(g_hat, std_error, n_c, n_a, delta) > 0.0:
+            calib_fp += 1
+    power = 0
+    na2, nc2 = len(alt_utility[0]), len(alt_utility)
+    for _ in range(trials):
+        g_hat = plugin_gap(_noisy(alt_utility, std_error, rng))
+        if gap_lower_confidence_bound(g_hat, std_error, nc2, na2, delta) > 0.0:
+            power += 1
+    return {
+        "std_error": std_error,
+        "naive_fpr": naive_fp / trials,
+        "calibrated_fpr": calib_fp / trials,
+        "power": power / trials,
+        "delta": delta,
+    }
+
+
+def falsify_inference(seed: int = 20260720, trials: int = 2500) -> dict[str, float | int | bool]:
+    """Try to break the certificate: calibrated FPR must stay <= delta on random nulls,
+    while the naive rule must visibly fail, and power must appear on alternatives.
+    """
+    rng = _Rng(seed)
+    delta = 0.1
+    worst_calib_fpr = 0.0
+    max_naive_fpr = 0.0
+    min_power = 1.0
+    checked = 0
+    for k in range(8):
+        n_c = 3 + (k % 3)
+        n_a = 3 + ((k // 3) % 3)
+        # NULL: additive utility (no interaction) => G = 0 exactly
+        alpha = [rng.gauss() for _ in range(n_c)]
+        beta = [rng.gauss() for _ in range(n_a)]
+        null_u = [[alpha[c] + beta[a] for a in range(n_a)] for c in range(n_c)]
+        # ALT: strong interaction => G > 0
+        alt_u = [[2.0 if a == (c % n_a) else 0.0 for a in range(n_a)] for c in range(n_c)]
+        rep = calibration_experiment(null_u, alt_u, std_error=0.12, delta=delta, trials=trials, seed=seed + k)
+        worst_calib_fpr = max(worst_calib_fpr, rep["calibrated_fpr"])
+        max_naive_fpr = max(max_naive_fpr, rep["naive_fpr"])
+        min_power = min(min_power, rep["power"])
+        checked += 1
+    return {
+        "configs": checked,
+        "worst_calibrated_fpr": worst_calib_fpr,
+        "delta": delta,
+        "calibration_valid": worst_calib_fpr <= delta,
+        "max_naive_fpr": max_naive_fpr,
+        "naive_rule_fails": max_naive_fpr > delta,   # debiasing is demonstrably necessary
+        "min_power": min_power,
+        "has_power": min_power > 0.9,
+        "all_ok": worst_calib_fpr <= delta and max_naive_fpr > delta and min_power > 0.9,
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI summary
+    print("IDENTIFIABILITY INFERENCE — calibrated pilot certificate\n")
+    alpha, beta = [0.5, -0.3, 1.1, -0.2], [0.2, -0.1, 0.4, 0.05]
+    null_u = [[alpha[c] + beta[a] for a in range(4)] for c in range(4)]
+    alt_u = [[1.0 if a == c else 0.0 for a in range(4)] for c in range(4)]
+    for n in (50, 200, 1000):
+        rep = calibration_experiment(null_u, alt_u, std_error=1.0 / math.sqrt(n))
+        print(f"  n={n:5d}  NULL naive-FPR={rep['naive_fpr']:.3f}  calibrated-FPR={rep['calibrated_fpr']:.3f}"
+              f"  (<= {rep['delta']})  |  ALT power={rep['power']:.3f}")
+    print(f"\n  sample complexity for G=0.25, sigma=1, |C|=4,|A|=4, delta=0.05:"
+          f" n* = {sample_complexity(0.25, 1.0, 4, 4, 0.05)} samples/cell")
+    rep = falsify_inference()
+    ok = "ALL OK" if rep["all_ok"] else "VIOLATION"
+    print(f"  FALSIFICATION: {ok} | calib<=delta={rep['calibration_valid']}"
+          f"  naive-fails={rep['naive_rule_fails']}  power={rep['has_power']}")

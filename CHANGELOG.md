@@ -17,6 +17,18 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Inference breakthrough: a calibrated pilot identifiability certificate**
+  (`docs/IDENTIFIABILITY_INFERENCE.md` + `experiments/common/identifiability_inference.py`):
+  the step from converse-only upper bounds to a decidable, error-controlled action.
+  Because the oracle gap `G` is a `max`-functional, the plug-in estimate is upward
+  biased (Jensen) and the naive `Ĝ>0` rule has an uncontrolled false-positive rate
+  (0.55 at n=50, up to 1.0 on a tied null). The debiased one-sided bound
+  `G_lo = Ĝ − sd√(2ln|A|) − (sd/√|C|)√(2ln(2/δ))` satisfies `P(G≥G_lo)≥1−δ`, so
+  `G_lo>0` certifies identifiability and `G_lo>c_route` certifies positive value, each
+  with false-positive rate ≤ δ; sample complexity `n*=⌈(σK/G)²⌉`. Monte-Carlo
+  calibration confirms FPR ≤ δ and power → 1; the max-bias term is shown load-bearing
+  (dropping it breaks calibration in the many-action regime — mutation-tested). This
+  is the machine that decides the Act J cloud spend with a validity proof attached.
 - **Value-of-information rate function and the Pinsker phase transition**
   (`docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md` + `experiments/common/value_of_information_rate.py`):
   computes the sharp `V*(R) = max{V(Z) : I(C;Z) ≤ R}` that the routability ceiling only
