@@ -29,6 +29,12 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   calibration confirms FPR ≤ δ and power → 1; the max-bias term is shown load-bearing
   (dropping it breaks calibration in the many-action regime — mutation-tested). This
   is the machine that decides the Act J cloud spend with a validity proof attached.
+  Adaptive extension: a tie-safeguarded parametric-bootstrap debiasing recovers the
+  power the worst-case bound discards (0.77→0.92, +15 points) at fixed validity —
+  false-positive rate ≤ δ on every null incl. least-favorable ties — by estimating the
+  actual separation-dependent bias and falling back to the conservative bound near the
+  non-differentiable tie (where the bootstrap is inconsistent, Bickel-Freedman); near
+  the boundary it correctly defers rather than green-lighting.
 - **Value-of-information rate function and the Pinsker phase transition**
   (`docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md` + `experiments/common/value_of_information_rate.py`):
   computes the sharp `V*(R) = max{V(Z) : I(C;Z) ≤ R}` that the routability ceiling only

@@ -213,6 +213,126 @@ def falsify_inference(seed: int = 20260720, trials: int = 2500) -> dict[str, flo
     }
 
 
+# --------------------------------------------------------------------------- #
+# Adaptive (bootstrap) debiasing — recover power the worst-case bound discards  #
+# --------------------------------------------------------------------------- #
+def bootstrap_debias(
+    utility_hat: Matrix, std_error: float, rng: _Rng, *, n_boot: int = 100
+) -> tuple[float, float, float]:
+    """Parametric-bootstrap estimate of the plug-in gap's bias, spread, and argmax
+    stability.
+
+    Treats ``utility_hat`` as truth, resamples ``U* = U-hat + noise(sd)``, and returns
+    ``(bias, gap_std, min_argmax_stability)``:
+      * ``bias`` = ``E[G-hat(U*)] - G-hat(U-hat)`` estimates ``E[G-hat] - G`` — the
+        actual, separation-dependent upward bias (small when actions are separated);
+      * ``gap_std`` = bootstrap standard deviation of ``G-hat``;
+      * ``min_argmax_stability`` = the least, over contexts, bootstrap frequency that
+        the per-context argmax matches the point estimate — a near-tie / irregularity
+        detector (the max functional is non-smooth exactly at ties, where the
+        bootstrap is known to fail, so this flags when to fall back).
+    """
+    n_c, n_a = len(utility_hat), len(utility_hat[0])
+    point_argmax = [max(range(n_a), key=lambda a: utility_hat[c][a]) for c in range(n_c)]
+    g0 = plugin_gap(utility_hat)
+    vals: list[float] = []
+    stable = [0] * n_c
+    for _ in range(n_boot):
+        star = [[utility_hat[c][a] + std_error * rng.gauss() for a in range(n_a)] for c in range(n_c)]
+        vals.append(plugin_gap(star))
+        for c in range(n_c):
+            if max(range(n_a), key=lambda a: star[c][a]) == point_argmax[c]:
+                stable[c] += 1
+    mean = sum(vals) / n_boot
+    variance = sum((v - mean) ** 2 for v in vals) / max(1, n_boot - 1)
+    return mean - g0, math.sqrt(variance), min(s / n_boot for s in stable)
+
+
+def adaptive_gap_lower_bound(
+    utility_hat: Matrix, std_error: float, n_contexts: int, n_actions: int,
+    delta: float, rng: _Rng, *, n_boot: int = 100,
+) -> float:
+    """Tie-safeguarded bootstrap lower bound: valid everywhere, more powerful when
+    the benchmark is well-separated.
+
+    Away from ties (stable argmax) it subtracts the *estimated* bias and spread,
+    recovering the power the worst-case union bound discards. Near a tie (unstable
+    argmax — where the bootstrap is unreliable) it falls back to the provably valid
+    conservative bound. Under-separated benchmarks are correctly deferred, not
+    green-lit (collect ``sample_complexity`` more samples first).
+    """
+    g0 = plugin_gap(utility_hat)
+    bias, gap_std, min_stability = bootstrap_debias(utility_hat, std_error, rng, n_boot=n_boot)
+    if min_stability < 1.0 - delta:                       # near-tie / irregular
+        return gap_lower_confidence_bound(g0, std_error, n_contexts, n_actions, delta)
+    return g0 - bias - gap_std * math.sqrt(2.0 * math.log(1.0 / delta))
+
+
+def power_comparison(
+    null_utility: Matrix, alt_utility: Matrix, std_error: float, *, delta: float = 0.1,
+    trials: int = 1000, n_boot: int = 80, seed: int = 20260720,
+) -> dict[str, float]:
+    """Compare conservative vs adaptive certificate: FPR on the null, power on the alt."""
+    n_c, n_a = len(null_utility), len(null_utility[0])
+    rng = _Rng(seed)
+    cons_fp = adap_fp = 0
+    for _ in range(trials):
+        u_hat = _noisy(null_utility, std_error, rng)
+        g_hat = plugin_gap(u_hat)
+        if gap_lower_confidence_bound(g_hat, std_error, n_c, n_a, delta) > 0.0:
+            cons_fp += 1
+        if adaptive_gap_lower_bound(u_hat, std_error, n_c, n_a, delta, rng, n_boot=n_boot) > 0.0:
+            adap_fp += 1
+    na2, nc2 = len(alt_utility[0]), len(alt_utility)
+    cons_pw = adap_pw = 0
+    for _ in range(trials):
+        u_hat = _noisy(alt_utility, std_error, rng)
+        g_hat = plugin_gap(u_hat)
+        if gap_lower_confidence_bound(g_hat, std_error, nc2, na2, delta) > 0.0:
+            cons_pw += 1
+        if adaptive_gap_lower_bound(u_hat, std_error, nc2, na2, delta, rng, n_boot=n_boot) > 0.0:
+            adap_pw += 1
+    return {
+        "conservative_fpr": cons_fp / trials, "adaptive_fpr": adap_fp / trials,
+        "conservative_power": cons_pw / trials, "adaptive_power": adap_pw / trials,
+        "delta": delta,
+    }
+
+
+def falsify_adaptive(seed: int = 20260720, trials: int = 500, n_boot: int = 50) -> dict[str, float | int | bool]:
+    """Adaptive certificate must stay valid on every null (incl. least-favorable ties)
+    while beating the conservative bound's power at a non-saturated operating point.
+    """
+    delta = 0.1
+    nulls: list[tuple[list[list[float]], int, int]] = [
+        ([[a + b for b in (0.2, -0.1, 0.4)] for a in (0.5, -0.3, 1.1)], 3, 3),  # additive G=0
+        ([[0.0] * 12 for _ in range(4)], 4, 12),                                 # tied, many actions
+        ([[0.0] * 20 for _ in range(6)], 6, 20),                                 # least-favorable tie
+    ]
+    worst_fpr = 0.0
+    rng = _Rng(seed)
+    for u, n_c, n_a in nulls:
+        fp = 0
+        for _ in range(trials):
+            u_hat = _noisy(u, 0.12, rng)
+            if adaptive_gap_lower_bound(u_hat, 0.12, n_c, n_a, delta, rng, n_boot=n_boot) > 0.0:
+                fp += 1
+        worst_fpr = max(worst_fpr, fp / trials)
+    # power at a non-saturated operating point where the conservative bound leaves room
+    alt = [[0.6 if a == c else 0.0 for a in range(4)] for c in range(4)]
+    cmp = power_comparison(nulls[0][0], alt, 0.12, delta=delta, trials=trials, n_boot=n_boot, seed=seed + 1)
+    return {
+        "worst_null_fpr": worst_fpr,
+        "delta": delta,
+        "valid": worst_fpr <= delta,
+        "conservative_power": cmp["conservative_power"],
+        "adaptive_power": cmp["adaptive_power"],
+        "power_gain": cmp["adaptive_power"] - cmp["conservative_power"],
+        "adaptive_dominates": cmp["adaptive_power"] >= cmp["conservative_power"] - 1e-9,
+        "all_ok": worst_fpr <= delta and cmp["adaptive_power"] > cmp["conservative_power"],
+    }
+
+
 if __name__ == "__main__":  # pragma: no cover - CLI summary
     print("IDENTIFIABILITY INFERENCE — calibrated pilot certificate\n")
     alpha, beta = [0.5, -0.3, 1.1, -0.2], [0.2, -0.1, 0.4, 0.05]
@@ -228,3 +348,9 @@ if __name__ == "__main__":  # pragma: no cover - CLI summary
     ok = "ALL OK" if rep["all_ok"] else "VIOLATION"
     print(f"  FALSIFICATION: {ok} | calib<=delta={rep['calibration_valid']}"
           f"  naive-fails={rep['naive_rule_fails']}  power={rep['has_power']}")
+
+    print("\nADAPTIVE (bootstrap) debiasing — power recovered at fixed validity:")
+    ad = falsify_adaptive()
+    print(f"  worst-null FPR={ad['worst_null_fpr']:.3f} (<= {ad['delta']})  valid={ad['valid']}"
+          f"  |  power conservative={ad['conservative_power']:.3f} -> adaptive={ad['adaptive_power']:.3f}"
+          f"  (+{ad['power_gain']:.3f})")

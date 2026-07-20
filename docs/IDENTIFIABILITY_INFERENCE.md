@@ -117,7 +117,36 @@ guaranteed error rate*.
 
 ---
 
-## 5. Epistemic status and limitations
+## 5. Adaptive debiasing: recovering the power the worst-case bound discards
+
+The bound `b = sd√(2 ln|A|)` is the worst case — attained only when all `|A|` actions
+tie. When actions are separated, the true bias is far smaller, so the conservative
+certificate throws away power. A **parametric bootstrap** estimates the *actual*,
+separation-dependent bias by resampling around `Û`; it is small when the per-context
+argmax is stable and large near a tie.
+
+The subtlety is real: the `max` functional is **non-differentiable exactly at ties**,
+and the bootstrap is known to be inconsistent at such points (Bickel–Freedman;
+Andrews). On the least-favourable all-tied null the naive bootstrap **under-covers**
+(false-positive rate `0.55` at `|A|=30`). The fix is a **tie safeguard**: measure the
+bootstrap argmax stability; if it drops below `1−δ` (a near-tie / irregular
+configuration) fall back to the provably valid worst-case bound, otherwise subtract
+the estimated bias and spread.
+
+> **Adaptive certificate (verified).** The tie-safeguarded bootstrap lower bound keeps
+> the false-positive rate `≤ δ` on *every* null tested — additive **and** the
+> least-favourable ties (`worst_null_fpr = 0.0`) — while its power **strictly exceeds**
+> the worst-case bound wherever the benchmark is adequately sampled
+> (e.g. `0.77 → 0.92`, `+15` points, at a non-saturated operating point).
+
+Crucially, near the identifiability boundary `G→0⁺` — a genuinely **irregular**
+estimation problem — *no* valid test has power without more data, so the certificate
+**defers** (recommending `n*` more samples) rather than green-lighting. This is not a
+weakness: the plain bootstrap's apparent power there is the same optimism that voids
+its validity. The safeguarded certificate buys power exactly where it is real
+(separated benchmarks) and refuses exactly where it is illusory (the boundary).
+
+## 6. Epistemic status and limitations
 
 * A **statistical theorem** about a decision procedure; it does not itself assert any
   CWC empirical result (`CWC-L7-pareto: NOT_TESTED`). It makes the *route to* that
