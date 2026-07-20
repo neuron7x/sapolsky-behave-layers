@@ -66,6 +66,12 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   divergent (critical). Fractal energy link: decision value per joule <= beta/(k_B T)
   (utility_per_joule_ceiling) couples the rate function to the neuron budget's J/bit
   floor — the same information-market price from the abstract decision to the ion channel.
+  Economic optimum (Theorem 4''): with per-nat cost kappa the net-optimal information
+  budget R* solves beta(R*)=kappa (marginal value = marginal cost), and routing pays iff
+  beta(0+)>kappa — regular problems route iff kappa<sigma (the sensitivity threshold),
+  critical problems always route (first nat infinitely valuable). optimal_information_budget;
+  verified beta(R*)=kappa, net maximised, thresholds correct. Turns "how tight is Pinsker?"
+  into "how many bits to buy, and whether to buy any" — the operational Act J decision.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

@@ -16,6 +16,7 @@ from experiments.common.value_of_information_rate import (
     falsify_rate_function,
     is_critical,
     marginal_value_of_information,
+    optimal_information_budget,
     optimal_value_at_rate,
     optimal_value_at_rate_general,
     optimal_value_at_rate_ri,
@@ -270,6 +271,45 @@ def test_utility_per_joule_ceiling_couples_to_landauer():
     assert utility_per_joule_ceiling(2.0) == pytest.approx(2.0 * utility_per_joule_ceiling(1.0), rel=1e-12)
     with pytest.raises(ValueError):
         utility_per_joule_ceiling(-1.0)
+
+
+# ---- ECONOMIC OPTIMUM: acquire information until marginal value = cost ----- #
+def test_optimum_solves_marginal_value_equals_marginal_cost():
+    for kappa in (0.5, 0.9):
+        r = optimal_information_budget(REGULAR, kappa)
+        assert r["route"] is True
+        assert float(r["marginal_at_optimum"]) == pytest.approx(kappa, rel=2e-2)  # beta(R*) = kappa
+
+
+def test_optimum_maximises_net_value():
+    kappa = 0.7
+    r = optimal_information_budget(REGULAR, kappa)
+    r_star = float(r["optimal_rate"])
+    net_star = float(r["net_value"])
+    for factor in (0.6, 0.8, 1.25, 1.6):
+        r_alt = r_star * factor
+        net_alt = optimal_value_at_rate_ri(REGULAR, r_alt) - kappa * r_alt
+        assert net_star >= net_alt - 1e-4      # R* is the maximiser of V*(R) - kappa*R
+
+
+def test_regular_problem_routes_only_below_the_sensitivity_threshold():
+    sigma = marginal_value_of_information(REGULAR, 1e-6)   # beta(0+) ~ sigma
+    assert optimal_information_budget(REGULAR, 0.5 * sigma)["route"] is True   # cheap -> route
+    assert optimal_information_budget(REGULAR, 2.0 * sigma)["route"] is False  # dear -> don't
+
+
+def test_critical_problem_always_routes_for_any_finite_cost():
+    # beta(0+) = infinity: the first nat is infinitely valuable, so routing always pays
+    for kappa in (0.5, 10.0):
+        r = optimal_information_budget(CRITICAL, kappa)
+        assert r["route"] is True
+        assert float(r["net_value"]) > 0.0
+        assert float(r["optimal_rate"]) > 0.0
+
+
+def test_information_budget_fails_closed():
+    with pytest.raises(ValueError):
+        optimal_information_budget(REGULAR, -0.1)
 
 
 # ------------------------------ bundled harness ---------------------------- #

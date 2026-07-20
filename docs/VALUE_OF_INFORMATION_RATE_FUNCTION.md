@@ -205,6 +205,28 @@ in physical units, from the abstract decision down to the biological substrate. 
 market is fractal: it prices a bit the same way at the routing gate and at the ion
 channel, and the exchange rate `β/(k_B T)` is where the two scales meet.
 
+### 4d. The economic optimum — how much to route
+
+With a per-nat acquisition cost `κ`, the net value of a routing decision is
+`V*(R) − κR`. Because `V*` is concave with decreasing slope `β(R)`, the optimum is the
+classical **marginal-value = marginal-cost** condition (`optimal_information_budget`):
+
+> **Theorem 4″ (optimal information budget).** The net-optimal amount of information
+> to acquire is `R*` solving `β(R*) = κ`, and routing pays at all iff the first nat
+> clears its cost, `β(0⁺) > κ`:
+> * **regular** (`β(0⁺)=σ` finite): route iff `κ < σ` — the *information sensitivity*
+>   is the exact routing threshold;
+> * **critical** (`β(0⁺)=∞`): **always** acquire a positive `R*` — the first nat is
+>   infinitely valuable, so any finite cost is worth paying.
+
+*Verified:* at the optimum `β(R*)=κ` to bisection precision; `V*(R*)−κR*` exceeds the
+net value at neighbouring rates; a regular problem routes below `σ` and refuses above
+`2σ`; a critical problem routes for every finite `κ`. This is the operational payoff of
+the whole rate-function theory — it turns "how tight is Pinsker?" into "exactly how many
+bits of difficulty-signal to buy, and whether to buy any." For Act J: estimate `κ` (the
+learned route-decision cost) and the pilot utility matrix, then read off `R*` and the
+certified net value before committing cloud compute.
+
 ## 5. Method and reproduction
 
 `V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a

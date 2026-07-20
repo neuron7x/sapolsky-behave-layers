@@ -248,7 +248,7 @@ def optimal_value_at_rate_general(
 # Sharp GENERAL solver via rational inattention (Matejka-McKay fixed point)     #
 # --------------------------------------------------------------------------- #
 def _rational_inattention(
-    utility: Matrix, prior: Vector, beta: float, *, iters: int = 4000, tol: float = 1e-14
+    utility: Matrix, prior: Vector, beta: float, *, iters: int = 1500, tol: float = 1e-13
 ) -> tuple[float, float]:
     """Value ``V(Z)`` and information ``I(C;Z)`` at the Shannon-cost optimum for a
     given shadow price ``beta`` (the Lagrangian ``max V - beta*I``).
@@ -291,7 +291,7 @@ def _solve_shadow_price(utility: Matrix, prior: Vector, rate: float) -> float:
     """Bisect the rational-inattention shadow price ``beta`` so that ``I(beta) = rate``
     (``I`` is decreasing in ``beta``)."""
     b_lo, b_hi = 1e-4, 1e7
-    for _ in range(80):
+    for _ in range(48):
         b_mid = math.sqrt(b_lo * b_hi)
         _v, info = _rational_inattention(utility, prior, b_mid)
         if info > rate:            # too much information purchased -> raise the price
@@ -358,6 +358,46 @@ def utility_per_joule_ceiling(marginal_value_nats: float, temperature_k: float =
     if temperature_k <= 0:
         raise ValueError("temperature must be positive")
     return marginal_value_nats / (_K_B * temperature_k)
+
+
+def optimal_information_budget(
+    utility: Matrix, cost_per_nat: float, prior: Vector | None = None, *, floor_rate: float = 1e-7
+) -> dict[str, float | bool]:
+    """The economically optimal amount of information to acquire for a routing decision.
+
+    With a per-nat acquisition cost ``kappa``, the net value is ``V*(R) - kappa*R``;
+    since ``V*`` is concave with slope ``beta(R) = dV*/dR`` (decreasing), the optimum
+    ``R*`` solves the **marginal-value = marginal-cost** condition ``beta(R*) = kappa``.
+    Routing pays at all iff the first nat clears its cost, ``beta(0+) > kappa``:
+
+      * REGULAR problem — ``beta(0+) = sigma`` finite: route iff ``kappa < sigma``;
+      * CRITICAL problem — ``beta(0+) = infinity``: always acquire a positive ``R*``.
+
+    Returns ``R*``, ``V*(R*)``, the maximised ``net_value``, and whether routing pays.
+    """
+    n_c = len(utility)
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    if cost_per_nat < 0 or not math.isfinite(cost_per_nat):
+        raise ValueError("cost_per_nat must be finite and non-negative")
+    beta0 = _solve_shadow_price(utility, p, floor_rate)  # proxy for beta(0+)
+    if cost_per_nat >= beta0:
+        return {"route": False, "optimal_rate": 0.0, "value_at_optimum": 0.0,
+                "net_value": 0.0, "marginal_at_optimum": beta0}
+    # beta(R) is decreasing; bisect R so beta(R) = kappa
+    r_lo, r_hi = floor_rate, 1.0
+    while _solve_shadow_price(utility, p, r_hi) > cost_per_nat and r_hi < 1e3:
+        r_hi *= 2.0
+    for _ in range(44):
+        r_mid = 0.5 * (r_lo + r_hi)
+        if _solve_shadow_price(utility, p, r_mid) > cost_per_nat:
+            r_lo = r_mid
+        else:
+            r_hi = r_mid
+    r_star = 0.5 * (r_lo + r_hi)
+    value = optimal_value_at_rate_ri(utility, r_star, p)
+    return {"route": True, "optimal_rate": r_star, "value_at_optimum": value,
+            "net_value": value - cost_per_nat * r_star,
+            "marginal_at_optimum": _solve_shadow_price(utility, p, r_star)}
 
 
 # --------------------------------------------------------------------------- #
