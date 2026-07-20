@@ -76,6 +76,16 @@ def test_compute_matched_adaptive_dominates_under_a_binding_budget():
     assert binding and max(r["compute_matched_gap"] for r in binding) > 0.2
 
 
+def test_compute_matched_dominance_is_robust_across_seeds():
+    # the +0.25 compute-matched advantage is not a single-seed fluke
+    u, cost, p = [[1.0, 1.0], [0.0, 1.0]], [1.0, 4.0], [0.5, 0.5]
+    gaps = []
+    for s in range(3):
+        r = compute_matched_gap(u, cost, p, [0.25], steps=3000, seed=s)[0]
+        gaps.append(r["compute_matched_gap"])
+    assert min(gaps) > 0.2                                         # dominance every seed
+
+
 def test_compute_matched_ties_when_a_mechanism_dominates():
     # cheap mechanism solves everything -> routing buys no compute advantage
     u, cost, p = [[1.0, 1.0], [1.0, 1.0]], [1.0, 4.0], [0.5, 0.5]
