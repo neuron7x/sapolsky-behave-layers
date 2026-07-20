@@ -42,6 +42,18 @@ def test_auditor_detects_injected_incoherence():
     assert result["auditor_sound"] is True
 
 
+def test_auditor_catches_faults_in_both_directions():
+    # DESTRUCTION STAGE: the auditor must catch incoherence of every kind, not one.
+    # reverse fault: a genuinely identifiable (G>0) problem tagged as a NEGATIVE status
+    reverse = [{"claim_id": "REV", "status": "NOT_SUPPORTED",
+                "utility": [[1.0, 0.0], [0.0, 1.0]], "route_cost": 0.0, "expect": POSITIVE}]
+    assert audit_ladder(reverse)["coherent"] is False
+    # wrong-veto-class fault: a dominance problem whose expected veto is mislabelled
+    wrong_veto = [{"claim_id": "WV", "status": "NOT_SUPPORTED",
+                   "utility": [[1.0, 1.0], [1.0, 1.0]], "route_cost": 0.0, "expect": VETO_COMPUTATION}]
+    assert audit_ladder(wrong_veto)["coherent"] is False
+
+
 # --------------------------- the three vetoes ------------------------------ #
 def test_classify_selects_the_right_veto():
     assert classify(0.0, 5.0, 0.0) == VETO_DOMINANCE       # no oracle gap
