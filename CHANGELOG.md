@@ -38,6 +38,14 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   predicts (same 0.25 as budgeted routing-v2) -- and ties when a mechanism weakly dominates.
   The compute-equivalent advantage question answered at tiny synthetic scale, matching theory;
   a proof of concept for L7, NOT the cloud-scale Pareto (still cloud-blocked). Fast pytest (8).
+  Real-transformer version (`transformer_depth.py`): adaptive depth on a pointer-following
+  task (easy=1-hop@depth-3, hard=3-hop@depth-4). HONEST finding (destruction stage): adaptive
+  is never worse than static at matched compute (once both depths converge — the deeper model
+  trains slower), but the strict gain is NOT robust — on some seeds the shallow model learns
+  the hard task and the separation collapses (shallow-on-hard 0.96/0.41/0.21 -> gain
+  0.01/0.15/0.20, mean +0.12, min +0.01). Two earlier task designs were retracted as not
+  depth-separated once trained. Mirrors the programme's WP2 bimodal-collapse: adaptivity pays
+  iff genuinely separated, which is a seed-dependent empirical accident, not a promise.
 - **Inference breakthrough: a calibrated pilot identifiability certificate**
   (`docs/IDENTIFIABILITY_INFERENCE.md` + `experiments/common/identifiability_inference.py`):
   the step from converse-only upper bounds to a decidable, error-controlled action.

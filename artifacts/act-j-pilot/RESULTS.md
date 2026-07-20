@@ -91,6 +91,34 @@ routing buys **no** compute advantage (gap 0). This is the compute-equivalent ad
 question (L7), answered at tiny synthetic scale and matching the theory exactly — a
 proof of concept for the real Act J, not the cloud-scale result itself.
 
+## On a REAL transformer — and its honest fragility (destruction stage)
+
+The compute-matched idea was pushed onto a real trained transformer: follow a successor
+pointer `h` times; easy (`h=1`) is solved at depth 3, hard (`h=3`) usually needs depth 4.
+Adaptive spends depth 3 on easy, depth 4 on hard, vs a static depth policy at matched
+average compute (3.5).
+
+| seed | shallow acc on hard | adaptive @3.5 | static-matched @3.5 | gain |
+|---:|---:|---:|---:|---:|
+| 0 | **0.958** | 1.000 | 0.989 | **+0.011** |
+| 1 | 0.411 | 1.000 | 0.853 | +0.147 |
+| 2 | 0.210 | 0.999 | 0.802 | +0.197 |
+
+**Honest finding:** adaptive depth is *never worse* than static at matched compute (by
+construction, once both depths are trained to convergence — the deeper model trains
+slower, so equal-step comparisons at too-few steps are unfair to it). But the strict
+**advantage is not robust**: on seed 0 the shallow model *learned the hard task* (0.958),
+the separation collapsed, and adaptivity bought almost nothing (+0.01). Mean gain +0.12,
+min +0.01. Two earlier task designs (`h=1 vs 2`, `depth 2 vs 3`) were **retracted** —
+they were not depth-separated at all once trained.
+
+This mirrors the programme's own collapse findings (WP2 routing was bimodal): adaptive
+computation pays exactly when the task is genuinely identifiable/separated, and whether a
+transformer *is* separated at a given depth is a seed-dependent empirical accident, not a
+promise. The clean, reproducible advantage lives in the decision-table experiment above;
+the transformer shows the same principle **and its fragility** on a real model — the
+destruction stage refusing to let a flaky positive stand.
+
 ## Reproduce
 
 ```bash
