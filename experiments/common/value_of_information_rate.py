@@ -245,6 +245,78 @@ def optimal_value_at_rate_general(
 
 
 # --------------------------------------------------------------------------- #
+# Sharp GENERAL solver via rational inattention (Matejka-McKay fixed point)     #
+# --------------------------------------------------------------------------- #
+def _rational_inattention(
+    utility: Matrix, prior: Vector, beta: float, *, iters: int = 4000, tol: float = 1e-14
+) -> tuple[float, float]:
+    """Value ``V(Z)`` and information ``I(C;Z)`` at the Shannon-cost optimum for a
+    given shadow price ``beta`` (the Lagrangian ``max V - beta*I``).
+
+    Solves the Matejka-McKay fixed point (numerically stabilised softmax):
+    ``P(a|c) ∝ P(a) exp(U[c,a]/beta)``, ``P(a) = sum_c p_c P(a|c)``. This IS the
+    optimal information structure for a mutual-information cost, so sweeping ``beta``
+    traces the sharp rate function for any finite ``|C|, |A|``.
+    """
+    n_c, n_a = len(utility), len(utility[0])
+    p_a = [1.0 / n_a] * n_a
+    cond = [[1.0 / n_a] * n_a for _ in range(n_c)]
+    for _ in range(iters):
+        cond = []
+        for c in range(n_c):
+            m = max(utility[c])
+            logw = [(math.log(p_a[a]) if p_a[a] > 0.0 else -1e300) + (utility[c][a] - m) / beta
+                    for a in range(n_a)]
+            mx = max(logw)
+            w = [math.exp(lw - mx) for lw in logw]
+            s = sum(w)
+            cond.append([x / s for x in w])
+        new_p_a = [sum(prior[c] * cond[c][a] for c in range(n_c)) for a in range(n_a)]
+        if max(abs(new_p_a[a] - p_a[a]) for a in range(n_a)) < tol:
+            p_a = new_p_a
+            break
+        p_a = new_p_a
+    info = 0.0
+    gross = 0.0
+    for c in range(n_c):
+        for a in range(n_a):
+            gross += prior[c] * cond[c][a] * utility[c][a]
+            if cond[c][a] > _TOL and p_a[a] > _TOL:
+                info += prior[c] * cond[c][a] * math.log(cond[c][a] / p_a[a])
+    v_fixed = max(sum(prior[c] * utility[c][a] for c in range(n_c)) for a in range(n_a))
+    return gross - v_fixed, max(0.0, info)
+
+
+def optimal_value_at_rate_ri(
+    utility: Matrix, rate: float, prior: Vector | None = None
+) -> float:
+    """Sharp ``V*(R)`` for GENERAL ``|C|, |A|`` via rational inattention.
+
+    ``I(beta)`` is decreasing in the shadow price ``beta``; bisect on ``log beta`` to
+    hit ``I(beta) = R``, then return the value there. Cross-validated: it reproduces
+    the closed-form symmetric-critical value to machine precision and matches the exact
+    binary grid solver, while strictly exceeding the binary-signal lower bound when
+    ``|A| > 2`` (it finds the optimal stochastic channel the grid cannot resolve).
+    """
+    n_c = len(utility)
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    if rate < 0 or not math.isfinite(rate):
+        raise ValueError("rate must be finite and non-negative")
+    if rate == 0.0:
+        return 0.0
+    b_lo, b_hi = 1e-4, 1e7
+    for _ in range(80):
+        b_mid = math.sqrt(b_lo * b_hi)
+        _v, info = _rational_inattention(utility, p, b_mid)
+        if info > rate:            # too much information purchased -> raise the price
+            b_lo = b_mid
+        else:
+            b_hi = b_mid
+    value, _info = _rational_inattention(utility, p, b_hi)
+    return max(0.0, value)
+
+
+# --------------------------------------------------------------------------- #
 # Small-rate diagnostics: the phase transition                                #
 # --------------------------------------------------------------------------- #
 def small_rate_exponent(

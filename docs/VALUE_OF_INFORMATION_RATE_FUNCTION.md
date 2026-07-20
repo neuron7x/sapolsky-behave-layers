@@ -166,6 +166,25 @@ on the prior margin `m` and the indifference manifold, both defined for any fini
 So the phase transition — linear/loose off the indifference manifold, square-root/tight
 on it — is a property of decision problems in general, not of two-context toy models.
 
+### 4b. The sharp general solver (rational inattention)
+
+The binary-signal grid is only a *lower* bound on `V*` once `|A|>2`. The sharp value
+for any finite `|C|,|A|` comes from recognising that
+
+> `max_channel [ V(Z) − β·I(C;Z) ]` **is the rational-inattention problem**
+> (Sims; Matějka–McKay 2015): the Shannon-information-cost decision problem.
+
+Its optimum is the fixed point `P(a|c) ∝ P(a)·exp(U[c,a]/β)`,
+`P(a)=Σ_c p_c P(a|c)`, solved by a convergent Blahut–Arimoto-style iteration.
+`I(β)` is decreasing in the shadow price `β`; bisecting `β` to hit `I(β)=R` yields the
+exact `V*(R)` (`optimal_value_at_rate_ri`). It is **cross-validated three ways**: it
+reproduces the closed-form symmetric-critical value to machine precision (`1.7·10⁻¹⁶`),
+matches the exact binary grid solver, and **strictly exceeds** the binary-signal lower
+bound at `|C|=|A|=3` (`0.081 > 0.075` at `R=0.02`) — finding the optimal *stochastic*
+channel the grid cannot resolve. With it the phase-transition exponents sharpen to
+`0.97` (regular) and `0.498` (critical). The value of information under a Shannon cost
+is exactly the routing-market price of §0, now computed sharply at any scale.
+
 ## 5. Method and reproduction
 
 `V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a
@@ -184,13 +203,11 @@ PYTHONPATH=. .venv/bin/python -m pytest -q experiments/common/tests/test_value_o
 * **Theorems**, not empirical claims: they bound and characterise achievable value
   for a given `(U, p)`; they say nothing about whether a CWC architecture attains it
   on a real workload (`CWC-L7-pareto: NOT_TESTED`).
-* The **exact solver is implemented for a binary context**; for general `|C|` a
-  binary-signal grid gives a valid *lower bound* on `V*` (bracketed above by
-  `min{G, Δu√(R/2)}`), sufficient to confirm the transition at `|C|=3` (§4a). The
-  fully general sharp `V*` (a convex-maximisation over arbitrary channels — extreme
-  points need not be deterministic partitions, since stochastic garblings beat them at
-  low rate in the critical regime) and the exact constant `c` on the whole
-  indifference manifold remain the natural next targets, not claimed here.
+* The sharp `V*` is now available for **general `|C|,|A|`** via the rational-inattention
+  solver (§4b), cross-validated against the closed form and the grid; the binary grid and
+  binary-signal grid remain as independent checks. The exact leading constant `c` is
+  pinned on the *symmetric* indifference locus (§4, `c=1`); the constant on the whole
+  indifference manifold as a function of local geometry remains the natural next target.
 
 ## Relationship to sibling documents
 

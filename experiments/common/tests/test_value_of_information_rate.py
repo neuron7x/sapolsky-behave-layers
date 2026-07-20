@@ -17,6 +17,7 @@ from experiments.common.value_of_information_rate import (
     is_critical,
     optimal_value_at_rate,
     optimal_value_at_rate_general,
+    optimal_value_at_rate_ri,
     oracle_gap_value,
     pinsker_ceiling,
     pinsker_tightness,
@@ -183,6 +184,59 @@ def test_symmetric_critical_value_is_monotone_and_fails_closed():
         prev = v
     with pytest.raises(ValueError):
         symmetric_critical_value(-0.1)
+
+
+# -------- SHARP GENERAL SOLVER via rational inattention -------------------- #
+def test_ri_reproduces_closed_form_critical_to_machine_precision():
+    # the RI fixed point IS the optimum, so it must match the analytic ground truth
+    for r in (0.01, 0.001, 0.0001):
+        assert optimal_value_at_rate_ri([[1.0, 0.0], [0.0, 1.0]], r) == pytest.approx(
+            symmetric_critical_value(r), abs=1e-7
+        )
+
+
+def test_ri_matches_the_exact_binary_grid_solver():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    for r in (0.05, 0.02, 0.005):
+        assert optimal_value_at_rate_ri(u, r) == pytest.approx(
+            optimal_value_at_rate(u, r, coarse=240, refine=60), abs=2e-3
+        )
+
+
+def test_ri_strictly_beats_the_binary_signal_lower_bound_when_actions_exceed_two():
+    # |C|=3,|A|=3: the optimal channel needs 3 signals; RI finds it, the 2-signal grid can't
+    u, p = CRIT3, P3
+    for r in (0.02, 0.01):
+        ri = optimal_value_at_rate_ri(u, r, p)
+        grid2 = optimal_value_at_rate_general(u, r, p, grid=40)
+        upper = min(oracle_gap_value(u, p), pinsker_ceiling(u, r))
+        assert ri >= grid2 - 1e-9         # never worse than the lower bound
+        assert ri > grid2 + 1e-3          # and strictly better (stochastic optimum)
+        assert ri <= upper + 1e-9         # still under the envelope
+
+
+def test_ri_is_monotone_saturates_and_respects_envelope():
+    u, p = [[1.0, 0.0, 0.2], [0.3, 0.9, 0.1], [0.2, 0.1, 0.8]], P3
+    g = oracle_gap_value(u, p)
+    prev = -1.0
+    for r in (0.01, 0.05, 0.2, 1.0):
+        v = optimal_value_at_rate_ri(u, r, p)
+        assert v >= prev - 1e-9
+        assert v <= min(g, pinsker_ceiling(u, r)) + 1e-6
+        prev = v
+    assert optimal_value_at_rate_ri(u, 6.0, p) == pytest.approx(g, abs=1e-3)  # saturation
+    assert optimal_value_at_rate_ri(u, 0.0, p) == 0.0
+
+
+def test_phase_transition_via_accurate_ri_solver():
+    def expo(u, rates):
+        vs = [optimal_value_at_rate_ri(u, r, P3) for r in rates]
+        return sum(
+            (math.log(vs[k + 1]) - math.log(vs[k])) / (math.log(rates[k + 1]) - math.log(rates[k]))
+            for k in range(len(vs) - 1)
+        ) / (len(vs) - 1)
+    assert expo(REG3, (0.02, 0.005, 0.00125)) > 0.85     # regular ~ linear
+    assert 0.45 < expo(CRIT3, (0.02, 0.005, 0.00125)) < 0.56  # critical ~ sqrt
 
 
 # ------------------------------ bundled harness ---------------------------- #

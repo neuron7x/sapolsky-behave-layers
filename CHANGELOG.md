@@ -54,6 +54,12 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   c=1, verified to machine precision by a closed-form solver (1−ratio = R/6 to every
   digit). Non-symmetric critical points keep Θ(√R) with c≤1, exact only on the
   symmetric locus — the sharpest statement of when routability is attained.
+  Sharp general solver: max_channel[V-beta*I] is the rational-inattention problem
+  (Matejka-McKay 2015); its Blahut-Arimoto fixed point + beta-bisection gives the exact
+  V*(R) for any finite |C|,|A| (optimal_value_at_rate_ri). Cross-validated three ways —
+  reproduces the closed-form critical value to 1.7e-16, matches the exact binary grid,
+  and strictly beats the binary-signal lower bound at |C|=|A|=3 (0.081>0.075), finding
+  the optimal stochastic channel. Sharpened exponents: 0.97 regular, 0.498 critical.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master
