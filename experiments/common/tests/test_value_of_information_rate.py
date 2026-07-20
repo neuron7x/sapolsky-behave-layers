@@ -7,6 +7,7 @@ critical/indifference problem. Constructed so a mutant that breaks the solver,
 the bound, or the dichotomy is killed.
 """
 import math
+import random
 from itertools import pairwise
 
 import pytest
@@ -353,6 +354,26 @@ def test_budget_places_routing_v2_near_the_indifference_manifold():
     assert beta_routing > 5.0 * beta_regular          # ~17x more value per nat
     # so routing pays even at a large route-decision cost
     assert optimal_information_budget(u, 5.0, p)["route"] is True
+
+
+# -------- DESTRUCTION STAGE: the RI solver is the GLOBAL optimum ------------ #
+def test_ri_never_undershoots_the_independent_grid_solver():
+    # if RI were a local optimum it could fall below the grid lower bound; it never does
+    rng = random.Random(5)
+    worst_undershoot = 0.0
+    worst_envelope = 0.0
+    for _ in range(20):
+        k, a = rng.randint(2, 3), rng.randint(2, 3)
+        u = [[rng.uniform(-1.0, 1.0) for _ in range(a)] for _ in range(k)]
+        p = [1.0 / k] * k
+        for r in (0.03, 0.15):
+            ri = optimal_value_at_rate_ri(u, r, p)
+            grid = optimal_value_at_rate_general(u, r, p, grid=26)
+            ceiling = min(oracle_gap_value(u, p), pinsker_ceiling(u, r))
+            worst_undershoot = max(worst_undershoot, grid - ri)
+            worst_envelope = max(worst_envelope, ri - ceiling)
+    assert worst_undershoot < 5e-3        # RI >= grid (global optimum, not local)
+    assert worst_envelope < 1e-6          # RI <= min{G, Pinsker} (never impossible)
 
 
 # ------------------------------ bundled harness ---------------------------- #

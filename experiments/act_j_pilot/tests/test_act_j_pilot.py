@@ -76,6 +76,40 @@ def test_compute_matched_adaptive_dominates_under_a_binding_budget():
     assert binding and max(r["compute_matched_gap"] for r in binding) > 0.2
 
 
+def test_static_baseline_is_the_true_lp_optimum():
+    # DESTRUCTION STAGE: static_value_at_compute must equal the brute-force best
+    # context-blind policy (LP optimum mixes <=2 mechanisms), not an under-estimate
+    from experiments.act_j_pilot.src.compute_matched import static_value_at_compute
+
+    def brute(u, cost, p, b, n=120):
+        k, a = len(u), len(u[0])
+        mean = [sum(p[c] * u[c][x] for c in range(k)) for x in range(a)]
+        best = -1e18
+
+        def rec(rem, left, cur):
+            nonlocal best
+            if left == 1:
+                q = [*cur, rem / n]
+                if sum(q[x] * cost[x] for x in range(a)) <= b + 1e-9:
+                    best = max(best, sum(q[x] * mean[x] for x in range(a)))
+                return
+            for kk in range(rem + 1):
+                rec(rem - kk, left - 1, [*cur, kk / n])
+        rec(n, a, [])
+        return best
+
+    rng = random.Random(3)
+    worst = 0.0
+    for _ in range(40):
+        a, k = rng.randint(2, 3), rng.randint(2, 3)
+        u = [[rng.uniform(0.0, 1.0) for _ in range(a)] for _ in range(k)]
+        cost = [rng.uniform(1.0, 5.0) for _ in range(a)]
+        p = [1.0 / k] * k
+        b = rng.uniform(min(cost), max(cost))
+        worst = max(worst, abs(static_value_at_compute(u, cost, p, b) - brute(u, cost, p, b)))
+    assert worst < 1e-2       # matches the LP optimum to grid resolution
+
+
 def test_compute_matched_dominance_is_robust_across_seeds():
     # the +0.25 compute-matched advantage is not a single-seed fluke
     u, cost, p = [[1.0, 1.0], [0.0, 1.0]], [1.0, 4.0], [0.5, 0.5]
