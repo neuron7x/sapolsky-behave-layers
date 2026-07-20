@@ -17,6 +17,17 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Value-of-information rate function and the Pinsker phase transition**
+  (`docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md` + `experiments/common/value_of_information_rate.py`):
+  computes the sharp `V*(R) = max{V(Z) : I(C;Z) ≤ R}` that the routability ceiling only
+  bounds, and settles the open "the bound can be loose" remark. New theorem (small-rate
+  dichotomy, computed + proved): at a REGULAR problem `V*(R)=Θ(R)` so Pinsker is
+  asymptotically infinitely loose (ratio→0, exponent 0.98); at a CRITICAL problem (two
+  actions tie — the measure-zero indifference manifold) `V*(R)=Θ(√R)` so Pinsker is
+  asymptotically exact (ratio→1, exponent 0.55). Locates precisely when a century-old
+  inequality is tight for decisions; tells CWC that routability certificates are
+  conservative off the indifference manifold. Exact binary-context solver + adversarial
+  harness (envelope, monotonicity, saturation, dichotomy); mutation-tested. No claim entry.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

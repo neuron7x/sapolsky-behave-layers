@@ -58,6 +58,15 @@ proved and adversarially falsification-tested to ≈10⁻¹⁵ over 10⁴ random
 `experiments/common/adaptive_value_theory.py` (+ suite in `experiments/common/tests/`).
 It is a *mathematical* scaffolding under L1/L2b/L2p — no new empirical claim.
 
+**Pinsker phase transition** (`docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md`): computes
+the sharp value-of-information rate function `V*(R)=max{V(Z):I(C;Z)≤R}` the routability
+ceiling only bounds, and proves *when* the ceiling is tight. Dichotomy at R→0: regular
+problem (unique prior optimum) ⇒ `V*(R)=Θ(R)`, Pinsker asymptotically INFINITELY LOOSE;
+critical problem (two actions tie — indifference manifold, measure zero) ⇒ `V*(R)=Θ(√R)`,
+Pinsker asymptotically EXACT. So a routability certificate is conservative off the
+indifference manifold — real routing headroom is smaller than the √I bound suggests.
+Computed + falsification-tested (`experiments/common/value_of_information_rate.py`).
+
 **Coherence & efficiency of the whole programme** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`):
 a machine-checked proof (Theorem C) that every recorded verdict equals the sign of
 its theoretical certificate `Γ = min{G(λ), Δu√(I/2)} − c_route` — 0 contradictions
