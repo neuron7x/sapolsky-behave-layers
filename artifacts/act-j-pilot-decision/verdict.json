@@ -1,0 +1,116 @@
+{
+  "experiment": "act_j_pilot_decision",
+  "verdict": "PILOT_GO_L4_CONFIRMATORY",
+  "decides": "L4 cost-aware plasticity confirmatory run GO/NO-GO",
+  "does_not_decide": [
+    "L7 compute-Pareto",
+    "learned controller",
+    "real-workload",
+    "energy/latency"
+  ],
+  "delta": 0.05,
+  "delta_eff_bonferroni_over_lambda_grid": 0.0125,
+  "operating_lambda": 1.0,
+  "c_route": 0.0,
+  "c_route_regime": "given-task (task identity observed => route is a lookup)",
+  "primary": {
+    "label": "plasticity_cost_budget_lambda_1.0",
+    "gap_hat": 0.19057617187499998,
+    "std_error": 0.028026652576816233,
+    "sigma": 0.06266950034353075,
+    "n_contexts": 2,
+    "n_actions": 4,
+    "delta_eff": 0.0125,
+    "gap_lower_bound": 0.08076988088238286,
+    "identifiable": true,
+    "route_cost_headroom": 0.08076988088238286,
+    "sample_complexity_nstar": 2
+  },
+  "route_cost_headroom": 0.08076988088238286,
+  "lambda_sweep": [
+    {
+      "lambda": 0.0,
+      "gap_hat": 7.324218749993339e-05,
+      "gap_lower_bound": -0.10973304880511717,
+      "identifiable": false
+    },
+    {
+      "lambda": 0.5,
+      "gap_hat": 0.10944824218749993,
+      "gap_lower_bound": -0.00035804880511718096,
+      "identifiable": false
+    },
+    {
+      "lambda": 1.0,
+      "gap_hat": 0.19057617187499998,
+      "gap_lower_bound": 0.08076988088238286,
+      "identifiable": true
+    },
+    {
+      "lambda": 2.0,
+      "gap_hat": 0.0,
+      "gap_lower_bound": -0.1098062909926171,
+      "identifiable": false
+    }
+  ],
+  "controls": {
+    "negative_A": {
+      "label": "NEG_A_weak_interaction_lambda0",
+      "gap_hat": 7.324218749993339e-05,
+      "std_error": 0.028026652576816233,
+      "sigma": 0.06266950034353075,
+      "n_contexts": 2,
+      "n_actions": 4,
+      "delta_eff": 0.0125,
+      "gap_lower_bound": -0.10973304880511717,
+      "identifiable": false,
+      "route_cost_headroom": -0.10973304880511717,
+      "sample_complexity_nstar": 11238332
+    },
+    "negative_B": {
+      "label": "NEG_B_quality_dominance_routing",
+      "gap_hat": 0.0,
+      "std_error": 0.028026652576816233,
+      "sigma": 0.06266950034353075,
+      "n_contexts": 2,
+      "n_actions": 2,
+      "delta_eff": 0.0125,
+      "gap_lower_bound": -0.09613771495783344,
+      "identifiable": false,
+      "route_cost_headroom": -0.09613771495783344,
+      "sample_complexity_nstar": null
+    },
+    "positive": {
+      "label": "POS_specialization",
+      "gap_hat": 0.5,
+      "std_error": 0.028026652576816233,
+      "sigma": 0.06266950034353075,
+      "n_contexts": 2,
+      "n_actions": 2,
+      "delta_eff": 0.0125,
+      "gap_lower_bound": 0.4038622850421666,
+      "identifiable": true,
+      "route_cost_headroom": 0.4038622850421666,
+      "sample_complexity_nstar": 1
+    },
+    "controls_ok": true
+  },
+  "certificate_self_falsification": {
+    "configs": 8,
+    "worst_calibrated_fpr": 0.0,
+    "delta": 0.1,
+    "calibration_valid": true,
+    "max_naive_fpr": 0.32,
+    "naive_rule_fails": true,
+    "min_power": 1.0,
+    "has_power": true,
+    "all_ok": true
+  },
+  "prohibited_extrapolations": [
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "learned allocator",
+    "real-workload generalization",
+    "independent replication"
+  ]
+}

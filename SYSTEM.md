@@ -176,10 +176,18 @@ fail-closed in code (`enable_energy` requires `energy_instrument_invalid_ack`; a
 <2-sample power window returns `available=False`, never a fabricated 0 J).
 
 ## The decisive next step
-Run the §6 identifiability predictor on a small pilot, then **Act J**:
-compute-equivalent Pareto of the SUPPORTED routing controller vs MoD / MoE /
-recursive baselines on ≥2 real workloads at cloud scale, then independent
-replication. This is the only path from "causally-verified mechanism" to
+**Pilot run (`artifacts/act-j-pilot-decision/`, preregistered):** the §6
+identifiability predictor + calibrated certificate was executed on the real
+plasticity data. Verdict `PILOT_GO_L4_CONFIRMATORY` — debiased `G_lo = 0.081 > 0`
+at `δ_eff = 0.0125` (Bonferroni over the λ grid), both negative controls refused,
+positive control certified, certificate self-falsified. This green-lights the L4
+cost-aware plasticity confirmatory run (freeze λ, charge `c_route`, fresh split); it
+is **offline identifiability only** and does NOT touch L7. No local checkpoint ⇒ no
+LM pilot; the L7 decision is still cloud-blocked.
+
+Then **Act J** proper: compute-equivalent Pareto of the SUPPORTED routing controller
+vs MoD / MoE / recursive baselines on ≥2 real workloads at cloud scale, then
+independent replication. This is the only path from "causally-verified mechanism" to
 "undeniable architectural result".
 
 ## Audit status
