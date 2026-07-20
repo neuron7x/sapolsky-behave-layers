@@ -312,6 +312,23 @@ def test_information_budget_fails_closed():
         optimal_information_budget(REGULAR, -0.1)
 
 
+# ---- APPLICATION: the budget tunes CWC routing-v2 to near-criticality ------ #
+def test_budget_places_routing_v2_near_the_indifference_manifold():
+    # routing-v2 budgeted (lambda=0.5): EASY[direct,semantic], HARD[direct,semantic]
+    u, p = [[1.0, 0.5], [0.004, 0.5]], [0.5, 0.5]
+    means = [sum(p[c] * u[c][a] for c in range(2)) for a in range(2)]
+    margin = max(means) - sorted(means)[-2]
+    assert margin < 0.01                              # tiny margin -> near indifference
+    assert is_critical(u, p, tol=0.01) is True
+    assert oracle_gap_value(u, p) > 0.2               # yet strongly identifiable (G=0.248)
+    # near-criticality AMPLIFIES the marginal value of a difficulty-signal (sqrt regime)
+    beta_routing = marginal_value_of_information(u, 1e-4, p)
+    beta_regular = marginal_value_of_information([[1.0, 0.0], [0.0, 0.5]], 1e-4)
+    assert beta_routing > 5.0 * beta_regular          # ~17x more value per nat
+    # so routing pays even at a large route-decision cost
+    assert optimal_information_budget(u, 5.0, p)["route"] is True
+
+
 # ------------------------------ bundled harness ---------------------------- #
 def test_falsification_harness_holds():
     rep = falsify_rate_function(seed=20260720, trials=30)

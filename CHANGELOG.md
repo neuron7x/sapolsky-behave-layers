@@ -72,6 +72,11 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   critical problems always route (first nat infinitely valuable). optimal_information_budget;
   verified beta(R*)=kappa, net maximised, thresholds correct. Turns "how tight is Pinsker?"
   into "how many bits to buy, and whether to buy any" — the operational Act J decision.
+  CWC application: applying the apparatus to the real routing-v2 experiment shows the
+  binding budget places it near the indifference manifold (margin 0.002) yet strongly
+  identifiable (G=0.248) — the most information-efficient regime, where the marginal
+  value of a difficulty-signal is amplified ~17x (beta(1e-4)=17.6 vs ~1.05 regular).
+  The theory now explains the empirical CE gap, not merely bounds it.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

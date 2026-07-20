@@ -227,6 +227,23 @@ bits of difficulty-signal to buy, and whether to buy any." For Act J: estimate `
 learned route-decision cost) and the pilot utility matrix, then read off `R*` and the
 certified net value before committing cloud compute.
 
+## 4e. Application — the budget tunes CWC routing-v2 to near-criticality
+
+Applying the apparatus to the real routing-v2 experiment closes the loop. The budgeted
+utility (`λ=0.5`) is `EASY=[1, 0.5]`, `HARD=[0.004, 0.5]`; the prior-optimal action
+(direct) wins by a **margin of only 0.002** — routing-v2 sits *right next to the
+indifference manifold*, yet is strongly identifiable (`G = 0.248`). Consequently the
+marginal value of a difficulty-signal is **amplified ~17×** (`β(10⁻⁴) ≈ 17.6` versus
+`≈1.05` for a generic regular problem): near criticality the value is in the √R regime,
+where a *little* signal is worth a lot and Pinsker is near-tight.
+
+So the binding budget does more than make routing identifiable (§4 of
+`IDENTIFIABILITY_THEORY.md`): it places the problem at the **most
+information-efficient** operating point, which is why budgeted routing-v2 showed both a
+positive oracle gap *and* a large empirical CE gap — and why it routes profitably even
+at a substantial route-decision cost (`optimal_information_budget` returns `route=True`
+up to `κ=5`). The theory now *explains* the empirical result rather than merely bounding it.
+
 ## 5. Method and reproduction
 
 `V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a
