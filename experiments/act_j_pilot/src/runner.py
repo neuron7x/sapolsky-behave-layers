@@ -80,6 +80,17 @@ def run() -> dict[str, object]:
                          "v_star_at_channel_rate": r.v_star_at_channel_rate, "inefficiency": r.inefficiency})
         sensory[name] = rows
     results["sensory"] = sensory
+
+    # compute-matched: adaptive vs static at equal FLOPs (the Act-J shape, compute axis)
+    from experiments.act_j_pilot.src.compute_matched import compute_matched_gap
+    ident = compute_matched_gap([[1.0, 1.0], [0.0, 1.0]], [1.0, 4.0], PRIOR, [2.0, 0.5, 0.25, 0.1], steps=4000, seed=0)
+    dominated = compute_matched_gap([[1.0, 1.0], [1.0, 1.0]], [1.0, 4.0], PRIOR, [0.5, 0.1], steps=4000, seed=0)
+    results["compute_matched"] = {
+        "identifiable_under_budget": ident,
+        "dominated": dominated,
+        "max_compute_matched_gap_identifiable": max(r["compute_matched_gap"] for r in ident),
+        "max_compute_matched_gap_dominated": max(abs(r["compute_matched_gap"]) for r in dominated),
+    }
     results["worst_gap_to_theory"] = worst_gap
     results["verdict"] = (
         "TRAINED_CONTROLLER_REALISES_V_STAR"

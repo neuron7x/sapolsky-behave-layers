@@ -322,6 +322,50 @@
       }
     ]
   },
+  "compute_matched": {
+    "identifiable_under_budget": [
+      {
+        "compute": 1.0000014305114746,
+        "adaptive_value": 0.5000001788139343,
+        "static_value": 0.5000002384185791,
+        "compute_matched_gap": -5.960464477539063e-08
+      },
+      {
+        "compute": 1.0000011920928955,
+        "adaptive_value": 0.5000002384185791,
+        "static_value": 0.5000001986821493,
+        "compute_matched_gap": 3.973642981325298e-08
+      },
+      {
+        "compute": 2.499999761581421,
+        "adaptive_value": 0.9999997615814209,
+        "static_value": 0.7499999602635701,
+        "compute_matched_gap": 0.24999980131785082
+      },
+      {
+        "compute": 2.5000007152557373,
+        "adaptive_value": 0.9999998807907104,
+        "static_value": 0.7500001192092896,
+        "compute_matched_gap": 0.2499997615814209
+      }
+    ],
+    "dominated": [
+      {
+        "compute": 1.0000014305114746,
+        "adaptive_value": 1.0,
+        "static_value": 1.0,
+        "compute_matched_gap": 0.0
+      },
+      {
+        "compute": 1.0000014305114746,
+        "adaptive_value": 1.0,
+        "static_value": 1.0,
+        "compute_matched_gap": 0.0
+      }
+    ],
+    "max_compute_matched_gap_identifiable": 0.24999980131785082,
+    "max_compute_matched_gap_dominated": 0.0
+  },
   "worst_gap_to_theory": 8.374337736594129e-07,
   "verdict": "TRAINED_CONTROLLER_REALISES_V_STAR"
 }

@@ -29,7 +29,13 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   V(O)<=V*(I(C;O)); the symmetric sensor is rate-optimal only for the symmetric (critical)
   problem, else it wastes value that grows with noise (inefficiency 0.007->0.040) — the
   measurable cost of a channel not shaped to the decision. Runnable in ~2 min; fast pytest (6).
-  Scope: synthetic 2×2/small controllers, NOT the L7 compute-equivalent Pareto (cloud-blocked).
+  Compute-matched (the Act-J shape on the FLOP axis): mechanisms carry FLOP costs
+  (cheap=1, expensive=4); a trained adaptive router is compared to the best context-blind
+  policy at EQUAL average compute. Under a binding budget the adaptive router strictly
+  dominates static by 0.25 at matched FLOPs -- exactly the constrained oracle gap the theory
+  predicts (same 0.25 as budgeted routing-v2) -- and ties when a mechanism weakly dominates.
+  The compute-equivalent advantage question answered at tiny synthetic scale, matching theory;
+  a proof of concept for L7, NOT the cloud-scale Pareto (still cloud-blocked). Fast pytest (8).
 - **Inference breakthrough: a calibrated pilot identifiability certificate**
   (`docs/IDENTIFIABILITY_INFERENCE.md` + `experiments/common/identifiability_inference.py`):
   the step from converse-only upper bounds to a decidable, error-controlled action.

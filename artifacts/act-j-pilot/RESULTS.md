@@ -66,6 +66,26 @@ only for the symmetric (critical) problem** — for a regular one it wastes valu
 the waste grows monotonically with sensor noise. This is the measurable *cost of a
 channel not shaped to the decision*, realised in a trained network.
 
+## Compute-matched — the Act-J shape on the FLOP axis
+
+The decisive question is value at **equal compute**. Each mechanism carries a FLOP cost
+(`cheap=1, expensive=4`); an adaptive router trained under a compute price is compared to
+the best context-blind policy spending the **same** average compute. Task: easy solved by
+both, hard only by the expensive mechanism.
+
+| regime | compute | adaptive V | static V | gap |
+|---|---:|---:|---:|---:|
+| identifiable (binding budget) | 1.00 (all cheap) | 0.500 | 0.500 | 0.000 |
+| identifiable | **2.50** | **1.000** | **0.750** | **+0.250** |
+| dominated (cheap solves all) | any | = static | = static | 0.000 |
+
+At the binding budget the trained adaptive router **strictly dominates the static
+frontier by 0.25 at equal FLOPs** — precisely the constrained oracle gap the theory
+predicts (and the same 0.25 as budgeted routing-v2). When a mechanism weakly dominates,
+routing buys **no** compute advantage (gap 0). This is the compute-equivalent advantage
+question (L7), answered at tiny synthetic scale and matching the theory exactly — a
+proof of concept for the real Act J, not the cloud-scale result itself.
+
 ## Reproduce
 
 ```bash

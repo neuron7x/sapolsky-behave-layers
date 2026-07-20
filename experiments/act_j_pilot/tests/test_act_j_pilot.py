@@ -11,6 +11,7 @@ from experiments.act_j_pilot.src.act_j_pilot import (
     train_controller,
     train_sensory_controller,
 )
+from experiments.act_j_pilot.src.compute_matched import compute_matched_gap
 from experiments.common.value_of_information_rate import optimal_value_at_rate_ri
 
 REGULAR = [[1.0, 0.0], [0.0, 0.5]]
@@ -62,6 +63,24 @@ def test_symmetric_sensor_is_rate_optimal_only_for_a_symmetric_problem():
     low = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.1), steps=2500, seed=0)
     high = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.6), steps=2500, seed=0)
     assert high.inefficiency > low.inefficiency > 1e-3                         # waste grows with noise
+
+
+def test_compute_matched_adaptive_dominates_under_a_binding_budget():
+    # easy solved by both, hard only by the expensive mechanism; cheap=1, expensive=4
+    u, cost, p = [[1.0, 1.0], [0.0, 1.0]], [1.0, 4.0], [0.5, 0.5]
+    rows = compute_matched_gap(u, cost, p, [2.0, 0.25], steps=3500, seed=0)
+    for r in rows:
+        assert r["adaptive_value"] >= r["static_value"] - 1e-3      # adaptive never worse
+    # at the binding budget (compute ~2.5) adaptive strictly dominates by the constrained gap
+    binding = [r for r in rows if r["compute"] > 1.5]
+    assert binding and max(r["compute_matched_gap"] for r in binding) > 0.2
+
+
+def test_compute_matched_ties_when_a_mechanism_dominates():
+    # cheap mechanism solves everything -> routing buys no compute advantage
+    u, cost, p = [[1.0, 1.0], [1.0, 1.0]], [1.0, 4.0], [0.5, 0.5]
+    for r in compute_matched_gap(u, cost, p, [0.3], steps=2500, seed=0):
+        assert abs(r["compute_matched_gap"]) < 1e-2
 
 
 def test_more_information_never_decreases_realised_value():
