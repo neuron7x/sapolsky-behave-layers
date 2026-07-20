@@ -49,13 +49,17 @@ dominance) and both positives (routing v2, and the plasticity revival — gap
 0.19 under a cost budget). Ships a cheap `O(|C||A|)` predictor to run on a pilot
 before spending cloud compute (`scripts/identifiability_theory.py`).
 
-**Empirical bridge — a trained controller realises V*(R)** (`experiments/act_j_pilot/`):
-a real neural controller (`context→P(a|c)`, MLP + Adam, GPU) trained on the rational-
-inattention objective `E[U]−β·I(C;A)` converges to the analytic rate function `V*(I)` to
-machine precision across all seeds/prices (`artifacts/act-j-pilot/`, verdict
-`TRAINED_CONTROLLER_REALISES_V_STAR`, worst gap 0.0000), and exhibits the phase transition
-(at a high info price the critical problem routes, the regular one abstains). Theory→
-learning-system loop closed at runnable scale; NOT the L7 Pareto (still cloud-blocked).
+**Empirical bridge — a trained controller realises V*(R)** (`experiments/act_j_pilot/`,
+**EXPLORATORY / not preregistered / not a claim-ladder entry**): a real neural controller
+(`context→P(a|c)`, MLP + Adam, GPU) trained on the rational-inattention objective
+`E[U]−β·I(C;A)` converges to the analytic rate function `V*(I)` to machine precision across
+all seeds/prices (`artifacts/act-j-pilot/`, verdict `TRAINED_CONTROLLER_REALISES_V_STAR`,
+worst gap 0.0000; see `artifacts/act-j-pilot/verdict.json` for the honest caveat), and
+exhibits the phase transition (at a high info price the critical problem routes, the regular
+one abstains). This is a learning system **realising a KNOWN analytic fixed point** (a
+fit-to-optimum convergence), NOT an independent empirical prediction; it closes the theory→
+learning-system loop at runnable scale but is **not** in `claim_registry.json` and is **not**
+the L7 Pareto (still cloud-blocked).
 
 **⭐ Information-market theory — one coherent synthesis** (`docs/INFORMATION_MARKET_SYNTHESIS.md`):
 the map that ties the whole theory line into ONE object — the value-of-information rate
@@ -93,9 +97,12 @@ indifference manifold — real routing headroom is smaller than the √I bound s
 Computed + falsification-tested (`experiments/common/value_of_information_rate.py`).
 
 **Coherence & efficiency of the whole programme** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`):
-a machine-checked proof (Theorem C) that every recorded verdict equals the sign of
-its theoretical certificate `Γ = min{G(λ), Δu√(I/2)} − c_route` — 0 contradictions
-across the ladder; the three vetoes partition all negatives. Efficiency (Theorem E):
+a machine-checked internal-consistency **audit** (Audit C — not a proof of coherence:
+its utility matrices are hand-encoded stand-ins, so it catches a status mismatched to
+its own encoded matrix but not a wrong matrix) that every recorded verdict equals the
+sign of its theoretical certificate `Γ = min{G(λ), Δu√(I/2)} − c_route` — 0 contradictions
+across the ladder; the three vetoes partition all negatives. Efficiency (Theorem E, a
+genuine proof):
 the identifiability predictor is `Θ(|C||A|)` and provably optimal (must read every
 entry); measured `reads == |C||A|`. The auditor is falsifiable — it flags an injected
 incoherent claim. `experiments/common/coherence_audit.py`.
@@ -151,14 +158,22 @@ make -f Makefile.cwc verify           # lint + types + tests + coverage + mutati
 make -f Makefile.cwc verify-evidence  # checksum every evidence bundle
 PYTHONPATH=. .venv/bin/python scripts/identifiability_theory.py   # the theory, from real data
 ```
-Every experiment has `artifacts/<exp>/{RESULTS.md, verdict.json, SHA256SUMS}` and
-`experiments/<exp>/PREREGISTRATION.md` committed before its confirmatory run.
+Every experiment ships `artifacts/<exp>/{RESULTS.md, verdict.json, SHA256SUMS}`. Preregistration
+discipline is honest about its own history: WP2-routing-v2 and RCFR have a `PREREGISTRATION.md`
+that is a strict Git ancestor of their result commit; **WP4-adaptive-depth and Routing-v3
+REINFORCE entered protocol+results in one commit and are therefore labeled
+`RETROSPECTIVE_PROTOCOL`** (`docs/methodology/PREREGISTRATION_INTEGRITY_POLICY.md`,
+`docs/vnv/DEBT_REGISTER_2026-07-19.md` T0-PREREG). The `act_j_pilot` is EXPLORATORY (not
+preregistered). No positive is stated above the governance its provenance supports.
 
 ## Governing protocols (docs/)
 `CWC_SEMANTIC_CONTRACT.md` (use/mention tiers), `DCSA_PROTOCOL_V2.md`
 (evidence-gated audit), `RCFR_FALSIFICATION_CONTRACT.md`, `IDENTIFIABILITY_THEORY.md`.
-Discipline: preregister before confirmatory runs; no claim above its gate; freeze
-negatives immutably; energy is `INSTRUMENT_INVALID` on this hardware → excluded.
+Discipline: preregister before confirmatory runs (retrospective cases labeled
+`RETROSPECTIVE_PROTOCOL`, not hidden); no claim above its gate; freeze negatives
+immutably; energy is `INSTRUMENT_INVALID` on this hardware → excluded, and now
+fail-closed in code (`enable_energy` requires `energy_instrument_invalid_ack`; a
+<2-sample power window returns `available=False`, never a fabricated 0 J).
 
 ## The decisive next step
 Run the §6 identifiability predictor on a small pilot, then **Act J**:

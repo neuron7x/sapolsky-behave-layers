@@ -1,8 +1,9 @@
 # Mathematical Coherence and Efficiency of the CWC Programme
 
-**Status.** Meta-theoretical note. It proves two properties of the programme *as a
-whole* — logical **coherence** and, in two precise senses, **efficiency** — and
-makes both machine-checkable in `experiments/common/coherence_audit.py`
+**Status.** Meta-theoretical note. It establishes two properties of the programme
+*as a whole* — logical **coherence** (as a machine-checked internal-consistency
+audit, not a proof) and, in two precise senses, **efficiency** (one of them a
+genuine proof) — and makes both machine-checkable in `experiments/common/coherence_audit.py`
 (suite: `experiments/common/tests/test_coherence_audit.py`). It introduces no new
 empirical claim and touches no `claim_registry.json` entry; it audits the
 consistency of the ones already there against the value theory.
@@ -47,14 +48,19 @@ Everything below is a consequence of A1–A4 and the six theorems.
 > `Γ≤0 ⇔ status ∈ {NEGATIVE classes}`, and each negative is explained by the
 > *specific* veto the theory predicts.
 
-> **Theorem C (coherence).** Under A1–A4, the CWC claim ladder is coherent: there
-> exists no pair (claim, regime) on record whose empirical verdict contradicts the
-> certificate sign. Equivalently, the map `regime ↦ sign(Γ)` reproduces every
-> recorded verdict, and the three vetoes **partition** all recorded negatives.
+> **Audit C (machine-checked internal consistency — not a proof of coherence).**
+> Under A1–A4, the CWC claim ladder is *internally consistent with its own encoded
+> value table*: there exists no pair (claim, regime) on record whose empirical
+> verdict contradicts the certificate sign. Equivalently, the map `regime ↦ sign(Γ)`
+> reproduces every recorded verdict, and the three vetoes **partition** all recorded
+> negatives.
 
-*Proof (by exhaustive certification, mechanised).* Each recorded regime is a finite
-decision problem; `Γ` is computed from the same utility matrices the programme
-used. `audit_ladder` evaluates all of them:
+*Audit (exhaustive check of a hand-encoded table, mechanised).* Each recorded regime
+is represented by a finite decision problem whose **utility matrix and expected
+verdict class are both hand-encoded** in `coherence_audit.py` — the stylized 2×2/4×4
+matrices are stand-ins chosen to reproduce the storyline's gaps, **not** the
+experiments' real utilities. `Γ` is computed from those encoded matrices, and
+`audit_ladder` checks that each verdict matches its encoded expectation:
 
 | Regime | reproduced `G` | certificate verdict | recorded status | veto |
 |---|---:|---|---|---|
@@ -67,7 +73,11 @@ used. `audit_ladder` evaluates all of them:
 
 Zero contradictions. The three positives are exactly the binding-budget regimes;
 the three dominance-negatives are exactly the weakly-dominant regimes (Theorem 2);
-the surface-matched negative is exactly the computation veto (Theorem 6). ∎
+the surface-matched negative is exactly the computation veto (Theorem 6).
+*(End of audit — not a QED.)* This check can catch a status that mismatches its own
+encoded matrix (see the `falsify_coherence` injection below); it **cannot** catch a
+wrong matrix or a mislabeled experiment, since the matrix and the expected verdict
+are supplied by the same hand-encoding.
 
 **Consistency corollary.** No two claims contradict: the ladder is a partial order
 in which a claim never asserts what a strictly-below claim denies (e.g. L2 routing
@@ -76,7 +86,7 @@ L7 marks NOT_TESTED). The audit rejects any status that outruns its certificate.
 
 **Soundness of the audit.** A coherence proof that cannot fail is vacuous.
 `falsify_coherence` injects a weakly-dominant (`G=0`) problem tagged SUPPORTED and
-asserts the auditor flags it. It does. So Theorem C is a *falsifiable* statement
+asserts the auditor flags it. It does. So Audit C is a *falsifiable* statement
 that currently holds, not a definition.
 
 ---
@@ -137,7 +147,7 @@ makes the theory actionable ahead of spending.
 
 ## 5. Epistemic status
 
-Theorem C is a statement about the *internal consistency* of the recorded ladder
+Audit C is a statement about the *internal consistency* of the recorded ladder
 against the value theory — it certifies that the programme's claims and its
 mathematics agree. It is **not** a claim that any CWC architecture achieves a
 positive `V_net` on a real workload (that is `CWC-L7-pareto: NOT_TESTED`). A
@@ -150,4 +160,4 @@ must not mistake for the empirical result it still owes.
 * `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` — supplies Theorems 1–6 and the certificate `Γ`.
 * `NEURON_INFORMATION_BUDGET.md` — supplies the physical price of `c_route`.
 * `IDENTIFIABILITY_THEORY.md` — supplies the regime utility matrices the audit reuses.
-* `experiments/common/coherence_audit.py` — the machine proof of Theorems C and E.
+* `experiments/common/coherence_audit.py` — the machine check of Audit C and the proof of Theorem E.

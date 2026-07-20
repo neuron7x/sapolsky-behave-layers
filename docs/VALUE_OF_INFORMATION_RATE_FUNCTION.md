@@ -50,12 +50,12 @@ budget `R`. ∎
 
 ---
 
-## 3. The small-rate law (the new result)
+## 3. The small-rate law (a conjectured dichotomy)
 
 Let `a₀ ∈ argmax_a 𝔼_p U(·,a)` be a prior-optimal action and
 `m := V_fixed − max_{a≠a₀} 𝔼_p U(·,a) ≥ 0` the expected-utility margin.
 
-> **Theorem 2 (small-rate dichotomy).** As `R → 0⁺`:
+> **Conjecture 2 (small-rate dichotomy — proof sketch + numerical corroboration).** As `R → 0⁺`:
 >
 > **(Regular, `m>0` — a unique prior optimum).**
 > `V*(R) = σ·R + o(R)` with `0 < σ < ∞`. Hence the marginal value of the first nat
@@ -85,9 +85,15 @@ changes the optimal action, with first-order gain proportional to the
 total-variation displacement. By the equality case of the value bound
 (`V = Δu·𝔼_z TV(P(·|z),P(·))`, Prop 4.1) and Pinsker's own tightness for near-equal
 distributions (Prop 4.2), the optimum tracks `Δu·√(R/2)`, so the ceiling is attained
-to leading order. ∎
+to leading order. (Sketch — the crux is asserted, see caveat.)
 
-**Computed confirmation (binary context, exact solver):**
+*Caveat (why this is a conjecture, not a theorem).* The crux — that the marginal
+value of the first nat `β(0⁺)=σ` is finite generically but `=∞` on the indifference
+manifold — is **asserted** here from the boundary-crossing heuristic, not derived; the
+argument above is a proof *sketch*. The confirmations below are numerical exponent
+fits on a few curated instances, not a proof.
+
+**Numerical corroboration (curated binary-context instances, exact solver):**
 
 | problem | regime | `V*/√R` as `R↓` | `V*/(Δu√(R/2))` as `R↓` | small-`R` exponent |
 |---|---|---|---|---|
@@ -163,9 +169,9 @@ units of the utility range.
 
 ## 4a. The transition is universal — general `|C| > 2`
 
-The dichotomy of §3 is **not an artifact of a binary context**: its proof turns only
-on the prior margin `m` and the indifference manifold, both defined for any finite
-`|C|,|A|`. A general-context lower-bound solver (grid over binary-signal channels,
+The dichotomy of §3 is **not an artifact of a binary context**: its argument turns
+only on the prior margin `m` and the indifference manifold, both defined for any
+finite `|C|,|A|`. A general-context lower-bound solver (grid over binary-signal channels,
 `optimal_value_at_rate_general`) confirms it directly for `|C|=3`:
 
 | problem (`|C|=|A|=3`) | regime | small-`R` exponent | `V*/(Δu√(R/2))` |

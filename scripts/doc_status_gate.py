@@ -2,7 +2,11 @@
 
 Checks, with NO third-party deps (jsonschema unavailable in the frozen env):
   1. claim_registry.json validates against schemas/claim.schema.json (required
-     fields + status enum + no unknown keys) and its git_commit == HEAD;
+     fields + status enum + no unknown keys); its git_commit is a real,
+     reachable ANCESTOR of HEAD (a committed registry is always one behind HEAD,
+     so exact equality is unsatisfiable); AND — fail-closed against a stale stamp
+     that predates its own evidence — every required_artifact already exists in
+     the tree of that git_commit, not merely in the working tree;
   2. every claim has a hypothesis_id that resolves in HYPOTHESIS_REGISTRY.yaml,
      and every hypothesis has a claim_id that resolves back (orphans == 0);
   3. every claim's required_artifacts path exists on disk;
@@ -78,6 +82,23 @@ def main() -> int:
             errors.append(f"claim_registry git_commit {reg_commit[:7]} is not a real commit")
         elif not ancestor:
             errors.append(f"claim_registry git_commit {reg_commit[:7]} is not an ancestor of HEAD (stale/divergent)")
+        else:
+            # Anti-staleness: the stamp must not predate the evidence it points to.
+            # Every required_artifact must already exist in reg_commit's own tree,
+            # so a registry stamped 51 commits before its artifacts were created
+            # (the historical d920f79 defect) fails closed instead of passing on a
+            # working-tree existence check alone.
+            for c in reg["claims"]:
+                for art in c.get("required_artifacts", []):
+                    tree_path = art.rstrip("/")
+                    present = subprocess.run(
+                        f"git cat-file -e {reg_commit}:{tree_path}",
+                        shell=True, cwd=ROOT, capture_output=True).returncode == 0
+                    if not present:
+                        errors.append(
+                            f"claim {c.get('claim_id','<no id>')}: required_artifact "
+                            f"'{art}' absent at registry commit {reg_commit[:7]} "
+                            f"(registry stamped before its own evidence)")
 
     claims = reg["claims"]
     claim_hyp = {}

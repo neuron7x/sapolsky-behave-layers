@@ -222,6 +222,18 @@ routing-v2 shape (unbudgeted gap ≈0, a strictly positive window under a budget
 per-action shift leaves the gap structure intact), `V(Z) ≤ G(λ)`; by Theorem 4,
 `V(Z) ≤ Δu·√(I/2)`. Take the minimum and subtract `c_route`. ∎
 
+**Scope caveat (one fixed utility).** The inequality is rigorous as a **min of two
+valid bounds on the signal value of a single fixed utility** — the form the code
+computes, where `V(Z)`, `G` and `Δu` are all derived from the *same* `U`. With a
+fixed utility, Theorem 3 gives `V(Z) ≤ G(0)` and Theorem 4 gives `V(Z) ≤ Δu·√(I/2)`,
+so `V_net ≤ min{G(0), Δu·√(I/2)} − c_route` holds exactly. The prose "unification"
+that decorates the gap term with a **budget `λ`** while leaving `V(Z)` raw is an
+over-glued narrative: subtracting the per-action budget `λK[a]` *inside* the max
+changes the value functional (`V_λ ≠ V`), so `V(Z) ≤ G(λ)` is **not** valid as
+written for the un-budgeted `V(Z)`. Any `λ`-budget must be applied **consistently** to
+`V`, `G` and `Δu` together (as the code does); read that way the three "faces" are one
+inequality on one utility, not a free pairing of a raw `V` with a budgeted `G`.
+
 **Three independent vetoes.** Each ceiling can vanish on its own: (i) a weakly
 dominant mechanism sends `G(λ) → 0` (dominance veto); (ii) an uninformative signal
 sends `I(C;Z) → 0` (information veto); (iii) a signal that is informative but

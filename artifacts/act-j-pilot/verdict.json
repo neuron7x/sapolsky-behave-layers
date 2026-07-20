@@ -1,0 +1,24 @@
+{
+  "experiment": "act_j_pilot",
+  "verdict": "TRAINED_CONTROLLER_REALISES_V_STAR",
+  "status": "EXPLORATORY",
+  "governance": "RETROSPECTIVE_NOT_PREREGISTERED",
+  "one_line": "A trained neural controller (context->P(a|c), MLP+Adam, GPU) minimizing the rational-inattention objective E[U]-beta*I(C;A) converges to the analytic value-of-information rate function V*(I) across all seeds/prices, and exhibits the predicted phase transition (critical problem routes, regular one abstains).",
+  "metrics": {
+    "worst_gap_to_theory": 0.0,
+    "betas": [3.0, 1.0, 0.3, 0.1],
+    "seeds": [0, 1, 2]
+  },
+  "caveats": [
+    "This is a demonstration that a learning system REALISES a KNOWN analytic fixed point V*(R); it is a fit-to-optimum convergence result, NOT an independent empirical prediction.",
+    "EXPLORATORY: no separately-committed preregistration precedes this run; it is a theory->learning-system bridge, not a confirmatory claim.",
+    "It is deliberately NOT a claim_registry.json entry and is NOT part of the L0..L8 claim ladder.",
+    "It is NOT the L7 compute-equivalent Pareto result (still cloud-blocked)."
+  ],
+  "not_claimed": [
+    "compute-equivalent Pareto advantage",
+    "real-workload routing",
+    "novelty of the rational-inattention solution",
+    "independent replication"
+  ]
+}

@@ -85,6 +85,17 @@ def validate(root: Path = ROOT) -> list[str]:
             if not (bundle / name).is_file():
                 errors.append(f"{bundle.relative_to(root)}: missing {name}")
 
+    # Frozen negatives (RTM REQ-010): immutable bundles under artifacts/history/.
+    # They carry no RESULTS.md — the sealed record is SHA256SUMS + CLAIM_BOUNDARY.json.
+    # Previously neither this validator (wp* glob) nor verify-evidence (hard-coded
+    # list) covered them, so the declared REQ-010 control was dead; now enforced.
+    history = root / "artifacts/history"
+    if history.is_dir():
+        for bundle in sorted(p for p in history.iterdir() if p.is_dir()):
+            for name in ("SHA256SUMS", "CLAIM_BOUNDARY.json"):
+                if not (bundle / name).is_file():
+                    errors.append(f"{bundle.relative_to(root)}: missing {name} (frozen negative)")
+
     wp4_runs = root / "artifacts/wp4-adaptive-depth-v2/raw_runs"
     wp4_saved = root / "artifacts/wp4-adaptive-depth-v2/analysis.json"
     if wp4_runs.is_dir() and wp4_saved.is_file():

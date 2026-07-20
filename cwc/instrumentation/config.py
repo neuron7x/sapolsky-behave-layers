@@ -44,6 +44,11 @@ class InstrumentationConfig:
     enable_vram: bool = True
     enable_energy: bool = False
     enable_flops: bool = True
+    # Energy on this programme's hardware is INSTRUMENT_INVALID (uncalibrated
+    # consumer-GPU NVML power). Enabling energy therefore requires the caller to
+    # explicitly affirm that the reading must never enter a claim aggregate. This
+    # turns "operator discipline" into a fail-closed code gate (see __post_init__).
+    energy_instrument_invalid_ack: bool = False
 
     def __post_init__(self) -> None:
         if self.sample_rate_hz <= 0:
@@ -74,6 +79,13 @@ class InstrumentationConfig:
 
         if self.enable_energy and not _cuda_available():
             raise ValueError("energy cannot be enabled without CUDA available")
+        if self.enable_energy and not self.energy_instrument_invalid_ack:
+            raise ValueError(
+                "energy is INSTRUMENT_INVALID on this programme's hardware "
+                "(uncalibrated consumer-GPU NVML power); enabling it requires "
+                "energy_instrument_invalid_ack=True to affirm the reading must "
+                "never enter a claim aggregate"
+            )
 
     @property
     def is_off(self) -> bool:

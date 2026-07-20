@@ -19,9 +19,13 @@ worst-seed reporting).
   hyperparameter-search budget.
 
 ## Inference
-- Paired comparison of the primary metric; **hierarchical bootstrap** (seed → corpus →
-  example) for CIs; fixed `bootstrap_seed` for determinism (see
-  `analyze_surface_matched.py`, `analyze_r3c_reinforce.py`).
+- Paired comparison of the primary metric; **flat paired bootstrap with the seed as
+  the resampling unit** for CIs (the synthetic benchmarks have no corpus/example
+  hierarchy to resample, so the unit is the seed); fixed `bootstrap_seed` for
+  determinism. As implemented: `analyze_r3c_reinforce.py` resamples over seeds;
+  `analyze_surface_matched.py` reports the per-seed paired arms directly (no
+  resampling). A hierarchical seed→corpus→example bootstrap is reserved for a future
+  real-workload evaluation where those levels exist.
 - Report **median, dispersion (MAD), 95% CI, and worst-seed** result — never best seed.
 - Report **collapse probability** and separate **conditional vs unconditional** utility.
 

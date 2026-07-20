@@ -172,6 +172,9 @@ else:
         sample_rate_hz=args.instrumentation_sample_rate_hz,
         trace_every_n_steps=args.instrumentation_trace_every,
         enable_energy=args.instrumentation_energy and device_type == "cuda",
+        # This training script explicitly acknowledges energy is INSTRUMENT_INVALID
+        # here; any joules it records are diagnostic only and excluded from claims.
+        energy_instrument_invalid_ack=args.instrumentation_energy and device_type == "cuda",
     )
     cwc_event_pool = CwcEventPool(size=256) if device_type == "cuda" else None
     if cwc_event_pool is not None:

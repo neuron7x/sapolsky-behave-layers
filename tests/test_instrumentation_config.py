@@ -79,3 +79,15 @@ def test_energy_requires_cuda(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr("cwc.instrumentation.config._cuda_available", lambda: False)
     with pytest.raises(ValueError, match="energy cannot be enabled without CUDA"):
         InstrumentationConfig(enable_energy=True)
+
+
+def test_energy_requires_instrument_invalid_ack(monkeypatch: pytest.MonkeyPatch):
+    # With CUDA present, energy still cannot be enabled without an explicit
+    # acknowledgement that it is INSTRUMENT_INVALID on this hardware — the
+    # discipline is a fail-closed code gate, not operator convention.
+    monkeypatch.setattr("cwc.instrumentation.config._cuda_available", lambda: True)
+    with pytest.raises(ValueError, match="INSTRUMENT_INVALID"):
+        InstrumentationConfig(enable_energy=True)
+    # The acknowledged form is accepted.
+    cfg = InstrumentationConfig(enable_energy=True, energy_instrument_invalid_ack=True)
+    assert cfg.enable_energy is True

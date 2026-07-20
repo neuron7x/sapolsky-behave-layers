@@ -3,6 +3,49 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Audit-closure] — 2026-07-20
+
+Closure of a full 4-axis adversarial audit (claim↔evidence, theory soundness,
+instrumentation code, methodology/gates). The verify gate was independently
+reproduced GREEN before and after. No claim was falsified; the audit found a
+coherent class of "advertised rigor > enforced rigor" gaps plus one latent
+fail-open, all closed here.
+
+### Fixed
+- **Energy fail-open (F1, real defect).** `NVMLPowerSampler.stop()` returned a
+  fabricated `joules=0.0` with `available=True` on a <2-sample (unmeasurable)
+  window, violating the module's own contract. Now returns `available=False`,
+  `confidence="unavailable"`; the test that blessed the defect now asserts it.
+- **Energy exclusion is now code-enforced (F2).** `enable_energy` requires an
+  explicit `energy_instrument_invalid_ack=True` — the INSTRUMENT_INVALID
+  discipline is a fail-closed gate, not operator convention.
+- **Registry provenance staleness (M2/M3).** `claim_registry.git_commit` was 51
+  commits stale and pointed at a tree missing three of its own required
+  artifacts; the doc gate's docstring claimed `==HEAD` but only checked ancestry.
+  Registry re-stamped; `doc_status_gate.py` now fails closed unless every
+  required_artifact already exists in the stamped commit's tree; docstring
+  corrected.
+- **Frozen-negative evidence gate (M4).** RTM REQ-010 declared `verify-evidence`
+  covers `artifacts/history/`, but neither gate touched it. Both `Makefile.cwc
+  verify-evidence` and `validate_evidence.py` now check the three frozen-negative
+  bundles (checksum + SHA256SUMS/CLAIM_BOUNDARY.json).
+
+### Corrected (honesty)
+- WP4 primary bundle carries a `SUPERSEDED.md` banner (checksum-safe) pointing to
+  the epistemic correction; its `compute_matched: true` / `..._CONFIRMED` verdict
+  is retracted at interpretation while the sealed files stay verbatim.
+- Statistical Analysis Plan: "hierarchical (seed→corpus→example) bootstrap"
+  corrected to the implemented flat seed-unit bootstrap.
+- Theory labeling: coherence "Theorem C" relabeled an internal-consistency audit
+  (not a coherence proof); the inference-certificate coverage, the Pinsker
+  small-rate dichotomy, and the master-inequality λ-unification carry honest
+  scope caveats. Theorems 1–5, 4′, RI-optimality and Efficiency-E are unchanged
+  (genuinely proved).
+- `act_j_pilot` labeled EXPLORATORY / not-preregistered / not a claim-ladder
+  entry, now with `verdict.json` + `SHA256SUMS`; SYSTEM.md preregistration prose
+  reconciled with the RETROSPECTIVE_PROTOCOL disclosure. `CWC-L0` metric corrected
+  to the artifact's actual test count.
+
 ## [Unreleased remediation] — 2026-07-19
 
 ### Corrected

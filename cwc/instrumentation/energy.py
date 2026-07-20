@@ -109,15 +109,22 @@ class NVMLPowerSampler:
             self._thread.join(timeout=max(1.0, self._interval_s * 5))
             self._thread = None
         if not self.available or len(self._samples) < 2:
-            confidence = "unavailable" if not self.available else "low_confidence"
+            # Fewer than two samples cannot be trapezoidally integrated: the
+            # measurement window is UNMEASURED. Per this module's contract
+            # (see the header: "Zero joules is only ever returned attached to
+            # available=False / confidence=unavailable"), an unmeasured window
+            # must NOT report joules=0.0 with available=True — that fabricates a
+            # 0 J reading for a window we never measured. So a 0- or 1-sample
+            # stop is available=False / confidence=unavailable. sample_count is
+            # preserved so a caller can still see that one probe landed.
             return EnergyRecord(
-                available=bool(self._samples),
+                available=False,
                 method="nvml_power_sampling",
                 sample_count=len(self._samples),
                 duration_sec=0.0,
                 joules=0.0,
                 average_watts=0.0,
-                confidence=confidence,
+                confidence="unavailable",
             )
         duration_sec = self._samples[-1][0] - self._samples[0][0]
         joules = _trapezoidal_joules(self._samples)

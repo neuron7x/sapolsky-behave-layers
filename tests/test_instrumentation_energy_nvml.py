@@ -122,14 +122,17 @@ def test_power_sampler_counts_missed_samples(monkeypatch):
     assert sampler.missed_samples > 0
 
 
-def test_power_sampler_single_sample_is_low_confidence(fake_nvml):
+def test_power_sampler_single_sample_is_unavailable_not_fabricated_zero(fake_nvml):
     sampler = NVMLPowerSampler(sample_rate_hz=1.0)  # 1s interval: at most 1 sample in a short window
     sampler.start()
     time.sleep(0.02)
     record = sampler.stop()
-    # 0 or 1 samples -> cannot integrate -> low_confidence, joules 0
-    assert record.confidence in ("low_confidence", "unavailable")
+    # 0 or 1 samples -> cannot integrate -> the window is UNMEASURED. joules=0.0
+    # must NEVER be attached to available=True (that fabricates a 0 J reading).
+    assert record.available is False
+    assert record.confidence == "unavailable"
     assert record.joules == 0.0
+    assert record.sample_count <= 1  # the probe that did land is still reported
 
 
 def test_facade_prefers_total_energy_backend(fake_nvml):

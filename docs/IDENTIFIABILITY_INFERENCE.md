@@ -60,14 +60,30 @@ G_lo  :=  Ĝ  −  b(sd,|A|)  −  d(sd,|C|,δ) ,
 > identifiability, and `G_lo > c_route` certifies positive net value, each with
 > false-positive rate at most `δ`.
 
-*Proof.* `Ĝ − G = (V̂_oracle − V_oracle) − (V̂_fixed − V_fixed)`. For the oracle term,
+*Proof sketch.* `Ĝ − G = (V̂_oracle − V_oracle) − (V̂_fixed − V_fixed)`. For the oracle term,
 `V̂_oracle − V_oracle = 𝔼_c( max_a Û[c,a] − max_a U[c,a] ) ≤ 𝔼_c max_a (Û−U)[c,a]`.
 Each `(Û−U)[c,a]` is centered sub-Gaussian with proxy `sd`; the maximum of `|A|` of
 them has expectation `≤ sd√(2 ln|A|) = b`, and concentrates. For `V̂_fixed`, the
 context-averaged estimates have proxy `sd/√|C|`; a one-sided union bound over `|A|`
 actions gives, with probability `≥ 1−δ`, `V̂_oracle − V_oracle − (V̂_fixed − V_fixed)
 ≤ b + d`. Hence with probability `≥ 1−δ`, `Ĝ − G ≤ b + d`, i.e. `G ≥ Ĝ − b − d =
-G_lo`. ∎
+G_lo`. (Sketch — see the Proof caveat.)
+
+> **Proof caveat (scope).** The argument above is a *sketch*, not a completed
+> high-probability proof. It bounds only the **expectation** of the oracle-term
+> overshoot (`𝔼[O] ≤ b`, a legitimate max-bias/Jensen correction) and then allocates
+> the entire deviation budget `d` to the **fixed** term `F`; it supplies **no
+> separate concentration term for the oracle term `O`**. A fully rigorous
+> high-probability bound needs ~two deviation terms (one for `O`'s concentration, one
+> for `F`'s), union-bounded — roughly `b + 2d`. The `sd/√|C|` proxy also tacitly
+> assumes **independence across the `|C|` contexts**, which is never stated as a
+> hypothesis. What is actually established is (i) the max-bias/Jensen correction `b`,
+> plus (ii) an empirically **calibrated** and deliberately **conservative** deviation
+> allowance, verified by simulation over the additive-utility and all-tied null
+> families — **not** a complete concentration proof of the oracle term. In practice
+> the `b` slack over-covers the missing `O`-deviation, so the stated coverage holds
+> *as calibrated* (assuming per-context independence); it should not be called a
+> finished proof.
 
 The bound is deliberately **conservative** (it is an envelope, so the realised
 false-positive rate is typically well below `δ`); conservativeness costs power, not
