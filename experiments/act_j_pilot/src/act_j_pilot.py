@@ -140,8 +140,12 @@ def train_sensory_controller(
 
     The bottleneck is the sensor, not an explicit info penalty: the controller simply
     maximises expected reward over the joint ``(C, O)``. It converges to the Bayes value
-    ``V(O)``, which the rate function bounds: ``V(O) ≤ V*(I(C;O))``. A symmetric sensor is
-    rate-optimal only for a symmetric problem; otherwise ``inefficiency = V*(I)−V(O) > 0``.
+    ``V(O)``, which the rate function bounds: ``V(O) ≤ V*(I(C;O))``. The symmetric
+    confusion sensor is rate-optimal (``inefficiency = V*(I)−V(O) = 0``) **iff the problem
+    is context-exchangeable** — invariant under the full permutation group on contexts (a
+    fully symmetric problem, at any ``|C|``). Being merely *critical* (two tied actions)
+    is NOT sufficient: a critical but non-exchangeable problem still leaves ``inefficiency
+    > 0`` — the cost of a channel not shaped to the (asymmetric) decision.
     """
     torch.manual_seed(seed)
     n_c, n_a = len(utility), len(utility[0])

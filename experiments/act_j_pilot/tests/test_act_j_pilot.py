@@ -56,13 +56,21 @@ def test_sensory_controller_hits_channel_value_and_respects_the_ceiling():
         assert r.trained_value <= r.v_star_at_channel_rate + 1e-2              # under the rate ceiling
 
 
-def test_symmetric_sensor_is_rate_optimal_only_for_a_symmetric_problem():
-    # critical (symmetric) -> no inefficiency; regular -> inefficiency that grows with noise
-    crit = train_sensory_controller(CRITICAL, PRIOR, symmetric_confusion_channel(2, 0.4), steps=2500, seed=0)
-    assert abs(crit.inefficiency) < 5e-3                                       # symmetric sensor optimal
+def test_symmetric_sensor_is_rate_optimal_iff_context_exchangeable():
+    # EXCHANGEABLE problems (full permutation symmetry) -> no inefficiency, at any |C|
+    exch2 = train_sensory_controller(CRITICAL, PRIOR, symmetric_confusion_channel(2, 0.4), steps=2500, seed=0)
+    assert abs(exch2.inefficiency) < 5e-3
+    ident3 = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]               # exchangeable |C|=3
+    exch3 = train_sensory_controller(ident3, [1 / 3] * 3, symmetric_confusion_channel(3, 0.4), steps=2500, seed=0)
+    assert abs(exch3.inefficiency) < 5e-3                                       # exchangeability, not just 2x2
+    # CRITICAL but NON-exchangeable -> the symmetric sensor is NOT rate-optimal
+    crit_asym = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]            # two actions tie, contexts differ
+    ca = train_sensory_controller(crit_asym, [1 / 3] * 3, symmetric_confusion_channel(3, 0.45), steps=2500, seed=0)
+    assert ca.inefficiency > 0.02                                              # criticality is NOT sufficient
+    # a regular problem: inefficiency grows with noise
     low = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.1), steps=2500, seed=0)
     high = train_sensory_controller(REGULAR, PRIOR, symmetric_confusion_channel(2, 0.6), steps=2500, seed=0)
-    assert high.inefficiency > low.inefficiency > 1e-3                         # waste grows with noise
+    assert high.inefficiency > low.inefficiency > 1e-3
 
 
 def test_compute_matched_adaptive_dominates_under_a_binding_budget():

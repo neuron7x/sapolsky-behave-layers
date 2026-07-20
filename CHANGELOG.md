@@ -26,9 +26,11 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   phase transition — at a high info price the critical problem routes (V=0.083) while the
   regular one abstains (V≈0). Scales to |C|=8,|A|=5 (worst gap 8.4e-7). A second, noisy-sensor
   controller sees only a confused observation O and learns the Bayes value V(O), bounded by
-  V(O)<=V*(I(C;O)); the symmetric sensor is rate-optimal only for the symmetric (critical)
-  problem, else it wastes value that grows with noise (inefficiency 0.007->0.040) — the
-  measurable cost of a channel not shaped to the decision. Runnable in ~2 min; fast pytest (6).
+  V(O)<=V*(I(C;O)); the symmetric confusion sensor is rate-optimal IFF the problem is
+  context-exchangeable (full permutation symmetry, any |C| — verified |C|=3 too), NOT merely
+  critical: a critical-but-non-exchangeable problem still wastes value (inefficiency
+  0.05-0.10). [Corrected in the destruction stage from an over-generalised 2x2 phrasing.]
+  The inefficiency is the measurable cost of a channel not shaped to the decision. Fast pytest.
   Compute-matched (the Act-J shape on the FLOP axis): mechanisms carry FLOP costs
   (cheap=1, expensive=4); a trained adaptive router is compared to the best context-blind
   policy at EQUAL average compute. Under a binding budget the adaptive router strictly

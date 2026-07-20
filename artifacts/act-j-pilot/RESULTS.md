@@ -61,10 +61,15 @@ confusion channel, error `ε`) and learns `P(a|O)`. It converges to the Bayes va
 | regular | 0.7 | 0.046 | 0.0000 | 0.0402 | 0.0402 |
 | critical | any | — | = V*(I) | = V*(I) | **0.0000** |
 
-The trained value matches `V(O)` exactly, and the **symmetric sensor is rate-optimal
-only for the symmetric (critical) problem** — for a regular one it wastes value, and
-the waste grows monotonically with sensor noise. This is the measurable *cost of a
-channel not shaped to the decision*, realised in a trained network.
+The trained value matches `V(O)` exactly. **Correction (destruction stage):** the
+symmetric confusion sensor is rate-optimal (inefficiency = 0) **iff the problem is
+context-exchangeable** — invariant under the full permutation group on contexts (a
+fully symmetric problem, at *any* `|C|`; verified for the `|C|=3` identity too). Being
+merely *critical* (two tied actions) is **not** sufficient: a critical but
+non-exchangeable problem (`[[1,0,0],[0,1,0],[½,½,0]]`) still leaves inefficiency
+`0.05–0.10 > 0`. The earlier "rate-optimal for the critical problem" phrasing
+over-generalised from 2×2 and is retracted. The inefficiency is the measurable *cost
+of a channel not shaped to the (asymmetric) decision*.
 
 ## Compute-matched — the Act-J shape on the FLOP axis
 
