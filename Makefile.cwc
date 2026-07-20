@@ -51,7 +51,7 @@ mutation:
 
 # Act v2.0 A0 — experiment reproduction + evidence verification
 experiment-tests:
-	PYTHONPATH=. $(PY) -m pytest -q experiments/common/tests/ experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/ experiments/wp2_routing_v2/tests/ experiments/wp3_rcfr/tests/ experiments/wp3_plasticity_v1/tests/ experiments/wp4_adaptive_depth/tests/
+	PYTHONPATH=. $(PY) -m pytest -q experiments/common/tests/ experiments/wp2_routing_v1/tests/ experiments/wp2_mechanism_v2/tests/ experiments/wp2_routing_v2/tests/ experiments/wp3_rcfr/tests/ experiments/wp3_plasticity_v1/tests/ experiments/wp4_adaptive_depth/tests/ experiments/act_j_pilot/tests/
 
 reproduce-mechanism:
 	PYTHONPATH=. $(PY) experiments/wp2_mechanism_v2/src/runner_mech.py --seeds 0 1 2 3 4 5 6 7 --out artifacts/wp2-mechanism-v2/raw_runs

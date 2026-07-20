@@ -49,6 +49,14 @@ dominance) and both positives (routing v2, and the plasticity revival — gap
 0.19 under a cost budget). Ships a cheap `O(|C||A|)` predictor to run on a pilot
 before spending cloud compute (`scripts/identifiability_theory.py`).
 
+**Empirical bridge — a trained controller realises V*(R)** (`experiments/act_j_pilot/`):
+a real neural controller (`context→P(a|c)`, MLP + Adam, GPU) trained on the rational-
+inattention objective `E[U]−β·I(C;A)` converges to the analytic rate function `V*(I)` to
+machine precision across all seeds/prices (`artifacts/act-j-pilot/`, verdict
+`TRAINED_CONTROLLER_REALISES_V_STAR`, worst gap 0.0000), and exhibits the phase transition
+(at a high info price the critical problem routes, the regular one abstains). Theory→
+learning-system loop closed at runnable scale; NOT the L7 Pareto (still cloud-blocked).
+
 **⭐ Information-market theory — one coherent synthesis** (`docs/INFORMATION_MARKET_SYNTHESIS.md`):
 the map that ties the whole theory line into ONE object — the value-of-information rate
 function `V*(R)` and its price `β=dV*/dR` — from the Landauer floor and neuron budget

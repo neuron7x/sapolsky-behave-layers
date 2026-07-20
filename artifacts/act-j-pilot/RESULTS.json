@@ -1,0 +1,231 @@
+{
+  "betas": [
+    3.0,
+    1.0,
+    0.3,
+    0.1
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "regular": [
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 3.310426599512084e-09,
+        "trained_value": -2.9802322387695312e-08,
+        "theory_v_star": 3.432730877328538e-09,
+        "gap_to_theory": -3.323505326502385e-08,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.004379396326839924,
+        "trained_value": 0.004463374614715576,
+        "theory_v_star": 0.00446339431852083,
+        "gap_to_theory": -1.9703805254067674e-08,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.35529276728630066,
+        "trained_value": 0.1834644079208374,
+        "theory_v_star": 0.1834644076259755,
+        "gap_to_theory": 2.948619126641461e-10,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.6725633144378662,
+        "trained_value": 0.24828195571899414,
+        "theory_v_star": 0.24828189031792625,
+        "gap_to_theory": 6.540106789465483e-08,
+        "oracle_gap_G": 0.25
+      }
+    ],
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 4.422448185437133e-09,
+        "trained_value": 0.0,
+        "theory_v_star": 4.586275470508383e-09,
+        "gap_to_theory": -4.586275470508383e-09,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.0043794093653559685,
+        "trained_value": 0.004463374614715576,
+        "theory_v_star": 0.004463407357046867,
+        "gap_to_theory": -3.2742331290691595e-08,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.3552932143211365,
+        "trained_value": 0.18346452713012695,
+        "theory_v_star": 0.18346454173644178,
+        "gap_to_theory": -1.4606314824305855e-08,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.6725629568099976,
+        "trained_value": 0.2482818365097046,
+        "theory_v_star": 0.2482818545552551,
+        "gap_to_theory": -1.8045550498335672e-08,
+        "oracle_gap_G": 0.25
+      }
+    ],
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 6.050660417145082e-09,
+        "trained_value": 0.0,
+        "theory_v_star": 6.275436281732993e-09,
+        "gap_to_theory": -6.275436281732993e-09,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.004379666410386562,
+        "trained_value": 0.004463672637939453,
+        "theory_v_star": 0.004463664402004186,
+        "gap_to_theory": 8.235935267109085e-09,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.3552929759025574,
+        "trained_value": 0.18346452713012695,
+        "theory_v_star": 0.18346447021087786,
+        "gap_to_theory": 5.691924909179136e-08,
+        "oracle_gap_G": 0.25
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.672562837600708,
+        "trained_value": 0.2482818365097046,
+        "theory_v_star": 0.24828184263433217,
+        "gap_to_theory": -6.124627582870801e-09,
+        "oracle_gap_G": 0.25
+      }
+    ]
+  ],
+  "critical": [
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 0.013689562678337097,
+        "trained_value": 0.08254390954971313,
+        "theory_v_star": 0.08254386614383635,
+        "gap_to_theory": 4.340587678175467e-08,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.11094393581151962,
+        "trained_value": 0.23105841875076294,
+        "theory_v_star": 0.23105844276974996,
+        "gap_to_theory": -2.40189870215346e-08,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.5432767868041992,
+        "trained_value": 0.46555471420288086,
+        "theory_v_star": 0.4655546066969344,
+        "gap_to_theory": 1.0750594647834788e-07,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.69264817237854,
+        "trained_value": 0.49995458126068115,
+        "theory_v_star": 0.4999546390702778,
+        "gap_to_theory": -5.7809596665236995e-08,
+        "oracle_gap_G": 0.5
+      }
+    ],
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 0.013698406517505646,
+        "trained_value": 0.08257055282592773,
+        "theory_v_star": 0.08257040194067011,
+        "gap_to_theory": 1.5088525762152472e-07,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.11094386130571365,
+        "trained_value": 0.23105835914611816,
+        "theory_v_star": 0.23105836826387616,
+        "gap_to_theory": -9.117757993060138e-09,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.5432776808738708,
+        "trained_value": 0.4655548334121704,
+        "theory_v_star": 0.4655548749179852,
+        "gap_to_theory": -4.1505814785125494e-08,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.6926470398902893,
+        "trained_value": 0.49995458126068115,
+        "theory_v_star": 0.4999545258165451,
+        "gap_to_theory": 5.5444136060067706e-08,
+        "oracle_gap_G": 0.5
+      }
+    ],
+    [
+      {
+        "beta": 3.0,
+        "trained_information": 0.013698596507310867,
+        "trained_value": 0.08257091045379639,
+        "theory_v_star": 0.0825709719067067,
+        "gap_to_theory": -6.145291031600664e-08,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 1.0,
+        "trained_information": 0.11094396561384201,
+        "trained_value": 0.23105847835540771,
+        "theory_v_star": 0.23105847257208956,
+        "gap_to_theory": 5.783318157703832e-09,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.3,
+        "trained_information": 0.543277382850647,
+        "trained_value": 0.46555471420288086,
+        "theory_v_star": 0.4655547855110401,
+        "gap_to_theory": -7.1308159266259e-08,
+        "oracle_gap_G": 0.5
+      },
+      {
+        "beta": 0.1,
+        "trained_information": 0.6927592754364014,
+        "trained_value": 0.4999654293060303,
+        "theory_v_star": 0.49996560376572563,
+        "gap_to_theory": -1.7445969535678785e-07,
+        "oracle_gap_G": 0.5
+      }
+    ]
+  ],
+  "phase_transition": {
+    "beta": 3.0,
+    "regular_value_at_high_price": -2.9802322387695312e-08,
+    "regular_information": 3.310426599512084e-09,
+    "critical_value_at_high_price": 0.08254390954971313,
+    "critical_information": 0.013689562678337097,
+    "critical_routes_regular_does_not": true
+  },
+  "worst_gap_to_theory": 1.7445969535678785e-07,
+  "verdict": "TRAINED_CONTROLLER_REALISES_V_STAR"
+}

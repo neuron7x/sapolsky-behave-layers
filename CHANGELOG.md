@@ -17,6 +17,15 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   withdrawn in a superseding epistemic correction.
 
 ### Added
+- **Act-J pilot — a trained neural controller realises V*(R)** (`experiments/act_j_pilot/`
+  + `artifacts/act-j-pilot/`): the empirical bridge from the information-market theory to a
+  learning system. A real MLP controller `context→P(a|c)` trained by Adam on the
+  rational-inattention objective `E[U]−β·I(C;A)` (GPU, torch 2.9) converges to the analytic
+  rate function `V*(I)` to machine precision across 2 regimes × 3 seeds × 4 information
+  prices (worst gap 0.0000, verdict `TRAINED_CONTROLLER_REALISES_V_STAR`), and exhibits the
+  phase transition — at a high info price the critical problem routes (V=0.083) while the
+  regular one abstains (V≈0). Runnable in ~2 min; fast deterministic pytest. Scope: synthetic
+  2×2 oracle controller, NOT the L7 compute-equivalent Pareto (still cloud-blocked).
 - **Inference breakthrough: a calibrated pilot identifiability certificate**
   (`docs/IDENTIFIABILITY_INFERENCE.md` + `experiments/common/identifiability_inference.py`):
   the step from converse-only upper bounds to a decidable, error-controlled action.
