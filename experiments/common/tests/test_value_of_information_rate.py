@@ -14,6 +14,7 @@ from experiments.common.value_of_information_rate import (
     falsify_rate_function,
     is_critical,
     optimal_value_at_rate,
+    optimal_value_at_rate_general,
     oracle_gap_value,
     pinsker_ceiling,
     pinsker_tightness,
@@ -94,6 +95,46 @@ def test_the_two_regimes_are_qualitatively_separated():
     assert float(reg["tightness_ratio"]) < 0.15
     assert float(crit["tightness_ratio"]) > 0.9
     assert crit["is_critical"] is True and reg["is_critical"] is False
+
+
+# ---------- THE TRANSITION IS UNIVERSAL: general |C| > 2 confirmation ------- #
+P3 = [1 / 3, 1 / 3, 1 / 3]
+REG3 = [[1.0, 0.0, 0.2], [0.3, 0.9, 0.1], [0.2, 0.1, 0.8]]   # unique prior optimum
+CRIT3 = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]  # actions 0,1 tie at mean 0.5
+
+
+def _exponent3(u, rates, grid=36):
+    vs = [optimal_value_at_rate_general(u, r, P3, grid=grid) for r in rates]
+    slopes = [
+        (math.log(vs[k + 1]) - math.log(vs[k])) / (math.log(rates[k + 1]) - math.log(rates[k]))
+        for k in range(len(vs) - 1) if vs[k] > 1e-9 and vs[k + 1] > 1e-9
+    ]
+    return vs, (sum(slopes) / len(slopes) if slopes else float("nan"))
+
+
+def test_general_solver_respects_the_envelope():
+    g = oracle_gap_value(CRIT3, P3)
+    for r in (0.005, 0.05, 0.3):
+        v = optimal_value_at_rate_general(CRIT3, r, P3, grid=28)
+        assert v <= min(g, pinsker_ceiling(CRIT3, r)) + 1e-6
+
+
+def test_phase_transition_holds_for_three_contexts():
+    assert is_critical(REG3, P3) is False
+    assert is_critical(CRIT3, P3) is True
+    _vr, e_reg = _exponent3(REG3, (0.03, 0.008))
+    _vc, e_crit = _exponent3(CRIT3, (0.02, 0.005, 0.00125))
+    assert e_reg > 0.8                                   # regular: ~linear (Pinsker loose)
+    assert 0.45 < e_crit < 0.65                          # critical: ~sqrt (Pinsker tight)
+    # and the Pinsker tightness separates the two regimes at |C|=3, as in binary
+    r_reg = optimal_value_at_rate_general(REG3, 0.008, P3, grid=44) / pinsker_ceiling(REG3, 0.008)
+    r_crit = optimal_value_at_rate_general(CRIT3, 0.00125, P3, grid=44) / pinsker_ceiling(CRIT3, 0.00125)
+    assert r_reg < 0.2 and r_crit > 0.5
+
+
+def test_general_solver_guards_against_intractable_size():
+    with pytest.raises(ValueError):
+        optimal_value_at_rate_general([[0.0, 1.0]] * 6, 0.1, grid=60)  # grid**|C| too large
 
 
 # ------------------------------ bundled harness ---------------------------- #

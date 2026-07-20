@@ -46,6 +46,9 @@ All notable changes to the CWC evidence substrate. Format loosely follows
   inequality is tight for decisions; tells CWC that routability certificates are
   conservative off the indifference manifold. Exact binary-context solver + adversarial
   harness (envelope, monotonicity, saturation, dichotomy); mutation-tested. No claim entry.
+  Universality: a general-context binary-signal solver confirms the transition is NOT a
+  binary artifact — at |C|=3 the regular problem gives exponent 1.12 (Pinsker ratio 0.11,
+  loose), the critical problem exponent 0.54 (ratio 0.67, tight), matching the binary case.
 - **Machine-checked coherence + efficiency proof** (`docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`
   + `experiments/common/coherence_audit.py`): Theorem C proves the whole claim ladder
   is internally consistent — every recorded verdict equals the sign of its master

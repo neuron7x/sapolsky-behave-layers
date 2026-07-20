@@ -37,6 +37,7 @@ Scope: the exact solver ``optimal_value_at_rate`` is implemented for a BINARY co
 """
 from __future__ import annotations
 
+import itertools
 import math
 from collections.abc import Sequence
 
@@ -187,6 +188,60 @@ def optimal_value_at_rate(
                     best_v, bq0, bq1 = v, q0, q1
         span = step
     return max(0.0, best_v)
+
+
+# --------------------------------------------------------------------------- #
+# General-|C| solver (binary signal) — the transition is not a binary artifact #
+# --------------------------------------------------------------------------- #
+def _vi_general(utility: Matrix, prior: Vector, qs: Sequence[float]) -> tuple[float, float]:
+    """Fast (V, I) for a general-context binary-signal channel, ``qs[c]=P(Z=1|C=c)``."""
+    n_c, n_a = len(utility), len(utility[0])
+    j0 = [prior[c] * (1.0 - qs[c]) for c in range(n_c)]
+    j1 = [prior[c] * qs[c] for c in range(n_c)]
+    pz0 = sum(j0)
+    pz1 = sum(j1)
+    prior_v = max(sum(prior[c] * utility[c][a] for c in range(n_c)) for a in range(n_a))
+    informed = 0.0
+    if pz0 > _TOL:
+        informed += max(sum(j0[c] * utility[c][a] for c in range(n_c)) for a in range(n_a))
+    if pz1 > _TOL:
+        informed += max(sum(j1[c] * utility[c][a] for c in range(n_c)) for a in range(n_a))
+    info = 0.0
+    for c in range(n_c):
+        if j0[c] > _TOL:
+            info += j0[c] * math.log(j0[c] / (prior[c] * pz0))
+        if j1[c] > _TOL:
+            info += j1[c] * math.log(j1[c] / (prior[c] * pz1))
+    return informed - prior_v, info if info > 0.0 else 0.0
+
+
+def optimal_value_at_rate_general(
+    utility: Matrix, rate: float, prior: Vector | None = None, *, grid: int = 40
+) -> float:
+    """Lower bound on ``V*(R)`` for a GENERAL context via a grid over binary-signal
+    channels ``(P(Z=1|C=c))_c``.
+
+    Two signal values suffice to expose the small-rate behaviour; the search returns
+    the best achievable ``V(Z)`` with ``I <= R`` over the grid, so it is a valid lower
+    bound bracketed above by ``min{G, Delta_u sqrt(R/2)}``. Cost is ``grid^|C|`` — this
+    confirms the phase transition beyond binary context for ``|C| <= 4``.
+    """
+    n_c = len(utility)
+    p = [1.0 / n_c] * n_c if prior is None else list(prior)
+    if (grid + 1) ** n_c > 6_000_000:
+        raise ValueError("grid**|C| too large; reduce grid or |C|")
+    if rate < 0:
+        raise ValueError("rate must be non-negative")
+    if rate == 0.0:
+        return 0.0
+    axis = [i / grid for i in range(grid + 1)]
+    best = 0.0
+    thr = rate + 1e-12
+    for combo in itertools.product(axis, repeat=n_c):
+        v, i = _vi_general(utility, p, combo)
+        if i <= thr and v > best:
+            best = v
+    return best
 
 
 # --------------------------------------------------------------------------- #

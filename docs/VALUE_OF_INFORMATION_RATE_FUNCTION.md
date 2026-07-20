@@ -122,6 +122,21 @@ is the utility-side rate function dual to Shannon–Blahut rate–distortion.
 
 ---
 
+## 4a. The transition is universal — general `|C| > 2`
+
+The dichotomy of §3 is **not an artifact of a binary context**: its proof turns only
+on the prior margin `m` and the indifference manifold, both defined for any finite
+`|C|,|A|`. A general-context lower-bound solver (grid over binary-signal channels,
+`optimal_value_at_rate_general`) confirms it directly for `|C|=3`:
+
+| problem (`|C|=|A|=3`) | regime | small-`R` exponent | `V*/(Δu√(R/2))` |
+|---|---|---:|---:|
+| unique prior optimum (margin 0.13) | regular | **1.12** (linear) | `0.11` (→0, loose) |
+| two actions tie at mean ½ | critical | **0.54** (√) | `0.67` (→1, tight) |
+
+So the phase transition — linear/loose off the indifference manifold, square-root/tight
+on it — is a property of decision problems in general, not of two-context toy models.
+
 ## 5. Method and reproduction
 
 `V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a
@@ -140,11 +155,13 @@ PYTHONPATH=. .venv/bin/python -m pytest -q experiments/common/tests/test_value_o
 * **Theorems**, not empirical claims: they bound and characterise achievable value
   for a given `(U, p)`; they say nothing about whether a CWC architecture attains it
   on a real workload (`CWC-L7-pareto: NOT_TESTED`).
-* The **exact solver is implemented for a binary context**, the setting in which the
-  transition is analysed; the envelope and the regime classifier are general. The
-  general-`|C|` sharp `V*` (a convex-maximisation over channels) and the exact
-  constant `c` on the full indifference manifold are stated as the natural next
-  targets, not claimed here.
+* The **exact solver is implemented for a binary context**; for general `|C|` a
+  binary-signal grid gives a valid *lower bound* on `V*` (bracketed above by
+  `min{G, Δu√(R/2)}`), sufficient to confirm the transition at `|C|=3` (§4a). The
+  fully general sharp `V*` (a convex-maximisation over arbitrary channels — extreme
+  points need not be deterministic partitions, since stochastic garblings beat them at
+  low rate in the critical regime) and the exact constant `c` on the whole
+  indifference manifold remain the natural next targets, not claimed here.
 
 ## Relationship to sibling documents
 
