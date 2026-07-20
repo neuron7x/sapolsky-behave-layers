@@ -159,6 +159,17 @@ its validity. The safeguarded certificate buys power exactly where it is real
   false-negative (miss a real benchmark) rate is governed by the sample-complexity
   corollary and shrinks with `n`.
 
+**Frontier — a rejected improvement (destruction stage).** The double (iterated)
+bootstrap was proposed as a way to cut the conservatism near the irregular boundary.
+It was tested and **rejected**: over matched runs it gave **no power gain** on the
+alternative (0.996 vs 0.996) and made the least-favourable tied null **worse**
+(false-positive rate 0.166 → 0.193, both already above `δ` for the *un*safeguarded
+bootstrap). The extra bias correction over-corrects at the non-differentiable tie,
+where the bootstrap is inconsistent (Bickel–Freedman) — iterating it amplifies the
+miscalibration rather than fixing it. The **tie-safeguarded single bootstrap is
+retained** as the best available adaptive certificate. Jackknife / median-of-means
+corrections remain untested candidates, not results in hand.
+
 ## Relationship to sibling documents
 
 * `IDENTIFIABILITY_THEORY.md` — defines `G` and the pilot predictor this makes inferential.
