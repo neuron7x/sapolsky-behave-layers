@@ -49,6 +49,14 @@ dominance) and both positives (routing v2, and the plasticity revival — gap
 0.19 under a cost budget). Ships a cheap `O(|C||A|)` predictor to run on a pilot
 before spending cloud compute (`scripts/identifiability_theory.py`).
 
+**⭐ Information-market theory — one coherent synthesis** (`docs/INFORMATION_MARKET_SYNTHESIS.md`):
+the map that ties the whole theory line into ONE object — the value-of-information rate
+function `V*(R)` and its price `β=dV*/dR` — from the Landauer floor and neuron budget
+through the master inequality, the Pinsker phase transition (regular Θ(R)/loose vs
+critical Θ(√R)/tight, c=1 attained), the sharp rational-inattention solver, the economic
+optimum `β(R*)=κ`, and the calibrated inference certificate, down to the single Act J
+decision "spend iff `G_lo > c_route`". Start here for the theory.
+
 **Unified value theory** (`docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md`): the oracle
 gap, the Pinsker information bound, and the route-decision cost are three faces of
 one master inequality `V_net ≤ min{ G(λ), Δu·√(I(C;Z)/2) } − c_route`. Adaptivity
