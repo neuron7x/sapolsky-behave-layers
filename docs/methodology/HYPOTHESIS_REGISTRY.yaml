@@ -185,6 +185,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4f-arm-scaling
 
+  - hypothesis_id: H-L4g
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The L4 oracle gap depends on the specific (linear) cost model."
+    H1: "The oracle gap and governor recovery survive any monotone cost transform."
+    estimand: "certificate G_lo and governor recovery under cost transforms linear/sqrt/log/square"
+    experimental_unit: "cost transform"
+    decision_rule: "reject H0 iff G_lo>0 and governor recovery>=0.8 for all four transforms. RESULT G_lo 0.111/0.101/0.035/0.043, recovery 1.0 each -> SUPPORTED (robust; magnitude cost-shape dependent)."
+    preregistration: experiments/wp3_plasticity_v9_costrobust/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4g-cost-robust
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
