@@ -1,0 +1,33 @@
+{
+  "experiment": "wp5_adaptive_compute_controller",
+  "verdict": "AC2_CONTROLLER_RECOVERS",
+  "tier": "SYNTHETIC \u2014 learned reward-only compute-controller (given difficulty)",
+  "lambda": 0.5,
+  "train_seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "eval_seeds": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "controller_seeds": 8,
+  "worst_recovery": 1.0,
+  "oracle": 0.6663954108953476,
+  "best_fixed": 0.20823160869379842,
+  "random": 0.04143835459318427,
+  "null_recovery": 0.0,
+  "random_below_fixed": true,
+  "recovered": true,
+  "null_ok": true,
+  "prohibited_extrapolations": [
+    "inferred-difficulty routing",
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+  ]
+}
