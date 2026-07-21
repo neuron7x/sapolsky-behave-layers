@@ -1,0 +1,105 @@
+{
+  "experiment": "wp3_plasticity_v2_confirmatory",
+  "verdict": "L4_IDENTIFIABLE_CONFIRMED_SYNTHETIC",
+  "tier": "SYNTHETIC (toy GroupedModel, oracle, no learned controller)",
+  "held_out_seeds": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "n_seeds": 16,
+  "lambda_frozen": 1.0,
+  "delta": 0.05,
+  "c_route": 0.0,
+  "primary": {
+    "label": "plasticity_cost_budget_lambda_1.0_heldout",
+    "gap_hat": 0.190948486328125,
+    "std_error": 0.022362515521092977,
+    "sigma": 0.08945006208437191,
+    "gap_lower_bound": 0.11076198884747979,
+    "identifiable": true,
+    "sample_complexity_nstar": 3
+  },
+  "route_cost_headroom": 0.11076198884747979,
+  "per_seed_gaps": [
+    0.1910400390625,
+    0.19110107421875,
+    0.1907958984375,
+    0.19110107421875,
+    0.1910400390625,
+    0.19110107421875,
+    0.19110107421875,
+    0.19061279296875,
+    0.1903076171875,
+    0.19073486328125,
+    0.1910400390625,
+    0.19110107421875,
+    0.1910400390625,
+    0.19091796875,
+    0.19097900390625,
+    0.191162109375
+  ],
+  "worst_seed_gap": 0.1903076171875,
+  "fraction_seeds_positive": 1.0,
+  "controls": {
+    "negative_A": {
+      "label": "NEG_A_weak_interaction_lambda0",
+      "gap_hat": 9.5367431640625e-05,
+      "std_error": 0.022362515521092977,
+      "sigma": 0.08945006208437191,
+      "gap_lower_bound": -0.08009113004900457,
+      "identifiable": false,
+      "sample_complexity_nstar": 11311555
+    },
+    "negative_B": {
+      "label": "NEG_B_quality_dominance_routing",
+      "gap_hat": 0.0,
+      "std_error": 0.022362515521092977,
+      "sigma": 0.08945006208437191,
+      "gap_lower_bound": -0.06928031655549485,
+      "identifiable": false,
+      "sample_complexity_nstar": null
+    },
+    "positive": {
+      "label": "POS_specialization",
+      "gap_hat": 0.5,
+      "std_error": 0.022362515521092977,
+      "sigma": 0.08945006208437191,
+      "gap_lower_bound": 0.4307196834445051,
+      "identifiable": true,
+      "sample_complexity_nstar": 1
+    },
+    "controls_ok": true
+  },
+  "certificate_self_falsification": {
+    "configs": 8,
+    "worst_calibrated_fpr": 0.0,
+    "delta": 0.1,
+    "calibration_valid": true,
+    "max_naive_fpr": 0.32,
+    "naive_rule_fails": true,
+    "min_power": 1.0,
+    "has_power": true,
+    "all_ok": true
+  },
+  "prohibited_extrapolations": [
+    "learned governor achieves it",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "real-workload generalization",
+    "independent replication"
+  ]
+}

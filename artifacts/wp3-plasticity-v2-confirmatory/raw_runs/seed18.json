@@ -1,0 +1,76 @@
+{
+  "seed": 18,
+  "registry_checksum": "c8018274ee0d5b68c3c9117fdd2f5e7196ca677d334de8a364d735cc3ea64292",
+  "n_groups": 7,
+  "base_pretrain_acc": 1.0,
+  "tasks": {
+    "lexical": {
+      "attn": {
+        "new_acc": 0.9989013671875,
+        "base_before": 1.0,
+        "base_after": 0.05859375,
+        "retention_drop": 0.94140625,
+        "utility": 0.0574951171875,
+        "cost_params": 4096
+      },
+      "mlp": {
+        "new_acc": 1.0,
+        "base_before": 1.0,
+        "base_after": 0.0584716796875,
+        "retention_drop": 0.9415283203125,
+        "utility": 0.0584716796875,
+        "cost_params": 8192
+      },
+      "head": {
+        "new_acc": 1.0,
+        "base_before": 1.0,
+        "base_after": 0.0584716796875,
+        "retention_drop": 0.9415283203125,
+        "utility": 0.0584716796875,
+        "cost_params": 512
+      },
+      "embed": {
+        "new_acc": 0.5430908203125,
+        "base_before": 1.0,
+        "base_after": 0.43505859375,
+        "retention_drop": 0.56494140625,
+        "utility": -0.0218505859375,
+        "cost_params": 512
+      }
+    },
+    "relational": {
+      "attn": {
+        "new_acc": 0.9998779296875,
+        "base_before": 1.0,
+        "base_after": 0.18212890625,
+        "retention_drop": 0.81787109375,
+        "utility": 0.1820068359375,
+        "cost_params": 4096
+      },
+      "mlp": {
+        "new_acc": 0.2896728515625,
+        "base_before": 1.0,
+        "base_after": 0.3216552734375,
+        "retention_drop": 0.6783447265625,
+        "utility": -0.388671875,
+        "cost_params": 8192
+      },
+      "head": {
+        "new_acc": 0.1805419921875,
+        "base_before": 1.0,
+        "base_after": 0.998779296875,
+        "retention_drop": 0.001220703125,
+        "utility": 0.1793212890625,
+        "cost_params": 512
+      },
+      "embed": {
+        "new_acc": 0.1661376953125,
+        "base_before": 1.0,
+        "base_after": 0.7410888671875,
+        "retention_drop": 0.2589111328125,
+        "utility": -0.0927734375,
+        "cost_params": 512
+      }
+    }
+  }
+}
