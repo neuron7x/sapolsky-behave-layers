@@ -1,0 +1,32 @@
+{
+  "experiment": "wp3_plasticity_v13_killtest",
+  "verdict": "L4K_LINE_SURVIVES",
+  "tier": "SYNTHETIC \u2014 falsification boundary / foundation check of the L4 line",
+  "lambda": 1.0,
+  "delta": 0.05,
+  "conditions": {
+    "real": {
+      "gap_lower_bound": 0.11076198884747979,
+      "governor_recovery": 1.0
+    },
+    "additive": {
+      "gap_lower_bound": -0.05263522766616817,
+      "governor_recovery": 0.0
+    },
+    "collapsed": {
+      "gap_lower_bound": -0.0801864974806452,
+      "governor_recovery": 0.0
+    },
+    "aligned_best": {
+      "gap_lower_bound": -0.0801864974806452,
+      "governor_recovery": 0.0
+    }
+  },
+  "real_shows_gap": true,
+  "all_nulls_vanish": true,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "external validity beyond synthetic"
+  ]
+}
