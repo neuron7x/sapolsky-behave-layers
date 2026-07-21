@@ -125,6 +125,18 @@ hypotheses:
     status: SUPPORTED_NARROWED
     claim_id: CWC-L4-plasticity
 
+  - hypothesis_id: H-L4b
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The learned governor's realised value is independent of the context information I(C;Z) (no route-decision cost)."
+    H1: "The learned governor's realised value is bounded by and decreases with lower I(C;Z), vanishing where the context cannot be cheaply inferred."
+    estimand: "held-out recovery as a function of context information I(C;Z)"
+    experimental_unit: "controller seed"
+    decision_rule: "L4B_BOUNDARY_MAPPED iff recovery reproduces L4a at full info, is monotone in I(C;Z), yields no gap at I=0, and tracks the grounded prediction OR abstains. MAPPED: tracks 1-2.146p to +/-0.001, abstains 8/8 at p*~0.466."
+    preregistration: experiments/wp3_plasticity_v4_inferred/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4b-inferred-context
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
