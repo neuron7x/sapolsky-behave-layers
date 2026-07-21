@@ -281,6 +281,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-AC3-inferred-difficulty
 
+  - hypothesis_id: H-AC4
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "The compute-controller's value exceeds V*(I) or is far below it even at high information."
+    H1: "V_gov <= V*(I) everywhere and near-saturates at high information (>=0.90 for I>=1 bit)."
+    estimand: "compute-controller realised value vs V*(I) across information levels"
+    experimental_unit: "information level"
+    decision_rule: "reject H0 iff ceiling holds at every level AND high-info saturation >=0.90. RESULT ceiling holds, high-info sat 0.971 -> SUPPORTED (AC4_RATE_BRIDGE_CONFIRMED); low-info sat 0.326 documented (committed != RI)."
+    preregistration: experiments/wp5_adaptive_compute/PREREGISTRATION_RATEBRIDGE.md
+    status: SUPPORTED
+    claim_id: CWC-AC4-rate-bridge
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
