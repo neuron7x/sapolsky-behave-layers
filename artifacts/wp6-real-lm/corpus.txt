@@ -1,0 +1,1307 @@
+# nanochat
+
+![nanochat logo](dev/nanochat.png)
+![scaling laws](dev/scaling_laws_jan26.png)
+
+nanochat is the simplest experimental harness for training LLMs. It is designed to run on a single GPU node, the code is minimal/hackable, and it covers all major LLM stages including tokenization, pretraining, finetuning, evaluation, and inference. For example, you can train your own GPT-2 capability LLM (which cost ~$43,000 to train in 2019) for only $48 (~2 hours of 8XH100 GPU node) and then talk to it over a simple CLI. On a spot instance, the total cost can be closer to ~$15. More generally, nanochat is configured out of the box to train an entire miniseries of compute-optimal models by setting one single complexity dial: `--depth`, the number of layers in the GPT transformer model (GPT-2 capability happens to be approximately depth 26). All other hyperparameters (the width of the transformer, number of heads, learning rate adjustments, training horizons, weight decays, ...) are calculated automatically in an optimal way.
+
+For questions about the repo, I recommend either using [DeepWiki](https://deepwiki.com/karpathy/nanochat) from Devin/Cognition to ask questions about the repo, or use the [Discussions tab](https://github.com/karpathy/nanochat/discussions), or come by the [#nanochat](https://discord.com/channels/1020383067459821711/1427295580895314031) channel on Discord.
+
+## Time-to-GPT-2 Leaderboard
+
+Presently, the main focus of development is on tuning the pretraining stage, which takes the most amount of compute. Inspired by the modded-nanogpt repo and to incentivise progress and community collaboration, nanochat maintains a leaderboard for a "GPT-2 speedrun", which is the wall-clock time required to train a nanochat model to GPT-2 grade capability, as measured by the DCLM CORE score. The [runs/speedrun.sh](runs/speedrun.sh) script always reflects the reference way to train GPT-2 grade model and talk to it. The current leaderboard looks as follows:
+
+| # | time | val_bpb | CORE | Description | Date | Commit | Contributors |
+|---|-------------|---------|------|-------------|------|--------|--------------|
+| 0 | 168 hours | - | 0.2565 | Original OpenAI GPT-2 checkpoint | 2019 | - | OpenAI |
+| 1 | 3.04 | 0.74833 | 0.2585 | d24 baseline, slightly overtrained | Jan 29 2026 | 348fbb3 | @karpathy |
+| 2 | 2.91 | 0.74504 | 0.2578 | d26 slightly undertrained **+fp8** | Feb 2 2026 | a67eba3 | @karpathy |
+| 3 | 2.76 | 0.74645 | 0.2602 | bump total batch size to 1M tokens | Feb 5 2026 | 2c062aa | @karpathy |
+| 4 | 2.02 | 0.71854 | 0.2571 | change dataset to NVIDIA ClimbMix | Mar 4 2026 | 324e69c | @ddudek @karpathy |
+| 5 | 1.80 | 0.71808 | 0.2690 | autoresearch [round 1](https://x.com/karpathy/status/2031135152349524125) | Mar 9 2026 | 6ed7d1d | @karpathy |
+| 6 | 1.65 | 0.71800 | 0.2626 | autoresearch round 2 | Mar 14 2026 | a825e63 | @karpathy |
+
+The primary metric we care about is "time to GPT-2" - the wall clock time needed to outperform the GPT-2 (1.6B) CORE metric on an 8XH100 GPU node. The GPT-2 CORE score is 0.256525. In 2019, the training of GPT-2 cost approximately $43,000 so it is incredible that due to many advances over 7 years across the stack, we can now do so much faster and for well below $100 (e.g. at the current ~$3/GPU/hr, an 8XH100 node is ~$24/hr, so 2 hours is ~$48).
+
+See [dev/LEADERBOARD.md](dev/LEADERBOARD.md) for more docs on how to interpret and contribute to the leaderboard.
+
+## Getting started
+
+### Setup
+
+nanochat uses [uv](https://docs.astral.sh/uv/) for dependency management. To install:
+
+```bash
+uv sync --extra gpu    # Use for CUDA (A100/H100/etc.)
+uv sync --extra cpu    # (or) Use for CPU-only / MPS
+source .venv/bin/activate
+```
+
+For development (adds pytest, matplotlib, ipykernel, transformers, etc.):
+
+```bash
+uv sync --extra gpu --group dev
+```
+
+### Reproduce and talk to GPT-2
+
+The most fun you can have is to train your own GPT-2 and talk to it. The entire pipeline to do so is contained in the single file [runs/speedrun.sh](runs/speedrun.sh), which is designed to be run on an 8XH100 GPU node. Boot up a new 8XH100 GPU box from your favorite provider (e.g. I use and like [Lambda](https://lambda.ai/service/gpu-cloud)), and kick off the training script:
+
+```bash
+bash runs/speedrun.sh
+```
+
+You may wish to do so in a screen session as this will take ~1.5 hours to run. Once it's done, you can talk to your model over the CLI. Make sure again that your local uv virtual environment is active (run `source .venv/bin/activate`), and chat:
+
+```bash
+python -m scripts.chat_cli
+```
+
+Get it to write stories or poems. Ask it to tell you who you are to see a hallucination. Ask it why the sky is blue. Or why it's green. The speedrun is a 4e19 FLOPs capability model so it's a bit like talking to a kindergartener :). An example conversation with a speedrun model:
+
+> **User:** Hello whats up?
+>
+> **Assistant:** Hello! How can I help you today?
+>
+> **User:** Why is the sky blue?
+>
+> **Assistant:** The sky is blue due to an optical illusion called the Rayleigh Scattering of Light, which occurs when sunlight passes through tiny particles in the air. These particles are made up of tiny blue and violet particles that cause the light to bend in a particular way.
+>
+> **User:** That's cool. Write a poem about it.
+>
+> **Assistant:** In the twilight's glow, the sky is blue,<br>
+> A canvas of shimmering blue, where skies unfold,<br>
+> A world of blue, where blue and more blue,<br>
+> Are woven together in a tapestry so fine,<br>
+> Where every hue seems to sing a story.<br>
+> ...
+
+A few more notes:
+
+- The code will run just fine on the Ampere 8XA100 GPU node as well, but a bit slower.
+- All code will run just fine on even a single GPU by omitting `torchrun`, and will produce ~identical results (code will automatically switch to gradient accumulation), but you'll have to wait 8 times longer.
+- If your GPU(s) have less than 80GB, you'll have to tune some of the hyperparameters or you will OOM / run out of VRAM. Look for `--device-batch-size` in the scripts and reduce it until things fit. E.g. from 32 (default) to 16, 8, 4, 2, or even 1. Less than that you'll have to know a bit more what you're doing and get more creative.
+- Most of the code is fairly vanilla PyTorch so it should run on anything that supports that - xpu, mps, or etc, but I haven't personally exercised all of these code paths so there might be sharp edges.
+
+## Research
+
+If you are a researcher and wish to help improve nanochat, two scripts of interest are [runs/scaling_laws.sh](runs/scaling_laws.sh) and [runs/miniseries.sh](runs/miniseries.sh). See [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) for related documentation. For quick experimentation (~5 min pretraining runs) my favorite scale is to train a 12-layer model (GPT-1 sized), e.g. like this:
+
+```
+OMP_NUM_THREADS=1 torchrun --standalone --nproc_per_node=8 -m scripts.base_train -- \
+    --depth=12 \
+    --run="d12" \
+    --model-tag="d12" \
+    --core-metric-every=999999 \
+    --sample-every=-1 \
+    --save-every=-1 \
+```
+
+This uses wandb (run name "d12"), only runs the CORE metric on last step, and it doesn't sample and save intermediate checkpoints. I like to change something in the code, re-run a d12 (or a d16 etc) and see if it helped, in an iteration loop. To see if a run helps, I like to monitor the wandb plots for:
+
+1. `val_bpb` (validation loss in vocab-size-invariant units of bits per byte) as a function of `step`, `total_training_time` and `total_training_flops`.
+2. `core_metric` (the DCLM CORE score)
+3. VRAM utilization, `train/mfu` (Model FLOPS utilization), `train/tok_per_sec` (training throughput)
+
+See an example [here](https://github.com/karpathy/nanochat/pull/498#issuecomment-3850720044).
+
+The important thing to note is that nanochat is written and configured around one single dial of complexity - the depth of the transformer. This single integer automatically determines all other hyperparameters (the width of the transformer, number of heads, learning rate adjustments, training horizons, weight decays, ...) so that the trained model comes out compute optimal. The idea is that the user doesn't have to think about or set any of this, they are simply asking for a smaller or bigger model using `--depth`, and everything "just works". By sweeping out the depth, you achieve the nanochat miniseries of compute optimal models at various sizes. GPT-2 capability model (which is of most interest at the moment) happens to be somewhere around d24-d26 range with the current code. But any candidate changes to the repo have to be principled enough that they work for all settings of depth.
+
+## Running on CPU / MPS
+
+The script [runs/runcpu.sh](runs/runcpu.sh) shows a very simple example of running on CPU or Apple Silicon. It dramatically shrinks the LLM that is being trained to make things fit into a reasonable time interval of a few ten minutes of training. You will not get strong results in this way.
+
+## Precision / dtype
+
+nanochat does not use `torch.amp.autocast`. Instead, precision is managed explicitly through a single global `COMPUTE_DTYPE` (defined in `nanochat/common.py`). By default this is auto-detected based on your hardware:
+
+| Hardware | Default dtype | Why |
+|----------|--------------|-----|
+| CUDA SM 80+ (A100, H100, ...) | `bfloat16` | Native bf16 tensor cores |
+| CUDA SM < 80 (V100, T4, ...) | `float32` | No bf16; fp16 available via `NANOCHAT_DTYPE=float16` (uses GradScaler) |
+| CPU / MPS | `float32` | Safe default. On recent macOS, MPS also runs `NANOCHAT_DTYPE=bfloat16` fine (~25% less memory, similar speed) |
+
+You can override the default with the `NANOCHAT_DTYPE` environment variable:
+
+```bash
+NANOCHAT_DTYPE=float32 python -m scripts.chat_cli -p "hello"   # force fp32
+NANOCHAT_DTYPE=bfloat16 torchrun --nproc_per_node=8 -m scripts.base_train  # force bf16
+```
+
+How it works: model weights are stored in fp32 (for optimizer precision), but our custom `Linear` layer casts them to `COMPUTE_DTYPE` during the forward pass. Embeddings are stored directly in `COMPUTE_DTYPE` to save memory. This gives us the same mixed-precision benefit as autocast but with full explicit control over what runs in which precision.
+
+Note: `float16` training automatically enables a `GradScaler` in `base_train.py` to prevent gradient underflow. SFT supports this too but RL currently does not. Inference in fp16 works fine everywhere.
+
+## Guides
+
+I've published a number of guides that might contain helpful information, most recent to least recent:
+
+- [Feb 1 2026: Beating GPT-2 for <<$100: the nanochat journey](https://github.com/karpathy/nanochat/discussions/481)
+- [Jan 7 miniseries v1](https://github.com/karpathy/nanochat/discussions/420) documents the first nanochat miniseries of models.
+- To add new abilities to nanochat, see [Guide: counting r in strawberry (and how to add abilities generally)](https://github.com/karpathy/nanochat/discussions/164).
+- [Oct 13 2025: original nanochat post](https://github.com/karpathy/nanochat/discussions/1) introducing nanochat, though now it contains some deprecated information and the model is a lot older (with worse results) than current master.
+
+## File structure
+
+```
+.
+├── LICENSE
+├── README.md
+├── dev
+│   ├── nanochat.png
+│   └── repackage_data_reference.py # Pretraining data shard generation
+├── nanochat
+│   ├── __init__.py                 # empty
+│   ├── checkpoint_manager.py       # Save/Load model checkpoints
+│   ├── common.py                   # Misc small utilities, quality of life
+│   ├── core_eval.py                # Evaluates base model CORE score (DCLM paper)
+│   ├── dataloader.py               # Tokenizing Distributed Data Loader
+│   ├── dataset.py                  # Download/read utils for pretraining data
+│   ├── engine.py                   # Efficient model inference with KV Cache
+│   ├── execution.py                # Allows the LLM to execute Python code as tool
+│   ├── gpt.py                      # The GPT nn.Module Transformer
+│   ├── loss_eval.py                # Evaluate bits per byte (instead of loss)
+│   ├── optim.py                    # AdamW + Muon optimizer, 1GPU and distributed
+│   └── tokenizer.py                # BPE Tokenizer wrapper in style of GPT-4
+├── pyproject.toml
+├── runs
+│   ├── miniseries.sh               # Miniseries training script
+│   ├── runcpu.sh                   # Small example of how to run on CPU/MPS
+│   ├── scaling_laws.sh             # Scaling laws experiments
+│   └── speedrun.sh                 # Train the ~$100 nanochat d20
+├── scripts
+│   ├── base_eval.py                # Base model: CORE score, bits per byte, samples
+│   ├── base_train.py               # Base model: train
+│   ├── chat_cli.py                 # Chat model: talk to over CLI
+│   ├── chat_eval.py                # Chat model: eval tasks
+│   ├── chat_rl.py                  # Chat model: reinforcement learning
+│   ├── chat_sft.py                 # Chat model: train SFT
+│   ├── infer_bench.py              # Inference: latency/throughput/VRAM bench
+│   ├── tok_eval.py                 # Tokenizer: evaluate compression rate
+│   └── tok_train.py                # Tokenizer: train it
+├── tasks
+│   ├── arc.py                      # Multiple choice science questions
+│   ├── common.py                   # TaskMixture | TaskSequence
+│   ├── gsm8k.py                    # 8K Grade School Math questions
+│   ├── humaneval.py                # Misnomer; Simple Python coding task
+│   ├── mmlu.py                     # Multiple choice questions, broad topics
+│   └── smoltalk.py                 # Conglomerate dataset of SmolTalk from HF
+├── tests
+│   ├── test_attention_fallback.py  # FA3/SDPA attention fallback
+│   ├── test_engine.py              # Inference engine, KV cache
+│   ├── test_execution.py           # Sandboxed code execution
+│   ├── test_optim.py               # MuonAdamW optimizer (needs GPU)
+│   ├── test_tasks.py               # Task slicing, mixtures, HubDataset
+│   └── test_tokenizer.py           # BPE round-trips, chat rendering
+└── uv.lock
+```
+
+## Contributing
+
+The goal of nanochat is to improve the state of the art in micro models that are accessible to work with end to end on budgets of < $1000 dollars. Accessibility is about overall cost but also about cognitive complexity - nanochat is not an exhaustively configurable LLM "framework"; there are no giant configuration objects, model factories, or if-then-else monsters in the code base. It is a single, cohesive, minimal, readable, hackable, maximally-forkable "strong baseline" codebase designed to run start to end and produce a ChatGPT model you can talk to. Currently, the most interesting part personally is speeding up the latency to GPT-2 (i.e. getting a CORE score above 0.256525). Currently this takes ~1.5 hours (down from 3h), but by improving the pretraining stage we can improve this further.
+
+Current AI policy: disclosure. When submitting a PR, please declare any parts that had substantial LLM contribution and that you have not written or that you do not fully understand.
+
+## Acknowledgements
+
+- The name (nanochat) derives from my earlier project [nanoGPT](https://github.com/karpathy/nanoGPT), which only covered pretraining.
+- nanochat is also inspired by [modded-nanoGPT](https://github.com/KellerJordan/modded-nanogpt), which gamified the nanoGPT repo with clear metrics and a leaderboard, and borrows a lot of its ideas and some implementation for pretraining.
+- Thank you to [HuggingFace](https://huggingface.co/) for fineweb and smoltalk.
+- Thank you [Lambda](https://lambda.ai/service/gpu-cloud) for the compute used in developing this project.
+- Thank you to chief LLM whisperer 🧙‍♂️ Alec Radford for advice/guidance.
+- Thank you to the repo czar Sofie [@svlandeg](https://github.com/svlandeg) for help with managing issues, pull requests and discussions of nanochat.
+
+## Cite
+
+If you find nanochat helpful in your research cite simply as:
+
+```bibtex
+@misc{nanochat,
+  author = {Andrej Karpathy},
+  title = {nanochat: The best ChatGPT that \$100 can buy},
+  year = {2025},
+  publisher = {GitHub},
+  url = {https://github.com/karpathy/nanochat}
+}
+```
+
+## License
+
+MIT
+
+
+# CWC Master Methodology
+
+**Normative constitution of the CWC research programme.** Every active experiment
+must have an unambiguous place here and must not introduce its own inconsistent rules
+of proof. Governs `claim_registry.json`, `HYPOTHESIS_REGISTRY.yaml`, and all
+`experiments/*/PREREGISTRATION*.md`.
+
+## 1. Research topic
+Whether a **causally-controlled adaptive-computation** architecture can beat static
+Transformers / MoE / dynamic-compute systems **at equal budget**.
+
+## 2. Main goal
+Move from mechanistic prototype to a **causally-validated, resource-measured,
+independently-reproducible** result — or falsify the hypothesis and preserve the
+negative.
+
+## 3. Research questions
+- **RQ-measure:** are the resource measurements deterministic and valid?
+- **RQ-identifiable:** does a benchmark with a real adaptive-compute advantage exist?
+- **RQ-routing:** can a learned controller route causally without leakage?
+- **RQ-allocation:** does adaptive allocation beat best-static by the predicted amount?
+- **RQ-reuse / RQ-plasticity / RQ-multiscale:** are the auxiliary mechanisms real & novel?
+- **RQ-pareto:** compute-equivalent Pareto advantage on real workloads?
+- **RQ-replication:** does an independent operator reproduce the primary result?
+
+## 4. Theoretical model
+Oracle gap `G = 𝔼_c[max_a(β_a+γ_{c,a})] − max_a β_a`; value of control is the
+context×choice interaction `γ`, identifiable only under a **binding budget**.
+Realized value discounts the route-decision cost: `V_realized = G − c_route`
+(`docs/IDENTIFIABILITY_THEORY.md`).
+
+## 5. Operational definitions
+Each construct (routing, adaptive allocation, functional reuse, plasticity,
+identifiability) has a machine-checkable operationalization in its experiment's
+`PREREGISTRATION` and `verdict.json`. No construct is claimed without one.
+
+## 6. Claim ladder
+L0 measurement → L1 identifiability → L2 routing causality → L2′ allocation →
+L3 reuse → L4 plasticity → L7 Pareto → L8 replication. **No claim may sit above its
+gate.** Ladder state is `claim_registry.json` and `SYSTEM.md`.
+
+## 7. Evidence hierarchy
+preregistration < code+tests (verification) < single-seed run < multi-seed
+confirmatory run with controls < independent replication. A claim's status is bounded
+by the highest tier that supports it.
+
+## 8. Exploratory vs confirmatory
+Confirmatory claims require a preregistration committed **before** the run timestamp.
+Exploratory findings (e.g. the plasticity λ≈1 revival) are labelled `EXPLORATORY` and
+cannot be reported as confirmatory without a new preregistered run.
+
+## 9–10. Unit of analysis / experimental unit
+The **experimental unit is the model seed** (paired across compared systems), not the
+token. Statistical hierarchy: init → training corpus → eval corpus → task family →
+example. Tokens of one run are not independent units.
+
+## 11. Control taxonomy
+random (compute-matched), frequency-matched random, frozen controller, reinitialized
+controller, constant-mean controller, route-shuffled, forced-correct, forced-wrong,
+anti-route, module-swap, score-permutation, input-feature ablation.
+
+## 12. Baseline taxonomy
+dense; best-fixed policy; static prune; random depth; MoD; budget-conditioned dynamic
+depth; recursive/shared-parameter; static MoE; sparse MoE; CWC. Compute-matched.
+
+## 13. Intervention taxonomy
+oracle-supervised (DIAGNOSTIC_ONLY), counterfactual value distillation (not autonomous),
+end-to-end (only this licenses an autonomous-routing claim).
+
+## 14. Benchmark-identifiability gate
+Before training any controller: prove `LCB95(oracle − best_fixed) > 0` and run the
+surface-leakage probe. A benchmark a surface probe can classify is `BENCHMARK_INVALID`.
+
+## 15. Compute-parity rules
+No advantage claim without identical task, dataset, training budget, hardware class,
+precision, evaluation protocol, hyperparameter-search budget, and **complete controller +
+dispatch cost** included.
+
+## 16. Stopping rules
+Confirmatory runs stop at the preregistered seed count / step budget — never at a
+favorable seed. Pilot seeds are excluded from confirmatory inference.
+
+## 17. Failure rules (fail-closed)
+Ambiguity, insufficient power, measurement invalidity, or protocol deviation →
+`INVALID`/`BLOCKED`, never a silent pass. Energy on this hardware is
+`INSTRUMENT_INVALID` and is excluded.
+
+## 18. Negative-results policy
+Every negative is frozen immutably (`artifacts/history/`, SHA256SUMS) and registered.
+Frozen negatives are **never recomputed** and never deleted.
+
+## 19. Protocol amendment rules
+A claim may **not** be raised after inspecting test/holdout evidence without a recorded
+amendment (`PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY.md`). Narrowing a claim is always
+permitted and is recorded.
+
+## 20. Publication & release boundaries
+No paper/System-Card claim may exceed `claim_registry.json`. Prohibited final
+statements (full validation, independent replication, scale Pareto, external approval,
+deployment-readiness) are listed in `SYSTEM.md` and enforced by the doc-status gate.
+
+
+# CWC Experiment Protocol Template
+
+Copy to `experiments/<exp>/PREREGISTRATION*.md` and commit **before** the confirmatory
+run (the run timestamp must be after the preregistration commit). Historical
+same-commit protocol/result files are retrospective specifications, not conforming
+examples; see `PREREGISTRATION_INTEGRITY_POLICY.md`.
+
+## Required sections
+1. **protocol_id** and immutable **version**
+2. **research_question** (link RQ-*)
+3. **H0 / H1** (link hypothesis_id in HYPOTHESIS_REGISTRY.yaml)
+4. **estimand** — the quantity the run actually estimates
+5. **independent variables**
+6. **dependent variables**
+7. **controlled variables**
+8. **confounders** (and how neutralized)
+9. **experimental unit** (default: model seed, paired)
+10. **model & data populations**
+11. **inclusion / exclusion rules**
+12. **datasets & split hashes** (link DATASET_REGISTER.yaml)
+13. **baseline selection** (from the baseline taxonomy)
+14. **compute parity** statement
+15. **metrics** (link METRIC_DEFINITIONS)
+16. **statistical tests** (link STATISTICAL_ANALYSIS_PLAN)
+17. **power / sample size**
+18. **seed policy** (model / data / eval / router seeds separated)
+19. **stopping rule**
+20. **failure rule** (fail-closed)
+21. **deviation procedure** (link PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY)
+22. **expected artifacts** (the Level-D bundle)
+23. **acceptance gate** (the exact decision rule)
+24. **prohibited interpretation** (what a positive/negative does NOT license)
+
+## Acceptance
+No confirmatory run may start without a schema-valid protocol and a preregistration
+commit preceding the run timestamp. Pilot runs are labelled and excluded from
+confirmatory inference.
+
+
+# Power and Sample Size Plan
+
+Companion to the SAP. Sample size `n = ceil( ((z_{1-α/2}+z_{1-β})·σ_d / δ_min)^2 )`.
+
+## Synthetic mechanism experiments (current)
+Effect sizes are large and near-deterministic:
+- WP4 Jensen gap: |measured − P(m>K)| = 0.0000 → any n≥2 is decisive; we use **8**.
+- Routing v3 REINFORCE: learned 0.009 vs random 0.48 (huge, tiny variance) → 8 seeds give
+  a paired-diff 95% UB of −0.465, far below 0.
+- Surface-matched: AUROC 0.51 ± tiny; 8 seeds × 4 arms confirm chance with no loss saving.
+
+`α = 0.05`, `power ≥ 0.80`, `δ_min` declared per protocol. For these effects, 8 seeds
+exceeds the required n by orders of magnitude; the binding constraint is **not** power
+but external validity (synthetic-only).
+
+## Real-workload / Pareto claims (NOT_TESTED)
+Before any cloud confirmatory run: estimate `σ_d` from a pilot, set `δ_min` to the
+minimum meaningful Pareto margin, compute `n`, and preregister it. Expected `n` is
+8–12 paired seeds × ≥5 corpora × baseline set — see
+`docs/evaluation/BASELINE_SELECTION_AND_COMPUTE_PARITY_POLICY.md` and the cost envelope
+`docs/reproducibility/EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
+
+
+# Preregistration Integrity Policy
+
+Effective 2026-07-19. This policy is prospective; it cannot repair historical
+temporal provenance.
+
+## A protocol qualifies as preregistered only if all conditions hold
+
+1. The protocol, primary estimand, exclusions, seed count, stopping rule,
+   analysis code hash, and decision rule are committed before any confirmatory
+   output is generated.
+2. The protocol commit is signed or anchored by an external immutable timestamp.
+3. The results commit is a strict descendant of the protocol commit and is not
+   the same commit.
+4. Pilot data are identified by immutable IDs and excluded from confirmatory
+   inference.
+5. Deviations are appended; the original protocol is never overwritten.
+6. Failure of any condition forces the label `RETROSPECTIVE_PROTOCOL` or
+   `EXPLORATORY`, never `PREREGISTERED`.
+
+## Current historical classification
+
+- WP3 plasticity v1: `RETROSPECTIVE_PROTOCOL`.
+- WP4 archived run: theory predates the run, but experiment protocol and results
+  share a commit; `RETROSPECTIVE_PROTOCOL`.
+- Routing-v3 REINFORCE: `RETROSPECTIVE_PROTOCOL`.
+- Routing-v3 surface-matched: `RETROSPECTIVE_PROTOCOL`.
+- WP4 v2: `POST_AUDIT_CORRECTIVE_NOT_PREREGISTERED`.
+
+No future claim may use “preregistered” based only on prose or an author-supplied
+date. Git/external timestamp order is the evidence.
+
+
+# Protocol Amendment and Deviation Policy
+
+## Amendments
+A protocol may be changed only by a recorded **amendment**: a new commit that appends to
+the protocol's `amendments` list with (date, reason, diff-of-intent). The original
+preregistration is never edited in place.
+
+**Hard rule:** a claim may NOT be *raised* after inspecting test/holdout evidence
+without an amendment. **Narrowing** a claim (adding limitations, restricting scope) is
+always permitted and is recorded in `claim_registry.json` and the changelog — as done
+for the routing-v2 narrowing.
+
+## Deviations
+Any departure from the executed protocol is a **deviation** and is logged in the
+experiment's `deviations.jsonl` and its `EXPERIMENT_CLOSEOUT`. A run with an unlogged
+material deviation is `INVALID_PROTOCOL_DEVIATION`.
+
+## Superseding results
+When a later experiment overturns an earlier interpretation (e.g. CWC-L2a showing the
+CWC-L2c straight-through collapse was an estimator artifact), the earlier claim is kept
+with a `note` linking the superseding claim — negatives are never deleted.
+
+## Fail-closed
+Ambiguous, under-powered, or measurement-invalid outcomes resolve to
+`BLOCKED`/`INVALID`, never a silent pass.
+
+
+# CWC Statistical Analysis Plan (SAP)
+
+Project-wide statistical rules. Binds every confirmatory experiment. Reflects the
+methods actually used in the shipped experiments (paired seeds, bootstrap CIs,
+worst-seed reporting).
+
+## Estimand & unit
+- Primary estimand per claim is declared in its hypothesis (`HYPOTHESIS_REGISTRY.yaml`).
+- **Statistical unit = model seed**, paired across compared systems. Tokens of one run
+  are NOT independent units.
+- Seed streams are separated: `model_seed`, `data_seed`, `evaluation_seed`,
+  `router_seed`, `bootstrap_seed`.
+
+## Confirmatory design
+- Pilot seeds are **excluded** from confirmatory inference.
+- Minimum **8 paired model seeds** (shipped experiments use 8).
+- Real evaluation corpora ≥ 5 is REQUIRED for real-workload claims (`NOT_TESTED` today).
+- Paired systems share data order, token budget, checkpoint rule, and
+  hyperparameter-search budget.
+
+## Inference
+- Paired comparison of the primary metric; **flat paired bootstrap with the seed as
+  the resampling unit** for CIs (the synthetic benchmarks have no corpus/example
+  hierarchy to resample, so the unit is the seed); fixed `bootstrap_seed` for
+  determinism. As implemented: `analyze_r3c_reinforce.py` resamples over seeds;
+  `analyze_surface_matched.py` reports the per-seed paired arms directly (no
+  resampling). A hierarchical seed→corpus→example bootstrap is reserved for a future
+  real-workload evaluation where those levels exist.
+- Report **median, dispersion (MAD), 95% CI, and worst-seed** result — never best seed.
+- Report **collapse probability** and separate **conditional vs unconditional** utility.
+
+## Thresholds
+- `alpha = 0.05`, target **power ≥ 0.80**, minimum detectable effect declared in the
+  protocol **before** the run.
+- Decision uses the CI bound, not the point estimate (e.g. paired diff 95% upper bound
+  `< 0`, AUROC lower bound `> 0.5`).
+
+## Power & sample size
+See `POWER_AND_SAMPLE_SIZE_PLAN.md`. For synthetic mechanism experiments the effect
+sizes are large and near-deterministic (e.g. Jensen gap error 0.0000), so 8 seeds is
+amply powered; real-workload claims require a pre-run power analysis.
+
+## Multiplicity & data handling
+- Primary hypotheses are few and preregistered; secondary comparisons use Holm
+  correction.
+- Test set is never used for threshold selection (validation only).
+- Failed-run and missing-data policies are declared per protocol; all exclusions are
+  reported.
+
+
+# Executable Architecture
+
+## 1. System boundary
+
+CWK is a research kernel, not a production assistant. Its first implementation is deliberately small enough to execute locally and inspect completely. Scale is introduced only after causal value is demonstrated at smaller matched budgets.
+
+## 2. Runtime data flow
+
+```text
+Typed Observation
+      │
+      ▼
+World Coupling Port ──► Input Encoder
+      │                    │
+      │                    ▼
+      │             Working-State Tokens
+      │                    │
+      │          ┌─────────┴─────────┐
+      │          ▼                   ▼
+      │   Sparse Local/Global   Memory Reader
+      │       Communication          │
+      │          └─────────┬─────────┘
+      │                    ▼
+      │             Transit Governor
+      │                    │ route + confidence + budget
+      │                    ▼
+      │              Expert Ecology
+      │                    │
+      │                    ▼
+      │        Metacognitive Budget Governor
+      │          ┌─────────┴─────────┐
+      │          ▼                   ▼
+      │      continue            terminate
+      │          │                   │
+      └──────────┴──────────────► Output / Action
+                                   │
+                                   ▼
+                           Evidence Spine
+```
+
+## 3. Typed contracts
+
+### CognitivePacket
+
+```text
+packet_id, modality, payload, timestamp, source, confidence, permissions
+```
+
+### ActivationBudget
+
+```text
+max_active_experts
+max_attention_density
+max_memory_reads
+max_memory_writes
+max_depth
+max_latency_ms
+max_peak_memory_bytes
+```
+
+### RouteDecision
+
+```text
+selected_experts
+normalized_weights
+route_entropy
+capacity_pressure
+overflow_count
+fallback_used
+router_version
+```
+
+### MemoryTrace
+
+```text
+trace_id
+key
+value
+source_packet_ids
+write_policy
+retention_class
+created_at
+expires_at
+content_hash
+```
+
+### TopologyDelta
+
+```text
+base_topology_hash
+proposed_edges_added
+proposed_edges_removed
+utility_evidence
+constraint_checks
+commit_hash
+rollback_pointer
+```
+
+## 4. Topology model
+
+The fabric is represented by `G=(V,E,X,T)`:
+
+- `V`: functional nodes;
+- `E`: directed weighted communication edges;
+- `X`: optional coordinates or learned placement vectors;
+- `T`: node and edge types.
+
+The reference implementation begins with a ring-local graph plus sparse deterministic long-range bridges. This is a test substrate, not a claim that this topology is optimal.
+
+Normalized wiring cost:
+
+```text
+C_wire = Σ_(i,j in E) a_ij · d(x_i, x_j) / C_wire_baseline
+```
+
+Communication cost:
+
+```text
+C_comm = Σ routed_messages bytes(message) · edge_cost / baseline
+```
+
+Topological value SHALL be measured separately through path length, reachability, robustness and task performance.
+
+## 5. Routing model
+
+The router computes scores `s = f_router(h)` and applies a dynamically maintained non-gradient bias `b` before Top-K selection:
+
+```text
+I = TopK(s + b, k)
+p = softmax((s_I + b_I) / τ)
+```
+
+The bias may be updated from recent expert load to reduce collapse without injecting a task-loss gradient. The reference implementation exposes this mechanism but does not claim equivalence to any external model.
+
+## 6. Expert ecology
+
+Each layer contains:
+
+- one shared expert, always available;
+- `N` routed experts;
+- a residual path;
+- capacity and overflow accounting.
+
+Output:
+
+```text
+y = residual(x) + α_shared E_shared(x) + Σ_i∈I p_i E_i(x)
+```
+
+Specialization is evaluated by route mutual information, intervention effects and representational similarity—not by utilization alone.
+
+## 7. Memory stratigraphy
+
+The local reference kernel implements bounded episodic key–value memory. Retrieval is cosine Top-K. Writes are explicit and disabled during evaluation unless preregistered. Future layers may add trainable test-time memory, but they must preserve separation between immutable model parameters and mutable session state.
+
+## 8. Structural plasticity
+
+The first plasticity controller operates between training phases:
+
+1. collect edge utility and route statistics;
+2. propose removal of persistently low-utility edges;
+3. propose growth toward under-connected or high-demand regions;
+4. validate connectivity, budget and regression constraints;
+5. commit a versioned topology only if validation passes.
+
+No topology mutation occurs silently inside a benchmark.
+
+## 9. Metacognitive budget control
+
+The budget governor receives uncertainty, route entropy, memory confidence and remaining resource budget. Initial implementation supports fixed budgets; learned budget selection is Phase 3 work. This ordering prevents an unvalidated controller from confounding evaluation of the kernel.
+
+## 10. Evidence and claim architecture
+
+Every run produces:
+
+```text
+manifest.json
+config.resolved.yaml
+environment.json
+metrics.jsonl
+topology.json
+stdout.log
+artifacts.sha256
+claim_candidate.json (optional)
+```
+
+The Claim Firewall validates these files against schemas and policy before any result is labeled beyond `observation`.
+
+
+# ⊛ STATUTE OF THE COGNITIVE WEAVE KERNEL
+
+**Normative identifier:** `CWK-STATUTE-1.0`  
+**Authority state:** canonical candidate  
+**Founder and Principal Architect:** Ярослав Василенко  
+**Scope:** architecture, implementation, experimentation, evidence and claims
+
+## Article 1 — Purpose
+
+CWK exists to design, implement and falsify a resource-rational architecture for digital cognitive objects. The programme investigates whether intelligence-relevant functions can be produced more efficiently when computation is organized as a dynamically routed, sparsely activated, modular and plastic fabric rather than a uniformly activated monolith.
+
+The programme optimizes no single metric. It seeks a defensible Pareto frontier across:
+
+- task capability;
+- activated computation;
+- communication volume;
+- memory footprint and memory traffic;
+- latency and throughput;
+- adaptation cost;
+- robustness under perturbation;
+- calibration and uncertainty;
+- reproducibility;
+- safety and provenance.
+
+## Article 2 — Scientific position
+
+1. Biological neuroscience is a source of constraints and hypotheses, not proof of architectural correctness.
+2. Terms such as *brain-like*, *plastic*, *memory*, *expert*, *attention* and *cognitive* are operational labels and SHALL NOT be treated as biological equivalence.
+3. Small-world organization, wiring economy, conditional computation, memory augmentation and test-time adaptation are distinct mechanisms. Their coexistence does not establish synergy; synergy must be measured.
+4. The primary scientific object is not model scale but **functional yield per activated resource**.
+5. Absence of improvement, instability, routing collapse or negative transfer are valid results and SHALL be preserved.
+
+## Article 3 — Core thesis
+
+Let a digital cognitive object be a tuple
+
+```text
+DCO = (F, R, E, M, P, B, W, V)
+```
+
+where:
+
+- `F` is the adaptive cognitive fabric;
+- `R` is the transit governor;
+- `E` is the expert ecology;
+- `M` is memory stratigraphy;
+- `P` is the structural plasticity cycle;
+- `B` is the activation budget contract;
+- `W` is the world coupling port;
+- `V` is the evidence and verification layer.
+
+The central hypothesis is that jointly constrained routing and topology can increase capability per resource relative to matched dense, static-sparse and conventional MoE baselines.
+
+## Article 4 — Canonical optimization objective
+
+For task distribution `D`, parameters `θ`, topology `G`, router state `ρ`, memory state `μ`, and resource budget `b`:
+
+```text
+J = E_D[L_task]
+  + λ_wire    · C_wire(G)
+  + λ_active  · C_active(θ, ρ)
+  + λ_comm    · C_comm(G, ρ)
+  + λ_memory  · C_memory(μ)
+  + λ_latency · C_latency
+  + λ_route   · C_route_instability(ρ)
+  + λ_redun   · C_expert_redundancy(E)
+  + λ_forget  · C_catastrophic_forgetting
+  + λ_risk    · C_safety_violation
+```
+
+Every cost SHALL be dimensionless or normalized against a declared baseline. No weighted scalar result may conceal a dominated metric. All primary reports SHALL publish both the scalar objective and the complete metric vector.
+
+## Article 5 — Architectural invariants
+
+The following invariants are mandatory:
+
+1. **Budget observability:** every forward pass reports active experts, routed tokens, attention edges, memory reads/writes and estimated cost.
+2. **Fail-closed routing:** invalid, empty or over-budget routes fall back to a declared safe path; silent token loss is forbidden.
+3. **Shared-path availability:** at least one shared expert or residual path remains available to every token.
+4. **Topology identity:** topology version and hash are attached to every experiment.
+5. **Memory provenance:** every persistent memory item has source identity, write time, retention policy and deletion path.
+6. **Plasticity boundaries:** structural rewiring is forbidden during evaluation unless test-time adaptation is the preregistered intervention.
+7. **No hidden baseline drift:** baseline code, tokenizer, data split, precision and compute budget are frozen before comparison.
+8. **Claim–evidence binding:** every released quantitative claim resolves to an evidence bundle.
+9. **Negative-result retention:** failed runs and null findings cannot be deleted solely because they weaken the thesis.
+10. **Reproducible randomness:** every stochastic process receives an independently derived seed recorded in evidence.
+11. **Capability-Threshold Gate:** any structural plasticity operator or routing configuration that increases active node count, `max_active_experts`, or depth ceiling beyond a preregistered threshold MUST NOT be enabled for evaluation until `Q_robust` and `Q_agency` (ADR-0007) are measured at that threshold and pass their preregistered bounds. This is a precondition, structurally identical to Budget-first (§3.1 of CWC-SPEC-001), not a post-hoc penalty term.
+
+## Article 6 — Original functional components
+
+### 6.1 Adaptive Cognitive Fabric
+
+A typed, weighted, spatially embedded graph. Nodes represent computational modules; edges represent allowed communication. Edge cost may incorporate geometric distance, bandwidth, synchronization and measured transfer cost. The fabric may contain local clusters, sparse long-range bridges and protected global control channels.
+
+### 6.2 Activation Budget Contract
+
+A machine-readable contract specifying ceilings and targets for active parameters, expert fan-out, attention density, memory operations, latency, peak memory and adaptation steps. Exceeding a hard ceiling invalidates the run unless the breach itself is the preregistered test.
+
+### 6.3 Transit Governor
+
+A router producing a route decision and a confidence distribution. It SHALL expose entropy, capacity use, token drops, route churn and expert utilization. It SHALL support deterministic replay.
+
+### 6.4 Expert Ecology
+
+An ecology contains shared experts, routed experts and optional modality-specific adapters. Expertise is not inferred from names. It is quantified through intervention, routing selectivity, representational similarity, transfer and ablation.
+
+### 6.5 Memory Stratigraphy
+
+- **Working memory:** bounded current-state activations.
+- **Episodic memory:** retrievable traces with explicit retention and provenance.
+- **Persistent memory:** learned parameters or durable external state.
+
+Memory gain must exceed retrieval cost and distraction harm under matched context budgets.
+
+### 6.6 Structural Plasticity Cycle
+
+A controlled four-stage cycle:
+
+```text
+observe → propose → validate → commit
+```
+
+Candidate edges are pruned or grown from measured utility, not aesthetic graph targets. Every committed topology delta is reversible and versioned.
+
+### 6.7 Metacognitive Budget Governor
+
+Selects compute depth and resource budget from uncertainty, expected value and risk. It cannot rewrite task outputs directly; it controls resource allocation and records the decision basis.
+
+### 6.8 World Coupling Port
+
+Provides typed observations and actions. It separates perception, state estimation, planning and actuation. Simulated embodiment and real-world embodiment SHALL be reported separately.
+
+### 6.9 Evidence Spine
+
+Captures immutable run identity, source revision, environment, dependency lock, data hashes, configuration, seeds, topology, metrics, logs and artifacts.
+
+### 6.10 Claim Firewall
+
+Rejects claims when evidence is missing, post-hoc, underpowered, non-reproducible or incompatible with the stated population. It distinguishes:
+
+- observation;
+- benchmark result;
+- replicated result;
+- bounded scientific claim;
+- generalization claim.
+
+## Article 7 — Falsification obligations
+
+Every mechanism SHALL be tested against:
+
+1. parameter-count-matched dense baseline;
+2. activated-FLOP-matched baseline;
+3. static sparse baseline;
+4. conventional MoE baseline where applicable;
+5. shuffled or randomized routing control;
+6. frozen-router ablation;
+7. memory-off and memory-random controls;
+8. topology-preserving weight randomization where meaningful;
+9. seed and data-split sensitivity;
+10. out-of-distribution transfer.
+
+A proposed mechanism is rejected for the tested scope when it fails preregistered minimum effects or violates resource ceilings.
+
+## Article 8 — Authority and change control
+
+The Founder and Principal Architect owns the research direction and may approve canonical changes. No architectural decision becomes canonical without:
+
+- an Architecture Decision Record;
+- explicit alternatives;
+- measurable consequences;
+- compatibility statement;
+- migration or rollback procedure;
+- validation evidence.
+
+## Article 9 — Prohibited practices
+
+The project forbids:
+
+- retroactively changing success thresholds after viewing results;
+- comparing unmatched compute or data while implying architectural superiority;
+- presenting proxy cost as measured energy without qualification;
+- selecting only favorable seeds;
+- claiming biological fidelity from metaphor;
+- treating benchmark contamination as capability;
+- using generated citations without source verification;
+- silently modifying data, prompts or evaluation scripts;
+- declaring novelty without a documented search boundary;
+- declaring intelligence, consciousness or agency from surface behavior.
+
+## Article 10 — Definition of success
+
+Success is not a dramatic narrative. Success is a replicated, resource-matched result demonstrating a non-trivial Pareto improvement, with transparent failure boundaries, independently executable code and a claim narrower than the evidence.
+
+
+# Research Roadmap
+
+## Phase 0 — Repository authority
+
+Exit criteria:
+
+- normative documents complete;
+- schemas validate;
+- deterministic smoke test passes;
+- CI and local commands agree;
+- no scientific performance claim.
+
+## Phase 1 — Causal microbenchmarks
+
+Executed against the `karpathy/nanochat` control organism per
+`research/EXPERIMENTAL_SUBSTRATE_NANOCHAT.md` (`CWC-EXPSUB-NANOCHAT-001`). WP-0 baseline fixation
+is executed; WP-1 through WP-7 are preregistered and pending. Local hardware (RTX 3050, 4 GB) bounds
+execution to smoke and micro-experiments — see that document's hardware boundary section before
+claiming any reproduced result.
+
+Mechanisms tested separately:
+
+1. local–global sparse communication;
+2. conditional expert routing;
+3. bounded episodic memory;
+4. wiring-cost regularization;
+5. prune–grow structural adaptation.
+
+Each mechanism must beat or match a budget-equivalent baseline on at least one preregistered task without degrading the protected metrics beyond tolerance.
+
+## Phase 2 — Pairwise composition
+
+Test interaction terms:
+
+- topology × routing;
+- routing × memory;
+- memory × adaptive budget;
+- topology × plasticity.
+
+A composed system is retained only when the interaction is non-negative or its trade-off is explicitly useful.
+
+## Phase 3 — Integrated kernel
+
+Train a compact language or multimodal sequence model under the complete resource objective. Required reports:
+
+- Pareto frontier;
+- route stability;
+- expert specialization;
+- memory utility;
+- topology evolution;
+- robustness;
+- calibration;
+- total training and inference cost.
+
+## Phase 4 — Agentic world coupling
+
+Add typed tools and simulated environment actions. Separate language quality from state estimation, planning and actuation. Require rollback, permissions and action provenance.
+
+## Phase 5 — External reproduction
+
+Freeze the protocol, publish artifact hashes and obtain independent execution. No broad architectural superiority claim before this phase.
+
+
+# Local Validation Report
+
+**Artifact:** Cognitive Weave Kernel 0.1.0  
+**Validation date:** 2026-07-15 (initial), revalidated 2026-07-16 after bibliography integration  
+**Environment:** Python 3.12.3, PyTorch 2.13.0+cu130 CPU, ruff 0.15.21, mypy 2.3.0
+
+## Executed checks
+
+| Check | Result |
+|---|---|
+| Unit and invariant tests | PASS — 11/11 (10 original + bibliography gate test) |
+| Deterministic smoke training | PASS — finite outputs and losses, byte-identical to 2026-07-15 run |
+| Repository structural validator | PASS |
+| JSON Schema meta-validation | PASS |
+| Python bytecode compilation | PASS |
+| Claim Firewall negative test | PASS — unsupported claim rejected by unit test |
+| `ruff check src tests scripts` | PASS — 0 errors (13 found and fixed 2026-07-16) |
+| `mypy --strict src/cwk scripts` | PASS — 0 errors (13 found and fixed 2026-07-16) |
+| `bibliography-verify` (`CWC-BIB-USCN-001`) | PASS — 35 primary sources, 10 claims |
+
+## Smoke evidence
+
+- active expert fraction: 0.50;
+- attention density: 0.347222;
+- route overflow: 0;
+- fallback: false;
+- memory size after controlled write: 16;
+- initial loss: 4.486858;
+- final loss: 4.261907;
+- topology hash: `be93e580b5d7c40894884a2af273a9c85fdc413c4a57e7475e6b9cfd1a50377c`.
+
+These values prove only that the reference contracts execute and emit evidence. They do not establish architectural superiority, energy efficiency or cognitive capability.
+
+## 2026-07-16 remediation notes
+
+`ruff` and `mypy --strict` were not executed in the 2026-07-15 artifact-generation environment. Running them
+surfaced 13 ruff findings (import ordering, unused import, 6 line-length overruns) and 13 mypy-strict findings
+(missing `types-jsonschema`/`types-PyYAML` stubs, three `nn.Module` buffer attributes mypy could not type through
+`register_buffer`, four `Any`-returning calls through `nn.Module.__call__`, one genuine torch stub gap on
+`Tensor.backward`). All were fixed in source; none required behavior changes to `forward()` numerics — the smoke
+evidence above is unchanged byte-for-byte. `types-jsonschema` and `types-PyYAML` were added to the `dev` extra in
+`pyproject.toml` so this gap cannot silently reopen.
+
+## Bibliography integration
+
+`docs/BIBLIOGRAPHY_US_CN.md`, `docs/claim_source_matrix.json`, `docs/SOURCE_AUDIT.csv`,
+`scripts/check_claim_source_matrix.py`, `tests/test_claim_source_matrix.py` and
+`.github/workflows/bibliography-claim-gate.yml` were merged from the external `CWC-BIB-USCN-001` package
+(SHA256SUMS.txt verified intact before merge). `CLAIMS.md` was added to bind each `CWC-CLM-*` row to its
+architecture component per `CLAUDE_CODE_INTEGRATION.md`. `CWC-*` identifiers and the author field were preserved
+unchanged, per that directive's explicit instruction not to rename canonical identifiers.
+
+
+# Cognitive Wiring Core (CWC)
+
+> **Fork notice.** This repository is a fork of
+> [github.com/karpathy/nanochat](https://github.com/karpathy/nanochat) (MIT License —
+> full credit to Andrej Karpathy and nanochat's contributors for the base
+> implementation; the `master`/`baseline` branches here are the unmodified upstream
+> history). The original contribution in this repository — Cognitive Wiring Core
+> (CWC) / Sapolsky-behavioral-layers research — is by Yaroslav Vasylenko, primarily on
+> the `wp1-instrumentation` branch (this GitLab project's default branch). See
+> [`CITATION.cff`](CITATION.cff) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+> for full attribution detail.
+
+An **evidence-first research programme** investigating whether a causally-controlled
+adaptive-computation architecture beats static Transformers / MoE / dynamic-compute
+systems at equal budget. This repository is the laboratory: a verified measurement
+substrate, a falsification harness, preregistered experiments, immutable evidence
+bundles, and a mathematical theory that unifies the results.
+
+> **What this is (honest one-line).** A verified instrumentation substrate + a
+> falsification harness that has produced **claim-tier positives and negatives** plus
+> a **mathematical theory** that predicts them. It is **not** yet an architecture with
+> a proven Pareto advantage at scale, and makes no such claim.
+
+Full map and entry point: [`SYSTEM.md`](SYSTEM.md). Governing methodology:
+[`docs/methodology/CWC_MASTER_METHODOLOGY.md`](docs/methodology/CWC_MASTER_METHODOLOGY.md).
+This project is built on top of Andrej Karpathy's **nanochat** (see
+[`docs/upstream/NANOCHAT_README.md`](docs/upstream/NANOCHAT_README.md)); the CWC work is
+additive and the upstream baseline is recorded pristine.
+
+## Headline results (claim-tier, reproducible)
+
+| Result | Verdict | Evidence |
+|---|---|---|
+| Instrumentation is deterministic & internally validated | **SUPPORTED** | `artifacts/wp1-release/` (207 tests, 99.46% cov, 12/12 mutation) |
+| A benchmark with a real adaptive-compute advantage exists | **SUPPORTED** | `artifacts/wp2-routing-v2/` (oracle gap 99.8%) |
+| Synthetic halt-oracle identity: adaptive−static = `P_sample(m>K)` | **SUPPORTED_NARROWED** | `artifacts/wp4-adaptive-depth/`; interpretation corrected in `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md` |
+| Frozen exact operator-hop allocation with free halt oracle | **SUPPORTED_NARROWED_INTERNAL** | `artifacts/wp4-exact-compute-v31/`; 16 untouched seeds, 7 distributions; not end-to-end compute parity |
+| End-to-end routing is learnable once credit-assignment is fixed | **SUPPORTED (binding budget)** | `artifacts/wp2-routing-v3-r3c-reinforce/` (AUROC 1.0, 8 seeds) |
+| On a surface-matched task the route decision IS the computation | **ROUTE_DECISION_IS_THE_COMPUTATION** | `artifacts/wp2-routing-v3-surface-matched/` |
+| Functional reuse (RCFR) is novel | **NOT_SUPPORTED** (ties prior art) | `artifacts/wp3-rcfr/` |
+| Metaplasticity benchmark identifiable unbudgeted | **NOT_TESTED / non-identifiable** | `artifacts/wp3-plasticity-v1/` |
+| Multiscale/fractal emergence | **NOT_SUPPORTED** | `artifacts/history/fractal/` |
+
+The unifying theory (`docs/IDENTIFIABILITY_THEORY.md`): the value of adaptive control
+is the context×choice interaction `γ`, realized only under a **binding budget** and
+only when the route signal is **cheaply computable** — `V_realized = oracle_gap − route_decision_cost`.
+
+## What CWC does NOT claim
+
+- ❌ a compute-equivalent Pareto advantage over MoD/MoE at scale (**NOT_TESTED** — cloud);
+- ❌ energy efficiency (energy is `INSTRUMENT_INVALID` on this hardware, excluded);
+- ❌ autonomous general adaptive intelligence;
+- ❌ independent replication (**NOT_TESTED** — not self-certifiable);
+- ❌ any frontier / deployment-grade capability.
+- ❌ an exactly compute-matched WP4 Pareto result (the archived static budget is
+  `round(E_sample[m])`, while adaptive compute is `E_sample[m]`).
+
+See the full non-claim boundary in [`SYSTEM.md`](SYSTEM.md) and per-claim scope in
+[`claim_registry.json`](claim_registry.json).
+
+## Reproduce
+
+```bash
+uv sync --frozen                                     # hermetic environment from uv.lock
+make -f Makefile.cwc verify                          # lint + types + tests + coverage + mutation + experiments
+make -f Makefile.cwc verify-evidence                 # checksum every evidence bundle
+make -f Makefile.cwc reproduce-primary               # re-derive the primary result end-to-end
+```
+
+Every experiment ships `artifacts/<exp>/{RESULTS.md, verdict.json, SHA256SUMS}` and a
+`experiments/<exp>/PREREGISTRATION*.md` committed before its confirmatory run.
+
+## Repository status
+
+- **Deployment status:** `LOCAL_RESEARCH_ONLY` — not a public service, not safety-critical,
+  not autonomously deployed, no frontier-capability claim. See
+  [`docs/system_card/CWC_SYSTEM_CARD.md`](docs/system_card/CWC_SYSTEM_CARD.md).
+- **Academic-readiness:** internal evidence substrate STRONG; academic documentation system
+  in progress — see [`docs/CHECKLIST_STATUS.md`](docs/CHECKLIST_STATUS.md) and the document
+  register [`docs/vnv/DOCUMENT_STATUS_REGISTER.csv`](docs/vnv/DOCUMENT_STATUS_REGISTER.csv).
+
+## License & citation
+
+MIT ([`LICENSE`](LICENSE)). Third-party components: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+To cite, use [`CITATION.cff`](CITATION.cff).
+
+
+# A Theory of Adaptive-Mechanism Identifiability
+
+Status: research note, verified numerically by `scripts/identifiability_theory.py`
+against the four CWC experiments (routing v1/v2, RCFR, plasticity).
+Motivation: three preregistered oracle-gap gates collapsed to ~0 (routing v1,
+RCFR, plasticity) while one succeeded (routing v2). This note derives the exact
+condition that separates them, and turns it into a cheap pre-check before any
+cloud-scale Pareto run (Act J).
+
+## 1. Object
+
+An adaptive controller chooses, per **context** `c ∈ C`, a **mechanism**
+`a ∈ A` (a route, a parameter group, an expert, an adapter). Let `U[c,a]` be the
+utility (quality, or quality minus a resource penalty). Contexts occur with
+weights `p_c`. Define
+
+- oracle value  `V_oracle = Σ_c p_c · max_a U[c,a]`  (choose per context),
+- best-fixed value `V_fixed = max_a Σ_c p_c · U[c,a]`  (one choice for all),
+- **oracle gap** `G = V_oracle − V_fixed ≥ 0`.
+
+`G` is exactly the *value of adaptivity*: how much a context-aware controller can
+beat the best context-blind policy. A benchmark is **identifiable** iff `G > 0`
+with statistical support — otherwise a learned controller cannot beat a constant
+and must not be trained (the CWC gate discipline).
+
+## 2. Exact decomposition theorem
+
+Write the two-way ANOVA of `U` (weights `p` over contexts, uniform over choices):
+`U[c,a] = μ + α_c + β_a + γ[c,a]`, with `α` the context main effect, `β` the
+choice main effect, `γ` the **interaction** (`Σ_a γ[c,a]=0`, `Σ_c p_c γ[c,a]=0`).
+
+Because `Σ_c p_c γ[c,a] = 0`, we get `V_fixed = μ + max_a β_a`, and
+
+> **Theorem.** `G = 𝔼_c[ max_a ( β_a + γ[c,a] ) ] − max_a β_a`.
+
+Proof: `V_oracle = μ + 𝔼_c α_c + 𝔼_c[max_a(β_a+γ[c,a])] = μ + 𝔼_c[max_a(β_a+γ[c,a])]`
+since `𝔼_c α_c = 0`; subtract `V_fixed = μ + max_a β_a`. ∎
+(Verified: the formula reproduces `G` to machine precision on all datasets.)
+
+**Corollary 1 (interaction drives everything).** If `γ ≡ 0` then `G = 0`.
+The value of adaptivity is *entirely* the context×choice interaction; main
+effects `β` never create a gap.
+
+**Corollary 2 (weak dominance kills the gap).** If some `a*` is *weakly optimal
+in every context* — `β_{a*}+γ[c,a*] ≥ β_a+γ[c,a] ∀c,a` — then `G = 0`, no matter
+how large `γ` is. A single always-best mechanism makes adaptivity worthless.
+
+## 3. The two collapse regimes (what actually happened)
+
+| Experiment | `G` | Why | Regime |
+|---|---:|---|---|
+| routing v2 (quality only) | 0.000 | semantic path solves EASY *and* HARD → weakly dominant | **quality dominance** |
+| RCFR | 0.000 | DISeL-with-role matches RCFR everywhere → weak dominance | quality dominance |
+| plasticity (λ=0) | 0.0001 | attention has the largest `β` and is never overtaken (`γ_RMS/β_spread = 0.41`) | **main-effect dominance** |
+| routing v1/v1.1 | ≈0 | any block solved every subtask | quality dominance |
+
+Every collapse is a **weakly-dominant mechanism** (Corollary 2): the most
+expressive / most capable choice is ≥ all others across contexts, so a constant
+policy ties the oracle. This is generic at small scale — expressive mechanisms
+subsume weaker ones through the residual stream.
+
+## 4. The central correction: identifiability is a CONSTRAINED property
+
+Quality alone almost always has a dominant choice (the biggest mechanism wins).
+Adaptivity acquires value only when a **cost** forbids using the dominant choice
+everywhere. Give each mechanism a cost `K[a]`; impose a budget (a fraction `κ`
+of contexts may use an expensive mechanism, or penalize with a Lagrangian `λ`):
+
+> **Identifiability condition.** `G > 0` iff, at the operating budget, no
+> mechanism weakly dominates the cost-adjusted utility — equivalently, iff
+> `argmax_a ( Q[c,a] − λ·K[a] )` **varies with `c`** at the `λ` implied by the
+> budget.
+
+Routing v2 confirms this exactly. On quality the gap is 0 (semantic dominates);
+under a 50% compute budget (`scripts/identifiability_theory.py`):
+
+```
+V_oracle = 1.000   (HARD→semantic, EASY→direct)
+V_fixed  = 0.751   (best context-blind κ-allocation)
+G        = 0.249   ← identifiable; this is the source of the empirical 99.8% CE gap
+```
+
+**The budget, not the quality difference, is what made routing identifiable.**
+
+## 5. The theory self-corrects the plasticity verdict
+
+The plasticity oracle-gap test measured `G` at `λ=0` (each group evaluated
+independently, no cost in the oracle objective) → 0.0001 → `NOT_IDENTIFIABLE`.
+But a budgeted controller is the entire premise of the AMG (cost §7.9). Adding
+the real parameter cost `K` (head 512, attn 4096, mlp 8192 params) and sweeping
+`λ`:
+
+| `λ` (cost weight) | `G` | oracle allocation |
+|---:|---:|---|
+| 0.0 | 0.000 | (attention ties everywhere) |
+| 0.5 | 0.109 | lexical→**head** (cheap, sufficient), relational→**attn** |
+| 1.0 | **0.191** | lexical→head, relational→attn |
+| 2.0 | 0.000 | over-penalized → head dominates |
+
+At `λ∈[0.5,1.0]` the cost-aware oracle spends the **cheap** `head` group on
+lexical (which head can solve) and reserves the **expensive** `attn` only for
+relational (structurally necessary), beating every fixed group. The gap peaks at
+`G ≈ 0.19`, **identical across all 5 seeds** (min 0.190, variance ≈ 0).
+
+> **Result.** The plasticity benchmark *is* identifiable once update cost enters
+> the oracle objective — which is exactly what a *budgeted* metaplasticity
+> governor is for. The earlier `NOT_IDENTIFIABLE` was an artifact of an
+> unbudgeted oracle test.
+
+**Epistemic status: EXPLORATORY.** `λ` was chosen after seeing the data. This
+generates a *preregisterable* hypothesis — "under a parameter-cost objective
+with `λ≈1`, a governor that picks the cheapest-sufficient plasticity locus per
+task beats any fixed locus" — which must be confirmed by a fresh run with a
+cost-aware oracle and `λ` frozen before execution. The robustness (zero seed
+variance) makes it a strong candidate, not a confirmed claim.
+
+## 6. A cheap identifiability predictor (before spending cloud compute)
+
+For any adaptive mechanism (routing, experts, plasticity, memory), before an
+expensive confirmatory or cloud-scale run:
+
+1. On a small pilot, estimate the utility matrix `Q[c,a]` and cost `K[a]` over a
+   handful of contexts and mechanisms.
+2. Pick the operating budget `λ` (or `κ`) from the intended deployment.
+3. Compute `argmax_a(Q[c,a] − λK[a])` per context. If it is **constant** across
+   contexts → **not identifiable at this budget** → do not train a controller,
+   do not spend cloud compute. Redesign until the constrained argmax varies.
+4. If it varies, estimate the constrained gap `G` and its seed CI; proceed only
+   if the lower CI > 0.
+
+This is O(|C|·|A|) arithmetic on a pilot — the identifiability of Act J can be
+predicted for a few dollars of pilot compute instead of discovered after a full
+cloud run.
+
+## 7. Design principle for identifiable benchmarks
+
+To make any adaptive mechanism identifiable, engineer **anti-dominance under
+budget**: the mechanisms must be *Pareto-incomparable across contexts at the
+operating cost* — each mechanism the constrained optimum for some context and
+suboptimal for others. Concretely: a **competence–cost spread** where cheap
+mechanisms suffice for easy contexts and expensive mechanisms are *necessary*
+(not merely better) for hard ones. The positive control `U=[[1,0],[0,1]]` (each
+choice best in exactly one context) gives the maximal gap `G=0.5`.
+
+The two failure modes to avoid: (a) one mechanism strong enough to win every
+context on quality (kill it with a binding budget); (b) a cost so high one cheap
+mechanism wins everything (`λ=2` above — over-penalized).
+
+## 8. Consequences for CWC direction
+
+1. The three "failed" negatives were not evidence that adaptive mechanisms are
+   worthless — they were evidence that **unbudgeted** small-scale benchmarks are
+   non-identifiable by construction (Corollary 2). The routing-v2 success and the
+   plasticity revival both come from a binding cost.
+2. Act J (compute-equivalent Pareto vs MoD/MoE) is exactly a *budgeted* test, so
+   it is the right frame — but run the §6 predictor on a pilot first: confirm the
+   constrained argmax varies before committing cloud compute.
+3. The plasticity direction is worth a fresh, cost-aware, preregistered oracle
+   run — the math says the value is there once cost is in the objective.
+
+## 9. Route-decision cost — a necessary discount on the oracle gap
+
+Sections 1–8 treat the oracle gap `G` as the value of adaptive control. That is an
+*upper bound*: it assumes the controller can identify the right choice for free. A
+learned controller must actually *compute* which mechanism a context needs, at some
+cost `c_route`. The realized value is therefore
+
+```
+V_realized = G − c_route.
+```
+
+Two empirical anchors (`artifacts/wp2-routing-v3-*`, 8 seeds each) pin the extremes:
+
+- **`c_route ≈ 0` (surface-leaky benchmark).** On the S-R-O task, difficulty
+  correlates with cheap surface features (length, histogram; leakage_probe AUROC=1.0).
+  A REINFORCE controller with objective `L = L_task + λ·C_use` recovers oracle-level
+  routing (AUROC 1.0, learned loss 0.009 vs random 0.48) — but **only at λ ≥ 1**
+  (a binding budget), confirming §6: at λ ≤ 0.5 the quality-dominant mechanism wins
+  everywhere and the route inverts. Crucially, this also shows the earlier
+  straight-through *collapse* was an **optimization artifact**, not an absence of
+  signal — the identifiability was real, the estimator was too weak.
+
+- **`c_route ≈ c_expensive` (surface-matched benchmark).** When EASY/HARD are matched
+  in length, first token, and token histogram, and differ only in a structural
+  property (distance between the two occurrences of a duplicated value), no controller
+  — neither a cheap mean-pool MLP nor an O(L²) self-attention controller — routes
+  above chance (AUROC ~0.51, no loss saving), **even trained by direct supervision on
+  the route label**. The difficulty signal is not cheaply computable: deciding the
+  route requires ~the same search the expensive mechanism performs, so `V_realized ≈ 0`
+  despite a large `G`.
+
+**Consequence.** A positive oracle gap (§1–8) is necessary but not sufficient for a
+usable adaptive architecture. Before any compute-equivalent Pareto claim (Act J), the
+gap must be discounted by the *learned* route-decision cost on the target workload.
+The decisive question for real workloads is not merely "does difficulty vary?" but
+"is difficulty **cheaply predictable** from the input?" — an empirical property to
+measure with a cheap-probe-vs-oracle-probe gap before spending cloud compute.
+
+The intuition has a formal necessary condition. For utility range `Δu` and
+router-visible signal `Z`, signal value is at most `Δu·sqrt(I(C;Z)/2)` when
+information is measured in nats. If this upper bound does not exceed route cost,
+positive net adaptation is impossible. The proof, assumptions, limitations, and
+executable finite-case verifier are in `docs/ROUTABILITY_INFORMATION_BOUND.md`.
+
+### 9.1 Paid stopping information on the exact-hop substrate
+
+WP4 v4 makes the information charge operational: one successor lookup both advances a
+nonterminal state and reveals a self-loop, and the terminal observation is billed. At
+the same frozen number of lookups, adaptive active-set allocation beats input-blind
+allocation in all seven synthetic distributions (mean paired solved lift 0.042–0.169;
+16 untouched seeds). This refutes the narrow hypothesis that paying the exact halt
+lookup necessarily erases the allocation gain. It does not price a learned predictor,
+controller arithmetic, memory traffic, or physical execution, so it is not evidence
+that `c_route` is small on real inputs.
+
+
