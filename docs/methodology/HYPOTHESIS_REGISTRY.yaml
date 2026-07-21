@@ -197,6 +197,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4g-cost-robust
 
+  - hypothesis_id: H-L4h
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "Adding contexts breaks identifiability or governor recovery even at matched per-context budget."
+    H1: "Identifiability and governor recovery hold as |C| grows at constant per-context budget."
+    estimand: "certificate G_lo and governor recovery vs context count |C|"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff G_lo>0 and recovery>=0.8 for all |C| in {2,3,4,6}. RESULT G_lo 0.084..0.685, recovery >=0.952 -> SUPPORTED (contexts do not interfere; identifiability strengthens with |C|)."
+    preregistration: experiments/wp3_plasticity_v10_contexts/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4h-context-scaling
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
