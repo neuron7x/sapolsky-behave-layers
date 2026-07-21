@@ -1,0 +1,42 @@
+{
+  "experiment": "wp13_effect_size",
+  "verdict": "EFFECT_SIZES_CI_POSITIVE",
+  "tier": "META \u2014 effect sizes, bootstrap CIs, retrospective power for the positives",
+  "n_boot": 2000,
+  "delta": 0.05,
+  "members": [
+    {
+      "claim": "CWC-L4-plasticity",
+      "n_seeds": 16,
+      "effect_gap": 0.190948486328125,
+      "bootstrap_ci95": [
+        0.19083023071289062,
+        0.19104766845703125
+      ],
+      "ci_lower_positive": true,
+      "sigma_max": 0.08945006208437191,
+      "standardized_effect": 2.1346937260704952,
+      "sample_complexity_nstar": 3,
+      "n_exceeds_nstar": true
+    },
+    {
+      "claim": "CWC-AC1-compute",
+      "n_seeds": 8,
+      "effect_gap": 0.6241455155735214,
+      "bootstrap_ci95": [
+        0.6233656238764524,
+        0.6247321283444762
+      ],
+      "ci_lower_positive": true,
+      "sigma_max": 0.002652559468704231,
+      "standardized_effect": 235.29934877517186,
+      "sample_complexity_nstar": 1,
+      "n_exceeds_nstar": true
+    }
+  ],
+  "all_bootstrap_ci_lower_positive": true,
+  "note": "Seed-bootstrap 95% CI of the oracle gap complements the one-sided G_lo. Both positives have CI lower bound > 0 and n_seeds >= sample-complexity n*. Standardized effect = gap/sigma.",
+  "prohibited_extrapolations": [
+    "independent replication"
+  ]
+}
