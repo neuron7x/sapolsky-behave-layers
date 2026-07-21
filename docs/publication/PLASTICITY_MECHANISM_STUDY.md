@@ -25,6 +25,11 @@ positives, four frozen negatives — the negatives are what make the account tru
 | L4d | …the `(σ/Δ)²` budget law, at higher power? | **NOT_SUPPORTED** | `Δ*∝N^−0.65` (steeper than −0.5); noise anti-scales (0.5) | `wp3-plasticity-v6-scaling` |
 | L4e | Is the collapse a pure 2-arm phenomenon? | **NOT_SUPPORTED** | 2-arm is drift-limited `N^−1.12`; dead arms add diffusion | `wp3-plasticity-v7-mechanism` |
 | L4f | Does the exponent scale monotonically with arm count? | **SUPPORTED** | `−1.03→−0.09` over `K=2..8`, monotone | `wp3-plasticity-v8-armscaling` |
+| L4g | Is the gap robust to the cost model? | **SUPPORTED** | `G_lo>0` under linear/sqrt/log/square | `wp3-plasticity-v9-costrobust` |
+| L4h | Does it generalize to more contexts? | **SUPPORTED** | `G_lo` 0.084→0.685, recovery ≥0.95 for `|C|=2..6` | `wp3-plasticity-v10-contexts` |
+| L4i | Does the governor realise the rate function `V*(R)`? | **SUPPORTED** | `V_gov≤V*(I)`, saturation ≥0.924 | `wp3-plasticity-v11-ratebridge` |
+| L4j | Is the sub-line registry↔evidence consistent? | **SUPPORTED** | 0 mismatches, 0 orphans | `wp3-plasticity-v12-consistency` |
+| L4k | Does the line survive its decisive nulls? | **SUPPORTED** | gap vanishes under every interaction-destroying null | `wp3-plasticity-v13-killtest` |
 
 ## 2. The positives, in order
 
@@ -77,6 +82,34 @@ Synthetic toy `GroupedModel`; given-context / wide-margin regimes; no real workl
 compute-equivalent Pareto (L7, cloud-blocked); no energy/latency; no independent replication.
 The L4 line is a **mechanism study**, not an architectural result. Its value is a
 falsification-disciplined map of when a cost-budget plasticity governor pays and how it fails.
+
+## 5a. Validity envelope (L4g–L4k)
+
+The positive core (L4/L4a/L4b) is now bounded by four validity checks, all passed:
+
+- **Cost-model robustness (L4g):** the gap survives every monotone cost transform (`G_lo>0` for
+  linear/sqrt/log/square) — it is the cost *ordering*, not the curvature, that matters. The
+  magnitude is cost-shape dependent (`log` compresses `G_lo` to 0.035).
+- **Context generalization (L4h):** identifiability *strengthens* and the governor still recovers
+  (≥0.95) as `|C|` grows to 6 at matched per-context budget — contexts do not interfere.
+- **Rate-function bridge (L4i):** the learned governor's realised value stays under the master
+  `V*(R)` ceiling and nearly saturates it (≥92.4%) — the plasticity analog of Act-J's
+  `TRAINED_CONTROLLER_REALISES_V_STAR`. The theory is non-vacuous on a real learned mechanism.
+- **Foundation nulls (L4k):** the gap appears *only* with a real context×arm interaction and
+  vanishes under additive/collapsed/aligned-best nulls. (The harness first caught a mis-specified
+  null of mine and I fixed it via a disclosed amendment — the falsification machinery works on the
+  experimenter too.)
+- **Internal consistency (L4j):** every claim's registry status matches its artifact verdict; no
+  orphan evidence.
+
+## 5b. Final ladder snapshot (this sub-line)
+
+Two positives at the top (L4 identifiability, L4a learned governor, L4b information bound), a ring
+of validity checks (L4g–L4k), and three frozen negatives at the mechanism level (L4c/L4d/L4e — the
+sample-complexity law fails, the collapse is drift-limited-plus-diffusion). The line is a complete,
+internally consistent, falsification-tested **mechanism study on a synthetic benchmark** — not an
+architectural result. The single remaining lever is L7 (real workload, compute-equivalent Pareto),
+which is cloud-blocked.
 
 ## 6. Reproduce
 
