@@ -19,7 +19,7 @@ from experiments.wp3_plasticity_v5_thinmargin.src.thinmargin import _delta_star,
 OUT = Path(__file__).resolve().parents[3] / "artifacts/wp3-plasticity-v6-scaling"
 
 N_ARMS = 4
-DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03]
+DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02, 0.01, 0.005]
 CONTROLLER_SEEDS = 24
 BUDGETS = [1500, 3000, 6000, 12000]
 SIGMA0 = 0.10
@@ -85,7 +85,14 @@ def analyze() -> dict[str, Any]:
     sigma_replicates_l4c = (not math.isnan(sigma_ratio)) and abs(sigma_ratio - 1.0) <= 0.4
     sigma_is_samplecomplexity = (not math.isnan(sigma_ratio)) and 1.4 <= sigma_ratio <= 2.8
 
-    verdict = "L4D_BUDGET_SCALING_CONFIRMED" if budget_confirmed else "L4D_BUDGET_SCALING_VIOLATED"
+    # A residual off-grid NaN is a measurement-range failure, NOT a scientific falsification.
+    any_nan = any(math.isnan(dstar_seq[i]) for i in range(len(dstar_seq)))
+    if budget_confirmed:
+        verdict = "L4D_BUDGET_SCALING_CONFIRMED"
+    elif any_nan:
+        verdict = "L4D_INSTRUMENT_LIMITED"
+    else:
+        verdict = "L4D_BUDGET_SCALING_VIOLATED"
 
     return {
         "experiment": "wp3_plasticity_v6_scaling",

@@ -34,6 +34,25 @@ low-power artifact? Reported, not gated by P1.
 - **P2 reported** as `sigma_scaling_replicates_l4c` (|ratio − 1| ≤ 0.4) vs
   `sigma_scaling_is_samplecomplexity` (ratio ∈ [1.4, 2.8]).
 
+## AMENDMENT 2026-07-21 (disclosed deviation — instrument-range defect)
+
+The first execution (prereg `c23e5cb`) revealed an **instrument defect, not a result**: the
+`Δ*` estimator returns `NaN` when the collapse margin falls **below the Δ-grid floor** (0.03).
+At `N ≥ 6000` the governor recovers even `Δ=0.03`, so the recovery curve never crosses 0.5
+within the grid and `Δ*` is unmeasurable there. The naive rule then reports `VIOLATED` for a
+purely measurement-range reason, which would be misleading.
+
+**Full disclosure (per `PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY.md`):** partial data WAS seen
+before this amendment — the two measurable budgets gave `Δ*(1500)=0.0567`, `Δ*(3000)=0.0350`
+(ratio 0.62, in the direction of `1/√N`); `N=6000, 12000` were `NaN`. This amendment ONLY
+fixes the measurement range and does not change the decision thresholds; the outcome remains
+genuinely uncertain (the 1500→3000 step is slightly STEEPER than `1/√2`, so the full ratio
+could land below, inside, or above the confirm band).
+
+Changes: extend the grid DOWN to `Δ ∈ {0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02,
+0.01, 0.005}`; add an **`L4D_INSTRUMENT_LIMITED`** verdict for any residual off-grid `NaN`
+(so a measurement-range failure is never reported as a scientific falsification).
+
 ## Scope / prohibited
 
 Tier `SYNTHETIC-PARAMETRIC`. Characterizes the learned-governor mechanism only. New claim
