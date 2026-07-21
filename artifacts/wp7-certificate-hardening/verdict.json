@@ -1,0 +1,59 @@
+{
+  "experiment": "wp7_certificate_hardening",
+  "verdict": "WP7_GAP_CLOSED_POSITIVES_ROBUST",
+  "tier": "META \u2014 rigor hardening: closes the inference-certificate proof gap, re-certifies positives",
+  "delta": 0.05,
+  "mc_delta": 0.1,
+  "mc_trials": 4000,
+  "coverage_montecarlo": [
+    {
+      "null": "additive_3x3",
+      "mc_delta": 0.1,
+      "fpr_original": 0.0,
+      "fpr_corrected": 0.0
+    },
+    {
+      "null": "additive_4x4",
+      "mc_delta": 0.1,
+      "fpr_original": 0.0,
+      "fpr_corrected": 0.0
+    },
+    {
+      "null": "tied_4x4",
+      "mc_delta": 0.1,
+      "fpr_original": 0.0,
+      "fpr_corrected": 0.0
+    },
+    {
+      "null": "tied_2x8",
+      "mc_delta": 0.1,
+      "fpr_original": 0.0,
+      "fpr_corrected": 0.0
+    },
+    {
+      "null": "tied_6x3",
+      "mc_delta": 0.1,
+      "fpr_original": 0.0,
+      "fpr_corrected": 0.0
+    }
+  ],
+  "corrected_bound_valid_all_nulls": true,
+  "positives_recertified": {
+    "CWC-L4-plasticity": {
+      "gap_hat": 0.190948486328125,
+      "g_lo_original": 0.11076198884747979,
+      "g_lo_corrected": 0.06008824744197573
+    },
+    "CWC-AC1-compute": {
+      "gap_hat": 0.6241455155735214,
+      "g_lo_original": 0.621284687323652,
+      "g_lo_corrected": 0.6195495381326336
+    }
+  },
+  "all_positives_survive_corrected": true,
+  "note": "Corrected bound = G_hat - b - 2d (both deviation terms union-bounded at delta/2); proof-complete, strictly more conservative than the original. FPR<=delta empirically; positives survive (L4 0.111->~0.06, AC1 0.621->~0.62).",
+  "prohibited_extrapolations": [
+    "independent replication",
+    "L7 compute-equivalent Pareto"
+  ]
+}

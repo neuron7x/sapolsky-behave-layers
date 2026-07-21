@@ -84,6 +84,17 @@ G_lo`. (Sketch — see the Proof caveat.)
 > the `b` slack over-covers the missing `O`-deviation, so the stated coverage holds
 > *as calibrated* (assuming per-context independence); it should not be called a
 > finished proof.
+>
+> **Gap closed (2026-07-21).** The proof-complete corrected bound
+> `G_lo = Ĝ − b − 2·d`, `d = (sd/√|C|)√(2ln(4/δ))`, budgets **both** deviation terms
+> (oracle-term concentration + fixed-term), union-bounded at `δ/2` each, giving
+> `P(G ≥ G_lo) ≥ 1 − δ` under sub-Gaussian per-context-independent noise. It is
+> implemented as `gap_lower_confidence_bound_corrected`, its coverage is Monte-Carlo-
+> verified `FPR ≤ δ` across five null families, and **every identifiability positive
+> survives it** (L4 `0.111 → 0.060`, AC1 `0.621 → 0.620`) — see
+> `experiments/wp7_certificate_hardening/` and `artifacts/wp7-certificate-hardening/`.
+> The original `gap_lower_confidence_bound` is retained (conservative-enough in
+> practice); the corrected bound is the proof-complete version for expert-grade claims.
 
 The bound is deliberately **conservative** (it is an envelope, so the realised
 false-positive rate is typically well below `δ`); conservativeness costs power, not
