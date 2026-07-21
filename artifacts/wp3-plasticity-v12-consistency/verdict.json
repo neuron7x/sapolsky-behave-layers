@@ -2,7 +2,7 @@
   "experiment": "wp3_plasticity_v12_consistency",
   "verdict": "L4J_CONSISTENT",
   "tier": "PROCESS \u2014 governance consistency of the L4 sub-line",
-  "n_l4_claims": 10,
+  "n_l4_claims": 11,
   "checks": [
     {
       "claim": "CWC-L4-plasticity",
@@ -73,6 +73,14 @@
       "status": "SUPPORTED",
       "status_polarity": "positive",
       "verdict": "L4I_BRIDGE_CONFIRMED",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4k-falsification-boundary",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4K_LINE_SURVIVES",
       "verdict_polarity": "positive",
       "match": true
     }

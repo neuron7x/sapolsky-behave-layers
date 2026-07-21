@@ -15,8 +15,10 @@ ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "artifacts/wp3-plasticity-v12-consistency"
 
 # NEG checked before POS. "INCONSISTENT" must precede the POS "CONSISTENT" substring test.
-POS_TOKENS = ("CONFIRMED", "SUPPORTED", "MAPPED", "GENERALIZES", "ROBUST", "CONSISTENT", "_GO", "GO_")
-NEG_TOKENS = ("VIOLATED", "INCOMPLETE", "NOT_SUPPORTED", "NOT_MAPPED", "NOT_CONFIRMED", "VOID", "INCONSISTENT")
+POS_TOKENS = ("CONFIRMED", "SUPPORTED", "MAPPED", "GENERALIZES", "ROBUST", "CONSISTENT",
+              "SURVIVES", "_GO", "GO_")
+NEG_TOKENS = ("VIOLATED", "INCOMPLETE", "NOT_SUPPORTED", "NOT_MAPPED", "NOT_CONFIRMED", "VOID",
+              "INCONSISTENT", "FALSIFIED")
 SELF_CLAIM = "CWC-L4j-line-consistency"   # the auditor does not audit its own verdict (circular)
 
 
