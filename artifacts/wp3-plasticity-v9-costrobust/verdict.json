@@ -1,0 +1,44 @@
+{
+  "experiment": "wp3_plasticity_v9_costrobust",
+  "verdict": "L4G_ROBUST",
+  "tier": "SYNTHETIC \u2014 validity/robustness of L4 identifiability to the cost model",
+  "lambda": 1.0,
+  "delta": 0.05,
+  "per_transform": {
+    "linear": {
+      "gap_hat": 0.190948486328125,
+      "gap_lower_bound": 0.11076198884747979,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "robust": true
+    },
+    "sqrt": {
+      "gap_hat": 0.18114509573485127,
+      "gap_lower_bound": 0.10095859825420606,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "robust": true
+    },
+    "log": {
+      "gap_hat": 0.11537225247223382,
+      "gap_lower_bound": 0.03518575499158861,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "robust": true
+    },
+    "square": {
+      "gap_hat": 0.12313079833984375,
+      "gap_lower_bound": 0.04294430085919854,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "robust": true
+    }
+  },
+  "all_transforms_robust": true,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
