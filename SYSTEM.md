@@ -30,7 +30,7 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 | L2′ synthetic allocation identity | halt-oracle adaptive−static equals empirical tail mass P_sample(m>K) | **SUPPORTED_NARROWED** | archived WP4 bundle + epistemic correction; no exact compute-parity claim |
 | L2′′ frozen operator-hop allocation | halt-conditioned allocation beats input-blind allocation at identical frozen operator hops | **SUPPORTED_NARROWED_INTERNAL** | `wp4-exact-compute-v31`; free halt oracle, not end-to-end compute parity |
 | L3 functional reuse (RCFR) | one module = many functions, novel | **NOT_SUPPORTED** | `artifacts/wp3-rcfr/` — real but ties DISeL (prior art) |
-| L4 controlled plasticity | budgeted metaplasticity governor helps | **NOT_TESTED** | `artifacts/wp3-plasticity-v1/` — benchmark not identifiable UNBUDGETED (see theory) |
+| L4 controlled plasticity | budgeted metaplasticity oracle gap is real | **SUPPORTED_NARROWED** — cost-budget oracle gap confirmed OUT-OF-SAMPLE on 16 held-out seeds with λ frozen a priori: G_lo 0.111>0 (δ=0.05), effect in 16/16 seeds, controls pass; synthetic + oracle, NO learned governor | `artifacts/wp3-plasticity-v2-confirmatory/` (confirmatory); `artifacts/wp3-plasticity-v1/` unbudgeted null + `artifacts/act-j-pilot-decision/` pilot |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
 | L6 joint-control advantage | joint > best isolated mechanism | **NOT_TESTED** | blocked |
 | L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | **the decisive next step (cloud)** |

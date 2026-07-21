@@ -115,14 +115,14 @@ hypotheses:
 
   - hypothesis_id: H-L4
     research_question_id: RQ-plasticity
-    type: exploratory
-    H0: "A budgeted metaplasticity governor does not help."
-    H1: "A budgeted metaplasticity governor helps under a cost budget."
-    estimand: "oracle allocation gap under cost budget"
+    type: confirmatory
+    H0: "Under a cost budget, no context-conditioned allocation beats the best fixed allocation (oracle gap = 0)."
+    H1: "Under a cost budget, a context-conditioned allocation beats every fixed allocation (oracle gap > 0)."
+    estimand: "oracle allocation gap under cost budget (lambda=1)"
     experimental_unit: "model seed"
-    decision_rule: "unbudgeted gap ~0 -> NOT_IDENTIFIABLE; cost-aware confirmatory run pending"
-    preregistration: experiments/wp3_plasticity_v1/PREREGISTRATION.md
-    status: NOT_TESTED
+    decision_rule: "reject H0 iff debiased G_lo > 0 at delta=0.05 on held-out seeds with lambda frozen a priori; CONFIRMED (G_lo=0.111, 16/16 seeds). Scope: synthetic + exact oracle, no learned governor."
+    preregistration: experiments/wp3_plasticity_v2_confirmatory/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
     claim_id: CWC-L4-plasticity
 
   - hypothesis_id: H-fractal
