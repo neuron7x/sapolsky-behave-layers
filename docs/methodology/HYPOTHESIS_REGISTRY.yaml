@@ -173,6 +173,18 @@ hypotheses:
     status: NOT_SUPPORTED
     claim_id: CWC-L4e-mechanism
 
+  - hypothesis_id: H-L4f
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The governor's collapse-margin budget exponent does not depend on arm count."
+    H1: "The exponent shallows monotonically as arms grow (dead arms inject diffusion)."
+    estimand: "budget exponent as a function of arm count K"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff exponent monotone non-decreasing in K, shallows by >=0.25, exp(2)<=-0.9. RESULT -1.026/-0.637/-0.459/-0.451/-0.094 -> MAPPED. Caveat: asymptote overshoots -0.5 toward 0; exact values grid-sensitive."
+    preregistration: experiments/wp3_plasticity_v8_armscaling/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4f-arm-scaling
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
