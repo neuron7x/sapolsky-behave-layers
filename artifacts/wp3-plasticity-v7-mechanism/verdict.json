@@ -1,0 +1,33 @@
+{
+  "experiment": "wp3_plasticity_v7_mechanism",
+  "verdict": "L4E_MECHANISM_INCOMPLETE",
+  "tier": "SYNTHETIC-PARAMETRIC \u2014 2-arm ablation of the governor collapse mechanism",
+  "n_arms_ablation": 2,
+  "controller_seeds": 24,
+  "budgets": [
+    1500,
+    3000,
+    6000,
+    12000
+  ],
+  "sigma0": 0.1,
+  "reduced_budget_delta_star": {
+    "1500": 0.012857142857142949,
+    "3000": 0.01375000000000009,
+    "6000": 0.005333333333333442,
+    "12000": 0.0013333333333337902
+  },
+  "reduced_budget_exponent": -1.117470423922401,
+  "target_full_governor_exponent": -0.654,
+  "exponent_match_within_0.15": false,
+  "reduced_noise_ratio": 0.3636363636364037,
+  "full_governor_noise_ratio": 0.5000000000000001,
+  "noise_sign_match_both_below_1": true,
+  "mechanism": "2-arm REINFORCE logit drift dg/dt ~ LR*Delta*pi(1-pi) (super-diffusive -> steeper than -0.5) + baseline-relative advantage makes noise act as exploration (ratio<1)",
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
