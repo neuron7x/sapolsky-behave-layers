@@ -1,0 +1,211 @@
+{
+  "experiment": "wp12_prereg_integrity",
+  "verdict": "PREREG_INTEGRITY_CLEAN",
+  "tier": "META \u2014 preregistration integrity across all experiments (git ancestry)",
+  "n_experiments_with_prereg": 27,
+  "strict_ancestor": 14,
+  "same_commit_retrospective": 4,
+  "violations": 0,
+  "retrospective_allowlist": [
+    "wp10_coherence",
+    "wp11_pinsker",
+    "wp13_effect_size",
+    "wp4_adaptive_depth",
+    "wp9_independence"
+  ],
+  "checks": [
+    {
+      "experiment": "act_j_pilot_decision",
+      "prereg_commit": "5f24a0b2a",
+      "result_commit": "75cf30f14",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp10_coherence",
+      "prereg_commit": "dd4db5b7a",
+      "result_commit": "dd4db5b7a",
+      "classification": "SAME_COMMIT_RETROSPECTIVE",
+      "disclosed": true,
+      "ok": true
+    },
+    {
+      "experiment": "wp11_pinsker",
+      "prereg_commit": "f7a59b364",
+      "result_commit": "f7a59b364",
+      "classification": "SAME_COMMIT_RETROSPECTIVE",
+      "disclosed": true,
+      "ok": true
+    },
+    {
+      "experiment": "wp13_effect_size",
+      "prereg_commit": "c6010f1a5",
+      "result_commit": "c6010f1a5",
+      "classification": "SAME_COMMIT_RETROSPECTIVE",
+      "disclosed": true,
+      "ok": true
+    },
+    {
+      "experiment": "wp2_mechanism_v2",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp2_routing_v1",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp2_routing_v2",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v1",
+      "prereg_commit": "436aed995",
+      "result_commit": "749a311c7",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v10_contexts",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v11_ratebridge",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v12_consistency",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v13_killtest",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v2_confirmatory",
+      "prereg_commit": "145ab91fb",
+      "result_commit": "648505de6",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v3_governor",
+      "prereg_commit": "9758ba9a8",
+      "result_commit": "5a670b7e2",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v4_inferred",
+      "prereg_commit": "d30074f28",
+      "result_commit": "a83dc4b04",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v5_thinmargin",
+      "prereg_commit": "def116806",
+      "result_commit": "ced1029ef",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v6_scaling",
+      "prereg_commit": "c23e5cb24",
+      "result_commit": "152fbc23c",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v7_mechanism",
+      "prereg_commit": "68aaccc88",
+      "result_commit": "a155fc167",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v8_armscaling",
+      "prereg_commit": "32f02ffa9",
+      "result_commit": "12122c1e1",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_plasticity_v9_costrobust",
+      "prereg_commit": "e6d410852",
+      "result_commit": "9d43391f3",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp3_rcfr",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp4_adaptive_depth",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp5_adaptive_compute",
+      "prereg_commit": "817c6204c",
+      "result_commit": "af5384ef5",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp6_real_lm",
+      "prereg_commit": "0422c21c0",
+      "result_commit": "957ddec9d",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp7_certificate_hardening",
+      "prereg_commit": "2c36f9938",
+      "result_commit": "cc93e895c",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp8_family_wise_error",
+      "prereg_commit": "bd22aff70",
+      "result_commit": "27fb58b05",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp9_independence",
+      "prereg_commit": "2753cdfb0",
+      "result_commit": "2753cdfb0",
+      "classification": "SAME_COMMIT_RETROSPECTIVE",
+      "disclosed": true,
+      "ok": true
+    }
+  ],
+  "note": "Prereg first-add must be a strict git ancestor of the first result commit. Same-commit allowed only if disclosed (DEBT_REGISTER T0-PREREG). Any undisclosed same-commit or result-before-prereg is a violation.",
+  "prohibited_extrapolations": [
+    "independent replication"
+  ]
+}
