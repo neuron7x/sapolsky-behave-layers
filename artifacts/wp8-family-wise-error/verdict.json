@@ -1,0 +1,68 @@
+{
+  "experiment": "wp8_family_wise_error",
+  "verdict": "WP8_FWER_CONTROLLED",
+  "tier": "META \u2014 family-wise error control across the SUPPORTED certificate positives",
+  "family_size": 2,
+  "n_all_claims": 29,
+  "base_delta": 0.05,
+  "per_member": {
+    "CWC-L4-plasticity": {
+      "gap_hat": 0.190948486328125,
+      "uncorrected": {
+        "delta": 0.05,
+        "g_lo_corrected": 0.06008824744197573,
+        "survives": true
+      },
+      "bonferroni_family": {
+        "delta": 0.025,
+        "g_lo_corrected": 0.05295525066409437,
+        "survives": true
+      },
+      "bonferroni_all_claims": {
+        "delta": 0.001724137931034483,
+        "g_lo_corrected": 0.029208681178752652,
+        "survives": true
+      }
+    },
+    "CWC-AC1-compute": {
+      "gap_hat": 0.6241455155735214,
+      "uncorrected": {
+        "delta": 0.05,
+        "g_lo_corrected": 0.6195495381326336,
+        "survives": true
+      },
+      "bonferroni_family": {
+        "delta": 0.025,
+        "g_lo_corrected": 0.619305293021746,
+        "survives": true
+      },
+      "bonferroni_all_claims": {
+        "delta": 0.001724137931034483,
+        "g_lo_corrected": 0.6184921728595256,
+        "survives": true
+      }
+    }
+  },
+  "holm_stepdown": {
+    "CWC-AC1-compute": {
+      "rank": 1,
+      "delta": 0.025,
+      "g_lo_corrected": 0.619305293021746,
+      "survives": true
+    },
+    "CWC-L4-plasticity": {
+      "rank": 2,
+      "delta": 0.05,
+      "g_lo_corrected": 0.06008824744197573,
+      "survives": true
+    }
+  },
+  "bonferroni_family_all_survive": true,
+  "bonferroni_all_claims_all_survive": true,
+  "holm_all_survive": true,
+  "note": "Positives survive Bonferroni over the family AND (reported) over all 29 claims, on top of the WP7 proof-complete bound. Recovery/ceiling-gated positives excluded (pass by margin, ~0 FPR).",
+  "prohibited_extrapolations": [
+    "independent replication",
+    "L7 compute-equivalent Pareto"
+  ]
+}
