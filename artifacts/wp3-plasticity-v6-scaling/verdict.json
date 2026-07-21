@@ -1,0 +1,231 @@
+{
+  "experiment": "wp3_plasticity_v6_scaling",
+  "verdict": "L4D_BUDGET_SCALING_VIOLATED",
+  "tier": "SYNTHETIC-PARAMETRIC \u2014 governor credit-assignment scaling",
+  "controller_seeds": 24,
+  "deltas": [
+    0.4,
+    0.3,
+    0.2,
+    0.15,
+    0.1,
+    0.07,
+    0.05,
+    0.03,
+    0.02,
+    0.01,
+    0.005
+  ],
+  "budgets": [
+    1500,
+    3000,
+    6000,
+    12000
+  ],
+  "sigma0": 0.1,
+  "budget_curves": {
+    "N_1500": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.3,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.15,
+        "recovery": 0.9166666666666664
+      },
+      {
+        "delta": 0.1,
+        "recovery": 0.7500000000000003
+      },
+      {
+        "delta": 0.07,
+        "recovery": 0.5833333333333336
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.45833333333333365
+      },
+      {
+        "delta": 0.03,
+        "recovery": 0.2500000000000002
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.1250000000000001
+      },
+      {
+        "delta": 0.01,
+        "recovery": 0.0
+      },
+      {
+        "delta": 0.005,
+        "recovery": -1.4802973661668755e-14
+      }
+    ],
+    "N_3000": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.3,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.15,
+        "recovery": 0.9999999999999997
+      },
+      {
+        "delta": 0.1,
+        "recovery": 0.8750000000000003
+      },
+      {
+        "delta": 0.07,
+        "recovery": 0.7500000000000003
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.6250000000000003
+      },
+      {
+        "delta": 0.03,
+        "recovery": 0.45833333333333365
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.3750000000000003
+      },
+      {
+        "delta": 0.01,
+        "recovery": 0.2083333333333335
+      },
+      {
+        "delta": 0.005,
+        "recovery": 0.16666666666665572
+      }
+    ],
+    "N_6000": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.3,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.15,
+        "recovery": 0.9999999999999997
+      },
+      {
+        "delta": 0.1,
+        "recovery": 0.916666666666667
+      },
+      {
+        "delta": 0.07,
+        "recovery": 0.8333333333333336
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.7500000000000003
+      },
+      {
+        "delta": 0.03,
+        "recovery": 0.5833333333333336
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.41666666666666696
+      },
+      {
+        "delta": 0.01,
+        "recovery": 0.2916666666666669
+      },
+      {
+        "delta": 0.005,
+        "recovery": 0.20833333333331963
+      }
+    ],
+    "N_12000": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.3,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.15,
+        "recovery": 0.9999999999999997
+      },
+      {
+        "delta": 0.1,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.07,
+        "recovery": 1.0000000000000002
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.9583333333333336
+      },
+      {
+        "delta": 0.03,
+        "recovery": 0.7083333333333336
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.6250000000000003
+      },
+      {
+        "delta": 0.01,
+        "recovery": 0.41666666666666696
+      },
+      {
+        "delta": 0.005,
+        "recovery": 0.24999999999998543
+      }
+    ]
+  },
+  "budget_delta_star": {
+    "N_1500": 0.05666666666666662,
+    "N_3000": 0.03499999999999996,
+    "N_6000": 0.024999999999999984,
+    "N_12000": 0.013999999999999985
+  },
+  "budget_ratio_N12000_over_N1500": 0.2470588235294117,
+  "predicted_budget_ratio_1_over_sqrt8": 0.35355339059327373,
+  "budget_monotone_decreasing": true,
+  "budget_scaling_confirmed": false,
+  "sigma_scaling_ratio_highpower": 0.5000000000000001,
+  "sigma_scaling_replicates_l4c": false,
+  "sigma_scaling_is_samplecomplexity": false,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
