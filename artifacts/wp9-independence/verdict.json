@@ -1,0 +1,46 @@
+{
+  "experiment": "wp9_independence",
+  "verdict": "INDEPENDENCE_ROBUST",
+  "tier": "META \u2014 corrected-bound coverage under cross-context correlation",
+  "mc_delta": 0.1,
+  "rhos": [
+    0.0,
+    0.3,
+    0.6,
+    0.9
+  ],
+  "shapes": [
+    "4x4",
+    "2x8",
+    "6x3"
+  ],
+  "fpr_grid": [
+    {
+      "shape": "4x4",
+      "rho_0.0": 0.0,
+      "rho_0.3": 0.0,
+      "rho_0.6": 0.0,
+      "rho_0.9": 0.0
+    },
+    {
+      "shape": "2x8",
+      "rho_0.0": 0.0,
+      "rho_0.3": 0.0,
+      "rho_0.6": 0.0,
+      "rho_0.9": 0.0
+    },
+    {
+      "shape": "6x3",
+      "rho_0.0": 0.0,
+      "rho_0.3": 0.0,
+      "rho_0.6": 0.0,
+      "rho_0.9": 0.0
+    }
+  ],
+  "max_fpr_over_all": 0.0,
+  "independence_robust": true,
+  "note": "Corrected-bound FPR on a tied null under cross-context correlated noise. FPR<=delta up to rho=0.9 => the per-context independence assumption is not load-bearing for validity (the b-slack over-covers). Worst case is the tied null.",
+  "prohibited_extrapolations": [
+    "independent replication"
+  ]
+}
