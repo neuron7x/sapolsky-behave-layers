@@ -171,3 +171,35 @@ def test_fail_closed():
         sample_complexity(0.0, 1.0, 4, 4, 0.05)      # non-positive gap not certifiable
     with pytest.raises(ValueError):
         certifies_positive_value(0.4, 0.02, 4, 4, route_cost=-0.1)
+
+
+def test_corrected_bound_is_more_conservative():
+    from experiments.common.identifiability_inference import (
+        gap_lower_confidence_bound,
+        gap_lower_confidence_bound_corrected,
+    )
+    orig = gap_lower_confidence_bound(0.5, 0.1, 4, 4, 0.05)
+    corr = gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.05)
+    assert corr < orig                      # budgets a second deviation term
+    assert corr == gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.05)  # deterministic
+
+
+def test_corrected_bound_fpr_within_delta_on_null():
+    # the proof-complete bound must keep FPR <= delta on a tied null (its whole point)
+    import math
+
+    from experiments.common.identifiability_inference import (
+        _Rng,
+        _noisy,
+        gap_lower_confidence_bound_corrected,
+        plugin_gap,
+    )
+    null_u = [[0.0] * 4 for _ in range(4)]
+    rng = _Rng(2026)
+    delta, se, trials, fp = 0.1, 0.15, 3000, 0
+    for _ in range(trials):
+        g = plugin_gap(_noisy(null_u, se, rng))
+        if gap_lower_confidence_bound_corrected(g, se, 4, 4, delta) > 0.0:
+            fp += 1
+    assert fp / trials <= delta
+    assert math.isfinite(gap_lower_confidence_bound_corrected(0.3, 0.05, 3, 3, 0.05))

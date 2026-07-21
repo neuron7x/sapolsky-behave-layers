@@ -81,6 +81,32 @@ def gap_lower_confidence_bound(
     return gap_hat - oracle_bias_bound(std_error, n_actions) - deviation_bound(std_error, n_contexts, delta)
 
 
+def gap_lower_confidence_bound_corrected(
+    gap_hat: float, std_error: float, n_contexts: int, n_actions: int, delta: float
+) -> float:
+    """Proof-complete ``1-delta`` lower bound: budgets BOTH deviation terms, union-bounded.
+
+    Closes the gap flagged in the audit of ``docs/IDENTIFIABILITY_INFERENCE.md``: the original
+    ``gap_lower_confidence_bound`` bounds only the *expectation* of the oracle-term overshoot
+    (``E[O] <= b``) and allocates the whole deviation budget to the fixed term ``F``, with no
+    separate concentration term for ``O``. Decompose ``G-hat - G = O - F`` with
+    ``O = V-hat_oracle - V_oracle`` and ``F = V-hat_fixed - V_fixed``. Then, for sub-Gaussian
+    per-cell noise with per-context independence:
+
+      * ``E[O] <= b = sd*sqrt(2 ln|A|)``          (max-operator optimism), and
+      * ``O - E[O]`` concentrates:  ``<= d`` w.p. ``1 - delta/2``  (average of |C| context terms),
+      * ``V_fixed - V-hat_fixed <= d`` w.p. ``1 - delta/2``,
+
+    with ``d = deviation_bound(sd, |C|, delta/2)``. Union bound gives
+    ``P(G-hat - G <= b + 2d) >= 1 - delta``, hence ``P(G >= G-hat - b - 2d) >= 1 - delta``.
+    Strictly more conservative than the original; empirically the identifiability positives
+    survive it (see ``experiments/wp7_certificate_hardening``).
+    """
+    b = oracle_bias_bound(std_error, n_actions)
+    d = deviation_bound(std_error, n_contexts, delta / 2.0)
+    return gap_hat - b - 2.0 * d
+
+
 def certify_identifiable(
     gap_hat: float, std_error: float, n_contexts: int, n_actions: int, *, delta: float = 0.05
 ) -> dict[str, float | bool]:
