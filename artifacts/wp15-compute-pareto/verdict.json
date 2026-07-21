@@ -1,0 +1,40 @@
+{
+  "experiment": "wp15_compute_pareto",
+  "verdict": "SYNTHETIC_COMPUTE_PARETO_DOMINATES",
+  "tier": "SYNTHETIC \u2014 compute-equivalent Pareto (the L7 protocol, synthetic instantiation)",
+  "fixed_frontier": [
+    {
+      "K": 1,
+      "avg_compute": 1.0,
+      "accuracy": 0.37475925125181675
+    },
+    {
+      "K": 2,
+      "avg_compute": 2.0,
+      "accuracy": 0.3747287426764766
+    },
+    {
+      "K": 3,
+      "avg_compute": 3.0,
+      "accuracy": 0.3754543783143163
+    }
+  ],
+  "adaptive_oracle": {
+    "avg_compute": 2.0,
+    "accuracy": 0.9995998938878377,
+    "per_difficulty_K": {
+      "1": 1,
+      "2": 2,
+      "3": 3
+    }
+  },
+  "fixed_accuracy_at_matched_compute": 0.3747287426764766,
+  "adaptive_advantage_at_matched_compute": 0.624871151211361,
+  "pareto_dominates": true,
+  "l7_status": "CWC-L7-pareto (real workload, MoD/MoE baselines, cloud) remains NOT_TESTED; this is the synthetic precursor and the cloud-ready protocol.",
+  "note": "At matched average compute, adaptive allocation reaches ~1.0 accuracy while every fixed-compute policy is stuck near chance (each fixed K solves only its own difficulty). This is the L7 shape (Pareto dominance at matched FLOPs) on synthetic data; the real- workload L7 is cloud-blocked (no checkpoint/budget/baselines).",
+  "prohibited_extrapolations": [
+    "real-workload compute-equivalent Pareto (L7)",
+    "independent replication"
+  ]
+}
