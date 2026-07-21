@@ -21,7 +21,7 @@ OUT = ROOT / "artifacts/wp3-plasticity-v7-mechanism"
 L4D = ROOT / "artifacts/wp3-plasticity-v6-scaling/verdict.json"
 
 N_ARMS = 2                       # ABLATION: best arm vs runner-up only
-DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02, 0.01, 0.005]
+DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02, 0.015, 0.01, 0.008, 0.005, 0.003, 0.001]
 CONTROLLER_SEEDS = 24
 BUDGETS = [1500, 3000, 6000, 12000]
 SIGMA0 = 0.10

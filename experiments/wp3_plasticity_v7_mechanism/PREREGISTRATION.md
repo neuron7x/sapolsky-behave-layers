@@ -40,6 +40,18 @@ REINFORCE) must reproduce BOTH signatures of the full 4-arm governor.
   (the 4-arm / baseline structure matters; the simple account is insufficient).
 - **L4E_INSTRUMENT_LIMITED** — residual off-grid `NaN` in the reduced `Δ*` (extend grid).
 
+## AMENDMENT 2026-07-21 (disclosed — instrument-range, and a magnitude finding seen)
+
+First run (prereg `68aaccc`) showed the 2-arm reduction is FAR more sample-efficient than the
+full governor: reduced `Δ*(1500)=0.0140` vs full `0.0567` (~4× smaller), and reduced
+`Δ*(12000)` fell below the 0.005 grid floor → `NaN` → `INSTRUMENT_LIMITED`. Disclosed: this
+already indicates the two dead arms MATTER (suppressing them in the 4-arm softmax dilutes the
+b-vs-r mass and enlarges `Δ*`), so the budget MAGNITUDE is not a pure 2-arm effect; the noise
+ratio (0.357) did reproduce `< 1`. Per `PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY`, extend the
+grid downward with finer low-`Δ` resolution to `Δ ∈ {…,0.02,0.015,0.01,0.008,0.005,0.003,
+0.001}` so the reduced exponent is measurable. Thresholds unchanged; the magnitude mismatch is
+reported regardless of the exponent outcome.
+
 ## Scope / prohibited
 
 Tier `SYNTHETIC-PARAMETRIC`. A mechanistic explanation of the governor's collapse scaling,
