@@ -317,6 +317,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-RIGOR1-certificate
 
+  - hypothesis_id: H-RIGOR2
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "A SUPPORTED certificate positive fails under family-wise multiplicity correction."
+    H1: "All certificate positives survive Bonferroni + Holm on top of the proof-complete bound (family-wise FPR<=0.05)."
+    estimand: "G_lo_corrected of the certificate positives at Bonferroni/Holm-adjusted delta"
+    experimental_unit: "claim"
+    decision_rule: "reject H0 iff all survive Bonferroni-family AND Holm. RESULT L4 +0.053/+0.029, AC1 +0.619, all survive incl all-29 -> SUPPORTED (WP8_FWER_CONTROLLED)."
+    preregistration: experiments/wp8_family_wise_error/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR2-fwer
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
