@@ -1,0 +1,77 @@
+{
+  "experiment": "wp3_plasticity_v3_governor",
+  "verdict": "L4A_SUPPORTED",
+  "tier": "SYNTHETIC, given-context, wide-margin (reward-only learned governor)",
+  "train_seeds": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "eval_seeds": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "controller_seeds": 8,
+  "episodes": 4000,
+  "lambda": 1.0,
+  "recovery_threshold": 0.8,
+  "null_recovery_max": 0.1,
+  "real": {
+    "oracle": 0.7186813354492188,
+    "best_fixed": 0.52777099609375,
+    "best_fixed_arm": "head",
+    "random": 0.25676727294921875,
+    "learned_per_seed": [
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188,
+      0.7186813354492188
+    ],
+    "worst_learned": 0.7186813354492188,
+    "worst_recovery": 1.0,
+    "learned_beats_fixed_worst": true,
+    "random_below_fixed": true
+  },
+  "null_falsifier": {
+    "oracle": 0.937469482421875,
+    "best_fixed": 0.937469482421875,
+    "best_fixed_arm": "head",
+    "random": 0.5207939147949219,
+    "learned_per_seed": [
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875,
+      0.937469482421875
+    ],
+    "worst_learned": 0.937469482421875,
+    "worst_recovery": 0.0,
+    "learned_beats_fixed_worst": false,
+    "random_below_fixed": true
+  },
+  "prohibited_extrapolations": [
+    "inferred-context or surface-independent routing",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "real-workload generalization",
+    "independent replication"
+  ]
+}
