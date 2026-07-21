@@ -305,6 +305,18 @@ hypotheses:
     status: NOT_SUPPORTED
     claim_id: CWC-RD1-real-lm-boundary
 
+  - hypothesis_id: H-RIGOR1
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The corrected certificate bound is invalid (FPR>delta) or a positive fails to survive it."
+    H1: "The corrected proof-complete bound holds FPR<=delta and every positive survives it."
+    estimand: "corrected-bound FPR on null families + G_lo_corrected of the certificate positives"
+    experimental_unit: "null family / claim"
+    decision_rule: "reject H0 iff corrected FPR<=delta on all nulls AND all positives G_lo_corrected>0. RESULT FPR=0.000, L4 0.060>0, AC1 0.620>0 -> SUPPORTED (WP7_GAP_CLOSED_POSITIVES_ROBUST)."
+    preregistration: experiments/wp7_certificate_hardening/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR1-certificate
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
