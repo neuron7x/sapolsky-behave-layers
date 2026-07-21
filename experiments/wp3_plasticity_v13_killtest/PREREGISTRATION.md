@@ -21,6 +21,19 @@ head, embed}), λ=1:
 Certificate `G_lo` via `identifiability_inference` (δ=0.05); governor = reward-only REINFORCE,
 train seeds 5–12 / eval 13–20, worst of 8.
 
+## AMENDMENT 2026-07-21 (disclosed — a mis-specified null, not a falsification)
+
+The first run (prereg above) flagged `LINE_FALSIFIED`, but the cause was a **broken null**, not a
+real result: the `arm_shuffle` derangement `[1,0,2,3]` merely moved context 1's best arm to a
+different index that was still distinct from context 0's best — so the context×arm interaction was
+**preserved** and the gap correctly persisted (`G_lo=0.111`). That is not a valid
+interaction-destroying null. The two canonical nulls (`additive`, `collapsed`) both vanished
+correctly (`G_lo=−0.053, −0.080`, recovery 0), so the line survives its valid kill-conditions.
+Per `PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY`, replace `arm_shuffle` with **`aligned_best`**: a
+data-dependent permutation that moves context 1's argmax onto context 0's argmax index, so a
+single fixed arm becomes optimal for both contexts (genuinely destroying context-conditioning).
+Thresholds unchanged.
+
 ## Decision rule (FROZEN)
 
 - **L4K_LINE_SURVIVES** iff the REAL control shows the gap (`G_lo>0`, recovery≥0.8) AND **all

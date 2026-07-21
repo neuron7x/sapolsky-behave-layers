@@ -52,9 +52,15 @@ def _mutate(util: dict[int, list[list[float]]], kind: str) -> dict[int, list[lis
             out[s] = [[row[t] + col[a] - grand for a in range(n_a)] for t in range(n_t)]
         elif kind == "collapsed":
             out[s] = [m[0][:], m[0][:]]
-        elif kind == "arm_shuffle":
-            perm = [1, 0, 2, 3]                       # fixed derangement of context 1's arms
-            out[s] = [m[0][:], [m[1][perm[a]] for a in range(len(GROUPS))]]
+        elif kind == "aligned_best":
+            # move context 1's best arm onto context 0's best-arm index, so ONE fixed arm is
+            # optimal for both contexts -> context-conditioning genuinely destroyed.
+            n_a = len(GROUPS)
+            i0 = max(range(n_a), key=lambda a: m[0][a])   # context 0 argmax
+            i1 = max(range(n_a), key=lambda a: m[1][a])   # context 1 argmax
+            row1 = m[1][:]
+            row1[i0], row1[i1] = row1[i1], row1[i0]        # swap so context 1's max lands at i0
+            out[s] = [m[0][:], row1]
     return out
 
 
@@ -127,7 +133,7 @@ def _governor_recovery(util: dict[int, list[list[float]]]) -> float:
 def analyze() -> dict[str, Any]:
     util = _per_seed_utils()
     conditions = {}
-    for kind in ("real", "additive", "collapsed", "arm_shuffle"):
+    for kind in ("real", "additive", "collapsed", "aligned_best"):
         u = _mutate(util, kind)
         glo = _certificate(u)
         rec = _governor_recovery(u)
@@ -136,7 +142,7 @@ def analyze() -> dict[str, Any]:
     real = conditions["real"]
     real_ok = real["gap_lower_bound"] > 0.0 and real["governor_recovery"] >= 0.8
     nulls_vanish = all(conditions[k]["gap_lower_bound"] <= 0.0 and conditions[k]["governor_recovery"] <= 0.10
-                       for k in ("additive", "collapsed", "arm_shuffle"))
+                       for k in ("additive", "collapsed", "aligned_best"))
     verdict = "L4K_LINE_SURVIVES" if (real_ok and nulls_vanish) else "L4K_LINE_FALSIFIED"
     return {
         "experiment": "wp3_plasticity_v13_killtest",
