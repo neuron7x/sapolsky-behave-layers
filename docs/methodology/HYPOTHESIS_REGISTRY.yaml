@@ -400,3 +400,15 @@ hypotheses:
     preregistration: experiments/wp9_independence/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR5-independence
+
+  - hypothesis_id: H-RIGOR6
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "A certificate positive's bootstrap 95% CI includes zero."
+    H1: "Both positives' bootstrap 95% CI lower bounds are > 0 and n_seeds >= n*."
+    estimand: "seed-bootstrap 95% CI of the oracle gap + sample complexity"
+    experimental_unit: "claim"
+    decision_rule: "reject H0 iff both CI lower bounds >0. RESULT L4 [0.191,0.191], AC1 [0.623,0.625] -> SUPPORTED."
+    preregistration: experiments/wp13_effect_size/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR6-effect-size
