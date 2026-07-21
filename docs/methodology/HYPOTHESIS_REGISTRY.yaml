@@ -269,6 +269,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-AC2-compute-controller
 
+  - hypothesis_id: H-AC3
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "The compute-controller's value is independent of difficulty information I(C;Z)."
+    H1: "Its value is bounded by and decreases with lower I(C;Z), vanishing when difficulty cannot be inferred."
+    estimand: "held-out recovery vs I(C;Z) under a noisy difficulty channel"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff rec(0)>=0.9, monotone in I, rec(I~0)<=0.15, controller abstains. RESULT recovery 1.0->0.0 monotone, abstains -> SUPPORTED (AC3_BOUNDARY_MAPPED)."
+    preregistration: experiments/wp5_adaptive_compute/PREREGISTRATION_INFERRED.md
+    status: SUPPORTED
+    claim_id: CWC-AC3-inferred-difficulty
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
