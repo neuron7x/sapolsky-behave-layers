@@ -161,6 +161,18 @@ hypotheses:
     status: NOT_SUPPORTED
     claim_id: CWC-L4d-budget-scaling
 
+  - hypothesis_id: H-L4e
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "A 2-arm ablation does not reproduce the full governor's collapse-margin budget exponent."
+    H1: "The collapse is a pure 2-arm phenomenon: the 2-arm ablation reproduces the exponent (within 0.15) and the noise sign."
+    estimand: "2-arm reduced budget exponent and noise ratio vs the full 4-arm governor"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff |reduced_exponent - (-0.654)| <= 0.15 AND reduced noise ratio < 1. RESULT: exponent -1.117 (mismatch 0.46), noise 0.364<1. FAIL to reject H0; H1 NOT_SUPPORTED (2-arm is drift-limited -1.1; dead-arm diffusion gives the full -0.65). Noise-as-exploration IS 2-arm."
+    preregistration: experiments/wp3_plasticity_v7_mechanism/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-L4e-mechanism
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
