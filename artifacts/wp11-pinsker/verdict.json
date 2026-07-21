@@ -1,0 +1,32 @@
+{
+  "experiment": "wp11_pinsker",
+  "verdict": "PINSKER_DICHOTOMY_CERTIFIED",
+  "tier": "META \u2014 Pinsker small-rate dichotomy certified over a random sample (de-curated)",
+  "regular": {
+    "n": 60,
+    "mean": 0.948118452757013,
+    "sd": 0.11034873104082181,
+    "frac_in_band": 0.85,
+    "band": [
+      0.85,
+      1.15
+    ]
+  },
+  "critical": {
+    "n": 60,
+    "mean": 0.5295578197138158,
+    "sd": 0.019932335673483945,
+    "frac_in_band": 1.0,
+    "band": [
+      0.4,
+      0.65
+    ]
+  },
+  "regular_regime_ok": true,
+  "critical_regime_ok": true,
+  "note": "Regular random instances -> exponent ~1 (Theta(R)); constructed critical -> ~0.5 (Theta(sqrt R)). Addresses the 'curated numerics' critique with a random sample. Analytic note: for regular problems beta(0+)=sigma<inf follows from concavity + a strictly positive prior-optimal gap; the finiteness on the measure-zero critical manifold is where the sqrt law takes over. Still a numerical certification, not a closed proof of the general dichotomy.",
+  "prohibited_extrapolations": [
+    "a closed proof of the general dichotomy",
+    "independent replication"
+  ]
+}
