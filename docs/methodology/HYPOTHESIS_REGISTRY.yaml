@@ -137,6 +137,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4b-inferred-context
 
+  - hypothesis_id: H-L4c
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The governor's credit-assignment collapse margin Delta* is independent of reward noise sigma."
+    H1: "The governor's collapse margin Delta* scales linearly with sigma (the (sigma/Delta)^2 sample-complexity law)."
+    estimand: "collapse margin Delta* as a function of reward noise sigma"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff Delta*(2sigma)/Delta*(sigma) in [1.4,2.8]. RESULT ratio=0.91 -> FAIL to reject H0; H1 FALSIFIED (L4C_SCALING_VIOLATED). Collapse itself is real."
+    preregistration: experiments/wp3_plasticity_v5_thinmargin/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-L4c-credit-collapse
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
