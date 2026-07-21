@@ -35,12 +35,12 @@ Family-wise FPR ≤ 0.05 worst-case. `artifacts/wp8-family-wise-error/`.
 `b+2d` bound (both deviation terms union-bounded), Monte-Carlo FPR `≤ δ`, positives survive.
 `docs/IDENTIFIABILITY_INFERENCE.md` (gap-closed note); `artifacts/wp7-certificate-hardening/`.
 
-## T4 — "The certificate assumes per-context independence." (ADDRESSED — see P4)
+## T4 — "The certificate assumes per-context independence." (ADDRESSED)
 
 **Attack.** The `sd/√|C|` deviation proxy assumes independence across contexts, never tested.
-**Response.** Robustness Monte-Carlo under correlated per-context noise
-(`artifacts/wp9-independence-robustness/`): the corrected bound's FPR is reported under violation;
-independence is shown [load-bearing / not] with the measured coverage.
+**Response.** WP9 Monte-Carlos the corrected bound's coverage under cross-context correlated noise:
+FPR = 0.000 ≤ δ up to `ρ=0.9` (all shapes) — the independence assumption is **not load-bearing** for
+validity (the `b`-slack over-covers even under strong correlation). `artifacts/wp9-independence/`.
 
 ## T5 — "Some theorems are numerical, not proved." (ADDRESSED / CONCEDED, labeled)
 
@@ -63,10 +63,11 @@ A RI-trained controller would close it; we did not claim it.
 ## T7 — "Preregistration could be retrospective (HARKing)." (ADDRESSED / CONCEDED per case)
 
 **Attack.** Preregs may be committed with results.
-**Response.** A machine gate verifies every prereg is a **strict Git ancestor** of its results
-(`artifacts/wp12-prereg-integrity/`); the honest exceptions (WP4, R3C) are labeled
-`RETROSPECTIVE_PROTOCOL` in `DEBT_REGISTER`, not hidden. The two-mechanism arcs were all
-preregistered-before-run.
+**Response.** WP12 machine-verifies every prereg is a **strict Git ancestor** of its results: 14
+experiments are `STRICT_ANCESTOR` (the two-mechanism arcs + WP6/7/8). Same-commit is allowed only if
+**disclosed** — WP4 (DEBT_REGISTER) and the four rigor meta re-analyses (wp9/10/11/13), which this
+run committed prereg+results together and which the gate itself caught and we disclosed (allowlist),
+not hid. 0 undisclosed violations. `artifacts/wp12-prereg-integrity/`.
 
 ## T8 — "Same author, no independent replication." (CONCEDED — not self-certifiable)
 
@@ -80,7 +81,7 @@ We provide a clean-room reproduction protocol and a checksummed evidence capsule
 **Attack.** Results may be seed/hardware artifacts; models are tiny; the real corpus is 66 KB.
 **Response.** Every analysis is deterministic given committed raw seeds; all utilities are frozen
 and checksummed; verdicts reproduce under `verify`. Model/corpus size is a scope limit
-(stated), and the effect sizes are large relative to seed variance (WP5-P5 CIs). We claim nothing
+(stated), and the effect sizes are large relative to seed variance (the wp13-effect-size CIs). We claim nothing
 at scale — that is L7.
 
 ## T10 — "No architectural advantage: this doesn't beat MoD/MoE." (CONCEDED — the whole point)
