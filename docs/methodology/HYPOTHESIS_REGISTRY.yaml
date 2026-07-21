@@ -412,3 +412,15 @@ hypotheses:
     preregistration: experiments/wp13_effect_size/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR6-effect-size
+
+  - hypothesis_id: H-RIGOR7
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "Some experiment has an undisclosed prereg-after-results (HARKing) ordering."
+    H1: "Every prereg is strict-ancestor of its results, except disclosed retrospective cases."
+    estimand: "git-ancestry classification of prereg vs results commit per experiment"
+    experimental_unit: "experiment"
+    decision_rule: "reject H0 iff 0 undisclosed same-commit or result-before-prereg. RESULT 14 strict-ancestor, 4 disclosed, 0 violations -> SUPPORTED."
+    preregistration: experiments/wp12_prereg_integrity/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR7-prereg-integrity
