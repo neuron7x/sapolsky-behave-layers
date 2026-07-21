@@ -1,0 +1,40 @@
+{
+  "experiment": "wp10_coherence",
+  "verdict": "COHERENCE_DECIRCULARIZED_0_CONTRADICTIONS",
+  "tier": "META \u2014 de-circularized coherence: recorded status vs certificate sign from real artifacts",
+  "delta": 0.05,
+  "checks": [
+    {
+      "claim": "CWC-L4-plasticity",
+      "status": "SUPPORTED_NARROWED",
+      "status_positive": true,
+      "g_lo_from_real_artifact": 0.11076198884747979,
+      "cert_positive": true,
+      "expected_sign": "positive",
+      "agrees": true
+    },
+    {
+      "claim": "CWC-AC1-compute-identifiability",
+      "status": "SUPPORTED",
+      "status_positive": true,
+      "g_lo_from_real_artifact": 0.621284687323652,
+      "cert_positive": true,
+      "expected_sign": "positive",
+      "agrees": true
+    },
+    {
+      "claim": "CWC-RD1-real-lm-boundary",
+      "status": "NOT_SUPPORTED",
+      "status_positive": false,
+      "g_lo_from_real_artifact": -0.08951418091007304,
+      "cert_positive": false,
+      "expected_sign": "negative",
+      "agrees": true
+    }
+  ],
+  "contradictions": 0,
+  "note": "Non-circular: every G_lo is recomputed from committed raw seeds (not a hand-encoded matrix). Both directions: SUPPORTED<->G_lo>0 and NOT_SUPPORTED<->G_lo<=0 (RD1 real-LM).",
+  "prohibited_extrapolations": [
+    "independent replication"
+  ]
+}
