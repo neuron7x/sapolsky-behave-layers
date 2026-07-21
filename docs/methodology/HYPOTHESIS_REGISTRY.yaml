@@ -245,6 +245,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4k-falsification-boundary
 
+  - hypothesis_id: H-AC1
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "Adaptive-compute allocation has no identifiable value (a fixed compute matches the oracle)."
+    H1: "An oracle compute-budget allocation beats any fixed compute (identifiable), transferring the framework off plasticity."
+    estimand: "certificate G_lo on U_lambda[difficulty][compute] over trained seeds"
+    experimental_unit: "model seed"
+    decision_rule: "reject H0 iff diagonal holds, G_lo>0 at every lambda, and monotone+additive nulls vanish at lambda=0. RESULT diagonal 0.998, G_lo 0.621/0.455/0.289, nulls vanish -> SUPPORTED (AC1_IDENTIFIABLE)."
+    preregistration: experiments/wp5_adaptive_compute/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-AC1-compute-identifiability
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
