@@ -1,0 +1,22 @@
+{
+  "experiment": "wp14_real_lm_contextual",
+  "verdict": "WP14_REAL_LM_NOT_IDENTIFIABLE_ROBUST",
+  "tier": "REAL-DATA \u2014 robustness of the WP6 boundary to a contextual (bigram) difficulty signal",
+  "n_seeds": 5,
+  "difficulty_signal": "bigram_surprisal",
+  "lambdas": [
+    0.0,
+    0.3
+  ],
+  "real_lm_g_lo": {
+    "0.0": -0.18238412326693576,
+    "0.3": -0.18238412326693576
+  },
+  "positive_control_synthetic_ac1": 0.621284687323652,
+  "real_identifiable": false,
+  "note": "With a stronger contextual (bigram) difficulty signal the real-LM per-token compute allocation is STILL not identifiable (G_lo<=0), while the synthetic positive control >0. The WP6 negative is robust to the difficulty definition -- hard tokens are hard because inherently unpredictable, not because they need more compute (more compute even hurts them).",
+  "prohibited_extrapolations": [
+    "adaptive compute never helps real LMs",
+    "L7 compute-equivalent Pareto"
+  ]
+}
