@@ -221,6 +221,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4i-rate-bridge
 
+  - hypothesis_id: H-L4j
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "Some L4 claim's registry status disagrees with its artifact verdict, or evidence is orphaned."
+    H1: "Every L4 claim's status matches its artifact verdict and no evidence is orphaned."
+    estimand: "polarity mismatches and orphan bundles across the L4 sub-line"
+    experimental_unit: "claim"
+    decision_rule: "reject H0 iff 0 mismatches AND 0 orphans (auditor self-exempt). RESULT 9 claims, 0/0 -> SUPPORTED (L4J_CONSISTENT)."
+    preregistration: experiments/wp3_plasticity_v12_consistency/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4j-line-consistency
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
