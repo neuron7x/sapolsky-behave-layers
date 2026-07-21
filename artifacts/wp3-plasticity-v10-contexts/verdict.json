@@ -1,0 +1,51 @@
+{
+  "experiment": "wp3_plasticity_v10_contexts",
+  "verdict": "L4H_GENERALIZES",
+  "tier": "SYNTHETIC-PARAMETRIC \u2014 generalization of identifiability+governor to more contexts",
+  "contexts": [
+    2,
+    3,
+    4,
+    6
+  ],
+  "delta_margin": 0.2,
+  "sigma": 0.1,
+  "per_context_episodes": 3000,
+  "per_context_count": {
+    "2": {
+      "gap_hat": 0.09999999999999998,
+      "gap_lower_bound": 0.0845097219742234,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "ok": true
+    },
+    "3": {
+      "gap_hat": 0.4,
+      "gap_lower_bound": 0.3847474782061656,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "ok": true
+    },
+    "4": {
+      "gap_hat": 0.55,
+      "gap_lower_bound": 0.5348839463097199,
+      "identifiable": true,
+      "worst_governor_recovery": 1.0,
+      "ok": true
+    },
+    "6": {
+      "gap_hat": 0.7,
+      "gap_lower_bound": 0.6849904814151009,
+      "identifiable": true,
+      "worst_governor_recovery": 0.9523809523809526,
+      "ok": true
+    }
+  },
+  "generalizes": true,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
