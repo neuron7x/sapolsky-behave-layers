@@ -1,0 +1,33 @@
+{
+  "experiment": "wp6_real_lm",
+  "verdict": "WP6_REAL_LM_NOT_IDENTIFIABLE",
+  "tier": "REAL-DATA (byte-level LM on frozen real prose) \u2014 boundary of the identifiability framework",
+  "n_seeds": 5,
+  "lambdas": [
+    0.0,
+    0.3
+  ],
+  "delta": 0.05,
+  "real_lm": {
+    "0.0": {
+      "gap_lower_bound": -0.08951418091007304,
+      "gap_hat": 0.0
+    },
+    "0.3": {
+      "gap_lower_bound": -0.08951418091007304,
+      "gap_hat": 0.0
+    }
+  },
+  "positive_control_synthetic_ac1": {
+    "gap_lower_bound": 0.621284687323652,
+    "gap_hat": 0.6241455155735214
+  },
+  "real_identifiable": false,
+  "positive_control_detects_gap": true,
+  "note": "On real LM per-token difficulty, more compute helps all difficulty buckets roughly uniformly (no sharp context x compute interaction), so oracle allocation ~ best fixed compute. The clean synthetic identifiability does NOT transfer to real data.",
+  "prohibited_extrapolations": [
+    "claiming adaptive compute never helps real LMs (only tested byte-level, tiny model, unigram-surprisal difficulty)",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+  ]
+}
