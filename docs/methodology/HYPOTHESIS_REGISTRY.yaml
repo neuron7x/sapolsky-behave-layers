@@ -293,6 +293,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-AC4-rate-bridge
 
+  - hypothesis_id: H-RD1
+    research_question_id: RQ-real-data
+    type: confirmatory
+    H0: "The clean synthetic adaptive-compute identifiability does not transfer to real LM per-token difficulty."
+    H1: "It transfers: an oracle per-difficulty compute allocation is identifiable (G_lo>0) on real data."
+    estimand: "certificate G_lo on real-LM per-difficulty compute utility, with a synthetic positive control"
+    experimental_unit: "model seed"
+    decision_rule: "reject H0 iff real G_lo>0 at some lambda AND positive control>0. RESULT real G_lo=-0.090 all lambda, positive control +0.621 -> FAIL to reject H0 (WP6_REAL_LM_NOT_IDENTIFIABLE). The interaction is a synthetic-benchmark property."
+    preregistration: experiments/wp6_real_lm/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD1-real-lm-boundary
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
