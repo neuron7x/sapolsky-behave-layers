@@ -257,6 +257,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-AC1-compute-identifiability
 
+  - hypothesis_id: H-AC2
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "A reward-only controller cannot recover the oracle compute-allocation out-of-sample."
+    H1: "A reward-only controller recovers K=d out-of-sample (>=0.8 recovery)."
+    estimand: "held-out recovery of a REINFORCE pi(K|d) controller"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff worst-of-8 recovery>=0.8 AND null<=0.1 AND random<best_fixed. RESULT recovery 1.000, null 0.000 -> SUPPORTED (AC2_CONTROLLER_RECOVERS)."
+    preregistration: experiments/wp5_adaptive_compute/PREREGISTRATION_CONTROLLER.md
+    status: SUPPORTED
+    claim_id: CWC-AC2-compute-controller
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
