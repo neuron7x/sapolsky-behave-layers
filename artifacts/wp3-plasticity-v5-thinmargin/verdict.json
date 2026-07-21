@@ -1,0 +1,75 @@
+{
+  "experiment": "wp3_plasticity_v5_thinmargin",
+  "verdict": "L4C_SCALING_VIOLATED",
+  "tier": "SYNTHETIC-PARAMETRIC \u2014 governor credit-assignment limit",
+  "n_episodes": 3000,
+  "controller_seeds": 8,
+  "sigma0": 0.1,
+  "deltas": [
+    0.4,
+    0.2,
+    0.1,
+    0.05,
+    0.02
+  ],
+  "curves": {
+    "sigma_0.10": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.1,
+        "recovery": 0.8750000000000008
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.6250000000000006
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.37500000000000033
+      }
+    ],
+    "sigma_0.20": [
+      {
+        "delta": 0.4,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.2,
+        "recovery": 0.9999999999999999
+      },
+      {
+        "delta": 0.1,
+        "recovery": 0.8750000000000008
+      },
+      {
+        "delta": 0.05,
+        "recovery": 0.8750000000000008
+      },
+      {
+        "delta": 0.02,
+        "recovery": 0.2500000000000002
+      }
+    ]
+  },
+  "delta_star": {
+    "sigma_0.10": 0.03499999999999995,
+    "sigma_0.20": 0.03199999999999998
+  },
+  "scaling_ratio_2sigma_over_sigma": 0.914285714285715,
+  "predicted_scaling": 2.0,
+  "both_noise_levels_collapse": false,
+  "sqrt_law_scaling_holds": false,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
