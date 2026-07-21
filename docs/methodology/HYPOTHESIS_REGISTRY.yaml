@@ -149,6 +149,18 @@ hypotheses:
     status: NOT_SUPPORTED
     claim_id: CWC-L4c-credit-collapse
 
+  - hypothesis_id: H-L4d
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The governor's collapse margin does not follow the sample-complexity budget law Delta* ~ 1/sqrt(N)."
+    H1: "Delta*(N) ~ 1/sqrt(N) (ratio Delta*(12000)/Delta*(1500) in [0.25,0.55])."
+    estimand: "collapse margin Delta* as a function of episode budget N (and re-test vs noise)"
+    experimental_unit: "controller seed"
+    decision_rule: "reject H0 iff Delta*(12000)/Delta*(1500) in [0.25,0.55]. RESULT 0.247 -> just outside (steeper, ~N^-0.68); noise axis anti-scales (ratio 0.5). FAIL to reject H0; H1 NOT_SUPPORTED on either axis."
+    preregistration: experiments/wp3_plasticity_v6_scaling/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-L4d-budget-scaling
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
