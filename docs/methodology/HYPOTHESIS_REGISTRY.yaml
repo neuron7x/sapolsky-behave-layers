@@ -376,3 +376,15 @@ hypotheses:
     preregistration: experiments/wp11_pinsker/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR3-pinsker
+
+  - hypothesis_id: H-RIGOR4
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "A recorded status disagrees with its certificate sign recomputed from real artifacts."
+    H1: "Every status agrees with its real-artifact certificate sign (both directions)."
+    estimand: "status_positive == (G_lo_from_real_artifact > 0) across certificate-computable claims"
+    experimental_unit: "claim"
+    decision_rule: "reject H0 iff 0 contradictions. RESULT 0 (L4/AC1 positive, RD1 negative) -> SUPPORTED."
+    preregistration: experiments/wp10_coherence/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR4-coherence
