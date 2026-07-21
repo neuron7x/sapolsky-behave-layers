@@ -120,8 +120,8 @@ hypotheses:
     H1: "Under a cost budget, a context-conditioned allocation beats every fixed allocation (oracle gap > 0)."
     estimand: "oracle allocation gap under cost budget (lambda=1)"
     experimental_unit: "model seed"
-    decision_rule: "reject H0 iff debiased G_lo > 0 at delta=0.05 on held-out seeds with lambda frozen a priori; CONFIRMED (G_lo=0.111, 16/16 seeds). Scope: synthetic + exact oracle, no learned governor."
-    preregistration: experiments/wp3_plasticity_v2_confirmatory/PREREGISTRATION.md
+    decision_rule: "reject H0 iff debiased G_lo > 0 at delta=0.05 on held-out seeds with lambda frozen a priori; CONFIRMED (G_lo=0.111, 16/16 seeds). L4a: a reward-only learned governor recovers 100% of the gap on held-out (8/8 controller seeds, NULL falsifier 0). Scope: synthetic, given-context, wide-margin; no L7."
+    preregistration: experiments/wp3_plasticity_v2_confirmatory/PREREGISTRATION.md ; experiments/wp3_plasticity_v3_governor/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-L4-plasticity
 
