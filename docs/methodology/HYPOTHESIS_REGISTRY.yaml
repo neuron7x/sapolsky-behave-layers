@@ -209,6 +209,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4h-context-scaling
 
+  - hypothesis_id: H-L4i
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "The learned governor's realised value exceeds V*(I) or is far below it."
+    H1: "V_gov <= V*(I) (ceiling) and near-saturates it (>=0.90)."
+    estimand: "governor realised value vs the rate function V*(I) across information levels"
+    experimental_unit: "information level (flip probability)"
+    decision_rule: "reject H0 iff ceiling holds at every level AND min saturation >=0.90. RESULT ceiling holds, min saturation 0.924 -> SUPPORTED (governor realises V*(R))."
+    preregistration: experiments/wp3_plasticity_v11_ratebridge/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4i-rate-bridge
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
