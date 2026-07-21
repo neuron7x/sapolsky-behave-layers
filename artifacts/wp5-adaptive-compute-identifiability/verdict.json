@@ -1,0 +1,65 @@
+{
+  "experiment": "wp5_adaptive_compute",
+  "verdict": "AC1_IDENTIFIABLE",
+  "tier": "SYNTHETIC \u2014 second real mechanism (adaptive compute), identifiability",
+  "n_seeds": 8,
+  "lambdas": [
+    0.0,
+    0.5,
+    1.0
+  ],
+  "delta": 0.05,
+  "diagonal_ok": true,
+  "worst_diagonal": 0.9979655146598816,
+  "worst_offdiagonal": 0.0677083358168602,
+  "real": {
+    "0.0": {
+      "gap_lower_bound": 0.621284687323652,
+      "gap_hat": 0.6241455155735214
+    },
+    "0.5": {
+      "gap_lower_bound": 0.455313147719485,
+      "gap_hat": 0.4581739759693544
+    },
+    "1.0": {
+      "gap_lower_bound": 0.28864648105281826,
+      "gap_hat": 0.29150730930268764
+    }
+  },
+  "monotone_null": {
+    "0.0": {
+      "gap_lower_bound": -0.0024454091739331413,
+      "gap_hat": 0.0
+    },
+    "0.5": {
+      "gap_lower_bound": 0.16422125749273353,
+      "gap_hat": 0.16666666666666669
+    },
+    "1.0": {
+      "gap_lower_bound": 0.2890619001287545,
+      "gap_hat": 0.29150730930268764
+    }
+  },
+  "additive_null": {
+    "0.0": {
+      "gap_lower_bound": -0.002068591374665166,
+      "gap_hat": 0.0
+    },
+    "0.5": {
+      "gap_lower_bound": -0.002068591374665166,
+      "gap_hat": 0.0
+    },
+    "1.0": {
+      "gap_lower_bound": -0.002068591374665166,
+      "gap_hat": 0.0
+    }
+  },
+  "real_identifiable_all_lambda": true,
+  "nulls_vanish": true,
+  "prohibited_extrapolations": [
+    "learned compute-controller (follow-up)",
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+  ]
+}
