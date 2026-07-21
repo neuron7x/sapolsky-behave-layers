@@ -388,3 +388,15 @@ hypotheses:
     preregistration: experiments/wp10_coherence/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR4-coherence
+
+  - hypothesis_id: H-RIGOR5
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The corrected bound's coverage breaks (FPR>delta) under cross-context correlation."
+    H1: "Coverage holds (FPR<=delta) up to rho=0.9; independence is not load-bearing."
+    estimand: "corrected-bound FPR on a tied null vs correlation rho"
+    experimental_unit: "shape x rho cell"
+    decision_rule: "reject H0 iff FPR<=delta at every rho up to 0.9. RESULT max FPR 0.000 -> SUPPORTED."
+    preregistration: experiments/wp9_independence/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR5-independence
