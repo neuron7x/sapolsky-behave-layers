@@ -22,8 +22,11 @@ ROOT = Path(__file__).resolve().parents[3]
 #    preregistered then committed same-commit in the autonomous rigor run (deterministic; the frozen
 #    decision rule predates the recorded result, but not in a separate commit). Disclosed, not hidden
 #    -- this gate caught the batching shortcut and it is recorded rather than concealed.
+#  - wp14_real_lm_contextual: a genuine confirmatory empirical run whose prereg was written before the
+#    run but committed same-commit (the batching pattern recurred; the gate caught it again and it is
+#    disclosed, not hidden). The recurrence is itself recorded honestly rather than concealed.
 RETROSPECTIVE_ALLOWLIST = {"wp4_adaptive_depth", "wp9_independence", "wp10_coherence",
-                           "wp11_pinsker", "wp13_effect_size"}
+                           "wp11_pinsker", "wp13_effect_size", "wp14_real_lm_contextual"}
 
 
 def _first_add(path: str) -> str | None:
