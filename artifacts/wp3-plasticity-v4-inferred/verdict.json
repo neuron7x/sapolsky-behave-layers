@@ -1,0 +1,97 @@
+{
+  "experiment": "wp3_plasticity_v4_inferred",
+  "verdict": "L4B_BOUNDARY_MAPPED",
+  "tier": "SYNTHETIC \u2014 route-decision-cost / value-of-information boundary (plasticity analog of L2b)",
+  "train_seeds": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "eval_seeds": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "controller_seeds": 8,
+  "episodes": 6000,
+  "oracle": 0.7186813354492188,
+  "best_fixed": 0.52777099609375,
+  "gap": 0.19091033935546875,
+  "sweep": [
+    {
+      "flip_p": 0.0,
+      "mutual_information_bits": 1.0,
+      "recovery_mean": 1.0,
+      "recovery_worst": 1.0,
+      "recovery_best": 1.0,
+      "predicted_commit_recovery": 1.0,
+      "abstain_fraction": 0.0
+    },
+    {
+      "flip_p": 0.1,
+      "mutual_information_bits": 0.5310044064107188,
+      "recovery_mean": 0.785341485833034,
+      "recovery_worst": 0.7853414858330339,
+      "recovery_best": 0.7853414858330339,
+      "predicted_commit_recovery": 0.7853442608799904,
+      "abstain_fraction": 0.0
+    },
+    {
+      "flip_p": 0.2,
+      "mutual_information_bits": 0.2780719051126377,
+      "recovery_mean": 0.5706829716660676,
+      "recovery_worst": 0.5706829716660676,
+      "recovery_best": 0.5706829716660676,
+      "predicted_commit_recovery": 0.5706885217599809,
+      "abstain_fraction": 0.0
+    },
+    {
+      "flip_p": 0.3,
+      "mutual_information_bits": 0.1187091007693073,
+      "recovery_mean": 0.35602445749910044,
+      "recovery_worst": 0.3560244574991004,
+      "recovery_best": 0.3560244574991004,
+      "predicted_commit_recovery": 0.3560327826399713,
+      "abstain_fraction": 0.0
+    },
+    {
+      "flip_p": 0.4,
+      "mutual_information_bits": 0.02904940554533142,
+      "recovery_mean": 0.14136594333213418,
+      "recovery_worst": 0.1413659433321342,
+      "recovery_best": 0.1413659433321342,
+      "predicted_commit_recovery": 0.1413770435199616,
+      "abstain_fraction": 0.0
+    },
+    {
+      "flip_p": 0.5,
+      "mutual_information_bits": 0.0,
+      "recovery_mean": -0.01832314270870799,
+      "recovery_worst": -0.1465851416696639,
+      "recovery_best": 0.0,
+      "predicted_commit_recovery": -0.07327869560004796,
+      "abstain_fraction": 1.0
+    }
+  ],
+  "recovery_at_full_info": 1.0,
+  "recovery_at_zero_info": -0.01832314270870799,
+  "monotone_in_information": true,
+  "tracks_grounded_prediction": true,
+  "governor_abstains_at_high_noise": false,
+  "prohibited_extrapolations": [
+    "real-workload routing",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
