@@ -364,3 +364,15 @@ hypotheses:
     preregistration: docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md
     status: NOT_TESTED
     claim_id: CWC-L8-replication
+
+  - hypothesis_id: H-RIGOR3
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The small-rate dichotomy holds only on curated instances."
+    H1: "It holds over a random sample: regular exponent ~1, critical ~0.5."
+    estimand: "small-rate exponent of V*(R) over random regular and constructed critical instances"
+    experimental_unit: "utility instance"
+    decision_rule: "reject H0 iff regular mean in [0.85,1.15] (>=80% in band) AND critical mean in [0.40,0.65] (>=90%). RESULT regular 0.948, critical 0.530 -> SUPPORTED (PINSKER_DICHOTOMY_CERTIFIED)."
+    preregistration: experiments/wp11_pinsker/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR3-pinsker
