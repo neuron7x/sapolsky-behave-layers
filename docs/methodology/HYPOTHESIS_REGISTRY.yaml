@@ -233,6 +233,18 @@ hypotheses:
     status: SUPPORTED
     claim_id: CWC-L4j-line-consistency
 
+  - hypothesis_id: H-L4k
+    research_question_id: RQ-plasticity
+    type: confirmatory
+    H0: "A gap survives an interaction-destroying null (the gap is a structural artifact)."
+    H1: "The gap appears only with a real interaction and vanishes under every interaction-destroying null."
+    estimand: "certificate G_lo and governor recovery on real vs additive/collapsed/aligned-best nulls"
+    experimental_unit: "null condition"
+    decision_rule: "reject H0 iff real shows the gap AND all three nulls vanish (G_lo<=0, recovery<=0.1). RESULT real 0.111/1.0, nulls -0.053/-0.080/-0.080 with recovery 0 -> SUPPORTED (L4K_LINE_SURVIVES). A mis-specified null was fixed via disclosed amendment."
+    preregistration: experiments/wp3_plasticity_v13_killtest/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L4k-falsification-boundary
+
   - hypothesis_id: H-fractal
     research_question_id: RQ-multiscale
     type: confirmatory
