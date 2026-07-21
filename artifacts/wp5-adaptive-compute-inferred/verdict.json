@@ -1,0 +1,56 @@
+{
+  "experiment": "wp5_adaptive_compute_inferred",
+  "verdict": "AC3_BOUNDARY_MAPPED",
+  "tier": "SYNTHETIC \u2014 route-decision-cost / value-of-information boundary on compute",
+  "lambda": 0.5,
+  "oracle": 0.6663954108953476,
+  "best_fixed": 0.20823160869379842,
+  "gap": 0.4581638022015492,
+  "sweep": [
+    {
+      "flip_p": 0.0,
+      "info_bits": 1.584962500721156,
+      "recovery_mean": 1.0,
+      "recovery_worst": 1.0
+    },
+    {
+      "flip_p": 0.1,
+      "info_bits": 1.0159669071318747,
+      "recovery_mean": 0.795392918439056,
+      "recovery_worst": 0.795392918439056
+    },
+    {
+      "flip_p": 0.2,
+      "info_bits": 0.6630344058337937,
+      "recovery_mean": 0.5907858368781126,
+      "recovery_worst": 0.5907858368781126
+    },
+    {
+      "flip_p": 0.35,
+      "info_bits": 0.300894445345665,
+      "recovery_mean": 0.2838752145366968,
+      "recovery_worst": 0.2838752145366968
+    },
+    {
+      "flip_p": 0.5,
+      "info_bits": 0.08496250072115608,
+      "recovery_mean": 0.049231050238966,
+      "recovery_worst": 0.04923105023896599
+    },
+    {
+      "flip_p": 0.667,
+      "info_bits": 0.0,
+      "recovery_mean": 0.0,
+      "recovery_worst": 0.0
+    }
+  ],
+  "recovery_full_info": 1.0,
+  "recovery_zero_info": 0.0,
+  "monotone_in_information": true,
+  "controller_abstains": true,
+  "prohibited_extrapolations": [
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+  ]
+}
