@@ -424,3 +424,15 @@ hypotheses:
     preregistration: experiments/wp12_prereg_integrity/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR7-prereg-integrity
+
+  - hypothesis_id: H-RD2
+    research_question_id: RQ-real-data
+    type: confirmatory
+    H0: "Real-LM identifiability appears under a contextual (bigram) difficulty signal (WP6 was a unigram artifact)."
+    H1: "It stays absent under a stronger signal (the WP6 negative is robust)."
+    estimand: "certificate G_lo on bigram-difficulty compute utility + synthetic positive control"
+    experimental_unit: "model seed"
+    decision_rule: "NOT_SUPPORTED (H0 rejected) iff real G_lo<=0 all lambda AND control>0. RESULT G_lo=-0.182, control +0.621 -> robust negative."
+    preregistration: experiments/wp14_real_lm_contextual/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD2-real-lm-contextual
