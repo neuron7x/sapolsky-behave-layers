@@ -1,0 +1,79 @@
+{
+  "experiment": "wp3_plasticity_v11_ratebridge",
+  "verdict": "L4I_BRIDGE_CONFIRMED",
+  "tier": "SYNTHETIC \u2014 theory<->mechanism bridge (governor realises V*(R))",
+  "utility": [
+    [
+      0.4996795654296875,
+      0.0,
+      0.937469482421875,
+      0.646026611328125
+    ],
+    [
+      0.4998931884765625,
+      -0.727020263671875,
+      0.118072509765625,
+      0.08001708984375
+    ]
+  ],
+  "oracle_gap": 0.19091033935546875,
+  "curve": [
+    {
+      "flip_p": 0.0,
+      "info_bits": 1.0,
+      "v_gov": 0.19091033935546875,
+      "v_star": 0.19091033935546875,
+      "under_ceiling": true,
+      "saturation": 1.0
+    },
+    {
+      "flip_p": 0.1,
+      "info_bits": 0.5310044064107188,
+      "v_gov": 0.14994098052978516,
+      "v_star": 0.15022442604614572,
+      "under_ceiling": true,
+      "saturation": 0.9981131862252981
+    },
+    {
+      "flip_p": 0.2,
+      "info_bits": 0.2780719051126377,
+      "v_gov": 0.10897162170410156,
+      "v_star": 0.10953633884315361,
+      "under_ceiling": true,
+      "saturation": 0.9948444767734963
+    },
+    {
+      "flip_p": 0.3,
+      "info_bits": 0.1187091007693073,
+      "v_gov": 0.06800226287841799,
+      "v_star": 0.0690243812496305,
+      "under_ceiling": true,
+      "saturation": 0.9851919227277681
+    },
+    {
+      "flip_p": 0.4,
+      "info_bits": 0.02904940554533142,
+      "v_gov": 0.027032904052734365,
+      "v_star": 0.029250245555467957,
+      "under_ceiling": true,
+      "saturation": 0.9241940892930696
+    },
+    {
+      "flip_p": 0.5,
+      "info_bits": 0.0,
+      "v_gov": 0.0,
+      "v_star": 0.0,
+      "under_ceiling": true,
+      "saturation": 1.0
+    }
+  ],
+  "ceiling_holds": true,
+  "min_saturation": 0.9241940892930696,
+  "saturation_floor": 0.9,
+  "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+  ]
+}
