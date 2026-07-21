@@ -1,0 +1,66 @@
+{
+  "experiment": "wp5_adaptive_compute_ratebridge",
+  "verdict": "AC4_RATE_BRIDGE_CONFIRMED",
+  "tier": "SYNTHETIC \u2014 theory<->mechanism bridge on the compute mechanism",
+  "oracle_gap": 0.4581638022015492,
+  "high_info_bits_threshold": 1.0,
+  "curve": [
+    {
+      "flip_p": 0.0,
+      "info_bits": 1.584962500721156,
+      "v_gov": 0.4581638022015492,
+      "v_star": 0.4581638022015492,
+      "saturation": 1.0,
+      "under_ceiling": true
+    },
+    {
+      "flip_p": 0.1,
+      "info_bits": 1.0159669071318747,
+      "v_gov": 0.3644202437562246,
+      "v_star": 0.37525373613317126,
+      "saturation": 0.9711302211442819,
+      "under_ceiling": true
+    },
+    {
+      "flip_p": 0.2,
+      "info_bits": 0.6630344058337937,
+      "v_gov": 0.2706766853109003,
+      "v_star": 0.2916875750690189,
+      "saturation": 0.9279678273812416,
+      "under_ceiling": true
+    },
+    {
+      "flip_p": 0.35,
+      "info_bits": 0.300894445345665,
+      "v_gov": 0.1300613476429135,
+      "v_star": 0.17184518620630063,
+      "saturation": 0.7568518531952038,
+      "under_ceiling": true
+    },
+    {
+      "flip_p": 0.5,
+      "info_bits": 0.08496250072115608,
+      "v_gov": 0.02255588516386015,
+      "v_star": 0.06923828062852572,
+      "saturation": 0.32577188455727296,
+      "under_ceiling": true
+    },
+    {
+      "flip_p": 0.667,
+      "info_bits": 0.0,
+      "v_gov": 0.0,
+      "v_star": 0.0,
+      "saturation": 1.0,
+      "under_ceiling": true
+    }
+  ],
+  "ceiling_holds": true,
+  "min_high_info_saturation": 0.9711302211442819,
+  "min_saturation_all": 0.32577188455727296,
+  "note": "committed greedy controller: V* ceiling holds everywhere and is tight at high info; saturation falls at low info (committed != RI soft-routing, gap widens with contexts)",
+  "prohibited_extrapolations": [
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+  ]
+}
