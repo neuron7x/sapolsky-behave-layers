@@ -14,8 +14,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "artifacts/wp3-plasticity-v12-consistency"
 
-POS_TOKENS = ("CONFIRMED", "SUPPORTED", "MAPPED", "GENERALIZES", "ROBUST", "_GO", "GO_")
-NEG_TOKENS = ("VIOLATED", "INCOMPLETE", "NOT_SUPPORTED", "NOT_MAPPED", "NOT_CONFIRMED", "VOID")
+# NEG checked before POS. "INCONSISTENT" must precede the POS "CONSISTENT" substring test.
+POS_TOKENS = ("CONFIRMED", "SUPPORTED", "MAPPED", "GENERALIZES", "ROBUST", "CONSISTENT", "_GO", "GO_")
+NEG_TOKENS = ("VIOLATED", "INCOMPLETE", "NOT_SUPPORTED", "NOT_MAPPED", "NOT_CONFIRMED", "VOID", "INCONSISTENT")
+SELF_CLAIM = "CWC-L4j-line-consistency"   # the auditor does not audit its own verdict (circular)
 
 
 def _verdict_polarity(v: str) -> str:
@@ -50,6 +52,8 @@ def analyze() -> dict[str, Any]:
     checks = []
     mismatches = 0
     for c in l4_claims:
+        if c["claim_id"] == SELF_CLAIM:      # self-audit is circular; skip
+            continue
         vj = _find_verdict(c.get("required_artifacts", []))
         if vj is None:
             checks.append({"claim": c["claim_id"], "status": c["status"], "verdict": None,
@@ -67,8 +71,11 @@ def analyze() -> dict[str, Any]:
     # orphan evidence: any wp3-plasticity-v* bundle with a verdict.json not referenced by a claim
     referenced = {a.rstrip("/") for c in reg["claims"] for a in c.get("required_artifacts", [])}
     orphans = []
+    self_bundle = "artifacts/wp3-plasticity-v12-consistency"   # the auditor itself is exempt
     for d in sorted(glob.glob(str(ROOT / "artifacts/wp3-plasticity-v*"))):
         rel = str(Path(d).relative_to(ROOT))
+        if rel == self_bundle:
+            continue
         if (Path(d) / "verdict.json").is_file() and rel not in referenced:
             orphans.append(rel)
 

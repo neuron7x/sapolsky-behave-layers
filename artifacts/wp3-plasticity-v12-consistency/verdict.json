@@ -1,0 +1,83 @@
+{
+  "experiment": "wp3_plasticity_v12_consistency",
+  "verdict": "L4J_CONSISTENT",
+  "tier": "PROCESS \u2014 governance consistency of the L4 sub-line",
+  "n_l4_claims": 10,
+  "checks": [
+    {
+      "claim": "CWC-L4-plasticity",
+      "status": "SUPPORTED_NARROWED",
+      "status_polarity": "positive",
+      "verdict": "L4A_SUPPORTED",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4b-inferred-context",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4B_BOUNDARY_MAPPED",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4c-credit-collapse",
+      "status": "NOT_SUPPORTED",
+      "status_polarity": "negative",
+      "verdict": "L4C_SCALING_VIOLATED",
+      "verdict_polarity": "negative",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4d-budget-scaling",
+      "status": "NOT_SUPPORTED",
+      "status_polarity": "negative",
+      "verdict": "L4D_BUDGET_SCALING_VIOLATED",
+      "verdict_polarity": "negative",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4e-mechanism",
+      "status": "NOT_SUPPORTED",
+      "status_polarity": "negative",
+      "verdict": "L4E_MECHANISM_INCOMPLETE",
+      "verdict_polarity": "negative",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4f-arm-scaling",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4F_ARM_SCALING_MAPPED",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4g-cost-robust",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4G_ROBUST",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4h-context-scaling",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4H_GENERALIZES",
+      "verdict_polarity": "positive",
+      "match": true
+    },
+    {
+      "claim": "CWC-L4i-rate-bridge",
+      "status": "SUPPORTED",
+      "status_polarity": "positive",
+      "verdict": "L4I_BRIDGE_CONFIRMED",
+      "verdict_polarity": "positive",
+      "match": true
+    }
+  ],
+  "polarity_mismatches": 0,
+  "orphan_evidence": [],
+  "consistent": true
+}
