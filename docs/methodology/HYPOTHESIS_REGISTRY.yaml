@@ -436,3 +436,15 @@ hypotheses:
     preregistration: experiments/wp14_real_lm_contextual/PREREGISTRATION.md
     status: NOT_SUPPORTED
     claim_id: CWC-RD2-real-lm-contextual
+
+  - hypothesis_id: H-L7s
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "Adaptive allocation does not beat fixed compute at matched average compute (no Pareto dominance)."
+    H1: "Adaptive Pareto-dominates every fixed-compute policy at matched compute (synthetic)."
+    estimand: "accuracy-vs-avg-compute frontier: adaptive vs fixed at matched compute"
+    experimental_unit: "policy"
+    decision_rule: "reject H0 iff adaptive advantage at matched compute >0.05 AND dominates. RESULT +0.625 -> SUPPORTED (synthetic). Real-workload L7 stays NOT_TESTED."
+    preregistration: experiments/wp15_compute_pareto/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-L7s-synthetic-pareto
