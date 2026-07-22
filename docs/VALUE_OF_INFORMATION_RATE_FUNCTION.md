@@ -301,3 +301,30 @@ PYTHONPATH=. .venv/bin/python -m pytest -q experiments/common/tests/test_value_o
 * `ROUTABILITY_INFORMATION_BOUND.md` — proves the ceiling; this note says when it binds.
 * `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` — Theorems 3–4 give the envelope; Props 4.1–4.2 drive the critical case.
 * `MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md` — the certificate `Γ` uses the ceiling `V*` sharpens.
+
+## Prior art and provenance (added 2026-07-22)
+
+`V*(R) = max{ V(Z) : I(C;Z) ≤ R }` is described above as "the exact analogue of Shannon's
+rate–distortion function for decisions". That analogy is literal, and the object is not
+new: it is the value frontier of **rational inattention** (Sims, 2003) and of
+**information-theoretic bounded rationality** (Ortega & Braun, 2013; Ortega et al., 2015),
+computed in the same way rate–distortion frontiers are computed (Blahut, 1972; Arimoto,
+1972), over the mutual information of Shannon (1948).
+
+Two consequences are load-bearing for how the results in this repository must be read:
+
+1. **The `I(C;Z) → 0` abstention results (`CWC-L4b-inferred-context`,
+   `CWC-AC3-inferred-difficulty`) are rediscoveries**, not discoveries. They stand as
+   measurements — a reward-only learned governor tracking the theoretical boundary to
+   ±0.001 — and their novelty claim is withdrawn to exactly that.
+2. **The low-information saturation gap (0.326) is structural.** CWC's governors commit
+   greedily; the optimum they are measured against is the soft information-cost optimum
+   of the bounded-rationality literature. `CWC-L4i-rate-bridge` and `CWC-AC4-rate-bridge`
+   are therefore ceiling-respect results, not optimality results.
+
+The genuinely open candidate here is narrower: **where Pinsker's inequality is tight**
+(`Θ(R)` regular vs `Θ(√R)` critical, located at the decision-indifference manifold,
+certified over 60+60 de-curated random instances, `CWC-RIGOR3-pinsker`). No prior
+statement of that dichotomy was located; the search was targeted, not exhaustive, and the
+absence of forward citation chasing is recorded in
+[`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`](publication/RELATED_WORK_AND_NOVELTY_REVIEW.md) §1.

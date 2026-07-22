@@ -17,6 +17,8 @@ jobs:
         run: pipx install uv || pip install uv
       - name: Sync frozen environment
         run: uv sync --frozen
+      - name: Bibliography gate (every citation machine-resolved, argued, claim-attached)
+        run: PYTHONPATH=. .venv/bin/python scripts/verify_bibliography.py
       - name: Documentation status gate (schema, traceability, freshness)
         run: PYTHONPATH=. .venv/bin/python scripts/doc_status_gate.py
       - name: Evidence checksum gate

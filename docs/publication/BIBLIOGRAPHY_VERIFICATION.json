@@ -1,0 +1,1727 @@
+{
+ "entries": {
+  "abraham1996metaplasticity": {
+   "area": "plasticity",
+   "argument": "Metaplasticity — the plasticity of synaptic plasticity. The biological source of the claim that a system can allocate its own capacity to change, which CWC tests as a budgeted allocation problem rather than asserting as an analogy.",
+   "claims": [
+    "CWC-L4-plasticity",
+    "CWC-L4h-context-scaling"
+   ],
+   "identifier": "10.1016/S0166-2236(96)80018-X",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Wickliffe C. Abraham",
+     "Mark F. Bear"
+    ],
+    "doi": "10.1016/S0166-2236(96)80018-X",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1016/S0166-2236(96)80018-X",
+    "title": "Metaplasticity: the plasticity of synaptic plasticity",
+    "url": "https://doi.org/10.1016/S0166-2236(96)80018-X",
+    "venue": "Trends in Neurosciences",
+    "year": 1996
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:28:55Z"
+  },
+  "aljundi2018mas": {
+   "area": "plasticity",
+   "argument": "Memory-aware synapses: unsupervised importance estimation; completes the importance-based continual-learning triple CWC's plasticity line sits inside.",
+   "claims": [
+    "CWC-L4-plasticity"
+   ],
+   "identifier": "1711.09601",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Rahaf Aljundi",
+     "Francesca Babiloni",
+     "Mohamed Elhoseiny",
+     "Marcus Rohrbach",
+     "Tinne Tuytelaars"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1711.09601",
+    "title": "Memory Aware Synapses: Learning what (not) to forget",
+    "url": "https://arxiv.org/abs/1711.09601",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:52Z"
+  },
+  "arimoto1972": {
+   "area": "information-theory",
+   "argument": "Arimoto's companion algorithm; cited jointly as the standard Blahut-Arimoto procedure.",
+   "claims": [
+    "CWC-L4i-rate-bridge",
+    "CWC-AC4-rate-bridge"
+   ],
+   "identifier": "10.1109/TIT.1972.1054753",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "S. Arimoto"
+    ],
+    "doi": "10.1109/TIT.1972.1054753",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/TIT.1972.1054753",
+    "title": "An algorithm for computing the capacity of arbitrary discrete memoryless channels",
+    "url": "https://doi.org/10.1109/TIT.1972.1054753",
+    "venue": "IEEE Transactions on Information Theory",
+    "year": 1972
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:10Z"
+  },
+  "attwell2001energy": {
+   "area": "energy",
+   "argument": "An energy budget for cortical signalling: the biological precedent for costing computation in energy. CWC records energy as INSTRUMENT_INVALID on its hardware and therefore makes no energy claim; the citation marks the axis that was deliberately abandoned.",
+   "claims": [
+    "CWC-L0-measurement",
+    "CWC-RIGOR10-timing-metrology"
+   ],
+   "identifier": "10.1097/00004647-200110000-00001",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "David Attwell",
+     "Simon B. Laughlin"
+    ],
+    "doi": "10.1097/00004647-200110000-00001",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1097/00004647-200110000-00001",
+    "title": "An Energy Budget for Signaling in the Grey Matter of the Brain",
+    "url": "https://doi.org/10.1097/00004647-200110000-00001",
+    "venue": "Journal of Cerebral Blood Flow &amp; Metabolism",
+    "year": 2001
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:30:16Z"
+  },
+  "bae2025mor": {
+   "area": "adaptive-computation",
+   "argument": "Mixture-of-Recursions: token-level dynamic recursion depth, the current state of the art in the exact mechanism family CWC studies. Its existence is why CWC's honest ceiling is an identifiability instrument rather than an architecture claim.",
+   "claims": [
+    "CWC-L7-pareto"
+   ],
+   "identifier": "2507.10524",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Sangmin Bae",
+     "Yujin Kim",
+     "Reza Bayat",
+     "Sungnyun Kim",
+     "Jiyoun Ha",
+     "Tal Schuster",
+     "Adam Fisch",
+     "Hrayr Harutyunyan",
+     "Ziwei Ji",
+     "Aaron Courville",
+     "Se-Young Yun"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2507.10524",
+    "title": "Mixture-of-Recursions: Learning Dynamic Recursive Depths for Adaptive Token-Level Computation",
+    "url": "https://arxiv.org/abs/2507.10524",
+    "venue": "arXiv preprint",
+    "year": 2025
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:37Z"
+  },
+  "banino2021pondernet": {
+   "area": "adaptive-computation",
+   "argument": "Probabilistic halting with a principled loss. Establishes learned per-instance halting as solved prior art; CWC's contribution is the certificate that decides when such a controller can pay for itself, not the controller.",
+   "claims": [
+    "CWC-L2p-jensen-gap",
+    "CWC-AC2-compute-controller"
+   ],
+   "identifier": "2107.05407",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Andrea Banino",
+     "Jan Balaguer",
+     "Charles Blundell"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2107.05407",
+    "title": "PonderNet: Learning to Ponder",
+    "url": "https://arxiv.org/abs/2107.05407",
+    "venue": "arXiv preprint",
+    "year": 2021
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:26:53Z"
+  },
+  "bengio2013ste": {
+   "area": "adaptive-computation",
+   "argument": "Straight-through estimation for stochastic/discrete units — the exact estimator whose failure CWC-L2c records as NOT_SUPPORTED. Cited so the negative is attributed to a known-hard estimator, not to the benchmark.",
+   "claims": [
+    "CWC-L2c-e2e-straightthrough"
+   ],
+   "identifier": "1308.3432",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Yoshua Bengio",
+     "Nicholas Léonard",
+     "Aaron Courville"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1308.3432",
+    "title": "Estimating or Propagating Gradients Through Stochastic Neurons for Conditional Computation",
+    "url": "https://arxiv.org/abs/1308.3432",
+    "venue": "arXiv preprint",
+    "year": 2013
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:27:51Z"
+  },
+  "bengio2015conditional": {
+   "area": "adaptive-computation",
+   "argument": "Conditional computation via learned sparse gating — the programmatic statement of the idea CWC tests the preconditions of.",
+   "claims": [
+    "CWC-L1-identifiability"
+   ],
+   "identifier": "1511.06297",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Emmanuel Bengio",
+     "Pierre-Luc Bacon",
+     "Joelle Pineau",
+     "Doina Precup"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1511.06297",
+    "title": "Conditional Computation in Neural Networks for faster models",
+    "url": "https://arxiv.org/abs/1511.06297",
+    "venue": "arXiv preprint",
+    "year": 2015
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:55Z"
+  },
+  "benjamini1995fdr": {
+   "area": "statistics",
+   "argument": "False discovery rate control: the less conservative alternative CWC deliberately did NOT use, recorded so the choice of family-wise control is a stated decision rather than a default.",
+   "claims": [
+    "CWC-RIGOR2-fwer"
+   ],
+   "identifier": "10.1111/j.2517-6161.1995.tb02031.x",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Yoav Benjamini",
+     "Yosef Hochberg"
+    ],
+    "doi": "10.1111/j.2517-6161.1995.tb02031.x",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1111/j.2517-6161.1995.tb02031.x",
+    "title": "Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing",
+    "url": "https://doi.org/10.1111/j.2517-6161.1995.tb02031.x",
+    "venue": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+    "year": 1995
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:42Z"
+  },
+  "blahut1972": {
+   "area": "information-theory",
+   "argument": "Blahut's algorithm for rate-distortion computation — the numerical method family used to trace the V*(R) frontier CWC's governors are compared against.",
+   "claims": [
+    "CWC-L4i-rate-bridge",
+    "CWC-AC4-rate-bridge"
+   ],
+   "identifier": "10.1109/TIT.1972.1054855",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "R. Blahut"
+    ],
+    "doi": "10.1109/TIT.1972.1054855",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/TIT.1972.1054855",
+    "title": "Computation of channel capacity and rate-distortion functions",
+    "url": "https://doi.org/10.1109/TIT.1972.1054855",
+    "venue": "IEEE Transactions on Information Theory",
+    "year": 1972
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:08Z"
+  },
+  "bolukbasi2017adaptive": {
+   "area": "adaptive-computation",
+   "argument": "Adaptive network selection with an explicit cost/accuracy trade-off; the nearest prior art that already charges for the decision. CWC's addition is measuring c_route physically (WP17) and charging it inside the certificate.",
+   "claims": [
+    "CWC-L2b-route-decision-cost"
+   ],
+   "identifier": "1702.07811",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Tolga Bolukbasi",
+     "Joseph Wang",
+     "Ofer Dekel",
+     "Venkatesh Saligrama"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1702.07811",
+    "title": "Adaptive Neural Networks for Efficient Inference",
+    "url": "https://arxiv.org/abs/1702.07811",
+    "venue": "Proceedings of the 34th International Conference on Machine Learning, PMLR 70:527-536, 2017",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:06Z"
+  },
+  "chambers2013registered": {
+   "area": "integrity",
+   "argument": "Registered Reports: peer review of the protocol before results exist — the model CWC's per-experiment PREREGISTRATION.md files imitate without an external reviewer, a gap the threats document states openly.",
+   "claims": [
+    "CWC-RIGOR7-prereg-integrity"
+   ],
+   "identifier": "10.1016/j.cortex.2012.12.016",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Christopher D. Chambers"
+    ],
+    "doi": "10.1016/j.cortex.2012.12.016",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1016/j.cortex.2012.12.016",
+    "title": "Registered Reports: A new publishing initiative at Cortex",
+    "url": "https://doi.org/10.1016/j.cortex.2012.12.016",
+    "venue": "Cortex",
+    "year": 2013
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:29:55Z"
+  },
+  "cover2006elements": {
+   "area": "information-theory",
+   "argument": "Canonical reference for the rate-distortion function, mutual information identities and Pinsker's inequality as used verbatim in ROUTABILITY_INFORMATION_BOUND and VALUE_OF_INFORMATION_RATE_FUNCTION.",
+   "claims": [
+    "CWC-L4i-rate-bridge",
+    "CWC-AC4-rate-bridge",
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "10.1002/047174882X",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Thomas M. Cover",
+     "Joy A. Thomas"
+    ],
+    "doi": "10.1002/047174882X",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1002/047174882X",
+    "title": "Elements of Information Theory",
+    "url": "https://doi.org/10.1002/047174882X",
+    "venue": "Wiley",
+    "year": 2005
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:01Z"
+  },
+  "dehghani2019universal": {
+   "area": "adaptive-computation",
+   "argument": "Weight-tied recurrent depth with ACT halting. CWC's WP5/WP18 substrate is a weight-tied recurrent block of the same family; WP19 shows the WP18 mechanism finding was a property of weight tying, so this reference fixes the scope of that narrowing.",
+   "claims": [
+    "CWC-AC1-compute-identifiability",
+    "CWC-RD4-negative-robustness"
+   ],
+   "identifier": "1807.03819",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Mostafa Dehghani",
+     "Stephan Gouws",
+     "Oriol Vinyals",
+     "Jakob Uszkoreit",
+     "Łukasz Kaiser"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1807.03819",
+    "title": "Universal Transformers",
+    "url": "https://arxiv.org/abs/1807.03819",
+    "venue": "arXiv preprint",
+    "year": 2018
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:26:48Z"
+  },
+  "demillo1978hints": {
+   "area": "software-verification",
+   "argument": "The origin of mutation testing: seed a fault, require a test to notice. CWC's 12/12 mutation gate on the mathematical core is this idea applied to a measurement instrument.",
+   "claims": [
+    "CWC-L0-measurement"
+   ],
+   "identifier": "10.1109/C-M.1978.218136",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "R.A. DeMillo",
+     "R.J. Lipton",
+     "F.G. Sayward"
+    ],
+    "doi": "10.1109/C-M.1978.218136",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/C-M.1978.218136",
+    "title": "Hints on Test Data Selection: Help for the Practicing Programmer",
+    "url": "https://doi.org/10.1109/C-M.1978.218136",
+    "venue": "Computer",
+    "year": 1978
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:30:09Z"
+  },
+  "efron1986bootstrap": {
+   "area": "statistics",
+   "argument": "Bootstrap standard errors and confidence intervals — the method behind WP13's 95% CIs on the certificate positives.",
+   "claims": [
+    "CWC-RIGOR6-effect-size"
+   ],
+   "identifier": "10.1214/ss/1177013815",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "B. Efron",
+     "R. Tibshirani"
+    ],
+    "doi": "10.1214/ss/1177013815",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1214/ss/1177013815",
+    "title": "Bootstrap Methods for Standard Errors, Confidence Intervals, and Other Measures of Statistical Accuracy",
+    "url": "https://doi.org/10.1214/ss/1177013815",
+    "venue": "Statistical Science",
+    "year": 1986
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:44Z"
+  },
+  "elbayad2020depthadaptive": {
+   "area": "adaptive-computation",
+   "argument": "Depth-adaptive transformer for sequence generation — the closest published setting to CWC's per-token compute allocation, and therefore the sharpest external check on the WP6/WP14/WP18 negatives.",
+   "claims": [
+    "CWC-RD1-real-lm-boundary",
+    "CWC-RD3-real-workload-pilot"
+   ],
+   "identifier": "1910.10073",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Maha Elbayad",
+     "Jiatao Gu",
+     "Edouard Grave",
+     "Michael Auli"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1910.10073",
+    "title": "Depth-Adaptive Transformer",
+    "url": "https://arxiv.org/abs/1910.10073",
+    "venue": "arXiv preprint",
+    "year": 2019
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:19Z"
+  },
+  "elhoushi2024layerskip": {
+   "area": "adaptive-computation",
+   "argument": "Layer skipping with self-speculative decoding at LM scale. Part of the baseline family a real L7 Pareto test would have to beat; CWC has not run it (NOT_TESTED).",
+   "claims": [
+    "CWC-L7-pareto"
+   ],
+   "identifier": "2404.16710",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Mostafa Elhoushi",
+     "Akshat Shrivastava",
+     "Diana Liskovich",
+     "Basil Hosmer",
+     "Bram Wasti",
+     "Liangzhen Lai",
+     "Anas Mahmoud",
+     "Bilge Acun",
+     "Saurabh Agarwal",
+     "Ahmed Roman",
+     "Ahmed A Aly",
+     "Beidi Chen",
+     "Carole-Jean Wu"
+    ],
+    "doi": "10.18653/v1/2024.acl-long.681",
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2404.16710",
+    "title": "LayerSkip: Enabling Early Exit Inference and Self-Speculative Decoding",
+    "url": "https://arxiv.org/abs/2404.16710",
+    "venue": "arXiv preprint",
+    "year": 2024
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:28Z"
+  },
+  "fedus2022sparsereview": {
+   "area": "sparse-experts",
+   "argument": "Review of sparse expert models; the second coverage backbone of the systematic search.",
+   "claims": [
+    "CWC-L7-pareto"
+   ],
+   "identifier": "2209.01667",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "William Fedus",
+     "Jeff Dean",
+     "Barret Zoph"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2209.01667",
+    "title": "A Review of Sparse Expert Models in Deep Learning",
+    "url": "https://arxiv.org/abs/2209.01667",
+    "venue": "arXiv preprint",
+    "year": 2022
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:20Z"
+  },
+  "fedus2022switch": {
+   "area": "sparse-experts",
+   "argument": "Switch Transformer: the scaled MoE baseline family a real L7 test must include. Not run.",
+   "claims": [
+    "CWC-L7-pareto"
+   ],
+   "identifier": "2101.03961",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "William Fedus",
+     "Barret Zoph",
+     "Noam Shazeer"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2101.03961",
+    "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+    "url": "https://arxiv.org/abs/2101.03961",
+    "venue": "arXiv preprint",
+    "year": 2021
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:15Z"
+  },
+  "figurnov2017sact": {
+   "area": "adaptive-computation",
+   "argument": "Spatially adaptive computation time in residual networks: per-position compute allocation. Prior art for allocation itself; CWC makes no vision claim.",
+   "claims": [
+    "CWC-AC1-compute-identifiability"
+   ],
+   "identifier": "1612.02297",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Michael Figurnov",
+     "Maxwell D. Collins",
+     "Yukun Zhu",
+     "Li Zhang",
+     "Jonathan Huang",
+     "Dmitry Vetrov",
+     "Ruslan Salakhutdinov"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1612.02297",
+    "title": "Spatially Adaptive Computation Time for Residual Networks",
+    "url": "https://arxiv.org/abs/1612.02297",
+    "venue": "arXiv preprint",
+    "year": 2016
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:26:57Z"
+  },
+  "geiping2025recurrentdepth": {
+   "area": "adaptive-computation",
+   "argument": "Latent reasoning by recurrent depth at scale — the large-model instance of CWC's weight-tied substrate. Directly relevant to WP19's finding that weight tying, not the data, produced WP18's uniform best-K.",
+   "claims": [
+    "CWC-AC1-compute-identifiability",
+    "CWC-RD4-negative-robustness"
+   ],
+   "identifier": "2502.05171",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Jonas Geiping",
+     "Sean McLeish",
+     "Neel Jain",
+     "John Kirchenbauer",
+     "Siddharth Singh",
+     "Brian R. Bartoldson",
+     "Bhavya Kailkhura",
+     "Abhinav Bhatele",
+     "Tom Goldstein"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2502.05171",
+    "title": "Scaling up Test-Time Compute with Latent Reasoning: A Recurrent Depth Approach",
+    "url": "https://arxiv.org/abs/2502.05171",
+    "venue": "arXiv preprint",
+    "year": 2025
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:42Z"
+  },
+  "goldshadlen2007": {
+   "area": "decision-theory",
+   "argument": "Neural basis of decision making: evidence accumulation to a bound, i.e. adaptive computation as implemented by brains. Supplies the biological framing without carrying empirical weight.",
+   "claims": [
+    "CWC-AC1-compute-identifiability"
+   ],
+   "identifier": "10.1146/annurev.neuro.29.051605.113038",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Joshua I. Gold",
+     "Michael N. Shadlen"
+    ],
+    "doi": "10.1146/annurev.neuro.29.051605.113038",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1146/annurev.neuro.29.051605.113038",
+    "title": "The Neural Basis of Decision Making",
+    "url": "https://doi.org/10.1146/annurev.neuro.29.051605.113038",
+    "venue": "Annual Review of Neuroscience",
+    "year": 2007
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:35Z"
+  },
+  "graves2016act": {
+   "area": "adaptive-computation",
+   "argument": "Learned halting for recurrent nets is the origin of the adaptive-compute line. CWC claims no novelty for adaptive stopping; its object is whether such a mechanism is IDENTIFIABLE on a given workload, which ACT assumes rather than tests.",
+   "claims": [
+    "CWC-L1-identifiability",
+    "CWC-AC1-compute-identifiability"
+   ],
+   "identifier": "1603.08983",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Alex Graves"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1603.08983",
+    "title": "Adaptive Computation Time for Recurrent Neural Networks",
+    "url": "https://arxiv.org/abs/1603.08983",
+    "venue": "arXiv preprint",
+    "year": 2016
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:26:43Z"
+  },
+  "han2021dynamicnn": {
+   "area": "adaptive-computation",
+   "argument": "Survey of dynamic neural networks; used as the coverage backbone of the systematic search so the related-work claim is not built from memory.",
+   "claims": [
+    "CWC-L1-identifiability"
+   ],
+   "identifier": "2102.04906",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Yizeng Han",
+     "Gao Huang",
+     "Shiji Song",
+     "Le Yang",
+     "Honghui Wang",
+     "Yulin Wang"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2102.04906",
+    "title": "Dynamic Neural Networks: A Survey",
+    "url": "https://arxiv.org/abs/2102.04906",
+    "venue": "arXiv preprint",
+    "year": 2021
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:46Z"
+  },
+  "hao2024coconut": {
+   "area": "test-time-compute",
+   "argument": "Continuous-latent-space reasoning: a candidate workload family with order-of-magnitude per-instance demand variation, i.e. a legitimate target for the WP-R1 screen.",
+   "claims": [
+    "CWC-R1-routability-screen"
+   ],
+   "identifier": "2412.06769",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Shibo Hao",
+     "Sainbayar Sukhbaatar",
+     "DiJia Su",
+     "Xian Li",
+     "Zhiting Hu",
+     "Jason Weston",
+     "Yuandong Tian"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2412.06769",
+    "title": "Training Large Language Models to Reason in a Continuous Latent Space",
+    "url": "https://arxiv.org/abs/2412.06769",
+    "venue": "arXiv preprint",
+    "year": 2024
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:38Z"
+  },
+  "hoeffding1963": {
+   "area": "statistics",
+   "argument": "The concentration inequality the identifiability certificate's deviation terms are built from; WP7's corrected bound G_lo = Ghat - b - 2d union-bounds two such deviations.",
+   "claims": [
+    "CWC-RIGOR1-certificate",
+    "CWC-RIGOR5-independence"
+   ],
+   "identifier": "10.1080/01621459.1963.10500830",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Wassily Hoeffding"
+    ],
+    "doi": "10.1080/01621459.1963.10500830",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1080/01621459.1963.10500830",
+    "title": "Probability Inequalities for Sums of Bounded Random Variables",
+    "url": "https://doi.org/10.1080/01621459.1963.10500830",
+    "venue": "Journal of the American Statistical Association",
+    "year": 1963
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:38Z"
+  },
+  "holm1979": {
+   "area": "statistics",
+   "argument": "Holm's step-down procedure, applied in WP8 alongside Bonferroni to control family-wise error over the certificate positives.",
+   "claims": [
+    "CWC-RIGOR2-fwer"
+   ],
+   "identifier": "10.2307/4615733",
+   "kind": "openalex_doi",
+   "resolved": {
+    "authors": [
+     "Sture Holm"
+    ],
+    "doi": "10.2307/4615733",
+    "resolver": "openalex",
+    "resolver_url": "https://api.openalex.org/works/doi:10.2307/4615733",
+    "title": "A Simple Sequentially Rejective Multiple Test Procedure",
+    "url": "https://doi.org/10.2307/4615733",
+    "venue": "Scandinavian Journal of Statistics",
+    "year": 1979
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:39Z"
+  },
+  "howard1966voi": {
+   "area": "information-theory",
+   "argument": "Information Value Theory. CWC's oracle gap G = V_oracle - V_fixed is the expected value of perfect information about the context relative to a context-blind policy. This is the single most important attribution in the programme: the quantity is classical, and CWC's claim is about MEASURING it with a certificate, not about discovering it.",
+   "claims": [
+    "CWC-L1-identifiability",
+    "CWC-L4i-rate-bridge"
+   ],
+   "identifier": "10.1109/TSSC.1966.300074",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Ronald Howard"
+    ],
+    "doi": "10.1109/TSSC.1966.300074",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/TSSC.1966.300074",
+    "title": "Information Value Theory",
+    "url": "https://doi.org/10.1109/TSSC.1966.300074",
+    "venue": "IEEE Transactions on Systems Science and Cybernetics",
+    "year": 1966
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:13Z"
+  },
+  "ioannidis2005": {
+   "area": "integrity",
+   "argument": "Why most published research findings are false: the base-rate argument that makes a 10-negative ledger evidence of method rather than of failure.",
+   "claims": [
+    "CWC-RIGOR2-fwer"
+   ],
+   "identifier": "10.1371/journal.pmed.0020124",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "John P. A. Ioannidis"
+    ],
+    "doi": "10.1371/journal.pmed.0020124",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1371/journal.pmed.0020124",
+    "title": "Why Most Published Research Findings Are False",
+    "url": "https://doi.org/10.1371/journal.pmed.0020124",
+    "venue": "PLoS Medicine",
+    "year": 2005
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:30:00Z"
+  },
+  "jacobs1991moe": {
+   "area": "sparse-experts",
+   "argument": "The original mixture of local experts. The context-conditioned choice CWC formalises as the ANOVA interaction gamma is the same object this line has optimised since 1991.",
+   "claims": [
+    "CWC-L1-identifiability"
+   ],
+   "identifier": "10.1162/neco.1991.3.1.79",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Robert A. Jacobs",
+     "Michael I. Jordan",
+     "Steven J. Nowlan",
+     "Geoffrey E. Hinton"
+    ],
+    "doi": "10.1162/neco.1991.3.1.79",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1162/neco.1991.3.1.79",
+    "title": "Adaptive Mixtures of Local Experts",
+    "url": "https://doi.org/10.1162/neco.1991.3.1.79",
+    "venue": "Neural Computation",
+    "year": 1991
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:06Z"
+  },
+  "jia2011mutation": {
+   "area": "software-verification",
+   "argument": "Survey of mutation testing: establishes the technique's scope and its known limits, including equivalent mutants, which is why CWC's probe is scoped to an arithmetic core rather than advertised as whole-repository mutation coverage.",
+   "claims": [
+    "CWC-L0-measurement"
+   ],
+   "identifier": "10.1109/TSE.2010.62",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Yue Jia",
+     "Mark Harman"
+    ],
+    "doi": "10.1109/TSE.2010.62",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/TSE.2010.62",
+    "title": "An Analysis and Survey of the Development of Mutation Testing",
+    "url": "https://doi.org/10.1109/TSE.2010.62",
+    "venue": "IEEE Transactions on Software Engineering",
+    "year": 2011
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:30:12Z"
+  },
+  "johnson2013revised": {
+   "area": "statistics",
+   "argument": "Revised standards for statistical evidence: the argument that conventional thresholds are too permissive, supporting CWC's choice of an ultra-conservative all-claims Bonferroni variant.",
+   "claims": [
+    "CWC-RIGOR2-fwer"
+   ],
+   "identifier": "10.1073/pnas.1313476110",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Valen E. Johnson"
+    ],
+    "doi": "10.1073/pnas.1313476110",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1073/pnas.1313476110",
+    "title": "Revised standards for statistical evidence",
+    "url": "https://doi.org/10.1073/pnas.1313476110",
+    "venue": "Proceedings of the National Academy of Sciences",
+    "year": 2013
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:29:46Z"
+  },
+  "just2014mutants": {
+   "area": "software-verification",
+   "argument": "Evidence that mutant detection correlates with real fault detection — the empirical warrant for treating the mutation gate as evidence about the instrument rather than as ceremony.",
+   "claims": [
+    "CWC-L0-measurement"
+   ],
+   "identifier": "10.1145/2635868.2635929",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "René Just",
+     "Darioush Jalali",
+     "Laura Inozemtseva",
+     "Michael D. Ernst",
+     "Reid Holmes",
+     "Gordon Fraser"
+    ],
+    "doi": "10.1145/2635868.2635929",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1145/2635868.2635929",
+    "title": "Are mutants a valid substitute for real faults in software testing?",
+    "url": "https://doi.org/10.1145/2635868.2635929",
+    "venue": "Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering",
+    "year": 2014
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:30:14Z"
+  },
+  "karpathy2025nanochat": {
+   "area": "upstream",
+   "argument": "The upstream baseline this repository forks. The master/baseline branches are unmodified upstream history; all CWC work is additive.",
+   "claims": [
+    "CWC-L0-measurement"
+   ],
+   "identifier": "https://github.com/karpathy/nanochat",
+   "kind": "url",
+   "resolved": {
+    "authors": [
+     "Andrej Karpathy"
+    ],
+    "doi": null,
+    "http_status": 200,
+    "manual_fields": [
+     "title",
+     "authors",
+     "year",
+     "venue"
+    ],
+    "resolver": "http-head",
+    "resolver_url": "https://github.com/karpathy/nanochat",
+    "title": "nanochat",
+    "url": "https://github.com/karpathy/nanochat",
+    "venue": "GitHub repository",
+    "year": 2025
+   },
+   "role": "upstream",
+   "verified_utc": "2026-07-22T15:30:23Z"
+  },
+  "kirkpatrick2017ewc": {
+   "area": "plasticity",
+   "argument": "Elastic weight consolidation: per-parameter importance as a plasticity budget. CWC's governor reuses this framing and claims novelty only for the identifiability certificate over it.",
+   "claims": [
+    "CWC-L4-plasticity"
+   ],
+   "identifier": "1612.00796",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "James Kirkpatrick",
+     "Razvan Pascanu",
+     "Neil Rabinowitz",
+     "Joel Veness",
+     "Guillaume Desjardins",
+     "Andrei A. Rusu",
+     "Kieran Milan",
+     "John Quan",
+     "Tiago Ramalho",
+     "Agnieszka Grabska-Barwinska",
+     "Demis Hassabis",
+     "Claudia Clopath",
+     "Dharshan Kumaran",
+     "Raia Hadsell"
+    ],
+    "doi": "10.1073/pnas.1611835114",
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1612.00796",
+    "title": "Overcoming catastrophic forgetting in neural networks",
+    "url": "https://arxiv.org/abs/1612.00796",
+    "venue": "arXiv preprint",
+    "year": 2016
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:43Z"
+  },
+  "kullback1951": {
+   "area": "information-theory",
+   "argument": "On information and sufficiency: the divergence CWC's routability bound is stated in.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "10.1214/aoms/1177729694",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "S. Kullback",
+     "R. A. Leibler"
+    ],
+    "doi": "10.1214/aoms/1177729694",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1214/aoms/1177729694",
+    "title": "On Information and Sufficiency",
+    "url": "https://doi.org/10.1214/aoms/1177729694",
+    "venue": "The Annals of Mathematical Statistics",
+    "year": 1951
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:04Z"
+  },
+  "kullback1967lower": {
+   "area": "information-theory",
+   "argument": "A lower bound for discrimination information in terms of variation — the Pinsker-type inequality CWC's ceiling V(Z) <= du*sqrt(I/2) applies. CWC-RIGOR3 tests where that step is tight (Theta(R)) and where it is loose (Theta(sqrt R)); attribution matters because the dichotomy is a statement about THIS inequality, not a new one.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "10.1109/TIT.1967.1053968",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "S. Kullback"
+    ],
+    "doi": "10.1109/TIT.1967.1053968",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1109/TIT.1967.1053968",
+    "title": "A lower bound for discrimination information in terms of variation (Corresp.)",
+    "url": "https://doi.org/10.1109/TIT.1967.1053968",
+    "venue": "IEEE Transactions on Information Theory",
+    "year": 1967
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:06Z"
+  },
+  "leviathan2023speculative": {
+   "area": "test-time-compute",
+   "argument": "Speculative decoding: a deployed adaptive-compute scheme whose entire viability rests on the decision being cheaper than the work — the deployed analogue of CWC's V = gap - c_route.",
+   "claims": [
+    "CWC-L2b-route-decision-cost"
+   ],
+   "identifier": "2211.17192",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Yaniv Leviathan",
+     "Matan Kalman",
+     "Yossi Matias"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2211.17192",
+    "title": "Fast Inference from Transformers via Speculative Decoding",
+    "url": "https://arxiv.org/abs/2211.17192",
+    "venue": "arXiv preprint",
+    "year": 2022
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:34Z"
+  },
+  "levy1996energy": {
+   "area": "energy",
+   "argument": "Energy-efficient neural codes: information per joule as an objective. Same role — the unmeasurable axis is named, not quietly dropped.",
+   "claims": [
+    "CWC-L0-measurement"
+   ],
+   "identifier": "10.1162/neco.1996.8.3.531",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "William B Levy",
+     "Robert A. Baxter"
+    ],
+    "doi": "10.1162/neco.1996.8.3.531",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1162/neco.1996.8.3.531",
+    "title": "Energy Efficient Neural Codes",
+    "url": "https://doi.org/10.1162/neco.1996.8.3.531",
+    "venue": "Neural Computation",
+    "year": 1996
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:30:19Z"
+  },
+  "munafo2017manifesto": {
+   "area": "integrity",
+   "argument": "A manifesto for reproducible science: the checklist CWC's clean-room spine (WP16) implements and, for independent replication, admits it does not satisfy.",
+   "claims": [
+    "CWC-RIGOR7-prereg-integrity",
+    "CWC-L8-replication"
+   ],
+   "identifier": "10.1038/s41562-016-0021",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Marcus R. Munafò",
+     "Brian A. Nosek",
+     "Dorothy V. M. Bishop",
+     "Katherine S. Button",
+     "Christopher D. Chambers",
+     "Nathalie Percie du Sert",
+     "Uri Simonsohn",
+     "Eric-Jan Wagenmakers",
+     "Jennifer J. Ware",
+     "John P. A. Ioannidis"
+    ],
+    "doi": "10.1038/s41562-016-0021",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1038/s41562-016-0021",
+    "title": "A manifesto for reproducible science",
+    "url": "https://doi.org/10.1038/s41562-016-0021",
+    "venue": "Nature Human Behaviour",
+    "year": 2017
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:29:58Z"
+  },
+  "nosek2018prereg": {
+   "area": "integrity",
+   "argument": "The preregistration revolution: the methodological source of CWC's strict-ancestor requirement, where a preregistration must be a git ancestor of its own results.",
+   "claims": [
+    "CWC-RIGOR7-prereg-integrity"
+   ],
+   "identifier": "10.1073/pnas.1708274114",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Brian A. Nosek",
+     "Charles R. Ebersole",
+     "Alexander C. DeHaven",
+     "David T. Mellor"
+    ],
+    "doi": "10.1073/pnas.1708274114",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1073/pnas.1708274114",
+    "title": "The preregistration revolution",
+    "url": "https://doi.org/10.1073/pnas.1708274114",
+    "venue": "Proceedings of the National Academy of Sciences",
+    "year": 2018
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:29:53Z"
+  },
+  "ortega2013thermo": {
+   "area": "information-theory",
+   "argument": "Decision-making with information-processing costs, in free-energy form. The soft-routing optimum CWC's committed-greedy governors fall short of at low information is exactly this object, which is why the low-info saturation gap (0.326) is a known structural gap, not an unexplained defect.",
+   "claims": [
+    "CWC-L4i-rate-bridge",
+    "CWC-AC4-rate-bridge"
+   ],
+   "identifier": "1204.6481",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Pedro A. Ortega",
+     "Daniel A. Braun"
+    ],
+    "doi": "10.1098/rspa.2012.0683",
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1204.6481",
+    "title": "Thermodynamics as a theory of decision-making with information processing costs",
+    "url": "https://arxiv.org/abs/1204.6481",
+    "venue": "arXiv preprint",
+    "year": 2012
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:19Z"
+  },
+  "ortega2015bounded": {
+   "area": "information-theory",
+   "argument": "Information-theoretic bounded rationality: the general framework CWC's master inequality V_realized <= oracle_gap - c_route is a special case of.",
+   "claims": [
+    "CWC-L4i-rate-bridge"
+   ],
+   "identifier": "1512.06789",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Pedro A. Ortega",
+     "Daniel A. Braun",
+     "Justin Dyer",
+     "Kee-Eung Kim",
+     "Naftali Tishby"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1512.06789",
+    "title": "Information-Theoretic Bounded Rationality",
+    "url": "https://arxiv.org/abs/1512.06789",
+    "venue": "arXiv preprint",
+    "year": 2015
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:24Z"
+  },
+  "pineau2021reproducibility": {
+   "area": "integrity",
+   "argument": "The NeurIPS reproducibility programme report: the community standard against which CWC's clean-room reproduction is a partial pass (same operator, same host).",
+   "claims": [
+    "CWC-L8-replication"
+   ],
+   "identifier": "2003.12206",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Joelle Pineau",
+     "Philippe Vincent-Lamarre",
+     "Koustuv Sinha",
+     "Vincent Larivière",
+     "Alina Beygelzimer",
+     "Florence d'Alché-Buc",
+     "Emily Fox",
+     "Hugo Larochelle"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2003.12206",
+    "title": "Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 Reproducibility Program)",
+    "url": "https://arxiv.org/abs/2003.12206",
+    "venue": "arXiv preprint",
+    "year": 2020
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:30:07Z"
+  },
+  "ramdas2022anytime": {
+   "area": "statistics",
+   "argument": "Game-theoretic statistics and safe anytime-valid inference: the correct framework for a certificate that may be evaluated repeatedly. CWC's bound is fixed-sample, so this is cited as a known limitation and an upgrade path, not as something already implemented.",
+   "claims": [
+    "CWC-RIGOR1-certificate"
+   ],
+   "identifier": "2210.01948",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Aaditya Ramdas",
+     "Peter Grünwald",
+     "Vladimir Vovk",
+     "Glenn Shafer"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2210.01948",
+    "title": "Game-theoretic statistics and safe anytime-valid inference",
+    "url": "https://arxiv.org/abs/2210.01948",
+    "venue": "arXiv preprint",
+    "year": 2022
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:29:51Z"
+  },
+  "raposo2024mod": {
+   "area": "adaptive-computation",
+   "argument": "Mixture-of-Depths: the reference adaptive-depth transformer at scale. CWC explicitly does NOT claim to beat MoD — CWC-L7-pareto is NOT_TESTED and cloud-blocked; the synthetic Pareto result CWC-L7s is a harness demonstration, not a comparison.",
+   "claims": [
+    "CWC-L7-pareto",
+    "CWC-L7s-synthetic-pareto"
+   ],
+   "identifier": "2404.02258",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "David Raposo",
+     "Sam Ritter",
+     "Blake Richards",
+     "Timothy Lillicrap",
+     "Peter Conway Humphreys",
+     "Adam Santoro"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2404.02258",
+    "title": "Mixture-of-Depths: Dynamically allocating compute in transformer-based language models",
+    "url": "https://arxiv.org/abs/2404.02258",
+    "venue": "arXiv preprint",
+    "year": 2024
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:33Z"
+  },
+  "ratcliff1978": {
+   "area": "decision-theory",
+   "argument": "The diffusion model of decision: per-instance variable processing time in cognition, the biological precedent for input-dependent compute.",
+   "claims": [
+    "CWC-AC1-compute-identifiability"
+   ],
+   "identifier": "10.1037/0033-295X.85.2.59",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Roger Ratcliff"
+    ],
+    "doi": "10.1037/0033-295X.85.2.59",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1037/0033-295X.85.2.59",
+    "title": "A theory of memory retrieval.",
+    "url": "https://doi.org/10.1037/0033-295X.85.2.59",
+    "venue": "Psychological Review",
+    "year": 1978
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:33Z"
+  },
+  "sapolsky2017behave": {
+   "area": "plasticity",
+   "argument": "The layered account of behaviour (seconds to evolution) that names this repository's parent directory and supplies the multi-timescale framing. Cited as the conceptual source, with no empirical weight placed on it.",
+   "claims": [
+    "CWC-L4-plasticity"
+   ],
+   "identifier": "9781594205071",
+   "kind": "isbn",
+   "resolved": {
+    "authors": [
+     "Robert M. Sapolsky"
+    ],
+    "doi": null,
+    "isbn": "9781594205071",
+    "resolver": "openlibrary",
+    "resolver_url": "https://openlibrary.org/api/books?bibkeys=ISBN:9781594205071&format=json&jscmd=data",
+    "title": "Behave ",
+    "url": "http://openlibrary.org/books/OL50216675M/Behave",
+    "venue": "Penguin Press",
+    "year": 2017
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:28:57Z"
+  },
+  "schuster2022calm": {
+   "area": "adaptive-computation",
+   "argument": "Confident adaptive language modelling: per-token early exit with calibrated confidence on real LMs. The reference most likely to be read as contradicting CWC-RD1/RD2; the resolution is scale and the fact that CALM prices exit by confidence, not by a certified oracle gap.",
+   "claims": [
+    "CWC-RD2-real-lm-contextual"
+   ],
+   "identifier": "2207.07061",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Tal Schuster",
+     "Adam Fisch",
+     "Jai Gupta",
+     "Mostafa Dehghani",
+     "Dara Bahri",
+     "Vinh Q. Tran",
+     "Yi Tay",
+     "Donald Metzler"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2207.07061",
+    "title": "Confident Adaptive Language Modeling",
+    "url": "https://arxiv.org/abs/2207.07061",
+    "venue": "arXiv preprint",
+    "year": 2022
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:24Z"
+  },
+  "schwartz2020righttool": {
+   "area": "adaptive-computation",
+   "argument": "Matches model capacity to instance difficulty on real NLP tasks — the positive-result counterpart to CWC's real-data negatives. Cited because it is the strongest published evidence AGAINST CWC's WP18 conclusion and must be confronted, not omitted.",
+   "claims": [
+    "CWC-RD1-real-lm-boundary",
+    "CWC-RD3-real-workload-pilot"
+   ],
+   "identifier": "2004.07453",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Roy Schwartz",
+     "Gabriel Stanovsky",
+     "Swabha Swayamdipta",
+     "Jesse Dodge",
+     "Noah A. Smith"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2004.07453",
+    "title": "The Right Tool for the Job: Matching Model and Instance Complexities",
+    "url": "https://arxiv.org/abs/2004.07453",
+    "venue": "arXiv preprint",
+    "year": 2020
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:10Z"
+  },
+  "shannon1948": {
+   "area": "information-theory",
+   "argument": "The source of mutual information and of the rate-function form. CWC's V*(R) is stated as the decision-valued analogue of a rate-distortion function and inherits its shape from here.",
+   "claims": [
+    "CWC-L4i-rate-bridge",
+    "CWC-AC4-rate-bridge"
+   ],
+   "identifier": "10.1002/j.1538-7305.1948.tb00917.x",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "C. E. Shannon"
+    ],
+    "doi": "10.1002/j.1538-7305.1948.tb00917.x",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1002/j.1538-7305.1948.tb00917.x",
+    "title": "A Mathematical Theory of Communication",
+    "url": "https://doi.org/10.1002/j.1538-7305.1948.tb00917.x",
+    "venue": "Bell System Technical Journal",
+    "year": 1948
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:28:59Z"
+  },
+  "shazeer2017moe": {
+   "area": "sparse-experts",
+   "argument": "Sparsely-gated MoE with load balancing. CWC borrows anti-collapse/load-balance discipline for its controllers and makes no MoE-superiority claim.",
+   "claims": [
+    "CWC-L7-pareto"
+   ],
+   "identifier": "1701.06538",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Noam Shazeer",
+     "Azalia Mirhoseini",
+     "Krzysztof Maziarz",
+     "Andy Davis",
+     "Quoc Le",
+     "Geoffrey Hinton",
+     "Jeff Dean"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1701.06538",
+    "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+    "url": "https://arxiv.org/abs/1701.06538",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:11Z"
+  },
+  "simmons2011": {
+   "area": "integrity",
+   "argument": "False-positive psychology: researcher degrees of freedom. CWC's disclosed grid amendments and frozen kill rule exist to remove exactly the flexibility catalogued here.",
+   "claims": [
+    "CWC-RIGOR7-prereg-integrity"
+   ],
+   "identifier": "10.1177/0956797611417632",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Joseph P. Simmons",
+     "Leif D. Nelson",
+     "Uri Simonsohn"
+    ],
+    "doi": "10.1177/0956797611417632",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1177/0956797611417632",
+    "title": "False-Positive Psychology",
+    "url": "https://doi.org/10.1177/0956797611417632",
+    "venue": "Psychological Science",
+    "year": 2011
+   },
+   "role": "integrity",
+   "verified_utc": "2026-07-22T15:30:02Z"
+  },
+  "sims2003inattention": {
+   "area": "information-theory",
+   "argument": "Rational inattention: optimal behaviour under an explicit mutual-information constraint on what the decision-maker observes. CWC's inferred-context boundary (governor abstains as I(C;Z) -> 0) is a rediscovery of this result in a compute-allocation setting; the review states that overlap rather than claiming the boundary as novel.",
+   "claims": [
+    "CWC-L4b-inferred-context",
+    "CWC-AC3-inferred-difficulty"
+   ],
+   "identifier": "10.1016/S0304-3932(03)00029-1",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Christopher A. Sims"
+    ],
+    "doi": "10.1016/S0304-3932(03)00029-1",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1016/S0304-3932(03)00029-1",
+    "title": "Implications of rational inattention",
+    "url": "https://doi.org/10.1016/S0304-3932(03)00029-1",
+    "venue": "Journal of Monetary Economics",
+    "year": 2003
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:15Z"
+  },
+  "snell2024testtime": {
+   "area": "test-time-compute",
+   "argument": "Optimal test-time compute scaling: shows adaptive allocation paying off when the demand spread is large. The empirical anchor for WP-R1's screen being worth running before any cloud spend.",
+   "claims": [
+    "CWC-R1-routability-screen",
+    "CWC-L7-pareto"
+   ],
+   "identifier": "2408.03314",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Charlie Snell",
+     "Jaehoon Lee",
+     "Kelvin Xu",
+     "Aviral Kumar"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2408.03314",
+    "title": "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters",
+    "url": "https://arxiv.org/abs/2408.03314",
+    "venue": "arXiv preprint",
+    "year": 2024
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:30Z"
+  },
+  "teerapittayanon2016branchynet": {
+   "area": "adaptive-computation",
+   "argument": "Early-exit branches — the cheapest realisation of input-conditional compute. Included so the novelty boundary explicitly excludes early exit.",
+   "claims": [
+    "CWC-AC1-compute-identifiability"
+   ],
+   "identifier": "1709.01686",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Surat Teerapittayanon",
+     "Bradley McDanel",
+     "H. T. Kung"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1709.01686",
+    "title": "BranchyNet: Fast Inference via Early Exiting from Deep Neural Networks",
+    "url": "https://arxiv.org/abs/1709.01686",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:01Z"
+  },
+  "tishby2000ib": {
+   "area": "information-theory",
+   "argument": "The information bottleneck: the trade-off between signal compression and task relevance that governs how much a router can learn from a noisy difficulty observation.",
+   "claims": [
+    "CWC-AC3-inferred-difficulty"
+   ],
+   "identifier": "physics/0004057",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Naftali Tishby",
+     "Fernando C. Pereira",
+     "William Bialek"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=physics/0004057",
+    "title": "The information bottleneck method",
+    "url": "https://arxiv.org/abs/physics/0004057",
+    "venue": "arXiv preprint",
+    "year": 2000
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:28Z"
+  },
+  "wald1945sprt": {
+   "area": "decision-theory",
+   "argument": "Sequential tests: the classical optimal-stopping result behind 'stop when enough evidence has accumulated'. CWC's halt-conditioned identity adaptive - static = P(m > K) is an optimal-stopping identity and is claimed conservatively as a verification, not a discovery.",
+   "claims": [
+    "CWC-L2p-jensen-gap"
+   ],
+   "identifier": "10.1214/aoms/1177731118",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "A. Wald"
+    ],
+    "doi": "10.1214/aoms/1177731118",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1214/aoms/1177731118",
+    "title": "Sequential Tests of Statistical Hypotheses",
+    "url": "https://doi.org/10.1214/aoms/1177731118",
+    "venue": "The Annals of Mathematical Statistics",
+    "year": 1945
+   },
+   "role": "foundation",
+   "verified_utc": "2026-07-22T15:29:31Z"
+  },
+  "wang2018skipnet": {
+   "area": "adaptive-computation",
+   "argument": "Layer-skipping policy learned with RL: prior art for reward-only routing controllers of the kind CWC trains in WP2/AC2.",
+   "claims": [
+    "CWC-L2-routing-causality"
+   ],
+   "identifier": "1711.09485",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Xin Wang",
+     "Fisher Yu",
+     "Zi-Yi Dou",
+     "Trevor Darrell",
+     "Joseph E. Gonzalez"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1711.09485",
+    "title": "SkipNet: Learning Dynamic Routing in Convolutional Networks",
+    "url": "https://arxiv.org/abs/1711.09485",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:59Z"
+  },
+  "wei2022cot": {
+   "area": "test-time-compute",
+   "argument": "Chain-of-thought: the canonical case where per-instance compute demand varies by orders of magnitude — precisely the workload property CWC's closing analysis says is required and that per-token byte prediction lacks.",
+   "claims": [
+    "CWC-R1-routability-screen"
+   ],
+   "identifier": "2201.11903",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Jason Wei",
+     "Xuezhi Wang",
+     "Dale Schuurmans",
+     "Maarten Bosma",
+     "Brian Ichter",
+     "Fei Xia",
+     "Ed Chi",
+     "Quoc Le",
+     "Denny Zhou"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2201.11903",
+    "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "url": "https://arxiv.org/abs/2201.11903",
+    "venue": "arXiv preprint",
+    "year": 2022
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:24Z"
+  },
+  "williams1992reinforce": {
+   "area": "method",
+   "argument": "REINFORCE. Every reward-only controller in CWC is this estimator; the L4c/L4d negatives are statements about ITS credit assignment (the advantage term scaling with reward noise), which is why they are reported as estimator properties, not as facts about adaptivity.",
+   "claims": [
+    "CWC-L2a-e2e-reinforce",
+    "CWC-AC2-compute-controller",
+    "CWC-L4c-credit-collapse"
+   ],
+   "identifier": "10.1007/BF00992696",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Ronald J. Williams"
+    ],
+    "doi": "10.1007/BF00992696",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1007/BF00992696",
+    "title": "Simple statistical gradient-following algorithms for connectionist reinforcement learning",
+    "url": "https://doi.org/10.1007/BF00992696",
+    "venue": "Machine Learning",
+    "year": 1992
+   },
+   "role": "method",
+   "verified_utc": "2026-07-22T15:30:21Z"
+  },
+  "wu2018blockdrop": {
+   "area": "adaptive-computation",
+   "argument": "Learned per-input block dropping; same role as SkipNet in bounding controller novelty.",
+   "claims": [
+    "CWC-L2-routing-causality"
+   ],
+   "identifier": "1711.08393",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Zuxuan Wu",
+     "Tushar Nagarajan",
+     "Abhishek Kumar",
+     "Steven Rennie",
+     "Larry S. Davis",
+     "Kristen Grauman",
+     "Rogerio Feris"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1711.08393",
+    "title": "BlockDrop: Dynamic Inference Paths in Residual Networks",
+    "url": "https://arxiv.org/abs/1711.08393",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:04Z"
+  },
+  "xin2020deebert": {
+   "area": "adaptive-computation",
+   "argument": "Early exiting in BERT: real-workload adaptive compute that reports gains. Same confrontation role as schwartz2020righttool; scope difference is per-sequence classification vs CWC's per-token byte prediction.",
+   "claims": [
+    "CWC-RD1-real-lm-boundary"
+   ],
+   "identifier": "2004.12993",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Ji Xin",
+     "Raphael Tang",
+     "Jaejun Lee",
+     "Yaoliang Yu",
+     "Jimmy Lin"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2004.12993",
+    "title": "DeeBERT: Dynamic Early Exiting for Accelerating BERT Inference",
+    "url": "https://arxiv.org/abs/2004.12993",
+    "venue": "arXiv preprint",
+    "year": 2020
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:27:15Z"
+  },
+  "zenke2017si": {
+   "area": "plasticity",
+   "argument": "Synaptic intelligence: online importance accumulation; same bounding role as EWC.",
+   "claims": [
+    "CWC-L4-plasticity"
+   ],
+   "identifier": "1703.04200",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Friedemann Zenke",
+     "Ben Poole",
+     "Surya Ganguli"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1703.04200",
+    "title": "Continual Learning Through Synaptic Intelligence",
+    "url": "https://arxiv.org/abs/1703.04200",
+    "venue": "arXiv preprint",
+    "year": 2017
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-07-22T15:28:47Z"
+  }
+ },
+ "entry_count": 65,
+ "generated_utc": "2026-07-22T15:30:23Z",
+ "policy": "Every entry's bibliographic fields come from the named external resolver, not from the author and not from a language model. An identifier that does not resolve aborts the build. Re-check offline with scripts/verify_bibliography.py.",
+ "resolvers": [
+  "arxiv-api",
+  "doi-content-negotiation",
+  "http-head",
+  "openalex",
+  "openlibrary"
+ ]
+}

@@ -54,6 +54,7 @@ docs:
     # third-party dep (git + make + coreutils are on the base image).
     - pip install pyyaml
   script:
+    - PYTHONPATH=. python scripts/verify_bibliography.py
     - PYTHONPATH=. python scripts/doc_status_gate.py
     - PYTHONPATH=. python scripts/validate_evidence.py
     - make -f Makefile.cwc PY=python verify-evidence

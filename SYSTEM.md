@@ -221,9 +221,27 @@ records, `DOCUMENT_STATUS_REGISTER.csv`); reproduction in `docs/reproducibility/
 publication package in `docs/publication/`; System Card in `docs/system_card/`; risk
 triggers in `docs/risk/`. Machine-verifiable spine: `scripts/doc_status_gate.py`
 (claim⟷hypothesis 0 orphans, registry schema-valid, commit ancestor of HEAD, artifacts
-exist) wired into `make -f Makefile.cwc verify`. Document register: **53 EXISTS / 0
+exist) wired into `make -f Makefile.cwc verify`. Document register: **87 EXISTS / 0
 MISSING / 10 TRIGGER_NOT_REACHED** (P2 frontier-safety deferred by the trigger ladder,
 not fabricated). Deployment status: `LOCAL_RESEARCH_ONLY`.
+
+**2026-07-22 — register de-drifted at the root.** The register was previously a
+hard-coded list of 63 paths, so 34 of 72 documents on disk were untracked, including
+`IDENTIFIABILITY_THEORY.md`, `ROUTABILITY_INFORMATION_BOUND.md`, `PROGRAMME_SUMMARY.md`
+and `THREATS_TO_VALIDITY_AND_RED_TEAM.md`. `build_document_register.py` now emits
+curated-governance entries **UNION a glob over `docs/`** (63 governed + 34 discovered =
+97), closing the third and last instance of the hard-coded-gate-list class already killed
+in `experiment-tests` and `verify-evidence`.
+
+**Bibliography is now a gate, not a list.** `scripts/verify_bibliography.py` (offline,
+inside `doc-gate`) enforces: every citation machine-resolved against an external
+authority, BibTeX titles byte-identical to what the resolver returned, every reference
+attached to a real `claim_registry.json` id, every reference argued in
+`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`, and no dangling citations. 65
+references, 0 unresolved. The review itself now records the **conceded overlaps** —
+oracle gap = expected value of information, routability ceiling = Pinsker-type bound,
+`V*(R)` = rational inattention — and the prior work reporting positive real-workload
+adaptive-compute results that the RD1/RD2/RD3 negatives must confront.
 
 ## Provenance
 Branch `wp1-instrumentation`, baseline `92d63d4e` (== upstream karpathy/nanochat,

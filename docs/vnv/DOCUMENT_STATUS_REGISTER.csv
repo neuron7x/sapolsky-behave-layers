@@ -62,3 +62,37 @@ DOC-060,P2,TRIGGER_NOT_REACHED,docs/risk/PRIVACY_PII_AND_DATA_RETENTION_POLICY.m
 DOC-061,P2,TRIGGER_NOT_REACHED,docs/risk/DEPLOYMENT_MONITORING_DEPRECATION_AND_CHANGE_CONTROL.md,TRIGGER_NOT_REACHED
 DOC-062,P2,EXISTS,docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md,
 DOC-063,P2,TRIGGER_NOT_REACHED,docs/risk/NONCOMPLIANCE_CORRECTIVE_AND_PREVENTIVE_ACTION.md,TRIGGER_NOT_REACHED
+DOC-D001,P1,EXISTS,docs/ADAPTIVE_COMPUTATION_ADMISSIBILITY_SPEC.md,discovered by glob
+DOC-D002,P1,EXISTS,docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md,discovered by glob
+DOC-D003,P1,EXISTS,docs/CHECKLIST_STATUS.json,discovered by glob
+DOC-D004,P1,EXISTS,docs/CHECKLIST_STATUS.md,discovered by glob
+DOC-D005,P1,EXISTS,docs/CWC_QUALITY_REPORT.md,discovered by glob
+DOC-D006,P1,EXISTS,docs/CWC_SEMANTIC_CONTRACT.md,discovered by glob
+DOC-D007,P1,EXISTS,docs/DCSA_AUDIT_0001.md,discovered by glob
+DOC-D008,P1,EXISTS,docs/DCSA_AUDIT_0002.md,discovered by glob
+DOC-D009,P1,EXISTS,docs/DCSA_PROTOCOL_V2.md,discovered by glob
+DOC-D010,P1,EXISTS,docs/IDENTIFIABILITY_INFERENCE.md,discovered by glob
+DOC-D011,P1,EXISTS,docs/IDENTIFIABILITY_THEORY.md,discovered by glob
+DOC-D012,P1,EXISTS,docs/INFORMATION_MARKET_SYNTHESIS.md,discovered by glob
+DOC-D013,P1,EXISTS,docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md,discovered by glob
+DOC-D014,P1,EXISTS,docs/NEURON_INFORMATION_BUDGET.md,discovered by glob
+DOC-D015,P1,EXISTS,docs/RCFR_FALSIFICATION_CONTRACT.md,discovered by glob
+DOC-D016,P1,EXISTS,docs/ROUTABILITY_INFORMATION_BOUND.md,discovered by glob
+DOC-D017,P1,EXISTS,docs/VALUE_OF_INFORMATION_RATE_FUNCTION.md,discovered by glob
+DOC-D018,P1,EXISTS,docs/WP1_INSTRUMENTATION.md,discovered by glob
+DOC-D019,P1,EXISTS,docs/WP1_L2_PREREGISTRATION.md,discovered by glob
+DOC-D020,P1,EXISTS,docs/adr/0001-cwc-measurement-safe-instrumentation.md,discovered by glob
+DOC-D021,P1,EXISTS,docs/adr/0002-wp2-routing-gate-mechanism.md,discovered by glob
+DOC-D022,P1,EXISTS,docs/methodology/PREREGISTRATION_INTEGRITY_POLICY.md,discovered by glob
+DOC-D023,P1,EXISTS,docs/publication/ASCENSION_ACT_STATUS.md,discovered by glob
+DOC-D024,P1,EXISTS,docs/publication/BIBLIOGRAPHY_VERIFICATION.json,discovered by glob
+DOC-D025,P1,EXISTS,docs/publication/PLASTICITY_MECHANISM_STUDY.md,discovered by glob
+DOC-D026,P1,EXISTS,docs/publication/PROGRAMME_SUMMARY.md,discovered by glob
+DOC-D027,P1,EXISTS,docs/publication/THREATS_TO_VALIDITY_AND_RED_TEAM.md,discovered by glob
+DOC-D028,P1,EXISTS,docs/vision/ARCHITECTURE.md,discovered by glob
+DOC-D029,P1,EXISTS,docs/vision/CHARTER.md,discovered by glob
+DOC-D030,P1,EXISTS,docs/vision/ROADMAP.md,discovered by glob
+DOC-D031,P1,EXISTS,docs/vision/VALIDATION_REPORT.md,discovered by glob
+DOC-D032,P1,EXISTS,docs/vnv/DEBT_REGISTER_2026-07-19.md,discovered by glob
+DOC-D033,P1,EXISTS,docs/vnv/DOCUMENT_STATUS_REGISTER.csv,discovered by glob
+DOC-D034,P1,EXISTS,docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md,discovered by glob

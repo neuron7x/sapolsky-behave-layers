@@ -212,3 +212,24 @@ allocation in all seven synthetic distributions (mean paired solved lift 0.042�
 lookup necessarily erases the allocation gain. It does not price a learned predictor,
 controller arithmetic, memory traffic, or physical execution, so it is not evidence
 that `c_route` is small on real inputs.
+
+## Prior art and provenance (added 2026-07-22)
+
+The oracle gap `G = V_oracle − V_fixed` defined in §1 is the **expected value of perfect
+information** about the context, relative to a context-blind policy (Howard, 1966). The
+`γ` term it is decomposed into in §2 is the interaction of a two-way ANOVA, and it is the
+same context-conditioned choice value the conditional-computation and mixture-of-experts
+lines have optimised since Jacobs et al. (1991) — through learned halting (Graves, 2016;
+Banino et al., 2021), sparse expert routing (Shazeer et al., 2017; Fedus et al., 2022),
+and adaptive depth at scale (Raposo et al., 2024; Bae et al., 2025).
+
+**CWC does not claim `G`.** What this note contributes is the inversion: the prior
+literature *assumes* `G > 0` and optimises a controller for it, whereas here `G > 0` is
+treated as a hypothesis that must be certified before a controller may be trained at all —
+and, in WP18, a hypothesis that was rejected on real workloads, halting the programme by
+its own preregistered kill rule.
+
+Per-citation arguments, the conceded overlaps and the prior art that reports *positive*
+real-workload results (which this programme must confront rather than omit) are in
+[`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`](publication/RELATED_WORK_AND_NOVELTY_REVIEW.md)
+§2.3 and §3.

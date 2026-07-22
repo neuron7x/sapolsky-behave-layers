@@ -58,6 +58,30 @@ only when the route signal is **cheaply computable** — `V_realized = oracle_ga
 See the full non-claim boundary in [`SYSTEM.md`](SYSTEM.md) and per-claim scope in
 [`claim_registry.json`](claim_registry.json).
 
+## Novelty boundary — what is actually original here
+
+The mechanisms are not. Adaptive halting, adaptive depth, learned routing and
+importance-weighted plasticity are established prior art, and the value-of-information
+theory this repository builds on is classical: the oracle gap is expected value of
+information (Howard, 1966), the routability ceiling is a Pinsker-type bound (Kullback,
+1967), and the `V*(R)` frontier is rational inattention (Sims, 2003). Those overlaps are
+conceded in writing, per claim, in
+[`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`](docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md) §3 —
+including the prior work that reports *positive* real-workload results this programme's
+negatives must confront (§2.3).
+
+> **The one defensible novelty statement:** not a mechanism and not a theory, but an
+> **executable, falsification-tested instrument that decides — before spending — whether a
+> given workload can pay for adaptivity**, together with the frozen negatives that
+> instrument produced when turned on its author's own preferred hypothesis.
+
+The bibliography is machine-verified, not hand-written: all 65 references were resolved
+against external authorities (arXiv API, DOI content negotiation, OpenAlex, Open Library),
+the resolution record is
+[`docs/publication/BIBLIOGRAPHY_VERIFICATION.json`](docs/publication/BIBLIOGRAPHY_VERIFICATION.json),
+and `make -f Makefile.cwc bib-gate` fails if any citation is unresolved, hand-altered,
+attached to a claim id that does not exist, or never argued.
+
 ## Reproduce
 
 ```bash

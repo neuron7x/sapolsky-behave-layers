@@ -2,6 +2,26 @@
 REAL file existence. States: EXISTS / MISSING / TRIGGER_NOT_REACHED / N_A. Never
 hand-maintained -> never drifts. Run:
   PYTHONPATH=. .venv/bin/python scripts/build_document_register.py
+
+TWO SOURCES, and the second one is the point:
+
+  1. GOVERNED  -- the curated list below. These carry governance semantics a glob cannot
+     infer: a priority (P0/P1/P2) and, for risk documents, TRIGGER_NOT_REACHED as a
+     legitimate non-existent state. A curated entry whose file disappears reports MISSING.
+
+  2. DISCOVERED -- every remaining document under docs/, found by GLOB.
+
+Why (2) exists: until 2026-07-22 this register was the curated list ALONE, and 34 of 72
+documents on disk were therefore untracked -- including docs/IDENTIFIABILITY_THEORY.md,
+docs/ROUTABILITY_INFORMATION_BOUND.md, docs/publication/PROGRAMME_SUMMARY.md and
+docs/publication/THREATS_TO_VALIDITY_AND_RED_TEAM.md, i.e. most of the programme's actual
+substance. That is the same hard-coded-gate-list drift already killed at the root in
+`experiment-tests` (glob over experiments/*/tests) and `verify-evidence` (glob over
+artifacts/**/SHA256SUMS). This is the third and last instance of that class: a document
+can no longer be silently absent from the register by being forgotten.
+
+Discovered ids are DOC-D### assigned in sorted-path order, so the output is deterministic
+and `git diff --exit-code` after `make docs-regen` remains a valid CI gate.
 """
 from __future__ import annotations
 
@@ -9,6 +29,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/vnv/DOCUMENT_STATUS_REGISTER.csv"
+
+# Documents discovered by glob: which suffixes count as a document, and what to skip.
+DISCOVER_ROOT = "docs"
+DISCOVER_SUFFIXES = {".md", ".yaml", ".yml", ".csv", ".json", ".jsonl", ".bib"}
+DISCOVER_EXCLUDE_PREFIXES = (
+    "docs/upstream/",  # unmodified upstream nanochat documentation, not CWC-governed
+)
 
 # (id, priority, path, note). Priority P2 risk docs are TRIGGER_NOT_REACHED by design.
 DOCS = [
@@ -78,10 +105,24 @@ DOCS = [
 ]
 
 
+def discover(governed_paths: set[str]) -> list[tuple[str, str, str, str]]:
+    """Every docs/ file not already governed, as DOC-D### entries in sorted-path order."""
+    found: list[str] = []
+    for p in sorted((ROOT / DISCOVER_ROOT).rglob("*")):
+        if not p.is_file() or p.suffix not in DISCOVER_SUFFIXES:
+            continue
+        rel = p.relative_to(ROOT).as_posix()
+        if rel in governed_paths or rel.startswith(DISCOVER_EXCLUDE_PREFIXES):
+            continue
+        found.append(rel)
+    return [(f"DOC-D{i:03d}", "P1", rel, "discovered by glob") for i, rel in enumerate(found, start=1)]
+
+
 def main() -> None:
+    entries = list(DOCS) + discover({path for _, _, path, _ in DOCS})
     rows = ["doc_id,priority,state,path,note"]
     counts: dict[str, int] = {}
-    for did, prio, path, note in DOCS:
+    for did, prio, path, note in entries:
         exists = (ROOT / path).exists()
         if exists:
             state = "EXISTS"
@@ -92,7 +133,8 @@ def main() -> None:
         counts[state] = counts.get(state, 0) + 1
         rows.append(f"{did},{prio},{state},{path},{note}")
     OUT.write_text("\n".join(rows) + "\n")
-    print(f"register -> {OUT.relative_to(ROOT)} ({len(DOCS)} docs)")
+    n_disc = sum(1 for e in entries if e[0].startswith("DOC-D"))
+    print(f"register -> {OUT.relative_to(ROOT)} ({len(entries)} docs: {len(DOCS)} governed + {n_disc} discovered)")
     for k, v in sorted(counts.items()):
         print(f"  {k}: {v}")
 

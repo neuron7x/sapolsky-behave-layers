@@ -5,7 +5,7 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate docs-regen
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test coverage mutation experiment-tests validate-evidence doc-gate
@@ -19,10 +19,19 @@ verify-full: verify verify-evidence reproduce-primary
 
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
 # commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.
-doc-gate:
+# bib-gate is part of it: a bibliography is the one artefact a reader cannot check by
+# running the code, so it is checked here instead (offline, deterministic).
+doc-gate: bib-gate
 	PYTHONPATH=. $(PY) scripts/doc_status_gate.py
 
-# Regenerate the machine-derived docs from real state (ledger + 63-doc register).
+# Offline bibliography gate: every citation machine-resolved, titles unaltered, every
+# reference attached to a real claim and argued in the related-work review.
+bib-gate:
+	PYTHONPATH=. $(PY) scripts/verify_bibliography.py
+
+# Regenerate the machine-derived docs from real state (experiment ledger + the document
+# register, which is curated-governance entries UNION a glob over docs/ so no document can
+# be silently untracked).
 docs-regen:
 	PYTHONPATH=. $(PY) scripts/build_experiment_ledger.py
 	PYTHONPATH=. $(PY) scripts/build_document_register.py
@@ -31,7 +40,7 @@ lint:
 	$(PY) -m ruff check .
 
 typecheck:
-	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py experiments/common/value_of_information_rate.py experiments/common/identifiability_inference.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py
+	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py experiments/common/value_of_information_rate.py experiments/common/identifiability_inference.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py scripts/verify_bibliography.py scripts/build_bibliography.py scripts/build_document_register.py
 
 # Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
 test:
