@@ -496,3 +496,15 @@ hypotheses:
     preregistration: experiments/wp18_real_workload_pilot/PREREGISTRATION.md
     status: NOT_SUPPORTED
     claim_id: CWC-RD3-real-workload-pilot
+
+  - hypothesis_id: H-RD4
+    research_question_id: RQ-real-data
+    type: confirmatory
+    H0: "The WP18 negative is an artifact of the weight-tied compute axis (a different axis would show identifiable structure)."
+    H1: "The negative is robust across compute axes."
+    estimand: "G_lo vs c_route, and modal best compute level per difficulty bucket, on an untied-depth axis"
+    experimental_unit: "(seed x held-out eval shard) replicate"
+    decision_rule: "frozen in PREREGISTRATION.md: robust iff BOTH workloads have G_lo <= c_route AND a single modal best depth across buckets; mechanism-specific if either fails. RESULT G_lo -0.484/-0.234 (decision holds) but prose modal best depth differs across buckets -> NEGATIVE_IS_MECHANISM_SPECIFIC -> SUPPORTED_NARROWED (decision robust, explanation axis-specific)."
+    preregistration: experiments/wp19_negative_robustness/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD4-negative-robustness

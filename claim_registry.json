@@ -1,7 +1,7 @@
 {
  "schema": "cwc-claim-registry/1.1",
  "schema_file": "schemas/claim.schema.json",
- "git_commit": "4c38096923eabda7999cd0d419aa5bf8006cf69b",
+ "git_commit": "a5dfb36e3fe1cef5e8a0628cf814cf14af8a1d78",
  "generated": "2026-07-21",
  "claims": [
   {
@@ -1134,7 +1134,8 @@
    "limitations": [
     "small from-scratch models (pilot scale), not large pretrained LMs",
     "two corpora only, both from one repository",
-    "does NOT show adaptive compute never helps real LMs"
+    "does NOT show adaptive compute never helps real LMs",
+    "NARROWED BY WP19: the stated mechanism ('no context x resource interaction') is specific to the WEIGHT-TIED compute axis. On untied depth, prose buckets do differ (easy=2, med/hard=3). The NOT_SUPPORTED status is unaffected -- G_lo still fails c_route on both axes."
    ],
    "prohibited_extrapolations": [
     "real-workload compute-equivalent Pareto (L7)",
@@ -1142,7 +1143,43 @@
     "large-model or production behaviour",
     "adaptive compute never helps real LMs"
    ],
-   "note": "Act CWC-ASCEND-2026-01 WP18 KILL RULE TRIGGERED: both workloads have G_lo <= c_route, so architecture work stops and the negative boundary is published. Third independent real-data negative (WP6 unigram, WP14 bigram, WP18 two families/scales/lengths). Mechanism: no context x resource interaction -- every difficulty bucket wants the same compute budget. A tiny plug-in gap (~0.001 nats) exists but is ~180x below the certificate correction and the same order as the measured route cost.",
+   "note": "Act CWC-ASCEND-2026-01 WP18 KILL RULE TRIGGERED: both workloads have G_lo <= c_route, so architecture work stops and the negative boundary is published. Third independent real-data negative (WP6 unigram, WP14 bigram, WP18 two families/scales/lengths). Mechanism: no context x resource interaction -- every difficulty bucket wants the same compute budget. A tiny plug-in gap (~0.001 nats) exists but is ~180x below the certificate correction and the same order as the measured route cost. WP19 attacked this negative on an untied-depth axis: the DECISION held (G_lo -0.484/-0.234, more negative than here) but the 'no interaction' EXPLANATION was falsified on prose and is narrowed to the weight-tied axis.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RD4-negative-robustness",
+   "hypothesis_id": "H-RD4",
+   "statement": "The WP18 real-workload negative is robust across structurally different compute axes.",
+   "status": "SUPPORTED_NARROWED",
+   "scope": {
+    "regime": [
+     "untied depth L in {1,2,3} vs weight-tied K iterations",
+     "same two real workloads, splits and eval shards",
+     "pilot scale, from-scratch byte LMs"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp19-negative-robustness/"
+   ],
+   "supporting_metrics": [
+    "untied-depth G_lo prose -0.4841 / code -0.2338 (both < c_route 0.0006)",
+    "weight-tied G_lo prose -0.2004 / code -0.1709",
+    "modal best depth prose easy=2 med=3 hard=3 (INTERACTION present)",
+    "code easy=med=hard=3",
+    "positive control +0.6195"
+   ],
+   "limitations": [
+    "NARROWED: robust in the DECISION (certificate vs c_route) but NOT in the explanation -- the 'no interaction' finding was axis-specific",
+    "pilot scale only",
+    "two corpora from one repository"
+   ],
+   "prohibited_extrapolations": [
+    "any architecture claim",
+    "L7",
+    "adaptive compute never helps real LMs",
+    "the boundary at large pretrained scale"
+   ],
+   "note": "Verdict NEGATIVE_IS_MECHANISM_SPECIFIC -- the outcome that goes AGAINST the author's prior conclusion, registered as observed. A genuine context x resource interaction does exist on real prose with untied depth; it is simply far too small and noisy to certify or to pay for the route decision. The WP18 kill rule therefore stands, now supported on two structurally different compute axes.",
    "independent_replication": false
   }
  ]
