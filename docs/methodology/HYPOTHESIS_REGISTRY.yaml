@@ -484,3 +484,15 @@ hypotheses:
     preregistration: experiments/wp17_metrology/PREREGISTRATION.md
     status: NOT_SUPPORTED
     claim_id: CWC-RIGOR10-timing-metrology
+
+  - hypothesis_id: H-RD3
+    research_question_id: RQ-real-data
+    type: confirmatory
+    H0: "On real workloads, per-token difficulty induces no compute-allocation gap exceeding the measured route cost."
+    H1: "It does (G_lo > c_route on at least one real workload)."
+    estimand: "debiased lower confidence bound on the oracle gap per workload, vs measured c_route"
+    experimental_unit: "(seed x held-out eval shard) replicate"
+    decision_rule: "frozen in PREREGISTRATION.md: a workload passes iff G_lo > c_route; if BOTH fail the kill rule fires and architecture work stops. RESULT G_lo -0.200/-0.154 vs c_route 0.0006, positive control +0.6195 -> H0 NOT rejected -> NOT_SUPPORTED, kill rule TRIGGERED."
+    preregistration: experiments/wp18_real_workload_pilot/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD3-real-workload-pilot
