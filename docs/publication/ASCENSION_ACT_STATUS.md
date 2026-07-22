@@ -85,7 +85,21 @@ plus independent replication**. Neither exists. Therefore:
 > routing decision.**
 
 Until such a workload exists, WP20–WP24 are unfalsifiable ceremony and WP25–WP26 are unreachable.
-Candidate directions (none attempted; all beyond a 4 GB consumer GPU): tasks whose *per-instance*
+
+**That question is now answerable cheaply, without hunting.** WP-R1
+(`artifacts/wpr1-routability-spec/`) derives the condition a workload must satisfy and shows it
+predicts the certificate's verdict on every frozen bundle plus a boundary sweep:
+
+> **routable ⟺ `Ĝ > c_route + κ·se`**  (κ = 4.9007 for this design) — the gap must exceed
+> ≈5 standard errors *and* the measured route cost; equivalently `n ≥ (κ·σ/(Ĝ − c_route))²`.
+
+So a candidate workload is screened by a cheap pilot before any budget is committed. Applied to what
+has been measured: for three of the four real-workload arms the aggregate gap **does not exceed
+`c_route` at all** — no sample size would certify them. Only WP19-prose, the arm with a genuine
+interaction, has a positive margin, at ~3.7 × 10⁵ replicates versus 15.
+
+Candidate directions still untested (all beyond a 4 GB consumer GPU): tasks whose *per-instance*
 compute demand varies by orders of magnitude — multi-step reasoning, retrieval-conditioned
 generation, mixed-modality batches — rather than per-token byte prediction, where the measured
-interaction is ~0.001 nats, the same order as the cost of deciding.
+interaction is ~0.001 nats, the same order as the cost of deciding. **The screen, not intuition, is
+now what decides whether any of them is worth a run.**

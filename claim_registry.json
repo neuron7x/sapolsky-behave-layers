@@ -1,7 +1,7 @@
 {
  "schema": "cwc-claim-registry/1.1",
  "schema_file": "schemas/claim.schema.json",
- "git_commit": "a5dfb36e3fe1cef5e8a0628cf814cf14af8a1d78",
+ "git_commit": "961fa6c0798412f910e002f4d281f563b4a13082",
  "generated": "2026-07-21",
  "claims": [
   {
@@ -1180,6 +1180,42 @@
     "the boundary at large pretrained scale"
    ],
    "note": "Verdict NEGATIVE_IS_MECHANISM_SPECIFIC -- the outcome that goes AGAINST the author's prior conclusion, registered as observed. A genuine context x resource interaction does exist on real prose with untied depth; it is simply far too small and noisy to certify or to pay for the route decision. The WP18 kill rule therefore stands, now supported on two structurally different compute axes.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-R1-routability-screen",
+   "hypothesis_id": "H-R1",
+   "statement": "The sign of the corrected identifiability certificate is predicted by the closed-form condition Ghat > c_route + kappa*se, on every certificate-bearing evidence bundle frozen in this repository.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "design n_contexts=n_actions=3, delta=0.05, corrected certificate",
+     "kappa=4.9007 derived from the shipped bound implementations",
+     "c_route=0.0006 measured in WP17"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wpr1-routability-spec/"
+   ],
+   "supporting_metrics": [
+    "0/7 mismatches on frozen bundles (AC1, WP6, WP14, WP18 prose+code, WP19 prose+code)",
+    "boundary sweep 61 points, 0 mismatches, 7 points inside the near-threshold band",
+    "predicted threshold 5.786 lies INSIDE the certificate flip bracket [5.068, 6.311]",
+    "corrections exactly linear in se (max-min ratio < 1e-9)"
+   ],
+   "limitations": [
+    "kappa is DESIGN-SPECIFIC, not a universal constant",
+    "passing the screen only fails to exclude a workload; it does not show routability",
+    "the frozen bundles all sit far from the threshold, so the threshold VALUE rests on the sweep, not on them"
+   ],
+   "prohibited_extrapolations": [
+    "any architecture claim",
+    "L7",
+    "L8",
+    "kappa as a universal constant",
+    "screen pass implies routable"
+   ],
+   "note": "Not the act's WP20 (BLOCKED). Converts the WP18 kill-rule negative into a screening instrument: a cheap pilot now says in closed form whether a candidate workload could EVER be certified, and at what n. Machine-derived budget requirement corrected an error the author had made twice (gap-statistic sd vs cell sd, ~150x): for 3 of 4 real arms the aggregate gap does not exceed c_route at all, so no sample size certifies them; only WP19-prose has a positive margin, needing ~3.7e5 replicates vs 15.",
    "independent_replication": false
   }
  ]

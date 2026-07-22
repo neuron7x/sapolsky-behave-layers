@@ -508,3 +508,15 @@ hypotheses:
     preregistration: experiments/wp19_negative_robustness/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD4-negative-robustness
+
+  - hypothesis_id: H-R1
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The certificate's sign is not predicted by the closed-form condition Ghat > c_route + kappa*se."
+    H1: "It is, on every frozen certificate-bearing bundle."
+    estimand: "agreement between the closed-form screen and the corrected certificate's sign"
+    experimental_unit: "evidence bundle (and sweep point)"
+    decision_rule: "frozen in PREREGISTRATION.md: 100% agreement or REFUTED; no post-hoc exclusions. RESULT 0/7 mismatches on frozen bundles plus 0/61 on a boundary sweep whose predicted threshold lies inside the certificate's flip bracket -> SUPPORTED."
+    preregistration: experiments/wpr1_routability_spec/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-R1-routability-screen

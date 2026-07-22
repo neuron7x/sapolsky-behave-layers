@@ -82,8 +82,8 @@ genuine interaction exists. What survived is the *decision*, on both axes and bo
 
 ## 6. Ledger
 
-42 claims / 42 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
-`verify-full` GREEN, on GitLab. 25 `SUPPORTED`, 5 `SUPPORTED_NARROWED`, 10 `NOT_SUPPORTED`,
+43 claims / 43 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
+`verify-full` GREEN, on GitLab. 26 `SUPPORTED`, 5 `SUPPORTED_NARROWED`, 10 `NOT_SUPPORTED`,
 2 `NOT_TESTED` (L7 cloud, L8 replication). Preregistration integrity is machine-audited: 18
 strict-ancestor, 5 disclosed-retrospective, **0 violations**.
 
@@ -113,6 +113,12 @@ L7 (compute-equivalent Pareto vs MoD/MoE at scale) and L8 (independent replicati
 > **Find a real workload whose context × resource interaction is large enough to pay for its own
 > routing decision.** Everything downstream — strong baselines, causal controller, sparse
 > execution, the Pareto trial — is unfalsifiable ceremony until such a workload exists.
+
+**The question is now screenable rather than guessable.** WP-R1 derives the condition — routable
+iff `Ĝ > c_route + κ·se`, κ = 4.9007 for this design, i.e. the gap must exceed ≈5 standard errors
+and the route cost — and shows it predicts the certificate's sign on every frozen bundle (0/7
+mismatches) and across a boundary sweep (0/61, predicted threshold inside the flip bracket). A cheap
+pilot now answers "could this workload ever be certified, and at what `n`" before any budget moves.
 
 Candidate directions (none attempted here, all beyond a 4 GB consumer GPU): tasks with genuinely
 heterogeneous per-instance difficulty (multi-step reasoning, retrieval-conditioned generation,
