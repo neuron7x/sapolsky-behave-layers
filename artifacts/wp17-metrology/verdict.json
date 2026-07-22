@@ -1,0 +1,143 @@
+{
+  "experiment": "wp17_metrology",
+  "verdict": "METROLOGY_LIMITED__PARETO_SURVIVES_PHYSICAL_ROUTE_COST",
+  "tier": "METROLOGY -- physical cost accounting on the real AC1 mechanism (single host)",
+  "host": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU, 595.71.05",
+    "torch": "2.9.1+cu128",
+    "cuda": true
+  },
+  "seed": 0,
+  "batch": 64,
+  "reps": 30,
+  "warmup": 10,
+  "q1_flop_ledger_vs_profiler": [
+    {
+      "K": 1,
+      "analytic_linear_only": 19660800,
+      "profiler_aten_mm": 19660800,
+      "like_for_like_error_pct": 0.0,
+      "pass": true,
+      "analytic_with_attention": 20840448,
+      "profiler_all_attributed": 19734528,
+      "full_vs_profiler_error_pct": 5.603985056039851,
+      "profiler_unattributed_flops": 1105920,
+      "profiler_ops": {
+        "aten::add": 73728,
+        "aten::mm": 19660800
+      }
+    },
+    {
+      "K": 2,
+      "analytic_linear_only": 38535168,
+      "profiler_aten_mm": 38535168,
+      "like_for_like_error_pct": 0.0,
+      "pass": true,
+      "analytic_with_attention": 40894464,
+      "profiler_all_attributed": 38658048,
+      "full_vs_profiler_error_pct": 5.785123966942149,
+      "profiler_unattributed_flops": 2236416,
+      "profiler_ops": {
+        "aten::add": 122880,
+        "aten::mm": 38535168
+      }
+    },
+    {
+      "K": 3,
+      "analytic_linear_only": 57409536,
+      "profiler_aten_mm": 57409536,
+      "like_for_like_error_pct": 0.0,
+      "pass": true,
+      "analytic_with_attention": 60948480,
+      "profiler_all_attributed": 57581568,
+      "full_vs_profiler_error_pct": 5.847204438753734,
+      "profiler_unattributed_flops": 3366912,
+      "profiler_ops": {
+        "aten::add": 172032,
+        "aten::mm": 57409536
+      }
+    }
+  ],
+  "q2_route_decision_cost": {
+    "model_flops_K1": 20840448,
+    "encoder_router_flops": 12288,
+    "tabular_controller_flops": 576,
+    "rho_flops_encoder_router": 0.0005896226415094339,
+    "rho_flops_tabular": 2.7638561320754718e-05,
+    "router_ms_median": 0.042262516217306256,
+    "model_K1_ms_median": 0.22427350631915033,
+    "rho_time_encoder_router": 0.1884418579391405,
+    "note": "The tabular AC2 controller presumes the context label is GIVEN; Act SS8 forbids counting that as free. The encoder router is the deployable lower bound: it must read the input to infer difficulty (WP6/WP14). Kill-test uses the encoder router."
+  },
+  "q3_wp15_kill_test": {
+    "rho_charged_iterations": 0.0005896226415094339,
+    "measured_frontier_max_compute": 3.0,
+    "adaptive_total_compute": 2.0005896226415096,
+    "adaptive_accuracy": 0.9995998938878377,
+    "fixed_accuracy_at_matched_total": 0.3747291705276782,
+    "advantage": 0.6248707233601595,
+    "kill_test_verdict": "PARETO_SURVIVES_PHYSICAL_ROUTE_COST"
+  },
+  "q4q5_overhead_stability": {
+    "baseline_ms_median": 0.36648099194280803,
+    "overhead_median_pct": 0.7014029568007674,
+    "overhead_p95_pct": 4.869009690211978,
+    "latency_cv_pct": 2.937979222461653,
+    "n_reps_per_window": 30,
+    "overhead_pass": false,
+    "stability_pass": false,
+    "repeats": {
+      "n": 3,
+      "latency_cv_pct_min_med_max": [
+        2.937979222461653,
+        3.3615223588732137,
+        5.403791013793758
+      ],
+      "overhead_p95_pct_min_med_max": [
+        4.869009690211978,
+        8.550623413926806,
+        15.745260378623872
+      ],
+      "stability_pass_in_all_repeats": false,
+      "overhead_pass_in_all_repeats": false,
+      "note": "Q5 flips between repeats on this host (sub-ms steps, OS/thermal jitter). The gate is reported as HOST_UNSTABLE unless it holds in EVERY repeat -- a single passing run is not evidence."
+    }
+  },
+  "q4q5_overhead_stability_batch1024_disclosed_amendment": {
+    "baseline_ms_median": 3.5135210055159405,
+    "overhead_median_pct": 0.3475283894737724,
+    "overhead_p95_pct": 2.2545758168991847,
+    "latency_cv_pct": 0.6407881313187304,
+    "n_reps_per_window": 30,
+    "overhead_pass": false,
+    "stability_pass": false,
+    "repeats": {
+      "n": 3,
+      "latency_cv_pct_min_med_max": [
+        0.6407881313187304,
+        2.904610660716394,
+        6.283340205742405
+      ],
+      "overhead_p95_pct_min_med_max": [
+        2.0333184326243092,
+        2.2545758168991847,
+        9.711844359383658
+      ],
+      "stability_pass_in_all_repeats": false,
+      "overhead_pass_in_all_repeats": false
+    },
+    "amendment": "DISCLOSED: batch 1024 (preregistered was 64). Reason: at sub-ms step time the p95 overhead metric is jitter-limited, not instrument-limited. The preregistered batch-64 result stands and is reported unchanged."
+  },
+  "q6_energy": {
+    "energy_available": false,
+    "detail": "unavailable: TypeError",
+    "pass": true,
+    "status": "INSTRUMENT_INVALID"
+  },
+  "prohibited_extrapolations": [
+    "real-workload compute-equivalent Pareto (L7)",
+    "energy efficiency",
+    "rho beyond this model/host/batch"
+  ]
+}
