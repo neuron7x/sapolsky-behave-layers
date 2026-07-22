@@ -1,0 +1,685 @@
+{
+  "experiment": "wpr1_routability_spec",
+  "verdict": "SPEC_PREDICTS_CERTIFICATE",
+  "tier": "SCREENING INSTRUMENT -- closed-form routability condition, tested out-of-sample on frozen evidence",
+  "class_ceiling": "no mechanism claim; cannot unblock L7 or L8",
+  "specification": "routable <=> plugin_gap > c_route + kappa * se",
+  "kappa_derivation": {
+    "kappa": 4.90069587954565,
+    "ratios_at_decreasing_se": [
+      4.90069587954565,
+      4.9006958795456494,
+      4.90069587954565,
+      4.9006958795456494
+    ],
+    "linear_in_se": true,
+    "design": {
+      "n_contexts": 3,
+      "n_actions": 3,
+      "delta": 0.05
+    }
+  },
+  "c_route_measured_wp17": 0.0006,
+  "n_cases": 7,
+  "mismatches": 0,
+  "cases": [
+    {
+      "bundle": "AC1-synthetic-positive",
+      "n_replicates": 8,
+      "plugin_gap": 0.6241455155735214,
+      "se": 0.0009378213939106736,
+      "gap_over_se": 665.5270605108103,
+      "required_gap_over_se": 5.540476549826615,
+      "predicted_routable": true,
+      "certificate_g_lo": 0.6195495381326336,
+      "certificate_routable": true,
+      "agrees": true
+    },
+    {
+      "bundle": "WP6-real-lm-unigram",
+      "n_replicates": 5,
+      "plugin_gap": 0.0,
+      "se": 0.029344059336554342,
+      "gap_over_se": 0.0,
+      "required_gap_over_se": 4.921142948341363,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.14380631067979494,
+      "certificate_routable": false,
+      "agrees": true
+    },
+    {
+      "bundle": "WP14-real-lm-bigram",
+      "n_replicates": 5,
+      "plugin_gap": 0.0,
+      "se": 0.05978818641670836,
+      "gap_over_se": 0.0,
+      "required_gap_over_se": 4.910731306876029,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.29300371881786985,
+      "certificate_routable": false,
+      "agrees": true
+    },
+    {
+      "bundle": "WP18-prose-tiedK",
+      "n_replicates": 60,
+      "plugin_gap": 0.0,
+      "se": 0.0408963021023879,
+      "gap_over_se": 0.0,
+      "required_gap_over_se": 4.915367132670147,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.2004203392018265,
+      "certificate_routable": false,
+      "agrees": true
+    },
+    {
+      "bundle": "WP18-code-tiedK",
+      "n_replicates": 60,
+      "plugin_gap": 0.0,
+      "se": 0.034871777366977164,
+      "gap_over_se": 0.0,
+      "required_gap_over_se": 4.917901770535543,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.17089597565477826,
+      "certificate_routable": false,
+      "agrees": true
+    },
+    {
+      "bundle": "WP19-prose-untied-depth",
+      "n_replicates": 15,
+      "plugin_gap": 0.003706457879808056,
+      "se": 0.0995378214448093,
+      "gap_over_se": 0.037236678741890836,
+      "required_gap_over_se": 4.906723739019475,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.48409813353371955,
+      "certificate_routable": false,
+      "agrees": true
+    },
+    {
+      "bundle": "WP19-code-untied-depth",
+      "n_replicates": 15,
+      "plugin_gap": 0.0,
+      "se": 0.04770723909856219,
+      "gap_over_se": 0.0,
+      "required_gap_over_se": 4.913272587218052,
+      "predicted_routable": false,
+      "certificate_g_lo": -0.23379867007482286,
+      "certificate_routable": false,
+      "agrees": true
+    }
+  ],
+  "budget_requirement": [
+    {
+      "bundle": "AC1-synthetic-positive",
+      "cell_sigma": 0.002652559468704231,
+      "gap_minus_c_route": 0.6235455155735213,
+      "n_replicates_now": 8,
+      "n_needed_for_certification": 0.00043461973553735067,
+      "unreachable": false
+    },
+    {
+      "bundle": "WP6-real-lm-unigram",
+      "cell_sigma": 0.0656153114123229,
+      "gap_minus_c_route": -0.0006,
+      "n_replicates_now": 5,
+      "n_needed_for_certification": null,
+      "unreachable": true
+    },
+    {
+      "bundle": "WP14-real-lm-bigram",
+      "cell_sigma": 0.13369044907918948,
+      "gap_minus_c_route": -0.0006,
+      "n_replicates_now": 5,
+      "n_needed_for_certification": null,
+      "unreachable": true
+    },
+    {
+      "bundle": "WP18-prose-tiedK",
+      "cell_sigma": 0.3167813939280314,
+      "gap_minus_c_route": -0.0006,
+      "n_replicates_now": 60,
+      "n_needed_for_certification": null,
+      "unreachable": true
+    },
+    {
+      "bundle": "WP18-code-tiedK",
+      "cell_sigma": 0.27011562598991057,
+      "gap_minus_c_route": -0.0006,
+      "n_replicates_now": 60,
+      "n_needed_for_certification": null,
+      "unreachable": true
+    },
+    {
+      "bundle": "WP19-prose-untied-depth",
+      "cell_sigma": 0.38550832477351393,
+      "gap_minus_c_route": 0.0031064578798080562,
+      "n_replicates_now": 15,
+      "n_needed_for_certification": 369872.53828932554,
+      "unreachable": false
+    },
+    {
+      "bundle": "WP19-code-untied-depth",
+      "cell_sigma": 0.1847693425222667,
+      "gap_minus_c_route": -0.0006,
+      "n_replicates_now": 15,
+      "n_needed_for_certification": null,
+      "unreachable": true
+    }
+  ],
+  "budget_note": "sigma is the CELL sd the certificate consumes (se*sqrt(n)), not the sd of the gap statistic; using the latter understates the requirement by ~4 orders of magnitude. This was caught while checking the write-up.",
+  "boundary_sweep": {
+    "n_points": 61,
+    "mismatches": 0,
+    "certificate_sign_changes": 1,
+    "predicted_threshold_gap_over_se": 5.785521360340599,
+    "kappa_only": 4.90069587954565,
+    "flip_bracket_gap_over_se": [
+      5.068344278024629,
+      6.310943163135413
+    ],
+    "resolution_note": "the certificate's flip is bracketed by two grid points; the FULL predicted threshold (kappa + c_route/se, NOT kappa alone) must lie inside that bracket. Comparing against kappa alone was a reporting error caught here and fixed -- the route-cost term is part of the condition.",
+    "flip_alpha": 0.007609496685459876,
+    "flip_gap_over_se": 6.310943163135413,
+    "n_points_near_threshold": 7,
+    "all_near_threshold_agree": true,
+    "points": [
+      {
+        "alpha": 0.0,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502148041473,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 1e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502186948564,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 1.2154742500762858e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502195327332,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 1.4773776525985097e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.7855022055092755,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 1.795714494371641e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502217881835,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 2.1826447283974874e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.7855022329154515,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 2.6529484644318946e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502251181178,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 3.2245905452963977e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502273372004,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 3.9194067748472215e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502300328559,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 4.7639380104013405e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502333070201,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 5.790443980602483e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502372832297,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 7.038135554931547e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502421111106,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 8.554672535565684e-05,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.78550247971742,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.000103979841848149,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.78550255084057,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.00012638482029342973,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502637124477,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0001536174946671828,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.78550274175741,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.00018671810912919206,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785502868577121,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.00022695105366946685,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.78550302219293,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0002758531617629181,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785503208125601,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.00033529241492495567,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785503432964571,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0004075392965871778,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.78550370454065,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.000495353520895917,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785504032108192,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0006020894493336125,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785504426525963,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0007318242219076174,
+        "gap_over_se": 0.0,
+        "required_gap_over_se": 5.785504900416788,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0008895134973108237,
+        "gap_over_se": 0.12095281622900894,
+        "required_gap_over_se": 5.78550546827288,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0010811807510766078,
+        "gap_over_se": 0.2975006176855906,
+        "required_gap_over_se": 5.78550614645252,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0013141473626117567,
+        "gap_over_se": 0.5120902783654325,
+        "required_gap_over_se": 5.785506952982317,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.001597312280060254,
+        "gap_over_se": 0.7729189890412574,
+        "required_gap_over_se": 5.7855079070304,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0019414919457438817,
+        "gap_over_se": 1.089950280074528,
+        "required_gap_over_se": 5.7855090278429655,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0023598334667821936,
+        "gap_over_se": 1.475294636616786,
+        "required_gap_over_se": 5.785510332826572,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.002868316813342012,
+        "gap_over_se": 1.9436721237575025,
+        "required_gap_over_se": 5.785511834293663,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0034863652276780842,
+        "gap_over_se": 2.5129746835368096,
+        "required_gap_over_se": 5.785513534142273,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.004237587160604063,
+        "gap_over_se": 3.2049495609104355,
+        "required_gap_over_se": 5.785515415373422,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.005150678076168122,
+        "gap_over_se": 4.046029918729074,
+        "required_gap_over_se": 5.785517428802265,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.006260516572014822,
+        "gap_over_se": 5.068344278024629,
+        "required_gap_over_se": 5.785519472505662,
+        "predicted": false,
+        "certificate": false,
+        "agrees": true
+      },
+      {
+        "alpha": 0.007609496685459876,
+        "gap_over_se": 6.310943163135413,
+        "required_gap_over_se": 5.785521360340599,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.009249147277217335,
+        "gap_over_se": 7.821289463909244,
+        "required_gap_over_se": 5.785522774076154,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.011242100350620862,
+        "gap_over_se": 9.65706879577063,
+        "required_gap_over_se": 5.7855231910263845,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.013664483492953258,
+        "gap_over_se": 11.888387799131799,
+        "required_gap_over_se": 5.785521775140708,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.01660882782627715,
+        "gap_over_se": 14.600442105785252,
+        "required_gap_over_se": 5.785517213694177,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.02018760254679039,
+        "gap_over_se": 17.8967517542806,
+        "required_gap_over_se": 5.785507473131052,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.024537511066398166,
+        "gap_over_se": 21.903080078727484,
+        "required_gap_over_se": 5.785489434943646,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.02982471286216891,
+        "gap_over_se": 26.77217197317054,
+        "required_gap_over_se": 5.785458353811406,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.03625117049988531,
+        "gap_over_se": 32.68946745906888,
+        "required_gap_over_se": 5.785407052828359,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.04406236427773573,
+        "gap_over_se": 39.87996339271706,
+        "required_gap_over_se": 5.785324730576327,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.053556669177068965,
+        "gap_over_se": 48.616403390981034,
+        "required_gap_over_se": 5.785195196535693,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.0650967523045817,
+        "gap_over_se": 59.22896110827731,
+        "required_gap_over_se": 5.784994267355562,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.07912342618981319,
+        "gap_over_se": 72.11652170575806,
+        "required_gap_over_se": 5.784685937137923,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.09617248711152965,
+        "gap_over_se": 87.75951894927766,
+        "required_gap_over_se": 5.78421676884413,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.11689518164985777,
+        "gap_over_se": 106.7339773628191,
+        "required_gap_over_se": 5.783507731030921,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.14208308325339208,
+        "gap_over_se": 129.72581462175648,
+        "required_gap_over_se": 5.7824424230080576,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.1726983290659436,
+        "gap_over_se": 157.5433726372147,
+        "required_gap_over_se": 5.780850318331923,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.20991037201085547,
+        "gap_over_se": 191.12424886450938,
+        "required_gap_over_se": 5.778483405907856,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.25514065200312874,
+        "gap_over_se": 231.52935666483637,
+        "required_gap_over_se": 5.774984664648227,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.31011689265747755,
+        "gap_over_se": 279.9122997567113,
+        "required_gap_over_se": 5.769847711128524,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.37693909753883637,
+        "gap_over_se": 337.4455234300061,
+        "required_gap_over_se": 5.762369749603248,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.45815976690544913,
+        "gap_over_se": 404.3103979376516,
+        "required_gap_over_se": 5.749784953744516,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.5568813990945267,
+        "gap_over_se": 464.5430097846289,
+        "required_gap_over_se": 5.703095854971715,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.6768750009458527,
+        "gap_over_se": 528.9264649730255,
+        "required_gap_over_se": 5.652162265893014,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 0.8227241341700474,
+        "gap_over_se": 596.3727408730882,
+        "required_gap_over_se": 5.597643203155513,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      },
+      {
+        "alpha": 1.0,
+        "gap_over_se": 665.5270605108103,
+        "required_gap_over_se": 5.540476549826615,
+        "predicted": true,
+        "certificate": true,
+        "agrees": true
+      }
+    ]
+  },
+  "boundary_sweep_note": "The frozen bundles all sit far from the threshold (negatives G/se~0, positive ~665), so agreement there tests the functional form but not the threshold VALUE. The sweep shrinks a real frozen dataset's interaction continuously across the boundary and checks the spec predicts the certificate's exact flip point -- where it can lose.",
+  "interpretation": "The gap must exceed ~5 standard errors AND the measured route cost. Because se = sigma/sqrt(n), a workload with a small effect can only be certified by paying n >= (kappa*sigma/(G-c_route))^2 -- which is why the real workloads are unreachable, not merely unlucky.",
+  "prohibited_extrapolations": [
+    "any architecture claim",
+    "L7",
+    "L8",
+    "kappa as a universal constant (it is design-specific)",
+    "passing the screen implies routability (it only fails to exclude)"
+  ]
+}

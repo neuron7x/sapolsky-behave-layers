@@ -44,8 +44,11 @@ therefore collapses onto a single fixed policy, and the gap collapses with it.
 Honest nuance: a **tiny** positive plug-in gap (~0.001 nats) does exist and would be *statistically*
 detectable with ~26 replicate units. It is not certifiable and not useful:
 - The certificate's bias+deviation correction at this noise level is ≈0.2 nats — roughly **180×**
-  the observed effect. Shrinking it below the effect needs ~180² ≈ 3×10⁴ times more replicates
-  (order **10⁶** replicate units) under √n scaling. Practically unreachable.
+  the observed effect. **Correction (WP-R1, `artifacts/wpr1-routability-spec/`):** the "order 10⁶
+  replicate units" figure originally written here was computed from the sd of the *gap statistic*;
+  the certificate consumes the **cell** standard deviation (~150× larger). Derived properly, the
+  aggregate gap on these two workloads **does not exceed `c_route` at all**, so **no sample size
+  whatsoever** would certify them — a simpler and stronger statement than the one it replaces.
 - The effect (~0.001 nats) is the same order as the **measured** route cost (0.0006). Even taken at
   face value, paying for the decision consumes it.
 
