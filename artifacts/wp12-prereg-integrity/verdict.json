@@ -2,8 +2,8 @@
   "experiment": "wp12_prereg_integrity",
   "verdict": "PREREG_INTEGRITY_CLEAN",
   "tier": "META \u2014 preregistration integrity across all experiments (git ancestry)",
-  "n_experiments_with_prereg": 34,
-  "strict_ancestor": 18,
+  "n_experiments_with_prereg": 35,
+  "strict_ancestor": 19,
   "same_commit_retrospective": 5,
   "violations": 0,
   "retrospective_allowlist": [
@@ -247,6 +247,14 @@
       "result_commit": "2753cdfb0",
       "classification": "SAME_COMMIT_RETROSPECTIVE",
       "disclosed": true,
+      "ok": true
+    },
+    {
+      "experiment": "wpr1_routability_spec",
+      "prereg_commit": "5ad13130a",
+      "result_commit": "961fa6c07",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
       "ok": true
     }
   ],
