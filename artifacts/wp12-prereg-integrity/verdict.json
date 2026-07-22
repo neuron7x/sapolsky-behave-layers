@@ -2,8 +2,8 @@
   "experiment": "wp12_prereg_integrity",
   "verdict": "PREREG_INTEGRITY_CLEAN",
   "tier": "META \u2014 preregistration integrity across all experiments (git ancestry)",
-  "n_experiments_with_prereg": 30,
-  "strict_ancestor": 15,
+  "n_experiments_with_prereg": 32,
+  "strict_ancestor": 16,
   "same_commit_retrospective": 5,
   "violations": 0,
   "retrospective_allowlist": [
@@ -59,6 +59,19 @@
       "experiment": "wp15_compute_pareto",
       "prereg_commit": "193a20a97",
       "result_commit": "2a170c48f",
+      "classification": "STRICT_ANCESTOR",
+      "disclosed": false,
+      "ok": true
+    },
+    {
+      "experiment": "wp16_cleanroom_release",
+      "classification": "NO_ARTIFACT",
+      "ok": true
+    },
+    {
+      "experiment": "wp17_metrology",
+      "prereg_commit": "963ccd249",
+      "result_commit": "56afffd1a",
       "classification": "STRICT_ANCESTOR",
       "disclosed": false,
       "ok": true
