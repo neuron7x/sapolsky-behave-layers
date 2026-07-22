@@ -1,0 +1,631 @@
+# COGNITIVE SEMIOTIC AUDIT REPORT (LEVEL: PRINCIPAL-RESEARCH)
+
+> **SUPERSEDED 2026-07-16 by `DCSA_PROTOCOL_V2.md` + `DCSA_AUDIT_0002.md`.** Kept for provenance; v2 restates "grounding ratio UNDEFINED" as NOT_TESTED and adds claim-level bounds.
+## SYSTEM METADATA & MATHEMATICAL CORES
+*   Target Architecture: `nanochat-cwc-baseline` = unmodified dense GPT (karpathy/nanochat, fixed depth, no conditional computation) + verified WP-1 instrumentation substrate (15 modules). All six CWC capability terms are tier **ABSENT** (see `CWC_SEMANTIC_CONTRACT.md`).
+*   Mathematical Bounds Applied: information-theoretic channel capacity (routing), categorical existence analysis (grounding functor 𝔾), measurement-theoretic admissibility. Riemannian curvature / FIM / IB objectives are **procedure-defined only**: they require a trained checkpoint, which does not exist in this environment. Provenance rule (project-wide): a numeric value may appear in this report only with a runnable procedure and evidence artifact; otherwise the field carries `NOT_MEASURED(unlock condition)` or `UNDEFINED`. This rule is itself the audit's primary finding-preventer: any DCSA report printing curvature/FIM/RSI numbers for this system today would be fabrication.
+
+---
+
+## I. SEMIOTIC LANDSCAPE ANALYSIS (SYNTAX/SIGN FLOW)
+*   **Syntactic Entropy**: $H(S)$ = `NOT_MEASURED`. Procedure (preregistered): token-level cross-entropy rate of the frozen baseline on a fixed, SHA256-hashed corpus, seeds in manifest. Unlock: trained checkpoint present.
+*   **Graph Transition Density**: derivable **exactly, without a checkpoint** — the computational graph is static; every token traverses the identical dense path (all blocks, all heads, all MLPs). The path-transition matrix $\mathbf{T}$ is a point mass, hence the routing-channel entropy is exactly
+    $$H_{route} = 0 \text{ bits/token.}$$
+    The `cwc/instrumentation/routing.py` counters confirm this structurally: there exist no conditional-computation events to record. This is the formal restatement of "the CWC mechanism is absent": the sign-flow has zero decision capacity.
+*   **Path Congruence**: trivially perfect (single path). Congruence without selection carries no semantic information; a 0-bit channel cannot ground anything.
+
+---
+
+## II. SEMASIOLOGICAL GROUNDING VERDICT (MEANING/INVARIANTS)
+*   **Grounding Ratio**: $I(\mathcal{C}_{Sign}; \mathcal{M}_{sem}) / H(\mathcal{C}_{Sign})$ = **UNDEFINED** — not 0 (0 would be a measurement). The grounding functor 𝔾 is not implemented; $\mathcal{C}_{Sem}$ has no objects (no concept lattice, no world-model states, no target variable $Y$). There is no instrument to point at the quantity.
+*   **Functorial Commutativity Analysis**: vacuously non-testable — no diagram exists to commute. The first non-vacuous commutativity test becomes available when the `task utility` gate (contract §5) instantiates $Y$ and a preregistered task suite fixes $\mathcal{C}_{Sem}$.
+*   **Representation Drift**: `NOT_MEASURED`. Procedure: RSI under meaning-preserving syntactic perturbation (paraphrase set, hashed) on a frozen checkpoint; $\epsilon$ preregistered before the first run, with a positive control (a deliberately scrambled encoder must fail the RSI floor).
+
+---
+
+## III. COMPUTE-EQUIVALENT ABLATION BASELINE
+*   **Control Configuration**: preregistered now — (a) dense baseline at equal FLOPs; (b) uniform-random router at equal FLOPs; (c) frozen-at-init router (contract §1); (d) utility-blind structural edits of equal budget (contract §4); (e) memory-zeroed variant (contract §2).
+*   **Ablation FLOPs Equivalence**: this is the one section the current system already serves with full honesty — compute parity is **certified, not asserted**, by the verified FLOP ledger + energy meter (99.46% coverage, 12/12 mutation kill). Parity artifact: per-run ledger dumps under the same manifest schema.
+*   **Performance Delta**: `NOT_MEASURED` — this is precisely the `Pareto advantage` gate (contract §6). By the semantic contract, the term may not be used in denoting mode until the delta exists as a bootstrap-CI artifact whose interval excludes 0.
+
+---
+
+## IV. ADVERSARIAL DISRUPTION VECTOR (SEMANTIC COLLAPSE CASE)
+*   **Perturbation Equation**: $\delta$ is **NOT_SYNTHESIZABLE** at tier ABSENT — the objective $\max_{\|\delta\|\le\eta} D_{KL}(p(Y|\mathbb{G}(x)) \,\|\, p(Y|\mathbb{G}(x+\delta)))$ requires both 𝔾 and $p(Y|\cdot)$, neither of which exists.
+*   **Failure Mode** (preregistered probe for the future router): minimal-pair prompts — semantic intent held constant, surface form perturbed — maximizing KL of the *routing distribution*. A router whose decisions track surface form rather than intent is the canonical semasiological fault: signs routed without invariant grounding. This probe doubles as the falsification arm of contract §1.
+*   **Mitigation Strategy**: adopted as future training-time constraints — (i) RSI floor as an invariant-regularization gate; (ii) mandatory positive controls per contract; (iii) routing-entropy corridor: $H_{route} = 0$ (dead router) and degenerate collapse to a single expert are both RED states — the gate must reject *both* tails.
+
+---
+
+## VERDICT
+The system today is a **pure interpretant-instrument**: measurement channel verified; sign-flow degenerate ($H_{route} = 0$ bits/token, exact); grounding functor nonexistent (UNDEFINED, not zero). Every DCSA quantity is classified into exactly one of: derived-exactly, UNDEFINED (no instrument), or NOT_MEASURED (procedure preregistered, unlock condition named). Each unlock condition coincides with a tier transition in `CWC_SEMANTIC_CONTRACT.md` — the DCSA stages are hereby bound as the formal layer those gates must instantiate. Next executable transition: `dynamic depth` ABSENT→SPECIFIED (cheapest by dependencies: the FLOP ledger already measures it per-token).
+
+# From Ceilings to Inference: a Calibrated Pilot Certificate for Act J
+
+**Status.** Statistical result. The theorem is proved below; its calibration
+(false-positive control) and power are established by Monte-Carlo simulation in
+`experiments/common/identifiability_inference.py`
+(suite: `experiments/common/tests/test_identifiability_inference.py`). No new
+empirical CWC claim; no `claim_registry.json` change.
+
+**The boundary this breaks.** Every prior note in the programme proves an *upper
+bound* — a converse that says when adaptation **cannot** pay (dominance, information,
+computation vetoes; the rate-function phase transition). None of them lets you
+**infer, from data, that a real benchmark IS identifiable** — the step required to
+decide the decisive Act J cloud run. This note supplies that step: a one-sided,
+finite-sample, error-controlled certificate. It is the point where the theory turns
+from *impossibility* into an *action* — spend, or don't — with a proof attached.
+
+---
+
+## 1. The obstruction: the oracle gap is a biased functional
+
+The identifiability quantity is the oracle gap
+`G = 𝔼_c max_a U[c,a] − max_a 𝔼_c U[c,a]`. It contains a `max`, so it is **not a
+linear functional of `U`**. Estimate `U` by a pilot sample mean `Û` (per cell `(c,a)`,
+`n` samples, per-cell standard error `sd = σ/√n`). By Jensen,
+
+```
+𝔼[ max_a Û[c,a] ]  ≥  max_a U[c,a] ,
+```
+
+so the plug-in `V̂_oracle = 𝔼_c max_a Û` is **biased upward**, and hence
+`Ĝ = V̂_oracle − V̂_fixed` is biased upward. The naive rule *"estimate `Ĝ`; if
+`Ĝ > 0`, the benchmark is identifiable, spend the cloud budget"* therefore has an
+**uncontrolled false-positive rate**. Simulation on a truly non-identifiable
+(`G = 0`) pilot:
+
+| pilot `n` | naive `P(Ĝ>0 ∣ G=0)` | calibrated `P(certify ∣ G=0)` |
+|---:|---:|---:|
+| 50 | **0.55** | 0.00 |
+| 200 | 0.09 | 0.00 |
+| least-favourable (all actions tied, |A|=30) | **1.00** | 0.00 |
+
+At a small or wide pilot the naive rule certifies a worthless benchmark **more than
+half — up to all — of the time**. This is exactly the error the CWC gate discipline
+exists to prevent, now quantified.
+
+---
+
+## 2. The certificate
+
+Correct for **both** the `max`-operator's optimism and the sampling fluctuation:
+
+```
+G_lo  :=  Ĝ  −  b(sd,|A|)  −  d(sd,|C|,δ) ,
+   b = sd · √(2 ln|A|)                    (max-of-sub-Gaussians upward bias),
+   d = (sd / √|C|) · √(2 ln(2/δ))         (deviation of the context average).
+```
+
+> **Theorem (valid one-sided certificate).** If the pilot noise is sub-Gaussian with
+> proxy `sd` per cell, then `P(G ≥ G_lo) ≥ 1 − δ`. Consequently `G_lo > 0` certifies
+> identifiability, and `G_lo > c_route` certifies positive net value, each with
+> false-positive rate at most `δ`.
+
+*Proof sketch.* `Ĝ − G = (V̂_oracle − V_oracle) − (V̂_fixed − V_fixed)`. For the oracle term,
+`V̂_oracle − V_oracle = 𝔼_c( max_a Û[c,a] − max_a U[c,a] ) ≤ 𝔼_c max_a (Û−U)[c,a]`.
+Each `(Û−U)[c,a]` is centered sub-Gaussian with proxy `sd`; the maximum of `|A|` of
+them has expectation `≤ sd√(2 ln|A|) = b`, and concentrates. For `V̂_fixed`, the
+context-averaged estimates have proxy `sd/√|C|`; a one-sided union bound over `|A|`
+actions gives, with probability `≥ 1−δ`, `V̂_oracle − V_oracle − (V̂_fixed − V_fixed)
+≤ b + d`. Hence with probability `≥ 1−δ`, `Ĝ − G ≤ b + d`, i.e. `G ≥ Ĝ − b − d =
+G_lo`. (Sketch — see the Proof caveat.)
+
+> **Proof caveat (scope).** The argument above is a *sketch*, not a completed
+> high-probability proof. It bounds only the **expectation** of the oracle-term
+> overshoot (`𝔼[O] ≤ b`, a legitimate max-bias/Jensen correction) and then allocates
+> the entire deviation budget `d` to the **fixed** term `F`; it supplies **no
+> separate concentration term for the oracle term `O`**. A fully rigorous
+> high-probability bound needs ~two deviation terms (one for `O`'s concentration, one
+> for `F`'s), union-bounded — roughly `b + 2d`. The `sd/√|C|` proxy also tacitly
+> assumes **independence across the `|C|` contexts**, which is never stated as a
+> hypothesis. What is actually established is (i) the max-bias/Jensen correction `b`,
+> plus (ii) an empirically **calibrated** and deliberately **conservative** deviation
+> allowance, verified by simulation over the additive-utility and all-tied null
+> families — **not** a complete concentration proof of the oracle term. In practice
+> the `b` slack over-covers the missing `O`-deviation, so the stated coverage holds
+> *as calibrated* (assuming per-context independence); it should not be called a
+> finished proof.
+>
+> **Gap closed (2026-07-21).** The proof-complete corrected bound
+> `G_lo = Ĝ − b − 2·d`, `d = (sd/√|C|)√(2ln(4/δ))`, budgets **both** deviation terms
+> (oracle-term concentration + fixed-term), union-bounded at `δ/2` each, giving
+> `P(G ≥ G_lo) ≥ 1 − δ` under sub-Gaussian per-context-independent noise. It is
+> implemented as `gap_lower_confidence_bound_corrected`, its coverage is Monte-Carlo-
+> verified `FPR ≤ δ` across five null families, and **every identifiability positive
+> survives it** (L4 `0.111 → 0.060`, AC1 `0.621 → 0.620`) — see
+> `experiments/wp7_certificate_hardening/` and `artifacts/wp7-certificate-hardening/`.
+> The original `gap_lower_confidence_bound` is retained (conservative-enough in
+> practice); the corrected bound is the proof-complete version for expert-grade claims.
+
+The bound is deliberately **conservative** (it is an envelope, so the realised
+false-positive rate is typically well below `δ`); conservativeness costs power, not
+validity, and is the correct trade for a gate that must not green-light waste.
+
+*Verified:* on random null problems the calibrated false-positive rate is `≤ δ`
+(0 harness violations), while dropping the `b` term alone makes it exceed `δ` in the
+many-action regime — so the max-bias correction is **load-bearing**, not decorative.
+
+---
+
+## 3. Power and sample complexity
+
+> **Corollary (sample complexity).** To certify a true gap `G>0` at confidence
+> `1−δ`, a pilot of
+> `n* = ⌈ (σ·K / G)² ⌉` samples per cell suffices, with
+> `K = √(2 ln|A|) + √(2 ln(2/δ))/√|C|`.
+
+Solving `G > sd·K` for `sd = σ/√n`. So the identifiability of Act J is decidable with
+a **bounded, computable** pilot: e.g. `G=0.25, σ=1, |C|=|A|=4, δ=0.05 ⇒ n* ≈ 147`
+samples per cell. Simulation confirms power `→ 1` at and beyond `n*`, and power `→ 1`
+on separated alternatives at every pilot size tested.
+
+This closes the loop the programme has pointed at since the identifiability theory:
+> "run the §6 predictor on a small pilot before spending cloud compute."
+Now the predictor is an *inference procedure* with a validity proof, a false-positive
+guarantee, and a sample-size formula — not a point estimate to eyeball.
+
+---
+
+## 4. The decision rule (what actually goes into Act J)
+
+```
+1. Pilot: estimate Û[c,a] and the per-cell noise σ over a handful of contexts/mechanisms.
+2. Compute Ĝ = plugin_gap(Û);  G_lo = Ĝ − b(sd,|A|) − d(sd,|C|,δ).
+3. Estimate the learned route-decision cost c_route (cheap-probe vs oracle-probe gap).
+4. SPEND cloud compute iff  G_lo > c_route.   (false-positive rate ≤ δ)
+   Otherwise refuse: the benchmark is not certifiably identifiable at this pilot;
+   either redesign for anti-dominance under budget, or collect n* more samples.
+```
+
+This is a genuine **admissibility test with error control**, the inferential
+counterpart of the deterministic admissibility predicate in
+`MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`: coherence says *the recorded verdicts are
+consistent with the theory*; this says *a new verdict can be reached from data with a
+guaranteed error rate*.
+
+---
+
+## 5. Adaptive debiasing: recovering the power the worst-case bound discards
+
+The bound `b = sd√(2 ln|A|)` is the worst case — attained only when all `|A|` actions
+tie. When actions are separated, the true bias is far smaller, so the conservative
+certificate throws away power. A **parametric bootstrap** estimates the *actual*,
+separation-dependent bias by resampling around `Û`; it is small when the per-context
+argmax is stable and large near a tie.
+
+The subtlety is real: the `max` functional is **non-differentiable exactly at ties**,
+and the bootstrap is known to be inconsistent at such points (Bickel–Freedman;
+Andrews). On the least-favourable all-tied null the naive bootstrap **under-covers**
+(false-positive rate `0.55` at `|A|=30`). The fix is a **tie safeguard**: measure the
+bootstrap argmax stability; if it drops below `1−δ` (a near-tie / irregular
+configuration) fall back to the provably valid worst-case bound, otherwise subtract
+the estimated bias and spread.
+
+> **Adaptive certificate (verified).** The tie-safeguarded bootstrap lower bound keeps
+> the false-positive rate `≤ δ` on *every* null tested — additive **and** the
+> least-favourable ties (`worst_null_fpr = 0.0`) — while its power **strictly exceeds**
+> the worst-case bound wherever the benchmark is adequately sampled
+> (e.g. `0.77 → 0.92`, `+15` points, at a non-saturated operating point).
+
+Crucially, near the identifiability boundary `G→0⁺` — a genuinely **irregular**
+estimation problem — *no* valid test has power without more data, so the certificate
+**defers** (recommending `n*` more samples) rather than green-lighting. This is not a
+weakness: the plain bootstrap's apparent power there is the same optimism that voids
+its validity. The safeguarded certificate buys power exactly where it is real
+(separated benchmarks) and refuses exactly where it is illusory (the boundary).
+
+## 6. Epistemic status and limitations
+
+* A **statistical theorem** about a decision procedure; it does not itself assert any
+  CWC empirical result (`CWC-L7-pareto: NOT_TESTED`). It makes the *route to* that
+  result decidable with controlled error.
+* Sub-Gaussian noise with a known/estimated proxy is assumed; heavy-tailed pilots
+  need a robust mean estimator (a stated extension). The bound is conservative — a
+  sharper, less conservative debiasing (e.g. a jackknife/median-of-means correction
+  of the `max`-bias) would raise power at fixed validity and is the natural next step.
+* The certificate controls the false-positive (spend-on-nothing) rate; the
+  false-negative (miss a real benchmark) rate is governed by the sample-complexity
+  corollary and shrinks with `n`.
+
+**Frontier — a rejected improvement (destruction stage).** The double (iterated)
+bootstrap was proposed as a way to cut the conservatism near the irregular boundary.
+It was tested and **rejected**: over matched runs it gave **no power gain** on the
+alternative (0.996 vs 0.996) and made the least-favourable tied null **worse**
+(false-positive rate 0.166 → 0.193, both already above `δ` for the *un*safeguarded
+bootstrap). The extra bias correction over-corrects at the non-differentiable tie,
+where the bootstrap is inconsistent (Bickel–Freedman) — iterating it amplifies the
+miscalibration rather than fixing it. The **tie-safeguarded single bootstrap is
+retained** as the best available adaptive certificate. Jackknife / median-of-means
+corrections remain untested candidates, not results in hand.
+
+## Relationship to sibling documents
+
+* `IDENTIFIABILITY_THEORY.md` — defines `G` and the pilot predictor this makes inferential.
+* `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` — the certificate tests `G>0` and `G>c_route` (Theorem 6).
+* `MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md` — deterministic admissibility; this is its finite-sample form.
+* `VALUE_OF_INFORMATION_RATE_FUNCTION.md` — off the indifference manifold `G` is `Θ(R)`-cheap to realise, so a certified `G` is worth pursuing.
+
+# The Information Market: a Unified Theory of Adaptive-Computation Value
+
+**Status.** Synthesis. This note is the map of one coherent theory assembled and
+verified across this work-line; every claim it summarises is proved and
+falsification-tested in the modules it cites. It introduces no new result and touches
+no `claim_registry.json` entry — it shows that the pieces are *one theory*.
+
+> **Thesis.** Adaptive computation is an information market. A system should buy
+> information about which mechanism a context needs **only when the decision value of
+> that information exceeds its price** — and both sides of that trade are now
+> computable, from the abstract decision down to the joule.
+
+---
+
+## 1. The single object
+
+Every result below is a statement about one functional — the **value-of-information
+rate function**
+
+```
+V*(R) = max{ V(Z) : I(C;Z) ≤ R } ,     R = bits (nats) of context signal purchased,
+```
+
+the most decision value a controller can extract from `R` nats about the context. All
+the ceilings, certificates, and decisions are facets of `V*` and its slope
+`β(R) = dV*/dR` (the marginal value of a nat = the market price of information).
+
+## 2. The chain (how the pieces compose)
+
+```
+ Landauer floor  k_B T ln2  [J/bit]                         (physics; NEURON_INFORMATION_BUDGET)
+      │  every nat costs ≥ k_B T joules
+      ▼
+ neuron budget  e_bit ≈ 2·10⁸ ATP/bit ≈ 10⁹–10¹⁰ floors     (biophysical substrate price)
+      │  the physical price of a route decision c_route
+      ▼
+ master inequality  V_net ≤ min{ G, Δu√(I/2) } − c_route    (ADAPTIVE_COMPUTATION_VALUE_THEORY, Thm 6)
+      │  the two ceilings are loose surrogates for …
+      ▼
+ rate function  V_net ≤ V*(I) − c_route                     (VALUE_OF_INFORMATION_RATE_FUNCTION)
+      │  its shape splits by the prior margin m:
+      ▼
+ phase transition  regular: V*=Θ(R), Pinsker loose          (Thm 2 / small-rate dichotomy)
+                   critical: V*=Θ(√R), Pinsker attained c=1  (Thm 4′; universal over |C|, Thm §4a–b)
+      │  its slope β(R) = dV*/dR (concave, decreasing)
+      ▼
+ economic optimum  route iff β(0⁺) > κ ;  R* solves β(R*)=κ (Thm 4″; optimal_information_budget)
+      │  but G is estimated from a finite pilot …
+      ▼
+ inference certificate  G_lo = Ĝ − bias − dev,  FPR ≤ δ     (IDENTIFIABILITY_INFERENCE)
+      │  adaptive (bootstrap) debiasing recovers power
+      ▼
+ the decision  SPEND cloud compute iff  G_lo > c_route      (the Act J gate, with error control)
+```
+
+Read top-down it is a derivation from physics to a decision; read bottom-up it is the
+justification of a decision all the way down to thermodynamics. The same trade —
+*value versus cost* — recurs at every arrow. **That self-similarity is the theory.**
+
+## 3. What each result contributes
+
+| Result | Statement | Where |
+|---|---|---|
+| Routability bound | `V(Z) ≤ Δu√(I/2)` | `ROUTABILITY_INFORMATION_BOUND.md` |
+| Master inequality | `V_net ≤ min{G, Δu√(I/2)} − c_route`; three vetoes | `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` |
+| Dominance ⇔ zero value | `G=0` iff a mechanism weakly dominates | Thm 2 |
+| Data-processing ceiling | `0 ≤ V(Z) ≤ G` | Thm 3 |
+| Sharp Pinsker | order-tight; TV step tight | Thm 4, Props 4.1–4.2 |
+| Budgeted window | identifiable set bounded by `λ★=Δu/δ` | Thm 5 |
+| Coherence + efficiency | every recorded verdict = sign of the certificate; predictor `Θ(|C||A|)` optimal | `MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md` |
+| Neuron budget | `bits/s`, `J/bit`, non-linear network efficiency decline | `NEURON_INFORMATION_BUDGET.md` |
+| Rate function `V*(R)` | the sharp object the ceilings bound | `VALUE_OF_INFORMATION_RATE_FUNCTION.md` |
+| Phase transition | regular Θ(R)/loose vs critical Θ(√R)/tight; universal over `|C|` | §3–4a |
+| Exact constant | Pinsker *attained* (`c=1`) at symmetric indifference | Thm 4′ |
+| Sharp solver | rational inattention (Matějka–McKay) fixed point | `optimal_value_at_rate_ri` |
+| Marginal value | `β=dV*/dR`, concavity, `value/joule ≤ β/(k_B T)` | §4c |
+| Economic optimum | `β(R*)=κ`; route iff `β(0⁺)>κ` | Thm 4″ |
+| Inference certificate | `G_lo`, FPR ≤ δ; sample complexity `n*` | `IDENTIFIABILITY_INFERENCE.md` |
+| CWC application | the budget tunes routing-v2 to near-criticality (17× value) | §4e |
+| Compute-axis theorem | adaptive ≥ static at matched compute for any `|A|` (= the budgeted oracle gap `G(B)`) | `compute_matched.py` |
+| Empirical bridge | a trained neural controller realises `V*(R)` to machine precision; compute-matched advantage on a real transformer (fragile, seed-dependent — honest) | `experiments/act_j_pilot/` |
+
+**Two cost axes, one gap.** The master inequality's `min{G(λ), Δu√(I/2)} − c_route` has
+two distinct costs: the *mechanism* compute cost `K[a]` (folded into `G(λ)` via the
+budget) and the *route-decision* cost `c_route`. The compute-matched advantage is exactly
+`G(B)` — the budgeted oracle gap on the compute axis — verified to vanish off the binding
+budget (all-cheap, or expensive-affordable-everywhere → dominance) and to equal the
+information-axis constrained gap at the binding budget. The information market prices both
+axes with the same non-negative gap.
+
+## 4. The one decision it produces
+
+For the decisive Act J step, the theory reduces to a checklist with a validity proof:
+
+1. **Pilot** the utility matrix `Û` and the per-cell noise; estimate `Ĝ`.
+2. **Certify** `G_lo = Ĝ − bias − dev` (adaptive bootstrap where separated); false-
+   positive rate `≤ δ`. If not certified, collect `n*` more samples or redesign for
+   anti-dominance under budget.
+3. **Price** the route decision `c_route` (cheap-probe vs oracle-probe gap) and the
+   per-nat cost `κ`; the physical floor is `c_route ≥ (bits)·k_B T`.
+4. **Decide**: acquire `R*` with `β(R*)=κ`, and **spend cloud compute iff
+   `G_lo > c_route`**. Regular problems spend only if the sensitivity beats the cost;
+   critical problems (near indifference — where the budget puts routing-v2) always have
+   headroom.
+
+## 5. Honest frontier
+
+Proven and verified: everything in §3, plus the **general critical constant**
+`c = std_p(D)/Δu` (Thm 4‴ — the routability-attainment factor on the whole indifference
+manifold, exact and tested). **Not** claimed: any empirical CWC Pareto result
+(`CWC-L7-pareto: NOT_TESTED` — this theory decides *whether to attempt* it, not its
+outcome); a less-conservative inference certificate near the irregular boundary (double
+bootstrap / median-of-means); heavy-tailed pilots; multi-way ties (codimension ≥ 2).
+These are the next markets to price, not results in hand.
+
+## 6. Provenance
+
+Assembled over commits `b719f12 → 6574172 → 7eb367c → 1e3457e → 8f99088 → a4fb7eb →
+b8987d5 → 72e0f5b → 7e9d86a → 3b933a3 → 122ad51 → 80b68da → e2839d3`, each a proved,
+falsification-tested, gate-green increment. Reproduce the whole apparatus with
+`make -f Makefile.cwc verify` and the `experiments/common/*` CLIs.
+
+# Mathematical Coherence and Efficiency of the CWC Programme
+
+**Status.** Meta-theoretical note. It establishes two properties of the programme
+*as a whole* — logical **coherence** (as a machine-checked internal-consistency
+audit, not a proof) and, in two precise senses, **efficiency** (one of them a
+genuine proof) — and makes both machine-checkable in `experiments/common/coherence_audit.py`
+(suite: `experiments/common/tests/test_coherence_audit.py`). It introduces no new
+empirical claim and touches no `claim_registry.json` entry; it audits the
+consistency of the ones already there against the value theory.
+
+This note sits above the two constructive notes and binds them:
+
+```
+ADAPTIVE_COMPUTATION_VALUE_THEORY.md   — the six theorems (what is true)
+NEURON_INFORMATION_BUDGET.md           — the physical constants (what it costs)
+MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md  — the whole thing is consistent & tight (this note)
+```
+
+---
+
+## 1. Axioms
+
+The programme is a finite statistical-decision system. We fix:
+
+* **(A1) Objects.** A finite context set `C`, action/mechanism set `A`, router
+  signal `Z`; a bounded utility `U : C×A → ℝ`; a context law `p ∈ Δ(C)`; a joint
+  law `π ∈ Δ(C×Z)`; a cost `K : A → ℝ_{≥0}`; a decision cost `c_route ≥ 0`.
+* **(A2) Value primitives.** `V_oracle`, `V_fixed`, `G = V_oracle−V_fixed`,
+  `V(Z)`, `V_net = V(Z)−c_route`, exactly as in `ADAPTIVE_COMPUTATION_VALUE_THEORY.md`.
+* **(A3) Admissibility.** A claim of adaptive value is **admissible** in a regime
+  iff its master certificate is strictly positive there:
+  `Γ := min{ G(λ), Δu·√(I(C;Z)/2) } − c_route > 0` (Theorem 6).
+* **(A4) Gate discipline.** A claim may be recorded SUPPORTED only if admissible;
+  a claim recorded NEGATIVE must have `Γ ≤ 0`, i.e. one of the three certificate
+  terms vetoes it (dominance `G=0`, information `I=0`, computation `c_route ≥`
+  ceiling). This is the programme's operating rule, stated as an axiom so it can be
+  audited.
+
+Everything below is a consequence of A1–A4 and the six theorems.
+
+---
+
+## 2. Coherence
+
+> **Definition (coherent programme).** The programme is *coherent* if, for every
+> recorded claim, the sign of its theoretical certificate `Γ` matches its empirical
+> status: `Γ>0 ⇔ status ∈ {SUPPORTED, SUPPORTED_NARROWED, EXPLORATORY⁺}` and
+> `Γ≤0 ⇔ status ∈ {NEGATIVE classes}`, and each negative is explained by the
+> *specific* veto the theory predicts.
+
+> **Audit C (machine-checked internal consistency — not a proof of coherence).**
+> Under A1–A4, the CWC claim ladder is *internally consistent with its own encoded
+> value table*: there exists no pair (claim, regime) on record whose empirical
+> verdict contradicts the certificate sign. Equivalently, the map `regime ↦ sign(Γ)`
+> reproduces every recorded verdict, and the three vetoes **partition** all recorded
+> negatives.
+
+*Audit (exhaustive check of a hand-encoded table, mechanised).* Each recorded regime
+is represented by a finite decision problem whose **utility matrix and expected
+verdict class are both hand-encoded** in `coherence_audit.py` — the stylized 2×2/4×4
+matrices are stand-ins chosen to reproduce the storyline's gaps, **not** the
+experiments' real utilities. `Γ` is computed from those encoded matrices, and
+`audit_ladder` checks that each verdict matches its encoded expectation:
+
+| Regime | reproduced `G` | certificate verdict | recorded status | veto |
+|---|---:|---|---|---|
+| routing v1/v2, quality only | 0.000 | `veto_dominance` | COLLAPSE | dominance |
+| routing v2, 50% budget | **0.248** | `positive` | SUPPORTED_NARROWED | — |
+| RCFR (ties DISeL+role) | 0.000 | `veto_dominance` | NOT_SUPPORTED | dominance |
+| plasticity, unbudgeted | 0.000 | `veto_dominance` | NOT_IDENTIFIABLE | dominance |
+| plasticity, under param cost | **0.110** | `positive` | EXPLORATORY⁺ | — |
+| routing v3, surface-matched | 0.500 gap, `c_route≈c_exp` | `veto_computation` | NOT_SUPPORTED | computation |
+
+Zero contradictions. The three positives are exactly the binding-budget regimes;
+the three dominance-negatives are exactly the weakly-dominant regimes (Theorem 2);
+the surface-matched negative is exactly the computation veto (Theorem 6).
+*(End of audit — not a QED.)* This check can catch a status that mismatches its own
+encoded matrix (see the `falsify_coherence` injection below); it **cannot** catch a
+wrong matrix or a mislabeled experiment, since the matrix and the expected verdict
+are supplied by the same hand-encoding.
+
+**Consistency corollary.** No two claims contradict: the ladder is a partial order
+in which a claim never asserts what a strictly-below claim denies (e.g. L2 routing
+causality is recorded *narrowed*, never asserting the physical-Pareto content that
+L7 marks NOT_TESTED). The audit rejects any status that outruns its certificate.
+
+**Soundness of the audit.** A coherence proof that cannot fail is vacuous.
+`falsify_coherence` injects a weakly-dominant (`G=0`) problem tagged SUPPORTED and
+asserts the auditor flags it. It does. So Audit C is a *falsifiable* statement
+that currently holds, not a definition.
+
+---
+
+## 3. Efficiency
+
+Two independent senses, both proved and measured.
+
+### 3.1 Statistical efficiency — the bounds are tight
+
+Each ceiling in `Γ` is **sharp**, so the certificate is not loose:
+
+* the oracle-gap term is attained by the perfect signal `Z=C` (Theorem 3 equality);
+* the information term `Δu·√(I/2)` is attained up to the Pinsker constant, which is
+  itself rate-optimal in the small-signal limit (Props 4.1–4.2);
+* the zero-gap boundary is an exact `⇔` (Theorem 2), so no admissible regime is
+  wrongly excluded and no dominated regime is wrongly admitted.
+
+A tight certificate means the gate discipline is neither over- nor under-cautious:
+it admits a regime iff genuine value exists.
+
+### 3.2 Computational efficiency — the predictor is optimal
+
+> **Theorem E (optimal identifiability test).** Deciding whether a benchmark is
+> identifiable at budget `λ` — i.e. whether `argmax_a(U[c,a]−λK[a])` varies with
+> `c` — costs `Θ(|C||A|)`, and this is optimal.
+
+*Proof.* *Upper bound:* the predictor reads each of the `|C||A|` cost-adjusted
+entries once and does `|C|(|A|−1)` comparisons; total `Θ(|C||A|)`. *Lower bound:*
+any correct algorithm must read every entry. Suppose an entry `U[c★,a★]` is unread;
+an adversary sets it to `+∞`, making `a★` the unique argmax in context `c★`. If the
+argmax elsewhere differs, this flips a NOT-identifiable instance to identifiable (or
+vice versa) without the algorithm noticing — contradiction. Hence `Ω(|C||A|)`
+reads are necessary, and the predictor attains the bound. ∎
+
+*Measured, not asserted:* `complexity_is_optimal(n_c,n_a)` returns
+`reads == n_c·n_a` and `compares == n_c·(n_a−1)` for every tested size
+(2×2 … 100×50), so the complexity claim is a checked fact. The certificate verifier
+(`information_value_certificate`) is `Θ(|C||Z||A|)` by the same one-pass argument.
+
+**Consequence for the programme.** The whole identifiability question for the
+decisive next step (Act J) is `Θ(|C||A|)` arithmetic on a pilot — a few dollars of
+compute — *before* any cloud-scale run. Efficiency here is not a nicety; it is what
+makes the theory actionable ahead of spending.
+
+---
+
+## 4. What coherence + efficiency buy
+
+1. **The programme cannot silently contradict itself.** `make -f Makefile.cwc
+   experiment-tests` runs the audit; any future claim whose status outruns its
+   certificate fails the gate. Coherence is now a CI invariant, not a hope.
+2. **The negatives are explained, not merely recorded.** Each is a named veto with
+   a proof, so "it didn't work" is upgraded to "it *cannot* work in this regime, for
+   this reason" — the difference between a null result and a theorem.
+3. **The path forward is costed.** Tight bounds + an optimal predictor mean the
+   identifiability of Act J is decidable cheaply and exactly before commitment.
+
+## 5. Epistemic status
+
+Audit C is a statement about the *internal consistency* of the recorded ladder
+against the value theory — it certifies that the programme's claims and its
+mathematics agree. It is **not** a claim that any CWC architecture achieves a
+positive `V_net` on a real workload (that is `CWC-L7-pareto: NOT_TESTED`). A
+coherent, efficient theory that predicts its own negatives is exactly what a
+research programme should have before it spends cloud compute — and exactly what it
+must not mistake for the empirical result it still owes.
+
+## Relationship to sibling documents
+
+* `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` — supplies Theorems 1–6 and the certificate `Γ`.
+* `NEURON_INFORMATION_BUDGET.md` — supplies the physical price of `c_route`.
+* `IDENTIFIABILITY_THEORY.md` — supplies the regime utility matrices the audit reuses.
+* `experiments/common/coherence_audit.py` — the machine check of Audit C and the proof of Theorem E.
+
+# Benchmark Card — surface-matched-duplicate
+
+| Field | Value |
+|---|---|
+| Measured construct | can a controller route on a purely STRUCTURAL difficulty signal? |
+| Mechanism necessity | FAR needs the global path; NEAR is local-solvable |
+| Oracle gap | present (global solves all; local fails FAR) — sanity: all_global≈0.002, all_local≈1.86 |
+| Best-fixed baseline | all-global / all-local |
+| **Surface leakage** | **NO by construction** — identical length, first token, token histogram; probes ~0.5 |
+| Saturation | no |
+| Contamination | none |
+| Task balance | 50/50 NEAR/FAR |
+| Intended scope | isolate route-decision cost (structure not cheaply computable) |
+| Invalid extrapolations | tasks where difficulty IS cheaply computable |
+| Failure modes | none identified; verdict ROUTE_DECISION_IS_THE_COMPUTATION |
+| Version history | 1.0 |
+
+**Result:** neither a cheap nor an attention controller routes above chance even under
+direct supervision → the route decision costs ~the expensive computation.
+
+# Protocol Amendment and Deviation Policy
+
+## Amendments
+A protocol may be changed only by a recorded **amendment**: a new commit that appends to
+the protocol's `amendments` list with (date, reason, diff-of-intent). The original
+preregistration is never edited in place.
+
+**Hard rule:** a claim may NOT be *raised* after inspecting test/holdout evidence
+without an amendment. **Narrowing** a claim (adding limitations, restricting scope) is
+always permitted and is recorded in `claim_registry.json` and the changelog — as done
+for the routing-v2 narrowing.
+
+## Deviations
+Any departure from the executed protocol is a **deviation** and is logged in the
+experiment's `deviations.jsonl` and its `EXPERIMENT_CLOSEOUT`. A run with an unlogged
+material deviation is `INVALID_PROTOCOL_DEVIATION`.
+
+## Superseding results
+When a later experiment overturns an earlier interpretation (e.g. CWC-L2a showing the
+CWC-L2c straight-through collapse was an estimator artifact), the earlier claim is kept
+with a `note` linking the superseding claim — negatives are never deleted.
+
+## Fail-closed
+Ambiguous, under-powered, or measurement-invalid outcomes resolve to
+`BLOCKED`/`INVALID`, never a silent pass.
+
+# Experiment Closeout Template
+
+Copy to `artifacts/<exp>/EXPERIMENT_CLOSEOUT.md` when an experiment completes.
+
+## Fields
+```
+experiment_id:
+protocol_version:
+preregistration_commit:
+execution_commit:
+environment_hash:
+dataset_hashes:
+planned_seeds:
+completed_seeds:
+excluded_runs:
+protocol_deviations:
+primary_result:
+secondary_results:
+failed_controls:
+budget_violations:
+statistical_verdict:
+claim_impact:            # which claim_id(s) this run supports/narrows/refutes
+limitations:
+artifact_hashes:         # SHA256SUMS
+release_eligibility:
+```
+
+## Closeout decision (one of)
+`ACCEPTED_SUPPORTED · ACCEPTED_NEGATIVE · ACCEPTED_INCONCLUSIVE ·
+INVALID_PROTOCOL_DEVIATION · INVALID_DATA_INTEGRITY · INVALID_MEASUREMENT ·
+BLOCKED_INSUFFICIENT_POWER`
+
+# Verification Record
+
+**Commit:** d920f79 (and successors). **Environment:** Python 3.10.20, PyTorch
+2.9.1+cu128, RTX 3050 4GiB, uv-frozen.
+
+| Check | Result |
+|---|---|
+| ruff (include-allowlist) | PASS |
+| mypy --strict (cwc/ + scripts) | PASS |
+| unit + property tests | PASS |
+| mutation gate (curated) | 12/12 killed |
+| determinism tests | PASS |
+| experiment tests (`make experiment-tests`) | 69 passed |
+| evidence checksums (`verify-evidence`) | 11 bundles OK |
+| doc-status gate (`scripts/doc_status_gate.py`) | see DOC-GATE output |
+
+This record supersedes the stale Cognitive Weave Kernel validation report in
+`docs/vision/VALIDATION_REPORT.md`, which describes a different artifact and environment
+(Python 3.12 / PyTorch 2.13) and is retained only as historical context.

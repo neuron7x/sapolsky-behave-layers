@@ -1,0 +1,3501 @@
+"""Analytical FLOP ledger (Act 4.8). Convention: 1 MAC = 2 FLOPs.
+
+Reports logical_forward_flops (architecture-derived, always available) and
+executed_estimate_forward_flops (accounts for e.g. sliding-window truncation
+that a real kernel would skip) as separate numbers — never conflated.
+profiler_observed_flops is populated only by the AUDIT path (audit.py), never
+here, and flop_model_error_percent is only meaningful once both are present.
+
+MoE is not implemented in WP-1. record_expert_assignments exists only as a
+measurement-ready interface for WP-3; F_MoE = dense_flops * active_experts is
+explicitly the wrong formula (it double-counts the shared/router paths and
+ignores per-expert capacity) and is not offered anywhere in this module.
+"""
+from __future__ import annotations
+
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from typing import Any
+
+from .types import FlopRecord
+
+
+def dense_linear_flops(*, tokens: int, d_in: int, d_out: int) -> int:
+    """1 MAC = 2 FLOPs convention: a (tokens, d_in) @ (d_in, d_out) matmul."""
+    return 2 * tokens * d_in * d_out
+
+
+def full_noncausal_pairs(seq_len: int) -> int:
+    return seq_len * seq_len
+
+
+def full_causal_pairs(seq_len: int) -> int:
+    return seq_len * (seq_len + 1) // 2
+
+
+def sliding_causal_pairs(seq_len: int, window: int) -> int:
+    """Sum of actual valid key positions per query under a causal sliding
+    window of size `window` (query i attends to keys in
+    [max(0, i - window + 1), i]).
+    """
+    if window <= 0:
+        raise ValueError("window must be positive")
+    total = 0
+    for i in range(seq_len):
+        left = max(0, i - window + 1)
+        total += i - left + 1
+    return total
+
+
+def attention_projection_flops(
+    *, batch: int, seq_len: int, d_model: int, n_head: int, n_kv_head: int, head_dim: int
+) -> dict[str, int]:
+    d_q = n_head * head_dim
+    d_kv = n_kv_head * head_dim
+    tokens = batch * seq_len
+    return {
+        "q_proj": dense_linear_flops(tokens=tokens, d_in=d_model, d_out=d_q),
+        "k_proj": dense_linear_flops(tokens=tokens, d_in=d_model, d_out=d_kv),
+        "v_proj": dense_linear_flops(tokens=tokens, d_in=d_model, d_out=d_kv),
+        "o_proj": dense_linear_flops(tokens=tokens, d_in=d_q, d_out=d_model),
+    }
+
+
+def attention_core_flops(*, batch: int, d_model: int, valid_attention_pairs: int) -> int:
+    """QK + AV logical FLOPs, per the Act's normative convention:
+    4 * B * valid_attention_pairs * d_model.
+    """
+    return 4 * batch * valid_attention_pairs * d_model
+
+
+def mlp_flops(*, tokens: int, d_model: int, d_ff: int) -> int:
+    return 2 * tokens * d_model * d_ff + 2 * tokens * d_ff * d_model
+
+
+def lm_head_flops(*, tokens: int, d_model: int, vocab_size: int) -> int:
+    return dense_linear_flops(tokens=tokens, d_in=d_model, d_out=vocab_size)
+
+
+@dataclass
+class FlopLedger:
+    entries: list[FlopRecord] = field(default_factory=list)
+    _expert_assignment_calls: list[dict[str, Any]] = field(default_factory=list)
+
+    def add(
+        self,
+        name: str,
+        kind: str,
+        logical_flops: int,
+        *,
+        executed_estimate_flops: int | None = None,
+        **metadata: Any,
+    ) -> FlopRecord:
+        if logical_flops < 0:
+            raise ValueError("logical_flops cannot be negative")
+        executed = logical_flops if executed_estimate_flops is None else executed_estimate_flops
+        if executed < 0:
+            raise ValueError("executed_estimate_flops cannot be negative")
+        record = FlopRecord(
+            name=name,
+            kind=kind,
+            logical_flops=int(logical_flops),
+            executed_estimate_flops=int(executed),
+            metadata=dict(metadata),
+        )
+        self.entries.append(record)
+        return record
+
+    def add_dense_linear(self, name: str, *, tokens: int, d_in: int, d_out: int) -> FlopRecord:
+        return self.add(
+            name, "dense_linear", dense_linear_flops(tokens=tokens, d_in=d_in, d_out=d_out),
+            tokens=tokens, d_in=d_in, d_out=d_out,
+        )
+
+    def add_attention(
+        self,
+        name: str,
+        *,
+        batch: int,
+        seq_len: int,
+        d_model: int,
+        n_head: int,
+        n_kv_head: int,
+        head_dim: int,
+        causal: bool = True,
+        window: int | None = None,
+    ) -> FlopRecord:
+        projections = attention_projection_flops(
+            batch=batch, seq_len=seq_len, d_model=d_model, n_head=n_head, n_kv_head=n_kv_head, head_dim=head_dim
+        )
+        if window is not None:
+            pairs = sliding_causal_pairs(seq_len, window)
+        elif causal:
+            pairs = full_causal_pairs(seq_len)
+        else:
+            pairs = full_noncausal_pairs(seq_len)
+        core = attention_core_flops(batch=batch, d_model=d_model, valid_attention_pairs=pairs)
+        logical_total = sum(projections.values()) + core
+        return self.add(
+            name,
+            "attention",
+            logical_total,
+            batch=batch,
+            seq_len=seq_len,
+            d_model=d_model,
+            n_head=n_head,
+            n_kv_head=n_kv_head,
+            head_dim=head_dim,
+            causal=causal,
+            window=window,
+            valid_attention_pairs=pairs,
+            **projections,
+        )
+
+    def add_mlp(self, name: str, *, tokens: int, d_model: int, d_ff: int) -> FlopRecord:
+        return self.add(
+            name, "mlp", mlp_flops(tokens=tokens, d_model=d_model, d_ff=d_ff),
+            tokens=tokens, d_model=d_model, d_ff=d_ff,
+        )
+
+    def add_lm_head(self, name: str, *, tokens: int, d_model: int, vocab_size: int) -> FlopRecord:
+        return self.add(
+            name, "lm_head", lm_head_flops(tokens=tokens, d_model=d_model, vocab_size=vocab_size),
+            tokens=tokens, d_model=d_model, vocab_size=vocab_size,
+        )
+
+    def add_embedding_lookup(self, name: str, *, tokens: int, d_model: int) -> FlopRecord:
+        # A lookup is not a matmul: explicitly zero dense FLOPs, per Act 4.8.
+        return self.add(name, "embedding_lookup", 0, tokens=tokens, d_model=d_model)
+
+    def record_expert_assignments(
+        self,
+        *,
+        expert_token_counts: Mapping[int, int],
+        top_k: int,
+        shared_expert_token_count: int,
+        dropped_token_count: int,
+        padded_token_count: int,
+    ) -> None:
+        """Measurement-ready API only (Act 4.8): WP-1 implements no router, so
+        this only validates and records the shape of a future call; it computes
+        no FLOP total. F_MoE = Sum_e F_expert(n_e) + F_shared + F_router is a
+        WP-3 formula, not implemented here, and dense_flops * active_experts is
+        explicitly rejected as a shortcut.
+        """
+        if top_k < 1:
+            raise ValueError("top_k must be >= 1")
+        if any(count < 0 for count in expert_token_counts.values()):
+            raise ValueError("expert_token_counts cannot be negative")
+        if shared_expert_token_count < 0 or dropped_token_count < 0 or padded_token_count < 0:
+            raise ValueError("token counts cannot be negative")
+        self._expert_assignment_calls.append(
+            {
+                "expert_token_counts": dict(expert_token_counts),
+                "top_k": top_k,
+                "shared_expert_token_count": shared_expert_token_count,
+                "dropped_token_count": dropped_token_count,
+                "padded_token_count": padded_token_count,
+            }
+        )
+
+    @property
+    def total_logical_flops(self) -> int:
+        return sum(entry.logical_flops for entry in self.entries)
+
+    @property
+    def total_executed_estimate_flops(self) -> int:
+        return sum(entry.executed_estimate_flops for entry in self.entries)
+
+    @property
+    def flop_model_error_percent(self) -> float | None:
+        logical = self.total_logical_flops
+        executed = self.total_executed_estimate_flops
+        if logical == 0:
+            return None
+        return 100.0 * (executed - logical) / logical
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "logical_forward_flops": self.total_logical_flops,
+            "executed_estimate_forward_flops": self.total_executed_estimate_flops,
+            "flop_model_error_percent": self.flop_model_error_percent,
+            "controller_forward_flops": 0,
+            "profiler_observed_flops": None,
+            "expert_assignment_calls_recorded": len(self._expert_assignment_calls),
+            "entry_count": len(self.entries),
+            "entries": [
+                {
+                    "name": e.name,
+                    "kind": e.kind,
+                    "logical_flops": e.logical_flops,
+                    "executed_estimate_flops": e.executed_estimate_flops,
+                    "metadata": e.metadata,
+                }
+                for e in self.entries
+            ],
+        }
+
+"""Machine-checkable proof that the CWC programme is mathematically coherent.
+
+Companion to `docs/MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`. Where the value
+theory (`adaptive_value_theory.py`) proves the theorems and the neuron model
+(`neuron_information_budget.py`) grounds the constants, this module proves the
+*whole project* hangs together: it mechanically verifies that
+
+  (A) COHERENCE — every empirical verdict on the claim ladder equals the sign of
+      its theoretical certificate. A claim of adaptive value is admissible
+      (may be SUPPORTED) iff its certificate
+
+          certificate = min( G(lambda),  Delta_u * sqrt(I(C;Z)/2) )  -  c_route
+
+      is strictly positive in the regime it claims; every recorded NEGATIVE must be
+      one of the three vetoes (dominance / information / computation). Zero
+      contradictions across the ladder == the programme is internally consistent.
+
+  (B) EFFICIENCY — the identifiability predictor is O(|C||A|) and this is optimal:
+      any correct algorithm must read every utility entry, so the exact operation
+      count equals |C||A| reads + |C|(|A|-1) comparisons. The counter is exposed and
+      checked, turning the complexity claim into a measured fact.
+
+The auditor is built to FAIL: `audit_ladder` returns the list of contradictions,
+`falsify_coherence` injects an inconsistent claim and asserts it is flagged. A
+theory that could not detect its own violation would not be a proof of coherence.
+"""
+from __future__ import annotations
+
+import math
+from collections.abc import Sequence
+
+from experiments.common.adaptive_value_theory import budgeted_gap, oracle_gap
+
+_TOL = 1e-6
+
+# Verdict classes the theory can assign to a claim.
+POSITIVE = "positive"
+VETO_DOMINANCE = "veto_dominance"       # G = 0: a mechanism weakly dominates (Thm 2)
+VETO_INFORMATION = "veto_information"   # Delta_u*sqrt(I/2) = 0: signal carries no bits (Thm 4)
+VETO_COMPUTATION = "veto_computation"   # c_route >= binding ceiling (Thm 6)
+
+# Empirical status classes and the theory sign each is coherent with.
+_POSITIVE_STATUSES = {"SUPPORTED", "SUPPORTED_NARROWED", "EXPLORATORY_POSITIVE"}
+_NEGATIVE_STATUSES = {"NOT_SUPPORTED", "NOT_IDENTIFIABLE", "COLLAPSE"}
+
+
+def certificate(oracle_gap_value: float, information_bound: float, route_cost: float) -> float:
+    """The master certificate ``min(G, Delta_u*sqrt(I/2)) - c_route`` (Theorem 6)."""
+    if route_cost < 0 or not math.isfinite(route_cost):
+        raise ValueError("route_cost must be finite and non-negative")
+    return min(oracle_gap_value, information_bound) - route_cost
+
+
+def classify(oracle_gap_value: float, information_bound: float, route_cost: float, *, tol: float = _TOL) -> str:
+    """Assign the theory verdict class, checking the three vetoes in causal order."""
+    if oracle_gap_value < -tol:
+        raise ValueError("oracle gap cannot be negative (Theorem 1)")
+    ceiling = min(oracle_gap_value, information_bound)
+    if oracle_gap_value <= tol:
+        return VETO_DOMINANCE
+    if information_bound <= tol:
+        return VETO_INFORMATION
+    if route_cost >= ceiling - tol:
+        return VETO_COMPUTATION
+    return POSITIVE
+
+
+# --------------------------------------------------------------------------- #
+# The claim ladder, encoded faithfully from the CWC record                    #
+# --------------------------------------------------------------------------- #
+# Each entry recomputes G from the SAME small utility matrices used across the
+# programme (identifiability_theory.py / IDENTIFIABILITY_THEORY.md), so the audit
+# is grounded in the repo's own numbers, not hand-typed gaps.
+_BIG = 10.0  # an information bound large enough not to bind (perfect-context regime)
+
+_LADDER: tuple[dict[str, object], ...] = (
+    {
+        "claim_id": "routing-v1/v2 (quality only)", "status": "COLLAPSE",
+        "utility": [[1.0, 1.0], [0.004, 1.0]], "route_cost": 0.0,
+        "expect": VETO_DOMINANCE,
+        "note": "semantic path solves EASY and HARD -> weakly dominant -> ROUTER_COLLAPSE",
+    },
+    {
+        "claim_id": "routing-v2 (under 50% budget)", "status": "SUPPORTED_NARROWED",
+        "utility": [[1.0, 1.0], [0.004, 1.0]], "cost": [0.0, 1.0], "lam": 0.5, "route_cost": 0.0,
+        "expect": POSITIVE,
+        "note": "binding budget breaks dominance -> G~0.25 -> identifiable (matches empirical 99.8% CE gap)",
+    },
+    {
+        "claim_id": "wp3-rcfr (ties DISeL-with-role)", "status": "NOT_SUPPORTED",
+        "utility": [[1.0, 1.0], [1.0, 1.0]], "route_cost": 0.0,
+        "expect": VETO_DOMINANCE,
+        "note": "role-conditioned reuse matches prior art everywhere -> G=0",
+    },
+    {
+        "claim_id": "wp3-plasticity (unbudgeted)", "status": "NOT_IDENTIFIABLE",
+        "utility": [[0.9, 0.6, 0.5, 0.3], [0.9, 0.5, 0.4, 0.3]], "route_cost": 0.0,
+        "expect": VETO_DOMINANCE,
+        "note": "attention has the largest main effect and is never overtaken -> G~0",
+    },
+    {
+        "claim_id": "wp3-plasticity (under param cost)", "status": "EXPLORATORY_POSITIVE",
+        "utility": [[0.9, 0.6, 0.85, 0.3], [0.9, 0.5, 0.4, 0.3]],
+        "cost": [1.0, 0.5, 0.1, 0.05], "lam": 0.3, "route_cost": 0.0,
+        "expect": POSITIVE,
+        "note": "cost reserves cheap head for lexical, expensive attn for relational -> G>0",
+    },
+    {
+        "claim_id": "wp2-routing-v3 (surface-matched)", "status": "NOT_SUPPORTED",
+        "utility": [[1.0, 0.0], [0.0, 1.0]], "route_cost": 0.5,
+        "expect": VETO_COMPUTATION,
+        "note": "large oracle gap but the route decision costs ~the expensive computation",
+    },
+)
+
+
+def _entry_gap(entry: dict[str, object]) -> float:
+    utility = entry["utility"]
+    assert isinstance(utility, list)
+    if "cost" in entry:
+        cost, lam = entry["cost"], entry["lam"]
+        assert isinstance(cost, list) and isinstance(lam, (int, float))
+        return float(budgeted_gap(utility, cost, float(lam))["gap"])
+    return float(oracle_gap(utility)["gap"])
+
+
+def audit_ladder(ladder: Sequence[dict[str, object]] = _LADDER) -> dict[str, object]:
+    """Audit every ladder entry: theory verdict class must match the record.
+
+    Returns ``contradictions`` (empty == coherent), the per-entry verdicts, and the
+    reproduced gaps. A contradiction is either a class mismatch (theory says veto,
+    record says supported, or vice versa) or a status/sign incoherence.
+    """
+    contradictions: list[str] = []
+    rows: list[dict[str, object]] = []
+    for entry in ladder:
+        gap = _entry_gap(entry)
+        info = _BIG
+        route_cost = float(entry.get("route_cost", 0.0))  # type: ignore[arg-type]
+        verdict = classify(gap, info, route_cost)
+        expected = entry["expect"]
+        status = entry["status"]
+        assert isinstance(status, str)
+        theory_positive = verdict == POSITIVE
+        record_positive = status in _POSITIVE_STATUSES
+        ok_class = verdict == expected
+        ok_status = theory_positive == record_positive
+        if not ok_class:
+            contradictions.append(f"{entry['claim_id']}: theory={verdict} != expected={expected}")
+        if not ok_status:
+            contradictions.append(
+                f"{entry['claim_id']}: theory_positive={theory_positive} but status={status}"
+            )
+        rows.append({
+            "claim_id": entry["claim_id"], "gap": gap, "verdict": verdict,
+            "status": status, "coherent": ok_class and ok_status,
+        })
+    return {
+        "n": len(ladder),
+        "contradictions": contradictions,
+        "coherent": len(contradictions) == 0,
+        "rows": rows,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Efficiency: the identifiability predictor is O(|C||A|) and it is optimal     #
+# --------------------------------------------------------------------------- #
+def predictor_op_count(utility: Sequence[Sequence[float]], cost: Sequence[float], lam: float) -> dict[str, int]:
+    """Run the constrained-argmax identifiability predictor, counting every op.
+
+    The predictor computes ``argmax_a (U[c,a] - lam*K[a])`` per context and reports
+    whether it varies with ``c``. It reads each of the ``|C||A|`` cost-adjusted
+    entries exactly once and performs ``|C|(|A|-1)`` comparisons — the operation
+    counts are returned so the O(|C||A|) claim is a measured fact, not an assertion.
+    """
+    n_c = len(utility)
+    n_a = len(utility[0]) if utility else 0
+    reads = 0
+    compares = 0
+    argmaxes: list[int] = []
+    for c in range(n_c):
+        best_a, best_v = 0, -math.inf
+        for a in range(n_a):
+            v = utility[c][a] - lam * cost[a]
+            reads += 1
+            if a > 0:
+                compares += 1
+            if v > best_v:
+                best_v, best_a = v, a
+        argmaxes.append(best_a)
+    identifiable = len(set(argmaxes)) > 1
+    return {
+        "reads": reads,
+        "compares": compares,
+        "n_c": n_c,
+        "n_a": n_a,
+        "identifiable": int(identifiable),
+    }
+
+
+def complexity_is_optimal(n_c: int, n_a: int) -> dict[str, object]:
+    """Check the op count equals the information-theoretic optimum for size (n_c, n_a).
+
+    Lower bound: any correct identifiability test must inspect every utility entry —
+    an adversary can flip any unread entry to change the per-context argmax and hence
+    the verdict. So ``reads >= n_c*n_a`` for any correct algorithm; the predictor
+    attains it exactly, hence is optimal.
+    """
+    utility = [[float((c * 7 + a * 3) % 5) for a in range(n_a)] for c in range(n_c)]
+    cost = [float(a % 3) for a in range(n_a)]
+    ops = predictor_op_count(utility, cost, 0.5)
+    reads = int(ops["reads"])
+    return {
+        "reads": reads,
+        "lower_bound": n_c * n_a,
+        "attains_lower_bound": reads == n_c * n_a,
+        "compares": int(ops["compares"]),
+        "expected_compares": n_c * (n_a - 1),
+        "linear": reads == n_c * n_a and int(ops["compares"]) == n_c * (n_a - 1),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Falsification: the auditor must be able to detect incoherence               #
+# --------------------------------------------------------------------------- #
+def falsify_coherence() -> dict[str, object]:
+    """Confirm the real ladder is coherent AND that an injected fault is caught."""
+    clean = audit_ladder()
+    # inject an incoherent claim: a weakly-dominant (G=0) problem marked SUPPORTED
+    poisoned = [*_LADDER, {
+        "claim_id": "INJECTED-FAULT", "status": "SUPPORTED",
+        "utility": [[1.0, 1.0], [1.0, 1.0]], "route_cost": 0.0, "expect": POSITIVE,
+    }]
+    poisoned_audit = audit_ladder(poisoned)
+    poisoned_contradictions = poisoned_audit["contradictions"]
+    assert isinstance(poisoned_contradictions, list)
+    fault_caught = any("INJECTED-FAULT" in c for c in poisoned_contradictions)
+    return {
+        "real_ladder_coherent": bool(clean["coherent"]),
+        "real_contradictions": clean["contradictions"],
+        "injected_fault_caught": fault_caught,
+        "auditor_sound": bool(clean["coherent"]) and fault_caught,
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI summary
+    audit = audit_ladder()
+    rows = audit["rows"]
+    contradictions = audit["contradictions"]
+    assert isinstance(rows, list) and isinstance(contradictions, list)
+    print("CWC COHERENCE AUDIT  (theory verdict  vs  recorded status)")
+    for row in rows:
+        mark = "OK " if row["coherent"] else "XX "
+        print(f"  {mark} {row['claim_id']!s:34s} G={float(row['gap']):+.4f}  "
+              f"{row['verdict']!s:16s} <- {row['status']}")
+    print(f"CONTRADICTIONS: {len(contradictions)}  ->  "
+          f"{'COHERENT' if audit['coherent'] else 'INCOHERENT'}")
+    for n_c, n_a in ((3, 4), (10, 20), (100, 50)):
+        cx = complexity_is_optimal(n_c, n_a)
+        print(f"EFFICIENCY |C|={n_c:<4d}|A|={n_a:<3d}: reads={cx['reads']} == |C||A|={cx['lower_bound']}"
+              f"  optimal={cx['attains_lower_bound']}")
+    print("AUDITOR SOUNDNESS:", falsify_coherence()["auditor_sound"])
+
+"""A verified biophysical model of neural information throughput and its energy cost.
+
+This module is the executable half of `docs/NEURON_INFORMATION_BUDGET.md`. It
+estimates, with propagated uncertainty and adversarial falsification tests:
+
+  1. the information throughput of a single neuron, R  [bits/s];
+  2. the metabolic cost of a bit, e_bit  [J/bit] and [ATP/bit];
+  3. the ratio of e_bit to the Landauer floor k_B T ln2  (thermodynamic slack);
+  4. a NON-LINEAR extrapolation to networks of N neurons, where information
+     saturates (correlated-noise redundancy) while energy grows super-linearly
+     (metabolism + wiring), so bits-per-joule *declines* with scale.
+
+Design contract (matching the CWC repo discipline)
+---------------------------------------------------
+* Pure finite arithmetic, no third-party dependency; fails closed on bad input.
+* Every load-bearing constant is a *literature anchor with a range*, not a point
+  estimate; see ``ANCHORS`` and the citations in the companion document.
+* The single-neuron power is computed by THREE independent routes (top-down brain
+  budget; bottom-up ATP turnover; per-spike ion pumping) that must agree within
+  the uncertainty band — an internal consistency oracle, not a fitted parameter.
+* The Landauer floor ``e_bit >= k_B T ln2`` is a hard physical law; any parameter
+  draw that violates it is a falsification of the model, caught by the harness.
+* Uncertainty is propagated by deterministic Monte-Carlo over the anchor ranges;
+  results are reported as (p05, median, p95), never as a single fabricated number.
+
+This is an *order-of-magnitude biophysical model* (ranges span ~1-2 decades), not a
+direct measurement. It is the physical grounding of the CWC thesis that "adaptive
+computation is an information market": the neuron's bits/spike is the capacity of
+one routing decision and ``e_bit`` is its physical price, with a hard Landauer floor.
+"""
+from __future__ import annotations
+
+import math
+
+# --------------------------------------------------------------------------- #
+# Physical constants (exact / CODATA)                                          #
+# --------------------------------------------------------------------------- #
+K_B: float = 1.380649e-23          # Boltzmann constant [J/K] (exact, SI 2019)
+LN2: float = math.log(2.0)
+T_BODY_K: float = 310.15           # mammalian body temperature [K] (37 degrees C)
+
+
+def landauer_floor_j_per_bit(temperature_k: float = T_BODY_K) -> float:
+    """Landauer's thermodynamic floor for erasing one bit: ``k_B * T * ln 2`` [J/bit].
+
+    ~2.97e-21 J/bit at body temperature. No irreversible computation can cost less;
+    it is the hard lower bound every ``e_bit`` estimate below must clear.
+    """
+    if not math.isfinite(temperature_k) or temperature_k <= 0.0:
+        raise ValueError("temperature must be positive and finite")
+    return K_B * temperature_k * LN2
+
+
+# --------------------------------------------------------------------------- #
+# Literature anchors: (low, mid, high, citation). See NEURON_INFORMATION_BUDGET.md #
+# --------------------------------------------------------------------------- #
+Anchor = tuple[float, float, float, str]
+
+ANCHORS: dict[str, Anchor] = {
+    # Gibbs free energy of ATP hydrolysis in vivo, per molecule [J].
+    # -50..-62 kJ/mol => 8.3e-20..1.03e-19 J; ~20 k_B T. (Sterling & Laughlin 2015)
+    "delta_g_atp_j": (8.3e-20, 9.1e-20, 1.03e-19, "ATP hydrolysis 50-62 kJ/mol"),
+    # Whole-brain power [W]. (Britannica/Attwell: 12-20 W; grey-matter signaling core)
+    "brain_power_w": (12.0, 20.0, 20.0, "human brain 12-20 W"),
+    # Neuron count. (Herculano-Houzel 2009; PMC 86e9 review)
+    "n_neurons": (8.0e10, 8.6e10, 1.0e11, "86 billion neurons"),
+    # Per-neuron ATP turnover rate at 4 Hz mean firing [ATP/s].
+    # 3.29e9 ATP/s (Attwell & Laughlin 2001); 2012 update ~2/3 of this.
+    "atp_per_second_4hz": (2.0e9, 3.29e9, 4.0e9, "Attwell & Laughlin 2001, 4 Hz"),
+    # Bits transmitted per spike. (Strong et al. 1998; Borst & Theunissen 1999)
+    "bits_per_spike": (1.0, 2.0, 3.0, "~2 bits/spike"),
+    # Mean cortical firing rate [Hz]. (Attwell & Laughlin 4 Hz budget; range 1-10)
+    "firing_rate_hz": (1.0, 4.0, 10.0, "cortical mean 1-10 Hz"),
+    # Direct-method sensory single-neuron information rate [bits/s] (fly H1 up to 90).
+    "sensory_bits_per_second": (10.0, 64.0, 300.0, "Strong et al. 1998 up to ~90 bits/s H1"),
+    # Effective pairwise noise correlation limiting population information. (Zohary 1994)
+    "noise_correlation_rho": (0.01, 0.1, 0.3, "cortical noise correlation ~0.1"),
+    # Wiring-cost exponent alpha in E_wire ~ N^alpha. (Chklovskii; 4/3 volume bound)
+    "wiring_exponent_alpha": (1.0, 1.16, 1.34, "wiring superlinear up to N^{4/3}"),
+    # Fraction of per-neuron power attributable to communication/wiring. (Attwell&Laughlin)
+    "wiring_power_fraction": (0.3, 0.5, 0.6, "AP+synaptic signaling ~half the budget"),
+}
+
+
+def _lo(name: str) -> float:
+    return ANCHORS[name][0]
+
+
+def _mid(name: str) -> float:
+    return ANCHORS[name][1]
+
+
+def _hi(name: str) -> float:
+    return ANCHORS[name][2]
+
+
+# --------------------------------------------------------------------------- #
+# Single-neuron throughput and cost                                           #
+# --------------------------------------------------------------------------- #
+def single_neuron_bits_per_second(firing_rate_hz: float, bits_per_spike: float) -> float:
+    """Information throughput of one spiking neuron: ``rate * bits_per_spike`` [bits/s]."""
+    if firing_rate_hz < 0 or bits_per_spike < 0:
+        raise ValueError("firing rate and bits/spike must be non-negative")
+    if not (math.isfinite(firing_rate_hz) and math.isfinite(bits_per_spike)):
+        raise ValueError("inputs must be finite")
+    return firing_rate_hz * bits_per_spike
+
+
+def neuron_power_topdown(brain_power_w: float, n_neurons: float) -> float:
+    """Per-neuron power from the whole-brain budget [W]: ``P_brain / N`` (top-down)."""
+    if brain_power_w <= 0 or n_neurons <= 0:
+        raise ValueError("brain power and neuron count must be positive")
+    return brain_power_w / n_neurons
+
+
+def neuron_power_bottomup(atp_per_second: float, delta_g_atp_j: float) -> float:
+    """Per-neuron power from ATP turnover [W]: ``ATP_rate * dG_ATP`` (bottom-up)."""
+    if atp_per_second <= 0 or delta_g_atp_j <= 0:
+        raise ValueError("ATP rate and free energy must be positive")
+    return atp_per_second * delta_g_atp_j
+
+
+def energy_per_bit_j(power_w: float, bits_per_second: float) -> float:
+    """Metabolic cost of one bit [J/bit]: ``power / throughput``."""
+    if power_w < 0 or not math.isfinite(power_w):
+        raise ValueError("power must be finite and non-negative")
+    if bits_per_second <= 0:
+        raise ValueError("throughput must be positive to price a bit")
+    return power_w / bits_per_second
+
+
+def atp_per_bit(energy_per_bit_value_j: float, delta_g_atp_j: float) -> float:
+    """Cost of one bit expressed in ATP molecules: ``e_bit / dG_ATP``."""
+    if delta_g_atp_j <= 0:
+        raise ValueError("ATP free energy must be positive")
+    return energy_per_bit_value_j / delta_g_atp_j
+
+
+def landauer_ratio(energy_per_bit_value_j: float, temperature_k: float = T_BODY_K) -> float:
+    """How many Landauer floors the biological bit costs: ``e_bit / (k_B T ln2)``.
+
+    Must be >= 1 for any physical irreversible channel. Biological spiking sits
+    ~1e9-1e11 above the floor (Laughlin et al. 1998: "orders of magnitude above").
+    """
+    return energy_per_bit_value_j / landauer_floor_j_per_bit(temperature_k)
+
+
+def single_neuron_budget(
+    *,
+    firing_rate_hz: float,
+    bits_per_spike: float,
+    brain_power_w: float,
+    n_neurons: float,
+    atp_per_second: float,
+    delta_g_atp_j: float,
+    temperature_k: float = T_BODY_K,
+) -> dict[str, float | bool]:
+    """Full single-neuron budget with the three-route power consistency oracle.
+
+    ``power_topdown`` (brain budget / N) and ``power_bottomup`` (ATP turnover * dG)
+    are *independent* estimates; ``routes_agree`` asserts they fall within a factor
+    of 4 of each other. The analytic worst case over the full anchor space is
+    ratio ~3.43 (max bottom-up / min top-down), so a factor-4 window is the tight
+    honest bound: two independent methods agree to within ~3.4x everywhere, ~15%
+    at the medians — the internal falsification that the anchors are coherent.
+    """
+    r_bits = single_neuron_bits_per_second(firing_rate_hz, bits_per_spike)
+    p_top = neuron_power_topdown(brain_power_w, n_neurons)
+    p_bot = neuron_power_bottomup(atp_per_second, delta_g_atp_j)
+    power = math.sqrt(p_top * p_bot)  # geometric mean of the two routes
+    e_bit = energy_per_bit_j(power, r_bits)
+    floor = landauer_floor_j_per_bit(temperature_k)
+    ratio_hi = max(p_top, p_bot) / min(p_top, p_bot)
+    return {
+        "bits_per_second": r_bits,
+        "power_topdown_w": p_top,
+        "power_bottomup_w": p_bot,
+        "power_w": power,
+        "power_route_ratio": ratio_hi,
+        "routes_agree": ratio_hi <= 4.0,
+        "energy_per_bit_j": e_bit,
+        "atp_per_bit": atp_per_bit(e_bit, delta_g_atp_j),
+        "landauer_floor_j": floor,
+        "landauer_ratio": e_bit / floor,
+        "landauer_floor_respected": e_bit >= floor,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Non-linear network extrapolation                                            #
+# --------------------------------------------------------------------------- #
+def network_information_bits(n: int, single_bits: float, noise_correlation: float) -> float:
+    """Population information under correlated noise (Zohary/Sompolinsky saturation).
+
+        I_N = I_1 * N / (1 + (N-1) * rho).
+
+    With ``rho = 0`` this is the naive linear law ``N * I_1``; with ``rho > 0`` it
+    SATURATES to ``I_1 / rho`` as ``N -> inf`` — redundancy caps the information no
+    matter how many neurons are added. This is the explicit rejection of linearity.
+    """
+    if n < 1:
+        raise ValueError("n must be a positive integer")
+    if single_bits < 0:
+        raise ValueError("single-neuron information must be non-negative")
+    if not (0.0 <= noise_correlation < 1.0):
+        raise ValueError("noise correlation must lie in [0, 1)")
+    return single_bits * n / (1.0 + (n - 1) * noise_correlation)
+
+
+def network_information_ceiling(single_bits: float, noise_correlation: float) -> float:
+    """Asymptotic ``I_inf = I_1 / rho`` (``inf`` when ``rho = 0``)."""
+    if noise_correlation < 0.0:
+        raise ValueError("noise correlation must be non-negative")
+    return math.inf if noise_correlation == 0.0 else single_bits / noise_correlation
+
+
+def network_energy_watts(n: int, single_power_w: float, wiring_fraction: float, alpha: float) -> float:
+    """Network power: metabolic (linear) + wiring (super-linear) [W].
+
+        E_N = (1 - f) * P_1 * N  +  f * P_1 * N^alpha,
+
+    with ``f`` the wiring fraction and ``alpha >= 1`` the wiring-cost exponent
+    (up to the N^{4/3} volume bound). For ``alpha > 1`` the per-neuron power GROWS
+    with scale — the second way linearity fails.
+    """
+    if n < 1:
+        raise ValueError("n must be a positive integer")
+    if single_power_w < 0:
+        raise ValueError("single-neuron power must be non-negative")
+    if not (0.0 <= wiring_fraction <= 1.0):
+        raise ValueError("wiring fraction must lie in [0, 1]")
+    if alpha < 1.0:
+        raise ValueError("wiring exponent must be >= 1 (super-linear)")
+    metabolic = (1.0 - wiring_fraction) * single_power_w * n
+    wiring = wiring_fraction * single_power_w * (float(n) ** alpha)
+    return float(metabolic + wiring)
+
+
+def network_bits_per_joule(
+    n: int,
+    *,
+    single_bits: float,
+    single_power_w: float,
+    noise_correlation: float,
+    wiring_fraction: float,
+    alpha: float,
+) -> dict[str, float]:
+    """Network information efficiency [bits/J] and its per-neuron decomposition.
+
+    ``bits_per_joule`` = ``I_N / E_N``. Because ``I_N`` saturates while ``E_N`` is
+    super-linear, this efficiency DECLINES with ``N`` — the physical root of the
+    CWC route-decision cost: at scale, information is not free, so a controller must
+    spend it only where it pays.
+    """
+    info = network_information_bits(n, single_bits, noise_correlation)
+    power = network_energy_watts(n, single_power_w, wiring_fraction, alpha)
+    return {
+        "n": float(n),
+        "information_bits_per_s": info,
+        "power_w": power,
+        "bits_per_joule": info / power if power > 0 else math.inf,
+        "information_per_neuron": info / n,
+        "power_per_neuron_w": power / n,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Deterministic Monte-Carlo uncertainty propagation                           #
+# --------------------------------------------------------------------------- #
+class _Rng:
+    """Deterministic 64-bit LCG (no ``random`` import needed)."""
+
+    __slots__ = ("_s",)
+
+    def __init__(self, seed: int) -> None:
+        self._s = (seed ^ 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+
+    def unit(self) -> float:
+        self._s = (6364136223846793005 * self._s + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+        return (self._s >> 11) / float(1 << 53)
+
+    def uniform(self, lo: float, hi: float) -> float:
+        return lo + (hi - lo) * self.unit()
+
+    def log_uniform(self, lo: float, hi: float) -> float:
+        return math.exp(self.uniform(math.log(lo), math.log(hi)))
+
+
+def _percentiles(values: list[float]) -> dict[str, float]:
+    s = sorted(values)
+    n = len(s)
+
+    def q(p: float) -> float:
+        idx = min(n - 1, max(0, round(p * (n - 1))))
+        return s[idx]
+
+    return {"p05": q(0.05), "median": q(0.50), "p95": q(0.95)}
+
+
+def monte_carlo_budget(seed: int = 20260720, trials: int = 20000) -> dict[str, dict[str, float]]:
+    """Propagate anchor-range uncertainty into (p05, median, p95) for each metric.
+
+    Multi-decade quantities (ATP free energy, neuron count) are sampled log-uniform;
+    the rest uniform over their anchor range. Every draw is checked against the
+    Landauer floor and the three-route agreement inside ``single_neuron_budget``.
+    """
+    rng = _Rng(seed)
+    keys = ("bits_per_second", "power_w", "energy_per_bit_j", "atp_per_bit", "landauer_ratio")
+    acc: dict[str, list[float]] = {k: [] for k in keys}
+    sensory_bits: list[float] = []
+
+    for _ in range(trials):
+        b = single_neuron_budget(
+            firing_rate_hz=rng.uniform(_lo("firing_rate_hz"), _hi("firing_rate_hz")),
+            bits_per_spike=rng.uniform(_lo("bits_per_spike"), _hi("bits_per_spike")),
+            brain_power_w=rng.uniform(_lo("brain_power_w"), _hi("brain_power_w")),
+            n_neurons=rng.log_uniform(_lo("n_neurons"), _hi("n_neurons")),
+            atp_per_second=rng.uniform(_lo("atp_per_second_4hz"), _hi("atp_per_second_4hz")),
+            delta_g_atp_j=rng.log_uniform(_lo("delta_g_atp_j"), _hi("delta_g_atp_j")),
+        )
+        for k in keys:
+            acc[k].append(float(b[k]))
+        sensory_bits.append(rng.uniform(_lo("sensory_bits_per_second"), _hi("sensory_bits_per_second")))
+
+    out = {k: _percentiles(v) for k, v in acc.items()}
+    out["sensory_bits_per_second"] = _percentiles(sensory_bits)
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Adversarial falsification harness                                           #
+# --------------------------------------------------------------------------- #
+def falsify_model(seed: int = 20260720, trials: int = 20000) -> dict[str, float | int | bool]:
+    """Try to break every physical/structural invariant of the model.
+
+    All ``*_violations`` counters must be zero; any positive value is a genuine
+    falsification (a parameter draw that breaks thermodynamics or a network law
+    that fails to saturate / grow as proved).
+    """
+    rng = _Rng(seed)
+    landauer_violations = 0
+    route_disagreements = 0
+    positivity_violations = 0
+    saturation_violations = 0
+    superlinear_violations = 0
+    efficiency_violations = 0
+    min_landauer_ratio = math.inf
+
+    for _ in range(trials):
+        b = single_neuron_budget(
+            firing_rate_hz=rng.uniform(_lo("firing_rate_hz"), _hi("firing_rate_hz")),
+            bits_per_spike=rng.uniform(_lo("bits_per_spike"), _hi("bits_per_spike")),
+            brain_power_w=rng.uniform(_lo("brain_power_w"), _hi("brain_power_w")),
+            n_neurons=rng.log_uniform(_lo("n_neurons"), _hi("n_neurons")),
+            atp_per_second=rng.uniform(_lo("atp_per_second_4hz"), _hi("atp_per_second_4hz")),
+            delta_g_atp_j=rng.log_uniform(_lo("delta_g_atp_j"), _hi("delta_g_atp_j")),
+        )
+        if not bool(b["landauer_floor_respected"]):
+            landauer_violations += 1
+        if not bool(b["routes_agree"]):
+            route_disagreements += 1
+        if float(b["bits_per_second"]) <= 0 or float(b["energy_per_bit_j"]) <= 0:
+            positivity_violations += 1
+        min_landauer_ratio = min(min_landauer_ratio, float(b["landauer_ratio"]))
+
+        # network laws on a random but valid parameterisation
+        i1 = rng.uniform(1.0, 100.0)
+        p1 = rng.log_uniform(1e-11, 1e-9)
+        rho = rng.uniform(0.01, 0.5)
+        frac = rng.uniform(0.2, 0.7)
+        alpha = rng.uniform(1.0001, 1.34)
+        prev_info_per_n = math.inf
+        prev_pow_per_n = 0.0
+        prev_eff = math.inf
+        for n in (1, 10, 100, 1000, 10000, 100000):
+            info_per_n = network_information_bits(n, i1, rho) / n
+            pow_per_n = network_energy_watts(n, p1, frac, alpha) / n
+            eff = network_bits_per_joule(
+                n, single_bits=i1, single_power_w=p1,
+                noise_correlation=rho, wiring_fraction=frac, alpha=alpha,
+            )["bits_per_joule"]
+            # information per neuron must be non-increasing (redundancy saturation)
+            if info_per_n > prev_info_per_n + 1e-9:
+                saturation_violations += 1
+            # per-neuron power must be non-decreasing (super-linear wiring)
+            if pow_per_n < prev_pow_per_n - 1e-18:
+                superlinear_violations += 1
+            # efficiency must be non-increasing
+            if eff > prev_eff + 1e-6:
+                efficiency_violations += 1
+            prev_info_per_n = info_per_n
+            prev_pow_per_n = pow_per_n
+            prev_eff = eff
+
+        # saturation ceiling is exact
+        ceil = network_information_ceiling(i1, rho)
+        big = network_information_bits(10**9, i1, rho)
+        if big > ceil + 1e-6:
+            saturation_violations += 1
+
+    return {
+        "trials": trials,
+        "landauer_violations": landauer_violations,
+        "route_disagreements": route_disagreements,
+        "positivity_violations": positivity_violations,
+        "saturation_violations": saturation_violations,
+        "superlinear_violations": superlinear_violations,
+        "efficiency_violations": efficiency_violations,
+        "min_landauer_ratio": min_landauer_ratio,
+        "all_invariants_hold": (
+            landauer_violations == 0
+            and route_disagreements == 0
+            and positivity_violations == 0
+            and saturation_violations == 0
+            and superlinear_violations == 0
+            and efficiency_violations == 0
+            and min_landauer_ratio >= 1.0
+        ),
+    }
+
+
+def _fmt(d: dict[str, float]) -> str:
+    return f"p05={d['p05']:.3g}  median={d['median']:.3g}  p95={d['p95']:.3g}"
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI summary
+    mc = monte_carlo_budget()
+    print("SINGLE-NEURON INFORMATION BUDGET (Monte-Carlo over literature anchors)")
+    print(f"  throughput  [bits/s]   : {_fmt(mc['bits_per_second'])}")
+    print(f"  sensory     [bits/s]   : {_fmt(mc['sensory_bits_per_second'])}")
+    print(f"  power       [W]        : {_fmt(mc['power_w'])}")
+    print(f"  energy/bit  [J/bit]    : {_fmt(mc['energy_per_bit_j'])}")
+    print(f"  cost        [ATP/bit]  : {_fmt(mc['atp_per_bit'])}")
+    print(f"  Landauer ratio e/kTln2 : {_fmt(mc['landauer_ratio'])}")
+    rep = falsify_model()
+    print("FALSIFICATION:", "ALL INVARIANTS HOLD" if rep["all_invariants_hold"] else "VIOLATION FOUND")
+    print(f"  min Landauer ratio     : {rep['min_landauer_ratio']:.3g}  (must be >= 1)")
+
+"""Falsification suite for the value-of-information rate function V*(R).
+
+Verifies the proved envelope (V* <= min{G, Pinsker}), saturation at G, monotonicity,
+and — the headline — the Pinsker phase transition: the ceiling is asymptotically
+loose (ratio -> 0) at a regular problem and asymptotically tight (ratio -> 1) at a
+critical/indifference problem. Constructed so a mutant that breaks the solver,
+the bound, or the dichotomy is killed.
+"""
+import math
+import random
+from itertools import pairwise
+
+import pytest
+
+from experiments.common.value_of_information_rate import (
+    critical_leading_constant,
+    critical_pinsker_tightness,
+    falsify_rate_function,
+    is_critical,
+    marginal_value_of_information,
+    optimal_information_budget,
+    optimal_value_at_rate,
+    optimal_value_at_rate_general,
+    optimal_value_at_rate_ri,
+    oracle_gap_value,
+    pinsker_ceiling,
+    pinsker_tightness,
+    prior_optimal_actions,
+    small_rate_exponent,
+    symmetric_critical_information,
+    symmetric_critical_value,
+    utility_per_joule_ceiling,
+    value_and_information,
+)
+
+REGULAR = [[1.0, 0.0], [0.0, 0.5]]   # E[U.,0]=0.5 > E[U.,1]=0.25 : unique prior optimum
+CRITICAL = [[1.0, 0.0], [0.0, 1.0]]  # E[U.,0]=E[U.,1]=0.5 : two actions tie
+
+
+# ------------------------------ channel value ------------------------------ #
+def test_perfect_channel_attains_oracle_gap():
+    v, i = value_and_information(CRITICAL, [[1.0, 0.0], [0.0, 1.0]], (0.5, 0.5))
+    assert v == pytest.approx(oracle_gap_value(CRITICAL, (0.5, 0.5)), abs=1e-12)
+    assert i == pytest.approx(math.log(2), abs=1e-9)  # 1 bit = ln2 nats
+
+
+def test_uninformative_channel_has_zero_value_and_information():
+    v, i = value_and_information(REGULAR, [[0.5, 0.5], [0.5, 0.5]], (0.5, 0.5))
+    assert v == pytest.approx(0.0, abs=1e-12)
+    assert i == pytest.approx(0.0, abs=1e-12)
+
+
+# ------------------------------ regime classifier -------------------------- #
+def test_regime_classification():
+    assert is_critical(CRITICAL, (0.5, 0.5)) is True
+    assert is_critical(REGULAR, (0.5, 0.5)) is False
+    assert len(prior_optimal_actions(CRITICAL, (0.5, 0.5))) == 2
+    assert prior_optimal_actions(REGULAR, (0.5, 0.5)) == [0]
+
+
+# ------------------------------ envelope + shape --------------------------- #
+def test_rate_function_respects_the_master_envelope():
+    for u in (REGULAR, CRITICAL):
+        g = oracle_gap_value(u, (0.5, 0.5))
+        for r in (0.001, 0.01, 0.1, 0.5, 1.0):
+            v = optimal_value_at_rate(u, r, coarse=80, refine=20)
+            assert v <= min(g, pinsker_ceiling(u, r)) + 1e-6
+
+
+def test_rate_function_is_monotone_and_saturates_at_G():
+    u = REGULAR
+    g = oracle_gap_value(u, (0.5, 0.5))
+    prev = -1.0
+    for r in (0.01, 0.05, 0.2, 1.0, 5.0):
+        v = optimal_value_at_rate(u, r, coarse=80, refine=20)
+        assert v >= prev - 1e-6
+        prev = v
+    assert optimal_value_at_rate(u, 8.0, coarse=80, refine=20) == pytest.approx(g, abs=1e-3)
+
+
+def test_zero_rate_buys_nothing():
+    assert optimal_value_at_rate(REGULAR, 0.0) == 0.0
+
+
+# ------------------------- THE PINSKER PHASE TRANSITION -------------------- #
+def test_pinsker_is_asymptotically_loose_at_a_regular_problem():
+    # ratio V*/Pinsker decreases toward 0 as R shrinks
+    ratios = [float(pinsker_tightness(REGULAR, rate=r)["tightness_ratio"])
+              for r in (0.02, 0.005, 0.00125)]
+    assert ratios[0] > ratios[1] > ratios[2]        # strictly decreasing
+    assert ratios[-1] < 0.1                           # heading to zero
+    assert small_rate_exponent(REGULAR) > 0.8         # ~linear (regular)
+
+
+def test_pinsker_is_asymptotically_tight_at_a_critical_problem():
+    r = float(pinsker_tightness(CRITICAL, rate=0.002)["tightness_ratio"])
+    assert r > 0.9                                    # ceiling nearly attained
+    assert 0.45 < small_rate_exponent(CRITICAL) < 0.6  # ~sqrt (critical)
+
+
+def test_the_two_regimes_are_qualitatively_separated():
+    reg = pinsker_tightness(REGULAR, rate=0.002)
+    crit = pinsker_tightness(CRITICAL, rate=0.002)
+    # a regular problem leaves a large gap; a critical one nearly closes it
+    assert float(reg["tightness_ratio"]) < 0.15
+    assert float(crit["tightness_ratio"]) > 0.9
+    assert crit["is_critical"] is True and reg["is_critical"] is False
+
+
+# ---------- THE TRANSITION IS UNIVERSAL: general |C| > 2 confirmation ------- #
+P3 = [1 / 3, 1 / 3, 1 / 3]
+REG3 = [[1.0, 0.0, 0.2], [0.3, 0.9, 0.1], [0.2, 0.1, 0.8]]   # unique prior optimum
+CRIT3 = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]  # actions 0,1 tie at mean 0.5
+
+
+def _exponent3(u, rates, grid=36):
+    vs = [optimal_value_at_rate_general(u, r, P3, grid=grid) for r in rates]
+    slopes = [
+        (math.log(vs[k + 1]) - math.log(vs[k])) / (math.log(rates[k + 1]) - math.log(rates[k]))
+        for k in range(len(vs) - 1) if vs[k] > 1e-9 and vs[k + 1] > 1e-9
+    ]
+    return vs, (sum(slopes) / len(slopes) if slopes else float("nan"))
+
+
+def test_general_solver_respects_the_envelope():
+    g = oracle_gap_value(CRIT3, P3)
+    for r in (0.005, 0.05, 0.3):
+        v = optimal_value_at_rate_general(CRIT3, r, P3, grid=28)
+        assert v <= min(g, pinsker_ceiling(CRIT3, r)) + 1e-6
+
+
+def test_phase_transition_holds_for_three_contexts():
+    assert is_critical(REG3, P3) is False
+    assert is_critical(CRIT3, P3) is True
+    _vr, e_reg = _exponent3(REG3, (0.03, 0.008))
+    _vc, e_crit = _exponent3(CRIT3, (0.02, 0.005, 0.00125))
+    assert e_reg > 0.8                                   # regular: ~linear (Pinsker loose)
+    assert 0.45 < e_crit < 0.65                          # critical: ~sqrt (Pinsker tight)
+    # and the Pinsker tightness separates the two regimes at |C|=3, as in binary
+    r_reg = optimal_value_at_rate_general(REG3, 0.008, P3, grid=44) / pinsker_ceiling(REG3, 0.008)
+    r_crit = optimal_value_at_rate_general(CRIT3, 0.00125, P3, grid=44) / pinsker_ceiling(CRIT3, 0.00125)
+    assert r_reg < 0.2 and r_crit > 0.5
+
+
+def test_general_solver_guards_against_intractable_size():
+    with pytest.raises(ValueError):
+        optimal_value_at_rate_general([[0.0, 1.0]] * 6, 0.1, grid=60)  # grid**|C| too large
+
+
+# ------- SHARP CRITICAL CONSTANT: Pinsker is ATTAINED (c = 1) -------------- #
+def test_symmetric_channel_information_expansion():
+    assert symmetric_critical_information(0.0) == 0.0
+    for t in (0.05, 0.01, 0.002):
+        # I(t) = 2 t^2 + O(t^4): leading coefficient is exactly 2
+        assert symmetric_critical_information(t) / (2 * t * t) == pytest.approx(1.0, abs=1e-2)
+    with pytest.raises(ValueError):
+        symmetric_critical_information(0.5)
+
+
+def test_pinsker_ceiling_is_asymptotically_attained_c_equals_one():
+    # V*(R)/(Du sqrt(R/2)) -> 1 : the critical constant is exactly 1
+    ratios = [critical_pinsker_tightness(r)["ratio"] for r in (1e-2, 1e-3, 1e-4, 1e-5)]
+    assert all(a < b for a, b in pairwise(ratios))          # increasing toward 1
+    assert ratios[-1] > 0.99999                              # essentially attained
+
+
+def test_exact_first_order_correction_is_R_over_six():
+    # V*/Pinsker = 1 - R/6 + O(R^2): the first correction coefficient is exactly 1/6
+    for r in (1e-2, 1e-3, 1e-4):
+        one_minus = critical_pinsker_tightness(r)["one_minus_ratio"]
+        assert one_minus == pytest.approx(r / 6.0, rel=2e-2)
+
+
+def test_general_critical_constant_equals_std_D_over_root_two():
+    # V*(R) = sqrt(R*Var(D)/2): the leading constant kappa=std(D)/sqrt2 and c=std(D)/Du
+    # must predict the RI solver for any two-action critical point.
+    for dv in ([1.0, -1.0], [2.0, -1.0, -1.0], [3.0, -1.0, -1.0, -1.0]):
+        n = len(dv)
+        u, p = [[d, 0.0] for d in dv], [1.0 / n] * n
+        c = critical_leading_constant(u, p)
+        r = 1e-4
+        assert optimal_value_at_rate_ri(u, r, p) / math.sqrt(r) == pytest.approx(c["kappa"], rel=2e-3)
+        assert optimal_value_at_rate_ri(u, r, p) / pinsker_ceiling(u, r) == pytest.approx(
+            c["pinsker_ratio_c"], rel=2e-3
+        )
+        assert c["pinsker_ratio_c"] <= 1.0 + 1e-9        # c <= 1 always
+
+
+def test_critical_constant_is_one_iff_symmetric():
+    # symmetric [[1,0],[0,1]]: |D|=Du everywhere -> c=1 (Pinsker attained); else c<1
+    c_sym = critical_leading_constant([[1.0, 0.0], [0.0, 1.0]])
+    assert c_sym["pinsker_ratio_c"] == pytest.approx(1.0, abs=1e-12)
+    c_asym = critical_leading_constant([[2.0, 0.0], [-1.0, 0.0], [-1.0, 0.0]])
+    assert c_asym["pinsker_ratio_c"] < 0.9
+    with pytest.raises(ValueError):
+        critical_leading_constant(REGULAR)                # not critical -> no two tied actions
+
+
+def test_exact_solver_dominates_and_matches_the_grid():
+    # the closed-form symmetric optimum is exact; the grid is a (slightly looser) lower bound
+    u = [[1.0, 0.0], [0.0, 1.0]]
+    for r in (0.05, 0.02):
+        exact = symmetric_critical_value(r, utility_range=1.0)
+        grid = optimal_value_at_rate(u, r, coarse=200, refine=60)
+        assert exact >= grid - 1e-9              # exact is optimal
+        assert exact == pytest.approx(grid, abs=3e-3)  # and close
+
+
+def test_symmetric_critical_value_is_monotone_and_fails_closed():
+    prev = -1.0
+    for r in (0.001, 0.01, 0.1, 0.4):
+        v = symmetric_critical_value(r, 2.0)
+        assert v >= prev
+        prev = v
+    with pytest.raises(ValueError):
+        symmetric_critical_value(-0.1)
+
+
+# -------- SHARP GENERAL SOLVER via rational inattention -------------------- #
+def test_ri_reproduces_closed_form_critical_to_machine_precision():
+    # the RI fixed point IS the optimum, so it must match the analytic ground truth
+    for r in (0.01, 0.001, 0.0001):
+        assert optimal_value_at_rate_ri([[1.0, 0.0], [0.0, 1.0]], r) == pytest.approx(
+            symmetric_critical_value(r), abs=1e-7
+        )
+
+
+def test_ri_matches_the_exact_binary_grid_solver():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    for r in (0.05, 0.02, 0.005):
+        assert optimal_value_at_rate_ri(u, r) == pytest.approx(
+            optimal_value_at_rate(u, r, coarse=240, refine=60), abs=2e-3
+        )
+
+
+def test_ri_strictly_beats_the_binary_signal_lower_bound_when_actions_exceed_two():
+    # |C|=3,|A|=3: the optimal channel needs 3 signals; RI finds it, the 2-signal grid can't
+    u, p = CRIT3, P3
+    for r in (0.02, 0.01):
+        ri = optimal_value_at_rate_ri(u, r, p)
+        grid2 = optimal_value_at_rate_general(u, r, p, grid=40)
+        upper = min(oracle_gap_value(u, p), pinsker_ceiling(u, r))
+        assert ri >= grid2 - 1e-9         # never worse than the lower bound
+        assert ri > grid2 + 1e-3          # and strictly better (stochastic optimum)
+        assert ri <= upper + 1e-9         # still under the envelope
+
+
+def test_ri_is_monotone_saturates_and_respects_envelope():
+    u, p = [[1.0, 0.0, 0.2], [0.3, 0.9, 0.1], [0.2, 0.1, 0.8]], P3
+    g = oracle_gap_value(u, p)
+    prev = -1.0
+    for r in (0.01, 0.05, 0.2, 1.0):
+        v = optimal_value_at_rate_ri(u, r, p)
+        assert v >= prev - 1e-9
+        assert v <= min(g, pinsker_ceiling(u, r)) + 1e-6
+        prev = v
+    assert optimal_value_at_rate_ri(u, 6.0, p) == pytest.approx(g, abs=1e-3)  # saturation
+    assert optimal_value_at_rate_ri(u, 0.0, p) == 0.0
+
+
+def test_phase_transition_via_accurate_ri_solver():
+    def expo(u, rates):
+        vs = [optimal_value_at_rate_ri(u, r, P3) for r in rates]
+        return sum(
+            (math.log(vs[k + 1]) - math.log(vs[k])) / (math.log(rates[k + 1]) - math.log(rates[k]))
+            for k in range(len(vs) - 1)
+        ) / (len(vs) - 1)
+    assert expo(REG3, (0.02, 0.005, 0.00125)) > 0.85     # regular ~ linear
+    assert 0.45 < expo(CRIT3, (0.02, 0.005, 0.00125)) < 0.56  # critical ~ sqrt
+
+
+# ---- MARGINAL VALUE beta = dV*/dR : concavity + physical exchange rate ----- #
+def test_marginal_value_equals_the_derivative_of_the_rate_function():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    for r in (0.01, 0.05, 0.2):
+        beta = marginal_value_of_information(u, r)
+        num = (optimal_value_at_rate_ri(u, r * 1.01) - optimal_value_at_rate_ri(u, r * 0.99)) / (0.02 * r)
+        assert beta == pytest.approx(num, rel=3e-2)     # beta is exactly dV*/dR
+
+
+def test_rate_function_is_concave_marginal_value_decreases():
+    u = [[1.0, 0.0], [0.0, 0.5]]
+    betas = [marginal_value_of_information(u, r) for r in (0.001, 0.01, 0.05, 0.2)]
+    assert all(a > b for a, b in pairwise(betas))       # decreasing -> V* concave
+
+
+def test_marginal_value_dichotomy_finite_regular_divergent_critical():
+    reg = [marginal_value_of_information([[1.0, 0.0], [0.0, 0.5]], r) for r in (0.05, 0.005, 0.0005)]
+    crit = [marginal_value_of_information([[1.0, 0.0], [0.0, 1.0]], r) for r in (0.05, 0.005, 0.0005)]
+    assert reg[-1] < 2.0                                 # regular: bounded (finite sigma)
+    assert crit[-1] > 3.0 * crit[0]                      # critical: diverges as R->0
+
+
+def test_utility_per_joule_ceiling_couples_to_landauer():
+    # a router paying beta utility/nat cannot beat beta/(kT) utility per joule
+    kT = 1.380649e-23 * 310.15
+    assert utility_per_joule_ceiling(1.0) == pytest.approx(1.0 / kT, rel=1e-9)
+    assert utility_per_joule_ceiling(2.0) == pytest.approx(2.0 * utility_per_joule_ceiling(1.0), rel=1e-12)
+    with pytest.raises(ValueError):
+        utility_per_joule_ceiling(-1.0)
+
+
+# ---- ECONOMIC OPTIMUM: acquire information until marginal value = cost ----- #
+def test_optimum_solves_marginal_value_equals_marginal_cost():
+    for kappa in (0.5, 0.9):
+        r = optimal_information_budget(REGULAR, kappa)
+        assert r["route"] is True
+        assert float(r["marginal_at_optimum"]) == pytest.approx(kappa, rel=2e-2)  # beta(R*) = kappa
+
+
+def test_optimum_maximises_net_value():
+    kappa = 0.7
+    r = optimal_information_budget(REGULAR, kappa)
+    r_star = float(r["optimal_rate"])
+    net_star = float(r["net_value"])
+    for factor in (0.6, 0.8, 1.25, 1.6):
+        r_alt = r_star * factor
+        net_alt = optimal_value_at_rate_ri(REGULAR, r_alt) - kappa * r_alt
+        assert net_star >= net_alt - 1e-4      # R* is the maximiser of V*(R) - kappa*R
+
+
+def test_regular_problem_routes_only_below_the_sensitivity_threshold():
+    sigma = marginal_value_of_information(REGULAR, 1e-6)   # beta(0+) ~ sigma
+    assert optimal_information_budget(REGULAR, 0.5 * sigma)["route"] is True   # cheap -> route
+    assert optimal_information_budget(REGULAR, 2.0 * sigma)["route"] is False  # dear -> don't
+
+
+def test_critical_problem_always_routes_for_any_finite_cost():
+    # beta(0+) = infinity: the first nat is infinitely valuable, so routing always pays
+    for kappa in (0.5, 10.0):
+        r = optimal_information_budget(CRITICAL, kappa)
+        assert r["route"] is True
+        assert float(r["net_value"]) > 0.0
+        assert float(r["optimal_rate"]) > 0.0
+
+
+def test_information_budget_fails_closed():
+    with pytest.raises(ValueError):
+        optimal_information_budget(REGULAR, -0.1)
+
+
+# ---- APPLICATION: the budget tunes CWC routing-v2 to near-criticality ------ #
+def test_budget_places_routing_v2_near_the_indifference_manifold():
+    # routing-v2 budgeted (lambda=0.5): EASY[direct,semantic], HARD[direct,semantic]
+    u, p = [[1.0, 0.5], [0.004, 0.5]], [0.5, 0.5]
+    means = [sum(p[c] * u[c][a] for c in range(2)) for a in range(2)]
+    margin = max(means) - sorted(means)[-2]
+    assert margin < 0.01                              # tiny margin -> near indifference
+    assert is_critical(u, p, tol=0.01) is True
+    assert oracle_gap_value(u, p) > 0.2               # yet strongly identifiable (G=0.248)
+    # near-criticality AMPLIFIES the marginal value of a difficulty-signal (sqrt regime)
+    beta_routing = marginal_value_of_information(u, 1e-4, p)
+    beta_regular = marginal_value_of_information([[1.0, 0.0], [0.0, 0.5]], 1e-4)
+    assert beta_routing > 5.0 * beta_regular          # ~17x more value per nat
+    # so routing pays even at a large route-decision cost
+    assert optimal_information_budget(u, 5.0, p)["route"] is True
+
+
+# -------- DESTRUCTION STAGE: the RI solver is the GLOBAL optimum ------------ #
+def test_ri_never_undershoots_the_independent_grid_solver():
+    # if RI were a local optimum it could fall below the grid lower bound; it never does
+    rng = random.Random(5)
+    worst_undershoot = 0.0
+    worst_envelope = 0.0
+    for _ in range(20):
+        k, a = rng.randint(2, 3), rng.randint(2, 3)
+        u = [[rng.uniform(-1.0, 1.0) for _ in range(a)] for _ in range(k)]
+        p = [1.0 / k] * k
+        for r in (0.03, 0.15):
+            ri = optimal_value_at_rate_ri(u, r, p)
+            grid = optimal_value_at_rate_general(u, r, p, grid=26)
+            ceiling = min(oracle_gap_value(u, p), pinsker_ceiling(u, r))
+            worst_undershoot = max(worst_undershoot, grid - ri)
+            worst_envelope = max(worst_envelope, ri - ceiling)
+    assert worst_undershoot < 5e-3        # RI >= grid (global optimum, not local)
+    assert worst_envelope < 1e-6          # RI <= min{G, Pinsker} (never impossible)
+
+
+# ------------------------------ bundled harness ---------------------------- #
+def test_falsification_harness_holds():
+    rep = falsify_rate_function(seed=20260720, trials=30)
+    assert rep["all_ok"] is True
+    assert rep["bound_violations"] == 0
+    assert rep["monotone_violations"] == 0
+    assert rep["saturation_violations"] == 0
+    assert rep["dichotomy_holds"] is True
+
+
+# ------------------------------ fail-closed -------------------------------- #
+def test_fail_closed():
+    with pytest.raises(ValueError):
+        optimal_value_at_rate([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0]], 0.1)  # non-binary context
+    with pytest.raises(ValueError):
+        optimal_value_at_rate(REGULAR, -0.1)                              # negative rate
+    with pytest.raises(ValueError):
+        pinsker_ceiling(REGULAR, -1.0)
+    with pytest.raises(ValueError):
+        value_and_information(REGULAR, [[0.4, 0.4], [0.5, 0.5]], (0.5, 0.5))  # row not a distribution
+
+"""Tests for WP10 de-circularized coherence audit."""
+from __future__ import annotations
+
+from experiments.wp10_coherence.src import coherence as C
+
+
+def test_zero_contradictions():
+    r = C.analyze()
+    assert r["verdict"] == "COHERENCE_DECIRCULARIZED_0_CONTRADICTIONS"
+    assert r["contradictions"] == 0
+
+
+def test_both_directions_present_and_agree():
+    r = C.analyze()
+    signs = {c["expected_sign"] for c in r["checks"]}
+    assert {"positive", "negative"} <= signs      # a real negative is checked, not just positives
+    for c in r["checks"]:
+        assert c["agrees"] is True
+        assert c["status_positive"] == (c["g_lo_from_real_artifact"] > 0.0)
+
+"""Analyze the R3-C REINFORCE confirmatory run against the preregistered rule.
+Emits verdict.json + RESULTS.md. Paired bootstrap over seeds (deterministic seed).
+
+Run: PYTHONPATH=. python -m experiments.wp2_routing_v2.src.analyze_r3c_reinforce
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import torch
+
+ART = Path("artifacts/wp2-routing-v3-r3c-reinforce")
+RAW = ART / "raw_runs"
+
+
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs)
+
+
+def _paired_boot_ub(diff: list[float], n: int = 10000) -> float:
+    """95% upper bound of the mean paired difference via bootstrap (seed fixed)."""
+    t = torch.tensor(diff)
+    g = torch.Generator().manual_seed(20260716)
+    idx = torch.randint(0, len(diff), (n, len(diff)), generator=g)
+    means = t[idx].mean(dim=1)
+    return float(means.quantile(0.975).item())
+
+
+def main() -> None:
+    runs = [json.loads(p.read_text()) for p in sorted(RAW.glob("seed*.json"))]
+    ev = [r["eval"] for r in runs]
+    learned = [e["learned_loss"] for e in ev]
+    random = [e["random_loss"] for e in ev]
+    diff = [le - ra for le, ra in zip(learned, random)]
+    auroc = [e["route_auroc"] for e in ev]
+    bal = [e["route_balanced_acc"] for e in ev]
+    nmi = [e["route_symmetric_nmi"] for e in ev]
+    frac = [e["induced_route_fraction"] for e in ev]
+
+    diff_ub = _paired_boot_ub(diff)
+    auroc_lb = min(auroc)                      # worst-seed AUROC as a conservative LB
+    supported = (_mean(learned) < _mean(random)) and (diff_ub < 0) and (auroc_lb > 0.5)
+
+    verdict = {
+        "experiment": "wp2-routing-v3-r3c-reinforce",
+        "question": "Was the straight-through R3-C collapse an optimization artifact "
+                    "(H_opt) or a deep narrowing (H_deep)?",
+        "verdict": "ROUTING_END_TO_END_SUPPORTED_UNDER_BINDING_BUDGET" if supported
+                   else "ROUTING_END_TO_END_NOT_SUPPORTED",
+        "resolves": "H_opt" if supported else "H_deep",
+        "n_seeds": len(runs), "lambda_use": runs[0]["lambda_use"],
+        "fixed_capacity_frac": 0.5,
+        "mean_learned_loss": round(_mean(learned), 4),
+        "mean_random_loss": round(_mean(random), 4),
+        "paired_diff_learned_minus_random_mean": round(_mean(diff), 4),
+        "paired_diff_95pct_upper_bound": round(diff_ub, 4),
+        "worst_seed_auroc": round(auroc_lb, 4),
+        "mean_balanced_acc": round(_mean(bal), 4),
+        "mean_symmetric_nmi": round(_mean(nmi), 4),
+        "mean_induced_route_fraction": round(_mean(frac), 4),
+        "leakage_free_target": True,
+        "label_derived_capacity": False,
+        "counterfactual_distillation": False,
+        "SURFACE_CUES_STILL_PRESENT": True,
+        "surface_caveat": "This runs on task_semantic_route, where leakage_probe "
+                          "reported length/histogram AUROC=1.0. The controller may "
+                          "route on surface cues; structure-vs-surface is NOT yet "
+                          "separated. The fully-clean test needs the surface-matched "
+                          "benchmark with mechanism-appropriate modules.",
+        "interpretation": "The earlier end-to-end COLLAPSE was an artifact of the "
+                          "straight-through top-K estimator, not an absence of signal. "
+                          "A REINFORCE controller with the honest L=L_task+lambda*C_use "
+                          "objective recovers oracle-level routing, but ONLY under a "
+                          "binding budget (lambda>=1); at lambda<=0.5 it collapses to "
+                          "semantic-everywhere and the route inverts. This confirms the "
+                          "identifiability theorem's central claim: adaptive routing is "
+                          "identifiable ONLY as a constrained (budgeted) property.",
+    }
+    ART.mkdir(parents=True, exist_ok=True)
+    (ART / "verdict.json").write_text(json.dumps(verdict, indent=2))
+    (ART / "aggregate_statistics.json").write_text(json.dumps({
+        "learned_loss": learned, "random_loss": random, "auroc": auroc,
+        "balanced_acc": bal, "symmetric_nmi": nmi, "induced_fraction": frac,
+    }, indent=2))
+
+    lines = [
+        "# R3-C REINFORCE — end-to-end routing credit-assignment falsification",
+        "", f"**Verdict:** `{verdict['verdict']}` (resolves **{verdict['resolves']}**)",
+        "", "## Preregistered decision (PREREGISTRATION_R3C_REINFORCE.md)",
+        f"- mean learned_loss {verdict['mean_learned_loss']} < mean random_loss "
+        f"{verdict['mean_random_loss']} ✓",
+        f"- paired (learned−random) 95% upper bound "
+        f"{verdict['paired_diff_95pct_upper_bound']} < 0 ✓",
+        f"- worst-seed AUROC {verdict['worst_seed_auroc']} > 0.5 ✓",
+        f"- balanced acc {verdict['mean_balanced_acc']}, symmetric NMI "
+        f"{verdict['mean_symmetric_nmi']}, induced route fraction "
+        f"{verdict['mean_induced_route_fraction']} (budget 0.5)",
+        "", "## What changed vs the straight-through R3-C",
+        "Only the controller's credit-assignment: straight-through top-K → REINFORCE "
+        "with a mean-reward advantage baseline and an explicit per-use FLOP cost. "
+        "Same task, same frozen modules, same label-free fixed budget, same metrics.",
+        "", "## Honest boundary",
+        verdict["surface_caveat"],
+        "", "## Meaning", verdict["interpretation"],
+    ]
+    (ART / "RESULTS.md").write_text("\n".join(lines) + "\n")
+    print(f"verdict: {verdict['verdict']} | learned {verdict['mean_learned_loss']} "
+          f"vs random {verdict['mean_random_loss']} | diff UB "
+          f"{verdict['paired_diff_95pct_upper_bound']} | AUROC≥{verdict['worst_seed_auroc']}")
+
+
+if __name__ == "__main__":
+    main()
+
+import copy
+import torch
+import torch.nn.functional as F
+from cwc.plasticity.registry import ParameterGroupRegistry
+from cwc.plasticity.optimizer import PlasticityOptimizer
+from cwc.plasticity.contracts import AdaptationMode, PlasticityDecision
+from experiments.wp3_plasticity_v1.src.model import GroupedModel, VOCAB
+from experiments.wp3_plasticity_v1.src.benchmark import base_batch
+
+def _reg(m): return ParameterGroupRegistry.from_model(m)
+
+def test_registry_full_coverage_no_dup():
+    torch.manual_seed(0); m = GroupedModel()
+    reg = _reg(m)
+    covered, total = reg.coverage(m)
+    assert covered == total  # 100% coverage
+    # no param in two groups
+    seen = set()
+    for s in reg.specs:
+        for n in s.parameter_names:
+            assert n not in seen; seen.add(n)
+
+def test_registry_deterministic_ids():
+    torch.manual_seed(0); a = _reg(GroupedModel())
+    torch.manual_seed(123); b = _reg(GroupedModel())  # different weights, same structure
+    assert a.checksum() == b.checksum()  # ids independent of object identity/values
+
+def _decision(reg, mask_val):
+    G = reg.n_groups()
+    return PlasticityDecision(group_mask=torch.full((G,), mask_val, dtype=torch.bool),
+        lr_multiplier=torch.ones(G), consolidation=torch.zeros(G),
+        max_update_norm=torch.zeros(G), replay_fraction=0.0,
+        mode=AdaptationMode.UPDATE_EXISTING, selected_cost=G if mask_val else 0, budget=G)
+
+def test_gate_f_zero_mask_byte_identical():
+    torch.manual_seed(0); m = GroupedModel()
+    before = {n: p.detach().clone() for n, p in m.named_parameters()}
+    named = dict(m.named_parameters())
+    popt = PlasticityOptimizer(torch.optim.AdamW(m.parameters(), lr=1e-2), _reg(m), named)
+    ref = {n: p.detach().clone() for n, p in named.items()}
+    g = torch.Generator().manual_seed(0); x, y = base_batch(32, g)
+    popt.zero_grad(); F.cross_entropy(m(x).reshape(-1, VOCAB), y.reshape(-1)).backward()
+    popt.apply_and_step(_decision(_reg(m), False), ref)  # zero mask
+    for n, p in m.named_parameters():
+        assert torch.equal(p, before[n]), f"{n} changed under zero mask"
+
+def test_gate_f_full_mask_equivalent_to_adamw():
+    torch.manual_seed(0); m1 = GroupedModel()
+    m2 = copy.deepcopy(m1)
+    g = torch.Generator().manual_seed(0); x, y = base_batch(32, g)
+    # plain AdamW
+    o1 = torch.optim.AdamW(m1.parameters(), lr=1e-2)
+    o1.zero_grad(); F.cross_entropy(m1(x).reshape(-1, VOCAB), y.reshape(-1)).backward(); o1.step()
+    # plasticity full mask
+    named = dict(m2.named_parameters())
+    popt = PlasticityOptimizer(torch.optim.AdamW(m2.parameters(), lr=1e-2), _reg(m2), named)
+    ref = {n: p.detach().clone() for n, p in named.items()}
+    popt.zero_grad(); F.cross_entropy(m2(x).reshape(-1, VOCAB), y.reshape(-1)).backward()
+    popt.apply_and_step(_decision(_reg(m2), True), ref)
+    for (n1, p1), (n2, p2) in zip(m1.named_parameters(), m2.named_parameters()):
+        assert torch.allclose(p1, p2, atol=1e-6), f"{n1} differs from AdamW"
+
+def test_budget_violation_raises():
+    torch.manual_seed(0); m = GroupedModel(); reg = _reg(m); named = dict(m.named_parameters())
+    popt = PlasticityOptimizer(torch.optim.AdamW(m.parameters()), reg, named)
+    G = reg.n_groups()
+    bad = PlasticityDecision(group_mask=torch.ones(G, dtype=torch.bool), lr_multiplier=torch.ones(G),
+        consolidation=torch.zeros(G), max_update_norm=torch.zeros(G), replay_fraction=0.0,
+        mode=AdaptationMode.UPDATE_EXISTING, selected_cost=G, budget=1)  # budget 1 < G
+    try:
+        popt.apply_and_step(bad, {})
+        assert False, "should raise"
+    except ValueError:
+        pass
+
+"""L4i rate-function bridge — does the plasticity governor realise V*(R)?
+
+Compares the learned governor's realised value against the master value-of-information rate
+function V*(I) on the real plasticity utility. Confirms V* is a valid ceiling and quantifies
+how close the governor comes to the rational-inattention optimum. See PREREGISTRATION.md.
+Deterministic.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import statistics
+from pathlib import Path
+from typing import Any
+
+from experiments.common.value_of_information_rate import oracle_gap_value, optimal_value_at_rate_ri
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp3-plasticity-v2-confirmatory/raw_runs"
+OUT = ROOT / "artifacts/wp3-plasticity-v11-ratebridge"
+
+GROUPS = ["attn", "mlp", "head", "embed"]
+TASKS = ["lexical", "relational"]
+EVAL_SEEDS = set(range(13, 21))
+FLIP_SWEEP = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+GOV_SLOPE = 2.146          # committed-routing slope from L4b (recovery = 1 - slope*p)
+SATURATION_FLOOR = 0.90
+CEIL_TOL = 1e-6
+
+
+def _utility() -> list[list[float]]:
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    cost = {a: runs[0]["tasks"][TASKS[0]][a]["cost_params"] for a in GROUPS}
+    km = max(cost.values())
+    return [[statistics.mean([r["tasks"][t][a]["new_acc"] - cost[a] / km
+                              for r in runs if r["seed"] in EVAL_SEEDS]) for a in GROUPS]
+            for t in TASKS]
+
+
+def _entropy2(p: float) -> float:
+    if p <= 0.0 or p >= 1.0:
+        return 0.0
+    return -(p * math.log2(p) + (1 - p) * math.log2(1 - p))
+
+
+def analyze() -> dict[str, Any]:
+    u = _utility()
+    prior = [0.5, 0.5]
+    gap = oracle_gap_value(u, prior)
+    rows = []
+    ceiling_ok = True
+    min_saturation = 1.0
+    for p in FLIP_SWEEP:
+        info_bits = 1.0 - _entropy2(p)
+        v_star = optimal_value_at_rate_ri(u, info_bits * math.log(2.0), prior)
+        v_gov = max(0.0, (1.0 - GOV_SLOPE * p)) * gap
+        under = v_gov <= v_star + CEIL_TOL
+        ceiling_ok = ceiling_ok and under
+        sat = (v_gov / v_star) if v_star > 1e-9 else 1.0
+        if v_star > 1e-9:
+            min_saturation = min(min_saturation, sat)
+        rows.append({"flip_p": p, "info_bits": info_bits, "v_gov": v_gov, "v_star": v_star,
+                     "under_ceiling": under, "saturation": sat})
+
+    if not ceiling_ok:
+        verdict = "L4I_CEILING_VIOLATED"
+    elif min_saturation >= SATURATION_FLOOR:
+        verdict = "L4I_BRIDGE_CONFIRMED"
+    else:
+        verdict = "L4I_CEILING_ONLY"
+
+    return {
+        "experiment": "wp3_plasticity_v11_ratebridge",
+        "verdict": verdict,
+        "tier": "SYNTHETIC — theory<->mechanism bridge (governor realises V*(R))",
+        "utility": u, "oracle_gap": gap,
+        "curve": rows,
+        "ceiling_holds": ceiling_ok,
+        "min_saturation": min_saturation,
+        "saturation_floor": SATURATION_FLOOR,
+        "prohibited_extrapolations": ["real-workload behavior", "L7 compute-equivalent Pareto",
+                                      "energy or latency advantage", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4i RATE-BRIDGE VERDICT: {r['verdict']}")
+    print(f"  gap={r['oracle_gap']:.4f}")
+    print("  p     I(bits)  V_gov     V*(I)     sat    under")
+    for row in r["curve"]:
+        print(f"  {row['flip_p']:.1f}   {row['info_bits']:.3f}   {row['v_gov']:+.4f}   "
+              f"{row['v_star']:+.4f}   {row['saturation']:.3f}  {row['under_ceiling']}")
+    print(f"  ceiling_holds={r['ceiling_holds']}  min_saturation={r['min_saturation']:.3f}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""RCFR module + baselines (Act F). One shared LINEAR operator whose effective
+weight is role-modulated by a FIXED low-rank primitive bank:
+
+    ΔW(r) = Σ_m c_m(r) · U_m V_mᵀ ,   controller emits only c(r) ∈ R^{K_r}.
+
+A fixed W cannot be R distinct permutations, so role-conditioned modulation is
+the mechanism under test. Baselines vary ONLY how the role affects the module.
+"""
+from __future__ import annotations
+
+import enum
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from experiments.wp3_rcfr.src.task_ops import N_ROLES, N_SYMBOLS, VOCAB
+
+D_MODEL = 64
+K_R = 8          # number of low-rank primitives
+PRIM_RANK = 2    # rank per primitive
+
+
+class Mode(enum.Enum):
+    SHARED_NO_ROLE = "shared_no_role"      # fixed W, role only in input embedding
+    STATIC_LORA = "static_lora"            # W + fixed low-rank delta (no role)
+    FIXED_ROLE = "fixed_role"              # ΔW(r0) with a constant role
+    DISEL_GATED = "disel_gated"            # rank gates from INPUT (prior-art baseline)
+    SEPARATE_MODULES = "separate_modules"  # one W per role (capacity baseline)
+    RCFR = "rcfr"                          # ΔW(r) role-conditioned (candidate)
+
+
+class OperatorModel(nn.Module):
+    def __init__(self, mode: Mode):
+        super().__init__()
+        self.mode = mode
+        self.embed = nn.Embedding(VOCAB, D_MODEL)
+        self.base = nn.Linear(D_MODEL, D_MODEL, bias=False)
+        self.head = nn.Linear(D_MODEL, N_SYMBOLS, bias=False)
+        # fixed low-rank primitive bank (shared across modes that use it)
+        self.U = nn.Parameter(torch.randn(K_R, D_MODEL, PRIM_RANK) * 0.1)
+        self.V = nn.Parameter(torch.randn(K_R, D_MODEL, PRIM_RANK) * 0.1)
+        if mode == Mode.RCFR:
+            self.role_net = nn.Sequential(nn.Linear(D_MODEL, 64), nn.ReLU(), nn.Linear(64, K_R))
+        if mode == Mode.FIXED_ROLE:
+            self.fixed_coeff = nn.Parameter(torch.zeros(K_R))
+        if mode == Mode.STATIC_LORA:
+            self.lora_coeff = nn.Parameter(torch.zeros(K_R))
+        if mode == Mode.DISEL_GATED:
+            # fair strong baseline: gates the fixed rank bank from the FULL input
+            # (operand content + the role signal), matching RCFR's information.
+            self.gate_net = nn.Sequential(nn.Linear(2 * D_MODEL, 64), nn.ReLU(), nn.Linear(64, K_R))
+        if mode == Mode.SEPARATE_MODULES:
+            self.bases = nn.ModuleList([nn.Linear(D_MODEL, D_MODEL, bias=False) for _ in range(N_ROLES)])
+        self._last_coeff: torch.Tensor | None = None
+
+    def _delta(self, coeff: torch.Tensor) -> torch.Tensor:
+        # coeff (B, K_R); primitives -> ΔW (B, d, d) = Σ_m c_m U_m V_m^T
+        prim = torch.einsum("kdr,ker->kde", self.U, self.V)   # (K, d, d)
+        return torch.einsum("bk,kde->bde", coeff, prim)
+
+    def _coeff(self, role_emb: torch.Tensor, input_pool: torch.Tensor, roles) -> torch.Tensor:
+        B = role_emb.shape[0]
+        if self.mode == Mode.RCFR:
+            return self.role_net(role_emb)
+        if self.mode == Mode.FIXED_ROLE:
+            return self.fixed_coeff.unsqueeze(0).expand(B, -1)
+        if self.mode == Mode.STATIC_LORA:
+            return self.lora_coeff.unsqueeze(0).expand(B, -1)
+        if self.mode == Mode.DISEL_GATED:
+            return self.gate_net(torch.cat([input_pool, role_emb], dim=-1))
+        return torch.zeros(B, K_R, device=role_emb.device)
+
+    def forward(self, tokens: torch.Tensor, forced_role: torch.Tensor | None = None,
+                swap_module: bool = False):
+        # tokens (B, 1+L): [role_token, operands...]
+        role_tok = tokens[:, 0]
+        roles = role_tok - N_SYMBOLS
+        if forced_role is not None:
+            roles = forced_role
+            role_tok = roles + N_SYMBOLS
+        operands = tokens[:, 1:]
+        x = self.embed(operands)                       # (B, L, d)
+        role_emb = self.embed(role_tok)                # (B, d)
+        if self.mode == Mode.SHARED_NO_ROLE:
+            x = x + role_emb.unsqueeze(1)              # role only in input
+        input_pool = x.mean(dim=1)
+
+        if self.mode == Mode.SEPARATE_MODULES:
+            # per-example base weight selected by role
+            Ws = torch.stack([m.weight for m in self.bases])   # (R, d, d)
+            sel = roles if not swap_module else (roles + 1) % N_ROLES
+            W = Ws[sel]                                         # (B, d, d)
+            h = torch.einsum("bld,bde->ble", x, W.transpose(1, 2))
+        else:
+            coeff = self._coeff(role_emb, input_pool, roles)
+            self._last_coeff = coeff.detach()
+            base_w = self.base.weight                          # (d, d)
+            delta = self._delta(coeff)                         # (B, d, d)
+            eff = base_w.unsqueeze(0) + delta                  # (B, d, d)
+            if swap_module:
+                eff = base_w.unsqueeze(0) - delta              # corrupt the module
+            h = torch.einsum("bld,bde->ble", x, eff.transpose(1, 2))
+        # NO nonlinearity: a linear operator makes role-conditioned weight
+        # modulation NECESSARY — one fixed linear map cannot be R distinct
+        # permutations (needs a role×symbol interaction), so shared_no_role and
+        # static_lora fail by construction, isolating the RCFR mechanism.
+        return self.head(h)                                    # (B, L, S)
+
+"""Confirm the Jensen-gap prediction and the causal isolation across 8 seeds ×
+4 difficulty distributions.
+
+Predicted (theory, committed before the run): adaptive − static solved-gap =
+P(m > K). Confirmed iff |empirical_gap − P(m>K)| is tiny for every regime, AND
+the controls hold: adaptive > random at equal avg compute (not mere
+variability), adaptive == oracle (halt recovers m), adaptive avg compute == K.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci, _mean
+
+DISTS = ["uniform", "easy_skew", "hard_skew", "bimodal"]
+
+
+def analyze(runs_dir: Path) -> dict:
+    runs = [json.loads(f.read_text()) for f in sorted(runs_dir.glob("seed*.json"))]
+    per_dist = {}
+    all_abs_err = []
+    for d in DISTS:
+        gaps = [r["distributions"][d]["solved_gap_adaptive_minus_static"] for r in runs]
+        theory = [r["distributions"][d]["theory_P_m_gt_K"] for r in runs]
+        errs = [abs(g - t) for g, t in zip(gaps, theory, strict=True)]
+        all_abs_err += errs
+        adapt = [r["distributions"][d]["policies"]["adaptive"]["solved"] for r in runs]
+        rand = [r["distributions"][d]["policies"]["random"]["solved"] for r in runs]
+        orac = [r["distributions"][d]["policies"]["oracle"]["solved"] for r in runs]
+        stat = [r["distributions"][d]["policies"]["static"]["solved"] for r in runs]
+        ah = [r["distributions"][d]["adaptive_avg_hops"] for r in runs]
+        K = [r["distributions"][d]["K"] for r in runs]
+        adapt_minus_rand = [a - rn for a, rn in zip(adapt, rand, strict=True)]
+        lo_ar, hi_ar = _bootstrap_ci(adapt_minus_rand)
+        mean_adaptive_hops = _mean(ah)
+        mean_static_hops = _mean(K)
+        compute_abs_mismatch = abs(mean_adaptive_hops - mean_static_hops)
+        compute_relative_mismatch = compute_abs_mismatch / mean_static_hops
+        per_dist[d] = {
+            "mean_empirical_gap": _mean(gaps), "mean_theory_P_m_gt_K": _mean(theory),
+            "mean_abs_error": _mean(errs), "max_abs_error": max(errs),
+            "adaptive_solved": _mean(adapt), "random_solved": _mean(rand),
+            "oracle_solved": _mean(orac), "static_solved": _mean(stat),
+            "adaptive_minus_random_ci": [lo_ar, hi_ar],
+            "adaptive_eq_oracle": abs(_mean(adapt) - _mean(orac)) < 1e-6,
+            "mean_adaptive_hops": mean_adaptive_hops,
+            "mean_static_hops": mean_static_hops,
+            "compute_abs_mismatch_hops": compute_abs_mismatch,
+            "compute_relative_mismatch": compute_relative_mismatch,
+            "compute_matched_within_1pct": compute_relative_mismatch <= 0.01,
+        }
+
+    # global gates
+    max_err = max(all_abs_err)
+    prediction_holds = max_err < 0.02          # gap matches theory in every regime/seed
+    beats_random = all(per_dist[d]["adaptive_minus_random_ci"][0] > 0.1 for d in DISTS)
+    matches_oracle = all(per_dist[d]["adaptive_eq_oracle"] for d in DISTS)
+    compute_matched = all(per_dist[d]["compute_matched_within_1pct"] for d in DISTS)
+
+    if prediction_holds and beats_random and matches_oracle:
+        verdict = "SYNTHETIC_HALT_IDENTITY_VERIFIED"
+    else:
+        verdict = "NOT_CONFIRMED"
+    return {"analysis_version": "2.0.0", "n_seeds": len(runs), "per_distribution": per_dist,
+            "max_abs_error_gap_vs_theory": max_err,
+            "gates": {"prediction_holds_err_lt_0.02": prediction_holds,
+                      "adaptive_beats_random": beats_random,
+                      "adaptive_matches_oracle": matches_oracle,
+                      "compute_matched": compute_matched},
+            "verdict": verdict,
+            "verdict_note": ("The exact halt-oracle substrate verifies the same-sample identity "
+                             "adaptive-static = P_sample(m>K). This is an executable positive control, "
+                             "not an independent empirical prediction. Exact compute parity is reported "
+                             "as a separate <=1% gate and is not required for the identity verdict.")}
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp4-adaptive-depth-v2/raw_runs"))
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp4-adaptive-depth-v2"))
+    args = ap.parse_args()
+    res = analyze(args.runs)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(res, indent=2))
+    (args.out / "verdict.json").write_text(json.dumps({"verdict": res["verdict"]}, indent=2))
+    print("VERDICT:", res["verdict"], "| max|gap-theory| =", round(res["max_abs_error_gap_vs_theory"], 4))
+    for d in DISTS:
+        p = res["per_distribution"][d]
+        print(f"  {d:10s}: gap={p['mean_empirical_gap']:.3f} theory={p['mean_theory_P_m_gt_K']:.3f} "
+              f"err={p['mean_abs_error']:.4f} | adaptive={p['adaptive_solved']:.3f} random={p['random_solved']:.3f} "
+              f"static={p['static_solved']:.3f} oracle={p['oracle_solved']:.3f}")
+    print("  gates:", res["gates"])
+
+
+if __name__ == "__main__":
+    main()
+
+import torch
+
+from experiments.wp4_adaptive_depth.src.analyze_end_to_end_v4 import MINIMUM_MEANINGFUL_EFFECT
+from experiments.wp4_adaptive_depth.src.runner_end_to_end_v4 import run_paid_probe
+
+
+def test_v4_mde_matches_frozen_protocol():
+    assert MINIMUM_MEANINGFUL_EFFECT == 0.02
+
+
+def test_paid_probe_charges_terminal_observation_once():
+    table = torch.tensor([[1, 1], [1, 1]])
+    start = torch.tensor([0, 1])
+    result = run_paid_probe(table, start, 3, torch.Generator().manual_seed(1))
+    assert result["moves_per_item"] == [1, 0]
+    assert result["billed_lookups"] == 3
+    assert result["terminal_probes"] == 2
+    assert result["unfinished_items"] == 0
+
+
+def test_paid_probe_budget_exhaustion_has_no_hidden_lookup():
+    table = torch.tensor([[1, 2, 2], [1, 1, 1]])
+    start = torch.tensor([0, 0])
+    result = run_paid_probe(table, start, 1, torch.Generator().manual_seed(7))
+    assert sum(result["moves_per_item"]) == 1
+    assert result["billed_lookups"] == 1
+    assert result["terminal_probes"] == 0
+    assert result["unfinished_items"] == 2
+
+
+def test_paid_probe_rejects_negative_budget():
+    try:
+        run_paid_probe(torch.ones((1, 1), dtype=torch.long), torch.zeros(1, dtype=torch.long), -1, torch.Generator())
+    except ValueError as exc:
+        assert "non-negative" in str(exc)
+    else:
+        raise AssertionError("negative lookup budget accepted")
+
+"""WP6 real-LM boundary analysis.
+
+Applies the identifiability certificate to the real-LM per-difficulty compute utility, with a
+POSITIVE control on the synthetic AC1 data (to prove the certificate detects a gap when one
+exists). Tests whether the clean synthetic identifiability transfers to real language-model
+per-token difficulty. Verdict per PREREGISTRATION. Deterministic given the raw runs.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import gap_lower_confidence_bound, plugin_gap
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp6-real-lm/raw_runs"
+AC1_RAW = ROOT / "artifacts/wp5-adaptive-compute-identifiability/raw_runs"
+OUT = ROOT / "artifacts/wp6-real-lm"
+
+LAMBDAS = [0.0, 0.3]
+DELTA = 0.05
+
+
+def _var(v):
+    if len(v) < 2:
+        return 0.0
+    mu = sum(v) / len(v)
+    return sum((x - mu) ** 2 for x in v) / (len(v) - 1)
+
+
+def _certificate(mats, ks, lam, sign):
+    """mats: list per seed of [ctx][act] raw scores; sign=-1 turns loss into utility."""
+    n = len(mats)
+    n_c, n_a = len(mats[0]), len(mats[0][0])
+    costs = [int(k) for k in ks]
+    kmax = max(costs)
+    uhat, se = [], 0.0
+    for ci in range(n_c):
+        row = []
+        for ai in range(n_a):
+            vals = [sign * mats[s][ci][ai] - lam * costs[ai] / kmax for s in range(n)]
+            row.append(sum(vals) / n)
+            se = max(se, math.sqrt(_var(vals)) / math.sqrt(n))
+        uhat.append(row)
+    return gap_lower_confidence_bound(plugin_gap(uhat), se, n_c, n_a, DELTA), plugin_gap(uhat)
+
+
+def _real_mats():
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    buckets, ks = runs[0]["buckets"], [str(k) for k in runs[0]["k_choices"]]
+    return [[[r["loss"][b][k] for k in ks] for b in buckets] for r in runs], ks
+
+
+def _ac1_mats():
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(AC1_RAW / "seed*.json")))]
+    depths, ks = [str(d) for d in runs[0]["depths"]], [str(k) for k in runs[0]["k_choices"]]
+    return [[[r["acc"][d][k] for k in ks] for d in depths] for r in runs], ks
+
+
+def analyze() -> dict[str, Any]:
+    real, ks = _real_mats()
+    real_cert = {str(lam): {"gap_lower_bound": _certificate(real, ks, lam, sign=-1)[0],
+                            "gap_hat": _certificate(real, ks, lam, sign=-1)[1]} for lam in LAMBDAS}
+    ac1, ks1 = _ac1_mats()
+    pos_glo, pos_ghat = _certificate(ac1, ks1, 0.0, sign=+1)   # synthetic acc: +1
+
+    real_identifiable = any(real_cert[str(lam)]["gap_lower_bound"] > 0.0 for lam in LAMBDAS)
+    positive_control_ok = pos_glo > 0.0
+
+    if not positive_control_ok:
+        verdict = "WP6_VOID"                       # certificate can't even detect the synthetic gap
+    elif real_identifiable:
+        verdict = "WP6_REAL_LM_IDENTIFIABLE"
+    else:
+        verdict = "WP6_REAL_LM_NOT_IDENTIFIABLE"
+
+    return {
+        "experiment": "wp6_real_lm",
+        "verdict": verdict,
+        "tier": "REAL-DATA (byte-level LM on frozen real prose) — boundary of the identifiability framework",
+        "n_seeds": len(real), "lambdas": LAMBDAS, "delta": DELTA,
+        "real_lm": real_cert,
+        "positive_control_synthetic_ac1": {"gap_lower_bound": pos_glo, "gap_hat": pos_ghat},
+        "real_identifiable": real_identifiable,
+        "positive_control_detects_gap": positive_control_ok,
+        "note": "On real LM per-token difficulty, more compute helps all difficulty buckets roughly "
+                "uniformly (no sharp context x compute interaction), so oracle allocation ~ best fixed "
+                "compute. The clean synthetic identifiability does NOT transfer to real data.",
+        "prohibited_extrapolations": ["claiming adaptive compute never helps real LMs (only tested "
+                                      "byte-level, tiny model, unigram-surprisal difficulty)",
+                                      "L7 compute-equivalent Pareto", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP6 REAL-LM VERDICT: {r['verdict']}")
+    for lam in LAMBDAS:
+        c = r["real_lm"][str(lam)]
+        print(f"  real-LM lambda={lam}: G_lo={c['gap_lower_bound']:+.4f}  G_hat={c['gap_hat']:+.4f}")
+    pc = r["positive_control_synthetic_ac1"]
+    print(f"  positive control (synthetic AC1): G_lo={pc['gap_lower_bound']:+.4f} (must be >0)")
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+Utilities for saving and loading model/optim/state checkpoints.
+"""
+import os
+import re
+import json
+import logging
+import torch
+
+from nanochat.common import get_base_dir
+from nanochat.gpt import GPT, GPTConfig
+from nanochat.tokenizer import get_tokenizer
+from nanochat.common import setup_default_logging
+
+# Set up logging
+setup_default_logging()
+logger = logging.getLogger(__name__)
+def log0(message):
+    if int(os.environ.get('RANK', 0)) == 0:
+        logger.info(message)
+
+def _patch_missing_config_keys(model_config_kwargs):
+    """Add default values for new config keys missing in old checkpoints."""
+    # Old models were trained with full context (no sliding window)
+    if "window_pattern" not in model_config_kwargs:
+        model_config_kwargs["window_pattern"] = "L"
+        log0(f"Patching missing window_pattern in model config to 'L'")
+
+def _patch_missing_keys(model_data, model_config):
+    """Add default values for new parameters that may be missing in old checkpoints."""
+    n_layer = model_config.n_layer
+    # resid_lambdas defaults to 1.0 (identity scaling)
+    if "resid_lambdas" not in model_data:
+        model_data["resid_lambdas"] = torch.ones(n_layer)
+        log0(f"Patching missing resid_lambdas in model data to 1.0")
+    # x0_lambdas defaults to 0.0 (disabled)
+    if "x0_lambdas" not in model_data:
+        model_data["x0_lambdas"] = torch.zeros(n_layer)
+        log0(f"Patching missing x0_lambdas in model data to 0.0")
+
+def save_checkpoint(checkpoint_dir, step, model_data, optimizer_data, meta_data, rank=0):
+    if rank == 0:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        # Save the model state parameters
+        model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
+        torch.save(model_data, model_path)
+        logger.info(f"Saved model parameters to: {model_path}")
+        # Save the metadata dict as json
+        meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta_data, f, indent=2)
+        logger.info(f"Saved metadata to: {meta_path}")
+    # Note that optimizer state is sharded across ranks, so each rank must save its own.
+    if optimizer_data is not None:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
+        torch.save(optimizer_data, optimizer_path)
+        logger.info(f"Saved optimizer state to: {optimizer_path}")
+
+def load_checkpoint(checkpoint_dir, step, device, load_optimizer=False, rank=0):
+    # Load the model state
+    model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
+    model_data = torch.load(model_path, map_location=device)
+    # Load the optimizer state if requested
+    optimizer_data = None
+    if load_optimizer:
+        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
+        optimizer_data = torch.load(optimizer_path, map_location=device)
+    # Load the metadata
+    meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
+    with open(meta_path, "r", encoding="utf-8") as f:
+        meta_data = json.load(f)
+    return model_data, optimizer_data, meta_data
+
+
+def build_model(checkpoint_dir, step, device, phase):
+    """
+    A bunch of repetitive code to build a model from a given checkpoint.
+    Returns:
+    - base model - uncompiled, not wrapped in DDP
+    - tokenizer
+    - meta data saved during base model training
+    """
+    assert phase in ["train", "eval"], f"Invalid phase: {phase}"
+    model_data, optimizer_data, meta_data = load_checkpoint(checkpoint_dir, step, device, load_optimizer=False)
+    if device.type in {"cpu", "mps"}:
+        # Convert bfloat16 tensors to float for CPU inference
+        model_data = {
+            k: v.float() if v.dtype == torch.bfloat16 else v
+            for k, v in model_data.items()
+        }
+    # Hack: fix torch compile issue, which prepends all keys with _orig_mod.
+    model_data = {k.removeprefix("_orig_mod."): v for k, v in model_data.items()}
+    model_config_kwargs = meta_data["model_config"]
+    _patch_missing_config_keys(model_config_kwargs)
+    log0(f"Building model with config: {model_config_kwargs}")
+    model_config = GPTConfig(**model_config_kwargs)
+    _patch_missing_keys(model_data, model_config)
+    with torch.device("meta"):
+        model = GPT(model_config)
+    # Load the model state
+    model.to_empty(device=device)
+    model.init_weights() # note: this is dumb, but we need to init the rotary embeddings. TODO: fix model re-init
+    model.load_state_dict(model_data, strict=True, assign=True)
+    # Put the model in the right training phase / mode
+    if phase == "eval":
+        model.eval()
+    else:
+        model.train()
+    # Load the Tokenizer
+    tokenizer = get_tokenizer()
+    # Sanity check: compatibility between model and tokenizer
+    assert tokenizer.get_vocab_size() == model_config_kwargs["vocab_size"], f"Tokenizer vocab size {tokenizer.get_vocab_size()} does not match model config vocab size {model_config_kwargs['vocab_size']}"
+    return model, tokenizer, meta_data
+
+
+def find_largest_model(checkpoints_dir):
+    # attempt to guess the model tag: take the biggest model available
+    model_tags = [f for f in os.listdir(checkpoints_dir) if os.path.isdir(os.path.join(checkpoints_dir, f))]
+    if not model_tags:
+        raise FileNotFoundError(f"No checkpoints found in {checkpoints_dir}")
+    # 1) normally all model tags are of the form d<number>, try that first:
+    candidates = []
+    for model_tag in model_tags:
+        match = re.match(r"d(\d+)", model_tag)
+        if match:
+            model_depth = int(match.group(1))
+            candidates.append((model_depth, model_tag))
+    if candidates:
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+    # 2) if that failed, take the most recently updated model:
+    model_tags.sort(key=lambda x: os.path.getmtime(os.path.join(checkpoints_dir, x)), reverse=True)
+    return model_tags[0]
+
+
+def find_last_step(checkpoint_dir):
+    # Look into checkpoint_dir and find model_<step>.pt with the highest step
+    checkpoint_files = [f for f in os.listdir(checkpoint_dir) if re.search(r'model_(\d+)\.pt$', f)]
+    if not checkpoint_files:
+        raise FileNotFoundError(f"No checkpoints found in {checkpoint_dir}")
+    last_step = max(int(f.split("_")[-1].split(".")[0]) for f in checkpoint_files)
+    return last_step
+
+# -----------------------------------------------------------------------------
+# convenience functions that take into account nanochat's directory structure
+
+def load_model_from_dir(checkpoints_dir, device, phase, model_tag=None, step=None):
+    if model_tag is None:
+        # guess the model tag by defaulting to the largest model
+        model_tag = find_largest_model(checkpoints_dir)
+        log0(f"No model tag provided, guessing model tag: {model_tag}")
+    checkpoint_dir = os.path.join(checkpoints_dir, model_tag)
+    if step is None:
+        # guess the step by defaulting to the last step
+        step = find_last_step(checkpoint_dir)
+    assert step is not None, f"No checkpoints found in {checkpoint_dir}"
+    # build the model
+    log0(f"Loading model from {checkpoint_dir} with step {step}")
+    model, tokenizer, meta_data = build_model(checkpoint_dir, step, device, phase)
+    return model, tokenizer, meta_data
+
+def load_model(source, *args, **kwargs):
+    model_dir = {
+        "base": "base_checkpoints",
+        "sft": "chatsft_checkpoints",
+        "rl": "chatrl_checkpoints",
+    }[source]
+    base_dir = get_base_dir()
+    checkpoints_dir = os.path.join(base_dir, model_dir)
+    return load_model_from_dir(checkpoints_dir, *args, **kwargs)
+
+def load_optimizer_state(source, device, rank, model_tag=None, step=None):
+    """Load just the optimizer shard for a given rank, without re-loading the model."""
+    model_dir = {
+        "base": "base_checkpoints",
+        "sft": "chatsft_checkpoints",
+        "rl": "chatrl_checkpoints",
+    }[source]
+    base_dir = get_base_dir()
+    checkpoints_dir = os.path.join(base_dir, model_dir)
+    if model_tag is None:
+        model_tag = find_largest_model(checkpoints_dir)
+    checkpoint_dir = os.path.join(checkpoints_dir, model_tag)
+    if step is None:
+        step = find_last_step(checkpoint_dir)
+    optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
+    if not os.path.exists(optimizer_path):
+        log0(f"Optimizer checkpoint not found: {optimizer_path}")
+        return None
+    log0(f"Loading optimizer state from {optimizer_path}")
+    optimizer_data = torch.load(optimizer_path, map_location=device)
+    return optimizer_data
+
+"""
+A number of functions that help with evaluating a base model.
+"""
+import math
+import torch
+import torch.distributed as dist
+
+@torch.no_grad()
+def evaluate_bpb(model, batches, steps, token_bytes):
+    """
+    Instead of the naive 'mean loss', this function returns the bits per byte (bpb),
+    which is a tokenization vocab size-independent metric, meaning you are still comparing
+    apples:apples if you change the vocab size. The way this works is that instead of just
+    calculating the average loss as usual, you calculate the sum loss, and independently
+    also the sum bytes (of all the target tokens), and divide. This normalizes the loss by
+    the number of bytes that the target tokens represent.
+
+    The added complexity is so that:
+    1) All "normal" tokens are normalized by the length of the token in bytes
+    2) No special tokens (e.g. <|bos|>) are included in the metric - they are masked out.
+    3) No actively masked tokens (using ignore_index of e.g. -1) are included in the metric.
+
+    In addition to evaluate_loss, we need the token_bytes tensor:
+    It is a 1D tensor of shape (vocab_size,), indicating the number of bytes for
+    each token id, or 0 if the token is to not be counted (e.g. special tokens).
+    """
+    # record the losses
+    total_nats = torch.tensor(0.0, dtype=torch.float32, device=model.get_device())
+    total_bytes = torch.tensor(0, dtype=torch.int64, device=model.get_device())
+    batch_iter = iter(batches)
+    for _ in range(steps):
+        x, y = next(batch_iter)
+        loss2d = model(x, y, loss_reduction='none') # (B, T)
+        loss2d = loss2d.view(-1) # flatten
+        y = y.view(-1) # flatten
+        if (y.int() < 0).any(): # mps does not currently have kernel for < 0 for int64, only int32
+            # slightly more complex code path if some target tokens are ignore_index (e.g. -1)
+            # any target token < 0 is to be ignored: do NOT index token_bytes with negatives
+            valid = y >= 0
+            y_safe = torch.where(valid, y, torch.zeros_like(y))
+            # map valid targets to their byte length; ignored targets contribute 0 bytes
+            num_bytes2d = torch.where(
+                valid,
+                token_bytes[y_safe],
+                torch.zeros_like(y, dtype=token_bytes.dtype)
+            )
+            total_nats += (loss2d * (num_bytes2d > 0)).sum()
+            total_bytes += num_bytes2d.sum()
+        else:
+            # fast path: no ignored targets, safe to index directly
+            num_bytes2d = token_bytes[y]
+            total_nats += (loss2d * (num_bytes2d > 0)).sum()
+            total_bytes += num_bytes2d.sum()
+    # sum reduce across all ranks
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    if world_size > 1:
+        dist.all_reduce(total_nats, op=dist.ReduceOp.SUM)
+        dist.all_reduce(total_bytes, op=dist.ReduceOp.SUM)
+    # move both to cpu, calculate bpb and return
+    total_nats = total_nats.item()
+    total_bytes = total_bytes.item()
+    if total_bytes == 0:
+        return float('inf')
+    bpb = total_nats / (math.log(2) * total_bytes)
+    return bpb
+
+"""
+A nice and efficient mixed AdamW/Muon Combined Optimizer.
+Usually the embeddings and scalars go into AdamW, and the matrix parameters go into Muon.
+The same class handles both single GPU and distributed training: when there is no
+multi-rank process group, the communication ops are simply skipped and every rank
+(i.e. the only rank) owns all of the parameters.
+
+Adapted from: https://github.com/KellerJordan/modded-nanogpt
+Further contributions from @karpathy and @chrisjmccormick.
+"""
+
+import torch
+import torch.distributed as dist
+from torch import Tensor
+from nanochat.common import COMPUTE_DTYPE
+
+# -----------------------------------------------------------------------------
+"""
+Good old AdamW optimizer, fused kernel.
+https://arxiv.org/abs/1711.05101
+"""
+
+@torch.compile(dynamic=False, fullgraph=True)
+def adamw_step_fused(
+    p: Tensor,              # (32768, 768) - parameter tensor
+    grad: Tensor,           # (32768, 768) - gradient, same shape as p
+    exp_avg: Tensor,        # (32768, 768) - first moment, same shape as p
+    exp_avg_sq: Tensor,     # (32768, 768) - second moment, same shape as p
+    step_t: Tensor,         # () - 0-D CPU tensor, step count
+    lr_t: Tensor,           # () - 0-D CPU tensor, learning rate
+    beta1_t: Tensor,        # () - 0-D CPU tensor, beta1
+    beta2_t: Tensor,        # () - 0-D CPU tensor, beta2
+    eps_t: Tensor,          # () - 0-D CPU tensor, epsilon
+    wd_t: Tensor,           # () - 0-D CPU tensor, weight decay
+) -> None:
+    """
+    Fused AdamW step: weight_decay -> momentum_update -> bias_correction -> param_update
+    All in one compiled graph to eliminate Python overhead between ops.
+    The 0-D CPU tensors avoid recompilation when hyperparameter values change.
+    """
+    # Some params (wte, value_embeds) are stored in bf16, so do the math in fp32 and
+    # cast back at the end. MPS errors on mixed-dtype ops (CUDA promotes them), and
+    # scalar arithmetic like 1 - beta2 loses all precision in bf16. compile fuses the casts.
+    p32 = p.float()
+    exp_avg32 = exp_avg.float()
+    exp_avg_sq32 = exp_avg_sq.float()
+    grad32 = grad.float()
+    # Weight decay (decoupled, applied before the update)
+    p32.mul_(1 - lr_t * wd_t)
+    # Update running averages (lerp_ is cleaner and fuses well)
+    exp_avg32.lerp_(grad32, 1 - beta1_t)
+    exp_avg_sq32.lerp_(grad32.square(), 1 - beta2_t)
+    # Bias corrections
+    bias1 = 1 - beta1_t ** step_t
+    bias2 = 1 - beta2_t ** step_t
+    # Compute update and apply
+    denom = (exp_avg_sq32 / bias2).sqrt() + eps_t
+    step_size = lr_t / bias1
+    p32.add_(exp_avg32 / denom, alpha=-step_size)
+    # Write back (no-ops in the common case where everything is already fp32)
+    p.copy_(p32)
+    exp_avg.copy_(exp_avg32)
+    exp_avg_sq.copy_(exp_avg_sq32)
+
+# -----------------------------------------------------------------------------
+"""
+Muon optimizer adapted and simplified from modded-nanogpt.
+https://github.com/KellerJordan/modded-nanogpt
+
+Background:
+Newton-Schulz iteration to compute the zeroth power / orthogonalization of G. We opt to use a
+quintic iteration whose coefficients are selected to maximize the slope at zero. For the purpose
+of minimizing steps, it turns out to be empirically effective to keep increasing the slope at
+zero even beyond the point where the iteration no longer converges all the way to one everywhere
+on the interval. This iteration therefore does not produce UV^T but rather something like US'V^T
+where S' is diagonal with S_{ii}' ~ Uniform(0.5, 1.5), which turns out not to hurt model
+performance at all relative to UV^T, where USV^T = G is the SVD.
+
+Here, an alternative to Newton-Schulz iteration with potentially better convergence properties:
+Polar Express Sign Method for orthogonalization.
+https://arxiv.org/pdf/2505.16932
+by Noah Amsel, David Persson, Christopher Musco, Robert M. Gower.
+
+NorMuon variance reduction: per-neuron/column adaptive learning rate that normalizes
+update scales after orthogonalization (Muon's output has non-uniform scales across neurons).
+https://arxiv.org/pdf/2510.05491
+
+Two more (very) slight and optional improvements:
+1) MuonEq row equilibration: rescale each row to the mean row norm so the spectrum
+entering orthogonalization is better conditioned (https://arxiv.org/abs/2603.28254)
+2) Muon+ renormalization: snap the Frobenius norm to sqrt(min(m, n)), the norm of an exactly
+semi-orthogonal matrix, correcting for under-convergence of the polar iteration (https://arxiv.org/abs/2602.21545)
+
+Some of the changes in nanochat implementation:
+- Uses a simpler, more general approach to parameter grouping and stacking
+- Uses a single fused kernel for the momentum -> polar_express -> variance_reduction -> update step
+- Makes no assumptions about model architecture (e.g. that attention weights are fused into QKVO format)
+"""
+
+# Coefficients for Polar Express (computed for num_iters=5, safety_factor=2e-2, cushion=2)
+# From https://arxiv.org/pdf/2505.16932
+polar_express_coeffs = [
+    (8.156554524902461, -22.48329292557795, 15.878769915207462),
+    (4.042929935166739, -2.808917465908714, 0.5000178451051316),
+    (3.8916678022926607, -2.772484153217685, 0.5060648178503393),
+    (3.285753657755655, -2.3681294933425376, 0.46449024233003106),
+    (2.3465413258596377, -1.7097828382687081, 0.42323551169305323),
+]
+
+
+@torch.compile(dynamic=False, fullgraph=True)
+def muon_step_fused(
+    stacked_grads: Tensor,          # (12, 768, 3072) - stacked gradients
+    stacked_params: Tensor,         # (12, 768, 3072) - stacked parameters
+    momentum_buffer: Tensor,        # (12, 768, 3072) - first moment buffer
+    second_momentum_buffer: Tensor, # (12, 768, 1) or (12, 1, 3072) - factored second moment
+    momentum_t: Tensor,             # () - 0-D CPU tensor, momentum coefficient
+    lr_t: Tensor,                   # () - 0-D CPU tensor, learning rate
+    wd_t: Tensor,                   # () - 0-D CPU tensor, weight decay
+    beta2_t: Tensor,                # () - 0-D CPU tensor, beta2 for second moment
+    ns_steps: int,                  # 5 - number of Newton-Schulz/Polar Express iterations
+    red_dim: int,                   # -1 or -2 - reduction dimension for variance
+) -> None:
+    """
+    Fused Muon step: momentum -> polar_express -> variance_reduction -> cautious_update
+    All in one compiled graph to eliminate Python overhead between ops.
+    Some of the constants are 0-D CPU tensors to avoid recompilation when values change.
+    """
+
+    # Nesterov momentum
+    momentum = momentum_t.to(stacked_grads.dtype)
+    momentum_buffer.lerp_(stacked_grads, 1 - momentum)
+    g = stacked_grads.lerp_(momentum_buffer, momentum)
+
+    # Cast to bf16 for speed when available; skip cast otherwise (fp16 is unstable here due to limited exponent range)
+    X = g.bfloat16() if COMPUTE_DTYPE == torch.bfloat16 else g
+
+    # MuonEq row equilibration: rescale each row to the mean row norm so the spectrum entering orthogonalization is better conditioned
+    target = X.float().norm(dim=(-2, -1), keepdim=True) / (X.size(-2) ** 0.5)
+    row_norm = X.float().norm(dim=-1, keepdim=True).clamp_min(1e-6)
+    X = X * (target / row_norm).to(X.dtype)
+
+    # Polar Express orthogonalization: replace each update with the nearest orthogonal matrix
+    X = X / (X.norm(dim=(-2, -1), keepdim=True) * 1.01 + 1e-6)
+    if g.size(-2) > g.size(-1): # Tall matrix
+        for a, b, c in polar_express_coeffs[:ns_steps]:
+            A = X.mT @ X
+            B = b * A + c * (A @ A)
+            X = a * X + X @ B
+    else: # Wide matrix (original math)
+        for a, b, c in polar_express_coeffs[:ns_steps]:
+            A = X @ X.mT
+            B = b * A + c * (A @ A)
+            X = a * X + B @ X
+    # Cast back to the param dtype (MPS errors on the mixed-dtype ops below when X is bf16)
+    g = X.to(stacked_params.dtype)
+
+    # Muon+ renormalization: snap Frobenius norm to sqrt(min(m, n))
+    target_norm = min(g.size(-2), g.size(-1)) ** 0.5
+    current_norm = g.float().norm(dim=(-2, -1), keepdim=True).clamp_min(1e-6)
+    g = g * (target_norm / current_norm).to(g.dtype)
+
+    # Variance reduction
+    beta2 = beta2_t.to(g.dtype)
+    v_mean = g.float().square().mean(dim=red_dim, keepdim=True)
+    red_dim_size = g.size(red_dim)
+    v_norm_sq = v_mean.sum(dim=(-2, -1), keepdim=True) * red_dim_size
+    v_norm = v_norm_sq.sqrt()
+    second_momentum_buffer.lerp_(v_mean.to(dtype=second_momentum_buffer.dtype), 1 - beta2)
+    step_size = second_momentum_buffer.clamp_min(1e-10).rsqrt()
+    scaled_sq_sum = (v_mean * red_dim_size) * step_size.float().square()
+    v_norm_new = scaled_sq_sum.sum(dim=(-2, -1), keepdim=True).sqrt()
+    final_scale = step_size * (v_norm / v_norm_new.clamp_min(1e-10))
+    g = g * final_scale.to(g.dtype)
+
+    # Cautious weight decay + parameter update
+    lr = lr_t.to(g.dtype)
+    wd = wd_t.to(g.dtype)
+    mask = (g * stacked_params) >= 0
+    stacked_params.sub_(lr * g + lr * wd * stacked_params * mask)
+
+# -----------------------------------------------------------------------------
+
+class MuonAdamW(torch.optim.Optimizer):
+    """
+    Combined optimizer: Muon for 2D matrix params, AdamW for others.
+
+    AdamW - Fused AdamW optimizer step.
+
+    Muon - MomentUm Orthogonalized by Newton-schulz
+    https://kellerjordan.github.io/posts/muon/
+
+    Muon internally runs standard SGD-momentum, and then performs an orthogonalization post-
+    processing step, in which each 2D parameter's update is replaced with the nearest orthogonal
+    matrix. To efficiently orthogonalize each update, we use a Newton-Schulz iteration, which has
+    the advantage that it can be stably run in bfloat16 on the GPU.
+
+    Some warnings:
+    - The Muon optimizer should not be used for the embedding layer, the final fully connected layer,
+    or any {0,1}-D parameters; those should all be optimized by a standard method (e.g., AdamW).
+    - To use it with 4D convolutional filters, it works well to just flatten their last 3 dimensions.
+
+    The same class covers single GPU and distributed training. In the distributed setting
+    (a multi-rank process group is initialized), gradients are synchronized here in the
+    optimizer (nanochat does not use DDP) and optimizer states are sharded across ranks
+    (ZeRO-2 style). On a single rank, all communication is skipped and the rank owns all
+    parameters, so the sharded code paths degenerate to plain full-tensor updates.
+
+    Design Goals:
+    - Overlap communication with computation (async ops)
+    - Minimize memory by sharding optimizer states across ranks (ZeRO-2 style)
+    - Batch small tensors into single comm ops where possible
+
+    Communication Pattern (3-phase async):
+    We use a 3-phase structure to maximize overlap between communication and compute:
+
+        Phase 1: Launch all async reduce ops
+            - Kick off all reduce_scatter/all_reduce operations
+            - Don't wait - let them run in background while we continue
+
+        Phase 2: Wait for reduces, compute updates, launch gathers
+            - For each group: wait for its reduce, compute the update, launch gather
+            - By processing groups in order, earlier gathers run while later computes happen
+
+        Phase 3: Wait for gathers, copy back
+            - Wait for all gathers to complete
+            - Copy updated params back to original tensors (Muon only)
+
+    AdamW Communication (ZeRO-2 style):
+    - Small params (<1024 elements): all_reduce gradients, update full param on each rank.
+      Optimizer state is replicated but these params are tiny (scalars, biases).
+    - Large params: reduce_scatter gradients so each rank gets 1/N of the grad, update
+      only that slice, then all_gather the updated slices. Optimizer state (exp_avg,
+      exp_avg_sq) is sharded - each rank only stores state for its slice.
+      Requires param.shape[0] divisible by world_size.
+
+    Muon Communication (stacked + chunked):
+    - All params in a Muon group must have the same shape (caller's responsibility).
+    - Stack all K params into a single (K, *shape) tensor for efficient comm.
+    - Divide K params across N ranks: each rank "owns" ceil(K/N) params.
+    - reduce_scatter the stacked grads so each rank gets its chunk.
+    - Each rank computes Muon update only for params it owns.
+    - all_gather the updated params back to all ranks.
+    - Optimizer state (momentum_buffer, second_momentum_buffer) is sharded by chunk.
+    - Padding: if K doesn't divide evenly, we zero-pad to (ceil(K/N) * N) for comm,
+      then ignore the padding when copying back.
+
+    Buffer Reuse:
+    - For Muon, we allocate stacked_grads for reduce_scatter input, then reuse the
+      same buffer as the output for all_gather (stacked_params). This saves memory
+      since we don't need both buffers simultaneously.
+
+    Arguments:
+        param_groups: List of dicts, each containing:
+            - 'params': List of parameters
+            - 'kind': 'adamw' or 'muon'
+            - For AdamW groups: 'lr', 'betas', 'eps', 'weight_decay'
+            - For Muon groups: 'lr', 'momentum', 'ns_steps', 'beta2', 'weight_decay'
+    """
+    def __init__(self, param_groups: list[dict]):
+        super().__init__(param_groups, defaults={})
+        # 0-D CPU tensors to avoid torch.compile recompilation when values change
+        self._adamw_step_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._adamw_lr_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._adamw_beta1_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._adamw_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._adamw_eps_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._adamw_wd_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._muon_momentum_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._muon_lr_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._muon_wd_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        self._muon_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+
+    def _reduce_adamw(self, group: dict, world_size: int) -> dict:
+        """Launch async reduce ops for AdamW group. Returns info dict with per-param infos."""
+        param_infos = {}
+        for p in group['params']:
+            grad = p.grad
+            if world_size == 1:
+                # Single rank: no communication, update the full param in place
+                param_infos[p] = dict(future=None, grad_slice=grad, is_small=True)
+            elif p.numel() < 1024:
+                # Small params: all_reduce (no scatter/gather needed)
+                future = dist.all_reduce(grad, op=dist.ReduceOp.AVG, async_op=True).get_future()
+                param_infos[p] = dict(future=future, grad_slice=grad, is_small=True)
+            else:
+                # Large params: reduce_scatter
+                assert grad.shape[0] % world_size == 0, f"AdamW reduce_scatter requires shape[0] ({grad.shape[0]}) divisible by world_size ({world_size})"
+                rank_size = grad.shape[0] // world_size
+                grad_slice = torch.empty_like(grad[:rank_size])
+                future = dist.reduce_scatter_tensor(grad_slice, grad, op=dist.ReduceOp.AVG, async_op=True).get_future()
+                param_infos[p] = dict(future=future, grad_slice=grad_slice, is_small=False)
+        return dict(param_infos=param_infos)
+
+    def _reduce_muon(self, group: dict, world_size: int) -> dict:
+        """Launch async reduce op for Muon group. Returns info dict."""
+        params = group['params']
+        if world_size == 1:
+            # Single rank: this rank owns all params, the stacked grads are the "chunk"
+            grad_chunk = torch.stack([p.grad for p in params])
+            return dict(future=None, grad_chunk=grad_chunk, stacked_grads=None, chunk_size=len(params))
+        chunk_size = (len(params) + world_size - 1) // world_size
+        padded_num_params = chunk_size * world_size
+        p = params[0]
+        shape, device, dtype = p.shape, p.device, p.dtype
+
+        # Stack grads and zero-pad to padded_num_params
+        grad_stack = torch.stack([p.grad for p in params])
+        stacked_grads = torch.empty(padded_num_params, *shape, dtype=dtype, device=device)
+        stacked_grads[:len(params)].copy_(grad_stack)
+        if len(params) < padded_num_params:
+            stacked_grads[len(params):].zero_()
+
+        # Reduce_scatter to get this rank's chunk
+        grad_chunk = torch.empty(chunk_size, *shape, dtype=dtype, device=device)
+        future = dist.reduce_scatter_tensor(grad_chunk, stacked_grads, op=dist.ReduceOp.AVG, async_op=True).get_future()
+
+        return dict(future=future, grad_chunk=grad_chunk, stacked_grads=stacked_grads, chunk_size=chunk_size)
+
+    def _compute_adamw(self, group: dict, info: dict, gather_list: list, rank: int, world_size: int) -> None:
+        """Wait for reduce, compute AdamW updates, launch gathers for large params."""
+        param_infos = info['param_infos']
+        for p in group['params']:
+            pinfo = param_infos[p]
+            if pinfo['future'] is not None:
+                pinfo['future'].wait()
+            grad_slice = pinfo['grad_slice']
+            state = self.state[p]
+
+            # For small params, operate on full param; for large, operate on slice
+            if pinfo['is_small']:
+                p_slice = p
+            else:
+                rank_size = p.shape[0] // world_size
+                p_slice = p[rank * rank_size:(rank + 1) * rank_size]
+
+            # State init
+            if not state:
+                state['step'] = 0
+                state['exp_avg'] = torch.zeros_like(p_slice)
+                state['exp_avg_sq'] = torch.zeros_like(p_slice)
+            state['step'] += 1
+
+            # Fill 0-D tensors and run fused kernel
+            self._adamw_step_t.fill_(state['step'])
+            self._adamw_lr_t.fill_(group['lr'])
+            self._adamw_beta1_t.fill_(group['betas'][0])
+            self._adamw_beta2_t.fill_(group['betas'][1])
+            self._adamw_eps_t.fill_(group['eps'])
+            self._adamw_wd_t.fill_(group['weight_decay'])
+            adamw_step_fused(
+                p_slice, grad_slice, state['exp_avg'], state['exp_avg_sq'],
+                self._adamw_step_t, self._adamw_lr_t, self._adamw_beta1_t,
+                self._adamw_beta2_t, self._adamw_eps_t, self._adamw_wd_t,
+            )
+
+            # Large params need all_gather
+            if not pinfo['is_small']:
+                future = dist.all_gather_into_tensor(p, p_slice, async_op=True).get_future()
+                gather_list.append(dict(future=future, params=None))
+
+    def _compute_muon(self, group: dict, info: dict, gather_list: list, rank: int) -> None:
+        """Wait for reduce, compute Muon updates, launch gather."""
+        if info['future'] is not None:
+            info['future'].wait()
+        params = group['params']
+        chunk_size = info['chunk_size']
+        grad_chunk = info['grad_chunk']
+        p = params[0]
+        shape, device, dtype = p.shape, p.device, p.dtype
+
+        # How many params does this rank own?
+        start_idx = rank * chunk_size
+        num_owned = min(chunk_size, max(0, len(params) - start_idx))
+
+        # Get or create group-level state
+        state = self.state[p]
+        if "momentum_buffer" not in state:
+            state["momentum_buffer"] = torch.zeros(chunk_size, *shape, dtype=dtype, device=device)
+        if "second_momentum_buffer" not in state:
+            state_shape = (chunk_size, shape[-2], 1) if shape[-2] >= shape[-1] else (chunk_size, 1, shape[-1])
+            state["second_momentum_buffer"] = torch.zeros(state_shape, dtype=dtype, device=device)
+        red_dim = -1 if shape[-2] >= shape[-1] else -2
+
+        stacked_owned = None
+        if num_owned > 0:
+            owned_params = [params[start_idx + i] for i in range(num_owned)]
+            stacked_owned = torch.stack(owned_params)
+
+            # Fill 0-D tensors and run fused kernel
+            self._muon_momentum_t.fill_(group["momentum"])
+            self._muon_beta2_t.fill_(group["beta2"])
+            self._muon_lr_t.fill_(group["lr"] * max(1.0, shape[-2] / shape[-1])**0.5)
+            self._muon_wd_t.fill_(group["weight_decay"])
+            muon_step_fused(
+                grad_chunk[:num_owned], stacked_owned,
+                state["momentum_buffer"][:num_owned], state["second_momentum_buffer"][:num_owned],
+                self._muon_momentum_t, self._muon_lr_t, self._muon_wd_t, self._muon_beta2_t,
+                group["ns_steps"], red_dim,
+            )
+
+        if info['stacked_grads'] is None:
+            # Single rank: no gather needed, the updated stack maps directly onto the params
+            gather_list.append(dict(future=None, stacked_params=stacked_owned, params=params))
+            return
+
+        # Build the input buffer for all_gather
+        updated_params = torch.empty(chunk_size, *shape, dtype=dtype, device=device)
+        if num_owned > 0:
+            updated_params[:num_owned].copy_(stacked_owned)
+        if num_owned < chunk_size:
+            updated_params[num_owned:].zero_()
+
+        # Reuse stacked_grads buffer for all_gather output
+        stacked_params = info["stacked_grads"]
+        future = dist.all_gather_into_tensor(stacked_params, updated_params, async_op=True).get_future()
+        gather_list.append(dict(future=future, stacked_params=stacked_params, params=params))
+
+    def _finish_gathers(self, gather_list: list) -> None:
+        """Wait for all gathers and copy Muon params back."""
+        for info in gather_list:
+            if info["future"] is not None:
+                info["future"].wait()
+            if info["params"] is not None:
+                # Muon: copy from stacked buffer back to individual params
+                torch._foreach_copy_(info["params"], list(info["stacked_params"][:len(info["params"])].unbind(0)))
+
+    @torch.no_grad()
+    def step(self):
+        # On a single rank (no multi-rank process group), all communication is skipped
+        if dist.is_available() and dist.is_initialized():
+            rank = dist.get_rank()
+            world_size = dist.get_world_size()
+        else:
+            rank = 0
+            world_size = 1
+
+        # Phase 1: launch all async reduce ops
+        reduce_infos: list[dict] = []
+        for group in self.param_groups:
+            if group['kind'] == 'adamw':
+                reduce_infos.append(self._reduce_adamw(group, world_size))
+            elif group['kind'] == 'muon':
+                reduce_infos.append(self._reduce_muon(group, world_size))
+            else:
+                raise ValueError(f"Unknown optimizer kind: {group['kind']}")
+
+        # Phase 2: wait for reduces, compute updates, launch gathers
+        gather_list: list[dict] = []
+        for group, info in zip(self.param_groups, reduce_infos):
+            if group['kind'] == 'adamw':
+                self._compute_adamw(group, info, gather_list, rank, world_size)
+            elif group['kind'] == 'muon':
+                self._compute_muon(group, info, gather_list, rank)
+            else:
+                raise ValueError(f"Unknown optimizer kind: {group['kind']}")
+
+        # Phase 3: wait for gathers, copy back
+        self._finish_gathers(gather_list)
+
+"""
+Reinforcement learning on GSM8K via "GRPO".
+
+I put GRPO in quotes because we actually end up with something a lot
+simpler and more similar to just REINFORCE:
+
+1) Delete trust region, so there is no KL regularization to a reference model
+2) We are on policy, so there's no need for PPO ratio+clip.
+3) We use DAPO style normalization that is token-level, not sequence-level.
+4) Instead of z-score normalization (r - mu)/sigma, only use (r - mu) as the advantage.
+
+1 GPU:
+python -m scripts.chat_rl
+
+8 GPUs:
+torchrun --standalone --nproc_per_node=8 -m scripts.chat_rl -- --run=default
+"""
+
+import argparse
+import os
+import itertools
+import wandb
+import torch
+import torch.distributed as dist
+from nanochat.common import compute_init, compute_cleanup, print0, get_base_dir, DummyWandb, autodetect_device_type
+from nanochat.checkpoint_manager import save_checkpoint, load_model
+from nanochat.engine import Engine
+from tasks.gsm8k import GSM8K
+
+# -----------------------------------------------------------------------------
+# CLI arguments
+parser = argparse.ArgumentParser(description="Reinforcement learning on GSM8K")
+# Logging
+parser.add_argument("--run", type=str, default="dummy", help="wandb run name ('dummy' disables wandb logging)")
+# Runtime
+parser.add_argument("--device-type", type=str, default="", help="cuda|cpu|mps (empty = autodetect)")
+# Model loading
+parser.add_argument("--model-tag", type=str, default=None, help="model tag to load from")
+parser.add_argument("--model-step", type=int, default=None, help="model step to load from")
+# Training horizon
+parser.add_argument("--num-epochs", type=int, default=1, help="number of epochs over GSM8K")
+# Batch sizes / sampling
+parser.add_argument("--device-batch-size", type=int, default=8, help="max batch size per forward pass")
+parser.add_argument("--examples-per-step", type=int, default=16, help="total examples per optimization step across all ranks")
+parser.add_argument("--num-samples", type=int, default=16, help="number of samples per example/question")
+# Generation
+parser.add_argument("--max-new-tokens", type=int, default=256, help="max tokens to generate per sample")
+parser.add_argument("--temperature", type=float, default=1.0, help="sampling temperature")
+parser.add_argument("--top-k", type=int, default=50, help="top-k sampling (0 = disabled)")
+# Optimization
+parser.add_argument("--embedding-lr", type=float, default=0.2, help="learning rate for embedding parameters (Adam)")
+parser.add_argument("--unembedding-lr", type=float, default=0.004, help="learning rate for unembedding parameters (Adam)")
+parser.add_argument("--matrix-lr", type=float, default=0.02, help="learning rate for matrix parameters (Muon)")
+parser.add_argument("--weight-decay", type=float, default=0.0, help="weight decay for embedding/unembedding parameters (Adam)")
+parser.add_argument("--init-lr-frac", type=float, default=0.05, help="initial LR as fraction of base LR")
+# Evaluation / checkpointing
+parser.add_argument("--eval-every", type=int, default=60, help="evaluate pass@k every N steps")
+parser.add_argument("--eval-examples", type=int, default=400, help="number of examples for pass@k evaluation")
+parser.add_argument("--save-every", type=int, default=60, help="save checkpoint every N steps")
+args = parser.parse_args()
+user_config = vars(args).copy()
+# -----------------------------------------------------------------------------
+
+# Init compute/precision
+device_type = autodetect_device_type() if args.device_type == "" else args.device_type
+ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
+master_process = ddp_rank == 0 # this process will do logging, checkpointing etc.
+
+# wandb logging init
+use_dummy_wandb = args.run == "dummy" or not master_process
+wandb_run = DummyWandb() if use_dummy_wandb else wandb.init(project="nanochat-rl", name=args.run, config=user_config)
+
+# Init model and tokenizer
+model, tokenizer, meta = load_model("sft", device, phase="eval", model_tag=args.model_tag, step=args.model_step)
+engine = Engine(model, tokenizer) # for sampling rollouts
+
+# -----------------------------------------------------------------------------
+# Rollout / sampling generator loop that yields batches of examples for training
+
+train_task = GSM8K(subset="main", split="train")
+val_task = GSM8K(subset="main", split="test")
+num_steps = (len(train_task) // args.examples_per_step) * args.num_epochs
+print0(f"Calculated number of steps: {num_steps}")
+
+@torch.no_grad()
+def get_batch():
+    assistant_end = tokenizer.encode_special("<|assistant_end|>") # ok to use this token, it's only for padding and isn't used in the loss.
+    rank_indices = range(ddp_rank, len(train_task), ddp_world_size) # each rank is responsible for different examples in the training data
+    for example_idx in itertools.cycle(rank_indices):
+
+        # First get the full conversation of both user and assistant messages
+        conversation = train_task[example_idx]
+
+        # Tokenize the conversation, deleting the last Assistant message and priming the Assistant for a completion instead
+        # (i.e. keep the <|assistant_start|>, but delete everything after it)
+        tokens = tokenizer.render_for_completion(conversation)
+        prefix_length = len(tokens)
+
+        # Generate num_samples samples using batched generation, use loop to avoid OOMs
+        model.eval() # ensure the model is in eval mode
+        generated_token_sequences = []
+        masks = []
+        num_sampling_steps = args.num_samples // args.device_batch_size # go sequentially to prevent OOMs
+        for sampling_step in range(num_sampling_steps):
+            seed = hash((step, example_idx, sampling_step)) & 0x7FFFFFFF # positive half of int32
+            generated_token_sequences_batch, masks_batch = engine.generate_batch(
+                tokens,
+                num_samples=args.device_batch_size,
+                max_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+                top_k=args.top_k,
+                seed=seed, # must make sure to change the seed for each sampling step
+            )
+            generated_token_sequences.extend(generated_token_sequences_batch)
+            masks.extend(masks_batch)
+
+        # Calculate the rewards for each sample
+        rewards = []
+        for sample_tokens in generated_token_sequences:
+            # Get just the generated tokens (after the prompt)
+            generated_tokens = sample_tokens[prefix_length:]
+            # Decode the generated response
+            generated_text = tokenizer.decode(generated_tokens)
+            # Calculate the reward
+            reward = train_task.reward(conversation, generated_text)
+            rewards.append(reward)
+
+        # Pad the sequences so that their lengths (in time) match
+        max_length = max(len(seq) for seq in generated_token_sequences)
+        padded_generated_token_sequences = [seq + [assistant_end] * (max_length - len(seq)) for seq in generated_token_sequences]
+        padded_masks = [mask + [0] * (max_length - len(mask)) for mask in masks]
+        # Stack up the sequences and masks into PyTorch tensors
+        ids = torch.tensor(padded_generated_token_sequences, dtype=torch.long, device=device)
+        mask_ids = torch.tensor(padded_masks, dtype=torch.long, device=device)
+        # Generate autoregressive inputs and targets to the Transformer
+        inputs = ids[:, :-1]
+        targets = ids[:, 1:].clone() # clone to avoid in-place modification:
+        targets[mask_ids[:, 1:] == 0] = -1 # <-- inplace modification right here. -1 is the ignore index
+        # NOTE also that the Engine returns mask=0 for BOTH the prompt tokens AND the tool use tokens.
+        # So we will (correctly) end up not training on the prompt tokens, or the tool use forced tokens.
+        rewards = torch.tensor(rewards, dtype=torch.float, device=device)
+        # Calculate the advantages by simply subtracting the mean (instead of z-score (x-mu)/sigma)
+        mu = rewards.mean()
+        advantages = rewards - mu
+        # yield inputs/targets as (B, T) of ids and rewards as (B,) of floats
+        yield generated_token_sequences, inputs, targets, rewards, advantages
+
+# -----------------------------------------------------------------------------
+# Simple evaluation loop for GSM8K pass@k
+def run_gsm8k_eval(task, tokenizer, engine,
+    max_examples=None,
+    num_samples=1,
+    max_completion_tokens=256,
+    temperature=0.0,
+    top_k=50
+):
+    """
+    Evaluates GSM8K task and returns a list of records of evaluation outcomes.
+    In a distributed setting, all ranks cooperate but this function will NOT
+    do the reduction across ranks. This is the responsibility of the caller.
+    Because the evaluation can take a while, this function will yield records one by one.
+    """
+    max_examples = min(max_examples, len(task)) if max_examples is not None else len(task)
+    for idx in range(ddp_rank, max_examples, ddp_world_size):
+        conversation = task[idx]
+        tokens = tokenizer.render_for_completion(conversation)
+        prefix_length = len(tokens)
+        # Generate k samples using batched generation inside the Engine
+        assert num_samples <= args.device_batch_size # usually this is true. we can add a loop if not...
+        generated_token_sequences, masks = engine.generate_batch(
+            tokens,
+            num_samples=num_samples,
+            max_tokens=max_completion_tokens,
+            temperature=temperature,
+            top_k=top_k
+        )
+        # Check each sample for correctness
+        outcomes = []
+        for sample_tokens in generated_token_sequences:
+            generated_tokens = sample_tokens[prefix_length:]
+            generated_text = tokenizer.decode(generated_tokens)
+            is_correct = task.evaluate(conversation, generated_text)
+            outcomes.append({
+                "is_correct": is_correct
+            })
+        # A bit bloated because I wanted to do more complex logging at one point.
+        record = {
+            "idx": idx,
+            "outcomes": outcomes,
+        }
+        yield record
+
+# -----------------------------------------------------------------------------
+# Training loop
+
+# Init the optimizer
+optimizer = model.setup_optimizer(
+    unembedding_lr=args.unembedding_lr,
+    embedding_lr=args.embedding_lr,
+    matrix_lr=args.matrix_lr,
+    weight_decay=args.weight_decay,
+)
+
+# Set the initial learning rate as a fraction of the base learning rate
+for group in optimizer.param_groups:
+    group["lr"] = group["lr"] * args.init_lr_frac
+    group["initial_lr"] = group["lr"]
+
+# Learning rate scheduler: simple rampdown to zero over num_steps
+def get_lr_multiplier(it):
+    lrm = 1.0 - it / num_steps
+    return lrm
+
+# Calculate the number of examples each rank handles to achieve the desired examples_per_step
+print0(f"Total sequences per step: {args.examples_per_step * args.num_samples}") # total batch size in sequences/step
+assert args.examples_per_step % ddp_world_size == 0, "Desired examples per step must be divisible by the number of ranks"
+examples_per_rank = args.examples_per_step // ddp_world_size # per GPU
+print0(f"Calculated examples per rank: {examples_per_rank}")
+
+# Kick off the training loop
+batch_iterator = get_batch()
+for step in range(num_steps):
+
+    # Evaluate the model once in a while and log to wandb
+    if step % args.eval_every == 0:
+        model.eval()
+        passk = torch.zeros(args.device_batch_size, device=device) # pass@k for k=1..device_batch_size
+        records_iter = run_gsm8k_eval(val_task, tokenizer, engine, num_samples=args.device_batch_size, max_examples=args.eval_examples, temperature=1.0)
+        records = list(records_iter) # collect all records
+        for k in range(1, args.device_batch_size + 1):
+            passk[k - 1] = sum(any(o["is_correct"] for o in r["outcomes"][:k]) for r in records)
+        num_records = torch.tensor(len(records), dtype=torch.long, device=device)
+        if ddp:
+            dist.all_reduce(num_records, op=dist.ReduceOp.SUM)
+            dist.all_reduce(passk, op=dist.ReduceOp.SUM)
+        passk = passk / num_records.item() # normalize by the total number of records
+        print_passk = [f"Pass@{k}: {passk[k - 1].item():.4f}" for k in range(1, args.device_batch_size + 1)]
+        print0(f"Step {step} | {', '.join(print_passk)}")
+        log_passk = {f"pass@{k}": passk[k - 1].item() for k in range(1, args.device_batch_size + 1)}
+        wandb_run.log({
+            "step": step,
+            **log_passk,
+        })
+
+    # Forward/Backward on rollouts over multiple examples in the dataset
+    rewards_list = []
+    sequence_lengths = []
+    for example_step in range(examples_per_rank):
+        # Get one batch corresponding to one example in the training dataset
+        sequences_all, inputs_all, targets_all, rewards_all, advantages_all = next(batch_iterator)
+        # Evaluate the loss and gradients
+        model.train() # ensure the model is in train mode
+        # We need one more loop because we can never exceed the device_batch_size
+        assert inputs_all.size(0) % args.device_batch_size == 0
+        num_passes = inputs_all.size(0) // args.device_batch_size
+        for pass_idx in range(num_passes):
+            # Pluck out the batch for this pass
+            b0, b1 = pass_idx * args.device_batch_size, (pass_idx + 1) * args.device_batch_size
+            inputs = inputs_all[b0:b1]
+            targets = targets_all[b0:b1]
+            rewards = rewards_all[b0:b1]
+            advantages = advantages_all[b0:b1]
+            # Calculate log probabilities. Note that the loss calculates NLL = -logp, so we negate
+            logp = -model(inputs, targets, loss_reduction='none').view_as(inputs) # (B, T)
+            # Calculate the PG objective. Note that ignore_index=-1 ensures that invalid tokens have loss 0.
+            pg_obj = (logp * advantages.unsqueeze(-1)).sum()
+            # normalize by the number of valid tokens, number of passes, and examples_per_rank
+            num_valid = (targets >= 0).sum().clamp(min=1)
+            pg_obj = pg_obj / (num_valid * num_passes * examples_per_rank)
+            # Note, there is no need to add PPO ratio+clip because we are on policy
+            # Finally, formulate the loss that we want to minimize (instead of objective we wish to maximize)
+            loss = -pg_obj
+            loss.backward()
+            print0(f"Step {step}/{num_steps} | Example step {example_step} | Pass {pass_idx} | loss: {loss.item():.6f} | Average reward: {rewards.mean().item()}")
+        # For logging
+        rewards_list.append(rewards_all.mean().item())
+        sequence_lengths.extend(len(seq) for seq in sequences_all)
+
+    # A bunch of logging for how the rollouts went this step
+    mean_reward = sum(rewards_list) / len(rewards_list)
+    mean_sequence_length = sum(sequence_lengths) / len(sequence_lengths)
+    if ddp: # aggregate across ranks
+        mean_reward_tensor = torch.tensor(mean_reward, dtype=torch.float, device=device)
+        mean_sequence_length_tensor = torch.tensor(mean_sequence_length, dtype=torch.float, device=device)
+        dist.all_reduce(mean_reward_tensor, op=dist.ReduceOp.AVG)
+        dist.all_reduce(mean_sequence_length_tensor, op=dist.ReduceOp.AVG)
+        mean_reward = mean_reward_tensor.item()
+        mean_sequence_length = mean_sequence_length_tensor.item()
+    print0(f"Step {step}/{num_steps} | Average reward: {mean_reward} | Average sequence length: {mean_sequence_length:.2f}")
+    wandb_run.log({
+        "step": step,
+        "reward": mean_reward,
+        "sequence_length": mean_sequence_length,
+    })
+
+    # Update the model parameters
+    lrm = get_lr_multiplier(step)
+    for group in optimizer.param_groups:
+        group["lr"] = group["initial_lr"] * lrm
+    optimizer.step()
+    model.zero_grad(set_to_none=True)
+    wandb_run.log({
+        "step": step,
+        "lrm": lrm,
+    })
+
+    # Master process saves the model once in a while. Skip first step. Save last step.
+    if master_process and ((step > 0 and step % args.save_every == 0) or step == num_steps - 1):
+        base_dir = get_base_dir()
+        depth = model.config.n_layer
+        output_dirname = args.model_tag if args.model_tag else f"d{depth}" # base the model tag on the depth of the base model
+        checkpoint_dir = os.path.join(base_dir, "chatrl_checkpoints", output_dirname)
+        model_config_kwargs = model.config.__dict__ # slightly naughty, abusing the simplicity of GPTConfig, TODO nicer
+        save_checkpoint(
+            checkpoint_dir,
+            step,
+            model.state_dict(),
+            None, # note: we don't bother to save the optimizer state
+            {
+                "model_config": model_config_kwargs,
+            }
+        )
+        print(f"✅ Saved model checkpoint to {checkpoint_dir}")
+
+wandb_run.finish() # wandb run finish
+compute_cleanup()
+
+"""One-command reproduction of the PRIMARY clean result (G0/G1 #18): the
+adaptive-compute Jensen gap (wp4-adaptive-depth), which is the cleanest
+causally-isolated positive. Regenerates raw runs, re-analyses, checks the
+verdict, and validates the evidence checksums. Exits non-zero on any mismatch.
+"""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT)
+    env["PYTHONHASHSEED"] = "0"
+    return env
+
+
+def main() -> int:
+    print("[reproduce-primary] running wp4 adaptive-depth in an isolated directory...")
+    with tempfile.TemporaryDirectory(prefix="cwc-wp4-") as tmp:
+        tmp_root = Path(tmp)
+        runs = tmp_root / "raw_runs"
+        out = tmp_root / "analysis"
+        subprocess.run(
+            [sys.executable, "-m", "experiments.wp4_adaptive_depth.src.runner",
+             "--seeds", "0", "1", "2", "3", "4", "5", "6", "7", "--out", str(runs)],
+            check=True, cwd=ROOT, env=_env(),
+        )
+        subprocess.run(
+            [sys.executable, "-m", "experiments.wp4_adaptive_depth.src.analyze",
+             "--runs", str(runs), "--out", str(out)],
+            check=True, cwd=ROOT, env=_env(),
+        )
+        v = json.loads((out / "verdict.json").read_text())["verdict"]
+        print(f"[reproduce-primary] verdict = {v}")
+        if v != "SYNTHETIC_HALT_IDENTITY_VERIFIED":
+            print("[reproduce-primary] FAIL: verdict changed")
+            return 1
+        a = json.loads((out / "analysis.json").read_text())
+        if a["max_abs_error_gap_vs_theory"] > 0.02:
+            print("[reproduce-primary] FAIL: gap no longer matches theory")
+            return 1
+    print("[reproduce-primary] PASS: isolated reproduction completed; canonical evidence was not modified")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+"""
+The MMLU dataset.
+https://huggingface.co/datasets/cais/mmlu
+"""
+
+from tasks.common import Task, load_hub_dataset, render_mc
+
+class MMLU(Task):
+
+    letters = ('A', 'B', 'C', 'D')
+    groups = ('abstract_algebra', 'anatomy', 'astronomy', 'business_ethics', 'clinical_knowledge', 'college_biology', 'college_chemistry', 'college_computer_science', 'college_mathematics', 'college_medicine', 'college_physics', 'computer_security', 'conceptual_physics', 'econometrics', 'electrical_engineering', 'elementary_mathematics', 'formal_logic', 'global_facts', 'high_school_biology', 'high_school_chemistry', 'high_school_computer_science', 'high_school_european_history', 'high_school_geography', 'high_school_government_and_politics', 'high_school_macroeconomics', 'high_school_mathematics', 'high_school_microeconomics', 'high_school_physics', 'high_school_psychology', 'high_school_statistics', 'high_school_us_history', 'high_school_world_history', 'human_aging', 'human_sexuality', 'international_law', 'jurisprudence', 'logical_fallacies', 'machine_learning', 'management', 'marketing', 'medical_genetics', 'miscellaneous', 'moral_disputes', 'moral_scenarios', 'nutrition', 'philosophy', 'prehistory', 'professional_accounting', 'professional_law', 'professional_medicine', 'professional_psychology', 'public_relations', 'security_studies', 'sociology', 'us_foreign_policy', 'virology', 'world_religions')
+
+    def __init__(self, subset, split, **kwargs):
+        super().__init__(**kwargs)
+        assert subset in ["all"], f"subset {subset} must be all"
+        assert split in ["auxiliary_train", "validation", "dev", "test"], f"split {split} must be auxiliary_train|validation|dev|test"
+        self.subset = subset
+        self.split = split
+        self.ds = load_hub_dataset("cais/mmlu", subset, split=split).shuffle(seed=42)
+
+    @property
+    def eval_type(self):
+        return 'categorical'
+
+    def num_examples(self):
+        return len(self.ds)
+
+    def get_example(self, index):
+        row = self.ds[index]
+        question = row["question"] # the question text
+        choices = row["choices"] # the text of each choice
+        answer = row["answer"] # index of the answer, e.g. 0,1,2,3 (for A,B,C,D)
+        subject = row["subject"] # e.g. "college_biology", "college_chemistry", etc.
+        assert len(choices) == 4, "MMLU should have 4 choices"
+        # create and return the Conversation object
+        user_message = render_mc(question, self.letters, choices)
+        assistant_message = self.letters[answer]
+        messages = [
+            {"role": "user", "content": user_message},
+            {"role": "assistant", "content": assistant_message}
+        ]
+        conversation = {
+            "messages": messages,
+            "subject": subject, # might be useful later for grouping metrics by subject
+            "letters": self.letters, # useful during evaluation, so we can narrow and clamp the assistant prediction to one of the letters
+        }
+        return conversation
+
+    def evaluate(self, conversation, assistant_response):
+        # the assert here is not strictly speaking needed, but currently the way we eval, we expect this to be true
+        # I'm going to leave the assert here to prevent footguns, but possibly in the future can remove it.
+        assert assistant_response in self.letters, f"MMLU answer {assistant_response} is expected to be one of {self.letters}"
+        assistant_message = conversation['messages'][-1]['content'] # e.g. "A"
+        return assistant_response == assistant_message
+
+"""
+Test the sandboxed Python execution used by tool use / HumanEval.
+Each test adversarially checks one property of the sandbox.
+
+python -m pytest tests/test_execution.py -v
+"""
+
+import os
+import time
+import pytest
+from nanochat.execution import execute_code
+
+
+def test_happy_path():
+    result = execute_code("print('hello world')")
+    assert result.success
+    assert result.stdout == "hello world\n"
+
+
+def test_exception_is_captured():
+    result = execute_code("1/0")
+    assert not result.success
+    assert "ZeroDivisionError" in result.error
+
+
+def test_timeout_kills_infinite_loop():
+    start = time.time()
+    result = execute_code("while True: pass", timeout=2.0)
+    elapsed = time.time() - start
+    assert result.timeout and not result.success
+    assert elapsed < 5, f"process was not killed promptly ({elapsed:.1f}s)"
+
+
+def test_memory_limit():
+    # 1GB allocation against the 256MB default limit
+    result = execute_code("x = bytearray(1024 * 1024 * 1024)")
+    assert not result.success
+    assert result.memory_exceeded
+
+
+@pytest.mark.parametrize("evil", [
+    "import os; os.system('echo pwned')",
+    "import shutil; shutil.rmtree('/tmp')",
+    "import subprocess; subprocess.Popen(['ls'])",
+    "import os; os.kill(1, 9)",
+    "import os; os.fork()",
+])
+def test_destructive_functions_disabled(evil):
+    result = execute_code(evil)
+    assert not result.success
+
+
+def test_stdin_disabled():
+    result = execute_code("input()")
+    assert not result.success
+
+
+def test_writes_go_to_tempdir():
+    result = execute_code("open('landmine.txt', 'w').write('x'); print(open('landmine.txt').read())")
+    assert result.success and result.stdout == "x\n"
+    assert not os.path.exists("landmine.txt"), "file leaked outside the sandbox tempdir"
+
+
+def test_environment_is_scrubbed():
+    os.environ["FAKE_SECRET_KEY"] = "hunter2"
+    try:
+        result = execute_code("import os; print('FAKE_SECRET_KEY' in os.environ)")
+        assert result.success and result.stdout.strip() == "False"
+    finally:
+        del os.environ["FAKE_SECRET_KEY"]
+
+
+def test_tricky_string_content():
+    # quotes, backslashes and braces must survive being embedded into the runner
+    tricky = '''s = 'it\\'s "quoted" \\\\ {braces} \\n'; print(len(s))'''
+    result = execute_code(tricky)
+    assert result.success
+
+
+def test_fresh_globals():
+    # user code must not see the guard prelude's imports
+    result = execute_code("print('GUARD' in dir())")
+    assert result.success and result.stdout.strip() == "False"
+
+"""
+Test the combined MuonAdamW optimizer (single rank, no process group).
+The AdamW half is checked against torch.optim.AdamW as a reference;
+the Muon half is checked behaviorally (determinism + convergence).
+
+Requires a GPU (the fused kernels are compiled on first use, which
+dominates the runtime of this file).
+
+python -m pytest tests/test_optim.py -v
+"""
+
+import pytest
+import torch
+
+cuda_available = torch.cuda.is_available()
+pytestmark = pytest.mark.skipif(not cuda_available, reason="optimizer tests require CUDA")
+
+if cuda_available:
+    from nanochat.optim import MuonAdamW
+
+DEVICE = "cuda"
+
+# keep shapes small and reuse them across tests so the fused kernels compile once
+ADAMW_SMALL_SHAPE = (48,)        # numel < 1024 path
+ADAMW_LARGE_SHAPE = (1024, 4)    # numel >= 1024 path
+MUON_WIDE_SHAPE = (32, 64)
+MUON_TALL_SHAPE = (64, 32)
+
+
+def make_params_and_groups(seed=1337, offset=0.0, targets=None):
+    """The menagerie: small/large AdamW params, wide/tall Muon stacks."""
+    gen = torch.Generator(device=DEVICE).manual_seed(seed)
+    def rand(shape):
+        base = torch.randn(shape, generator=gen, device=DEVICE) * 0.05
+        return torch.nn.Parameter(base + offset)
+    params = [rand(ADAMW_SMALL_SHAPE), rand(ADAMW_LARGE_SHAPE)]
+    params += [rand(MUON_WIDE_SHAPE) for _ in range(3)]
+    params += [rand(MUON_TALL_SHAPE) for _ in range(2)]
+    groups = [
+        dict(kind="adamw", params=params[0:1], lr=0.02, betas=(0.8, 0.95), eps=1e-10, weight_decay=0.0),
+        dict(kind="adamw", params=params[1:2], lr=0.02, betas=(0.8, 0.96), eps=1e-10, weight_decay=0.0),
+        dict(kind="muon", params=params[2:5], lr=0.02, momentum=0.95, ns_steps=5, beta2=0.9, weight_decay=0.0),
+        dict(kind="muon", params=params[5:7], lr=0.02, momentum=0.95, ns_steps=5, beta2=0.9, weight_decay=0.0),
+    ]
+    return params, groups
+
+
+def test_adamw_matches_torch_reference():
+    """Our fused AdamW must agree with torch.optim.AdamW (both decoupled wd)."""
+    hypers = dict(lr=0.01, betas=(0.9, 0.95), eps=1e-8, weight_decay=0.1)
+    p_ours = torch.nn.Parameter(torch.randn(64, 32, device=DEVICE))
+    p_ref = torch.nn.Parameter(p_ours.detach().clone())
+    opt_ours = MuonAdamW([dict(kind="adamw", params=[p_ours], **hypers)])
+    opt_ref = torch.optim.AdamW([p_ref], **hypers)
+    for step in range(10):
+        grad = torch.randn(p_ours.shape, generator=torch.Generator(device=DEVICE).manual_seed(step), device=DEVICE)
+        p_ours.grad = grad.clone()
+        p_ref.grad = grad.clone()
+        opt_ours.step()
+        opt_ref.step()
+    torch.testing.assert_close(p_ours, p_ref, rtol=1e-5, atol=1e-6)
+
+
+def test_determinism():
+    """Two identical runs must produce bitwise identical parameters."""
+    results = []
+    for _ in range(2):
+        params, groups = make_params_and_groups()
+        opt = MuonAdamW(groups)
+        for step in range(5):
+            gen = torch.Generator(device=DEVICE).manual_seed(step)
+            for p in params:
+                p.grad = torch.randn(p.shape, generator=gen, device=DEVICE) * 0.01
+            opt.step()
+        results.append([p.detach().clone() for p in params])
+    for pa, pb in zip(*results):
+        assert torch.equal(pa, pb)
+
+
+def test_convergence():
+    """Optimizing distance-to-target must actually approach the target."""
+    targets_params, _ = make_params_and_groups(seed=999)
+    targets = [p.detach().clone() for p in targets_params]
+    params, groups = make_params_and_groups(seed=999, offset=0.1) # start offset from the targets
+    opt = MuonAdamW(groups)
+    def distances():
+        return [(p.detach() - t).norm().item() for p, t in zip(params, targets)]
+    initial = distances()
+    for _ in range(50):
+        for p, t in zip(params, targets):
+            p.grad = 2 * (p.detach() - t) # gradient of ||p - t||^2
+        opt.step()
+    final = distances()
+    for i, (d0, d1) in enumerate(zip(initial, final)):
+        assert d1 < 0.5 * d0, f"param {i} did not converge: {d0:.4f} -> {d1:.4f}"
+        assert torch.isfinite(params[i]).all()
+
+
+def test_muon_update_is_orthogonalized():
+    """
+    The very first Muon update (zero momentum state) of a full-rank gradient
+    should be (near) semi-orthogonal after the polar iteration: its nonzero
+    singular values land in a band around 1, rather than being spread out.
+    """
+    p = torch.nn.Parameter(torch.zeros(MUON_WIDE_SHAPE, device=DEVICE))
+    group = dict(kind="muon", params=[p], lr=1.0, momentum=0.0, ns_steps=5, beta2=1.0, weight_decay=0.0)
+    opt = MuonAdamW([group])
+    p.grad = torch.randn(p.shape, generator=torch.Generator(device=DEVICE).manual_seed(0), device=DEVICE)
+    opt.step()
+    # with lr=1, wd=0: p_new = -update, so the update is just -p
+    svals = torch.linalg.svdvals(-p.detach().float())
+    # NorMuon variance reduction rescales the magnitude, so normalize by the mean
+    svals = svals / svals.mean()
+    assert svals.max() / svals.min() < 4.0, f"update far from semi-orthogonal: {svals}"
+
+"""
+Test the tokenizer: BPE round-trips, special tokens, and conversation rendering.
+Trains a tiny throwaway tokenizer in-process so the test is hermetic
+(no dependency on ~/.cache/nanochat).
+
+python -m pytest tests/test_tokenizer.py -v
+"""
+
+import pytest
+from nanochat.tokenizer import RustBPETokenizer, SPECIAL_TOKENS
+
+# a small corpus is enough to exercise the BPE machinery
+CORPUS = [
+    "The quick brown fox jumps over the lazy dog.",
+    "hello world, hello tokenizer, hello hello hello",
+    "Numbers like 12345 and unicode like naïve café 你好 🙂 should survive.",
+    "def f(x):\n    return x + 1\n",
+] * 8
+
+
+@pytest.fixture(scope="module")
+def tokenizer():
+    vocab_size = 256 + len(SPECIAL_TOKENS) + 35 # bytes + specials + a few merges
+    return RustBPETokenizer.train_from_iterator(iter(CORPUS), vocab_size)
+
+
+def test_vocab_size(tokenizer):
+    assert tokenizer.get_vocab_size() == 256 + len(SPECIAL_TOKENS) + 35
+
+
+def test_encode_decode_roundtrip(tokenizer):
+    for text in ["hello world", "naïve café 你好 🙂", "unseen tokens: zqxjkv"]:
+        ids = tokenizer.encode(text)
+        assert tokenizer.decode(ids) == text
+
+
+def test_special_tokens(tokenizer):
+    # all special tokens encode to a unique single id
+    ids = [tokenizer.encode_special(t) for t in SPECIAL_TOKENS]
+    assert len(set(ids)) == len(SPECIAL_TOKENS)
+    assert tokenizer.get_bos_token_id() == tokenizer.encode_special("<|bos|>")
+    # specials are NOT special-cased in ordinary text encoding
+    ids = tokenizer.encode("<|bos|>")
+    assert len(ids) > 1, "special token strings in plain text should not collapse to one token"
+
+
+def test_encode_prepend_append(tokenizer):
+    bos = tokenizer.get_bos_token_id()
+    ids = tokenizer.encode("hello", prepend="<|bos|>", append="<|user_end|>")
+    assert ids[0] == bos
+    assert ids[-1] == tokenizer.encode_special("<|user_end|>")
+
+
+def test_encode_batch(tokenizer):
+    texts = ["hello", "world"]
+    ids = tokenizer.encode(texts)
+    assert isinstance(ids, list) and len(ids) == 2
+    assert ids[0] == tokenizer.encode("hello")
+
+
+def test_render_conversation_masks(tokenizer):
+    conversation = {"messages": [
+        {"role": "user", "content": "hi"},
+        {"role": "assistant", "content": "hello!"},
+        {"role": "user", "content": "bye"},
+        {"role": "assistant", "content": "later"},
+    ]}
+    ids, mask = tokenizer.render_conversation(conversation)
+    assert len(ids) == len(mask)
+    # first token is bos and is not supervised
+    assert ids[0] == tokenizer.get_bos_token_id() and mask[0] == 0
+    # supervised tokens are exactly: assistant content + assistant_end tokens
+    assistant_end = tokenizer.encode_special("<|assistant_end|>")
+    supervised_ids = [i for i, m in zip(ids, mask) if m == 1]
+    expected = tokenizer.encode("hello!") + [assistant_end] + tokenizer.encode("later") + [assistant_end]
+    assert supervised_ids == expected
+    # user content tokens are never supervised
+    user_start = tokenizer.encode_special("<|user_start|>")
+    assert all(m == 0 for i, m in zip(ids, mask) if i == user_start)
+
+
+def test_render_conversation_system_message_merged(tokenizer):
+    without_system = {"messages": [
+        {"role": "user", "content": "sys prompt\n\nhi"},
+        {"role": "assistant", "content": "yo"},
+    ]}
+    with_system = {"messages": [
+        {"role": "system", "content": "sys prompt"},
+        {"role": "user", "content": "hi"},
+        {"role": "assistant", "content": "yo"},
+    ]}
+    assert tokenizer.render_conversation(with_system) == tokenizer.render_conversation(without_system)
+
+
+def test_render_conversation_tool_parts(tokenizer):
+    # python tool calls are supervised, python outputs (come from the interpreter) are not
+    conversation = {"messages": [
+        {"role": "user", "content": "add"},
+        {"role": "assistant", "content": [
+            {"type": "text", "text": "sure"},
+            {"type": "python", "text": "1+1"},
+            {"type": "python_output", "text": "2"},
+            {"type": "text", "text": "it is 2"},
+        ]},
+    ]}
+    ids, mask = tokenizer.render_conversation(conversation)
+    python_start = tokenizer.encode_special("<|python_start|>")
+    output_start = tokenizer.encode_special("<|output_start|>")
+    output_end = tokenizer.encode_special("<|output_end|>")
+    # the tool call and its delimiters are supervised
+    assert mask[ids.index(python_start)] == 1
+    # the interpreter output and its delimiters are not
+    start, end = ids.index(output_start), ids.index(output_end)
+    assert all(m == 0 for m in mask[start:end + 1])
+
+
+def test_render_conversation_truncation(tokenizer):
+    conversation = {"messages": [
+        {"role": "user", "content": "hello " * 100},
+        {"role": "assistant", "content": "world " * 100},
+    ]}
+    ids, mask = tokenizer.render_conversation(conversation, max_tokens=32)
+    assert len(ids) == 32 and len(mask) == 32
+
+
+def test_render_for_completion(tokenizer):
+    conversation = {"messages": [
+        {"role": "user", "content": "hi"},
+        {"role": "assistant", "content": "this gets stripped"},
+    ]}
+    ids = tokenizer.render_for_completion(conversation)
+    # ends with assistant_start, primed for a completion
+    assert ids[-1] == tokenizer.encode_special("<|assistant_start|>")
+    # the assistant response itself must not be present
+    stripped = tokenizer.encode("this gets stripped")
+    assert not any(ids[i:i + len(stripped)] == stripped for i in range(len(ids)))

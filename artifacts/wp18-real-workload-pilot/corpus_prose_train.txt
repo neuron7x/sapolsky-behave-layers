@@ -1,0 +1,3014 @@
+# Adaptive-Computation Admissibility Protocol — Specification v1.0
+
+**Status.** Normative specification. Keywords **MUST**, **MUST NOT**, **SHALL**,
+**SHOULD**, **MAY** are to be interpreted as in RFC 2119. Every normative clause is
+bound to a machine-checkable verifier; a conforming implementation **MUST** pass the
+conformance suite `experiments/common/admissibility_spec_conformance.py`
+(`make -f Makefile.cwc experiment-tests`). This document specifies *the decision
+procedure* for whether to deploy adaptive computation (the "Act J gate"); it does not
+specify a model architecture.
+
+---
+
+## 1. Scope
+
+This protocol decides, from a finite pilot, whether a context-adaptive controller can
+deliver positive net value over the best context-blind policy on a target workload, with
+a controlled false-positive rate. It formalises the information-market theory
+(`docs/INFORMATION_MARKET_SYNTHESIS.md`) into an executable contract.
+
+**In scope:** the admissibility decision and its error guarantee; the invariants any
+conforming value-computation implementation must satisfy.
+**Out of scope (non-goals):** an architecture; a claim that any specific system attains
+the certified value on real data (that is `CWC-L7-pareto: NOT_TESTED`); cloud-scale
+Pareto evaluation.
+
+## 2. Normative references
+
+`ADAPTIVE_COMPUTATION_VALUE_THEORY.md` (Thm 1–6), `VALUE_OF_INFORMATION_RATE_FUNCTION.md`
+(V*(R), β, Thm 4′–4‴), `IDENTIFIABILITY_INFERENCE.md` (the certificate),
+`MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md` (coherence, complexity), `NEURON_INFORMATION_BUDGET.md`
+(the physical floor). The reference implementation is `experiments/common/*.py`.
+
+## 3. Definitions and interface
+
+A conforming caller **MUST** provide:
+
+| symbol | meaning | constraint |
+|---|---|---|
+| `Û[c,a]` | pilot estimate of utility, mechanism `a` in context `c` | finite |
+| `p[c]` | context prior | `p ≥ 0`, `Σ p = 1` |
+| `K[a]` | compute cost of mechanism `a` | `K ≥ 0` |
+| `se` | per-cell standard error of the pilot mean | `se ≥ 0` |
+| `c_route` | route-decision cost (utility units) | `c_route ≥ 0`, `≥ k_B T` per nat physically |
+| `δ` | admissible false-positive rate | `δ ∈ (0,1)` |
+| `B` | compute budget (optional) | `B ≥ min_a K[a]` |
+
+Derived quantities (reference impl in parentheses): oracle gap `G` (`oracle_gap`),
+information ceiling `Δu√(I/2)` (`signal_value`), rate function `V*(R)` and price
+`β=dV*/dR` (`optimal_value_at_rate_ri`, `marginal_value_of_information`), lower
+confidence bound `G_lo` (`gap_lower_confidence_bound`).
+
+## 4. Invariants (a conforming value implementation MUST satisfy)
+
+* **INV-1 (non-negativity).** `G ≥ 0` for all inputs. *(Thm 1; `oracle_gap`.)*
+* **INV-2 (dominance ⇔ zero value).** `G = 0` **iff** a mechanism weakly dominates.
+  *(Thm 2.)*
+* **INV-3 (master envelope).** `V(Z) ≤ min{ G, Δu√(I(C;Z)/2) }`, so
+  `V_net ≤ min{G, Δu√(I/2)} − c_route`. *(Thm 6.)*
+* **INV-4 (rate-function sharpness).** `V*(R)` computed by the reference solver equals
+  the global optimum (concavity + revelation) and never exceeds the envelope; it
+  **MUST NOT** undershoot an independent lower bound. *(§4b; `falsify_rate_function`.)*
+* **INV-5 (certificate validity).** For sub-Gaussian pilot noise, `P(G ≥ G_lo) ≥ 1−δ`;
+  the empirical false-positive rate on a null **MUST** be `≤ δ`. *(`falsify_inference`.)*
+* **INV-6 (compute-axis non-negativity).** The constrained-oracle (adaptive) value is
+  `≥` the best context-blind value at matched compute, for any `|A|`.
+  *(`compute_matched_advantage.advantage ≥ 0`.)*
+* **INV-7 (programme coherence).** Every recorded empirical verdict equals the sign of
+  its certificate. *(`audit_ladder.coherent`.)*
+
+An implementation that fails any INV is **non-conforming** and its admissibility output
+is void.
+
+## 5. The admissibility procedure (normative)
+
+Given a conforming interface (§3), a conforming implementation **SHALL** execute:
+
+```
+1.  Validate inputs (§3); on violation → REJECT("malformed").         [MUST fail closed]
+2.  G_hat  := plugin_gap(Û, p)
+3.  G_lo   := gap_lower_confidence_bound(G_hat, se, |C|, |A|, δ)
+        (an implementation MAY use the tie-safeguarded adaptive bound where it is
+         valid; it MUST NOT report a bound with empirical FPR > δ on a null.)
+4.  IF G_lo ≤ 0:
+        RETURN NOT_IDENTIFIABLE
+            with n_star := sample_complexity(target_gap, σ, |C|, |A|, δ)   [collect more, or redesign for anti-dominance under budget]
+5.  IF G_lo > c_route:
+        RETURN ADMISSIBLE(spend)     with guarantee  P(false ADMISSIBLE) ≤ δ
+    ELSE:
+        RETURN INADMISSIBLE(route cost ≥ certified value)
+```
+
+A conforming implementation **MUST NOT** return `ADMISSIBLE` when `G_lo ≤ c_route`, and
+**MUST NOT** claim a false-positive rate below the one its certificate actually attains.
+
+## 6. Guarantees
+
+* **G1 (error control).** `P(RETURN ADMISSIBLE | true G ≤ c_route) ≤ δ`. Conservative by
+  construction (typically ≪ δ).
+* **G2 (decidability & cost).** The identifiability test is `Θ(|C||A|)` and optimal (§3
+  of `MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md`); the pilot size to certify a true gap is
+  `n* = ⌈(σK/G)²⌉` (`sample_complexity`).
+* **G3 (physical floor).** `c_route ≥ k_B T` per nat of information the route reads
+  (`utility_per_joule_ceiling`); an implementation **SHOULD** reject a `c_route` below
+  the Landauer floor as unphysical.
+
+## 7. Conformance
+
+A conforming implementation **SHALL** pass every check in
+`experiments/common/admissibility_spec_conformance.py::check_conformance`, which
+mechanically verifies INV-1…INV-7 against the reference verifiers and confirms the
+admissibility procedure (§5) obeys G1–G3 on a battery of nulls and alternatives. The
+suite is wired into `make -f Makefile.cwc experiment-tests`; a non-conforming build
+fails the gate.
+
+## 8. Limitations
+
+The certificate assumes sub-Gaussian pilot noise with a correctly-estimated `se`
+(misspecifying `se` voids G1). Heavy-tailed pilots require a robust mean (untested;
+`NEG-double-bootstrap` records that the double bootstrap does not help near ties). The
+protocol decides *whether to attempt* the cloud-scale Pareto step, not its outcome.
+
+## 9. Versioning
+
+This is v1.0. Breaking changes to any normative clause (§3–§7) **MUST** increment the
+major version; new invariants or tightened guarantees increment the minor version. The
+conformance suite version **MUST** track this document.
+
+# CWC Stanford-Grade Checklist — Status Audit
+
+Machine-readable: `CHECKLIST_STATUS.json`. Audited at HEAD `a5df831`+.
+
+## The four fundamental defects (critical summary) — all addressed locally
+| # | Defect | Status | Evidence |
+|---|---|---|---|
+| 1 | Controller trained on privileged counterfactual target | **ADDRESSED** | R3-C without it → collapses (`artifacts/wp2-routing-v3-r3c/`); claim narrowed |
+| 2 | Test capacity derived from task labels | **FIXED** | R3-C uses fixed pre-eval budget, label-free |
+| 3 | No physical compute saving (both paths run) | **FIXED** | `forward_sparse` + 5 tests (compute scales with K, gradient isolation) |
+| 4 | Surface shortcuts (format classifiable) | **CONFIRMED + FIXED** | leakage audit AUROC 1.0 = invalid; `surface_matched_task` → probes ~0.5 |
+
+## Gate status
+| Gate | Status | Note |
+|---|---|---|
+| G0 artifact integrity | PARTIAL | clean-release, RELEASE_MANIFEST, CITATION, claim_registry done; run make-release on release branch |
+| G1 software verification | PARTIAL | ruff/mypy/65 tests/containers/CI-6-suites done; container build + CI matrix need infra (GitHub suspended) |
+| G2 measurement validation | PARTIAL | physical dispatch + profiler cross-check done; latency/VRAM/reference-kernel remain; energy NOT_MEASURED |
+| G3 benchmark identifiability | PASS (caveat) | oracle gap 99.8%; leakage confirmed + matched task built; 3rd mechanism family remains |
+| G4 routing causality | PARTIAL | R-A/B/C separated; **R-C (autonomous) collapses** → SUPPORTED result is R-B only; better credit-assignment remains |
+| G5 statistical validity | PARTIAL | 8 seeds + bootstrap; independent corpora + power analysis remain |
+| G6 strong baselines | NOT_TESTED | MoD/MoE/recursive → **cloud-blocked** |
+| G7 generalization | NOT_TESTED | real workloads / multi-scale → **cloud-blocked** |
+| G8 Pareto + replication | NOT_TESTED | Pareto → cloud; replication → needs independent operator (not self-certifiable) |
+
+## Priority progress
+- **P0 (validity fixes): mostly done** — claim narrowed, NMI/AUROC fixed, physical dispatch, surface audit + matched task, CI complete, clean release, containers, claim registry, reproduce-primary. Remaining local: independent eval corpora.
+- **P1 (routing proof): not started** — Routing v3 on 3 mechanism families + real workloads + MoD/MoE + Pareto → cloud.
+- **P2 (cognitive mechanisms): partial** — plasticity core + oracle (NOT_IDENTIFIABLE unbudgeted; theory shows revival under cost budget); RCFR NOT_SUPPORTED; memory/structure not started.
+- **P3 (full core): not started.**
+
+## Honest bottom line
+Every fundamental validity defect the review named is now addressed in the
+codebase with tests. The measurement/identifiability/causality gates (G0–G5) are
+PASS/PARTIAL. The gates that would establish a *general* architectural claim
+(G6–G8: strong compute-matched baselines, real-workload generalization,
+compute-equivalent Pareto, independent replication) are NOT_TESTED and require
+cloud compute plus an independent operator — not achievable on this hardware.
+The highest-value next step is unchanged and now unobstructed by validity leaks:
+**Routing v3 at cloud scale** with all four fixes already in place.
+
+# CWC WP-1 Instrumentation — Reference-Quality Report
+
+Quality state of the `cwc/instrumentation` subsystem after the reference-grade
+hardening pass. Every number below was produced by running the tool on the
+exact-pinned environment (`.venv`, `torch==2.9.1+cu128`, Python 3.10.20), not
+asserted from memory. Reproduce with `make -f Makefile.cwc verify`.
+
+## Headline
+
+| Dimension | Result | Gate |
+|---|---|---|
+| Type safety | `mypy --strict` clean, 16 source files | `mypy.ini`, 0 errors |
+| Lint | `ruff` clean (E/F/I/UP/B/SIM/C4/PIE/RET/RUF) | `ruff.toml` |
+| Line+branch coverage | **99.46%** (13 of 15 modules at 100%) | floor 95% (`--cov-fail-under`) |
+| Mutation kill rate | **12/12 = 100%** over the mathematical cores | `scripts/mutation_probe.py` |
+| Behavioral tests | 209 tests (+ 12 mutants), 254 across the fork | all pass, pynvml-only skips |
+| Property-based tests | 25 invariants (Hypothesis) | `test_instrumentation_properties.py` |
+| Determinism | byte-identical deterministic layers | `test_instrumentation_determinism.py` |
+
+Source: 1,821 LOC across 15 modules. Tests: 2,382 LOC — a test:source ratio > 1.3.
+
+## What each gate actually proves
+
+**Type strictness.** `mypy --strict` over the whole package: no implicit `Any`,
+no untyped defs, no missing return types. The only untyped external surfaces
+(`torch.cuda.Event/record/elapsed_time`, `pynvml`) are optional-import-guarded
+and confined via scoped config, never blanket-`# type: ignore`'d.
+
+**Coverage.** 99.46% line+branch on the CUDA host (97% on a CPU-only runner,
+where the `@pytest.mark.cuda` tests skip). The residual is 2 lines + 4 partial
+branches, each documented: `energy.py:28` (`import pynvml` success flag —
+uncoverable without installing the optional pynvml), `energy.py:228->230` (a
+defensive facade fallthrough), and 3 `audit.py` profiler branches needing a
+specific torch-profiler op. None is a real logic gap.
+
+**Property-based testing.** 25 Hypothesis properties assert invariants over
+*all* inputs, not examples: 2-MAC FLOP identity and monotonicity,
+`causal ≤ noncausal`, `sliding ≤ full`, `window≥n ⟹ full`, `w=1 ⟹ diagonal`,
+percentile bounds/monotonicity/endpoint-exactness, bootstrap-CI
+ordering/range/constant-exactness, trapezoidal `P·T` identity and
+non-negativity, routing sum/min/max and histogram conservation, event-pool
+conservation.
+
+**Mutation testing** is the real proof the suite catches bugs. 12 curated,
+semantically-real defects injected into the mathematical cores; each must make
+the suite fail. It earned its keep: on first run it found **two genuinely weak
+tests** (percentile upper-index off-by-one, and a bootstrap two-sided-tail test
+that passed for the wrong reason) — both strengthened to exact-value
+assertions, taking the kill rate 10/12 → 12/12.
+
+**Determinism.** The deterministic reduction layers produce byte-identical
+output across repeated runs with identical inputs (FLOP ledger JSON, routing
+snapshot, seeded bootstrap CI, writer summary + SHA256SUMS, manifest
+deterministic fields). This is the property that makes an evidence bundle
+auditable.
+
+## Two real hazards found and fixed during hardening
+
+1. **Constant-input precision (Hypothesis).** The original `percentile` /
+   `bootstrap_ci` (duplicated across 3 scripts) lost a ULP on constant inputs
+   (`lo*(1-w)+hi*w` and `fmean`). Fixed by extracting a single canonical
+   `cwc/instrumentation/stats.py` that is constant-exact (endpoint short-circuit
+   + `statistics.mean`). DRY *and* correct.
+
+2. **Stale-`.pyc` mutation poisoning.** Mutating a source file and restoring it
+   within the same mtime-second let Python trust a stale mutated `.pyc` on the
+   next import — silently corrupting later results. Fixed: the probe runs its
+   inner pytest with `PYTHONDONTWRITEBYTECODE=1` and purges each mutated file's
+   bytecode in the restore `finally` block.
+
+## Scope and honesty
+
+This report covers *code and test quality* of the measurement layer. It does
+**not** re-open the WP-1 verdict: the overhead gate remains
+`BLOCKED_BY_MEASUREMENT_OVERHEAD` at the one model scale this 4 GiB GPU can run
+(see `docs/WP1_INSTRUMENTATION.md`), and `infer_bench.py` integration is still
+code-complete-but-not-runtime-verified (no trained checkpoint in this
+environment). Quality hardening does not change either of those honest limits —
+it makes the measurement instrument itself trustworthy, which is the
+precondition for any future claim built on it.
+
+## Reproduce
+
+```bash
+make -f Makefile.cwc install-dev     # ruff/mypy/hypothesis/coverage/mutmut into .venv
+make -f Makefile.cwc verify          # lint -> typecheck -> test -> coverage(95) -> mutation(100%)
+make -f Makefile.cwc determinism     # byte-identical-output gate
+make -f Makefile.cwc properties      # Hypothesis property suite
+```
+
+# CWC Semantic Contract — the name must not outrun the referent
+
+Status: NORMATIVE. This document governs how capability terms may be used in
+all CWC docs, code, commits, and claims. It applies the use/mention discipline
+already enforced elsewhere in this project's gates.
+
+## The semiotic state of "Cognitive Wiring Core" (2026-07-16)
+
+A sign has three vertices (Peirce / Ogden–Richards):
+
+| Vertex | CWC today |
+|---|---|
+| **Symbol** (the name) | "Cognitive Wiring Core" — exists in docs and repo names |
+| **Referent** (the thing) | an adaptive compute-control mechanism — **DOES NOT EXIST YET** |
+| **Interpretant** (what gives claims meaning) | the WP-1 instrumentation + evidence pipeline — **EXISTS, verified** |
+
+"CWC" is currently a *floating signifier*: a promise, not a denotation. What
+exists is the interpretant machinery — the apparatus that will make future
+claims about the referent *meaningful* (measurable, falsifiable, reproducible).
+Building the interpretant before the referent is the correct
+falsification-first order; the hazard is semantic inflation — using capability
+terms as if they already denote. This contract prevents that.
+
+## Rule
+
+A capability term below may be used in the **denoting** mode (as a thing that
+exists) only when its tier is `SUPPORTED`. Until then it may only be
+*mentioned* (quoted, planned, specified). Every claim that uses a term in
+denoting mode MUST cite the evidence artifact that moved it to `SUPPORTED`.
+
+Tier ladder (per term): `ABSENT → SPECIFIED → IMPLEMENTED → MEASURED → SUPPORTED`.
+A tier moves only forward via its gate; a failed falsification test moves it
+back and the failure artifact is committed (negative results are landed, not
+discarded).
+
+Every gate MUST include a positive control — a deliberately broken/ablated
+variant that the test provably rejects. A test that cannot fail is not a test.
+
+## Term registry
+
+All six terms below: tier = **ABSENT** (2026-07-16).
+
+### 1. `learnable router`
+- **Operational definition:** a module with trainable parameters whose per-token
+  routing decisions are updated by task-loss gradient (not a fixed heuristic).
+- **Measurement binding:** `cwc/instrumentation/routing.py` counters
+  (active_tokens/blocks/experts per step) + training manifest seed/config.
+- **Falsification criterion:** ablation — freeze the router at initialization
+  and retrain; if task metric of the frozen-router model is inside the
+  bootstrap CI of the trained-router model, the term is VOID (the routing is
+  decoration, not learning).
+
+### 2. `memory control`
+- **Operational definition:** a learned read/write policy over persistent state
+  that survives across contexts and measurably conditions computation.
+- **Measurement binding:** state-size and access counts via the event buffer;
+  determinism gate on state serialization.
+- **Falsification criterion:** memory-ablated (state zeroed each context) model
+  matches the full model within CI on the preregistered task suite → VOID.
+
+### 3. `dynamic depth`
+- **Operational definition:** per-token variable number of executed blocks,
+  decided at inference time by a learned criterion.
+- **Measurement binding:** per-token FLOPs via `cwc/instrumentation/flops.py`
+  ledger; depth histogram must be an evidence artifact.
+- **Falsification criterion:** depth distribution degenerate (variance ≈ 0 —
+  i.e., it always picks the same depth), OR measured FLOPs saving smaller than
+  the routing/measurement overhead → VOID.
+
+### 4. `structural plasticity`
+- **Operational definition:** topology edits (grow/prune connections or blocks)
+  driven by a utility signal during or between training phases.
+- **Measurement binding:** structure snapshots hashed into the manifest;
+  edit-log as evidence artifact.
+- **Falsification criterion:** structural edit-distance from initialization is
+  zero, OR random (utility-blind) edits of equal budget reach the same task
+  metric within CI → VOID.
+
+### 5. `task utility`
+- **Operational definition:** preregistered task suite, metric deltas vs the
+  unmodified nanochat baseline, seeds and configs frozen before the run.
+- **Measurement binding:** `bootstrap_ci` from `cwc/instrumentation/stats.py`;
+  evidence bundle with SHA256SUMS.
+- **Falsification criterion:** 95% bootstrap CI of the delta includes 0 → NOT
+  SUPPORTED (and that verdict is committed).
+
+### 6. `Pareto advantage`
+- **Operational definition:** on the (task metric, compute cost) plane — cost =
+  FLOPs and/or energy from the WP-1 meters — no baseline configuration
+  dominates the CWC configuration, and CWC dominates at least one baseline.
+- **Measurement binding:** FLOP ledger + energy meter + task-utility artifacts,
+  all from the same manifested runs.
+- **Falsification criterion:** any baseline point that dominates (≥ quality at
+  ≤ cost, one strict) → NOT SUPPORTED.
+
+## Naming consequences
+
+- Repo/docs may keep "CWC" as a *project* name (a proper noun for the
+  programme), but no README, report, or commit message may assert CWC as an
+  existing mechanism until ≥1 term above is SUPPORTED.
+- The honest current description is: "a verified measurement substrate for a
+  future adaptive compute controller" (see `CWC_QUALITY_REPORT.md`, scope
+  section).
+- Known open honesty items inherited from WP-1: overhead gate
+  `BLOCKED_BY_MEASUREMENT_OVERHEAD`; nanochat integration
+  code-complete-but-not-runtime-verified.
+
+# DCSA v2.0 — DEPENDABLE COGNITIVE–SEMANTIC ARCHITECTURE AUDITOR
+
+Status: NORMATIVE. Supersedes the v1 formal layer referenced by
+`DCSA_AUDIT_0001.md`. Provided by the project owner 2026-07-16; stored
+verbatim in substance. All future CWC audits MUST follow this protocol.
+
+## 0. Purpose
+
+The auditor determines **what is actually measured, what is merely estimated,
+what is untested, and which claims the data do not support**. Core principle:
+
+> Formal complexity is not evidence. Every equation must correspond to
+> available data, an implemented computation, and a falsifiable hypothesis.
+
+## 1. Role
+
+Principal Research Auditor in Representation Learning, Grounded Semantics and
+Adaptive Computation. Prohibited positioning: no institutional impersonation,
+no authority-as-evidence, no calling heuristic estimates mathematical proof.
+
+## 2. Epistemic contract — claim statuses
+
+```text
+VERIFIED     — directly computed or reproduced from provided data;
+SUPPORTED    — supported by several concordant measurements;
+ESTIMATED    — obtained via an explicitly stated model/approximation;
+HYPOTHESIS   — falsifiable assumption, not yet tested;
+NOT_TESTED   — required data or experiments absent;
+INVALID      — method, formula, or conclusion does not match the data;
+BLOCKED      — verification impossible due to a specific constraint.
+```
+
+Never: invent numeric values; use unfabricated placeholders without
+`ILLUSTRATIVE`; report `VERIFIED` without executed code/data; equate test
+coverage with scientific-hypothesis correctness; equate representation
+correlation with causal grounding; claim Pareto dominance without
+compute-equivalent baselines and confidence intervals.
+
+## 3. Input contract & Data Sufficiency Gate
+
+Admissible inputs: SYSTEM_SPEC, SOURCE_CODE, EXECUTION_TRACE, MODEL_ARTIFACTS,
+DATASET_SPEC, BASELINES, EXPERIMENT_PROTOCOL. Before any analysis emit:
+
+```text
+AVAILABLE: / MISSING: / DERIVABLE: / NOT_DERIVABLE:
+```
+
+Without activations/embeddings/traces: NO representation geometry, FIM,
+curvature, cluster structure, or semantic invariance. Without matched
+baselines: NO architectural-advantage conclusions. Without physical energy
+telemetry: `ENERGY_STATUS = NOT_MEASURED`. TDP is not an energy measurement.
+
+## 4. Operational formalization
+
+System: z_{t+1} = F_θ(z_t, x_t, a_t; B_t). Adaptive architecture:
+G_t = Π_θ(x_t, M_t, S_t, B_t); (y_t, M_{t+1}) = Exec(G_t, x_t, M_t);
+S_{t+1} = Φ(S_t, ΔU_t, ρ_t, B_t). Do NOT assume Π_θ, M_t, Φ are useful —
+their contribution must be isolated by ablations.
+
+**Operational semantics (grounding)** = three joint conditions:
+1. **Invariance** — representation stable under meaning-preserving transforms;
+2. **Sensitivity** — representation changes when a causally/functionally
+   significant property changes;
+3. **Action relevance** — representation improves prediction/decision/action
+   on an external outcome.
+Invariance alone is NOT grounding.
+
+Category-theoretic language is permitted ONLY with explicitly defined objects,
+morphisms, composition, identities, a concrete functor, and an observable
+structure-preservation condition. Otherwise the words `category` / `functor` /
+`natural transformation` are prohibited as evidence.
+
+## 5. Compulsory audit pipeline
+
+**STAGE 0 — Evidence & provenance:** exact commit, dirty state, dependency
+lock, model config, dataset snapshot, seed, hardware, precision, compile
+state, execution command, checksums, baseline equivalence. Output:
+REPRODUCIBILITY_STATUS / ENVIRONMENT_MATCH / ARTIFACT_INTEGRITY /
+CLAIMABLE_RUN / BLOCKING_REASONS. Incomplete provenance ⇒ downgrade all
+results to at most `ESTIMATED`.
+
+**STAGE 1 — Computational graph & routing:** G=(V,E) of *executed* modules;
+active nodes/edges, path length, density, active params, token depth,
+expert-token assignments, controller overhead. Routing distribution:
+H_i = −Σ_j p_ij log(p_ij+ε), report normalized H_i/log K. Mandatory metrics:
+per-module utilization, normalized entropy, Gini, dead-module fraction,
+overload fraction, dropped-token rate, padding waste, routing stability
+across seeds, controller FLOPs & latency. Collapse criteria only via
+**preregistered** thresholds (τ_dead, τ_entropy, τ_imbalance) — never chosen
+after seeing results.
+
+**STAGE 2 — Representation geometry:** with activations: CKA, RSA, effective
+rank exp(−Σ λ̃ᵢ log λ̃ᵢ), participation ratio, local intrinsic dimension,
+neighborhood preservation, linear probing, class-conditional separation,
+layerwise drift. Full Riemann curvature ONLY with: defined metric tensor,
+justified manifold assumption, sufficient local sample density, estimator
+validated on synthetic controls, reported uncertainty — else
+`RIEMANN_CURVATURE = INVALID_REQUEST`; use kNN-graph curvature, LID, Hessian
+spectrum, turning angles, geodesic approximations instead. Empirical Fisher
+F̂ = (1/N) Σ gₙgₙᵀ only with gradient access; never call it the full FIM;
+report the approximation type (diagonal/block/trace/top-eig/Hutchinson).
+
+**STAGE 3 — Semantic invariance & grounding:** build disjoint transform sets
+`T_same` (paraphrase, synonymy, role-preserving reorder, formatting,
+equivalent refactor, visual nuisance) and `T_change` (negation, role swap,
+causal intervention, label-changing substitution, unit/magnitude change, goal
+change), each with an oracle or verified annotation.
+Inv = 1 − E[d(z(x),z(f(x)))]/(E[d(z(x),z(x'))]+ε);
+Sens = E[d(z(x),z(g(x)))]/(E[d(z(x),z(x'))]+ε);
+GCS = harmonic_mean(Inv, Sens, ActionRel) — aggregate WITHOUT components is
+prohibited. Commutativity operationally: d(G(f(x)), g(G(x))) ≤ ε with f, g,
+paired samples, preregistered ε, and uncertainty — else no functorial claims.
+
+**STAGE 4 — Causal & adversarial:** δ ∈ Δ_valid with explicit edit/perceptual
+distance, label preservation, syntactic constraints, causal-variable
+invariance, oracle. Objective: max_{δ∈Δ_valid} D_KL[p_θ(y|x) ‖ p_θ(y|x+δ)];
+deterministic systems: output distance / action disagreement / failure
+probability / task-loss increase. Counterfactual controls per shift:
+semantics-preserving, semantics-changing, random same-size, matched-frequency,
+no-perturbation. A failure is *semantic* only if the system is unstable to
+T_same AND under-sensitive to T_change AND the task/action outcome is affected.
+
+**STAGE 5 — Compute-equivalent ablation:** mandatory baselines
+B0 dense-static, B1 random router, B2 frozen heuristic router, B3 learned
+router, B4 fixed-depth compute-matched, B5 static MoE (if experts). Training
+parity: dataset snapshot, tokenizer, total tokens, optimizer, LR schedule,
+batch semantics, precision, seq length, checkpoint selection, total train
+FLOPs, seeds, hardware class; |C_A−C_B|/max(C_A,C_B) ≤ τ_C, default
+τ_C = 0.01 — otherwise the phrase `compute-equivalent` is forbidden.
+Inference parity: same GPU, serving stack, batch, lengths, precision, compile
+state, KV-cache policy, warm-up, window. Report: quality, logical FLOPs,
+executed-estimate FLOPs, peak allocated/reserved VRAM, p50/p95/p99 latency,
+throughput, joules/request, joules/token, controller overhead, transfer,
+adaptation cost. Statistics: ≥3 seeds exploration, ≥5 final claim, paired
+evaluation, bootstrap 95% CI, hierarchical aggregation, multiple-comparison
+correction, effect size, raw per-seed values. Pareto claim ONLY if: no primary
+objective worse; ≥1 primary statistically better; compute parity holds;
+replicates across seeds; random AND frozen controls lose to the learned
+controller; no hidden resource transfer between metrics.
+
+## 6. Claim levels
+
+```text
+L0 SPECIFICATION          — formal design exists. "Formalized", NOT "more efficient".
+L1 EXECUTABLE CONTRACT    — code runs, tests pass. "Reference implementation works",
+                            NOT "hypothesis confirmed".
+L2 MEASUREMENT VALIDITY   — instrumentation qualified, overhead & errors measured.
+                            "Metrics fit for comparison".
+L3 COMPONENT CAUSALITY    — learned component beats random/frozen/removed controls.
+                            "Component has measurable contribution".
+L4 PARETO EVIDENCE        — compute-equivalent multi-seed Pareto shift.
+L5 GENERALIZATION         — transfers across datasets, scales, hardware.
+L6 INDEPENDENT REPLICATION — replicated without private code or author involvement.
+```
+
+## 7. Strict output format
+
+See `DCSA_AUDIT_0002.md` for the canonical instantiation: sections
+0 EXECUTIVE VERDICT, 1 SYSTEM AND EVIDENCE METADATA, 2 CLAIM–EVIDENCE MATRIX,
+3 COMPUTATIONAL GRAPH AND ROUTING, 4 REPRESENTATION GEOMETRY, 5 SEMANTIC
+INVARIANCE AND GROUNDING, 6 ADVERSARIAL AND CAUSAL FAILURES, 7 COMPUTE-
+EQUIVALENT BASELINES, 8 FALSIFICATION OUTCOME, 9 FINAL CLAIM BOUNDARY,
+10 NEXT DECISIVE EXPERIMENT. Every numeric value carries: value, unit, sample
+size, seed count, uncertainty, measurement method, status.
+
+## 8. CWC-specific audit mode
+
+```text
+WP-0 fixed baseline; WP-1 measurement qualification; WP-2 learned routing;
+WP-3 sparse experts; WP-4 adaptive depth; WP-5 memory; WP-6 structural
+state S_t; WP-7 joint closed-loop controller.
+```
+
+No joint-controller claim until separately passed: routing vs random; routing
+vs frozen; fixed vs adaptive depth; memory on/off; topology frozen vs plastic;
+hard constraint vs soft penalty; controller overhead; compute parity.
+
+Central hypothesis H_CWC: JointControl(G_t, M_t, S_t, B_t) yields a better
+quality–resource trade-off set than independent or static mechanisms.
+Supported ONLY if the joint controller: (1) beats the best single-axis
+adaptive baseline; (2) does not covertly transfer cost between FLOPs, latency,
+VRAM, energy; (3) is stable across seeds; (4) passes negative controls;
+(5) transfers to at least a second workload; (6) has an independently
+reproducible evidence bundle.
+
+## 9. Prohibited pseudo-formalism (auto-INVALID)
+
+"Latent space is a Riemannian manifold" without a manifold-assumption test;
+"meaning is a functor" without defined categories/mappings; "RSI≈1 proves
+semantics"; "mutual information" without estimator/bias/sample size;
+"semantic entropy" without a defined random variable; "grounding ratio"
+without an operational target; "Fisher metric" without gradients and stated
+approximation; "causal" without intervention or identification; "Pareto"
+without the full objective set; "compute-equivalent" without FLOP parity;
+"energy efficient" from TDP; "solved stability–plasticity" without a
+longitudinal adaptation experiment.
+
+## 10. Operation commands
+
+`AUDIT_ARCHITECTURE(system_spec, source_code, traces, checkpoints, datasets,
+baselines, protocol)`; `AUDIT_REPRESENTATIONS(activations, labels,
+same_meaning_transforms, meaning_changing_transforms, outcome_data)`;
+`GENERATE_CONTROLS(candidate_config, compute_budget, hardware, dataset,
+seed_count)`; `TEST_PARETO_CLAIM(candidate_runs, baseline_runs,
+primary_objectives, equivalence_tolerance=0.01, confidence=0.95)` →
+{PARETO_SUPPORTED, PARETO_NOT_SUPPORTED, COMPUTE_MISMATCH,
+INSUFFICIENT_SEEDS, METRIC_INVALID}; `FALSIFY_CLAIM(claim,
+minimum_counterexample, negative_controls, stopping_rule)`.
+
+## 11. Final behavioral directive
+
+Priority: data sufficiency → provenance → operational definitions → causal
+controls → statistical validity → resource parity → theoretical
+interpretation. Insufficient data → `NOT_TESTED`. Method/data mismatch →
+`INVALID`. Strong untested hypothesis → `HYPOTHESIS`. Actually reproduced →
+`VERIFIED`. The goal is not to confirm the architecture but to create the
+conditions under which it can be honestly confirmed or refuted.
+
+# A Theory of Adaptive-Mechanism Identifiability
+
+Status: research note, verified numerically by `scripts/identifiability_theory.py`
+against the four CWC experiments (routing v1/v2, RCFR, plasticity).
+Motivation: three preregistered oracle-gap gates collapsed to ~0 (routing v1,
+RCFR, plasticity) while one succeeded (routing v2). This note derives the exact
+condition that separates them, and turns it into a cheap pre-check before any
+cloud-scale Pareto run (Act J).
+
+## 1. Object
+
+An adaptive controller chooses, per **context** `c ∈ C`, a **mechanism**
+`a ∈ A` (a route, a parameter group, an expert, an adapter). Let `U[c,a]` be the
+utility (quality, or quality minus a resource penalty). Contexts occur with
+weights `p_c`. Define
+
+- oracle value  `V_oracle = Σ_c p_c · max_a U[c,a]`  (choose per context),
+- best-fixed value `V_fixed = max_a Σ_c p_c · U[c,a]`  (one choice for all),
+- **oracle gap** `G = V_oracle − V_fixed ≥ 0`.
+
+`G` is exactly the *value of adaptivity*: how much a context-aware controller can
+beat the best context-blind policy. A benchmark is **identifiable** iff `G > 0`
+with statistical support — otherwise a learned controller cannot beat a constant
+and must not be trained (the CWC gate discipline).
+
+## 2. Exact decomposition theorem
+
+Write the two-way ANOVA of `U` (weights `p` over contexts, uniform over choices):
+`U[c,a] = μ + α_c + β_a + γ[c,a]`, with `α` the context main effect, `β` the
+choice main effect, `γ` the **interaction** (`Σ_a γ[c,a]=0`, `Σ_c p_c γ[c,a]=0`).
+
+Because `Σ_c p_c γ[c,a] = 0`, we get `V_fixed = μ + max_a β_a`, and
+
+> **Theorem.** `G = 𝔼_c[ max_a ( β_a + γ[c,a] ) ] − max_a β_a`.
+
+Proof: `V_oracle = μ + 𝔼_c α_c + 𝔼_c[max_a(β_a+γ[c,a])] = μ + 𝔼_c[max_a(β_a+γ[c,a])]`
+since `𝔼_c α_c = 0`; subtract `V_fixed = μ + max_a β_a`. ∎
+(Verified: the formula reproduces `G` to machine precision on all datasets.)
+
+**Corollary 1 (interaction drives everything).** If `γ ≡ 0` then `G = 0`.
+The value of adaptivity is *entirely* the context×choice interaction; main
+effects `β` never create a gap.
+
+**Corollary 2 (weak dominance kills the gap).** If some `a*` is *weakly optimal
+in every context* — `β_{a*}+γ[c,a*] ≥ β_a+γ[c,a] ∀c,a` — then `G = 0`, no matter
+how large `γ` is. A single always-best mechanism makes adaptivity worthless.
+
+## 3. The two collapse regimes (what actually happened)
+
+| Experiment | `G` | Why | Regime |
+|---|---:|---|---|
+| routing v2 (quality only) | 0.000 | semantic path solves EASY *and* HARD → weakly dominant | **quality dominance** |
+| RCFR | 0.000 | DISeL-with-role matches RCFR everywhere → weak dominance | quality dominance |
+| plasticity (λ=0) | 0.0001 | attention has the largest `β` and is never overtaken (`γ_RMS/β_spread = 0.41`) | **main-effect dominance** |
+| routing v1/v1.1 | ≈0 | any block solved every subtask | quality dominance |
+
+Every collapse is a **weakly-dominant mechanism** (Corollary 2): the most
+expressive / most capable choice is ≥ all others across contexts, so a constant
+policy ties the oracle. This is generic at small scale — expressive mechanisms
+subsume weaker ones through the residual stream.
+
+## 4. The central correction: identifiability is a CONSTRAINED property
+
+Quality alone almost always has a dominant choice (the biggest mechanism wins).
+Adaptivity acquires value only when a **cost** forbids using the dominant choice
+everywhere. Give each mechanism a cost `K[a]`; impose a budget (a fraction `κ`
+of contexts may use an expensive mechanism, or penalize with a Lagrangian `λ`):
+
+> **Identifiability condition.** `G > 0` iff, at the operating budget, no
+> mechanism weakly dominates the cost-adjusted utility — equivalently, iff
+> `argmax_a ( Q[c,a] − λ·K[a] )` **varies with `c`** at the `λ` implied by the
+> budget.
+
+Routing v2 confirms this exactly. On quality the gap is 0 (semantic dominates);
+under a 50% compute budget (`scripts/identifiability_theory.py`):
+
+```
+V_oracle = 1.000   (HARD→semantic, EASY→direct)
+V_fixed  = 0.751   (best context-blind κ-allocation)
+G        = 0.249   ← identifiable; this is the source of the empirical 99.8% CE gap
+```
+
+**The budget, not the quality difference, is what made routing identifiable.**
+
+## 5. The theory self-corrects the plasticity verdict
+
+The plasticity oracle-gap test measured `G` at `λ=0` (each group evaluated
+independently, no cost in the oracle objective) → 0.0001 → `NOT_IDENTIFIABLE`.
+But a budgeted controller is the entire premise of the AMG (cost §7.9). Adding
+the real parameter cost `K` (head 512, attn 4096, mlp 8192 params) and sweeping
+`λ`:
+
+| `λ` (cost weight) | `G` | oracle allocation |
+|---:|---:|---|
+| 0.0 | 0.000 | (attention ties everywhere) |
+| 0.5 | 0.109 | lexical→**head** (cheap, sufficient), relational→**attn** |
+| 1.0 | **0.191** | lexical→head, relational→attn |
+| 2.0 | 0.000 | over-penalized → head dominates |
+
+At `λ∈[0.5,1.0]` the cost-aware oracle spends the **cheap** `head` group on
+lexical (which head can solve) and reserves the **expensive** `attn` only for
+relational (structurally necessary), beating every fixed group. The gap peaks at
+`G ≈ 0.19`, **identical across all 5 seeds** (min 0.190, variance ≈ 0).
+
+> **Result.** The plasticity benchmark *is* identifiable once update cost enters
+> the oracle objective — which is exactly what a *budgeted* metaplasticity
+> governor is for. The earlier `NOT_IDENTIFIABLE` was an artifact of an
+> unbudgeted oracle test.
+
+**Epistemic status: EXPLORATORY.** `λ` was chosen after seeing the data. This
+generates a *preregisterable* hypothesis — "under a parameter-cost objective
+with `λ≈1`, a governor that picks the cheapest-sufficient plasticity locus per
+task beats any fixed locus" — which must be confirmed by a fresh run with a
+cost-aware oracle and `λ` frozen before execution. The robustness (zero seed
+variance) makes it a strong candidate, not a confirmed claim.
+
+## 6. A cheap identifiability predictor (before spending cloud compute)
+
+For any adaptive mechanism (routing, experts, plasticity, memory), before an
+expensive confirmatory or cloud-scale run:
+
+1. On a small pilot, estimate the utility matrix `Q[c,a]` and cost `K[a]` over a
+   handful of contexts and mechanisms.
+2. Pick the operating budget `λ` (or `κ`) from the intended deployment.
+3. Compute `argmax_a(Q[c,a] − λK[a])` per context. If it is **constant** across
+   contexts → **not identifiable at this budget** → do not train a controller,
+   do not spend cloud compute. Redesign until the constrained argmax varies.
+4. If it varies, estimate the constrained gap `G` and its seed CI; proceed only
+   if the lower CI > 0.
+
+This is O(|C|·|A|) arithmetic on a pilot — the identifiability of Act J can be
+predicted for a few dollars of pilot compute instead of discovered after a full
+cloud run.
+
+## 7. Design principle for identifiable benchmarks
+
+To make any adaptive mechanism identifiable, engineer **anti-dominance under
+budget**: the mechanisms must be *Pareto-incomparable across contexts at the
+operating cost* — each mechanism the constrained optimum for some context and
+suboptimal for others. Concretely: a **competence–cost spread** where cheap
+mechanisms suffice for easy contexts and expensive mechanisms are *necessary*
+(not merely better) for hard ones. The positive control `U=[[1,0],[0,1]]` (each
+choice best in exactly one context) gives the maximal gap `G=0.5`.
+
+The two failure modes to avoid: (a) one mechanism strong enough to win every
+context on quality (kill it with a binding budget); (b) a cost so high one cheap
+mechanism wins everything (`λ=2` above — over-penalized).
+
+## 8. Consequences for CWC direction
+
+1. The three "failed" negatives were not evidence that adaptive mechanisms are
+   worthless — they were evidence that **unbudgeted** small-scale benchmarks are
+   non-identifiable by construction (Corollary 2). The routing-v2 success and the
+   plasticity revival both come from a binding cost.
+2. Act J (compute-equivalent Pareto vs MoD/MoE) is exactly a *budgeted* test, so
+   it is the right frame — but run the §6 predictor on a pilot first: confirm the
+   constrained argmax varies before committing cloud compute.
+3. The plasticity direction is worth a fresh, cost-aware, preregistered oracle
+   run — the math says the value is there once cost is in the objective.
+
+## 9. Route-decision cost — a necessary discount on the oracle gap
+
+Sections 1–8 treat the oracle gap `G` as the value of adaptive control. That is an
+*upper bound*: it assumes the controller can identify the right choice for free. A
+learned controller must actually *compute* which mechanism a context needs, at some
+cost `c_route`. The realized value is therefore
+
+```
+V_realized = G − c_route.
+```
+
+Two empirical anchors (`artifacts/wp2-routing-v3-*`, 8 seeds each) pin the extremes:
+
+- **`c_route ≈ 0` (surface-leaky benchmark).** On the S-R-O task, difficulty
+  correlates with cheap surface features (length, histogram; leakage_probe AUROC=1.0).
+  A REINFORCE controller with objective `L = L_task + λ·C_use` recovers oracle-level
+  routing (AUROC 1.0, learned loss 0.009 vs random 0.48) — but **only at λ ≥ 1**
+  (a binding budget), confirming §6: at λ ≤ 0.5 the quality-dominant mechanism wins
+  everywhere and the route inverts. Crucially, this also shows the earlier
+  straight-through *collapse* was an **optimization artifact**, not an absence of
+  signal — the identifiability was real, the estimator was too weak.
+
+- **`c_route ≈ c_expensive` (surface-matched benchmark).** When EASY/HARD are matched
+  in length, first token, and token histogram, and differ only in a structural
+  property (distance between the two occurrences of a duplicated value), no controller
+  — neither a cheap mean-pool MLP nor an O(L²) self-attention controller — routes
+  above chance (AUROC ~0.51, no loss saving), **even trained by direct supervision on
+  the route label**. The difficulty signal is not cheaply computable: deciding the
+  route requires ~the same search the expensive mechanism performs, so `V_realized ≈ 0`
+  despite a large `G`.
+
+**Consequence.** A positive oracle gap (§1–8) is necessary but not sufficient for a
+usable adaptive architecture. Before any compute-equivalent Pareto claim (Act J), the
+gap must be discounted by the *learned* route-decision cost on the target workload.
+The decisive question for real workloads is not merely "does difficulty vary?" but
+"is difficulty **cheaply predictable** from the input?" — an empirical property to
+measure with a cheap-probe-vs-oracle-probe gap before spending cloud compute.
+
+The intuition has a formal necessary condition. For utility range `Δu` and
+router-visible signal `Z`, signal value is at most `Δu·sqrt(I(C;Z)/2)` when
+information is measured in nats. If this upper bound does not exceed route cost,
+positive net adaptation is impossible. The proof, assumptions, limitations, and
+executable finite-case verifier are in `docs/ROUTABILITY_INFORMATION_BOUND.md`.
+
+### 9.1 Paid stopping information on the exact-hop substrate
+
+WP4 v4 makes the information charge operational: one successor lookup both advances a
+nonterminal state and reveals a self-loop, and the terminal observation is billed. At
+the same frozen number of lookups, adaptive active-set allocation beats input-blind
+allocation in all seven synthetic distributions (mean paired solved lift 0.042–0.169;
+16 untouched seeds). This refutes the narrow hypothesis that paying the exact halt
+lookup necessarily erases the allocation gain. It does not price a learned predictor,
+controller arithmetic, memory traffic, or physical execution, so it is not evidence
+that `c_route` is small on real inputs.
+
+# The Information Budget of a Neuron — a Verified Biophysical Model
+
+**Status.** Biophysical model, order-of-magnitude. Every number below is produced
+by `experiments/common/neuron_information_budget.py`, propagated with uncertainty
+over cited literature ranges, and adversarially falsification-tested by
+`experiments/common/tests/test_neuron_information_budget.py` (physical laws,
+consistency oracles, non-linear scaling, literature-band positive controls). This
+is a *model that assembles measured constants and enforces the laws that relate
+them* — not a new measurement and not an empirical CWC claim; it adds no entry to
+`claim_registry.json`.
+
+**Question (as posed).** Estimate (i) the information throughput of a single
+biological neuron in bits/second, (ii) the energy cost of a bit, and (iii)
+extrapolate both to networks of varying scale **without assuming linearity**.
+
+**One-line answer.** A cortical spiking neuron carries **≈10 bits/s** (fast sensory
+neurons up to ~150–300 bits/s) at **≈2×10⁻¹⁰ W**, i.e. **≈2×10⁻¹¹ J/bit ≈ 2×10⁸
+ATP/bit** — about **10⁹–10¹⁰ times the Landauer floor**. Scaled to networks,
+information **saturates** while energy grows **super-linearly**, so bits-per-joule
+**declines with size**: information is not free, and it is progressively less free
+at scale.
+
+---
+
+## 0. Why this belongs in CWC (the fractal link)
+
+The CWC value theory (`docs/ADAPTIVE_COMPUTATION_VALUE_THEORY.md`) proves that
+adaptive computation pays only when the *value* of a routing decision exceeds its
+*cost*: `V_net ≤ min{G, Δu·√(I(C;Z)/2)} − c_route`. That theory is about bits and
+abstract cost. This note supplies the **physical substrate constants** underneath
+it — for the biological system CWC is modelled on (`sapolsky-behave-layers`):
+
+* the neuron's **bits/spike** is the channel capacity `I(C;Z)` of one decision;
+* **`e_bit`** (J/bit) is the physical price of the route-decision cost `c_route`;
+* the Landauer floor `k_B T ln2` is the *hardest possible* lower bound on `c_route`;
+* the network **efficiency decline** is *why* a controller must spend information
+  selectively — the biophysical root of the route-decision-cost discount.
+
+The same inequality — value must beat cost — recurs at the scale of one ion channel
+and at the scale of a cortex. That self-similarity is the point.
+
+---
+
+## 1. Model of single-neuron throughput
+
+A spiking neuron's information rate is the product of its firing rate and the
+information each spike carries:
+
+```
+R = r · b        [bits/s],   r = firing rate [Hz],   b = bits/spike.
+```
+
+**Anchors (with ranges).**
+
+| Quantity | low | mid | high | Source |
+|---|---:|---:|---:|---|
+| firing rate `r` [Hz] | 1 | 4 | 10 | Attwell & Laughlin 2001 (4 Hz budget); cortical 1–10 |
+| bits/spike `b` | 1 | 2 | 3 | Strong et al. 1998; Rieke et al. 1997; Borst & Theunissen 1999 |
+| sensory `R` [bits/s] | 10 | 64 | 300 | Strong et al. 1998 (fly H1 up to ~90, within 2× of the spike-train entropy limit) |
+
+**Result (Monte-Carlo over the ranges):** cortical `R ≈ 10 bits/s`
+(p05–p95 ≈ 2.6–23), sensory `R ≈ 150 bits/s` (p05–p95 ≈ 24–285). The two regimes
+are reported separately because they differ by an order of magnitude — collapsing
+them into one number would be dishonest.
+
+---
+
+## 2. Model of the energy cost of a bit
+
+`e_bit = P / R`, where `P` is per-neuron power. `P` is estimated by **three
+independent routes** that must agree — the model's internal falsification:
+
+* **Top-down:** `P = P_brain / N = 20 W / 8.6×10¹⁰ ≈ 2.3×10⁻¹⁰ W`
+  (brain 12–20 W; N ≈ 86×10⁹ — Herculano-Houzel 2009).
+* **Bottom-up:** `P = (ATP/s)·ΔG_ATP = 3.29×10⁹ · 9.1×10⁻²⁰ ≈ 3.0×10⁻¹⁰ W`
+  (per-neuron ATP turnover at 4 Hz — Attwell & Laughlin 2001; ΔG_ATP ≈ 50–62 kJ/mol
+  ≈ 20 k_B T — Sterling & Laughlin 2015).
+* **Per-spike:** ion pumping after each action potential (~2×10⁸–2×10⁹ ATP/AP;
+  Attwell & Laughlin 2001, updated by Howarth, Gleeson & Attwell 2012).
+
+The top-down and bottom-up estimates land within **~15% at the medians** and within
+a factor of **~3.4 across the entire anchor space** (analytic worst case
+`max bottom-up / min top-down`). Two independent methods agreeing to a factor of a
+few is the evidence that the budget is real, not an artefact of one calculation.
+
+**Result:** `P ≈ 2.2×10⁻¹⁰ W`, `e_bit ≈ 2.2×10⁻¹¹ J/bit ≈ 2.4×10⁸ ATP/bit`
+(p05–p95 ≈ 1×10⁸–9×10⁸). This sits above Laughlin et al.'s ~10⁴ ATP/bit for
+*per-synapse graded* signalling — as expected, because it prices the *whole
+spiking neuron* including maintenance, not a single efficient analog synapse.
+
+**Landauer comparison.** The floor is `k_B T ln2 = 2.97×10⁻²¹ J/bit` at 310 K.
+The biological bit costs `e_bit / (k_B T ln2) ≈ 7×10⁹` floors (p05–p95 ≈
+3×10⁹–3×10¹⁰) — quantitatively confirming Laughlin's "orders of magnitude above the
+thermodynamic minimum". The gap is the price of reliability, speed, and
+noise-immunity in a warm, wet, irreversible medium.
+
+---
+
+## 3. Non-linear extrapolation to networks
+
+Linearity is explicitly rejected on **both** axes.
+
+**Information saturates (redundancy).** With homogeneous pairwise noise correlation
+`ρ`, the population information about a stimulus is
+`I_N = I_1 · N / (1 + (N−1)ρ)` (linear-Fisher form; Zohary, Shadlen & Newsome 1994;
+Sompolinsky et al. 2001; Averbeck, Latham & Pouget 2006). It has an **exact
+ceiling** `I_∞ = I_1/ρ`: correlated noise caps the information no matter how many
+neurons are added. Only at `ρ = 0` does it reduce to the naive linear `N·I_1`.
+
+**Energy grows super-linearly (wiring).** `E_N = (1−f)·P_1·N + f·P_1·N^α`, with `f`
+the communication/wiring fraction (~0.5; Attwell & Laughlin 2001) and `α ∈ (1, 4/3]`
+the wiring-volume exponent (Chklovskii, Schikorski & Stevens 2002; the 4/3 bound
+from three-dimensional wire packing). For `α > 1`, per-neuron power **rises** with
+scale.
+
+**Consequence — efficiency decline.** `η_N = I_N / E_N` (bits/J) has a saturating
+numerator over a super-linear denominator, so it is **monotonically non-increasing**
+in `N` and `→ 0`. This is a proved, tested property, not an assumption:
+
+```
+I_N/N     ↓  (saturation)        E_N/N     ↑  (super-linear)        η_N = I_N/E_N ↓
+```
+
+The physical meaning: a bigger brain buys *less* information per joule, so at scale
+the only way to stay efficient is to **route** — spend the expensive bits where they
+change a decision. That is the CWC master inequality (§0) rediscovered from
+thermodynamics and graph geometry.
+
+---
+
+## 4. Verification and falsification
+
+Everything above is checked so it *can* fail:
+
+* **Physical floor.** `e_bit ≥ k_B T ln2` for **every** Monte-Carlo draw (0
+  violations over 10⁴; `min_landauer_ratio ≈ 1.9×10⁹ ≥ 1`). The floor value equals
+  `k_B T ln2` recomputed independently in the test (a dropped `ln2` is killed).
+* **Three-route oracle.** Top-down vs bottom-up power agree within a factor of 4
+  across the full anchor space (0 disagreements); ~15% at the medians.
+* **Positive controls.** Throughput, power, ATP/bit, and Landauer-ratio medians all
+  fall inside their independently-sourced literature bands (§1–2).
+* **Network laws.** `I_N/N` non-increasing, `I_∞ = I_1/ρ` exact, `E_N/N`
+  non-decreasing, `η_N` non-increasing, `ρ=0 ⟹` linear — each an assertion, each
+  verified over thousands of random valid parameterisations.
+* **Exactness (anti-mutation).** Derived quantities (`e_bit`, `ATP/bit`, Landauer
+  ratio, geometric-mean power, network ceiling) are recomputed independently in the
+  suite; confirmed that dropping `ln2` and dropping the super-linear wiring term
+  both fail the suite.
+* **Fail-closed.** Negative rates, zero throughput, `ρ ∉ [0,1)`, `α < 1`, and
+  non-positive constants all raise.
+
+Reproduce:
+
+```bash
+PYTHONPATH=. .venv/bin/python experiments/common/neuron_information_budget.py
+PYTHONPATH=. .venv/bin/python -m pytest -q experiments/common/tests/test_neuron_information_budget.py
+```
+
+---
+
+## 5. Epistemic status and limitations
+
+* **Order of magnitude, not precision.** Ranges span ~1–2 decades; report the band,
+  never a false-precision point. The value of the model is the *enforced
+  consistency* between throughput, energy, the Landauer floor, and the scaling laws,
+  cross-checked against independent measurements.
+* **Assumptions that could move the numbers.** bits/spike depends on temporal
+  resolution and stimulus statistics; firing rates vary by area and state; ATP/AP
+  depends on cell geometry and channel overlap (Howarth 2012 revised A&L down by
+  ~1/3); `ρ` and `α` are homogeneous-population idealisations. All are exposed as
+  anchors — widen a range and the Monte-Carlo band widens honestly.
+* **What is *not* claimed.** No claim that a neuron *is* a bits/s channel in any
+  complete sense (dendritic computation, plasticity, and neuromodulation are outside
+  a Shannon-rate model), and no claim about artificial-vs-biological efficiency
+  beyond the numbers shown. This is the substrate budget, not a theory of cognition.
+
+## References (primary anchors)
+
+* Attwell & Laughlin (2001), *An energy budget for signaling in the grey matter of
+  the brain*, J. Cereb. Blood Flow Metab. 21:1133. (per-neuron ATP turnover; 4 Hz)
+* Laughlin, de Ruyter van Steveninck & Anderson (1998), *The metabolic cost of
+  neural information*, Nat. Neurosci. 1:36. (ATP/bit; orders above thermodynamic min)
+* Strong, Koberle, de Ruyter van Steveninck & Bialek (1998), *Entropy and
+  information in neural spike trains*, PRL 80:197. (direct-method bits/s and bits/spike)
+* Borst & Theunissen (1999), *Information theory and neural coding*, Nat. Neurosci.
+  2:947. (review of single-neuron information rates)
+* Howarth, Gleeson & Attwell (2012), *Updated energy budgets…*, J. Cereb. Blood Flow
+  Metab. 32:1222. (revised AP energy)
+* Herculano-Houzel (2009) / 86-billion-neuron count reviews. (N)
+* Zohary, Shadlen & Newsome (1994), *Correlated neuronal discharge…*, Nature
+  370:140; Averbeck, Latham & Pouget (2006), Nat. Rev. Neurosci. 7:358. (noise
+  correlation → information saturation)
+* Chklovskii, Schikorski & Stevens (2002), *Wiring optimization in cortical
+  circuits*, Neuron 34:341. (super-linear wiring cost)
+* Sterling & Laughlin (2015), *Principles of Neural Design*, MIT Press. (ΔG_ATP;
+  design principles)
+* Landauer (1961), *Irreversibility and heat generation…*, IBM J. Res. Dev. 5:183.
+  (`k_B T ln2` floor)
+
+# RCFR Falsification Contract — Role-Conditioned Functional Reuse
+
+Status: NORMATIVE. Governs any future work on RCFR (role-plastic modules /
+dynamic role-conditioned low-rank modulation) in CWC. Derived from the
+owner-supplied RCFR audit (2026-07-16) and DCSA v2.0 discipline. RCFR is
+**WP-3+ territory** and is BLOCKED until the WP-2 routing gate resolves; this
+document freezes what RCFR would have to prove, not permission to build it.
+
+## 0. What RCFR claims
+A shared bank of operators `{E_1..E_N}`; a controller emits `(module i_t,
+role r_t, depth d_t)` per input; the role modulates the module via a
+low-rank/FiLM/hypernetwork delta:
+`E_i^{(r)}(h) = E_i(h; θ_i + Δθ_i(r, M))`, `Δθ(r) = A(r) B(r)^T`.
+Claim: one physical module changes functional role by context, not one expert
+per function.
+
+## 1. Claim-status ledger (audit, statuses re-verified here)
+| Claim | Status | Basis |
+|---|---|---|
+| Conditional low-rank modulation exists | **VERIFIED PRIOR ART** | HyperNetworks (1609.09106), HyperFormer (2106.04489), HypeLoRA, HyLoVQA, DISeL — a hypernet generating LoRA A,B by task/input is published |
+| Dynamic-LoRA generator `r→A(r),B(r)→ΔW(r)` is novel | **FALSE** | direct analogues above; the map is prior art |
+| Current code implements *token-level* RCFR | **FALSE** | code carries `A:[B,d_out,rank]` per sequence ⇒ ΔW_{b,1}=…=ΔW_{b,L}; that is sequence-conditioned, not `r_{b,t}`. Token-level needs `A,B ∈ R^{B×L×d×k}` |
+| Generator is "almost free" | **FALSE (naive token-level)** | see §2, arithmetic INDEPENDENTLY VERIFIED |
+| Frozen base weights remove forgetting | **FALSE** | §3: `A'(r_o)B'(r_o)^T ≠ A(r_o)B(r_o)^T` after W_A,W_B change, even with W frozen |
+| Entropy is a reliable executive signal | **FALSE** | NNs miscalibrated (1706.04599); need a calibrated risk estimator |
+| XOR/transfer proves functional repurposing | **NOT PROVEN** | confounds: shared encoder, format matching, memorization, extra params/FLOPs, regularization |
+| RCFR as a *closed CWC system* is non-novel | **NOT PROVEN** | the integration hypothesis stays open |
+| RCFR beats MoE/MoD | **NOT_TESTED** | no compute-matched comparison exists |
+| Strongest potential novelty | **joint role–route–depth–memory–budget control** | not the LoRA generator alone |
+
+## 2. Resource budget — INDEPENDENTLY RE-COMPUTED (VERIFIED, `scripts`-free check)
+For `d_in=d_out=4096, d_r=128, k=8`:
+- Generator params per module `= d_r·k·(d_in+d_out) = 8,388,608` (**8.39M**).
+  16 modules ⇒ **134.2M** generator params. NOT free.
+- Token-level A,B storage at `B=8, L=2048, fp16 = B·L·k·(d_in+d_out)·2 B =
+  2.00 GiB` — transient only, before grads/optimizer/activations.
+- Generation FLOPs `= 2·d_r·k·(d_in+d_out) = 16,777,216` per role vector;
+  for `8×2048` tokens ⇒ **274.9 GFLOPs = 50% of one full 4096×4096 layer**
+  (549.8 GFLOPs). Naive token-level matrix generation can erase the resource
+  advantage.
+- Static LoRA fuses into W (zero inference latency); **context-dependent RCFR
+  cannot pre-fuse** because ΔW(r_t) changes per input.
+
+Consequence: any RCFR proposal MUST state which granularity (sequence vs
+token) it implements and pay the corresponding, measured, WP-1-qualified cost.
+A "cheap token-level roles" claim is refuted a priori until measured otherwise.
+
+## 3. Forgetting is not solved by freezing W
+For an old role `r_o`, output `y_o = W h + A(r_o) B(r_o)^T h`. Training a new
+task changes generator weights `W_A→W'_A, W_B→W'_B`, so
+`A'(r_o)B'(r_o)^T ≠ A(r_o)B(r_o)^T` even with W frozen. Base weights are
+protected; the *functional behavior of the old role* is not. RCFR forgetting
+claims require an explicit mechanism (replay, role-anchor regularization,
+orthogonal subspaces, consolidation, or freezing verified role primitives) AND
+a longitudinal adaptation experiment — never "frozen base ⇒ no forgetting".
+
+## 4. Executive gate must be a calibrated risk estimator
+Not entropy. `R_t = P(failure | h_t, route, B_t)`, validated by Expected
+Calibration Error, Brier score, risk–coverage curve, selective accuracy, OOD
+detection, and disagreement between independent trajectories.
+
+## 5. Mandatory compute-matched baselines (RCFR is supported only vs ALL)
+| Baseline | Isolates |
+|---|---|
+| Base shared module | reuse without roles |
+| Static LoRA | ordinary adaptation |
+| HyperFormer-style adapter | prior-art conditional generation |
+| Input-gated rank basis | dynamic-LoRA baseline |
+| Neural Interpreter | dynamic function composition |
+| MoD | adaptive compute under a budget |
+| **RCFR** | joint module–role–depth control |
+
+## 6. Mandatory causal controls
+1. Role permutation (keep module, permute r_t).
+2. Module swap (keep role, swap E_i).
+3. Random role (same compute, random r_t).
+4. Frozen controller (remove learned adaptation).
+5. Static adapter (average ΔW(r)).
+6. Alternative-path ablation (remove the backup trajectory).
+7. Fixed-depth control (equalize total FLOPs).
+
+## 7. RCFR is SUPPORTED only if (all)
+Same physical module is used across tasks; changing ONLY the role vector
+predictably changes its function; random/swapped/static roles LOSE at equal
+compute; effect replicates on ≥5 seeds; transfers to unseen compositions; and
+the whole is compute-matched against every §5 baseline including MoE/MoD. Until
+then RCFR novelty = the OPEN integration hypothesis (joint
+role–route–depth–memory–budget control), not the LoRA generator.
+
+## 8. Ordering
+No RCFR experiment begins until WP-2 routing (block, then token) has a verdict.
+Current status: WP-2 v1 NOT_SUPPORTED (ROUTER_COLLAPSE); v1.1 (binding budget,
+heterogeneous task) in progress. If learned routing cannot beat static even
+where adaptivity provably helps, adding role-modulation on top is unjustified —
+the audit's "joint control is the only novelty" claim would itself be at risk.
+
+# The Routability Bound: When Adaptation Cannot Pay
+
+Let `C` be latent context, `Z` the router-visible signal, `A` an action, and
+`u(c,a) ∈ [u_min,u_max]`. Define the value of observing `Z`:
+
+```
+V(Z) = E_Z max_a E[u(C,a)|Z] - max_a E[u(C,a)].
+```
+
+With `Δu=u_max-u_min` and mutual information in nats,
+
+```
+0 ≤ V(Z) ≤ Δu · E_Z TV(P(C|Z),P(C))
+          ≤ Δu · sqrt(I(C;Z)/2).
+```
+
+Therefore, if routing costs `c_route`,
+
+```
+Δu · sqrt(I(C;Z)/2) ≤ c_route  =>  V_net ≤ 0.
+```
+
+No optimizer or extra training can overcome this certificate without changing the
+accessible signal, utility range, or cost model.
+
+## Proof
+
+The informed policy can ignore `Z`, so `V(Z)≥0`. At each `z`, improvement over the
+prior-optimal action is at most
+`sup_a |E_{P(C|z)}u_a-E_{P(C)}u_a|`, which is bounded by
+`Δu·TV(P(C|z),P(C))`. Average over `z`; Pinsker bounds TV by the square root of
+conditional KL, and Jensen moves the expectation outside the concave square root.
+Mean conditional KL is `I(C;Z)`. Subtract `c_route`. □
+
+| Oracle gap | Cheap-signal information | Consequence |
+|---|---|---|
+| zero | any | adaptation has no task value |
+| positive | zero | value exists but is unroutable |
+| positive | insufficient for cost | provably non-positive net value |
+| positive | sufficient | possible, not guaranteed; train and intervene |
+
+The bound is one-sided and can be loose. Empirical MI can be biased: publication use
+requires uncertainty bounds and direct interventions. The dependency-free verifier in
+`experiments/common/value_information.py` is tested on an exhaustive finite grid and
+1,000 deterministic adversarial random decision problems.
+
+> **Adaptive computation is an information market: buy information about difficulty
+> only when its maximum decision value exceeds its acquisition cost.**
+
+# The Value-of-Information Rate Function and the Pinsker Phase Transition
+
+**Status.** Mathematical result. The theorems are proved below and the phase
+transition is computed and adversarially falsification-tested by
+`experiments/common/value_of_information_rate.py`
+(suite: `experiments/common/tests/test_value_of_information_rate.py`). No new
+empirical claim; no `claim_registry.json` change.
+
+**What this settles.** `docs/ROUTABILITY_INFORMATION_BOUND.md` proves the one-sided
+ceiling `V(Z) ≤ Δu·√(I(C;Z)/2)` and explicitly notes it "is one-sided and can be
+loose." This note determines **exactly when it is loose and when it is tight**, by
+computing the sharp object the ceiling bounds — the *value-of-information rate
+function* — and proving a phase transition in the tightness of Pinsker's inequality
+located precisely at the decision-indifference manifold.
+
+---
+
+## 1. The object
+
+For a finite decision problem `(U, p)` on contexts `C` and actions `A`, and a
+router-visible signal `Z` obtained through a channel `C→Z`, define the **rate
+function**
+
+```
+V*(R)  :=  max { V(Z)  :  I(C;Z) ≤ R } ,        R ≥ 0  (nats),
+```
+
+the greatest decision value extractable from any signal of mutual information at
+most `R`. Here `V(Z) = 𝔼_z max_a 𝔼[U(C,a)|Z=z] − max_a 𝔼U(C,a)`. `V*` is the exact
+analogue of Shannon's rate–distortion function for *decisions*: it prices
+information in the currency of utility.
+
+---
+
+## 2. Basic structure
+
+> **Proposition 1.** `V*` is non-decreasing, `V*(0)=0`, and `V*(R) = G` for all
+> `R ≥ R̄`, where `G` is the oracle gap and `R̄ ≤ H(C)`. Moreover
+> `V*(R) ≤ min{ G, Δu·√(R/2) }` for every `R`.
+
+*Proof.* Monotone: a larger budget enlarges the feasible set. `V*(0)=0`: only the
+constant channel has `I=0`, and it yields `V=0`. Saturation: the perfect channel
+`Z=C` has `I(C;Z)=H(C)` and `V=G` (Theorem 3 of the value theory), and no signal
+beats `G` (data processing), so `V*` reaches `G` by `R̄ = H(C)` and cannot exceed
+it. The envelope is Theorems 3–4 (oracle-gap and Pinsker ceilings) applied at
+budget `R`. ∎
+
+*Verified:* the solver reproduces the envelope, monotonicity, and saturation to
+`G` on random problems (`falsify_rate_function`, 0 violations).
+
+---
+
+## 3. The small-rate law (a conjectured dichotomy)
+
+Let `a₀ ∈ argmax_a 𝔼_p U(·,a)` be a prior-optimal action and
+`m := V_fixed − max_{a≠a₀} 𝔼_p U(·,a) ≥ 0` the expected-utility margin.
+
+> **Conjecture 2 (small-rate dichotomy — proof sketch + numerical corroboration).** As `R → 0⁺`:
+>
+> **(Regular, `m>0` — a unique prior optimum).**
+> `V*(R) = σ·R + o(R)` with `0 < σ < ∞`. Hence the marginal value of the first nat
+> is finite and
+> `V*(R) / (Δu·√(R/2)) → 0` — **the Pinsker ceiling is asymptotically infinitely
+> loose.**
+>
+> **(Critical, `m=0` — two actions tie: the indifference manifold).**
+> `V*(R) = Δu_eff·√(R/2)·(1+o(1))`. Hence the marginal value of the first nat is
+> infinite (square-root onset) and
+> `V*(R) / (Δu·√(R/2)) → c ∈ (0,1]` — **the Pinsker ceiling is asymptotically
+> order-tight**, and for the symmetric binary problem it is asymptotically exact
+> (`c → 1`).
+
+*Proof sketch.*
+*Regular.* Choosing a different action than `a₀` at signal `z` gains utility only
+if the posterior `P(·|z)` has crossed the decision boundary, a set at fixed total-
+variation distance `≥ m/Δu` from the prior. The cheapest way to cross it with a
+tiny budget is a **rare, near-deterministic signal**: an event of probability `ε`
+that pins the context. Such a signal has `I ≍ ε·log(1/ε)`-order but, optimized, the
+achievable trade-off is `V ≍ σ·I` with a finite slope `σ` set by the best
+gain-per-nat over crossing events. Thus `V*(R)` is linear to first order and, since
+`R = o(√R)`, the Pinsker ratio vanishes.
+*Critical.* When two actions tie in expectation, the decision boundary passes
+*through* the prior: an arbitrarily small perturbation of the posterior already
+changes the optimal action, with first-order gain proportional to the
+total-variation displacement. By the equality case of the value bound
+(`V = Δu·𝔼_z TV(P(·|z),P(·))`, Prop 4.1) and Pinsker's own tightness for near-equal
+distributions (Prop 4.2), the optimum tracks `Δu·√(R/2)`, so the ceiling is attained
+to leading order. (Sketch — the crux is asserted, see caveat.)
+
+*Caveat (why this is a conjecture, not a theorem).* The crux — that the marginal
+value of the first nat `β(0⁺)=σ` is finite generically but `=∞` on the indifference
+manifold — is **asserted** here from the boundary-crossing heuristic, not derived; the
+argument above is a proof *sketch*. The confirmations below are numerical exponent
+fits on a few curated instances, not a proof.
+
+**Numerical corroboration (curated binary-context instances, exact solver):**
+
+| problem | regime | `V*/√R` as `R↓` | `V*/(Δu√(R/2))` as `R↓` | small-`R` exponent |
+|---|---|---|---|---|
+| `[[1,0],[0,½]]` | regular (`m=¼`) | `→ 0` | `0.19 → 0.10 → 0.05` (→0) | **0.98** (linear) |
+| `[[1,0],[0,1]]` | critical (`m=0`) | `→ 1/√2` | `0.99 → 0.93 → 0.86` (→1) | **0.55** (√) |
+
+---
+
+## 4. Where Pinsker is tight — a corollary that locates the transition
+
+> **Corollary 3.** Let `M := { (U,p) : ∃ a≠a₀ with 𝔼_p U(·,a) = V_fixed }` be the
+> **indifference manifold** (two actions tie for the prior optimum). Then the
+> routability (Pinsker) ceiling is asymptotically tight (`V*(R)/(Δu√(R/2)) → c>0`)
+> **iff** `(U,p) ∈ M`, and asymptotically loose (`ratio → 0`) otherwise. `M` has
+> codimension `≥ 1`; for Lebesgue-almost-every decision problem the ceiling is loose.
+
+**Reading for CWC.** A positive routability certificate (§9 of the identifiability
+theory) is *conservative* away from `M`: off the indifference manifold the true
+information-limited value `V*(R)` is `Θ(R)`, far below the `Θ(√R)` ceiling, so real
+adaptive routing has **less** headroom than the square-root bound advertises unless
+the workload's difficulty signal sits at an indifference boundary. Concretely, when
+scoping Act J: estimate `I(C;Z)` of the cheap difficulty probe *and* the prior
+margin `m`; if `m` is comfortably positive, discount the routability ceiling to its
+linear regime before predicting savings. The `√I` bound flatters problems that are
+not near indifference.
+
+**Connection to the literature.** The finiteness/infiniteness of the marginal value
+of the first nat is the decision-theoretic content behind the classical non-concavity
+phenomena in the economics of information (Radner–Stiglitz 1984); here it is made a
+sharp, computable `Θ(R)` vs `Θ(√R)` law and tied to Pinsker's constant. `V*` itself
+is the utility-side rate function dual to Shannon–Blahut rate–distortion.
+
+---
+
+## 4. The exact critical constant — Pinsker is *attained*, not merely order-tight
+
+Prop 4.2 showed the Pinsker ceiling is order-tight in the critical regime. At a
+**symmetric** binary indifference point (`C` uniform, `U = Δu·I₂`) the constant is
+pinned exactly.
+
+> **Theorem 4′ (attainment, `c = 1`).** At a symmetric binary indifference point,
+> `V*(R) = Δu·√(R/2)·(1 − R/6 + O(R²))`. Hence `V*(R)/(Δu√(R/2)) → 1`: the Pinsker
+> information ceiling for decision value is **asymptotically attained**, with a
+> computable first correction `−R/6`.
+
+*Proof.* By the problem's `C↔C, A↔A` symmetry the optimal channel is symmetric,
+`q₀ = ½−t, q₁ = ½+t`, and two signals suffice (revelation). Then the informed action
+is the majority context at each signal, giving `V(t) = Δu·t`, while
+`I(t) = (½+t)ln(1+2t) + (½−t)ln(1−2t) = 2t² + (4/3)t⁴ + O(t⁶)`. Inverting `I(t)=R`
+gives `t = √(R/2)·(1 − R/12 + …)`, so `V*(R) = Δu·t = Δu√(R/2)(1 − R/12 + …)`; dividing
+by `Δu√(R/2)` and using `√(R/2)`'s own expansion yields the ratio `1 − R/6 + O(R²)`. ∎
+
+*Verified to machine precision* by the closed-form solver `symmetric_critical_value`
+(inverts `I(t)=R` by bisection — the analytic ground truth the grid solver is checked
+against): `1 − ratio = {1.67e-3, 1.67e-4, 1.67e-5}` at `R = {1e-2, 1e-3, 1e-4}`,
+matching `R/6` to every digit.
+
+The general constant is now pinned exactly. At *any* two-action critical point (actions
+`a,b` tie, `D := U[·,a]−U[·,b]`, `𝔼_p D = 0`), the small-rate value is
+`V(Z) = ½·𝔼_z|𝔼[D|Z=z]|`, and its rate-constrained optimum is
+
+> **Theorem 4‴ (general critical constant).**
+> `V*(R) = √( R·Var_p(D)/2 )·(1+o(1))`, so the leading coefficient is
+> `κ = std_p(D)/√2` and the Pinsker-ratio limit is
+> `c = std_p(D)/Δu ≤ 1`, with equality iff `|D| = Δu` almost surely.
+
+*Verified* (`critical_leading_constant`): the formula predicts the RI-solved
+`V*(R)/√R` and `V*(R)/(Δu√(R/2))` to `2·10⁻³` on symmetric and asymmetric criticals
+(`c = 1.00, 0.47, 0.43`), and `c=1` **iff** the tie is symmetric. This is the sharpest
+statement of *how* tight the routability bound is on the whole indifference manifold:
+the attainment factor is the standard deviation of the tied-action utility gap, in
+units of the utility range.
+
+## 4a. The transition is universal — general `|C| > 2`
+
+The dichotomy of §3 is **not an artifact of a binary context**: its argument turns
+only on the prior margin `m` and the indifference manifold, both defined for any
+finite `|C|,|A|`. A general-context lower-bound solver (grid over binary-signal channels,
+`optimal_value_at_rate_general`) confirms it directly for `|C|=3`:
+
+| problem (`|C|=|A|=3`) | regime | small-`R` exponent | `V*/(Δu√(R/2))` |
+|---|---|---:|---:|
+| unique prior optimum (margin 0.13) | regular | **1.12** (linear) | `0.11` (→0, loose) |
+| two actions tie at mean ½ | critical | **0.54** (√) | `0.67` (→1, tight) |
+
+So the phase transition — linear/loose off the indifference manifold, square-root/tight
+on it — is a property of decision problems in general, not of two-context toy models.
+
+### 4b. The sharp general solver (rational inattention)
+
+The binary-signal grid is only a *lower* bound on `V*` once `|A|>2`. The sharp value
+for any finite `|C|,|A|` comes from recognising that
+
+> `max_channel [ V(Z) − β·I(C;Z) ]` **is the rational-inattention problem**
+> (Sims; Matějka–McKay 2015): the Shannon-information-cost decision problem.
+
+Its optimum is the fixed point `P(a|c) ∝ P(a)·exp(U[c,a]/β)`,
+`P(a)=Σ_c p_c P(a|c)`, solved by a convergent Blahut–Arimoto-style iteration.
+
+> **Why this is the GLOBAL optimum (not a local one).** `I(C;A)` is *convex* in the
+> channel `{P(a|c)}` for a fixed input `p(c)` (Cover–Thomas Thm 2.7.4), and `E[U]` is
+> linear, so `E[U] − β·I` is **concave** for `β>0` — its stationary point is the unique
+> global maximum. By the revelation principle any richer signal `Z` satisfies
+> `I(C;A) ≤ I(C;Z)` for the induced optimal action `A`, at equal value, so restricting
+> the signal to an action-recommendation is without loss; hence the RI trace equals
+> `V*(R)` exactly. This is a proof, not an assumption — and it is why `V*(R)` is concave
+> (its slope `β(R)` is the multiplier, which decreases as the constraint relaxes).
+> *Destruction-stage check:* over 1200 random `(problem, R)` points the RI value never
+> undershoots the independent grid solver (worst `grid − RI = 0.00000`) and never
+> exceeds the envelope — the concavity proof and the numerics agree exactly.
+`I(β)` is decreasing in the shadow price `β`; bisecting `β` to hit `I(β)=R` yields the
+exact `V*(R)` (`optimal_value_at_rate_ri`). It is **cross-validated three ways**: it
+reproduces the closed-form symmetric-critical value to machine precision (`1.7·10⁻¹⁶`),
+matches the exact binary grid solver, and **strictly exceeds** the binary-signal lower
+bound at `|C|=|A|=3` (`0.081 > 0.075` at `R=0.02`) — finding the optimal *stochastic*
+channel the grid cannot resolve. With it the phase-transition exponents sharpen to
+`0.97` (regular) and `0.498` (critical). The value of information under a Shannon cost
+is exactly the routing-market price of §0, now computed sharply at any scale.
+
+### 4c. The marginal value of a nat — and the fractal link to energy
+
+The rational-inattention shadow price is the **marginal value of information**
+`β(R) = dV*/dR` [utility per nat] (`marginal_value_of_information`), verified to equal
+the numerical derivative of `V*`. Because `β` is a Lagrange multiplier it is
+**decreasing in `R`**, so `V*` is **concave** (settling Prop 1 rigorously); it is
+finite as `R→0` at a regular problem (the information sensitivity `σ`) and **diverges**
+at a critical one (the √R onset, seen from the derivative side).
+
+`β` closes the loop with `NEURON_INFORMATION_BUDGET.md`. A physical router pays `β`
+utility per nat, and by Landauer every nat costs at least `k_B T` joules to acquire
+irreversibly, so
+
+> **decision value per joule ≤ β / (k_B T)** (`utility_per_joule_ceiling`).
+
+The same information-market price — `min{value, cost}` at §0, `β = dV*/dR` here — now
+in physical units, from the abstract decision down to the biological substrate. The
+market is fractal: it prices a bit the same way at the routing gate and at the ion
+channel, and the exchange rate `β/(k_B T)` is where the two scales meet.
+
+### 4d. The economic optimum — how much to route
+
+With a per-nat acquisition cost `κ`, the net value of a routing decision is
+`V*(R) − κR`. Because `V*` is concave with decreasing slope `β(R)`, the optimum is the
+classical **marginal-value = marginal-cost** condition (`optimal_information_budget`):
+
+> **Theorem 4″ (optimal information budget).** The net-optimal amount of information
+> to acquire is `R*` solving `β(R*) = κ`, and routing pays at all iff the first nat
+> clears its cost, `β(0⁺) > κ`:
+> * **regular** (`β(0⁺)=σ` finite): route iff `κ < σ` — the *information sensitivity*
+>   is the exact routing threshold;
+> * **critical** (`β(0⁺)=∞`): **always** acquire a positive `R*` — the first nat is
+>   infinitely valuable, so any finite cost is worth paying.
+
+*Verified:* at the optimum `β(R*)=κ` to bisection precision; `V*(R*)−κR*` exceeds the
+net value at neighbouring rates; a regular problem routes below `σ` and refuses above
+`2σ`; a critical problem routes for every finite `κ`. This is the operational payoff of
+the whole rate-function theory — it turns "how tight is Pinsker?" into "exactly how many
+bits of difficulty-signal to buy, and whether to buy any." For Act J: estimate `κ` (the
+learned route-decision cost) and the pilot utility matrix, then read off `R*` and the
+certified net value before committing cloud compute.
+
+## 4e. Application — the budget tunes CWC routing-v2 to near-criticality
+
+Applying the apparatus to the real routing-v2 experiment closes the loop. The budgeted
+utility (`λ=0.5`) is `EASY=[1, 0.5]`, `HARD=[0.004, 0.5]`; the prior-optimal action
+(direct) wins by a **margin of only 0.002** — routing-v2 sits *right next to the
+indifference manifold*, yet is strongly identifiable (`G = 0.248`). Consequently the
+marginal value of a difficulty-signal is **amplified ~17×** (`β(10⁻⁴) ≈ 17.6` versus
+`≈1.05` for a generic regular problem): near criticality the value is in the √R regime,
+where a *little* signal is worth a lot and Pinsker is near-tight.
+
+So the binding budget does more than make routing identifiable (§4 of
+`IDENTIFIABILITY_THEORY.md`): it places the problem at the **most
+information-efficient** operating point, which is why budgeted routing-v2 showed both a
+positive oracle gap *and* a large empirical CE gap — and why it routes profitably even
+at a substantial route-decision cost (`optimal_information_budget` returns `route=True`
+up to `κ=5`). The theory now *explains* the empirical result rather than merely bounding it.
+
+## 5. Method and reproduction
+
+`V(Z)` is convex in the channel, so `V*(R)` is attained at the boundary `I=R`; for a
+binary context two signal symbols suffice, and the exact `V*(R)` is found by a
+two-stage grid over `(q0,q1)=(P(Z{=}1|C{=}0),P(Z{=}1|C{=}1))` with local refinement
+(needed for accuracy at small `R`). The envelope, monotonicity, saturation, and the
+dichotomy are checked by `falsify_rate_function`. Reproduce:
+
+```bash
+PYTHONPATH=. .venv/bin/python experiments/common/value_of_information_rate.py
+PYTHONPATH=. .venv/bin/python -m pytest -q experiments/common/tests/test_value_of_information_rate.py
+```
+
+## 6. Epistemic status and scope
+
+* **Theorems**, not empirical claims: they bound and characterise achievable value
+  for a given `(U, p)`; they say nothing about whether a CWC architecture attains it
+  on a real workload (`CWC-L7-pareto: NOT_TESTED`).
+* The sharp `V*` is now available for **general `|C|,|A|`** via the rational-inattention
+  solver (§4b), cross-validated against the closed form and the grid; the binary grid and
+  binary-signal grid remain as independent checks. The exact leading constant `c` is
+  pinned on the *symmetric* indifference locus (§4, `c=1`); the constant on the whole
+  indifference manifold as a function of local geometry remains the natural next target.
+
+## Relationship to sibling documents
+
+* `ROUTABILITY_INFORMATION_BOUND.md` — proves the ceiling; this note says when it binds.
+* `ADAPTIVE_COMPUTATION_VALUE_THEORY.md` — Theorems 3–4 give the envelope; Props 4.1–4.2 drive the critical case.
+* `MATHEMATICAL_COHERENCE_AND_EFFICIENCY.md` — the certificate `Γ` uses the ceiling `V*` sharpens.
+
+# CWC WP-1 Instrumentation
+
+Implements `CWC_NANOCHAT_WP1_INSTRUMENTATION_ACT_v1.0.0` (`/home/neuro7/Downloads/
+CWC_Nanochat_WP1_Claude_Code_Act_v1.0.0/cwc-wp1-claude-code-act`, SHA256-verified
+before implementation). Baseline commit `92d63d4e8bb4df75c3b71618f31ddde2378b2bcd`
+(branch `baseline`, tag `wp0-fixation-2026-07-16`) untouched; all work on
+`wp1-instrumentation`.
+
+## What this is
+
+A measurement layer for nanochat, built to be metrologically trustworthy before
+any CWC routing/memory/plasticity mechanism is added: `cwc/instrumentation/`
+(config, types, noop, clock, event_buffer, run_meter, vram, flops, energy,
+routing, writer, manifest, audit) plus four scripts and 100+ tests.
+
+## Two-tier design (Act §2.1)
+
+- **Always-on lightweight core**: `RunMeter` (deferred-synchronization CUDA
+  event timing + CPU wall clock), `VRAMMeter` (allocator peak stats, never
+  `empty_cache()`), `FlopLedger` (analytical, not profiler-based), `EnergySampler`
+  (NVML total-energy delta → power-sampling → unavailable, never TDP),
+  `RoutingCounters` (measurement-ready, no router implemented), `Writer`
+  (buffered JSONL + atomic JSON + SHA256SUMS).
+- **Sampled/isolated audit tools**: `audit.py`'s `torch.profiler` wrapper,
+  roofline report, MoE-CAP schema placeholders — never used in a claim run
+  (`claim_run: false` is structural, not a convention).
+
+`InstrumentationMode.OFF` is a true no-op: no CUDA events, no NVML import, no
+files, no threads (`noop.py`'s `Null*` classes; verified in
+`test_instrumentation_noop.py` and the OFF/COUNTERS loss-identity check in
+`test_instrumentation_integration.py`).
+
+## Environment fixation (Act §1.3) — resolved
+
+Local system Python/torch (`3.12.3` / `2.12.1+cu130`) does not match nanochat's
+pin. `uv sync --extra gpu --group dev` against nanochat's own `uv.lock`
+resolved the exact pin (`torch==2.9.1+cu128`) into `.venv/` (not the
+manually-created `.venv-wp1/`, which `uv sync` does not target by default and
+which was removed once this was discovered). **144→164 tests pass there**
+(nanochat's own 58 pre-existing tests + all new WP-1 tests), including real
+CUDA event timing, real GPU VRAM allocation, real NVML power sampling, and a
+real nanochat `GPT` forward+backward+loss-identity check between OFF and
+COUNTERS modes (Gate B). 2 skips are `pynvml`-specific — `pynvml` is not a
+nanochat dependency, and its absence exercising the graceful-degradation path
+correctly is not a failure.
+
+`environment_match` compares PEP 440 release segments only (`"2.9.1+cu128"`
+matches expected `"2.9.1"` — the `+cu128` is CUDA build metadata). This bug
+(exact-string comparison originally reported `environment_match: false` for a
+build that does match) was caught by running the real smoke test on real
+hardware, not by the unit tests alone — a concrete instance of why Act §9's
+real-load verification matters beyond unit coverage.
+
+## FLOP ledger agreement (Act §5.4)
+
+`nanochat.gpt.GPT.estimate_flops()` returns forward+backward FLOPs per token
+as `6 * num_matmul_params() + attn_flops` (PaLM-paper attention approximation,
+no causal halving). This ledger's dense-matmul-only forward portion
+(`2 * num_matmul_params()` per token, matching convention) agrees with
+nanochat's own estimator within a documented tolerance (ratio 0.85–1.15,
+verified in `test_nanochat_estimator_agreement_on_dense_matmul_portion` — the
+small gap is nanochat's per-layer value-embedding gate and resid/x0 scalar
+lambdas, which this ledger does not model). Separately, `test_instrumentation_audit.py`
+and `scripts/instrumentation_audit.py` show **exact agreement (0.0% error)**
+between this ledger's analytical FLOPs and `torch.profiler`'s own
+`with_flops=True` output for a plain dense matmul, once the analytical count
+is scaled to the same number of profiled steps (a real bug in the diagnostic
+script — comparing one step's analytical count to ten profiled steps' summed
+count — was caught by actually running it and fixed).
+
+## Script integration (Act §5)
+
+- **`scripts/base_train.py`**: `--instrumentation-mode/output/run-id/energy/
+  sample-rate-hz/trace-every/window-steps`, default `off`. Wraps the existing
+  training-step block in a `RunMeter` scope reusing nanochat's own
+  `synchronize()`/`t0`/`t1` (no added synchronization). Verified end-to-end on
+  real hardware through manifest/config-writing up to nanochat's own
+  pre-existing tokenizer-cache requirement (`FileNotFoundError` for
+  `~/.cache/nanochat/tokenizer/tokenizer.pkl` — not caused by this change; no
+  trained tokenizer exists in this environment). `manifest.json` from a real
+  `--instrumentation-mode=counters` run shows correct git commit/branch/dirty
+  state, correct device/environment info, `environment_match: true`.
+- **`scripts/infer_bench.py`**: `--instrumentation-mode/energy`, additive
+  nested `cwc_instrumentation` payload field (TTLT, TPOT p50/p95/p99, peak VRAM
+  reserved, joules/request, joules/token, FLOP ledger); every existing
+  top-level field is unchanged and the "last stdout line is valid JSON"
+  contract holds. **Not runtime-verified** beyond syntax check and `--help` —
+  `infer_bench.py` needs a trained checkpoint via `load_model()`, and none
+  exists in this environment (no `tok_train.py`/`base_train.py` run has
+  completed here). This is a known, disclosed gap, not a silent one.
+
+## Overhead qualification (Act §4.14, §9) — **PASS (QUALIFIED_AT_DEPTH12_SCALE)**
+
+**2026-07-16 update — gate CLOSED.** A single preregistered confirmatory run
+(N=1 stopping rule, `docs/WP1_L2_PREREGISTRATION.md`) at 4× the power of the
+exploratory runs below decisively cleared all three criteria:
+
+| Confirmatory (10 cycles × 200 steps = 2000 paired samples) | Value | Gate | Status |
+|---|---|---|---|
+| median paired E2E overhead | **−0.46%** | ≤ 1.0% | PASS |
+| bootstrap 95% CI (paired), upper bound | **+0.306%** (CI [+0.086%, +0.306%]) | ≤ 2.0% | PASS |
+| GPU-specific overhead (cycle-averaged) | **−0.21%** | ≤ 1.0% | PASS |
+
+Evidence: `artifacts/instrumentation/overhead_report_confirmatory_L2.json`
+and `artifacts/wp1-release/overhead/`. The earlier `BLOCKED` verdict came from
+the point estimate sitting AT the 1.0% line (canonical run 1.03%) with only
+5 cycles; 10 cycles at 200 steps tightened the estimate to ~0.1–0.3% true
+cost, sub-millisecond against a ~52.5 ms step. WP-1 metrology closes as
+`PASS_WITH_ENERGY_EXCLUDED` (energy is INSTRUMENT_INVALID — see below).
+The exploratory history is retained unedited for provenance:
+
+### Exploratory history (superseded, retained for provenance)
+
+`scripts/instrumentation_overhead.py`: paired alternating OFF→COUNTERS→
+COUNTERS→OFF, 5 cycles, real nanochat `GPT` forward+backward+optimizer step,
+bootstrap 95% CI. Two real bugs were found and fixed only by actually running
+this end-to-end (not caught by unit tests): (1) `_timed_steps` resolved the
+meter internally and discarded records, so a second `resolve()` call by the
+caller silently returned empty — `gpu_kernel_ms` read back as zero for every
+record; (2) the GPU-specific sub-gate compared a single one-shot bare-vs-pooled
+measurement rather than averaging across all cycles, and gave contradictory
+results between runs (+2.2% one run, −0.76% the next) purely from that
+noise — fixed by moving it inside the cycle loop.
+
+**Honest result, 3 independent runs, largest model this RTX 3050 (3.68 GiB)
+can run without OOM** (depth=12, n_embd=768, ~50 ms/step — nanochat's own
+default depth=20/n_embd=1280 was tried and OOMs on this GPU):
+
+| Run | E2E relative overhead (median) | E2E CI upper | GPU-specific overhead |
+|---|---|---|---|
+| 1 | 0.89% | 1.14% | −0.76% |
+| 2 | 0.65% | 2.25%* | 2.22%* |
+| 3 (canonical, saved) | 1.03% | 1.44% | 0.58% |
+
+\* run 2 predates the cycle-averaging fix to the GPU sub-gate; its GPU number
+is the noise-dominated single-shot measurement described above and is not
+trusted — included for the record, not as evidence.
+
+At toy scale (depth=6, n_embd=384, ~11 ms/step) overhead is clearly and
+repeatably above threshold (~2.2%), confirming the effect is a roughly fixed
+per-step Python-level cost (event-pool acquisition, dataclass construction,
+context-manager entry/exit) that matters less as step duration grows. The
+**E2E CI-based criterion passes in all 3 runs**; the **stricter point-estimate
+criterion (≤1.0%) passes 2 of 3** — right at the noise floor, not decisively
+clear. The canonical run is saved at
+`artifacts/instrumentation/overhead_report_canonical_run.json`.
+
+**Exploratory verdict (historical):** these 3 runs were reported
+`BLOCKED_BY_MEASUREMENT_OVERHEAD` — the point estimate sat at the 1% line and
+fail-closed forbade rounding up. The resolution path named here — "(b) more
+cycles for a tighter CI" — is exactly what the 2026-07-16 confirmatory run
+executed (10 cycles × 200 steps), clearing the gate. No thresholds were
+loosened; the same 1%/2%/1% criteria were applied to 4× the data.
+
+## Energy validation (Act §5 B6/B7) — **UNAVAILABLE (INSTRUMENT_INVALID)**
+
+Preregistered liveness probe (`docs/WP1_L2_PREREGISTRATION.md`, evidence
+`artifacts/instrumentation/energy_liveness_probe.json`): NVML counters are
+readable and monotonic, but `nvmlDeviceGetTotalEnergyConsumption` is
+physically implausible on this host — a 5 s matmul load implied **160.8 W**
+average power while the instantaneous rate read 79.8 W (RTX 3050 Laptop
+TGP ≤ 80 W). The counter over-reads ~2× under load, ~4.8× at idle. This is
+the fourth manifestation of untrusted power telemetry on this machine (idle
+`power.draw` = 749.67 W, physically impossible). Per Act B6, TDP fallback is
+forbidden, so `ENERGY_VALIDATION = UNAVAILABLE`, `ENERGY_METRICS =
+NON_CLAIMABLE`. A counter that exists and lies is reported as
+INSTRUMENT_INVALID, not silently used. This excludes energy from every CWC
+claim but does not block routing experiments on FLOPs/VRAM/latency.
+
+## Known limitations
+
+- `infer_bench.py` integration is code-complete but not runtime-verified (no
+  trained checkpoint available in this environment).
+- The overhead gate is measured on the largest model this GPU's 3.68 GiB VRAM
+  supports (depth=12), not nanochat's own default (depth=20) — VRAM-bound, not
+  a choice.
+- `RunMeter`'s CPU-only path (no CUDA, `enable_cuda_events=False`) has real
+  test coverage via CPU-mode integration tests but the dedicated
+  `test_instrumentation_cuda_events.py` module is marked `@pytest.mark.cuda`
+  and would be entirely skipped on a CPU-only host — acceptable per Act §8.2
+  ("Skipped entirely if CUDA is unavailable"), but worth knowing if this
+  package is ever exercised on a CPU-only CI runner.
+- `compile_state` in the manifest is hardcoded `"unknown"` — `torch.compile`
+  interaction with this instrumentation is untested (nanochat's own scripts
+  use `torch.compile` in places this integration does not yet introspect).
+
+## Verify
+
+```bash
+python -m compileall cwc scripts tests
+pytest -q                              # via .venv/bin/python: 164 passed, 2 skipped
+pytest -q -m "not cuda"
+pytest -q -m cuda
+python -m scripts.instrumentation_smoke --device cpu   # SMOKE PASS
+python -m scripts.instrumentation_smoke --device cuda  # SMOKE PASS
+python -m scripts.instrumentation_overhead --cycles 5 --warmup-steps 20 --measurement-steps 100
+python -m scripts.instrumentation_audit --steps 10
+python -m scripts.export_cwc_instrumentation_bundle --input artifacts/instrumentation/<run_id>
+```
+
+# WP-1 → L2 confirmatory run — PREREGISTRATION
+
+Registered: 2026-07-16, BEFORE execution. Commit of this file precedes the run.
+Protocol authority: DCSA v2.0 (`DCSA_PROTOCOL_V2.md`) + Act §4.14/§9 gate.
+
+## Prior state (what this run may and may not change
+
+Three exploratory runs at depth=12 exist (`WP1_INSTRUMENTATION.md` §Overhead):
+CI-criterion passed 3/3; strict point-criterion (≤1.0%) passed 2/3 (canonical
+run: 1.03%); verdict fail-closed `BLOCKED_BY_MEASUREMENT_OVERHEAD`. The docs
+name the legitimate resolution path: a higher-power run (more cycles → tighter
+CI). This document preregisters exactly ONE confirmatory run.
+
+**Stopping rule: N = 1.** No re-runs regardless of outcome. A failed
+confirmatory run is landed as a negative artifact, not retried.
+
+## Confirmatory run specification
+
+- Command: `scripts/instrumentation_overhead.py` with
+  `--cycles 10 --warmup-steps 20 --measurement-steps 200 --seed 1234`
+  (model config unchanged from canonical: depth=12, n_embd=768, n_head=6,
+  seq_len=256, batch=4) → 2000 paired samples, 4× the power of each prior run.
+- Environment preconditions (verified and recorded immediately before launch;
+  if violated, the run is POSTPONED, never reinterpreted): zero compute
+  processes on the GPU; GPU memory used ≤ 100 MiB; utilization ≤ 10%.
+- Precondition snapshot at registration time: 0 compute processes, 13 MiB
+  used, 8% util. Known anomaly recorded pre-run: `nvidia-smi power.draw`
+  reads 749.67 W at idle — physically impossible for RTX 3050 Laptop
+  (TGP ≤ 80 W); the power *rate* counter is untrusted a priori.
+
+## Decision rule (unchanged from the earlier, stricter registration)
+
+PASS ⇔ all three, computed by the script's existing preregistered logic:
+1. median paired E2E overhead ≤ 1.0%;
+2. bootstrap 95% CI upper bound ≤ 2.0%;
+3. GPU-specific overhead (pooled vs bare CUDA events, cycle-averaged) ≤ 1.0%.
+
+The τ = 1.05 (5%) figure in `DCSA_AUDIT_0002.md` §10 is **VOID for this
+gate**: it was registered in ignorance of the earlier, stricter Act threshold.
+Thresholds may never be loosened after data exist. The stricter rule governs.
+
+## Outcome mapping (both directions preregistered)
+
+- PASS → overhead gate `BLOCKED_BY_MEASUREMENT_OVERHEAD` →
+  `QUALIFIED_AT_DEPTH12_SCALE`. L2 unlocks **for depth≥12-scale runs on this
+  hardware class only**. The toy-scale (depth=6, ~2.2%) failure remains
+  standing documentation of the scale boundary — it is not erased by a pass.
+- FAIL → verdict becomes `REFUTED_AT_THIS_SCALE_ON_THIS_HW`; L2 stays closed
+  on this hardware; unlocking then requires different hardware (larger model
+  scale), not protocol iteration.
+
+## Energy-liveness instrument check (separate, also preregistered)
+
+Deviation recorded: `nvidia-ml-py` (pynvml) will be installed into `.venv`
+(absent from `uv.lock`; exact version reported in results). Criteria:
+1. counters readable via NVML without error;
+2. `nvmlDeviceGetTotalEnergyConsumption` delta over a fixed synthetic GPU
+   load window is positive, finite, monotonic;
+3. physical plausibility: implied average power under load ∈ [1, 120] W and
+   at idle ∈ [0.5, 50] W (RTX 3050 Laptop TGP ≤ 80 W plus margin).
+
+Outcomes: all pass → `ENERGY_STATUS = MEASURED_LIVE (qualified)`;
+unreadable → remains `NOT_MEASURED`; readable but implausible/non-monotonic →
+`INSTRUMENT_INVALID` (the counter exists and lies — worse than absent, and
+reported as such; no energy figure may ever be derived from an
+INSTRUMENT_INVALID counter).
+
+## What this run cannot claim even on full PASS
+
+L2 means "metrics fit for comparison" at the qualified scale. It licenses no
+statement about CWC capabilities (WP-2…WP-7 remain pre-L0), no Pareto claim,
+and no energy efficiency claim (energy liveness ≠ energy-based comparison
+protocol, which needs its own parity design).
+
+# ADR-0001: CWC WP-1 Measurement-Safe Instrumentation
+
+Status: accepted
+
+## Context
+
+CWC-NANOCHAT-WP1-INSTRUMENTATION-ACT v1.0.0 requires a metrologically sound measurement layer
+before any routing, memory or plasticity mechanism is added to the pinned nanochat baseline
+(`92d63d4e8bb4df75c3b71618f31ddde2378b2bcd`, branch `baseline`, tag `wp0-fixation-2026-07-16`).
+Without it, a future WP-3 routing result cannot be causally attributed to routing rather than to
+measurement artifacts — exactly the failure mode `moe3`'s own MFU regression (46%→35%) would have
+been invisible without nanochat's pre-existing MFU telemetry.
+
+## Decision
+
+Build `cwc/instrumentation/` as an always-on-lightweight-core / sampled-audit-tool two-tier system
+(Act §2.1), defaulting to `InstrumentationMode.OFF` (true no-op — no CUDA events, no NVML import, no
+files, no threads). `COUNTERS` mode is safe for production benchmark use; `TRACE` and `AUDIT` are
+never used for final latency/energy claims (Act §2.2, §4.14).
+
+## Environment fixation
+
+Local system Python: 3.12.3. Local system torch: `2.12.1+cu130` (does not match nanochat's pinned
+`torch==2.9.1`) — this remains true for the system interpreter and is why `environment_match` exists
+as a manifest field at all.
+
+Per Act §1.3, `uv sync --extra gpu --group dev` was run against the project's own `uv.lock` (not the
+manually-created `.venv-wp1`, which `uv sync` does not target by default — it resolves into the
+project-standard `.venv`). This completed successfully: `.venv/bin/python` resolves `torch==2.9.1+cu128`
+exactly, `torch.cuda.is_available()` is `True`, and the full test suite (nanochat's own 58 pre-existing
+tests plus 86 new WP-1 tests) passes there — 144 passed, 2 skipped (the 2 skips are `pynvml`-dependent
+GPU energy tests; `pynvml` is not a nanochat dependency and its absence is itself the correct
+graceful-degradation path the Act requires, not a failure). GPU: NVIDIA GeForce RTX 3050 Laptop GPU,
+3953393664 bytes (~3.68 GiB) VRAM.
+
+**Result: environment mismatch is resolved.** Latency/VRAM/energy/FLOP numbers produced via
+`.venv/bin/python` in this repository are measured under the exact pinned dependency set and are not
+subject to the `ENVIRONMENT_MISMATCH — NON-CLAIMABLE` flag. Numbers produced via the system
+interpreter (`python3`, torch 2.12.1) remain flagged accordingly if ever mixed in.
+
+## Consequences
+
+- All WP-1 tests, including CUDA-timing-precision and energy-backend tests, are run and pass against
+  the exact pinned environment (`.venv/bin/python`), not just against whatever torch happened to be
+  available system-wide.
+- The real-load overhead gate (Act §4.14, §9) is executed under this same exact environment, so its
+  result is claimable rather than environment-mismatch-flagged.
+- `baseline`/`master` remain byte-identical to upstream `karpathy/nanochat`; all WP-1 work — including
+  the `.venv` created by `uv sync` — lands on `wp1-instrumentation` only. `.venv/` and `.venv-wp1/`
+  are git-ignored per nanochat's existing `.gitignore` and are not part of any committed tree.
+
+# ADR-0002 — WP-2 routing gate mechanism & training/eval compute regime
+
+Status: ACCEPTED (2026-07-16). Scope: first causal block-routing experiment
+(`experiments/wp2_routing_v1/`). Governs Act Phase D.
+
+## Decision 1 — one gate mechanism: straight-through top-K
+Act D4 requires exactly one mechanism. Chosen: **straight-through hard top-K**
+over per-block execute scores.
+
+Alternatives weighed:
+- Hard-concrete / L0 gates: give a soft budget in expectation, not an *exact*
+  per-sequence K. Act D3 demands a hard budget (FAIL_CLOSED on violation);
+  exact K is native to top-K, awkward for hard-concrete.
+- Gumbel-softmax sampling: stochastic at inference; Act D4 wants deterministic
+  eval and a simple negative control. Top-K argmax is deterministic.
+
+Straight-through top-K wins on all four Act D4 criteria: hard evaluation,
+exact budget, deterministic inference, simple negative control (freeze the
+same controller → E2), low controller cost (one small MLP scoring L blocks).
+
+Forward (train): `g = hard_topk_mask + (p − p.detach())`, `p = softmax(scores)`;
+`h_{l+1} = h_l + g_l · F_l(h_l)`. Gradient reaches the controller through `p`.
+Forward (eval): hard top-K, skipped blocks are not computed at all (real skip),
+`h_{l+1} = h_l` exactly (residual identity, Act D5).
+
+## Decision 2 — equalized training compute, matched eval compute
+The failure condition "candidate wins only via a larger train budget" (Act C3)
+is structurally eliminated: **during training all K-budget configs
+(random/frozen/learned/fixed_depth) compute all L blocks and gate the
+contribution to exactly K** — so their training FLOPs are identical by
+construction, differing only in *where* the K-hot mask points and whether a
+controller learned it. **At evaluation all four actually skip to exactly K
+blocks** (real compute saving), so eval active-FLOPs match exactly. The causal
+claim rests on eval quality at matched eval-compute; the selection policy is
+the only free variable. Dense (E0) runs all L at train and eval — quality
+ceiling, not a compute-matched comparator.
+
+Consequence: training compute is NOT the saving; the saving is at inference.
+This is stated openly in RESULTS and is the standard train-dense/infer-sparse
+regime. It makes the comparison strictly fairer, not weaker.
+
+## Decision 3 — per-sequence routing, controller interface
+Routing granularity is sequence × block (Act D1), not token-level (deferred to
+a later phase). The controller is a small MLP scoring each block from
+`[pooled_hidden_summary, normalized_layer_index]`; the remaining-budget
+constraint from the Act D2 interface is realized exactly by the global top-K
+(pick K of L). `pooled_hidden_summary` = mean over sequence positions of the
+embedded input, computed once per sequence → controller FLOPs are tiny and are
+counted against the candidate in parity.
+
+## Invariants enforced by tests (Act §13)
+dense == plain forward (bit-exact); skip == identity; budget never exceeded
+(==K); random deterministic by seed; frozen has no grad/updates; learned params
+do update; controller FLOPs counted; routing counters correct; eval
+deterministic; checkpoint round-trips controller state.
+
+# Split, Contamination and Test-Access Policy
+
+Because CWC data is synthetic and seed-determined, "splits" are disjoint seed ranges
+and `mode="train"|"test"` in the generators. Even so, the discipline holds:
+
+- Test streams use a **fixed evaluation seed** (e.g. `manual_seed(999_999)` /
+  `999_983`) distinct from training seeds.
+- **Test labels are never used to tune** the controller or select thresholds
+  (validation only). The R3-C fix exists precisely because label-derived test capacity
+  was a leak that had to be removed.
+- Every confirmatory run records the eval seed in its verdict; re-examining a test
+  configuration means a **new benchmark version**, not silent reuse.
+- **Contamination** is structurally impossible between disjoint synthetic seed ranges,
+  but any real-workload data (future) MUST add explicit contamination checks before use.
+- Surface-leakage of the split is audited (`leakage_probe.py`); a benchmark a surface
+  probe can classify is `BENCHMARK_INVALID_SURFACE_LEAKAGE`.
+
+# Benchmark Card — semantic-route
+
+| Field | Value |
+|---|---|
+| Measured construct | need for a global semantic mechanism vs a local direct path |
+| Mechanism necessity | HARD (passive+distractor+negation) requires the semantic path; EASY does not |
+| Oracle gap | 99.8% (LCB95 > 0) — identifiable |
+| Best-fixed baseline | present (all-direct / all-semantic) |
+| **Surface leakage** | **YES** — length/histogram AUROC=1.0, first_token 0.834 (`leakage_probe.py`) |
+| Saturation | no |
+| Contamination | none (disjoint synthetic seeds) |
+| Task balance | 50/50 EASY/HARD |
+| Intended scope | routing-causality demonstration under controlled leakage |
+| Invalid extrapolations | structure-only routing; real workloads |
+| Failure modes | controller may ride surface cues (see CWC-L2a caveat) |
+| Version history | 1.0 |
+
+**Note:** because of the surface leakage, this benchmark supports routing-causality
+claims only with the leakage caveat. The surface-matched benchmark exists to remove it.
+
+# Baseline Selection and Compute-Parity Policy
+
+## Minimum baseline set (for any advantage claim)
+dense · best-fixed policy · static prune · random depth · **Mixture-of-Depths** ·
+budget-conditioned dynamic depth · recursive/shared-parameter · static MoE · sparse MoE
+· CWC. (Current mechanism experiments include dense/best-fixed/random/frozen/shuffled
+controls; MoD/MoE are cloud-blocked and marked `NOT_TESTED`.)
+
+## Parity requirements
+Every compared system shares: task, dataset, training token budget, evaluation corpus,
+optimizer family, precision, hardware class, and **hyperparameter-search budget**. The
+CWC controller + dispatch cost is always counted. Operating point chosen on validation.
+
+## Prohibited
+- no arbitrary "CWC score";
+- no hiding latency behind a FLOP number;
+- no excluding controller/parameter/optimizer cost;
+- no best-seed selection.
+
+# CWC Master Methodology
+
+**Normative constitution of the CWC research programme.** Every active experiment
+must have an unambiguous place here and must not introduce its own inconsistent rules
+of proof. Governs `claim_registry.json`, `HYPOTHESIS_REGISTRY.yaml`, and all
+`experiments/*/PREREGISTRATION*.md`.
+
+## 1. Research topic
+Whether a **causally-controlled adaptive-computation** architecture can beat static
+Transformers / MoE / dynamic-compute systems **at equal budget**.
+
+## 2. Main goal
+Move from mechanistic prototype to a **causally-validated, resource-measured,
+independently-reproducible** result — or falsify the hypothesis and preserve the
+negative.
+
+## 3. Research questions
+- **RQ-measure:** are the resource measurements deterministic and valid?
+- **RQ-identifiable:** does a benchmark with a real adaptive-compute advantage exist?
+- **RQ-routing:** can a learned controller route causally without leakage?
+- **RQ-allocation:** does adaptive allocation beat best-static by the predicted amount?
+- **RQ-reuse / RQ-plasticity / RQ-multiscale:** are the auxiliary mechanisms real & novel?
+- **RQ-pareto:** compute-equivalent Pareto advantage on real workloads?
+- **RQ-replication:** does an independent operator reproduce the primary result?
+
+## 4. Theoretical model
+Oracle gap `G = 𝔼_c[max_a(β_a+γ_{c,a})] − max_a β_a`; value of control is the
+context×choice interaction `γ`, identifiable only under a **binding budget**.
+Realized value discounts the route-decision cost: `V_realized = G − c_route`
+(`docs/IDENTIFIABILITY_THEORY.md`).
+
+## 5. Operational definitions
+Each construct (routing, adaptive allocation, functional reuse, plasticity,
+identifiability) has a machine-checkable operationalization in its experiment's
+`PREREGISTRATION` and `verdict.json`. No construct is claimed without one.
+
+## 6. Claim ladder
+L0 measurement → L1 identifiability → L2 routing causality → L2′ allocation →
+L3 reuse → L4 plasticity → L7 Pareto → L8 replication. **No claim may sit above its
+gate.** Ladder state is `claim_registry.json` and `SYSTEM.md`.
+
+## 7. Evidence hierarchy
+preregistration < code+tests (verification) < single-seed run < multi-seed
+confirmatory run with controls < independent replication. A claim's status is bounded
+by the highest tier that supports it.
+
+## 8. Exploratory vs confirmatory
+Confirmatory claims require a preregistration committed **before** the run timestamp.
+Exploratory findings (e.g. the plasticity λ≈1 revival) are labelled `EXPLORATORY` and
+cannot be reported as confirmatory without a new preregistered run.
+
+## 9–10. Unit of analysis / experimental unit
+The **experimental unit is the model seed** (paired across compared systems), not the
+token. Statistical hierarchy: init → training corpus → eval corpus → task family →
+example. Tokens of one run are not independent units.
+
+## 11. Control taxonomy
+random (compute-matched), frequency-matched random, frozen controller, reinitialized
+controller, constant-mean controller, route-shuffled, forced-correct, forced-wrong,
+anti-route, module-swap, score-permutation, input-feature ablation.
+
+## 12. Baseline taxonomy
+dense; best-fixed policy; static prune; random depth; MoD; budget-conditioned dynamic
+depth; recursive/shared-parameter; static MoE; sparse MoE; CWC. Compute-matched.
+
+## 13. Intervention taxonomy
+oracle-supervised (DIAGNOSTIC_ONLY), counterfactual value distillation (not autonomous),
+end-to-end (only this licenses an autonomous-routing claim).
+
+## 14. Benchmark-identifiability gate
+Before training any controller: prove `LCB95(oracle − best_fixed) > 0` and run the
+surface-leakage probe. A benchmark a surface probe can classify is `BENCHMARK_INVALID`.
+
+## 15. Compute-parity rules
+No advantage claim without identical task, dataset, training budget, hardware class,
+precision, evaluation protocol, hyperparameter-search budget, and **complete controller +
+dispatch cost** included.
+
+## 16. Stopping rules
+Confirmatory runs stop at the preregistered seed count / step budget — never at a
+favorable seed. Pilot seeds are excluded from confirmatory inference.
+
+## 17. Failure rules (fail-closed)
+Ambiguity, insufficient power, measurement invalidity, or protocol deviation →
+`INVALID`/`BLOCKED`, never a silent pass. Energy on this hardware is
+`INSTRUMENT_INVALID` and is excluded.
+
+## 18. Negative-results policy
+Every negative is frozen immutably (`artifacts/history/`, SHA256SUMS) and registered.
+Frozen negatives are **never recomputed** and never deleted.
+
+## 19. Protocol amendment rules
+A claim may **not** be raised after inspecting test/holdout evidence without a recorded
+amendment (`PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY.md`). Narrowing a claim is always
+permitted and is recorded.
+
+## 20. Publication & release boundaries
+No paper/System-Card claim may exceed `claim_registry.json`. Prohibited final
+statements (full validation, independent replication, scale Pareto, external approval,
+deployment-readiness) are listed in `SYSTEM.md` and enforced by the doc-status gate.
+
+# CWC Experiment Protocol Template
+
+Copy to `experiments/<exp>/PREREGISTRATION*.md` and commit **before** the confirmatory
+run (the run timestamp must be after the preregistration commit). Historical
+same-commit protocol/result files are retrospective specifications, not conforming
+examples; see `PREREGISTRATION_INTEGRITY_POLICY.md`.
+
+## Required sections
+1. **protocol_id** and immutable **version**
+2. **research_question** (link RQ-*)
+3. **H0 / H1** (link hypothesis_id in HYPOTHESIS_REGISTRY.yaml)
+4. **estimand** — the quantity the run actually estimates
+5. **independent variables**
+6. **dependent variables**
+7. **controlled variables**
+8. **confounders** (and how neutralized)
+9. **experimental unit** (default: model seed, paired)
+10. **model & data populations**
+11. **inclusion / exclusion rules**
+12. **datasets & split hashes** (link DATASET_REGISTER.yaml)
+13. **baseline selection** (from the baseline taxonomy)
+14. **compute parity** statement
+15. **metrics** (link METRIC_DEFINITIONS)
+16. **statistical tests** (link STATISTICAL_ANALYSIS_PLAN)
+17. **power / sample size**
+18. **seed policy** (model / data / eval / router seeds separated)
+19. **stopping rule**
+20. **failure rule** (fail-closed)
+21. **deviation procedure** (link PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY)
+22. **expected artifacts** (the Level-D bundle)
+23. **acceptance gate** (the exact decision rule)
+24. **prohibited interpretation** (what a positive/negative does NOT license)
+
+## Acceptance
+No confirmatory run may start without a schema-valid protocol and a preregistration
+commit preceding the run timestamp. Pilot runs are labelled and excluded from
+confirmatory inference.
+
+# Power and Sample Size Plan
+
+Companion to the SAP. Sample size `n = ceil( ((z_{1-α/2}+z_{1-β})·σ_d / δ_min)^2 )`.
+
+## Synthetic mechanism experiments (current)
+Effect sizes are large and near-deterministic:
+- WP4 Jensen gap: |measured − P(m>K)| = 0.0000 → any n≥2 is decisive; we use **8**.
+- Routing v3 REINFORCE: learned 0.009 vs random 0.48 (huge, tiny variance) → 8 seeds give
+  a paired-diff 95% UB of −0.465, far below 0.
+- Surface-matched: AUROC 0.51 ± tiny; 8 seeds × 4 arms confirm chance with no loss saving.
+
+`α = 0.05`, `power ≥ 0.80`, `δ_min` declared per protocol. For these effects, 8 seeds
+exceeds the required n by orders of magnitude; the binding constraint is **not** power
+but external validity (synthetic-only).
+
+## Real-workload / Pareto claims (NOT_TESTED)
+Before any cloud confirmatory run: estimate `σ_d` from a pilot, set `δ_min` to the
+minimum meaningful Pareto margin, compute `n`, and preregister it. Expected `n` is
+8–12 paired seeds × ≥5 corpora × baseline set — see
+`docs/evaluation/BASELINE_SELECTION_AND_COMPUTE_PARITY_POLICY.md` and the cost envelope
+`docs/reproducibility/EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
+
+# Preregistration Integrity Policy
+
+Effective 2026-07-19. This policy is prospective; it cannot repair historical
+temporal provenance.
+
+## A protocol qualifies as preregistered only if all conditions hold
+
+1. The protocol, primary estimand, exclusions, seed count, stopping rule,
+   analysis code hash, and decision rule are committed before any confirmatory
+   output is generated.
+2. The protocol commit is signed or anchored by an external immutable timestamp.
+3. The results commit is a strict descendant of the protocol commit and is not
+   the same commit.
+4. Pilot data are identified by immutable IDs and excluded from confirmatory
+   inference.
+5. Deviations are appended; the original protocol is never overwritten.
+6. Failure of any condition forces the label `RETROSPECTIVE_PROTOCOL` or
+   `EXPLORATORY`, never `PREREGISTERED`.
+
+## Current historical classification
+
+- WP3 plasticity v1: `RETROSPECTIVE_PROTOCOL`.
+- WP4 archived run: theory predates the run, but experiment protocol and results
+  share a commit; `RETROSPECTIVE_PROTOCOL`.
+- Routing-v3 REINFORCE: `RETROSPECTIVE_PROTOCOL`.
+- Routing-v3 surface-matched: `RETROSPECTIVE_PROTOCOL`.
+- WP4 v2: `POST_AUDIT_CORRECTIVE_NOT_PREREGISTERED`.
+
+No future claim may use “preregistered” based only on prose or an author-supplied
+date. Git/external timestamp order is the evidence.
+
+# ACM Artifact Evaluation Checklist (self-assessment)
+
+## Gate A — Functional
+| Criterion | Status | Evidence |
+|---|---|---|
+| Documented | Yes | ARTIFACT_README.md, SYSTEM.md |
+| Consistent | Yes | claims ⟷ artifacts ⟷ verdicts (doc-gate) |
+| Complete | Yes | all shipped results have bundles + SHA256SUMS |
+| Exercisable | Yes | `make experiment-tests` (69), `make verify-evidence` (11) |
+| Verified | Yes | VERIFICATION_RECORD.md |
+| Validated | Yes | VALIDATION_RECORD.md |
+
+## Gate B — Reusable
+| Criterion | Status |
+|---|---|
+| Modular structure | Yes (cwc/ experiments/ scripts/ schemas/) |
+| Stable interfaces | Partial (experiment runners are research-grade) |
+| Data dictionary + schemas | Yes |
+| Examples + extension points | Partial |
+| Versioning | Yes (CHANGELOG, CITATION) |
+| Test suite | Yes |
+
+## Gate C — Available
+| Criterion | Status |
+|---|---|
+| Persistent public repository | **PENDING** (GitHub org suspended — see SYSTEM.md) |
+| Immutable version | Yes (commit + release archive) |
+| DOI / identifier | **PENDING** (ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md) |
+| License | Yes (MIT) |
+
+## Gate D — Results Reproduced
+**NOT claimable** — requires an independent operator (CWC-L8 = NOT_TESTED).
+
+# Cognitive Wiring Core: A Falsification-First Study of Causally-Controlled Adaptive Computation
+
+**Status:** working technical report at commit `d920f79`+. Every number traces to a
+committed evidence bundle; no result is claimed beyond its gate.
+
+## Abstract
+We ask whether *causally-controlled* adaptive computation can beat static computation at
+equal budget. Rather than assert an architecture, we build a verified measurement
+substrate and a falsification harness, and report what survives. We contribute: (1) an
+**identifiability proposition** — under the stated additive model, the value of adaptive
+control is the context×choice interaction `γ`, realized only under a binding budget;
+(2) an executable positive control verifying the same-sample identity adaptive−static
+= **P_sample(m>K)** under an exact halt oracle (8×4), followed by a prospective
+paid-terminal-probe test that retains a logical-lookup-budget advantage across 16×7
+cells; neither is a physical Pareto result; (3) a
+dissection of learned routing into **credit-assignment** and **route-decision cost**,
+showing a leakage-free controller recovers oracle routing under a binding budget but
+that on a surface-matched task **the route decision costs as much as the computation**;
+and (4) a set of preserved negatives (functional reuse ties prior art; plasticity
+non-identifiable unbudgeted; fractal emergence unsupported). We claim **no** scale Pareto
+advantage and **no** independent replication.
+
+## 1. Introduction
+Adaptive computation promises to spend more compute on harder inputs. The open question
+is whether an observed gain is *causal control* or an artifact of extra capacity or
+optimization. CWC is built to answer this by falsification, not demonstration.
+
+## 2. Research question
+Can a learned controller route/allocate compute causally, without leakage, such that the
+advantage is not explained by static architecture, capacity, or optimization — and does
+it translate to a compute-equivalent advantage?
+
+## 3. Related work
+See `RELATED_WORK_AND_NOVELTY_REVIEW.md` (systematic search PENDING). Nearest: MoD,
+MoE/Switch, DISeL/HyperFormer, EWC/SI/MAS.
+
+## 4. Formal framework
+Oracle gap `G = 𝔼_c[max_a(β_a+γ_{c,a})] − max_a β_a`. A weakly-dominant choice forces
+`G=0`; identifiability is a **constrained** property (needs a binding budget). Realized
+value discounts route-decision cost: `V_realized = G − c_route` (§8).
+
+## 5. Methods
+Measurement substrate (WP1): deterministic FLOP/VRAM/routing instrumentation, 207 tests,
+99.46% branch coverage, 12/12 mutation kills. Mechanism-separable synthetic benchmarks
+with a proven oracle gap and a surface-leakage audit. Controllers trained under three
+regimes (oracle-supervised / value-distillation / end-to-end); only end-to-end licenses
+an autonomous-routing claim.
+
+## 6. Results
+- **Identifiability (L1):** oracle gap 99.8%, LCB95>0 — a benchmark with a real
+  adaptive-compute advantage exists.
+- **Allocation positive control (L2′):** the exact synthetic halt-oracle substrate
+  verifies adaptive−static = `P_sample(m>K)` across 8 seeds × 4 regimes. Because both
+  sides use the same sampled difficulties and `K=round(E_sample[m])`, this is an
+  executable identity, not an independent prediction or exact compute-parity result.
+- **Paid halt lookup (L2q):** with every successor observation, including the terminal
+  self-loop probe, inside the same frozen lookup budget, adaptive allocation retains a
+  paired solved lift of 0.042–0.169 across seven distributions and 16 untouched seeds.
+  This is logical-operation parity, not measured FLOP, latency, or learned-controller
+  parity.
+- **Routing credit-assignment (L2a):** the earlier straight-through end-to-end *collapse*
+  was an estimator artifact; a REINFORCE controller (`L=L_task+λ·C_use`, no privileged
+  target, label-free capacity) reaches AUROC 1.0 (learned 0.009 vs random 0.48, 8 seeds)
+  — only at λ≥1 (binding budget).
+- **Route-decision cost (L2b):** on a surface-matched benchmark (probes ~0.5), neither a
+  cheap nor an attention controller routes above chance (AUROC ~0.51), even under direct
+  supervision → the route decision costs ~the expensive computation.
+
+## 7. Causal interventions
+forced-correct ≈ oracle; forced-wrong degrades as predicted; route-shuffle removes the
+advantage; frozen/reinit/constant controllers fail — establishing that the routing signal
+is causal, within the stated (surface-caveated) scope.
+
+## 8. Negative results (preserved)
+RCFR ties DISeL-with-role (`RCFR_NOT_SUPPORTED`); metaplasticity benchmark
+non-identifiable unbudgeted; fractal emergence unsupported. All frozen, checksummed.
+
+## 9. Resource accounting
+All results reproduce in seconds–minutes on CPU / RTX 3050; $0. Energy INSTRUMENT_INVALID
+→ excluded. Cloud tiers for a scale claim: `EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
+
+## 10. Limitations & claim boundary
+Synthetic-only, small-scale, no physical scale Pareto, no independent replication. Several
+historical protocols and results entered Git together and are not auditable
+preregistrations. The first WP4 archive used an exact halt oracle and approximate
+compute matching; v4 pays the halt lookup exactly but still excludes controller and
+hardware costs. See `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`,
+`LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md`, and `claim_registry.json`.
+
+## 11. Reproducibility
+`make -f Makefile.cwc verify && make reproduce-primary`; per-result commands in
+`RESULT_TO_SCRIPT_MATRIX.csv`.
+
+## 12. Conclusion
+CWC does not (yet) show an architecture that wins at scale. It supplies a tested
+instrumentation substrate, narrow synthetic mechanisms, and falsification hypotheses
+for the decisive real-workload experiment.
+
+# Limitations, Broader Impacts and Environment
+
+## Limitations
+- **Synthetic-only.** Every confirmatory result is on procedurally-generated,
+  mechanism-separable benchmarks. No real-workload evidence exists yet.
+- **Small scale.** Depth ≤ 12 on a 4 GiB GPU; no scale generalization tested.
+- **No compute-equivalent Pareto** vs MoD/MoE (the decisive architectural test) —
+  NOT_TESTED, cloud-blocked.
+- **No independent replication.** A re-run by the author is not replication.
+- **Surface caveat.** The strongest routing positive (CWC-L2a) still has surface cues;
+  the surface-matched study shows structural routing is not cheaply learnable.
+- **Energy uninstrumented.** INSTRUMENT_INVALID on this hardware; excluded from all claims.
+
+## Broader impacts
+CWC is basic research into whether adaptive computation can be causally justified. The
+route-decision-cost result is a *cautionary* contribution: it bounds when adaptive
+routing can save compute, discouraging over-claimed efficiency. No dual-use or
+deployment concern at the current scope (LOCAL_RESEARCH_ONLY).
+
+## Environment / compute footprint
+All results reproduce in seconds–minutes on CPU / RTX 3050; total training cost $0. The
+cloud tiers that would be needed for a scale claim are estimated in
+`docs/reproducibility/EXPECTED_RUNTIME_HARDWARE_AND_COST.md` ($1.5k–$50k depending on
+scope), and are explicitly gated behind a cheap route-decision-cost pilot first.
+
+# NeurIPS 2026 Submission Checklist (self-assessment)
+
+| Item | Answer | Evidence |
+|---|---|---|
+| Claims match theory & experiments | Yes | claim_registry.json ⟷ VALIDATION_RECORD |
+| Limitations discussed | Yes | LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md |
+| Theory: assumptions & proofs | Yes | docs/IDENTIFIABILITY_THEORY.md |
+| Reproducibility: code released | Yes | full repo + `make reproduce-primary` |
+| Data: synthetic generators disclosed | Yes | DATASET_REGISTER.yaml, DATA_MANAGEMENT_AND_SHARING_PLAN.md |
+| Experimental detail | Yes | PREREGISTRATION*.md per experiment |
+| Error bars / statistical significance | Yes | STATISTICAL_ANALYSIS_PLAN; bootstrap CIs in analyzers |
+| Compute resources reported | Yes | EXPECTED_RUNTIME_HARDWARE_AND_COST.md |
+| Broader impacts | Yes | LIMITATIONS_BROADER_IMPACTS_AND_ENVIRONMENT.md |
+| Safeguards / high-risk release | N/A | LOCAL_RESEARCH_ONLY, no dual-use surface |
+| Existing assets credited | Yes | THIRD_PARTY_NOTICES.md, CITATION.cff |
+| Systematic related-work search | **PENDING** | RELATED_WORK_AND_NOVELTY_REVIEW.md (must complete before submission) |
+| Independent replication | **No** | CWC-L8 = NOT_TESTED |
+
+**Not submission-ready** until the related-work search is completed and (for any
+architectural claim) the compute-equivalent Pareto experiment is run.
+
+# CWC Programme Summary — A Falsification-Disciplined Theory of Adaptive-Computation Value
+
+*Expert-reviewable synthesis. Everything below is committed, gated, checksummed, and reproduced by
+`make -f Makefile.cwc verify`. Entry map: [`SYSTEM.md`](../../SYSTEM.md). Claim ledger:
+[`claim_registry.json`](../../claim_registry.json). Adversarial review:
+[`THREATS_TO_VALIDITY_AND_RED_TEAM.md`](THREATS_TO_VALIDITY_AND_RED_TEAM.md).*
+
+## 1. What the programme is (and is not)
+
+A **value-of-information theory of adaptive computation** — when does spending a variable resource
+(which parameters to adapt; how much compute) *by context under a budget* beat any fixed policy? —
+validated on **two independent real trained mechanisms**, statistically hardened to expert grade,
+and honestly bounded by a real-data negative. It is **not** an architecture and makes **no**
+compute-equivalent-Pareto claim (that is L7, cloud-blocked).
+
+## 2. The theory
+
+- Oracle gap `G = 𝔼_c max_a(β_a+γ_{c,a}) − max_a β_a`: value of adaptation = the context×choice
+  interaction `γ`, realised only under a binding budget (Theorems 1–5 — **genuine proofs**).
+- Value-of-information rate function `V*(R)` and the master inequality
+  `V_net ≤ min{G(λ), Δu√(I/2)} − c_route`.
+- Calibrated pilot certificate `G_lo` deciding "spend iff `G_lo > c_route`" with FPR ≤ δ, now
+  **proof-complete** (WP7) and **family-wise-error controlled** (WP8).
+
+## 3. Two real mechanism arcs (structural twins)
+
+| rung | parameter-plasticity | adaptive-compute |
+|---|---|---|
+| identifiable | L4 (`SUPPORTED_NARROWED`) | AC1 (`SUPPORTED`) |
+| learned controller recovers it | L4a | AC2 |
+| value bounded by `I(C;Z)` | L4b | AC3 |
+| realises `V*(R)` | L4i | AC4 |
+| mechanism characterization | L4c/d/e/f | — |
+| robustness / generalization | L4g/h | — |
+| foundation nulls | L4k | — |
+
+One theory governs both. The compute axis is the L7-relevant one; identifiability, a learned
+controller, an information-bounded value, and rate-function saturation all transfer to it.
+
+## 4. Expert-class statistical hardening (WP7–WP13)
+
+- **WP7** — proof-complete certificate (`b+2d`), FPR ≤ δ Monte-Carlo, positives survive.
+- **WP8** — family-wise error: Bonferroni (all-30) + Holm; positives survive.
+- **WP9** — independence assumption **not load-bearing** (coverage robust to `ρ=0.9` correlation).
+- **WP10** — de-circularized coherence: status ↔ certificate sign from **real artifacts**, both
+  directions, 0 contradictions.
+- **WP11** — Pinsker dichotomy certified over a **random sample** (regular ≈1, critical ≈0.5), not
+  four curated instances.
+- **WP12** — preregistration integrity: 14 experiments `STRICT_ANCESTOR`; same-commit only if
+  disclosed (the gate caught this run's own batching and we disclosed it).
+- **WP13** — effect sizes + bootstrap 95% CIs strictly above zero + retrospective power.
+
+## 5. The honest boundary and the frozen negatives
+
+- **WP6** — the clean identifiability does **not** transfer to real language-model per-token
+  difficulty (`G_lo=−0.09`; positive control `+0.62`). The sharp interaction is a property of the
+  synthetic benchmarks.
+- Seven `NOT_SUPPORTED` claims (L2c, L3, L4c, L4d, L4e, fractal, RD1) — the `(σ/Δ)²` law fails, the
+  collapse is drift-limited, RCFR ties prior art, real-data identifiability is absent. The negatives
+  are what make the positives credible.
+
+## 6. Ledger
+
+35 claims / 35 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
+`verify` GREEN, on GitLab. ≈18 `SUPPORTED`, 4 `SUPPORTED_NARROWED`, 7 `NOT_SUPPORTED`, 2 `NOT_TESTED`
+(L7 cloud, L8 replication).
+
+## 7. Reproducibility capsule
+
+```bash
+uv sync --frozen
+make -f Makefile.cwc verify            # lint+types+tests+coverage+mutation+experiment-tests+gates
+make -f Makefile.cwc verify-evidence   # checksum every evidence bundle
+```
+Every analysis is deterministic given committed raw seeds; every utility is frozen and checksummed;
+every verdict reproduces. A third party can replicate via
+`docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md`.
+
+## 8. The one decisive next step
+
+**L7** — compute-equivalent Pareto of the identified mechanisms vs MoD/MoE on ≥2 real workloads at
+cloud scale, then independent replication (L8). Everything here is the strongest locally-provable
+case and decision instrument *for* L7 — WP6 shows it does not come free — but it is not L7.
+
+# Related Work and Novelty Review
+
+> **Search-completeness disclosure.** This is a *working* review of the nearest prior art
+> actually relevant to the current claims, not a completed systematic survey. A full
+> systematic search (databases, dates, inclusion/exclusion) is **PENDING** and required
+> before any publication claim of novelty. Statuses below are conservative.
+
+## Search strategy (partial, 2026-07-20)
+- Databases searched in this pass: arXiv and OpenReview. Semantic Scholar and formal
+  backward/forward citation chasing remain PENDING.
+- Terms: adaptive computation, mixture-of-depths, conditional computation, dynamic
+  routing, mixture-of-experts, continual learning importance, functional reuse.
+- Inclusion: mechanisms that allocate/route/reuse compute conditionally. Exclusion:
+  pure scaling with no conditional mechanism.
+
+## Nearest mechanisms and CWC's boundary
+| Area | Nearest prior art | CWC position |
+|---|---|---|
+| Adaptive depth | Mixture-of-Depths (Raposo 2024) | CWC does NOT claim to beat MoD (NOT_TESTED); the Jensen-gap result is a *theoretical* identity CWC verifies, orthogonal to MoD's learned router |
+| Learned halting | ACT (Graves 2016), PonderNet (Banino et al. 2021), Universal Transformer (Dehghani et al. 2018) | Adaptive stopping is established prior art; CWC claims no novelty for it |
+| Conditional experts | Switch/MoE (Fedus 2022; Shazeer 2017) | CWC uses load-balance/anti-collapse ideas; makes no MoE-superiority claim |
+| Functional reuse | DISeL / HyperFormer (role-conditioned) | CWC-L3 explicitly **NOT_SUPPORTED**: RCFR ties this prior art (not novel in isolation) |
+| Continual importance | EWC / SI / MAS | CWC's plasticity governor reuses these; benchmark non-identifiable unbudgeted (NOT_TESTED) |
+
+## Novelty boundary (claim-by-claim)
+- **Identifiability theorem + route-decision-cost extension** — the clearest candidate
+  novelty: `V_realized = oracle_gap − route_decision_cost`, with the surface-matched
+  demonstration that structural difficulty is not cheaply routable. Prior-art overlap:
+  **unresolved** pending the systematic search.
+- **Paid halt-information audit** — v4 tests whether the synthetic allocation result
+  survives when the successor read that reveals convergence is inside the shared
+  budget. This is an evaluation/identifiability contribution candidate, not a new
+  adaptive-depth mechanism; novelty remains unresolved pending citation chasing.
+- **Jensen-gap = P(m>K) identity** — a derived identity, likely known in the
+  adaptive-computation/optimal-stopping literature; CWC's contribution is the exact
+  empirical verification, not the identity's discovery. Claimed conservatively.
+- All other mechanisms: **not claimed novel** (RCFR ties prior art; routing rides
+  surface cues; plasticity non-identifiable).
+
+**No unsupported novelty statement may enter a paper until this review is completed and
+each claim's overlap is resolved.**
+
+## Primary sources checked in the partial pass
+
+- Graves, *Adaptive Computation Time for Recurrent Neural Networks* (2016),
+  <https://arxiv.org/abs/1603.08983>.
+- Dehghani et al., *Universal Transformers* (2018),
+  <https://arxiv.org/abs/1807.03819>.
+- Banino et al., *PonderNet: Learning to Ponder* (2021),
+  <https://openreview.net/forum?id=1EuxRTe0WN>.
+- Raposo et al., *Mixture-of-Depths* (2024),
+  <https://arxiv.org/abs/2404.02258>.
+
+# Archival and Persistent-Identifier Plan
+
+## Current state
+- **Local immutability:** every evidence bundle carries `SHA256SUMS`; frozen negatives
+  live in `artifacts/history/`. Full backup at `~/CWC_CONSOLIDATION_BACKUP_2026-07-16/`
+  and a clean substrate zip in `~/Downloads/CWC-FULL-SUBSTRATE-*.zip`.
+- **Public archival: PENDING.** The GitHub organization is currently suspended (see
+  `SYSTEM.md`), so no public repository or DOI exists yet.
+
+## Plan (on public-release unblock)
+1. Push the frozen release (git bundle + `make-release` archives with `RELEASE_MANIFEST.json`).
+2. Mint a DOI via Zenodo (or an institutional archive) against the tagged release commit.
+3. Record the DOI in `CITATION.cff` and `ARTIFACT_README.md`.
+4. Deposit the source + evidence archives (not `.venv`) so the artifact is
+   reconstructible via `uv sync --frozen` + `make reproduce-primary`.
+
+Until then, the persistent identifier is the git commit hash + archive SHA-256.
+
+# CWC Artifact README (reviewer-facing)
+
+## Inventory
+Source (`cwc/`, `experiments/`, `scripts/`), evidence (`artifacts/`), containers
+(`containers/`), schemas (`schemas/`), docs (`docs/`). Entry point: `SYSTEM.md`.
+
+## Supported claims
+See `claim_registry.json` (machine-readable) and `docs/vnv/VALIDATION_RECORD.md`.
+
+## Unsupported / prohibited claims
+Scale Pareto, energy efficiency, autonomous routing, independent replication,
+deployment-readiness — see README §"What CWC does NOT claim".
+
+## Hardware / software
+Python 3.10.20, PyTorch 2.9.1+cu128, RTX 3050 4GiB (or CPU). Environment from `uv.lock`.
+
+## Install & smoke test
+```bash
+uv sync --frozen
+make -f Makefile.cwc experiment-tests        # 69 tests, ~5 s
+make -f Makefile.cwc verify-evidence         # 11 bundles checksum-OK
+```
+
+## Full reproduction
+```bash
+make -f Makefile.cwc verify                  # lint+types+tests+coverage+mutation+experiments
+make -f Makefile.cwc reproduce-primary       # primary result end-to-end
+```
+Expected outputs, tolerances and per-result commands: `RESULT_TO_SCRIPT_MATRIX.csv`.
+Expected runtime/cost: `EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
+
+## License / citation
+MIT (`LICENSE`); cite via `CITATION.cff`. Archival identifier: pending public release
+(GitHub org currently suspended — see `SYSTEM.md`).
+
+# Expected Runtime, Hardware and Cost
+
+## Local (all shipped results)
+- **Hardware:** RTX 3050 4GiB + CPU (depth ≤ 12 caps the model on this GPU).
+- **Runtime:** each mechanism experiment is seconds–minutes/seed on CPU; the 8-seed
+  REINFORCE routing run is ~3 min total; surface-matched 4 arms × 8 seeds a few minutes.
+- **Cost:** $0 (already run).
+- **Disk/VRAM:** artifacts ~2 MB; peak VRAM well under 4 GiB at depth ≤ 12.
+
+## Cloud (NOT_TESTED tiers G6–G8)
+Anchored on the nanochat unit (`docs/upstream/NANOCHAT_README.md`): one GPT-2-grade
+train (depth 20) ≈ 8×H100, ~1.5–2 h, ~$48 on-demand (~$15 spot), 4e19 FLOPs.
+- **Decisive Act J (one scale):** ~8 systems × 8 seeds ≈ ~$1.5k spot / ~$4–5k on-demand,
+  1–2 days on a few 8×H100 nodes.
+- **Full checklist (2 workloads × 2–3 scales × 2 hardware classes + replication):**
+  ~$20–50k, weeks. Second hardware class (e.g. RTX 4090 24 GB) for latency crossover.
+- **Cheapest insurance first:** a ~$50–100 pilot measuring the cheap-probe-vs-oracle-probe
+  route-decision-cost gap on the target workload, before committing the big spend.
+
+# External Review and Independence Protocol
+
+## Minimum independence conditions
+The replicator: did not build the mechanism under test; does not change the primary
+hypothesis after seeing results; works from a **frozen release**; receives the protocol
+before running; records the environment; keeps raw outputs; publishes a deviation log;
+writes a separate reproduction report.
+
+## Blind analysis (recommended)
+System labels hidden · run identifiers randomized · analysis performed before
+unblinding · label mapping revealed only after the verdict is locked.
+
+## Acceptance
+independent operator · frozen release · fresh environment · primary result reproduced ·
+deviations disclosed · raw artifacts available · separate signed report.
+
+**A re-run by the original author is NOT independent replication.** CWC-L8 stays
+`NOT_TESTED` until this protocol is executed by a third party.
+
+# CWC System Card
+
+Structured after public system/model-card practice (OpenAI / DeepMind / xAI). This is
+an internal transparency document; it does **not** copy their claims or imply external
+approval.
+
+| # | Field | Value |
+|---|---|---|
+| 1 | System identity | Cognitive Wiring Core (CWC) |
+| 2 | Version / commit | 1.0.0-d920f79 |
+| 3 | Purpose | evidence-first research on causally-controlled adaptive computation |
+| 4 | Architecture | measurement substrate + falsification harness + typed routing/allocation experiments on a nanochat GPT base |
+| 5 | Model dependencies | nanochat (Karpathy), PyTorch; upstream baseline pristine |
+| 6 | Data | synthetic seed-determined generators (no PII, no scraped data) |
+| 7 | Implementation | Python 3.10, PyTorch 2.9.1+cu128; uv-frozen; ruff + mypy --strict |
+| 8 | Training | small-scale, local; depth ≤ 12 on RTX 3050 |
+| 9 | Evaluation | mechanism-separable synthetic benchmarks; see VALIDATION_RECORD |
+| 10 | Compute / sustainability | local, $0; energy INSTRUMENT_INVALID → excluded |
+| 11 | Intended use | research into adaptive-compute mechanisms; reproducible evidence |
+| 12 | Excluded use | production, safety-critical, autonomous deployment, capability claims |
+| 13 | Known limitations | synthetic-only; no scale Pareto; no independent replication |
+| 14 | Known failure modes | routing rides surface cues without a matched benchmark; straight-through credit-assignment collapses |
+| 15 | Capability results | claim-tier positives + negatives (claim_registry.json) |
+| 16 | Safety evaluation | not applicable at this capability (see risk profile) |
+| 17 | Privacy | no personal data processed |
+| 18 | Security | local research code; no network/credential surface in experiments |
+| 19 | Human oversight | fully human-operated; no autonomous action |
+| 20 | Deployment status | `LOCAL_RESEARCH_ONLY · NOT_PUBLIC_SERVICE · NOT_SAFETY_CRITICAL · NOT_AUTONOMOUSLY_DEPLOYED · NO_FRONTIER_CAPABILITY_CLAIM` |
+| 21 | Unresolved risks | none at current scope; escalation triggers in risk profile |
+| 22 | Change history | `CHANGELOG.md` |
+| 23 | Contact / reporting | repository owner (Yaroslav Vasylenko) |
+
+# Executable Architecture
+
+## 1. System boundary
+
+CWK is a research kernel, not a production assistant. Its first implementation is deliberately small enough to execute locally and inspect completely. Scale is introduced only after causal value is demonstrated at smaller matched budgets.
+
+## 2. Runtime data flow
+
+```text
+Typed Observation
+      │
+      ▼
+World Coupling Port ──► Input Encoder
+      │                    │
+      │                    ▼
+      │             Working-State Tokens
+      │                    │
+      │          ┌─────────┴─────────┐
+      │          ▼                   ▼
+      │   Sparse Local/Global   Memory Reader
+      │       Communication          │
+      │          └─────────┬─────────┘
+      │                    ▼
+      │             Transit Governor
+      │                    │ route + confidence + budget
+      │                    ▼
+      │              Expert Ecology
+      │                    │
+      │                    ▼
+      │        Metacognitive Budget Governor
+      │          ┌─────────┴─────────┐
+      │          ▼                   ▼
+      │      continue            terminate
+      │          │                   │
+      └──────────┴──────────────► Output / Action
+                                   │
+                                   ▼
+                           Evidence Spine
+```
+
+## 3. Typed contracts
+
+### CognitivePacket
+
+```text
+packet_id, modality, payload, timestamp, source, confidence, permissions
+```
+
+### ActivationBudget
+
+```text
+max_active_experts
+max_attention_density
+max_memory_reads
+max_memory_writes
+max_depth
+max_latency_ms
+max_peak_memory_bytes
+```
+
+### RouteDecision
+
+```text
+selected_experts
+normalized_weights
+route_entropy
+capacity_pressure
+overflow_count
+fallback_used
+router_version
+```
+
+### MemoryTrace
+
+```text
+trace_id
+key
+value
+source_packet_ids
+write_policy
+retention_class
+created_at
+expires_at
+content_hash
+```
+
+### TopologyDelta
+
+```text
+base_topology_hash
+proposed_edges_added
+proposed_edges_removed
+utility_evidence
+constraint_checks
+commit_hash
+rollback_pointer
+```
+
+## 4. Topology model
+
+The fabric is represented by `G=(V,E,X,T)`:
+
+- `V`: functional nodes;
+- `E`: directed weighted communication edges;
+- `X`: optional coordinates or learned placement vectors;
+- `T`: node and edge types.
+
+The reference implementation begins with a ring-local graph plus sparse deterministic long-range bridges. This is a test substrate, not a claim that this topology is optimal.
+
+Normalized wiring cost:
+
+```text
+C_wire = Σ_(i,j in E) a_ij · d(x_i, x_j) / C_wire_baseline
+```
+
+Communication cost:
+
+```text
+C_comm = Σ routed_messages bytes(message) · edge_cost / baseline
+```
+
+Topological value SHALL be measured separately through path length, reachability, robustness and task performance.
+
+## 5. Routing model
+
+The router computes scores `s = f_router(h)` and applies a dynamically maintained non-gradient bias `b` before Top-K selection:
+
+```text
+I = TopK(s + b, k)
+p = softmax((s_I + b_I) / τ)
+```
+
+The bias may be updated from recent expert load to reduce collapse without injecting a task-loss gradient. The reference implementation exposes this mechanism but does not claim equivalence to any external model.
+
+## 6. Expert ecology
+
+Each layer contains:
+
+- one shared expert, always available;
+- `N` routed experts;
+- a residual path;
+- capacity and overflow accounting.
+
+Output:
+
+```text
+y = residual(x) + α_shared E_shared(x) + Σ_i∈I p_i E_i(x)
+```
+
+Specialization is evaluated by route mutual information, intervention effects and representational similarity—not by utilization alone.
+
+## 7. Memory stratigraphy
+
+The local reference kernel implements bounded episodic key–value memory. Retrieval is cosine Top-K. Writes are explicit and disabled during evaluation unless preregistered. Future layers may add trainable test-time memory, but they must preserve separation between immutable model parameters and mutable session state.
+
+## 8. Structural plasticity
+
+The first plasticity controller operates between training phases:
+
+1. collect edge utility and route statistics;
+2. propose removal of persistently low-utility edges;
+3. propose growth toward under-connected or high-demand regions;
+4. validate connectivity, budget and regression constraints;
+5. commit a versioned topology only if validation passes.
+
+No topology mutation occurs silently inside a benchmark.
+
+## 9. Metacognitive budget control
+
+The budget governor receives uncertainty, route entropy, memory confidence and remaining resource budget. Initial implementation supports fixed budgets; learned budget selection is Phase 3 work. This ordering prevents an unvalidated controller from confounding evaluation of the kernel.
+
+## 10. Evidence and claim architecture
+
+Every run produces:
+
+```text
+manifest.json
+config.resolved.yaml
+environment.json
+metrics.jsonl
+topology.json
+stdout.log
+artifacts.sha256
+claim_candidate.json (optional)
+```
+
+The Claim Firewall validates these files against schemas and policy before any result is labeled beyond `observation`.
+
+# ⊛ STATUTE OF THE COGNITIVE WEAVE KERNEL
+
+**Normative identifier:** `CWK-STATUTE-1.0`  
+**Authority state:** canonical candidate  
+**Founder and Principal Architect:** Ярослав Василенко  
+**Scope:** architecture, implementation, experimentation, evidence and claims
+
+## Article 1 — Purpose
+
+CWK exists to design, implement and falsify a resource-rational architecture for digital cognitive objects. The programme investigates whether intelligence-relevant functions can be produced more efficiently when computation is organized as a dynamically routed, sparsely activated, modular and plastic fabric rather than a uniformly activated monolith.
+
+The programme optimizes no single metric. It seeks a defensible Pareto frontier across:
+
+- task capability;
+- activated computation;
+- communication volume;
+- memory footprint and memory traffic;
+- latency and throughput;
+- adaptation cost;
+- robustness under perturbation;
+- calibration and uncertainty;
+- reproducibility;
+- safety and provenance.
+
+## Article 2 — Scientific position
+
+1. Biological neuroscience is a source of constraints and hypotheses, not proof of architectural correctness.
+2. Terms such as *brain-like*, *plastic*, *memory*, *expert*, *attention* and *cognitive* are operational labels and SHALL NOT be treated as biological equivalence.
+3. Small-world organization, wiring economy, conditional computation, memory augmentation and test-time adaptation are distinct mechanisms. Their coexistence does not establish synergy; synergy must be measured.
+4. The primary scientific object is not model scale but **functional yield per activated resource**.
+5. Absence of improvement, instability, routing collapse or negative transfer are valid results and SHALL be preserved.
+
+## Article 3 — Core thesis
+
+Let a digital cognitive object be a tuple
+
+```text
+DCO = (F, R, E, M, P, B, W, V)
+```
+
+where:
+
+- `F` is the adaptive cognitive fabric;
+- `R` is the transit governor;
+- `E` is the expert ecology;
+- `M` is memory stratigraphy;
+- `P` is the structural plasticity cycle;
+- `B` is the activation budget contract;
+- `W` is the world coupling port;
+- `V` is the evidence and verification layer.
+
+The central hypothesis is that jointly constrained routing and topology can increase capability per resource relative to matched dense, static-sparse and conventional MoE baselines.
+
+## Article 4 — Canonical optimization objective
+
+For task distribution `D`, parameters `θ`, topology `G`, router state `ρ`, memory state `μ`, and resource budget `b`:
+
+```text
+J = E_D[L_task]
+  + λ_wire    · C_wire(G)
+  + λ_active  · C_active(θ, ρ)
+  + λ_comm    · C_comm(G, ρ)
+  + λ_memory  · C_memory(μ)
+  + λ_latency · C_latency
+  + λ_route   · C_route_instability(ρ)
+  + λ_redun   · C_expert_redundancy(E)
+  + λ_forget  · C_catastrophic_forgetting
+  + λ_risk    · C_safety_violation
+```
+
+Every cost SHALL be dimensionless or normalized against a declared baseline. No weighted scalar result may conceal a dominated metric. All primary reports SHALL publish both the scalar objective and the complete metric vector.
+
+## Article 5 — Architectural invariants
+
+The following invariants are mandatory:
+
+1. **Budget observability:** every forward pass reports active experts, routed tokens, attention edges, memory reads/writes and estimated cost.
+2. **Fail-closed routing:** invalid, empty or over-budget routes fall back to a declared safe path; silent token loss is forbidden.
+3. **Shared-path availability:** at least one shared expert or residual path remains available to every token.
+4. **Topology identity:** topology version and hash are attached to every experiment.
+5. **Memory provenance:** every persistent memory item has source identity, write time, retention policy and deletion path.
+6. **Plasticity boundaries:** structural rewiring is forbidden during evaluation unless test-time adaptation is the preregistered intervention.
+7. **No hidden baseline drift:** baseline code, tokenizer, data split, precision and compute budget are frozen before comparison.
+8. **Claim–evidence binding:** every released quantitative claim resolves to an evidence bundle.
+9. **Negative-result retention:** failed runs and null findings cannot be deleted solely because they weaken the thesis.
+10. **Reproducible randomness:** every stochastic process receives an independently derived seed recorded in evidence.
+11. **Capability-Threshold Gate:** any structural plasticity operator or routing configuration that increases active node count, `max_active_experts`, or depth ceiling beyond a preregistered threshold MUST NOT be enabled for evaluation until `Q_robust` and `Q_agency` (ADR-0007) are measured at that threshold and pass their preregistered bounds. This is a precondition, structurally identical to Budget-first (§3.1 of CWC-SPEC-001), not a post-hoc penalty term.
+
+## Article 6 — Original functional components
+
+### 6.1 Adaptive Cognitive Fabric
+
+A typed, weighted, spatially embedded graph. Nodes represent computational modules; edges represent allowed communication. Edge cost may incorporate geometric distance, bandwidth, synchronization and measured transfer cost. The fabric may contain local clusters, sparse long-range bridges and protected global control channels.
+
+### 6.2 Activation Budget Contract
+
+A machine-readable contract specifying ceilings and targets for active parameters, expert fan-out, attention density, memory operations, latency, peak memory and adaptation steps. Exceeding a hard ceiling invalidates the run unless the breach itself is the preregistered test.
+
+### 6.3 Transit Governor
+
+A router producing a route decision and a confidence distribution. It SHALL expose entropy, capacity use, token drops, route churn and expert utilization. It SHALL support deterministic replay.
+
+### 6.4 Expert Ecology
+
+An ecology contains shared experts, routed experts and optional modality-specific adapters. Expertise is not inferred from names. It is quantified through intervention, routing selectivity, representational similarity, transfer and ablation.
+
+### 6.5 Memory Stratigraphy
+
+- **Working memory:** bounded current-state activations.
+- **Episodic memory:** retrievable traces with explicit retention and provenance.
+- **Persistent memory:** learned parameters or durable external state.
+
+Memory gain must exceed retrieval cost and distraction harm under matched context budgets.
+
+### 6.6 Structural Plasticity Cycle
+
+A controlled four-stage cycle:
+
+```text
+observe → propose → validate → commit
+```
+
+Candidate edges are pruned or grown from measured utility, not aesthetic graph targets. Every committed topology delta is reversible and versioned.
+
+### 6.7 Metacognitive Budget Governor
+
+Selects compute depth and resource budget from uncertainty, expected value and risk. It cannot rewrite task outputs directly; it controls resource allocation and records the decision basis.
+
+### 6.8 World Coupling Port
+
+Provides typed observations and actions. It separates perception, state estimation, planning and actuation. Simulated embodiment and real-world embodiment SHALL be reported separately.
+
+### 6.9 Evidence Spine
+
+Captures immutable run identity, source revision, environment, dependency lock, data hashes, configuration, seeds, topology, metrics, logs and artifacts.
+
+### 6.10 Claim Firewall
+
+Rejects claims when evidence is missing, post-hoc, underpowered, non-reproducible or incompatible with the stated population. It distinguishes:
+
+- observation;
+- benchmark result;
+- replicated result;
+- bounded scientific claim;
+- generalization claim.
+
+## Article 7 — Falsification obligations
+
+Every mechanism SHALL be tested against:
+
+1. parameter-count-matched dense baseline;
+2. activated-FLOP-matched baseline;
+3. static sparse baseline;
+4. conventional MoE baseline where applicable;
+5. shuffled or randomized routing control;
+6. frozen-router ablation;
+7. memory-off and memory-random controls;
+8. topology-preserving weight randomization where meaningful;
+9. seed and data-split sensitivity;
+10. out-of-distribution transfer.
+
+A proposed mechanism is rejected for the tested scope when it fails preregistered minimum effects or violates resource ceilings.
+
+## Article 8 — Authority and change control
+
+The Founder and Principal Architect owns the research direction and may approve canonical changes. No architectural decision becomes canonical without:
+
+- an Architecture Decision Record;
+- explicit alternatives;
+- measurable consequences;
+- compatibility statement;
+- migration or rollback procedure;
+- validation evidence.
+
+## Article 9 — Prohibited practices
+
+The project forbids:
+
+- retroactively changing success thresholds after viewing results;
+- comparing unmatched compute or data while implying architectural superiority;
+- presenting proxy cost as measured energy without qualification;
+- selecting only favorable seeds;
+- claiming biological fidelity from metaphor;
+- treating benchmark contamination as capability;
+- using generated citations without source verification;
+- silently modifying data, prompts or evaluation scripts;
+- declaring novelty without a documented search boundary;
+- declaring intelligence, consciousness or agency from surface behavior.
+
+## Article 10 — Definition of success
+
+Success is not a dramatic narrative. Success is a replicated, resource-matched result demonstrating a non-trivial Pareto improvement, with transparent failure boundaries, independently executable code and a claim narrower than the evidence.
+
+# Local Validation Report
+
+**Artifact:** Cognitive Weave Kernel 0.1.0  
+**Validation date:** 2026-07-15 (initial), revalidated 2026-07-16 after bibliography integration  
+**Environment:** Python 3.12.3, PyTorch 2.13.0+cu130 CPU, ruff 0.15.21, mypy 2.3.0
+
+## Executed checks
+
+| Check | Result |
+|---|---|
+| Unit and invariant tests | PASS — 11/11 (10 original + bibliography gate test) |
+| Deterministic smoke training | PASS — finite outputs and losses, byte-identical to 2026-07-15 run |
+| Repository structural validator | PASS |
+| JSON Schema meta-validation | PASS |
+| Python bytecode compilation | PASS |
+| Claim Firewall negative test | PASS — unsupported claim rejected by unit test |
+| `ruff check src tests scripts` | PASS — 0 errors (13 found and fixed 2026-07-16) |
+| `mypy --strict src/cwk scripts` | PASS — 0 errors (13 found and fixed 2026-07-16) |
+| `bibliography-verify` (`CWC-BIB-USCN-001`) | PASS — 35 primary sources, 10 claims |
+
+## Smoke evidence
+
+- active expert fraction: 0.50;
+- attention density: 0.347222;
+- route overflow: 0;
+- fallback: false;
+- memory size after controlled write: 16;
+- initial loss: 4.486858;
+- final loss: 4.261907;
+- topology hash: `be93e580b5d7c40894884a2af273a9c85fdc413c4a57e7475e6b9cfd1a50377c`.
+
+These values prove only that the reference contracts execute and emit evidence. They do not establish architectural superiority, energy efficiency or cognitive capability.
+
+## 2026-07-16 remediation notes
+
+`ruff` and `mypy --strict` were not executed in the 2026-07-15 artifact-generation environment. Running them
+surfaced 13 ruff findings (import ordering, unused import, 6 line-length overruns) and 13 mypy-strict findings
+(missing `types-jsonschema`/`types-PyYAML` stubs, three `nn.Module` buffer attributes mypy could not type through
+`register_buffer`, four `Any`-returning calls through `nn.Module.__call__`, one genuine torch stub gap on
+`Tensor.backward`). All were fixed in source; none required behavior changes to `forward()` numerics — the smoke
+evidence above is unchanged byte-for-byte. `types-jsonschema` and `types-PyYAML` were added to the `dev` extra in
+`pyproject.toml` so this gap cannot silently reopen.
+
+## Bibliography integration
+
+`docs/BIBLIOGRAPHY_US_CN.md`, `docs/claim_source_matrix.json`, `docs/SOURCE_AUDIT.csv`,
+`scripts/check_claim_source_matrix.py`, `tests/test_claim_source_matrix.py` and
+`.github/workflows/bibliography-claim-gate.yml` were merged from the external `CWC-BIB-USCN-001` package
+(SHA256SUMS.txt verified intact before merge). `CLAIMS.md` was added to bind each `CWC-CLM-*` row to its
+architecture component per `CLAUDE_CODE_INTEGRATION.md`. `CWC-*` identifiers and the author field were preserved
+unchanged, per that directive's explicit instruction not to rename canonical identifiers.
+
+# WP4 Epistemic Correction — 2026-07-19
+
+## Status
+
+This record **supersedes the interpretation**, but not the immutable files, in
+`artifacts/wp4-adaptive-depth/`.
+
+## What the evidence establishes
+
+On the exact synthetic pointer-chase substrate, a policy that runs until the
+absorbing state solves every item, while a fixed integer-depth policy solves
+exactly the items with `m <= K`. Therefore the observed solved-rate difference
+equals the empirical tail mass `P_sample(m > K)`. The implementation reproduces
+this identity and the associated controls.
+
+## What the evidence does not establish
+
+1. The equality is an executable algebraic identity of the benchmark, not an
+   independent empirical prediction: both sides are computed from the same
+   sampled `m` values.
+2. Compute is not exactly matched. Adaptive compute is `E_sample[m]`; static
+   compute is integer `K = round(E_sample[m])`. The archived runs differ by
+   approximately 0.095--0.223 hops depending on the regime.
+3. The adaptive policy receives an exact convergence signal. No learned stopping
+   rule, noisy halt signal, controller cost, or real workload is validated.
+4. The original protocol and results first entered Git history in the same
+   commit. The theory commit predates the run, but the experiment document is not
+   an independently timestamped preregistration.
+
+## Correct claim boundary
+
+**SUPPORTED_NARROWED:** the code verifies the synthetic tail-mass identity under
+an exact halt oracle. This is a unit test of allocation logic and a positive
+control for the identifiability framework.
+
+**NOT TESTED:** compute-equivalent Pareto advantage, learned adaptive stopping,
+robustness to noisy/expensive halt signals, real-workload generalization, novelty,
+and independent replication.
+
+## Required successor experiment
+
+Use an exactly matched total-operation ledger (relative mismatch <= 1%), a
+learned controller whose inference cost is charged, a prediction defined from a
+pilot distribution and evaluated on a fresh held-out sample, separately committed
+preregistration, strong adaptive baselines, and external reproduction.
+
+# Validation Record
+
+Scientific validation per claim (construct validity, identifiability, causality,
+controls, statistics, leakage). Current at commit d920f79+.
+
+| Claim | Validation basis | Verdict |
+|---|---|---|
+| CWC-L0-measurement | determinism + mutation + coverage gates | SUPPORTED |
+| CWC-L1-identifiability | oracle gap 99.8%, LCB95>0 | SUPPORTED |
+| CWC-L2-routing-causality | controls + interventions; narrowed by review | SUPPORTED_NARROWED |
+| CWC-L2a-e2e-reinforce | 8 seeds, paired diff UB −0.465, AUROC 1.0 | SUPPORTED (binding budget; surface caveat) |
+| CWC-L2b-route-decision-cost | 4 arms × 8 seeds chance; supervised probe chance | SUPPORTED |
+| CWC-L2p-jensen-gap | same-sample algebraic identity under exact halt oracle; compute mismatch disclosed | SUPPORTED_NARROWED |
+| CWC-L2p exact-hop successor | frozen budgets, 16 untouched seeds, 7 distributions, exact operator-hop equality | SUPPORTED_NARROWED_INTERNAL; free-halt scope only |
+| CWC-L2c-e2e-straightthrough | collapse; superseded by L2a | NOT_SUPPORTED |
+| CWC-L3-rcfr | ties prior art | NOT_SUPPORTED |
+| CWC-L4-plasticity | non-identifiable unbudgeted | NOT_TESTED |
+| CWC-fractal | null not rejected (archival) | NOT_SUPPORTED |
+| CWC-L7-pareto / CWC-L8-replication | not run / not self-certifiable | NOT_TESTED |
+
+WP4's original interpretation is superseded by
+`EPISTEMIC_CORRECTION_WP4_2026-07-19.md`. The two `NOT_TESTED` frontier claims are
+explicitly cloud/independent-operator blocked.

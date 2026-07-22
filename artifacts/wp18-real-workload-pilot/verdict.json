@@ -1,0 +1,104 @@
+{
+  "experiment": "wp18_real_workload_pilot",
+  "verdict": "WP18_KILL_RULE_TRIGGERED_NO_REAL_IDENTIFIABILITY",
+  "tier": "PILOT -- real-workload identifiability, small from-scratch models, no cloud",
+  "class_ceiling": "PILOT: estimates gap/variance/MDE/c_route only. NO architecture claim; cannot support L7.",
+  "workloads": {
+    "prose": {
+      "n_cells": 12,
+      "n_replicate_matrices": 60,
+      "g_lo_by_lambda": {
+        "0.0": -0.2004203392018265,
+        "0.3": -0.1967692964225392
+      },
+      "best_g_lo": -0.1967692964225392,
+      "c_route_measured_wp17": 0.0006,
+      "passes_g3": false,
+      "variance_between_shards": {
+        "n_units": 60,
+        "mean_plugin_gap": 0.0011427150832281963,
+        "sd": 0.002040606986018314,
+        "mde_at_pilot_n": 0.0007381623239385213,
+        "n_needed_for_observed_effect": 26,
+        "note": "alpha=0.05 two-sided, power=0.80. Unit = (seed x eval-shard) replicate."
+      },
+      "variance_between_seeds": {
+        "n_units": 12,
+        "mean_plugin_gap": 0.0011427150832281963,
+        "sd": 0.0015642214064426833,
+        "mde_at_pilot_n": 0.0012652482137646833,
+        "n_needed_for_observed_effect": 15,
+        "note": "alpha=0.05 two-sided, power=0.80. Unit = (seed x eval-shard) replicate."
+      },
+      "surface_probe": {
+        "modal_best_K_per_bucket": {
+          "easy": 2,
+          "med": 2,
+          "hard": 2
+        },
+        "all_buckets_share_one_best_K": true,
+        "fraction_agreeing_with_modal": {
+          "easy": 0.7666666666666667,
+          "med": 0.85,
+          "hard": 0.9833333333333333
+        }
+      },
+      "contamination_clean": true
+    },
+    "code": {
+      "n_cells": 12,
+      "n_replicate_matrices": 60,
+      "g_lo_by_lambda": {
+        "0.0": -0.17089597565477826,
+        "0.3": -0.15428436844758603
+      },
+      "best_g_lo": -0.15428436844758603,
+      "c_route_measured_wp17": 0.0006,
+      "passes_g3": false,
+      "variance_between_shards": {
+        "n_units": 60,
+        "mean_plugin_gap": 0.0012366576327217753,
+        "sd": 0.0022568197386898413,
+        "mde_at_pilot_n": 0.0008163743995957626,
+        "n_needed_for_observed_effect": 27,
+        "note": "alpha=0.05 two-sided, power=0.80. Unit = (seed x eval-shard) replicate."
+      },
+      "variance_between_seeds": {
+        "n_units": 12,
+        "mean_plugin_gap": 0.0012366576327217753,
+        "sd": 0.0012228048453954375,
+        "mde_at_pilot_n": 0.0009890873760242638,
+        "n_needed_for_observed_effect": 8,
+        "note": "alpha=0.05 two-sided, power=0.80. Unit = (seed x eval-shard) replicate."
+      },
+      "surface_probe": {
+        "modal_best_K_per_bucket": {
+          "easy": 2,
+          "med": 2,
+          "hard": 2
+        },
+        "all_buckets_share_one_best_K": true,
+        "fraction_agreeing_with_modal": {
+          "easy": 0.9,
+          "med": 0.9,
+          "hard": 0.8
+        }
+      },
+      "contamination_clean": true
+    }
+  },
+  "positive_control_synthetic_ac1_g_lo": 0.6195495381326336,
+  "decision": {
+    "rule": "a workload passes G3 iff G_lo > c_route (frozen in PREREGISTRATION.md); if BOTH fail, architecture work stops and the negative is published",
+    "c_route": 0.0006,
+    "prose_passes": false,
+    "code_passes": false,
+    "kill_rule_triggered": true
+  },
+  "prohibited_extrapolations": [
+    "real-workload compute-equivalent Pareto (L7)",
+    "any architecture claim",
+    "large-model or production behaviour",
+    "generalisation beyond byte-level from-scratch models on these two corpora"
+  ]
+}

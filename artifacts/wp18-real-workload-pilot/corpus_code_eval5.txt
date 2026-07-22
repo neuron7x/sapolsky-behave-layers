@@ -1,0 +1,2420 @@
+"""Mechanism-separable model (Act A2/A3). Two structurally non-substitutable
+operator types, so a fixed route MUST fail one task family — making adaptive
+routing identifiable (unlike WP-2 v1/v1.1 where any block solved everything).
+
+- E_A LocalOp: causal attention restricted to a local window [t-w, t]. Can copy
+  a neighbour (t-1); CANNOT reach a far position by construction.
+- E_B FarOp:  causal attention restricted to the far context [0, t-w-1]
+  (the local window is masked OUT). Can retrieve a far position; CANNOT see a
+  neighbour by construction.
+
+Task LOCAL (answer = token at t-1) is solvable only via E_A.
+Task FAR  (answer = token at position 1) is solvable only via E_B.
+K=1 active block over {one E_A, one E_B}: a fixed route fails one family; the
+oracle (route by true task) solves both. That oracle gap is the A2 gate.
+"""
+from __future__ import annotations
+
+import enum
+from dataclasses import dataclass
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+LOCAL_WINDOW = 2  # w
+ROUTER_NOISE = 0.0  # training-time gaussian noise on router logits (A3.2 anti-collapse)
+
+
+class Mode(enum.Enum):
+    DENSE = "dense"          # both blocks
+    RANDOM = "random"        # 1 random block per sequence
+    FROZEN = "frozen"        # learned-arch controller, frozen
+    FIXED = "fixed"          # always block 0 (E_A)
+    ORACLE = "oracle"        # route by TRUE task label (benchmark control)
+    LEARNED = "learned"      # controller trained
+
+
+@dataclass(frozen=True)
+class MechConfig:
+    vocab_size: int = 64
+    seq_len: int = 32
+    d_model: int = 64
+    n_head: int = 4
+    d_ff: int = 128
+    # two blocks: index 0 = E_A (local), index 1 = E_B (far). K=1.
+
+
+def _rms(x):
+    return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + 1e-6)
+
+
+def _local_mask(T: int, w: int, device) -> torch.Tensor:
+    i = torch.arange(T, device=device).view(T, 1)
+    j = torch.arange(T, device=device).view(1, T)
+    return (j <= i) & (j >= i - w)          # [t-w, t]
+
+
+def _far_mask(T: int, w: int, device) -> torch.Tensor:
+    i = torch.arange(T, device=device).view(T, 1)
+    j = torch.arange(T, device=device).view(1, T)
+    allow = (j <= i - w - 1)                  # [0, t-w-1]
+    allow[:, 0] = True                        # anchor pos 0 to avoid empty rows
+    allow[0, 0] = True
+    return allow
+
+
+class MaskedAttn(nn.Module):
+    def __init__(self, cfg: MechConfig, kind: str):
+        super().__init__()
+        self.kind = kind
+        self.n_head = cfg.n_head
+        self.dh = cfg.d_model // cfg.n_head
+        self.qkv = nn.Linear(cfg.d_model, 3 * cfg.d_model, bias=False)
+        self.proj = nn.Linear(cfg.d_model, cfg.d_model, bias=False)
+
+    def forward(self, x):
+        B, T, C = x.shape
+        allow = _local_mask(T, LOCAL_WINDOW, x.device) if self.kind == "local" else _far_mask(T, LOCAL_WINDOW, x.device)
+        bias = torch.zeros(T, T, device=x.device, dtype=x.dtype)
+        bias.masked_fill_(~allow, float("-inf"))
+        q, k, v = self.qkv(x).split(C, dim=2)
+        q = q.view(B, T, self.n_head, self.dh).transpose(1, 2)
+        k = k.view(B, T, self.n_head, self.dh).transpose(1, 2)
+        v = v.view(B, T, self.n_head, self.dh).transpose(1, 2)
+        y = F.scaled_dot_product_attention(q, k, v, attn_mask=bias.view(1, 1, T, T))
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        return self.proj(y)
+
+
+class MechBlock(nn.Module):
+    def __init__(self, cfg: MechConfig, kind: str):
+        super().__init__()
+        self.attn = MaskedAttn(cfg, kind)
+        self.fc = nn.Linear(cfg.d_model, cfg.d_ff, bias=False)
+        self.proj = nn.Linear(cfg.d_ff, cfg.d_model, bias=False)
+
+    def forward(self, x):
+        a = self.attn(_rms(x))
+        h = x + a
+        m = self.proj(F.relu(self.fc(_rms(h))).square())
+        return a + m       # contribution F(x)
+
+
+class Controller(nn.Module):
+    """Scores the 2 blocks from a per-sequence pooled summary. Global top-1."""
+
+    def __init__(self, cfg: MechConfig):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(cfg.d_model, 32), nn.ReLU(), nn.Linear(32, 2))
+
+    def forward(self, pooled):
+        return self.net(pooled)   # (B, 2)
+
+
+class MechModel(nn.Module):
+    def __init__(self, cfg: MechConfig, mode: Mode, fixed_block: int = 0):
+        super().__init__()
+        self.cfg = cfg
+        self.mode = mode
+        self.fixed_block = fixed_block
+        self.embed = nn.Embedding(cfg.vocab_size, cfg.d_model)
+        self.pos = nn.Embedding(cfg.seq_len, cfg.d_model)
+        self.block_a = MechBlock(cfg, "local")   # E_A index 0
+        self.block_b = MechBlock(cfg, "far")     # E_B index 1
+        self.head = nn.Linear(cfg.d_model, cfg.vocab_size, bias=False)
+        self.ctrl = Controller(cfg) if mode in (Mode.LEARNED, Mode.FROZEN) else None
+        if mode == Mode.FROZEN and self.ctrl is not None:
+            for p in self.ctrl.parameters():
+                p.requires_grad_(False)
+        self._last_route: torch.Tensor | None = None  # (B,) chosen block idx
+
+    def _route(self, pooled, task_label, seq_seed):
+        B = pooled.shape[0]
+        dev = pooled.device
+        if self.mode == Mode.DENSE:
+            return None  # both
+        if self.mode == Mode.FIXED:
+            return torch.full((B,), self.fixed_block, dtype=torch.long, device=dev)
+        if self.mode == Mode.ORACLE:
+            assert task_label is not None
+            return task_label.long()  # 0=local->E_A, 1=far->E_B
+        if self.mode == Mode.RANDOM:
+            g = torch.Generator(device="cpu").manual_seed((seq_seed or 0) * 7919 + B)
+            return torch.randint(0, 2, (B,), generator=g).to(dev)
+        # LEARNED / FROZEN
+        scores = self.ctrl(pooled)             # (B,2)
+        if self.training and ROUTER_NOISE > 0:
+            # noisy top-k gating (Shazeer et al.) — exploration to escape the
+            # constant-policy collapse basin in the inference regime.
+            scores = scores + torch.randn_like(scores) * ROUTER_NOISE
+        hard = scores.argmax(dim=1)
+        if self.training:
+            soft = F.softmax(scores, dim=1)
+            self._soft = soft
+        self._scores = scores
+        return hard
+
+    def forward(self, idx, task_label=None, seq_seed=None, forced_route=None, swap_modules=False):
+        T = idx.shape[1]
+        x = self.embed(idx) + self.pos(torch.arange(T, device=idx.device)).unsqueeze(0)
+        pooled = x.mean(dim=1)
+        route = forced_route if forced_route is not None else self._route(pooled, task_label, seq_seed)
+        if route is None:  # dense
+            x = x + self.block_a(x) + self.block_b(x)
+            self._last_route = torch.full((idx.shape[0],), -1, device=idx.device)
+            return self.head_out(x)
+        self._last_route = route
+        use_a = route == 0
+        block_a, block_b = (self.block_b, self.block_a) if swap_modules else (self.block_a, self.block_b)
+        out = x.clone()
+        if self.training and self.mode in (Mode.LEARNED,):
+            # straight-through: run both, gate by soft prob for gradient
+            ga = self._soft[:, 0].view(-1, 1, 1)
+            gb = self._soft[:, 1].view(-1, 1, 1)
+            hard_a = use_a.float().view(-1, 1, 1)
+            hard_b = (~use_a).float().view(-1, 1, 1)
+            g_a = hard_a + (ga - ga.detach())
+            g_b = hard_b + (gb - gb.detach())
+            x = x + g_a * self.block_a(x) + g_b * self.block_b(x)
+            return self.head_out(x)
+        # eval / non-learned: real single-block execution
+        if use_a.any():
+            out[use_a] = x[use_a] + block_a(x[use_a])
+        if (~use_a).any():
+            out[~use_a] = x[~use_a] + block_b(x[~use_a])
+        return self.head_out(out)
+
+    def head_out(self, x):
+        return self.head(_rms(x))
+
+"""WP-2 multi-seed causal experiment runner. Trains all 5 configs at a fixed
+budget and identical data order per seed, evaluates on a fixed val set, and
+writes one JSON per (config, seed) with quality/compute/systems/routing.
+
+Usage: PYTHONPATH=. python experiments/wp2_routing_v1/src/runner.py \
+    --seeds 0 1 2 --out artifacts/wp2-routing-v1/raw_runs
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import time
+from pathlib import Path
+
+import torch
+import torch.nn.functional as F
+
+from experiments.wp2_routing_v1.src.compute import active_inference_flops
+from experiments.wp2_routing_v1.src.model import ModelConfig, RoutedTransformer, RoutingMode
+from experiments.wp2_routing_v1.src.task import TaskConfig, generate_batch, query_position_mask
+
+# Calibrated pre-run (recorded deviation, before any claim run): n_pairs=6 sits
+# between n_pairs=4 (solved even at K=4, no headroom) and n_pairs=8 (unsolved
+# even dense); lr=1e-3 learns decisively where 3e-4 plateaued.
+TASK = TaskConfig(n_pairs=6)
+MCFG = ModelConfig()
+TRAIN_STEPS = 2500
+BATCH = 64
+LR = 1e-3
+WD = 0.01
+WARMUP = 100
+EVAL_EVERY = 500
+VAL_SEQ = 2000
+GRAD_CLIP = 1.0
+MODES = [RoutingMode.DENSE, RoutingMode.RANDOM, RoutingMode.FROZEN, RoutingMode.LEARNED, RoutingMode.FIXED_DEPTH]
+
+
+def _lr_at(step: int) -> float:
+    if step < WARMUP:
+        return LR * step / WARMUP
+    return LR
+
+
+def _make_val(device: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    g = torch.Generator().manual_seed(999_999)  # fixed val, same for all configs/seeds
+    xs, ys = [], []
+    remaining = VAL_SEQ
+    while remaining > 0:
+        b = min(256, remaining)
+        x, y = generate_batch(TASK, b, g, device="cpu")
+        xs.append(x); ys.append(y); remaining -= b
+    x = torch.cat(xs)[:VAL_SEQ].to(device)
+    y = torch.cat(ys)[:VAL_SEQ].to(device)
+    qmask = query_position_mask(TASK, VAL_SEQ, device=device)
+    return x, y, qmask
+
+
+@torch.no_grad()
+def _evaluate(model, x, y, qmask, device) -> dict:
+    model.eval()
+    full_ce_sum = 0.0; full_n = 0
+    q_ce_sum = 0.0; q_n = 0
+    active_total = 0.0; active_count = 0
+    util = torch.zeros(MCFG.n_layer, device=device)
+    budget_viol = 0
+    for i in range(0, x.shape[0], 256):
+        xb, yb, qb = x[i:i+256], y[i:i+256], qmask[i:i+256]
+        logits = model(xb, seq_seed=None)
+        logl = logits.view(-1, MCFG.vocab_size)
+        # query-position CE (primary discriminator)
+        qsel = qb.view(-1)
+        q_ce = F.cross_entropy(logl[qsel], yb.view(-1)[qsel], reduction="sum")
+        q_ce_sum += float(q_ce); q_n += int(qsel.sum())
+        # full-seq CE over non-pad targets
+        nonpad = yb.view(-1) != TASK.pad_token
+        f_ce = F.cross_entropy(logl[nonpad], yb.view(-1)[nonpad], reduction="sum")
+        full_ce_sum += float(f_ce); full_n += int(nonpad.sum())
+        counts = model.last_active_counts()
+        active_total += float(counts.sum()); active_count += counts.numel()
+        util += (model._last_mask.sum(dim=0))
+        budget_viol += int((counts > MCFG.budget_k).sum())
+    util = (util / active_count).tolist()
+    mean_active = active_total / active_count
+    # routing entropy/gini over per-layer utilization
+    u = torch.tensor(util) + 1e-9
+    p = u / u.sum()
+    ent = float(-(p * p.log()).sum() / torch.log(torch.tensor(float(MCFG.n_layer))))
+    su = sorted(util)
+    n = len(su); cum = sum((i + 1) * su[i] for i in range(n))
+    gini = float((2 * cum) / (n * sum(su) + 1e-9) - (n + 1) / n) if sum(su) > 0 else 0.0
+    dead = float(sum(1 for v in util if v < 1e-6) / MCFG.n_layer)
+    return {
+        "query_ce": q_ce_sum / max(q_n, 1),
+        "full_ce": full_ce_sum / max(full_n, 1),
+        "mean_active_blocks": mean_active,
+        "per_layer_utilization": util,
+        "normalized_entropy": ent,
+        "gini": gini,
+        "dead_layer_fraction": dead,
+        "budget_violations": budget_viol,
+    }
+
+
+def run_one(mode: RoutingMode, seed: int, device: str) -> dict:
+    torch.manual_seed(seed)
+    model = RoutedTransformer(MCFG, mode).to(device)
+    params = [p for p in model.parameters() if p.requires_grad]
+    opt = torch.optim.AdamW(params, lr=LR, weight_decay=WD, betas=(0.9, 0.95))
+    gen = torch.Generator().manual_seed(seed)  # data order fixed per seed
+    valx, valy, valq = _make_val(device)
+
+    best_q = float("inf"); best_eval = None; curve = []
+    t0 = time.perf_counter()
+    for step in range(TRAIN_STEPS):
+        model.train()
+        for pg in opt.param_groups:
+            pg["lr"] = _lr_at(step)
+        xb, yb = generate_batch(TASK, BATCH, gen, device="cpu")
+        xb, yb = xb.to(device), yb.to(device)
+        logits = model(xb, seq_seed=seed * 100000 + step)
+        nonpad = yb.view(-1) != TASK.pad_token
+        loss = F.cross_entropy(logits.view(-1, MCFG.vocab_size)[nonpad], yb.view(-1)[nonpad])
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(params, GRAD_CLIP)
+        opt.step()
+        if (step + 1) % EVAL_EVERY == 0 or step == TRAIN_STEPS - 1:
+            ev = _evaluate(model, valx, valy, valq, device)
+            curve.append({"step": step + 1, "query_ce": ev["query_ce"], "full_ce": ev["full_ce"]})
+            if ev["query_ce"] < best_q:
+                best_q = ev["query_ce"]; best_eval = ev
+    train_s = time.perf_counter() - t0
+
+    # systems metrics: eval-time latency + VRAM on one fixed batch
+    model.eval()
+    xb = valx[:256]
+    if device == "cuda":
+        torch.cuda.reset_peak_memory_stats(); torch.cuda.synchronize()
+    lat0 = time.perf_counter()
+    with torch.no_grad():
+        for _ in range(10):
+            model(xb, seq_seed=None)
+        if device == "cuda":
+            torch.cuda.synchronize()
+    e2e_ms = (time.perf_counter() - lat0) * 1000.0 / 10
+    peak_vram = int(torch.cuda.max_memory_allocated()) if device == "cuda" else None
+
+    active_blocks = MCFG.n_layer if mode == RoutingMode.DENSE else MCFG.budget_k
+    has_ctrl = mode in (RoutingMode.LEARNED, RoutingMode.FROZEN)
+    flops = active_inference_flops(MCFG, TASK.seq_len, active_blocks, has_ctrl)
+    ctrl_flops = MCFG.n_layer * 2 * ((MCFG.d_model + 1) * 64 + 64) if has_ctrl else 0
+
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable = sum(p.numel() for p in params)
+    ctrl_params = sum(p.numel() for p in model.controller.parameters()) if model.controller else 0
+
+    return {
+        "mode": mode.value,
+        "seed": seed,
+        "device": device,
+        "train_steps": TRAIN_STEPS,
+        "train_seconds": round(train_s, 2),
+        "best_query_ce": best_q,
+        "final_eval": best_eval,
+        "val_curve": curve,
+        "active_inference_flops": flops,
+        "controller_flops": ctrl_flops,
+        "active_blocks": active_blocks,
+        "e2e_latency_ms_per_256batch": round(e2e_ms, 4),
+        "peak_vram_allocated_bytes": peak_vram,
+        "total_params": total_params,
+        "trainable_params": trainable,
+        "controller_params": ctrl_params,
+    }
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-routing-v1/raw_runs"))
+    ap.add_argument("--steps", type=int, default=None)
+    args = ap.parse_args()
+    global TRAIN_STEPS
+    if args.steps:
+        TRAIN_STEPS = args.steps
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    for mode in MODES:
+        d = args.out / mode.value
+        d.mkdir(parents=True, exist_ok=True)
+        for seed in args.seeds:
+            res = run_one(mode, seed, device)
+            (d / f"seed{seed}.json").write_text(json.dumps(res, indent=2))
+            print(f"[{mode.value:12s} seed{seed}] best_query_ce={res['best_query_ce']:.4f} "
+                  f"active={res['active_blocks']} flops={res['active_inference_flops']:.3e} "
+                  f"t={res['train_seconds']}s")
+
+
+if __name__ == "__main__":
+    main()
+
+"""§11-13 — learned controller, routing causality, lesions. Trains the two
+paths, FREEZES them, then trains only the controller on routed task loss under
+a hard capacity (straight-through top-K). Reports causality metrics and the
+aphasia-analogue lesions.
+
+Run: PYTHONPATH=. python -m experiments.wp2_routing_v2.src.runner_final \
+    --seeds 0 1 2 3 4 5 6 7 --capacity 32 --out artifacts/wp2-routing-v2/final
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+
+import torch
+import torch.nn.functional as F
+
+from experiments.wp2_routing_v2.src.contracts import TaskKind
+from experiments.wp2_routing_v2.src.controller import topk_mask
+from experiments.wp2_routing_v2.src.runner_oracle import BATCH, VAL, _train_paths
+from experiments.wp2_routing_v2.src.task_semantic_route import (
+    deterministic_output_parser,
+    generate_batch,
+)
+from experiments.wp2_routing_v2.src.typed_graph import TypedCognitiveGraph
+
+CTRL_STEPS = 1500
+LR = 1e-3
+
+
+def _canon_loss_per_sample(out, canon):
+    B, L, V = out.shape
+    ce = F.cross_entropy(out.reshape(-1, V), canon.reshape(-1), reduction="none").reshape(B, L)
+    return ce.mean(dim=1)  # [B]
+
+
+def _train_controller(g: TypedCognitiveGraph, seed, capacity, device, steps):
+    """Unsupervised w.r.t. task labels: the controller learns a value function
+    for routing — need_score regresses toward the per-sample loss reduction the
+    semantic path buys, (direct_loss - sem_loss). Top-K by need then spends the
+    scarce semantic budget on the highest-benefit samples, minimizing total
+    task loss under the hard capacity. Uses only path losses, never task_kind.
+    """
+    for p in list(g.direct.parameters()) + list(g.semantic.parameters()):
+        p.requires_grad_(False)
+    opt = torch.optim.AdamW(g.controller.parameters(), lr=LR, weight_decay=0.01)
+    gen = torch.Generator().manual_seed(seed + 7)
+    for _ in range(steps):
+        g.train()
+        tokens, _gt, canon, _kind = generate_batch(BATCH, gen, "train", 0.5, device)
+        with torch.no_grad():
+            sem, _ = g.semantic(tokens)
+            direct = g.direct(tokens)
+            benefit = (_canon_loss_per_sample(direct, canon)
+                       - _canon_loss_per_sample(sem, canon))   # high for HARD
+        need = g.controller.need_score(tokens)
+        loss = F.mse_loss(need, benefit)
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(g.controller.parameters(), 1.0)
+        opt.step()
+    return g
+
+
+def _nmi(r, t):
+    r = r.long()
+    t = t.long()
+    mi = 0.0
+    for rv in (0, 1):
+        for tv in (0, 1):
+            p_rt = ((r == rv) & (t == tv)).float().mean().item()
+            p_r = (r == rv).float().mean().item()
+            p_t = (t == tv).float().mean().item()
+            if p_rt > 0 and p_r > 0 and p_t > 0:
+                mi += p_rt * math.log(p_rt / (p_r * p_t))
+    ht = -sum((t == tv).float().mean().item() * math.log(max((t == tv).float().mean().item(), 1e-12)) for tv in (0, 1))
+    return (mi / ht) if ht > 0 else 0.0
+
+
+def _auroc(score, label):
+    s = score.cpu()
+    y = label.cpu().long()
+    pos = s[y == 1]
+    neg = s[y == 0]
+    if pos.numel() == 0 or neg.numel() == 0:
+        return float("nan")
+    # rank-based AUROC
+    order = torch.argsort(s)
+    ranks = torch.zeros_like(s)
+    ranks[order] = torch.arange(1, s.numel() + 1, dtype=s.dtype)
+    auc = (ranks[y == 1].sum() - pos.numel() * (pos.numel() + 1) / 2) / (pos.numel() * neg.numel())
+    return float(auc)
+
+
+def _balanced_acc(pred_sem, hard):
+    tpr = pred_sem[hard].float().mean().item() if hard.any() else 0.0
+    tnr = (~pred_sem[~hard]).float().mean().item() if (~hard).any() else 0.0
+    return 0.5 * (tpr + tnr)
+
+
+@torch.no_grad()
+def _eval_routed(g, mask, vx, vcanon):
+    out, _, _ = g(vx, capacity=int(mask.sum()), forced_mask=mask)
+    return _canon_loss_per_sample(out, vcanon).mean().item(), out
+
+
+@torch.no_grad()
+def _causality(g, capacity, vx, vgt, vcanon, vkind, seed, device):
+    g.eval()
+    need = g.controller.need_score(vx)
+    learned_mask = topk_mask(need, capacity)
+    hard = vkind == int(TaskKind.HARD_SEMANTIC)
+    learned_loss, _ = _eval_routed(g, learned_mask, vx, vcanon)
+    # controls
+    gg = torch.Generator(device="cpu").manual_seed(seed * 13 + vkind.shape[0])
+    rand_mask = torch.zeros(vkind.shape[0], dtype=torch.bool)
+    rand_mask[torch.randperm(vkind.shape[0], generator=gg)[:capacity]] = True
+    rand_mask = rand_mask.to(device)
+    random_loss, _ = _eval_routed(g, rand_mask, vx, vcanon)
+    # shuffled learned: same count, permuted decisions
+    perm = torch.randperm(vkind.shape[0], generator=gg).to(device)
+    shuffled_mask = learned_mask[perm]
+    shuffled_loss, _ = _eval_routed(g, shuffled_mask, vx, vcanon)
+    # forced correct (oracle) / forced wrong
+    correct_loss, _ = _eval_routed(g, hard, vx, vcanon)
+    wrong_loss, _ = _eval_routed(g, ~hard, vx, vcanon)
+    return {
+        "learned_loss": learned_loss, "random_loss": random_loss, "shuffled_loss": shuffled_loss,
+        "forced_correct_loss": correct_loss, "forced_wrong_loss": wrong_loss,
+        "route_balanced_acc": _balanced_acc(learned_mask, hard),
+        "route_nmi": _nmi(learned_mask, hard),
+        "route_auroc": _auroc(need, hard.long()),
+        "cre": (wrong_loss / correct_loss) if correct_loss > 0 else None,
+        "shuffling_loss_ratio": (shuffled_loss / learned_loss) if learned_loss > 0 else None,
+        "budget_violation": int((learned_mask.sum() > capacity).item()),
+        "semantic_used": int(learned_mask.sum().item()),
+    }
+
+
+@torch.no_grad()
+def _lesions(g, vx, vgt, vcanon, vkind, device):
+    from experiments.wp2_routing_v2.src.typed_graph import LESIONS
+    g.eval()
+    all_sem = torch.ones(vkind.shape[0], dtype=torch.bool, device=device)
+    out_intact, _, _ = g(vx, capacity=vkind.shape[0], forced_mask=all_sem, lesion="none")
+    intact_exact = (out_intact.argmax(-1) == vcanon).all(1).float().mean().item()
+    res = {}
+    for les in LESIONS:
+        out, _state, _ = g(vx, capacity=vkind.shape[0], forced_mask=all_sem, lesion=les)
+        pred = out.argmax(-1)
+        exact = (pred == vcanon).all(1).float().mean().item()
+        # semantic feedback: parse output back, compare tuple
+        rec = deterministic_output_parser(pred)
+        tuple_ok = ((rec.subject == vgt.subject) & (rec.relation == vgt.relation)
+                    & (rec.object == vgt.object) & (rec.polarity == vgt.polarity)).float().mean().item()
+        sv = (pred[:, 0] >= 10) & (pred[:, 0] < 26) & (pred[:, 1] >= 30) & (pred[:, 1] < 38)
+        syntax_valid = sv.float().mean().item()
+        res[les] = {"canonical_exact": exact, "tuple_correct": tuple_ok, "syntax_valid": syntax_valid,
+                    "fnr_syntax_valid_wrong_tuple": (syntax_valid - tuple_ok) if tuple_ok < 1 else 0.0}
+    res["_intact_exact"] = intact_exact
+    return res
+
+
+def run_seed(seed, capacity, device, path_steps, ctrl_steps):
+    g, _ = _train_paths(seed, device, path_steps)
+    g = _train_controller(g, seed, capacity, device, ctrl_steps)
+    gv = torch.Generator().manual_seed(999_999)
+    vx, vgt, vcanon, vkind = generate_batch(VAL, gv, "test", 0.5, device)
+    # capacity = actual HARD count -> ORACLE fills budget exactly, all modes
+    # compute-matched, and a perfect learned router has 0 budget violations.
+    eval_cap = int((vkind == int(TaskKind.HARD_SEMANTIC)).sum().item())
+    caus = _causality(g, eval_cap, vx, vgt, vcanon, vkind, seed, device)
+    les = _lesions(g, vx, vgt, vcanon, vkind, device)
+    return {"seed": seed, "capacity": capacity, "causality": caus, "lesions": les}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, nargs="+", default=list(range(8)))
+    ap.add_argument("--capacity", type=int, default=32)
+    ap.add_argument("--path-steps", type=int, default=2000)
+    ap.add_argument("--ctrl-steps", type=int, default=CTRL_STEPS)
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-routing-v2/final"))
+    args = ap.parse_args()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    (args.out / "raw_runs").mkdir(parents=True, exist_ok=True)
+    for seed in args.seeds:
+        r = run_seed(seed, args.capacity, device, args.path_steps, args.ctrl_steps)
+        (args.out / "raw_runs" / f"seed{seed}.json").write_text(json.dumps(r, indent=2))
+        c = r["causality"]
+        print(f"[s{seed}] learned={c['learned_loss']:.3f} random={c['random_loss']:.3f} "
+              f"shuffled={c['shuffled_loss']:.3f} bal_acc={c['route_balanced_acc']:.3f} "
+              f"nmi={c['route_nmi']:.3f} auroc={c['route_auroc']:.3f} cre={c['cre']:.1f}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Semantic-tuple benchmark (Act §4). Every example encodes
+(subject, relation, object, polarity). Canonical target = [subj, rel, obj, pol].
+
+EASY_DIRECT: canonical order at positions 0-3 (solvable by a local path).
+HARD_SEMANTIC: passive / distractor-prefix / negation transformations that put
+the canonical fields beyond a 4-token local window (need global attention).
+
+Compositional split by (subject, relation, object) tuple identity — no test
+tuple appears in training.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import torch
+
+from experiments.wp2_routing_v2.src.contracts import (
+    ENT_HI,
+    ENT_LO,
+    F_BY,
+    F_DIST,
+    F_IS,
+    F_SEP,
+    NEG,
+    NOT,
+    PAD,
+    POS,
+    REL_HI,
+    REL_LO,
+    SemanticState,
+    TaskKind,
+)
+
+SEQ_LEN = 12
+L_OUT = 4
+
+
+@dataclass(frozen=True)
+class SplitSpec:
+    split: str = "train"   # train | val | test
+    p_hard: float = 0.5
+
+
+def _tuple_in_split(subj: int, rel: int, obj: int, split: str) -> bool:
+    # deterministic hash bucket over the tuple; test/val hold out disjoint tuples
+    h = (subj * 131 + rel * 17 + obj) % 10
+    if split == "test":
+        return h in (0, 1)          # 20% of tuples reserved for test
+    if split == "val":
+        return h in (2, 3)          # 20% for val (unseen templates handled below)
+    return h >= 4                   # 60% train
+
+
+def _sample_tuple(gen: torch.Generator, split: str) -> tuple[int, int, int]:
+    for _ in range(64):
+        subj = int(torch.randint(ENT_LO, ENT_HI, (1,), generator=gen).item())
+        obj = int(torch.randint(ENT_LO, ENT_HI, (1,), generator=gen).item())
+        rel = int(torch.randint(REL_LO, REL_HI, (1,), generator=gen).item())
+        if obj != subj and _tuple_in_split(subj, rel, obj, split):
+            return subj, rel, obj
+    return subj, rel, obj
+
+
+def _polarity_token(pol: int) -> int:
+    return POS if pol == 1 else NEG
+
+
+def generate_batch(batch_size: int, gen: torch.Generator, split: str = "train",
+                   p_hard: float = 0.5, device: str = "cpu"):
+    tokens = torch.full((batch_size, SEQ_LEN), PAD, dtype=torch.long)
+    canonical = torch.full((batch_size, L_OUT), PAD, dtype=torch.long)
+    subj_t = torch.zeros(batch_size, dtype=torch.long)
+    rel_t = torch.zeros(batch_size, dtype=torch.long)
+    obj_t = torch.zeros(batch_size, dtype=torch.long)
+    pol_t = torch.zeros(batch_size, dtype=torch.long)
+    kind = torch.zeros(batch_size, dtype=torch.long)
+
+    for b in range(batch_size):
+        subj, rel, obj = _sample_tuple(gen, split)
+        hard = bool(torch.rand(1, generator=gen).item() < p_hard)
+        pol = 1
+        if hard:
+            kind[b] = int(TaskKind.HARD_SEMANTIC)
+            template = int(torch.randint(0, 3, (1,), generator=gen).item())
+            if template == 0:  # passive: [obj, F_IS, rel, F_BY, subj]
+                seq = [obj, F_IS, rel, F_BY, subj]
+            elif template == 1:  # distractor prefix: [F_DIST, dist, F_SEP, subj, rel, obj]
+                dist = int(torch.randint(ENT_LO, ENT_HI, (1,), generator=gen).item())
+                seq = [F_DIST, dist, F_SEP, subj, rel, obj]
+            else:  # negation: [NOT, dist, F_SEP, subj, rel, obj] -> polarity flips
+                dist = int(torch.randint(ENT_LO, ENT_HI, (1,), generator=gen).item())
+                pol = 0
+                seq = [NOT, dist, F_SEP, subj, rel, obj]
+        else:  # EASY canonical at 0-3
+            kind[b] = int(TaskKind.EASY_DIRECT)
+            seq = [subj, rel, obj, _polarity_token(1)]
+        tokens[b, :len(seq)] = torch.tensor(seq, dtype=torch.long)
+        canonical[b] = torch.tensor([subj, rel, obj, _polarity_token(pol)], dtype=torch.long)
+        subj_t[b], rel_t[b], obj_t[b], pol_t[b] = subj, rel, obj, pol
+
+    state = SemanticState(subject=subj_t.to(device), relation=rel_t.to(device),
+                          object=obj_t.to(device), polarity=pol_t.to(device),
+                          confidence=torch.ones(batch_size, device=device))
+    return (tokens.to(device), state, canonical.to(device), kind.to(device))
+
+
+def deterministic_output_parser(output_tokens: torch.Tensor) -> SemanticState:
+    """Parse a canonical [B,4] output back into the discrete tuple (Act §14)."""
+    subj = output_tokens[:, 0]
+    rel = output_tokens[:, 1]
+    obj = output_tokens[:, 2]
+    pol = (output_tokens[:, 3] == POS).long()
+    return SemanticState(subject=subj, relation=rel, object=obj, polarity=pol,
+                         confidence=torch.ones(output_tokens.shape[0], device=output_tokens.device))
+
+import torch
+from experiments.wp2_routing_v2.src.task_semantic_route import generate_batch, deterministic_output_parser, L_OUT
+from experiments.wp2_routing_v2.src.contracts import TaskKind, POS
+
+def test_canonical_target_matches_state():
+    g = torch.Generator().manual_seed(0)
+    tok, st, canon, kind = generate_batch(32, g, "train", 0.5)
+    assert canon.shape[1] == L_OUT
+    assert torch.equal(canon[:, 0], st.subject)
+    assert torch.equal(canon[:, 1], st.relation)
+    assert torch.equal(canon[:, 2], st.object)
+
+def test_easy_is_canonical_prefix():
+    g = torch.Generator().manual_seed(1)
+    tok, st, canon, kind = generate_batch(64, g, "train", 1.0)  # all hard? no, p=1
+    g2 = torch.Generator().manual_seed(1)
+    tok, st, canon, kind = generate_batch(64, g2, "train", 0.0)  # all easy
+    easy = kind == int(TaskKind.EASY_DIRECT)
+    assert easy.all()
+    assert torch.equal(tok[:, :3], canon[:, :3])  # easy surface == canonical prefix
+
+def test_deterministic_output_parser_roundtrip():
+    g = torch.Generator().manual_seed(2)
+    tok, st, canon, kind = generate_batch(16, g, "train", 0.5)
+    rec = deterministic_output_parser(canon)
+    assert torch.equal(rec.subject, st.subject)
+    assert torch.equal(rec.relation, st.relation)
+
+def test_compositional_split_disjoint():
+    from experiments.wp2_routing_v2.src.task_semantic_route import _tuple_in_split
+    # a tuple cannot be in both train and test
+    for s in range(10, 26):
+        for r in range(30, 38):
+            for o in range(10, 26):
+                if _tuple_in_split(s, r, o, "test"):
+                    assert not _tuple_in_split(s, r, o, "train")
+
+"""python -m pytest experiments/wp3_plasticity_v1/tests/test_importance.py -q
+
+Behavioural + determinism checks for the three parameter-importance estimators
+in :mod:`cwc.plasticity.importance`.
+
+Toy task (CPU, tiny, fully seeded): a linearly-separable 3-class problem whose
+inputs are *already* good features. The model is ``l2 · relu(l1 · x)`` with no
+biases and equal in/hidden/out width. Layer ``l1`` is initialised to the
+identity, so it starts as an (optimal) pass-through and barely has to move;
+layer ``l2`` is initialised randomly and must learn the entire feature->class
+readout. Layer ``l2`` is therefore the *essential* layer — it does the real
+work — and we assert that SI and MAS rank it above the near-frozen ``l1``.
+"""
+from __future__ import annotations
+
+import pytest
+
+torch = pytest.importorskip("torch")
+
+from torch import Tensor, nn  # noqa: E402
+
+from cwc.plasticity.importance import (  # noqa: E402
+    aggregate_to_groups,
+    ewc_importance,
+    mas_importance,
+    si_accumulate,
+    si_finalize,
+    si_zero_accumulator,
+)
+
+SEED = 1234
+DEVICE = torch.device("cpu")
+DIM = 6
+N_CLASSES = 3
+N_SAMPLES = 90
+
+
+class TwoLayer(nn.Module):
+    """l1 (identity-init, near-frozen) -> ReLU -> l2 (random-init, essential)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.l1 = nn.Linear(DIM, DIM, bias=False)
+        self.l2 = nn.Linear(DIM, N_CLASSES, bias=False)
+        with torch.no_grad():
+            self.l1.weight.copy_(torch.eye(DIM))
+
+    def forward(self, x: Tensor) -> Tensor:
+        return self.l2(torch.relu(self.l1(x)))
+
+
+def _make_data() -> tuple[Tensor, Tensor]:
+    """Linearly-separable clusters: class c lives around prototype 2*e_c."""
+    g = torch.Generator().manual_seed(SEED)
+    labels = torch.arange(N_SAMPLES) % N_CLASSES
+    protos = torch.zeros(N_CLASSES, DIM)
+    for c in range(N_CLASSES):
+        protos[c, c] = 2.0
+    x = protos[labels] + 0.1 * torch.randn(N_SAMPLES, DIM, generator=g)
+    return x, labels
+
+
+def _batches(x: Tensor, y: Tensor, batch_size: int = 30) -> list[tuple[Tensor, Tensor]]:
+    return [
+        (x[i : i + batch_size], y[i : i + batch_size])
+        for i in range(0, x.shape[0], batch_size)
+    ]
+
+
+def _build_and_train() -> tuple[
+    TwoLayer, list[tuple[Tensor, Tensor]], dict[str, Tensor], dict[str, Tensor]
+]:
+    """Deterministically build, train briefly; return (model, batches, w_SI, ref)."""
+    torch.manual_seed(SEED)
+    model = TwoLayer()
+    x, y = _make_data()
+    batches = _batches(x, y)
+
+    ref_params = {n: p.detach().clone() for n, p in model.named_parameters()}
+    w = si_zero_accumulator(model)
+    opt = torch.optim.SGD(model.parameters(), lr=0.1)
+
+    # Brief consolidation-style training: importance is measured right after an
+    # experience, not after massive over-training. SI scores contribution *per
+    # unit displacement*, so letting the essential readout drift arbitrarily far
+    # would make SI discount it (large Δθ^2 denominator) — the realistic CL
+    # setting keeps displacements modest, where SI, EWC and MAS all agree.
+    model.train()
+    for _ in range(2):
+        for bx, by in batches:
+            prev = {n: p.detach().clone() for n, p in model.named_parameters()}
+            opt.zero_grad()
+            loss = nn.functional.cross_entropy(model(bx), by)
+            loss.backward()
+            opt.step()
+            # p.grad still holds the pre-step gradient here (Zenke-correct point).
+            si_accumulate(w, prev, model)
+
+    return model, batches, w, ref_params
+
+
+def _mean(t: Tensor) -> float:
+    return float(t.detach().mean().item())
+
+
+def test_estimators_rank_essential_layer_and_are_deterministic() -> None:
+    model, batches, w, ref_params = _build_and_train()
+    cur_params = {n: p.detach().clone() for n, p in model.named_parameters()}
+
+    # --- SI ---
+    si = si_finalize(w, cur_params, ref_params)
+    si_l1, si_l2 = _mean(si["l1.weight"]), _mean(si["l2.weight"])
+
+    # --- EWC (empirical Fisher, uses labels) ---
+    ewc = ewc_importance(model, batches, n_batches=len(batches), device=DEVICE)
+    ewc_l1, ewc_l2 = _mean(ewc["l1.weight"]), _mean(ewc["l2.weight"])
+
+    # --- MAS (unlabelled: feed bare input tensors) ---
+    inputs_only = [bx for bx, _ in batches]
+    mas = mas_importance(model, inputs_only, n_batches=len(inputs_only), device=DEVICE)
+    mas_l1, mas_l2 = _mean(mas["l1.weight"]), _mean(mas["l2.weight"])
+
+    # (a) essential layer (l2) ranks higher for at least SI and MAS.
+    assert si_l2 > si_l1, f"SI failed to rank l2>l1: l1={si_l1:.6g} l2={si_l2:.6g}"
+    assert mas_l2 > mas_l1, f"MAS failed to rank l2>l1: l1={mas_l1:.6g} l2={mas_l2:.6g}"
+    # EWC agrees here too (bonus; not part of the "at least SI and MAS" contract).
+    assert ewc_l2 > ewc_l1, f"EWC failed to rank l2>l1: l1={ewc_l1:.6g} l2={ewc_l2:.6g}"
+
+    # (b) determinism: recompute from scratch and require exact equality.
+    model2, batches2, w2, ref2 = _build_and_train()
+    cur2 = {n: p.detach().clone() for n, p in model2.named_parameters()}
+
+    si2 = si_finalize(w2, cur2, ref2)
+    ewc2 = ewc_importance(model2, batches2, n_batches=len(batches2), device=DEVICE)
+    mas2 = mas_importance(
+        model2, [bx for bx, _ in batches2], n_batches=len(batches2), device=DEVICE
+    )
+    for a, b in ((si, si2), (ewc, ewc2), (mas, mas2)):
+        for name in a:
+            assert torch.equal(a[name], b[name]), f"non-deterministic: {name}"
+
+    # (c) aggregate_to_groups returns exactly one scalar per group.
+    group_map = {"layer1": ["l1.weight"], "layer2": ["l2.weight"]}
+    for imp in (si, ewc, mas):
+        groups = aggregate_to_groups(imp, group_map)
+        assert set(groups) == {"layer1", "layer2"}
+        assert all(isinstance(v, float) for v in groups.values())
+        # l2 is the essential layer -> normalised to 1.0, l1 to 0.0 (2 params).
+        assert groups["layer2"] >= groups["layer1"]
+
+"""L4h generalization to more contexts.
+
+Scales the number of contexts |C| (each with its own best arm) at CONSTANT per-context budget
+and checks whether identifiability (certificate G_lo) and governor recovery hold, isolating
+context interference from budget dilution. See PREREGISTRATION.md. Deterministic.
+"""
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import _Rng, gap_lower_confidence_bound, plugin_gap
+
+OUT = Path(__file__).resolve().parents[3] / "artifacts/wp3-plasticity-v10-contexts"
+
+CONTEXTS = [2, 3, 4, 6]
+DELTA_MARGIN = 0.20
+SIGMA = 0.10
+PER_CONTEXT_EPISODES = 3000
+CONTROLLER_SEEDS = 8
+LR = 0.2
+DELTA = 0.05
+N_EVAL = 400            # noiseless expected utility is exact; eval seeds emulate held-out draws
+
+
+def _means(n_ctx: int) -> list[list[float]]:
+    m = []
+    for c in range(n_ctx):
+        row = [0.0] * n_ctx
+        row[c] = 1.0                              # best arm for context c
+        row[(c + 1) % n_ctx] = 1.0 - DELTA_MARGIN  # runner-up
+        m.append(row)
+    return m
+
+
+def _softmax(theta: list[float]) -> list[float]:
+    mx = max(theta)
+    ex = [math.exp(t - mx) for t in theta]
+    z = sum(ex)
+    return [e / z for e in ex]
+
+
+def _certificate(means: list[list[float]], n_ctx: int) -> dict[str, float | bool]:
+    # noiseless expected-utility matrix; per-cell se from the sampling model sigma/sqrt(N_EVAL)
+    se = SIGMA / math.sqrt(N_EVAL)
+    ghat = plugin_gap(means)
+    glo = gap_lower_confidence_bound(ghat, se, n_ctx, n_ctx, DELTA)
+    return {"gap_hat": ghat, "gap_lower_bound": glo, "identifiable": glo > 0.0}
+
+
+def _governor_recovery(means: list[list[float]], n_ctx: int) -> float:
+    oracle = sum(max(means[c]) for c in range(n_ctx)) / n_ctx
+    best_fixed = max(sum(means[c][a] for c in range(n_ctx)) / n_ctx for a in range(n_ctx))
+    gap = oracle - best_fixed
+    if gap <= 1e-9:
+        return 0.0
+    recs = []
+    for cs in range(CONTROLLER_SEEDS):
+        rng = _Rng(0xC70 ^ (cs * 613 + n_ctx))
+        theta = [[0.0] * n_ctx for _ in range(n_ctx)]
+        base = [0.0] * n_ctx
+        total = PER_CONTEXT_EPISODES * n_ctx
+        for ep in range(total):
+            c = ep % n_ctx
+            pi = _softmax(theta[c])
+            u = rng._unit()
+            cum = 0.0
+            a = n_ctx - 1
+            for i, pr in enumerate(pi):
+                cum += pr
+                if u <= cum:
+                    a = i
+                    break
+            reward = means[c][a] + SIGMA * rng.gauss()
+            base[c] = 0.99 * base[c] + 0.01 * reward
+            adv = reward - base[c]
+            for j in range(n_ctx):
+                theta[c][j] += LR * adv * ((1.0 - pi[j]) if j == a else -pi[j])
+        arm = [max(range(n_ctx), key=lambda a: theta[c][a]) for c in range(n_ctx)]
+        realised = sum(means[c][arm[c]] for c in range(n_ctx)) / n_ctx
+        recs.append((realised - best_fixed) / gap)
+    return min(recs)
+
+
+def analyze() -> dict[str, Any]:
+    per = {}
+    for nc in CONTEXTS:
+        means = _means(nc)
+        cert = _certificate(means, nc)
+        rec = _governor_recovery(means, nc)
+        per[str(nc)] = {**cert, "worst_governor_recovery": rec,
+                        "ok": bool(cert["identifiable"]) and rec >= 0.8}
+    generalizes = all(per[str(nc)]["ok"] for nc in CONTEXTS)
+    verdict = "L4H_GENERALIZES" if generalizes else "L4H_CONTEXT_INTERFERENCE"
+    return {
+        "experiment": "wp3_plasticity_v10_contexts",
+        "verdict": verdict,
+        "tier": "SYNTHETIC-PARAMETRIC — generalization of identifiability+governor to more contexts",
+        "contexts": CONTEXTS, "delta_margin": DELTA_MARGIN, "sigma": SIGMA,
+        "per_context_episodes": PER_CONTEXT_EPISODES,
+        "per_context_count": per,
+        "generalizes": generalizes,
+        "prohibited_extrapolations": ["real-workload behavior", "L7 compute-equivalent Pareto",
+                                      "energy or latency advantage", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4h CONTEXT-SCALING VERDICT: {r['verdict']}")
+    for nc in CONTEXTS:
+        p = r["per_context_count"][str(nc)]
+        print(f"  |C|={nc}  G_lo={p['gap_lower_bound']:+.4f}  identifiable={p['identifiable']}  "
+              f"gov_recovery={p['worst_governor_recovery']:.3f}  ok={p['ok']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""WP5-AC2 learned compute-controller.
+
+A reward-only REINFORCE policy pi(K|d) over the AC1 utilities: does it recover the oracle
+compute-allocation (K=d) out-of-sample? The compute-axis analog of the L4a plasticity governor.
+See PREREGISTRATION_CONTROLLER.md. Deterministic.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import random
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp5-adaptive-compute-identifiability/raw_runs"
+OUT = ROOT / "artifacts/wp5-adaptive-compute-controller"
+
+LAMBDA = 0.5
+TRAIN_SEEDS = [0, 1, 2, 3]
+EVAL_SEEDS = [4, 5, 6, 7]
+CONTROLLER_SEEDS = 8
+N_EPISODES = 4000
+LR = 0.2
+
+
+def _utils() -> tuple[dict[int, list[list[float]]], list[str], list[str]]:
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    depths = [str(d) for d in runs[0]["depths"]]
+    ks = [str(k) for k in runs[0]["k_choices"]]
+    kmax = max(int(k) for k in ks)
+    util = {r["seed"]: [[r["acc"][d][k] - LAMBDA * int(k) / kmax for k in ks] for d in depths]
+            for r in runs}
+    return util, depths, ks
+
+
+def _collapse(util):
+    return {s: [m[0][:] for _ in m] for s, m in util.items()}
+
+
+def _softmax(theta):
+    mx = max(theta)
+    ex = [math.exp(t - mx) for t in theta]
+    z = sum(ex)
+    return [e / z for e in ex]
+
+
+def _mean(util, seeds, c, a):
+    return sum(util[s][c][a] for s in seeds) / len(seeds)
+
+
+def _recovery(util, n_ctx, n_act) -> tuple[float, float, float, float]:
+    oracle = sum(max(_mean(util, EVAL_SEEDS, c, a) for a in range(n_act)) for c in range(n_ctx)) / n_ctx
+    fixed = max(range(n_act), key=lambda a: sum(_mean(util, TRAIN_SEEDS, c, a) for c in range(n_ctx)))
+    best_fixed = sum(_mean(util, EVAL_SEEDS, c, fixed) for c in range(n_ctx)) / n_ctx
+    rand = sum(_mean(util, EVAL_SEEDS, c, a) for c in range(n_ctx) for a in range(n_act)) / (n_ctx * n_act)
+    gap = oracle - best_fixed
+    if gap <= 1e-9:
+        return 0.0, oracle, best_fixed, rand
+    recs = []
+    for cs in range(CONTROLLER_SEEDS):
+        rng = random.Random(0xAC2 ^ cs)
+        theta = [[0.0] * n_act for _ in range(n_ctx)]
+        base = [0.0] * n_ctx
+        for ep in range(N_EPISODES):
+            c = ep % n_ctx
+            pi = _softmax(theta[c])
+            u = rng.random()
+            cum = 0.0
+            a = n_act - 1
+            for i, pr in enumerate(pi):
+                cum += pr
+                if u <= cum:
+                    a = i
+                    break
+            reward = util[rng.choice(TRAIN_SEEDS)][c][a]
+            base[c] = 0.99 * base[c] + 0.01 * reward
+            adv = reward - base[c]
+            for j in range(n_act):
+                theta[c][j] += LR * adv * ((1.0 - pi[j]) if j == a else -pi[j])
+        arm = [max(range(n_act), key=lambda a: theta[c][a]) for c in range(n_ctx)]
+        realised = sum(_mean(util, EVAL_SEEDS, c, arm[c]) for c in range(n_ctx)) / n_ctx
+        recs.append((realised - best_fixed) / gap)
+    return min(recs), oracle, best_fixed, rand
+
+
+def analyze() -> dict[str, Any]:
+    util, depths, ks = _utils()
+    n_ctx, n_act = len(depths), len(ks)
+    worst_rec, oracle, best_fixed, rand = _recovery(util, n_ctx, n_act)
+    null_rec, _, _, _ = _recovery(_collapse(util), n_ctx, n_act)
+
+    random_below_fixed = rand < best_fixed
+    recovered = worst_rec >= 0.8
+    null_ok = null_rec <= 0.10
+    if not (random_below_fixed and null_ok):
+        verdict = "AC2_VOID"
+    elif recovered:
+        verdict = "AC2_CONTROLLER_RECOVERS"
+    else:
+        verdict = "AC2_NOT_RECOVERED"
+
+    return {
+        "experiment": "wp5_adaptive_compute_controller",
+        "verdict": verdict,
+        "tier": "SYNTHETIC — learned reward-only compute-controller (given difficulty)",
+        "lambda": LAMBDA, "train_seeds": TRAIN_SEEDS, "eval_seeds": EVAL_SEEDS,
+        "controller_seeds": CONTROLLER_SEEDS,
+        "worst_recovery": worst_rec, "oracle": oracle, "best_fixed": best_fixed, "random": rand,
+        "null_recovery": null_rec,
+        "random_below_fixed": random_below_fixed, "recovered": recovered, "null_ok": null_ok,
+        "prohibited_extrapolations": ["inferred-difficulty routing", "real-workload",
+                                      "L7 compute-equivalent Pareto", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP5-AC2 CONTROLLER VERDICT: {r['verdict']}")
+    print(f"  held-out: oracle={r['oracle']:.4f} best_fixed={r['best_fixed']:.4f} random={r['random']:.4f}")
+    print(f"  worst recovery={r['worst_recovery']:.3f}  null_recovery={r['null_recovery']:.3f}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""WP5-AC4 compute rate-function bridge.
+
+Compares the learned compute-controller's realised value (committed AC3 recovery) against the
+master rate function V*(I) on the compute utility. Confirms V* is a valid, high-info-tight ceiling
+and documents the low-info committed-vs-RI gap. Compute-axis twin of L4i. See
+PREREGISTRATION_RATEBRIDGE.md. Deterministic.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import statistics
+from pathlib import Path
+from typing import Any
+
+from experiments.common.value_of_information_rate import optimal_value_at_rate_ri, oracle_gap_value
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp5-adaptive-compute-identifiability/raw_runs"
+AC3 = ROOT / "artifacts/wp5-adaptive-compute-inferred/verdict.json"
+OUT = ROOT / "artifacts/wp5-adaptive-compute-ratebridge"
+
+LAMBDA = 0.5
+EVAL_SEEDS = {4, 5, 6, 7}
+HIGH_INFO_BITS = 1.0
+SAT_FLOOR = 0.90
+CEIL_TOL = 1e-6
+
+
+def _utility():
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    depths = [str(d) for d in runs[0]["depths"]]
+    ks = [str(k) for k in runs[0]["k_choices"]]
+    kmax = max(int(k) for k in ks)
+    u = [[statistics.mean([r["acc"][d][k] - LAMBDA * int(k) / kmax
+                           for r in runs if r["seed"] in EVAL_SEEDS]) for k in ks] for d in depths]
+    return u, [1.0 / len(depths)] * len(depths)
+
+
+def analyze() -> dict[str, Any]:
+    u, prior = _utility()
+    gap = oracle_gap_value(u, prior)
+    ac3 = json.loads(AC3.read_text())
+
+    rows = []
+    ceiling_ok = True
+    min_high_info_sat = 1.0
+    min_sat_all = 1.0
+    for r in ac3["sweep"]:
+        info_bits = r["info_bits"]
+        v_star = optimal_value_at_rate_ri(u, info_bits * math.log(2.0), prior)
+        v_gov = max(0.0, r["recovery_mean"]) * gap
+        under = v_gov <= v_star + CEIL_TOL
+        ceiling_ok = ceiling_ok and under
+        sat = (v_gov / v_star) if v_star > 1e-9 else 1.0
+        if v_star > 1e-9:
+            min_sat_all = min(min_sat_all, sat)
+            if info_bits >= HIGH_INFO_BITS:
+                min_high_info_sat = min(min_high_info_sat, sat)
+        rows.append({"flip_p": r["flip_p"], "info_bits": info_bits, "v_gov": v_gov,
+                     "v_star": v_star, "saturation": sat, "under_ceiling": under})
+
+    high_info_ok = min_high_info_sat >= SAT_FLOOR
+    if not ceiling_ok:
+        verdict = "AC4_CEILING_VIOLATED"
+    elif high_info_ok:
+        verdict = "AC4_RATE_BRIDGE_CONFIRMED"
+    else:
+        verdict = "AC4_CEILING_ONLY"
+
+    return {
+        "experiment": "wp5_adaptive_compute_ratebridge",
+        "verdict": verdict,
+        "tier": "SYNTHETIC — theory<->mechanism bridge on the compute mechanism",
+        "oracle_gap": gap, "high_info_bits_threshold": HIGH_INFO_BITS,
+        "curve": rows,
+        "ceiling_holds": ceiling_ok,
+        "min_high_info_saturation": min_high_info_sat,
+        "min_saturation_all": min_sat_all,
+        "note": "committed greedy controller: V* ceiling holds everywhere and is tight at high info; "
+                "saturation falls at low info (committed != RI soft-routing, gap widens with contexts)",
+        "prohibited_extrapolations": ["real-workload", "L7 compute-equivalent Pareto",
+                                      "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP5-AC4 RATE-BRIDGE VERDICT: {r['verdict']}")
+    print(f"  gap={r['oracle_gap']:.4f}")
+    print("  p      I(bits)  V_gov     V*(I)     sat     under")
+    for row in r["curve"]:
+        print(f"  {row['flip_p']:.3f}  {row['info_bits']:.3f}   {row['v_gov']:+.4f}   "
+              f"{row['v_star']:+.4f}   {row['saturation']:.3f}   {row['under_ceiling']}")
+    print(f"  ceiling_holds={r['ceiling_holds']}  min high-info sat={r['min_high_info_saturation']:.3f}  "
+          f"min sat (all)={r['min_saturation_all']:.3f}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Byte-level weight-tied recurrent language model for the real-data boundary test (WP6).
+
+Same adaptive-compute mechanism as WP5 (K shared-block iterations), but next-BYTE prediction on
+real English prose (a frozen corpus of the repo's stable docs) instead of a synthetic shift task.
+"""
+from __future__ import annotations
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+VOCAB = 256          # byte-level
+D_MODEL = 64
+N_HEAD = 4
+SEQ_LEN = 64
+
+
+class Block(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.qkv = nn.Linear(D_MODEL, 3 * D_MODEL, bias=False)
+        self.proj = nn.Linear(D_MODEL, D_MODEL, bias=False)
+        self.fc = nn.Linear(D_MODEL, 4 * D_MODEL, bias=False)
+        self.fout = nn.Linear(4 * D_MODEL, D_MODEL, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b, t, c = x.shape
+        q, k, v = self.qkv(x).split(c, dim=2)
+        q = q.view(b, t, N_HEAD, c // N_HEAD).transpose(1, 2)
+        k = k.view(b, t, N_HEAD, c // N_HEAD).transpose(1, 2)
+        v = v.view(b, t, N_HEAD, c // N_HEAD).transpose(1, 2)
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        x = x + self.proj(y.transpose(1, 2).contiguous().view(b, t, c))
+        return x + self.fout(F.relu(self.fc(x)))
+
+
+class ByteRecurrentLM(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.emb = nn.Embedding(VOCAB, D_MODEL)
+        self.pos = nn.Embedding(SEQ_LEN, D_MODEL)
+        self.block = Block()
+        self.head = nn.Linear(D_MODEL, VOCAB, bias=False)
+
+    def forward(self, x: torch.Tensor, k_iter: int) -> torch.Tensor:
+        h = self.emb(x) + self.pos(torch.arange(x.shape[1], device=x.device)).unsqueeze(0)
+        for _ in range(k_iter):
+            h = self.block(h)
+        return self.head(h)
+
+"""WP6 real-LM runner: train the byte recurrent LM on the frozen real corpus and measure
+per-difficulty-bucket loss at each compute budget K. Difficulty = target-byte unigram surprisal
+tercile (an independent signal). Writes one JSON per seed. Run:
+  PYTHONPATH=. python -m experiments.wp6_real_lm.src.runner --seeds 0 1 2 3 4
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import json
+import math
+from pathlib import Path
+
+import torch
+import torch.nn.functional as F
+
+from experiments.wp6_real_lm.src.model import SEQ_LEN, VOCAB, ByteRecurrentLM
+
+ROOT = Path(__file__).resolve().parents[3]
+CORPUS = ROOT / "artifacts/wp6-real-lm/corpus.txt"
+K_CHOICES = [1, 2, 3]
+TRAIN_STEPS = 2500
+BATCH = 64
+LR = 3e-3
+EVAL_TOKENS = 4096
+BUCKETS = ["easy", "med", "hard"]
+
+
+def _data() -> torch.Tensor:
+    raw = CORPUS.read_text(encoding="utf-8").encode("utf-8", errors="ignore")
+    return torch.tensor(list(raw), dtype=torch.long)
+
+
+def _surprisal(data: torch.Tensor) -> torch.Tensor:
+    cnt = collections.Counter(data.tolist())
+    tot = len(data)
+    return torch.tensor([-math.log((cnt.get(b, 0) + 1) / tot) for b in range(VOCAB)])
+
+
+def _batch(data, n, split, device):
+    lo, hi = (0, int(len(data) * 0.9)) if split == "tr" else (int(len(data) * 0.9), len(data) - SEQ_LEN - 1)
+    gen = torch.Generator().manual_seed(1234 + (0 if split == "tr" else 1))
+    ix = torch.randint(lo, hi - SEQ_LEN - 1, (n,), generator=gen)
+    x = torch.stack([data[i:i + SEQ_LEN] for i in ix])
+    y = torch.stack([data[i + 1:i + SEQ_LEN + 1] for i in ix])
+    return x.to(device), y.to(device)
+
+
+def run_seed(seed: int, device: str) -> dict:
+    data = _data()
+    surpr = _surprisal(data)
+    torch.manual_seed(seed)
+    m = ByteRecurrentLM().to(device)
+    opt = torch.optim.AdamW(m.parameters(), lr=LR)
+    tgen = torch.Generator().manual_seed(seed + 7)
+    lo, hi = 0, int(len(data) * 0.9)
+    for step in range(TRAIN_STEPS):
+        k = K_CHOICES[step % len(K_CHOICES)]                 # teach iterable refinement
+        ix = torch.randint(lo, hi - SEQ_LEN - 1, (BATCH,), generator=tgen)
+        x = torch.stack([data[i:i + SEQ_LEN] for i in ix]).to(device)
+        y = torch.stack([data[i + 1:i + SEQ_LEN + 1] for i in ix]).to(device)
+        loss = F.cross_entropy(m(x, k).reshape(-1, VOCAB), y.reshape(-1))
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        opt.step()
+    # eval loss[bucket][K]
+    n_ev = EVAL_TOKENS // SEQ_LEN + 1
+    xb, yb = _batch(data, n_ev, "te", device)
+    ys = yb.reshape(-1)
+    s_y = surpr[ys.cpu()]
+    q1, q2 = torch.quantile(s_y, torch.tensor([1 / 3, 2 / 3]))
+    masks = {"easy": s_y <= q1, "med": (s_y > q1) & (s_y <= q2), "hard": s_y > q2}
+    loss_bk: dict[str, dict[str, float]] = {b: {} for b in BUCKETS}
+    with torch.no_grad():
+        for k in K_CHOICES:
+            per = F.cross_entropy(m(xb, k).reshape(-1, VOCAB), yb.reshape(-1), reduction="none")
+            for b in BUCKETS:
+                loss_bk[b][str(k)] = per[masks[b].to(device)].mean().item()
+    return {"seed": seed, "buckets": BUCKETS, "k_choices": K_CHOICES,
+            "cost_iters": {str(k): k for k in K_CHOICES}, "loss": loss_bk}
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp6-real-lm/raw_runs"))
+    args = ap.parse_args()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    args.out.mkdir(parents=True, exist_ok=True)
+    for seed in args.seeds:
+        r = run_seed(seed, device)
+        (args.out / f"seed{seed}.json").write_text(json.dumps(r, indent=2))
+        line = " ".join(f"{b}:K1={r['loss'][b]['1']:.2f},K3={r['loss'][b]['3']:.2f}" for b in BUCKETS)
+        print(f"[s{seed}] {line}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+Engine for efficient inference of our models.
+
+Everything works around token sequences:
+- The user can send token sequences to the engine
+- The engine returns the next token
+
+Notes:
+- The engine knows nothing about tokenization, it's purely token id sequences.
+
+The whole thing is made as efficient as possible.
+"""
+
+import torch
+import torch.nn.functional as F
+import signal
+import warnings
+from contextlib import contextmanager
+from collections import deque
+from nanochat.common import compute_init, autodetect_device_type, COMPUTE_DTYPE
+from nanochat.checkpoint_manager import load_model
+
+# -----------------------------------------------------------------------------
+# Calculator tool helpers
+@contextmanager
+def timeout(duration, formula):
+    def timeout_handler(signum, frame):
+        raise Exception(f"'{formula}': timed out after {duration} seconds")
+
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(duration)
+    yield
+    signal.alarm(0)
+
+def eval_with_timeout(formula, max_time=3):
+    try:
+        with timeout(max_time, formula):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", SyntaxWarning)
+                return eval(formula, {"__builtins__": {}}, {})
+    except Exception as e:
+        signal.alarm(0)
+        # print(f"Warning: Failed to eval {formula}, exception: {e}") # it's ok ignore wrong calculator usage
+        return None
+
+def use_calculator(expr):
+    """
+    Evaluate a Python expression safely.
+    Supports both math expressions and string operations like .count()
+    """
+    # Remove commas from numbers
+    expr = expr.replace(",", "")
+
+    # Check if it's a pure math expression (old behavior)
+    if all([x in "0123456789*+-/.() " for x in expr]):
+        if "**" in expr:  # disallow power operator
+            return None
+        return eval_with_timeout(expr)
+
+    # Check if it's a string operation we support
+    # Allow: strings (single/double quotes), .count(), letters, numbers, spaces, parens
+    allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'\"()._ "
+    if not all([x in allowed_chars for x in expr]):
+        return None
+
+    # Disallow dangerous patterns
+    dangerous_patterns = ['__', 'import', 'exec', 'eval', 'compile', 'open', 'file',
+                         'input', 'raw_input', 'globals', 'locals', 'vars', 'dir',
+                         'getattr', 'setattr', 'delattr', 'hasattr']
+    expr_lower = expr.lower()
+    if any(pattern in expr_lower for pattern in dangerous_patterns):
+        return None
+
+    # Only allow .count() method for now (can expand later)
+    if '.count(' not in expr:
+        return None
+
+    # Evaluate with timeout
+    return eval_with_timeout(expr)
+
+# -----------------------------------------------------------------------------
+class KVCache:
+    """
+    KV Cache designed for Flash Attention 3's flash_attn_with_kvcache API.
+
+    Key differences from FA2-style cache:
+    - Tensors are (B, T, H, D) not (B, H, T, D)
+    - FA3 updates the cache in-place during flash_attn_with_kvcache
+    - Position tracked per batch element via cache_seqlens tensor
+    """
+
+    def __init__(self, batch_size, num_heads, seq_len, head_dim, num_layers, device, dtype):
+        self.batch_size = batch_size
+        self.max_seq_len = seq_len
+        self.n_layers = num_layers
+        self.n_heads = num_heads
+        self.head_dim = head_dim
+        # Pre-allocate cache tensors: (n_layers, B, T, H, D)
+        self.k_cache = torch.zeros(num_layers, batch_size, seq_len, num_heads, head_dim, device=device, dtype=dtype)
+        self.v_cache = torch.zeros(num_layers, batch_size, seq_len, num_heads, head_dim, device=device, dtype=dtype)
+        # Current sequence length per batch element (FA3 needs int32)
+        self.cache_seqlens = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        # Previous token's normalized embedding for smear (set by model forward pass)
+        self.prev_embedding = None
+
+    def reset(self):
+        """Reset cache to empty state."""
+        self.cache_seqlens.zero_()
+        self.prev_embedding = None
+
+    def get_pos(self):
+        """Get current position (assumes all batch elements at same position)."""
+        return self.cache_seqlens[0].item()
+
+    def get_layer_cache(self, layer_idx):
+        """Return (k_cache, v_cache) views for a specific layer."""
+        return self.k_cache[layer_idx], self.v_cache[layer_idx]
+
+    def advance(self, num_tokens):
+        """Advance the cache position by num_tokens."""
+        self.cache_seqlens += num_tokens
+
+    def prefill(self, other):
+        """
+        Copy cached KV from another cache into this one.
+        Used when we do batch=1 prefill and then want to generate multiple samples in parallel.
+        """
+        assert self.get_pos() == 0, "Cannot prefill a non-empty KV cache"
+        assert self.n_layers == other.n_layers and self.n_heads == other.n_heads and self.head_dim == other.head_dim
+        assert self.max_seq_len >= other.max_seq_len
+        other_pos = other.get_pos()
+        self.k_cache[:, :, :other_pos, :, :] = other.k_cache[:, :, :other_pos, :, :]
+        self.v_cache[:, :, :other_pos, :, :] = other.v_cache[:, :, :other_pos, :, :]
+        self.cache_seqlens.fill_(other_pos)
+        # Copy smear state: expand batch=1 prev_embedding to num_samples
+        if other.prev_embedding is not None:
+            self.prev_embedding = other.prev_embedding.expand(self.batch_size, -1, -1).clone()
+
+# -----------------------------------------------------------------------------
+@torch.inference_mode()
+def sample_next_token(logits, rng, temperature=1.0, top_k=None):
+    """Sample a single next token from given logits of shape (B, vocab_size). Returns (B, 1)."""
+    assert temperature >= 0.0, "temperature must be non-negative"
+    if temperature == 0.0:
+        return torch.argmax(logits, dim=-1, keepdim=True)
+    if top_k is not None and top_k > 0:
+        k = min(top_k, logits.size(-1))
+        vals, idx = torch.topk(logits, k, dim=-1)
+        vals = vals / temperature
+        probs = F.softmax(vals, dim=-1)
+        choice = torch.multinomial(probs, num_samples=1, generator=rng)
+        return idx.gather(1, choice)
+    else:
+        logits = logits / temperature
+        probs = F.softmax(logits, dim=-1)
+        return torch.multinomial(probs, num_samples=1, generator=rng)
+
+# -----------------------------------------------------------------------------
+
+class RowState:
+    # Per-row state tracking during generation
+    def __init__(self, current_tokens=None):
+        self.current_tokens = current_tokens or [] # Current token sequence for this row
+        self.forced_tokens = deque() # Queue of tokens to force inject
+        self.in_python_block = False # Whether we are inside a python block
+        self.python_expr_tokens = [] # Tokens of the current python expression
+        self.completed = False # Whether this row has completed generation
+
+class Engine:
+
+    def __init__(self, model, tokenizer):
+        self.model = model
+        self.tokenizer = tokenizer # needed for tool use
+
+    @torch.inference_mode()
+    def generate(self, tokens, num_samples=1, max_tokens=None, temperature=1.0, top_k=None, seed=42):
+        """Same as generate, but does single prefill and then clones the KV cache."""
+        assert isinstance(tokens, list) and isinstance(tokens[0], int), "expecting list of ints"
+        device = self.model.get_device()
+        # Allocate the KV cache in the compute dtype so it matches what the forward pass emits
+        dtype = COMPUTE_DTYPE
+        rng = torch.Generator(device=device)
+        rng.manual_seed(seed)
+
+        # Get the special tokens we need to coordinate the tool use state machine
+        get_special = lambda s: self.tokenizer.encode_special(s)
+        python_start = get_special("<|python_start|>")
+        python_end = get_special("<|python_end|>")
+        output_start = get_special("<|output_start|>")
+        output_end = get_special("<|output_end|>")
+        assistant_end = get_special("<|assistant_end|>") # if sampled, ends row
+        bos = self.tokenizer.get_bos_token_id() # if sampled, ends row
+
+        # 1) Run a batch 1 prefill of the prompt tokens
+        m = self.model.config
+        kv_model_kwargs = {"num_heads": m.n_kv_head, "head_dim": m.n_embd // m.n_head, "num_layers": m.n_layer}
+        kv_cache_prefill = KVCache(
+            batch_size=1,
+            seq_len=len(tokens),
+            device=device,
+            dtype=dtype,
+            **kv_model_kwargs,
+        )
+        ids = torch.tensor([tokens], dtype=torch.long, device=device)
+        logits = self.model.forward(ids, kv_cache=kv_cache_prefill)
+        logits = logits[:, -1, :].expand(num_samples, -1)  # (num_samples, vocab_size)
+
+        # 2) Replicate the KV cache for each sample/row
+        kv_length_hint = (len(tokens) + max_tokens) if max_tokens is not None else self.model.config.sequence_len
+        kv_cache_decode = KVCache(
+            batch_size=num_samples,
+            seq_len=kv_length_hint,
+            device=device,
+            dtype=dtype,
+            **kv_model_kwargs,
+        )
+        kv_cache_decode.prefill(kv_cache_prefill)
+        del kv_cache_prefill # no need to keep this memory around
+
+        # 3) Initialize states for each sample
+        row_states = [RowState(tokens.copy()) for _ in range(num_samples)]
+
+        # 4) Main generation loop
+        num_generated = 0
+        while True:
+            # Stop condition: we've reached max tokens
+            if max_tokens is not None and num_generated >= max_tokens:
+                break
+            # Stop condition: all rows are completed
+            if all(state.completed for state in row_states):
+                break
+
+            # Sample the next token for each row
+            next_ids = sample_next_token(logits, rng, temperature, top_k)  # (B, 1)
+            sampled_tokens = next_ids[:, 0].tolist()
+
+            # Process each row: choose the next token, update state, optional tool use
+            token_column = [] # contains the next token id along each row
+            token_masks = [] # contains the mask (was it sampled (1) or forced (0)?) along each row
+            for i, state in enumerate(row_states):
+                # Select the next token in this row
+                is_forced = len(state.forced_tokens) > 0 # are there tokens waiting to be forced in deque?
+                token_masks.append(0 if is_forced else 1) # mask is 0 if forced, 1 if sampled
+                next_token = state.forced_tokens.popleft() if is_forced else sampled_tokens[i]
+                token_column.append(next_token)
+                # Update the state of this row to include the next token
+                state.current_tokens.append(next_token)
+                # On <|assistant_end|> or <|bos|>, mark the row as completed
+                if next_token == assistant_end or next_token == bos:
+                    state.completed = True
+                # Handle tool logic
+                if next_token == python_start:
+                    state.in_python_block = True
+                    state.python_expr_tokens = []
+                elif next_token == python_end and state.in_python_block:
+                    state.in_python_block = False
+                    if state.python_expr_tokens:
+                        expr = self.tokenizer.decode(state.python_expr_tokens)
+                        result = use_calculator(expr)
+                        if result is not None:
+                            result_tokens = self.tokenizer.encode(str(result))
+                            state.forced_tokens.append(output_start)
+                            state.forced_tokens.extend(result_tokens)
+                            state.forced_tokens.append(output_end)
+                    state.python_expr_tokens = []
+                elif state.in_python_block:
+                    state.python_expr_tokens.append(next_token)
+
+            # Yield the token column
+            yield token_column, token_masks
+            num_generated += 1
+
+            # Prepare logits for next iteration
+            ids = torch.tensor(token_column, dtype=torch.long, device=device).unsqueeze(1)
+            logits = self.model.forward(ids, kv_cache=kv_cache_decode)[:, -1, :]  # (B, vocab_size)
+
+    def generate_batch(self, tokens, num_samples=1, **kwargs):
+        """
+        Non-streaming batch generation that just returns the final token sequences.
+        Returns a list of token sequences (list of lists of ints).
+        Terminal tokens (assistant_end, bos) are not included in the results.
+        """
+        assistant_end = self.tokenizer.encode_special("<|assistant_end|>")
+        bos = self.tokenizer.get_bos_token_id()
+        results = [tokens.copy() for _ in range(num_samples)]
+        masks = [[0] * len(tokens) for _ in range(num_samples)]
+        completed = [False] * num_samples
+        for token_column, token_masks in self.generate(tokens, num_samples, **kwargs):
+            for i, (token, mask) in enumerate(zip(token_column, token_masks)):
+                if not completed[i]:
+                    if token == assistant_end or token == bos:
+                        completed[i] = True
+                    else:
+                        results[i].append(token)
+                        masks[i].append(mask)
+            # Stop if all rows are completed
+            if all(completed):
+                break
+        return results, masks
+
+
+if __name__ == "__main__":
+    """
+    Quick inline test to make sure that the naive/slow model.generate function
+    is equivalent to the faster Engine.generate function here.
+    """
+    import time
+    # init compute
+    device_type = autodetect_device_type()
+    ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
+    # load the model and tokenizer
+    model, tokenizer, meta = load_model("base", device, phase="eval")
+    bos_token_id = tokenizer.get_bos_token_id()
+    # common hyperparameters
+    kwargs = dict(max_tokens=64, temperature=0.0)
+    # set the starting prompt
+    prompt_tokens = tokenizer.encode("The chemical formula of water is", prepend=bos_token_id)
+    # generate the reference sequence using the model.generate() function
+    generated_tokens = []
+    torch.cuda.synchronize()
+    t0 = time.time()
+    stream = model.generate(prompt_tokens, **kwargs)
+    for token in stream:
+        generated_tokens.append(token)
+        chunk = tokenizer.decode([token])
+        print(chunk, end="", flush=True)
+    print()
+    torch.cuda.synchronize()
+    t1 = time.time()
+    print(f"Reference time: {t1 - t0:.2f}s")
+    reference_ids = generated_tokens
+    # generate tokens with Engine
+    generated_tokens = []
+    engine = Engine(model, tokenizer)
+    stream = engine.generate(prompt_tokens, num_samples=1, **kwargs) # note: runs in fp32
+    torch.cuda.synchronize()
+    t0 = time.time()
+    for token_column, token_masks in stream:
+        token = token_column[0] # only print out the first row
+        generated_tokens.append(token)
+        chunk = tokenizer.decode([token])
+        print(chunk, end="", flush=True)
+    print()
+    torch.cuda.synchronize()
+    t1 = time.time()
+    print(f"Engine time: {t1 - t0:.2f}s")
+    # compare the two sequences
+    for i in range(len(reference_ids)):
+        if reference_ids[i] != generated_tokens[i]:
+            print(f"Mismatch at {i}: {reference_ids[i]} != {generated_tokens[i]}")
+            break
+    print(f"Match: {reference_ids == generated_tokens}")
+
+"""
+Supervised fine-tuning (SFT) the model.
+Run as:
+
+python -m scripts.chat_sft
+
+Or torchrun for training:
+
+torchrun --standalone --nproc_per_node=8 -m scripts.chat_sft -- --device-batch-size=16
+"""
+
+import gc
+import argparse
+import os
+os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
+import time
+import wandb
+import torch
+from nanochat.common import compute_init, compute_cleanup, print0, DummyWandb, get_base_dir, autodetect_device_type, get_peak_flops, COMPUTE_DTYPE, COMPUTE_DTYPE_REASON, is_ddp_initialized
+from nanochat.tokenizer import get_token_bytes
+from nanochat.checkpoint_manager import save_checkpoint, load_model, load_optimizer_state
+from nanochat.loss_eval import evaluate_bpb
+import torch.distributed as dist
+from nanochat.flash_attention import HAS_FA3
+from nanochat.engine import Engine
+from scripts.chat_eval import run_chat_eval
+
+from tasks.common import TaskMixture
+from tasks.gsm8k import GSM8K
+from tasks.mmlu import MMLU
+from tasks.smoltalk import SmolTalk
+
+# -----------------------------------------------------------------------------
+# CLI arguments
+parser = argparse.ArgumentParser(description="Supervised fine-tuning (SFT) the model")
+# Logging
+parser.add_argument("--run", type=str, default="dummy", help="wandb run name ('dummy' disables wandb logging)")
+# Runtime
+parser.add_argument("--device-type", type=str, default="", help="cuda|cpu|mps (empty = autodetect)")
+# Model loading
+parser.add_argument("--model-tag", type=str, default=None, help="model tag to load from")
+parser.add_argument("--model-step", type=int, default=None, help="model step to load from")
+parser.add_argument("--load-optimizer", type=int, default=1, help="warm-start optimizer from pretrained checkpoint (0=no, 1=yes)")
+# Training horizon
+parser.add_argument("--num-iterations", type=int, default=-1, help="number of optimization steps (-1 = full epoch)")
+# Batch sizes (default: inherit from pretrained checkpoint)
+parser.add_argument("--max-seq-len", type=int, default=None, help="max context length (default: inherit from pretrain)")
+parser.add_argument("--device-batch-size", type=int, default=None, help="per-device batch size (default: inherit from pretrain)")
+parser.add_argument("--total-batch-size", type=int, default=None, help="total batch size in tokens (default: inherit from pretrain)")
+# Optimization (default: inherit from pretrained checkpoint)
+parser.add_argument("--embedding-lr", type=float, default=None, help="learning rate for embedding parameters (Adam) (default: inherit from pretrain)")
+parser.add_argument("--unembedding-lr", type=float, default=None, help="learning rate for unembedding parameters (Adam) (default: inherit from pretrain)")
+parser.add_argument("--matrix-lr", type=float, default=None, help="learning rate for matrix parameters (Muon) (default: inherit from pretrain)")
+parser.add_argument("--init-lr-frac", type=float, default=0.8, help="initial LR as fraction of base LR")
+parser.add_argument("--warmup-ratio", type=float, default=0.0, help="ratio of iterations for LR warmup")
+parser.add_argument("--warmdown-ratio", type=float, default=0.5, help="ratio of iterations for LR warmdown")
+parser.add_argument("--final-lr-frac", type=float, default=0.0, help="final LR as fraction of initial LR")
+# Evaluation
+parser.add_argument("--eval-every", type=int, default=200, help="evaluate val bpb every N steps (-1 = disable)")
+parser.add_argument("--eval-tokens", type=int, default=40*524288, help="number of tokens to evaluate val loss on")
+parser.add_argument("--chatcore-every", type=int, default=200, help="evaluate ChatCORE metric every N steps (-1 = disable)")
+parser.add_argument("--chatcore-max-cat", type=int, default=-1, help="max problems per categorical task for ChatCORE")
+parser.add_argument("--chatcore-max-sample", type=int, default=24, help="max problems per generative task for ChatCORE")
+# Data mixture
+parser.add_argument("--mmlu-epochs", type=int, default=3, help="number of epochs of MMLU in training mixture (teaches Multiple Choice)")
+parser.add_argument("--gsm8k-epochs", type=int, default=4, help="number of epochs of GSM8K in training mixture (teaches Math and Tool Use)")
+args = parser.parse_args()
+user_config = vars(args).copy()
+# -----------------------------------------------------------------------------
+
+# Compute init
+device_type = autodetect_device_type() if args.device_type == "" else args.device_type
+ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
+master_process = ddp_rank == 0
+print0(f"COMPUTE_DTYPE: {COMPUTE_DTYPE} ({COMPUTE_DTYPE_REASON})")
+synchronize = torch.cuda.synchronize if device_type == "cuda" else lambda: None
+get_max_memory = torch.cuda.max_memory_allocated if device_type == "cuda" else lambda: 0
+if device_type == "cuda":
+    gpu_device_name = torch.cuda.get_device_name(0)
+    gpu_peak_flops = get_peak_flops(gpu_device_name)
+    print0(f"GPU: {gpu_device_name} | Peak FLOPS (BF16): {gpu_peak_flops:.2e}")
+else:
+    gpu_peak_flops = float('inf')  # MFU not meaningful for CPU/MPS
+
+# wandb logging init
+use_dummy_wandb = args.run == "dummy" or not master_process
+wandb_run = DummyWandb() if use_dummy_wandb else wandb.init(project="nanochat-sft", name=args.run, config=user_config)
+
+# Flash Attention status
+if not HAS_FA3:
+    print0("WARNING: Flash Attention 3 not available, using PyTorch SDPA fallback. Training will be less efficient.")
+
+# Load the model and tokenizer
+model, tokenizer, meta = load_model("base", device, phase="train", model_tag=args.model_tag, step=args.model_step)
+
+# Inherit training hyperparameters from pretrained checkpoint (None = inherit, explicit value = override)
+pretrain_user_config = meta.get("user_config", {})
+for name, fallback, source in [
+    ("max_seq_len",       2048,  meta),
+    ("device_batch_size", 32,    meta),
+    ("total_batch_size",  524288, meta),
+    ("embedding_lr",      0.3,   pretrain_user_config),
+    ("unembedding_lr",    0.004, pretrain_user_config),
+    ("matrix_lr",         0.02,  pretrain_user_config),
+]:
+    arg_val = getattr(args, name)
+    pretrain_val = source.get(name)
+    if arg_val is None:
+        resolved = pretrain_val if pretrain_val is not None else fallback
+        setattr(args, name, resolved)
+        print0(f"Inherited {name}={resolved} from pretrained checkpoint")
+    elif pretrain_val is not None and arg_val != pretrain_val:
+        print0(f"NOTE: --{name.replace('_', '-')}={arg_val} overrides pretrained value of {pretrain_val}")
+    else:
+        print0(f"Using {name}={arg_val}")
+
+orig_model = model
+model = torch.compile(model, dynamic=False)
+depth = model.config.n_layer
+num_flops_per_token = model.estimate_flops()
+tokens_per_fwdbwd = args.device_batch_size * args.max_seq_len # tokens per iteration for a single rank
+world_tokens_per_fwdbwd = tokens_per_fwdbwd * ddp_world_size # total tokens per iteration for all ranks
+assert args.total_batch_size % world_tokens_per_fwdbwd == 0, f"total_batch_size ({args.total_batch_size}) must be a multiple of {world_tokens_per_fwdbwd}."
+grad_accum_steps = args.total_batch_size // world_tokens_per_fwdbwd
+print0(f"Tokens / micro-batch / rank: {args.device_batch_size} x {args.max_seq_len} = {tokens_per_fwdbwd:,}")
+print0(f"Tokens / micro-batch: {world_tokens_per_fwdbwd:,}")
+print0(f"Total batch size {args.total_batch_size:,} => gradient accumulation steps: {grad_accum_steps}")
+token_bytes = get_token_bytes(device=device)
+
+# Initialize the Optimizer (combined MuonAdamW: Muon for matrix params, AdamW for rest)
+# Note that pretraining ramps weight_decay to zero by end of pretraining, so SFT continues with zero
+optimizer = model.setup_optimizer(unembedding_lr=args.unembedding_lr, embedding_lr=args.embedding_lr, matrix_lr=args.matrix_lr, weight_decay=0.0)
+
+# Optionally warm-start optimizer from pretrained checkpoint (momentum buffers etc.)
+# Note: load_state_dict overwrites param_group metadata (LRs, betas, etc.) with the
+# pretrained values. Since pretraining warmdown brings LRs to ~0, we must save and
+# restore our fresh SFT LRs after loading.
+base_dir = get_base_dir()
+if args.load_optimizer:
+    optimizer_data = load_optimizer_state("base", device, rank=ddp_rank, model_tag=args.model_tag, step=args.model_step)
+    if optimizer_data is not None:
+        base_lrs = [group["lr"] for group in optimizer.param_groups]
+        optimizer.load_state_dict(optimizer_data)
+        del optimizer_data
+        for group, base_lr in zip(optimizer.param_groups, base_lrs):
+            group["lr"] = base_lr
+        print0("Loaded optimizer state from pretrained checkpoint (momentum buffers only, LRs reset)")
+    else:
+        print0("WARNING: optimizer checkpoint not found, starting with fresh optimizer (slightly worse)")
+
+# GradScaler for fp16 training (bf16/fp32 don't need it)
+scaler = torch.amp.GradScaler() if COMPUTE_DTYPE == torch.float16 else None
+if scaler is not None:
+    print0("GradScaler enabled for fp16 training")
+
+# Override the initial learning rate as a fraction of the base learning rate
+for group in optimizer.param_groups:
+    group["lr"] = group["lr"] * args.init_lr_frac
+    group["initial_lr"] = group["lr"]
+
+# SFT data mixture and DataLoader
+train_tasks = [
+    SmolTalk(split="train"), # 460K rows of general conversations
+    *[MMLU(subset="all", split="auxiliary_train") for _ in range(args.mmlu_epochs)], # 100K rows per epoch
+    *[GSM8K(subset="main", split="train") for _ in range(args.gsm8k_epochs)], # 8K rows per epoch
+]
+train_dataset = TaskMixture(train_tasks)
+print0(f"Training mixture: {len(train_dataset):,} rows (MMLU x{args.mmlu_epochs}, GSM8K x{args.gsm8k_epochs})")
+val_dataset = TaskMixture([
+    SmolTalk(split="test"), # 24K rows in test set
+    MMLU(subset="all", split="test", stop=5200), # 14K rows in test set, use only 5.2K to match the train ratios
+    GSM8K(subset="main", split="test", stop=420), # 1.32K rows in test set, use only 420 to match the train ratios
+]) # total: 24K + 5.2K + 0.42K ~= 29.6K rows
+# DataLoader is defined here, it emits inputs, targets : 2D tensors of shape (device_batch_size, max_seq_len)
+# A big problem is that we don't know the final num_iterations in advance. So we create
+# these two global variables and update them from within the data generator.
+last_step = False # we will toggle this to True when we reach the end of the training dataset
+approx_progress = 0.0 # will go from 0 to 1 over the course of the epoch
+current_epoch = 1 # track epoch for logging
+def sft_data_generator_bos_bestfit(split, buffer_size=100):
+    """
+    BOS-aligned dataloader for SFT with bestfit-pad packing.
+
+    Each row in the batch starts with BOS (beginning of a conversation).
+    Conversations are packed using best-fit algorithm. When no conversation fits,
+    the row is padded (instead of cropping) to ensure no tokens are ever discarded.
+    Padding positions have targets masked with -1 (ignore_index for cross-entropy).
+    """
+    global last_step, approx_progress, current_epoch
+    assert split in {"train", "val"}, "split must be 'train' or 'val'"
+    dataset = train_dataset if split == "train" else val_dataset
+    dataset_size = len(dataset)
+    assert dataset_size > 0
+    row_capacity = args.max_seq_len + 1  # +1 for target at last position
+    bos_token = tokenizer.get_bos_token_id()
+
+    # Conversation buffer: list of (token_ids, loss_mask) tuples
+    conv_buffer = []
+    cursor = ddp_rank  # Each rank processes different conversations (for fetching)
+    consumed = ddp_rank  # Track actual consumption separately from buffering
+    epoch = 1
+    it = 0  # iteration counter
+
+    def refill_buffer():
+        nonlocal cursor, epoch
+        while len(conv_buffer) < buffer_size:
+            conversation = dataset[cursor]
+            ids, mask = tokenizer.render_conversation(conversation)
+            conv_buffer.append((ids, mask))
+            cursor += ddp_world_size
+            if cursor >= dataset_size:
+                cursor = cursor % dataset_size
+                epoch += 1
+                # Note: last_step is now triggered based on consumption, not fetching
+
+    while True:
+        rows = []
+        mask_rows = []
+        row_lengths = []  # Track actual content length (excluding padding) for each row
+        for _ in range(args.device_batch_size):
+            row = []
+            mask_row = []
+            padded = False
+            while len(row) < row_capacity:
+                # Ensure buffer has conversations
+                while len(conv_buffer) < buffer_size:
+                    refill_buffer()
+
+                remaining = row_capacity - len(row)
+
+                # Find largest conversation that fits entirely
+                best_idx = -1
+                best_len = 0
+                for i, (conv, _) in enumerate(conv_buffer):
+                    conv_len = len(conv)
+                    if conv_len <= remaining and conv_len > best_len:
+                        best_idx = i
+                        best_len = conv_len
+
+                if best_idx >= 0:
+                    # Found a conversation that fits - use it entirely
+                    conv, conv_mask = conv_buffer.pop(best_idx)
+                    row.extend(conv)
+                    mask_row.extend(conv_mask)
+                    consumed += ddp_world_size  # Track actual consumption
+                else:
+                    # No conversation fits - pad the remainder instead of cropping
+                    # This ensures we never discard any tokens
+                    content_len = len(row)
+                    row.extend([bos_token] * remaining)  # Pad with BOS tokens
+                    mask_row.extend([0] * remaining)
+                    padded = True
+                    break  # Row is now full (with padding)
+
+            # Track content length: full row if no padding, otherwise the length before padding
+            if padded:
+                row_lengths.append(content_len)
+            else:
+                row_lengths.append(row_capacity)
+            rows.append(row[:row_capacity])
+            mask_rows.append(mask_row[:row_capacity])
+
+        # Stopping condition to respect num_iterations, if given
+        it += 1
+        if 0 < args.num_iterations <= it and split == "train":
+            last_step = True
+
+        # Update progress tracking (based on consumed, not cursor, to account for buffering)
+        if split == "train":
+            current_epoch = epoch
+            if args.num_iterations > 0:
+                approx_progress = it / args.num_iterations
+            else:
+                approx_progress = consumed / dataset_size
+            # Trigger last_step when we've consumed enough (instead of when cursor wraps)
+            if consumed >= dataset_size:
+                last_step = True
+
+        # Build tensors
+        use_cuda = device_type == "cuda"
+        batch_tensor = torch.tensor(rows, dtype=torch.long, pin_memory=use_cuda)
+        inputs = batch_tensor[:, :-1].to(device=device, dtype=torch.int32, non_blocking=use_cuda).contiguous()
+        targets = batch_tensor[:, 1:].to(device=device, dtype=torch.int64, non_blocking=use_cuda).contiguous()
+
+        # Apply the loss mask from render_conversation (mask=1 for assistant completions,
+        # mask=0 for user prompts, BOS, special tokens, tool outputs). mask[1:] aligns
+        # with targets (shifted by 1). Unmasked positions get -1 (ignore_index).
+        mask_tensor = torch.tensor(mask_rows, dtype=torch.int8)
+        mask_targets = mask_tensor[:, 1:].to(device=device)
+        targets[mask_targets == 0] = -1
+
+        # Mask out padding positions in targets (set to -1 = ignore_index)
+        # For each row, positions >= (content_length - 1) in targets should be masked
+        for i, content_len in enumerate(row_lengths):
+            if content_len < row_capacity:
+                targets[i, content_len-1:] = -1
+
+        yield inputs, targets
+
+train_loader = sft_data_generator_bos_bestfit("train")
+build_val_loader = lambda: sft_data_generator_bos_bestfit("val")
+progress = 0 # will go from 0 to 1 over the course of the epoch
+
+# Learning rate schedule (linear warmup, constant, linear warmdown)
+# Same shape as base_train but uses progress (0→1) instead of absolute step counts,
+# because SFT doesn't always know num_iterations in advance (dataset-driven stopping).
+def get_lr_multiplier(progress):
+    if progress < args.warmup_ratio:
+        return (progress + 1e-8) / args.warmup_ratio
+    elif progress <= 1.0 - args.warmdown_ratio:
+        return 1.0
+    else:
+        decay = (progress - (1.0 - args.warmdown_ratio)) / args.warmdown_ratio
+        return (1 - decay) * 1.0 + decay * args.final_lr_frac
+
+# Momentum scheduler for Muon optimizer
+def get_muon_momentum(it):
+    frac = min(it / 300, 1)
+    momentum = (1 - frac) * 0.85 + frac * 0.95
+    return momentum
+
+# -----------------------------------------------------------------------------
+# Training loop
+x, y = next(train_loader) # prefetch the very first batch of data
+min_val_bpb = float("inf")
+smooth_train_loss = 0 # EMA of training loss
+ema_beta = 0.9 # EMA decay factor
+total_training_time = 0 # total wall-clock time of training
+step = 0
+while True:
+    flops_so_far = num_flops_per_token * args.total_batch_size * step
+
+    # Synchronize last_step across all ranks to avoid hangs in the distributed setting
+    if ddp:
+        last_step_tensor = torch.tensor(last_step, dtype=torch.int32, device=device)
+        dist.all_reduce(last_step_tensor, op=dist.ReduceOp.MAX)
+        last_step = bool(last_step_tensor.item())
+
+    # once in a while: evaluate the val bpb (all ranks participate)
+    if last_step or (args.eval_every > 0 and step % args.eval_every == 0):
+        model.eval()
+        val_loader = build_val_loader()
+        eval_steps = args.eval_tokens // (args.device_batch_size * args.max_seq_len * ddp_world_size)
+        val_bpb = evaluate_bpb(model, val_loader, eval_steps, token_bytes)
+        print0(f"Step {step:05d} | Validation bpb: {val_bpb:.4f}")
+        if val_bpb < min_val_bpb:
+            min_val_bpb = val_bpb
+        wandb_run.log({
+            "step": step,
+            "total_training_flops": flops_so_far,
+            "total_training_time": total_training_time,
+            "val/bpb": val_bpb,
+        })
+        model.train()
+
+    # once in a while: estimate the ChatCORE metric (all ranks participate)
+    # use the original uncompiled model because the inputs keep changing shape
+    chatcore_results = {}
+    if args.chatcore_every > 0 and (last_step or (step > 0 and step % args.chatcore_every == 0)):
+        model.eval()
+        engine = Engine(orig_model, tokenizer)
+        all_tasks = ['ARC-Easy', 'ARC-Challenge', 'MMLU', 'GSM8K', 'HumanEval']
+        categorical_tasks = {'ARC-Easy', 'ARC-Challenge', 'MMLU'}
+        baseline_accuracies = {
+            'ARC-Easy': 0.25, 'ARC-Challenge': 0.25, 'MMLU': 0.25,
+            'GSM8K': 0.0, 'HumanEval': 0.0,
+        }
+        task_results = {}
+        for task_name in all_tasks:
+            limit = args.chatcore_max_cat if task_name in categorical_tasks else args.chatcore_max_sample
+            max_problems = None if limit < 0 else limit  # -1 means no limit
+            acc = run_chat_eval(task_name, orig_model, tokenizer, engine,
+                                batch_size=args.device_batch_size, max_problems=max_problems)
+            task_results[task_name] = acc
+            print0(f"  {task_name}: {100*acc:.2f}%")
+        # Compute ChatCORE metrics (mean centered accuracy, ranges from 0=random to 1=perfect)
+        def centered_mean(tasks):
+            return sum((task_results[t] - baseline_accuracies[t]) / (1.0 - baseline_accuracies[t]) for t in tasks) / len(tasks)
+        chatcore = centered_mean(all_tasks)
+        chatcore_cat = centered_mean(categorical_tasks)
+        print0(f"Step {step:05d} | ChatCORE: {chatcore:.4f} | ChatCORE_cat: {chatcore_cat:.4f}")
+        wandb_run.log({
+            "step": step,
+            "total_training_flops": flops_so_far,
+            "chatcore_metric": chatcore,
+            "chatcore_cat": chatcore_cat,
+            **{f"chatcore/{task_name}": acc for task_name, acc in task_results.items()},
+        })
+        model.train()
+
+    # save checkpoint at the end of the run (all ranks participate so each saves its optimizer shard)
+    if last_step:
+        output_dirname = args.model_tag if args.model_tag else f"d{depth}" # e.g. d12
+        checkpoint_dir = os.path.join(base_dir, "chatsft_checkpoints", output_dirname)
+        save_checkpoint(
+            checkpoint_dir,
+            step,
+            orig_model.state_dict(),
+            optimizer.state_dict(),
+            {
+                "step": step,
+                "val_bpb": val_bpb, # loss at last step
+                "model_config": {
+                    "sequence_len": args.max_seq_len,
+                    "vocab_size": tokenizer.get_vocab_size(),
+                    "n_layer": depth,
+                    "n_head": model.config.n_head,
+                    "n_kv_head": model.config.n_kv_head,
+                    "n_embd": model.config.n_embd,
+                    "window_pattern": model.config.window_pattern,
+                },
+                "user_config": user_config, # inputs to the training script
+            },
+            rank=ddp_rank,
+        )
+
+    if last_step:
+        break
+
+    # -------------------------------------------------------------------------
+    # single training step
+    # evaluate the gradient
+    synchronize()
+    t0 = time.time()
+    for micro_step in range(grad_accum_steps):
+        loss = model(x, y)
+        train_loss = loss.detach() # for logging
+        loss = loss / grad_accum_steps # each .backward() is a grad sum => normalize loss here
+        if scaler is not None:
+            scaler.scale(loss).backward()
+        else:
+            loss.backward()
+        x, y = next(train_loader) # prefetch the next batch while the GPU is busy with forward/backward
+        progress = max(progress, approx_progress) # only increase progress monotonically
+    # step the optimizer
+    lrm = get_lr_multiplier(progress)
+    muon_momentum = get_muon_momentum(step)
+    for group in optimizer.param_groups:
+        group["lr"] = group["initial_lr"] * lrm
+        if group['kind'] == 'muon':
+            group["momentum"] = muon_momentum
+    if scaler is not None:
+        scaler.unscale_(optimizer)
+        if is_ddp_initialized():
+            for v in scaler._found_inf_per_device(optimizer).values():
+                dist.all_reduce(v, op=dist.ReduceOp.MAX)
+        scaler.step(optimizer)
+        scaler.update()
+    else:
+        optimizer.step()
+    model.zero_grad(set_to_none=True)
+    synchronize()
+    t1 = time.time()
+    dt = t1 - t0
+    # -------------------------------------------------------------------------
+
+    # State
+    step += 1
+
+    # logging
+    smooth_train_loss = ema_beta * smooth_train_loss + (1 - ema_beta) * train_loss.item() # EMA the training loss
+    debiased_smooth_loss = smooth_train_loss / (1 - ema_beta**(step + 1)) # debias the EMA
+    pct_done = 100 * progress
+    tok_per_sec = int(args.total_batch_size / dt)
+    flops_per_sec = num_flops_per_token * args.total_batch_size / dt
+    mfu = 100 * flops_per_sec / (gpu_peak_flops * ddp_world_size)
+    if step > 10:
+        total_training_time += dt # only count the time after the first 10 steps
+    print0(f"step {step:05d} ({pct_done:.2f}%) | loss: {debiased_smooth_loss:.6f} | lrm: {lrm:.2f} | dt: {dt * 1000:.2f}ms | tok/sec: {tok_per_sec:,} | mfu: {mfu:.2f} | epoch: {current_epoch} | total time: {total_training_time/60:.2f}m")
+    if step % 10 == 0:
+        wandb_run.log({
+            "step": step,
+            "total_training_flops": flops_so_far,
+            "total_training_time": total_training_time,
+            "train/loss": debiased_smooth_loss,
+            "train/lrm": lrm,
+            "train/dt": dt,
+            "train/tok_per_sec": tok_per_sec,
+            "train/mfu": mfu,
+            "train/epoch": current_epoch,
+        })
+
+    # The garbage collector spends ~500ms scanning for cycles quite frequently.
+    # We manually manage it to avoid these pauses during training.
+    if step == 1:
+        gc.collect() # manually collect a lot of garbage from setup
+        gc.freeze() # freeze all currently surviving objects and exclude them from GC
+        gc.disable() # disable GC entirely except:
+    elif step % 5000 == 0: # every 5000 steps...
+        gc.collect() # manually collect, just to be safe for very long runs
+
+# print a few more stats
+print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")
+print0(f"Total training time: {total_training_time/60:.2f}m")
+print0(f"Minimum validation bpb: {min_val_bpb:.4f}")
+
+# cleanup
+wandb_run.finish() # wandb run finish
+compute_cleanup()
+
+"""CWC WP-1 AUDIT-mode diagnostic: torch.profiler + roofline report over a
+synthetic workload (or, with --checkpoint-source, a real nanochat model's
+decode step once a trained checkpoint is available).
+
+This script's own output always carries claim_run=false / claimable=false —
+it exists for periodic offline diagnosis, never as evidence for a production
+latency/FLOPs claim (Act 4.13, 6.3).
+
+    python scripts/instrumentation_audit.py --steps 10
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import torch
+
+from cwc.instrumentation.audit import flop_model_comparison, roofline_report, run_torch_profiler
+from cwc.instrumentation.flops import dense_linear_flops
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--steps", type=int, default=10)
+    parser.add_argument("--warmup-steps", type=int, default=3)
+    parser.add_argument("--tokens", type=int, default=256)
+    parser.add_argument("--d-model", type=int, default=256)
+    parser.add_argument("--output", type=Path, default=Path("artifacts/instrumentation/audit"))
+    args = parser.parse_args()
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    weight = torch.randn(args.d_model, args.d_model, device=device)
+
+    def workload() -> torch.Tensor:
+        x = torch.randn(args.tokens, args.d_model, device=device)
+        y = x @ weight
+        return y.relu().sum()
+
+    args.output.mkdir(parents=True, exist_ok=True)
+    trace_path = args.output / "profiler.chrome_trace.json"
+    audit_result = run_torch_profiler(
+        workload, steps=args.steps, warmup_steps=args.warmup_steps,
+        with_flops=True, trace_export_path=trace_path,
+    )
+
+    # audit_result's covered_flops sums over every timed step, so the
+    # analytical comparison must cover the same `steps` calls, not just one.
+    analytical_flops_per_step = dense_linear_flops(tokens=args.tokens, d_in=args.d_model, d_out=args.d_model)
+    analytical_flops = analytical_flops_per_step * args.steps
+    comparison = flop_model_comparison(analytical_flops=analytical_flops, audit_result=audit_result)
+
+    roofline = None
+    if device == "cuda":
+        # Conservative placeholder rates when the exact hardware ceiling isn't
+        # in nanochat's own lookup table (e.g. this laptop GPU) — provenance
+        # says so explicitly rather than silently using a wrong number.
+        roofline = roofline_report(
+            total_flops=analytical_flops,
+            total_bytes_moved=args.tokens * args.d_model * 4 * 2,
+            peak_flops_per_s=1e12,
+            peak_bandwidth_bytes_per_s=1e11,
+            hardware_ceiling_provenance="placeholder rates (exact device not in nanochat's peak-flops table)",
+        )
+
+    report = {
+        "audit_result": audit_result,
+        "flop_comparison": comparison,
+        "roofline": roofline,
+        "claimable": False,
+    }
+    report_path = args.output / "audit_report.json"
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+    print(json.dumps(report, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
+
+"""python -m pytest tests/test_instrumentation_stats.py -v
+
+Example-based coverage of the canonical stats helpers (property-based coverage
+is in test_instrumentation_properties.py).
+"""
+
+import pytest
+
+from cwc.instrumentation.stats import bootstrap_ci, percentile
+
+
+def test_percentile_empty_is_zero():
+    assert percentile([], 0.5) == 0.0
+
+
+def test_percentile_single_element():
+    assert percentile([3.0], 0.9) == 3.0
+
+
+def test_percentile_interpolates():
+    # midpoint between 0 and 10 at q=0.5 over [0, 10]
+    assert percentile([0.0, 10.0], 0.5) == 5.0
+
+
+def test_percentile_interior_interpolation_pins_upper_index():
+    # index = (4-1)*0.5 = 1.5 -> lower=1, upper=2, weight=0.5 -> 1*0.5 + 2*0.5 = 1.5.
+    # A mutant that reads ordered[lower+2] instead of ordered[lower+1] would return
+    # 1*0.5 + 3*0.5 = 2.0 here, so this exact value kills the off-by-one.
+    assert percentile([0.0, 1.0, 2.0, 3.0], 0.5) == 1.5
+
+
+def test_percentile_quarter_pins_interpolation():
+    # index = (4-1)*0.25 = 0.75 -> lower=0, upper=1, weight=0.75 -> 0*0.25 + 1*0.75 = 0.75
+    assert percentile([0.0, 1.0, 2.0, 3.0], 0.25) == 0.75
+
+
+def test_percentile_constant_is_exact():
+    value = 0.9655213702332301
+    for q in (0.0, 0.5, 0.95, 1.0):
+        assert percentile([value] * 7, q) == value  # exact, not approx
+
+
+def test_bootstrap_ci_empty_is_zero():
+    assert bootstrap_ci([], seed=1) == (0.0, 0.0)
+
+
+def test_bootstrap_ci_single_element():
+    assert bootstrap_ci([0.5], seed=1) == (0.5, 0.5)
+
+
+def test_bootstrap_ci_constant_is_exact():
+    value = 0.9655213702332301
+    lower, upper = bootstrap_ci([value] * 5, resamples=200, seed=3)
+    assert lower == value
+    assert upper == value
+
+
+def test_bootstrap_ci_reproducible_given_seed():
+    deltas = [0.01, 0.02, -0.005, 0.015, 0.008]
+    assert bootstrap_ci(deltas, resamples=300, seed=42) == bootstrap_ci(deltas, resamples=300, seed=42)
+
+
+def test_bootstrap_ci_lower_le_upper():
+    deltas = [0.0, 0.02, -0.01, 0.03, 0.005, -0.002]
+    lower, upper = bootstrap_ci(deltas, resamples=500, seed=9)
+    assert lower <= upper
+
+
+def test_bootstrap_ci_confidence_widens_interval():
+    deltas = [0.0, 0.02, -0.01, 0.03, 0.005, -0.002, 0.011, -0.004]
+    lo90, hi90 = bootstrap_ci(deltas, resamples=1000, seed=9, confidence=0.90)
+    lo99, hi99 = bootstrap_ci(deltas, resamples=1000, seed=9, confidence=0.99)
+    assert (hi99 - lo99) >= (hi90 - lo90)
+
+
+def test_bootstrap_ci_tail_is_two_sided():
+    # A 0%-confidence interval is a single point: the bootstrap median. With the
+    # CORRECT two-sided tail = (1-conf)/2, confidence=0.0 gives tail=0.5 ->
+    # lower_idx == upper_idx == median -> lower == upper (a well-defined point).
+    # A one-sided mutant (tail = 1-conf) would compute tail=1.0 -> lower_idx =
+    # len(means), indexing past the end and crashing — so this assertion kills
+    # the wrong-tail-divisor mutation.
+    deltas = [-0.05, -0.02, 0.0, 0.02, 0.05, 0.1, -0.1, 0.03]
+    lower, upper = bootstrap_ci(deltas, resamples=500, seed=11, confidence=0.0)
+    assert lower == upper
+
+
+@pytest.mark.parametrize("q", [0.0, 0.5, 1.0])
+def test_percentile_endpoints(q):
+    values = [4.0, 1.0, 9.0, 2.0]
+    result = percentile(values, q)
+    assert min(values) <= result <= max(values)

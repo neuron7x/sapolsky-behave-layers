@@ -1,0 +1,1408 @@
+"""Bounded pool of pre-created CUDA event pairs (Act 4.5).
+
+Events are allocated once, before warm-up, never inside the measurement loop.
+Pool exhaustion fails closed: it counts a dropped event pair and returns None
+rather than silently allocating a fresh (expensive, out-of-band) event.
+"""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import torch
+
+EventPair = tuple["torch.cuda.Event", "torch.cuda.Event"]
+
+
+class EventPool:
+    """Not thread-safe by design (Act 4.5: "thread safety не потрібна, якщо це
+    явно задокументовано"). One pool per (process, DDP rank); do not share
+    across threads or ranks.
+    """
+
+    def __init__(self, size: int) -> None:
+        if size <= 0:
+            raise ValueError("size must be > 0")
+        self._size = size
+        self._available: list[EventPair] = []
+        self._warmed_up = False
+        self._dropped_event_pairs = 0
+        self._acquired_count = 0
+
+    def warm_up(self) -> None:
+        if self._warmed_up:
+            return
+        import torch
+
+        for _ in range(self._size):
+            pair: EventPair = (
+                torch.cuda.Event(enable_timing=True),
+                torch.cuda.Event(enable_timing=True),
+            )
+            self._available.append(pair)
+        self._warmed_up = True
+
+    def acquire(self) -> EventPair | None:
+        if not self._available:
+            self._dropped_event_pairs += 1
+            return None
+        self._acquired_count += 1
+        return self._available.pop()
+
+    def release(self, pair: EventPair) -> None:
+        self._available.append(pair)
+
+    @property
+    def dropped_event_pairs(self) -> int:
+        return self._dropped_event_pairs
+
+    @property
+    def size(self) -> int:
+        return self._size
+
+    @property
+    def available_count(self) -> int:
+        return len(self._available)
+
+    @property
+    def warmed_up(self) -> bool:
+        return self._warmed_up
+
+"""Plasticity-aware optimizer wrapper (spec §9, Gate F): executes one decision.
+
+WHAT (per `apply_and_step`). For each active group g, transform its parameters'
+gradients in place: (1) scale by `lr_multiplier[g]`; (2) add the consolidation pull
+`lambda_g . Omega . (theta - theta_ref)` toward the reference weights; (3) clip to
+`max_update_norm[g]`. Then step the wrapped optimizer once.
+
+WHY the snapshot-and-restore, not `requires_grad=False`. Toggling `requires_grad`
+per step is fragile (it interacts with graph construction and does not stop a base
+optimizer's *weight decay* or *momentum* from moving a zero-gradient parameter). So
+instead we keep `requires_grad` fixed (spec §9) and, around the single `opt.step()`,
+snapshot every inactive/unregistered parameter and copy it back afterwards.
+
+INVARIANT (Gate F, byte-exact). A group whose mask bit is 0 is *identical* before and
+after the step — bit for bit — for ANY base optimizer configuration, because its value
+is restored from the pre-step snapshot. This is what lets "freeze this group" mean
+literally frozen, not "frozen up to weight-decay drift". A budget violation
+(`not decision.budget_ok()`) raises before any parameter is touched.
+"""
+from __future__ import annotations
+
+import torch
+
+from cwc.plasticity.contracts import PlasticityDecision
+from cwc.plasticity.registry import ParameterGroupRegistry
+
+
+class PlasticityOptimizer:
+    """Wraps a base `torch.optim.Optimizer` and a `ParameterGroupRegistry`, translating
+    a length-G `PlasticityDecision` into per-parameter gradient edits guarded by the
+    byte-exact freeze invariant. `named_params` is the name->Parameter map the decision
+    indices resolve against (the same names the registry grouped)."""
+
+    def __init__(self, optimizer: torch.optim.Optimizer, registry: ParameterGroupRegistry,
+                 named_params: dict[str, torch.nn.Parameter]):
+        self.opt = optimizer
+        self.registry = registry
+        self.named_params = named_params
+        self._gid_to_idx = {gid: i for i, gid in enumerate(registry.group_ids)}
+
+    def _idx(self, name: str) -> int | None:
+        gid = self.registry.param_to_group.get(name)
+        return self._gid_to_idx.get(gid) if gid is not None else None
+
+    def apply_and_step(self, decision: PlasticityDecision,
+                       reference: dict[str, torch.Tensor],
+                       importance: dict[str, torch.Tensor] | None = None) -> None:
+        """Modify .grad per group policy, then step. importance[name] optional
+        per-parameter Ω for the consolidation term (defaults to 1)."""
+        with torch.no_grad():
+            self._apply_and_step(decision, reference, importance)
+
+    def _apply_and_step(self, decision: PlasticityDecision,
+                        reference: dict[str, torch.Tensor],
+                        importance: dict[str, torch.Tensor] | None) -> None:
+        if not decision.budget_ok():
+            raise ValueError(f"budget violation: {int(decision.group_mask.sum())} > {decision.budget}")
+        # snapshot every inactive/unregistered param so the wrapped optimizer's
+        # weight decay / momentum cannot move it — inactive groups are guaranteed
+        # byte-identical regardless of the base optimizer's settings.
+        frozen: dict[str, torch.Tensor] = {}
+        for name, p in self.named_params.items():
+            gi = self._idx(name)
+            active = gi is not None and bool(decision.group_mask[gi].item())
+            if not active:
+                frozen[name] = p.detach().clone()
+        for name, p in self.named_params.items():
+            gi = self._idx(name)
+            if gi is None or p.grad is None:
+                continue
+            active = bool(decision.group_mask[gi].item())
+            if not active:
+                continue
+            lr_mult = float(decision.lr_multiplier[gi].item())
+            lam = float(decision.consolidation[gi].item())
+            g = p.grad
+            g.mul_(lr_mult)
+            if lam > 0 and name in reference:
+                omega = importance[name] if importance and name in importance else 1.0
+                g.add_(lam * omega * (p.data - reference[name]))
+            max_norm = float(decision.max_update_norm[gi].item())
+            if max_norm > 0:
+                gn = g.norm()
+                if gn > max_norm:
+                    g.mul_(max_norm / (gn + 1e-12))
+        self.opt.step()
+        # restore inactive params (guarantee: masked groups do not move)
+        for name, saved in frozen.items():
+            self.named_params[name].data.copy_(saved)
+
+    def zero_grad(self, set_to_none: bool = True) -> None:
+        self.opt.zero_grad(set_to_none=set_to_none)
+
+"""Machine-checked conformance for the Adaptive-Computation Admissibility Protocol.
+
+Verifies the normative invariants INV-1..INV-7 of
+`docs/ADAPTIVE_COMPUTATION_ADMISSIBILITY_SPEC.md` against the reference verifiers, and
+that the §5 admissibility procedure obeys the §6 guarantees (G1 error control, G2
+sample-complexity decidability, G3 the physical floor). A build that fails any check is
+non-conforming.
+
+The procedure itself (`admissibility_decision`) is the executable form of the Act-J
+gate: from a pilot it returns ADMISSIBLE / INADMISSIBLE / NOT_IDENTIFIABLE / REJECT with
+a controlled false-positive rate.
+"""
+from __future__ import annotations
+
+import math
+from collections.abc import Sequence
+
+from experiments.common.adaptive_value_theory import falsify_theory
+from experiments.common.coherence_audit import audit_ladder
+from experiments.common.identifiability_inference import (
+    _Rng,
+    gap_lower_confidence_bound,
+    plugin_gap,
+    sample_complexity,
+)
+from experiments.common.value_of_information_rate import falsify_rate_function
+
+Matrix = Sequence[Sequence[float]]
+Vector = Sequence[float]
+
+_K_B_T_LN2 = 1.380649e-23 * 310.15 * math.log(2.0)   # Landauer floor per bit [J]
+
+
+# --------------------------------------------------------------------------- #
+# The §5 admissibility procedure (executable Act-J gate)                       #
+# --------------------------------------------------------------------------- #
+def admissibility_decision(
+    utility_hat: Matrix, prior: Vector, cost: Vector, *,
+    std_error: float, route_cost: float, delta: float = 0.05, target_gap: float = 0.1, sigma: float = 1.0,
+) -> dict[str, object]:
+    """Execute the normative procedure (spec §5). Fails closed on malformed input."""
+    n_c, n_a = len(utility_hat), len(utility_hat[0])
+    if route_cost < 0 or not (0.0 < delta < 1.0) or std_error < 0:
+        return {"decision": "REJECT", "reason": "malformed"}
+    g_hat = plugin_gap(utility_hat, prior)
+    g_lo = gap_lower_confidence_bound(g_hat, std_error, n_c, n_a, delta)
+    if g_lo <= 0.0:
+        return {"decision": "NOT_IDENTIFIABLE", "gap_lower_bound": g_lo,
+                "n_star": sample_complexity(target_gap, sigma, n_c, n_a, delta)}
+    if g_lo > route_cost:
+        return {"decision": "ADMISSIBLE", "gap_lower_bound": g_lo, "route_cost": route_cost,
+                "fpr_bound": delta}
+    return {"decision": "INADMISSIBLE", "gap_lower_bound": g_lo, "route_cost": route_cost}
+
+
+# --------------------------------------------------------------------------- #
+# Conformance checks INV-1..INV-7 and G1..G3                                    #
+# --------------------------------------------------------------------------- #
+def _inv6_compute_axis(trials: int, seed: int) -> bool:
+    from experiments.act_j_pilot.src.compute_matched import compute_matched_advantage
+    rng = _Rng(seed)
+    worst = 0.0
+    for _ in range(trials):
+        n_c = 2 + int(rng._unit() * 3)
+        n_a = 2 + int(rng._unit() * 3)
+        u = [[rng._unit() for _ in range(n_a)] for _ in range(n_c)]
+        cost = [1.0 + 4.0 * rng._unit() for _ in range(n_a)]
+        p = [1.0 / n_c] * n_c
+        budget = min(cost) + rng._unit() * (max(cost) - min(cost))
+        worst = min(worst, compute_matched_advantage(u, cost, p, budget)["advantage"])
+    return worst > -1e-6
+
+
+def _g1_error_control(trials: int, seed: int, delta: float) -> float:
+    """False-positive rate of the ADMISSIBLE decision on a null (G=0) battery."""
+    rng = _Rng(seed)
+    fp = 0
+    alpha = [0.5, -0.3, 1.1]
+    beta = [0.2, -0.1, 0.4]
+    n = 60
+    se = 1.0 / math.sqrt(n)
+    null = [[alpha[c] + beta[a] for a in range(3)] for c in range(3)]  # additive => G=0
+    for _ in range(trials):
+        u_hat = [[null[c][a] + se * rng.gauss() for a in range(3)] for c in range(3)]
+        d = admissibility_decision(u_hat, [1 / 3] * 3, [1.0, 1.0, 1.0],
+                                   std_error=se, route_cost=0.0, delta=delta)
+        if d["decision"] == "ADMISSIBLE":
+            fp += 1
+    return fp / trials
+
+
+def check_conformance(*, quick: bool = True, seed: int = 20260720) -> dict[str, object]:
+    """Run every normative check; return a per-clause report. `conforming` is the AND."""
+    t_theory = 4000 if quick else 20000
+    t_rate = 30 if quick else 120
+    t_inf = 3000 if quick else 12000
+    t_axis = 300 if quick else 1500
+    delta = 0.1
+
+    theory = falsify_theory(seed=seed, trials=t_theory)
+    rate = falsify_rate_function(seed=seed, trials=t_rate)
+    from experiments.common.identifiability_inference import falsify_inference
+    inference = falsify_inference(seed=seed, trials=t_inf)
+    coherence = audit_ladder()
+
+    checks = {
+        "INV-1 non-negativity": float(theory["gap_negativity_max"]) < 1e-9,
+        "INV-2 dominance-iff-zero": int(theory["dominance_iff_failures"]) == 0,
+        "INV-3 master-envelope": float(theory["master_inequality_max_violation"]) < 1e-9,
+        "INV-4 rate-function-sharp": bool(rate["all_ok"]),
+        "INV-5 certificate-validity": bool(inference["calibration_valid"]),
+        "INV-6 compute-axis-nonneg": _inv6_compute_axis(t_axis, seed),
+        "INV-7 programme-coherence": bool(coherence["coherent"]),
+    }
+    g1_fpr = _g1_error_control(3000 if quick else 10000, seed, delta)
+    g3_floor = _K_B_T_LN2 > 0.0
+    guarantees = {
+        "G1 error-control (FPR<=delta)": g1_fpr <= delta,
+        "G1 fpr_value": g1_fpr,
+        "G2 decidability (n* finite)": sample_complexity(0.2, 1.0, 3, 3, delta) > 0,
+        "G3 physical-floor-positive": g3_floor,
+    }
+    conforming = all(checks.values()) and bool(guarantees["G1 error-control (FPR<=delta)"]) \
+        and bool(guarantees["G2 decidability (n* finite)"]) and g3_floor
+    return {"spec_version": "1.0", "invariants": checks, "guarantees": guarantees,
+            "conforming": conforming}
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI summary
+    report = check_conformance(quick=False)
+    invariants = report["invariants"]
+    guarantees = report["guarantees"]
+    assert isinstance(invariants, dict) and isinstance(guarantees, dict)
+    print(f"ADMISSIBILITY SPEC v{report['spec_version']} conformance:")
+    for name, ok in invariants.items():
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+    print(f"  G1 FPR = {float(guarantees['G1 fpr_value']):.4f} (<= delta)  |  G2 n*>0  |  G3 floor")
+    print("CONFORMING" if report["conforming"] else "NON-CONFORMING")
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+try:
+    from enum import StrEnum
+except ImportError:  # Python < 3.11 (canonical venv is 3.10) — behaviour-identical shim
+    from enum import Enum
+
+    class StrEnum(str, Enum):  # type: ignore[no-redef]  # noqa: UP042 (enum.StrEnum is the thing missing on 3.10)
+        __str__ = str.__str__
+
+
+class Scale(StrEnum):
+    MICRO = "micro"
+    MESO = "meso"
+    MACRO = "macro"
+
+
+SCALE_ORDER: tuple[Scale, ...] = (Scale.MICRO, Scale.MESO, Scale.MACRO)
+
+
+class FractalValidationError(ValueError):
+    """Raised when a multiscale comparison would be semantically invalid."""
+
+
+@dataclass(frozen=True)
+class ScaleObservation:
+    timestamp: int
+    scale: Scale
+    features: dict[str, float]
+    source: str = "unknown"
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not self.features:
+            raise FractalValidationError("features cannot be empty")
+        if any(not isinstance(value, int | float) for value in self.features.values()):
+            raise FractalValidationError("all feature values must be numeric")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "timestamp": self.timestamp,
+            "scale": self.scale.value,
+            "features": dict(sorted(self.features.items())),
+            "source": self.source,
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class FeatureMapping:
+    source_scale: Scale
+    target_scale: Scale
+    pairs: tuple[tuple[str, str], ...]
+
+    def __post_init__(self) -> None:
+        if self.source_scale == self.target_scale:
+            raise FractalValidationError("feature mapping must connect different scales")
+        if not self.pairs:
+            raise FractalValidationError("feature mapping pairs cannot be empty")
+
+    def mapped_values(
+        self,
+        source: ScaleObservation,
+        target: ScaleObservation,
+    ) -> tuple[list[float], list[float]]:
+        if source.scale != self.source_scale or target.scale != self.target_scale:
+            raise FractalValidationError("observation scales do not match feature mapping")
+        left: list[float] = []
+        right: list[float] = []
+        missing: list[str] = []
+        for source_name, target_name in self.pairs:
+            if source_name not in source.features:
+                missing.append(f"{source.scale.value}.{source_name}")
+            if target_name not in target.features:
+                missing.append(f"{target.scale.value}.{target_name}")
+            if missing:
+                continue
+            left.append(float(source.features[source_name]))
+            right.append(float(target.features[target_name]))
+        if missing:
+            raise FractalValidationError(f"feature mapping missing fields: {missing}")
+        return left, right
+
+
+@dataclass(frozen=True)
+class CausalWindow:
+    end_timestamp: int
+    observations: tuple[ScaleObservation, ...]
+
+    def __post_init__(self) -> None:
+        future = [
+            item.timestamp
+            for item in self.observations
+            if item.timestamp > self.end_timestamp
+        ]
+        if future:
+            raise FractalValidationError(f"causal window contains future observations: {future}")
+
+    def by_scale(self, scale: Scale) -> tuple[ScaleObservation, ...]:
+        return tuple(item for item in self.observations if item.scale == scale)
+
+    def latest(self, scale: Scale) -> ScaleObservation:
+        values = self.by_scale(scale)
+        if not values:
+            raise FractalValidationError(f"missing observation for scale={scale.value}")
+        return max(values, key=lambda item: item.timestamp)
+
+"""WP13 effect sizes, bootstrap CIs, and retrospective power for the positives.
+
+Goes beyond the one-sided G_lo>0 gate: reports the oracle-gap effect size with a seed-bootstrap
+95% CI, a standardized effect, and the sample-complexity/power for each certificate positive. See
+PREREGISTRATION.md. Deterministic (seeded bootstrap).
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import random
+import statistics
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import plugin_gap, sample_complexity
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = ROOT / "artifacts/wp13-effect-size"
+N_BOOT = 2000
+DELTA = 0.05
+
+
+def _agg_gap(per_seed):
+    n = len(per_seed)
+    n_c, n_a = len(per_seed[0]), len(per_seed[0][0])
+    uhat = [[sum(per_seed[s][ci][ai] for s in range(n)) / n for ai in range(n_a)] for ci in range(n_c)]
+    return plugin_gap(uhat)
+
+
+def _sigma_max(per_seed):
+    n = len(per_seed)
+    n_c, n_a = len(per_seed[0]), len(per_seed[0][0])
+    sm = 0.0
+    for ci in range(n_c):
+        for ai in range(n_a):
+            vals = [per_seed[s][ci][ai] for s in range(n)]
+            sm = max(sm, math.sqrt(statistics.pvariance(vals) * n / (n - 1)) if n > 1 else 0.0)
+    return sm
+
+
+def _bootstrap_ci(per_seed, seed):
+    rng = random.Random(seed)
+    n = len(per_seed)
+    gaps = []
+    for _ in range(N_BOOT):
+        idx = [rng.randrange(n) for _ in range(n)]
+        gaps.append(_agg_gap([per_seed[i] for i in idx]))
+    gaps.sort()
+    lo = gaps[int(0.025 * N_BOOT)]
+    hi = gaps[int(0.975 * N_BOOT)]
+    return lo, hi
+
+
+def _l4():
+    rp = [json.load(open(f)) for f in sorted(glob.glob(str(ROOT / "artifacts/wp3-plasticity-v2-confirmatory/raw_runs/seed*.json")))]
+    G, T = ["attn", "mlp", "head", "embed"], ["lexical", "relational"]
+    c = {a: rp[0]["tasks"][T[0]][a]["cost_params"] for a in G}
+    km = max(c.values())
+    return [[[x["tasks"][t][a]["new_acc"] - c[a] / km for a in G] for t in T] for x in rp], 2, 4
+
+
+def _ac1():
+    rc = [json.load(open(f)) for f in sorted(glob.glob(str(ROOT / "artifacts/wp5-adaptive-compute-identifiability/raw_runs/seed*.json")))]
+    dep, ks = [str(d) for d in rc[0]["depths"]], [str(k) for k in rc[0]["k_choices"]]
+    return [[[x["acc"][d][k] for k in ks] for d in dep] for x in rc], 3, 3
+
+
+def _member(name, per_seed, n_c, n_a, seed):
+    gh = _agg_gap(per_seed)
+    sig = _sigma_max(per_seed)
+    lo, hi = _bootstrap_ci(per_seed, seed)
+    nstar = sample_complexity(gh, sig, n_c, n_a, DELTA) if gh > 0 and sig > 0 else None
+    return {"claim": name, "n_seeds": len(per_seed), "effect_gap": gh,
+            "bootstrap_ci95": [lo, hi], "ci_lower_positive": lo > 0.0,
+            "sigma_max": sig, "standardized_effect": (gh / sig if sig > 1e-9 else float("inf")),
+            "sample_complexity_nstar": nstar, "n_exceeds_nstar": (nstar is not None and len(per_seed) >= nstar)}
+
+
+def analyze() -> dict[str, Any]:
+    l4, l4c, l4a = _l4()
+    ac1, ac1c, ac1a = _ac1()
+    members = [_member("CWC-L4-plasticity", l4, l4c, l4a, 101),
+               _member("CWC-AC1-compute", ac1, ac1c, ac1a, 202)]
+    all_ci_positive = all(m["ci_lower_positive"] for m in members)
+    verdict = "EFFECT_SIZES_CI_POSITIVE" if all_ci_positive else "EFFECT_SIZE_CI_CROSSES_ZERO"
+    return {
+        "experiment": "wp13_effect_size",
+        "verdict": verdict,
+        "tier": "META — effect sizes, bootstrap CIs, retrospective power for the positives",
+        "n_boot": N_BOOT, "delta": DELTA,
+        "members": members,
+        "all_bootstrap_ci_lower_positive": all_ci_positive,
+        "note": "Seed-bootstrap 95% CI of the oracle gap complements the one-sided G_lo. Both positives "
+                "have CI lower bound > 0 and n_seeds >= sample-complexity n*. Standardized effect = gap/sigma.",
+        "prohibited_extrapolations": ["independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP13 EFFECT-SIZE VERDICT: {r['verdict']}")
+    for m in r["members"]:
+        ci = m["bootstrap_ci95"]
+        print(f"  {m['claim']:18s} gap={m['effect_gap']:.4f}  CI95=[{ci[0]:+.4f},{ci[1]:+.4f}]  "
+              f"std-effect={m['standardized_effect']:.1f}  n*={m['sample_complexity_nstar']}  "
+              f"n>=n*={m['n_exceeds_nstar']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Tests for WP14 real-LM boundary robustness (contextual difficulty)."""
+from __future__ import annotations
+
+from experiments.wp14_real_lm_contextual.src import analyze as A
+
+
+def test_verdict_not_identifiable_robust():
+    r = A.analyze()
+    assert r["verdict"] == "WP14_REAL_LM_NOT_IDENTIFIABLE_ROBUST"
+
+
+def test_real_lm_gap_negative_at_every_lambda(r=None):
+    r = A.analyze()
+    for lam in A.LAMBDAS:
+        assert r["real_lm_g_lo"][str(lam)] <= 0.0
+
+
+def test_positive_control_detects_synthetic_gap():
+    r = A.analyze()
+    assert r["positive_control_synthetic_ac1"] > 0.0
+
+"""Phase H for WP-2 v1.1 — paired stats + adaptivity signal (per-type routing
+divergence) + verdict. Reuses the deterministic bootstrap from analyze.py.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci, _mean
+
+CONFIGS = ["dense", "random", "frozen", "learned", "fixed_depth"]
+
+
+def _load(runs: Path):
+    out = {}
+    for c in CONFIGS:
+        d = runs / c
+        out[c] = sorted(
+            (json.loads(f.read_text()) for f in d.glob("seed*.json")),
+            key=lambda r: r["seed"],
+        ) if d.exists() else []
+    return out
+
+
+def analyze(runs: Path) -> dict:
+    data = _load(runs)
+    per = {}
+    for c in CONFIGS:
+        ces = [r["best_answer_ce"] for r in data[c]]
+        accs = [r["final_eval"]["acc_overall"] for r in data[c]]
+        acc_r = [r["final_eval"]["acc_recall"] for r in data[c]]
+        acc_c = [r["final_eval"]["acc_copy"] for r in data[c]]
+        divs = [r["final_eval"]["routing_divergence_copy_vs_recall"] for r in data[c]]
+        per[c] = {
+            "n": len(ces), "seeds": [r["seed"] for r in data[c]],
+            "answer_ce": ces, "mean_ce": _mean(ces),
+            "mean_acc": _mean(accs), "mean_acc_recall": _mean(acc_r), "mean_acc_copy": _mean(acc_c),
+            "mean_routing_divergence": _mean(divs),
+            "active_blocks": data[c][0]["active_blocks"] if data[c] else None,
+            "active_inference_flops": data[c][0]["active_inference_flops"] if data[c] else None,
+        }
+
+    def paired(a, b):
+        ra = {r["seed"]: r["best_answer_ce"] for r in data[a]}
+        rb = {r["seed"]: r["best_answer_ce"] for r in data[b]}
+        seeds = sorted(set(ra) & set(rb))
+        d = [ra[s] - rb[s] for s in seeds]
+        lo, hi = _bootstrap_ci(d) if d else (None, None)
+        return {"n": len(d), "mean_delta": _mean(d), "ci95": [lo, hi],
+                "learned_better": (hi is not None and hi < 0),
+                "indistinguishable": (lo is not None and lo <= 0 <= hi)}
+
+    comps = {f"learned_vs_{c}": paired("learned", c) for c in ["random", "frozen", "fixed_depth", "dense"]}
+
+    # adaptivity (H2'): learned per-type routing divergence vs frozen/fixed
+    learned_div = per["learned"]["mean_routing_divergence"]
+    static_div = _mean([per["frozen"]["mean_routing_divergence"], per["fixed_depth"]["mean_routing_divergence"]])
+    adaptive = learned_div is not None and learned_div > 0.1  # meaningfully routes by type
+
+    # parity
+    kc = ["random", "frozen", "learned", "fixed_depth"]
+    fl = [per[c]["active_inference_flops"] for c in kc if per[c]["active_inference_flops"]]
+    parity_ok = (max(fl) - min(fl)) / max(fl) <= 0.01 if len(fl) == len(kc) else None
+
+    viols = sum(r["final_eval"]["budget_violations"] for c in kc for r in data[c] if r.get("final_eval"))
+
+    n_seeds = per["learned"]["n"]
+    beats_all_static = all(comps[f"learned_vs_{c}"]["learned_better"] for c in ["random", "frozen", "fixed_depth"])
+    if n_seeds == 0 or any(per[c]["n"] == 0 for c in CONFIGS) or viols > 0:
+        verdict = "MEASUREMENT_INVALID"
+    elif parity_ok is False:
+        verdict = "COMPUTE_MISMATCH"
+    elif beats_all_static and adaptive:
+        verdict = "ROUTING_SUPPORTED" if n_seeds >= 5 else "ROUTING_SUPPORTED_PILOT"
+    elif not adaptive:
+        verdict = "ROUTING_NOT_SUPPORTED_COLLAPSE"
+    else:
+        verdict = "ROUTING_NOT_SUPPORTED"
+
+    return {"per_config": per, "comparisons": comps,
+            "adaptivity": {"learned_routing_divergence": learned_div, "static_divergence": static_div,
+                           "learned_is_adaptive": adaptive},
+            "compute_parity_within_1pct": parity_ok, "budget_violations": viols,
+            "n_seeds": n_seeds, "verdict": verdict}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp2-routing-v1_1/raw_runs"))
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-routing-v1_1/statistics"))
+    args = ap.parse_args()
+    res = analyze(args.runs)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(res, indent=2))
+    print("VERDICT:", res["verdict"])
+    for c in CONFIGS:
+        p = res["per_config"][c]
+        print(f"  {c:12s} n={p['n']} ce={p['mean_ce']} acc={p['mean_acc']} "
+              f"(R={p['mean_acc_recall']} C={p['mean_acc_copy']}) route_div={p['mean_routing_divergence']}")
+    print("  adaptivity:", res["adaptivity"])
+    for k, v in res["comparisons"].items():
+        print(f"  {k}: Δ={v['mean_delta']} ci={v['ci95']} better={v['learned_better']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Independent FLOP formulas (Act §15). Logical MAC*2 accounting."""
+from __future__ import annotations
+
+from experiments.wp2_routing_v2.src.contracts import VOCAB_SIZE
+from experiments.wp2_routing_v2.src.task_semantic_route import SEQ_LEN
+from experiments.wp2_routing_v2.src.typed_modules import D_MODEL, L_OUT
+
+T = SEQ_LEN
+d = D_MODEL
+
+
+def _attn_flops():
+    qkv = 2 * T * 3 * d * d
+    core = 2 * 2 * T * T * d
+    out = 2 * T * d * d
+    return qkv + core + out
+
+
+def _mlp_flops(hidden=128):
+    return 2 * T * (d * hidden + hidden * d)
+
+
+def direct_path_flops() -> int:
+    heads = L_OUT * 2 * d * VOCAB_SIZE
+    return _attn_flops() + _mlp_flops() + heads
+
+
+def semantic_parser_flops() -> int:
+    heads = 2 * d * (3 * VOCAB_SIZE + 2 + 1)
+    return _attn_flops() + _mlp_flops() + heads
+
+
+def semantic_renderer_flops() -> int:
+    return L_OUT * 2 * (4 * d) * VOCAB_SIZE
+
+
+def controller_flops() -> int:
+    return 2 * d * 64 + 2 * 64 * 1
+
+
+def semantic_path_cost() -> int:
+    return semantic_parser_flops() + semantic_renderer_flops()
+
+
+def per_sample_route_cost(semantic: bool) -> int:
+    return semantic_path_cost() if semantic else direct_path_flops()
+
+
+def total_batch_flops(batch_size: int, k_semantic: int) -> int:
+    direct = (batch_size - k_semantic) * direct_path_flops()
+    semantic = k_semantic * semantic_path_cost()
+    ctrl = batch_size * controller_flops()
+    return direct + semantic + ctrl
+
+
+def parity_ratio(a: int, b: int) -> float:
+    return abs(a - b) / max(a, b)
+
+"""Small named-group transformer for the plasticity oracle-gap experiment.
+Module names match the registry patterns (attn.qkv/attn.proj/mlp.fc/mlp.proj/
+head/embed) so parameter groups are structurally addressable."""
+from __future__ import annotations
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+VOCAB = 16
+SEQ_LEN = 8
+D_MODEL = 32
+N_HEAD = 4
+
+
+class Attn(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.qkv = nn.Linear(D_MODEL, 3 * D_MODEL, bias=False)
+        self.proj = nn.Linear(D_MODEL, D_MODEL, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        B, T, C = x.shape
+        q, k, v = self.qkv(x).split(C, dim=2)
+        q = q.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        k = k.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        v = v.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        return self.proj(y.transpose(1, 2).contiguous().view(B, T, C))
+
+
+class Mlp(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.fc = nn.Linear(D_MODEL, 4 * D_MODEL, bias=False)
+        self.proj = nn.Linear(4 * D_MODEL, D_MODEL, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.proj(F.relu(self.fc(x)))
+
+
+class GroupedModel(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.embed = nn.Embedding(VOCAB, D_MODEL)
+        self.pos = nn.Embedding(SEQ_LEN, D_MODEL)
+        self.attn = Attn()
+        self.mlp = Mlp()
+        self.head = nn.Linear(D_MODEL, VOCAB, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        T = x.shape[1]
+        h = self.embed(x) + self.pos(torch.arange(T, device=x.device)).unsqueeze(0)
+        h = h + self.attn(h)
+        h = h + self.mlp(h)
+        return self.head(h)
+
+"""Act F analysis + F5 gate. RCFR is SUPPORTED only if it beats the STRONGEST
+conditional-adapter baseline (DISeL-with-role) — otherwise the mechanism works
+but is not novel over prior art in isolation (RCFR_NOT_SUPPORTED)."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci, _mean
+
+
+def analyze(runs_dir: Path) -> dict:
+    runs = [json.loads(f.read_text()) for f in sorted(runs_dir.glob("seed*.json"))]
+    modes = ["shared_no_role", "static_lora", "fixed_role", "disel_gated", "separate_modules", "rcfr"]
+    per = {}
+    for md in modes:
+        seen = [r["modes"][md]["acc_seen"] for r in runs]
+        unseen = [r["modes"][md]["acc_unseen"] for r in runs]
+        per[md] = {"acc_seen": _mean(seen), "acc_unseen": _mean(unseen),
+                   "n_params": runs[0]["modes"][md]["n_params"] if runs else None}
+
+    def paired(a, b):  # a - b on acc_seen (positive = a better)
+        d = [r["modes"][a]["acc_seen"] - r["modes"][b]["acc_seen"] for r in runs]
+        lo, hi = _bootstrap_ci(d) if d else (None, None)
+        return {"mean_delta": _mean(d), "ci95": [lo, hi], "a_better": lo is not None and lo > 0}
+
+    iv = {k: _mean([r["rcfr_interventions"][k] for r in runs])
+          for k in runs[0]["rcfr_interventions"]} if runs else {}
+
+    # F5 criteria
+    beats_norole = paired("rcfr", "shared_no_role")["a_better"]
+    beats_lora = paired("rcfr", "static_lora")["a_better"]
+    beats_disel = paired("rcfr", "disel_gated")["a_better"]   # STRONGEST adapter
+    same_module_multifn = per["rcfr"]["acc_seen"] >= 0.95 and beats_norole and beats_lora
+    role_predictable = iv.get("follows_wrong_role_fn", 0) >= 0.85 and iv.get("advantage_removed_by_role_permute", 0) >= 0.80
+    transfers = per["rcfr"]["acc_unseen"] >= 0.95
+    n = len(runs)
+
+    supported = bool(same_module_multifn and role_predictable and transfers and beats_disel and n >= 8)
+    if n == 0:
+        verdict = "NOT_TESTED"
+    elif supported:
+        verdict = "ROLE_CONDITIONED_FUNCTIONAL_REUSE_SUPPORTED"
+    else:
+        verdict = "RCFR_NOT_SUPPORTED"
+
+    return {"n_seeds": n, "per_mode": per,
+            "rcfr_vs": {"shared_no_role": paired("rcfr", "shared_no_role"),
+                        "static_lora": paired("rcfr", "static_lora"),
+                        "disel_gated": paired("rcfr", "disel_gated"),
+                        "separate_modules": paired("rcfr", "separate_modules")},
+            "interventions_mean": iv,
+            "f5": {"same_module_multifunction": same_module_multifn, "role_predictable": role_predictable,
+                   "transfers_to_unseen": transfers, "beats_strongest_adapter_disel": beats_disel},
+            "verdict": verdict,
+            "verdict_note": ("RCFR works (one module = R functions, role-only changes function predictably, "
+                             "beats no-role/static) BUT is NOT novel over a fair input-gated rank baseline "
+                             "(DISeL-with-role) in isolation. Confirms RCFR_FALSIFICATION_CONTRACT: conditional "
+                             "low-rank modulation is prior art; RCFR's only possible value is INTEGRATION (Act I).")}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp3-rcfr/raw_runs"))
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp3-rcfr"))
+    args = ap.parse_args()
+    res = analyze(args.runs)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(res, indent=2))
+    (args.out / "verdict.json").write_text(json.dumps({"verdict": res["verdict"]}, indent=2))
+    print("VERDICT:", res["verdict"])
+    for md in ["shared_no_role", "static_lora", "fixed_role", "disel_gated", "separate_modules", "rcfr"]:
+        p = res["per_mode"][md]
+        print(f"  {md:16s} seen={p['acc_seen']:.3f} unseen={p['acc_unseen']:.3f} params={p['n_params']}")
+    print("  F5:", res["f5"])
+    print("  rcfr-disel:", res["rcfr_vs"]["disel_gated"])
+
+
+if __name__ == "__main__":
+    main()
+
+"""Analyze frozen paid-halt WP4 v4."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci
+from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v3 import (
+    exact_positive_randomization_p,
+    holm_adjust,
+)
+from experiments.wp4_adaptive_depth.src.runner import DISTRIBUTIONS
+from experiments.wp4_adaptive_depth.src.runner_end_to_end_v4 import EXPECTED_SEEDS
+from experiments.wp4_adaptive_depth.src.runner_exact_compute_v3 import HELD_OUT_DISTRIBUTIONS
+from experiments.wp4_adaptive_depth.src.runner_exact_compute_v31 import FROZEN_TOTAL_HOPS
+
+MINIMUM_MEANINGFUL_EFFECT = 0.02
+
+
+def analyze(runs_dir: Path) -> dict:
+    runs = [json.loads(path.read_text()) for path in sorted(runs_dir.glob("seed*.json"))]
+    seeds = sorted(run["seed"] for run in runs)
+    errors = []
+    if seeds != EXPECTED_SEEDS:
+        errors.append(f"seed set {seeds} != frozen {EXPECTED_SEEDS}")
+    if any(run.get("protocol_commit") != "b6bc531" for run in runs):
+        errors.append("protocol commit mismatch")
+    if any(run.get("allocation_replicates") != 32 or run.get("batch_size") != 4096 for run in runs):
+        errors.append("frozen replicate-count or batch-size mismatch")
+
+    names = [*DISTRIBUTIONS, *HELD_OUT_DISTRIBUTIONS]
+    raw_p = {}
+    per_distribution = {}
+    for name in names:
+        cells = [run["distributions"][name] for run in runs]
+        differences = [float(cell["paired_solved_difference"]) for cell in cells]
+        contract = all(
+            cell["budget_was_derived_from_realized_m"] is False
+            and cell["frozen_lookup_budget"] == FROZEN_TOTAL_HOPS[name]
+            and cell["adaptive_paid_probe"]["billed_lookups"] == FROZEN_TOTAL_HOPS[name]
+            for cell in cells
+        )
+        if not contract:
+            errors.append(f"{name}: paid-budget contract failed")
+        lo, hi = _bootstrap_ci(differences, seed=20260720)
+        raw_p[name] = exact_positive_randomization_p(differences)
+        per_distribution[name] = {
+            "n_data_seeds": len(differences),
+            "mean_paired_solved_difference": sum(differences) / len(differences),
+            "bootstrap_ci95": [lo, hi],
+            "exact_randomization_p_raw": raw_p[name],
+            "worst_seed_difference": min(differences),
+            "mean_adaptive_solved": sum(float(c["adaptive_paid_probe"]["solved"]) for c in cells) / len(cells),
+            "mean_unfinished_items": sum(int(c["adaptive_paid_probe"]["unfinished_items"]) for c in cells) / len(cells),
+            "paid_budget_contract_all_cells": contract,
+        }
+    adjusted = holm_adjust(raw_p)
+    for name in names:
+        row = per_distribution[name]
+        row["holm_adjusted_p"] = adjusted[name]
+        row["primary_pass"] = bool(
+            row["paid_budget_contract_all_cells"]
+            and row["bootstrap_ci95"][0] > MINIMUM_MEANINGFUL_EFFECT
+            and row["holm_adjusted_p"] < 0.05
+            and row["worst_seed_difference"] > 0
+        )
+    development_pass = all(per_distribution[name]["primary_pass"] for name in DISTRIBUTIONS)
+    held_out_pass_count = sum(bool(per_distribution[name]["primary_pass"]) for name in HELD_OUT_DISTRIBUTIONS)
+    supported = not errors and development_pass and held_out_pass_count >= 2
+    return {
+        "analysis_version": "4.0.0",
+        "protocol_commit": "b6bc531",
+        "status": "INTERNAL_CONFIRMATORY_NOT_EXTERNALLY_PREREGISTERED",
+        "errors": errors,
+        "per_distribution": per_distribution,
+        "gates": {
+            "frozen_seed_set": seeds == EXPECTED_SEEDS,
+            "all_development_distributions_pass": development_pass,
+            "held_out_pass_count": held_out_pass_count,
+            "held_out_required": 2,
+        },
+        "verdict": "SUPPORTED_END_TO_END_INTERNAL" if supported else "END_TO_END_ADVANTAGE_NOT_SUPPORTED",
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--runs", type=Path, default=Path("artifacts/wp4-end-to-end-v4/raw_runs"))
+    parser.add_argument("--out", type=Path, default=Path("artifacts/wp4-end-to-end-v4"))
+    args = parser.parse_args()
+    result = analyze(args.runs)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
+    (args.out / "verdict.json").write_text(json.dumps({"verdict": result["verdict"], "status": result["status"]}, indent=2))
+    print(json.dumps({"verdict": result["verdict"], "gates": result["gates"]}, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+
+from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v3 import (
+    exact_positive_randomization_p,
+    holm_adjust,
+)
+
+
+def test_exact_randomization_detects_all_positive_pairs():
+    assert exact_positive_randomization_p([1.0] * 4) == 1 / 16
+
+
+def test_exact_randomization_rejects_empty_input():
+    try:
+        exact_positive_randomization_p([])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty randomization input accepted")
+
+
+def test_holm_adjustment_is_monotone_and_bounded():
+    adjusted = holm_adjust({"a": 0.001, "b": 0.02, "c": 0.5})
+    assert 0 <= adjusted["a"] <= adjusted["b"] <= adjusted["c"] <= 1
+
+"""
+BPE Tokenizer in the style of GPT-4: train with rustbpe, inference with tiktoken.
+"""
+
+import os
+import copy
+from functools import lru_cache
+
+SPECIAL_TOKENS = [
+    # every document begins with the Beginning of Sequence (BOS) token that delimits documents
+    "<|bos|>",
+    # tokens below are only used during finetuning to render Conversations into token ids
+    "<|user_start|>", # user messages
+    "<|user_end|>",
+    "<|assistant_start|>", # assistant messages
+    "<|assistant_end|>",
+    "<|python_start|>", # assistant invokes python REPL tool
+    "<|python_end|>",
+    "<|output_start|>", # python REPL outputs back to assistant
+    "<|output_end|>",
+]
+
+# NOTE: this split pattern deviates from GPT-4 in that we use \p{N}{1,2} instead of \p{N}{1,3}
+# I did this because I didn't want to "waste" too many tokens on numbers for smaller vocab sizes.
+# I verified that 2 is the sweet spot for vocab size of 32K. 1 is a bit worse, 3 was worse still.
+SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,2}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
+
+# -----------------------------------------------------------------------------
+# Tokenizer based on rustbpe + tiktoken combo
+import pickle
+import rustbpe
+import tiktoken
+
+class RustBPETokenizer:
+    """Light wrapper around tiktoken (for efficient inference) but train with rustbpe"""
+
+    def __init__(self, enc, bos_token):
+        self.enc = enc
+        self.bos_token_id = self.encode_special(bos_token)
+
+    @classmethod
+    def train_from_iterator(cls, text_iterator, vocab_size):
+        # 1) train using rustbpe
+        tokenizer = rustbpe.Tokenizer()
+        # the special tokens are inserted later in __init__, we don't train them here
+        vocab_size_no_special = vocab_size - len(SPECIAL_TOKENS)
+        assert vocab_size_no_special >= 256, f"vocab_size_no_special must be at least 256, got {vocab_size_no_special}"
+        tokenizer.train_from_iterator(text_iterator, vocab_size_no_special, pattern=SPLIT_PATTERN)
+        # 2) construct the associated tiktoken encoding for inference
+        pattern = tokenizer.get_pattern()
+        mergeable_ranks_list = tokenizer.get_mergeable_ranks()
+        mergeable_ranks = {bytes(k): v for k, v in mergeable_ranks_list}
+        tokens_offset = len(mergeable_ranks)
+        special_tokens = {name: tokens_offset + i for i, name in enumerate(SPECIAL_TOKENS)}
+        enc = tiktoken.Encoding(
+            name="rustbpe",
+            pat_str=pattern,
+            mergeable_ranks=mergeable_ranks, # dict[bytes, int] (token bytes -> merge priority rank)
+            special_tokens=special_tokens, # dict[str, int] (special token name -> token id)
+        )
+        return cls(enc, "<|bos|>")
+
+    @classmethod
+    def from_directory(cls, tokenizer_dir):
+        pickle_path = os.path.join(tokenizer_dir, "tokenizer.pkl")
+        with open(pickle_path, "rb") as f:
+            enc = pickle.load(f)
+        return cls(enc, "<|bos|>")
+
+    @classmethod
+    def from_pretrained(cls, tiktoken_name):
+        # https://github.com/openai/tiktoken/blob/eedc8563/tiktoken_ext/openai_public.py
+        enc = tiktoken.get_encoding(tiktoken_name)
+        # tiktoken calls the special document delimiter token "<|endoftext|>"
+        # yes this is confusing because this token is almost always PREPENDED to the beginning of the document
+        # it most often is used to signal the start of a new sequence to the LLM during inference etc.
+        # so in nanoChat we always use "<|bos|>" short for "beginning of sequence", but historically it is often called "<|endoftext|>".
+        return cls(enc, "<|endoftext|>")
+
+    def get_vocab_size(self):
+        return self.enc.n_vocab
+
+    def get_special_tokens(self):
+        return self.enc.special_tokens_set
+
+    def id_to_token(self, id):
+        return self.enc.decode([id])
+
+    @lru_cache(maxsize=32)
+    def encode_special(self, text):
+        return self.enc.encode_single_token(text)
+
+    def get_bos_token_id(self):
+        return self.bos_token_id
+
+    def encode(self, text, prepend=None, append=None, num_threads=8):
+        # text can be either a string or a list of strings
+
+        if prepend is not None:
+            prepend_id = prepend if isinstance(prepend, int) else self.encode_special(prepend)
+        if append is not None:
+            append_id = append if isinstance(append, int) else self.encode_special(append)
+
+        if isinstance(text, str):
+            ids = self.enc.encode_ordinary(text)
+            if prepend is not None:
+                ids.insert(0, prepend_id) # TODO: slightly inefficient here? :( hmm
+            if append is not None:
+                ids.append(append_id)
+        elif isinstance(text, list):
+            ids = self.enc.encode_ordinary_batch(text, num_threads=num_threads)
+            if prepend is not None:
+                for ids_row in ids:
+                    ids_row.insert(0, prepend_id) # TODO: same
+            if append is not None:
+                for ids_row in ids:
+                    ids_row.append(append_id)
+        else:
+            raise ValueError(f"Invalid input type: {type(text)}")
+
+        return ids
+
+    def __call__(self, *args, **kwargs):
+        return self.encode(*args, **kwargs)
+
+    def decode(self, ids):
+        return self.enc.decode(ids)
+
+    def decode_single_token_bytes(self, token_id):
+        return self.enc.decode_single_token_bytes(token_id)
+
+    def save(self, tokenizer_dir):
+        # save the encoding object to disk
+        os.makedirs(tokenizer_dir, exist_ok=True)
+        pickle_path = os.path.join(tokenizer_dir, "tokenizer.pkl")
+        with open(pickle_path, "wb") as f:
+            pickle.dump(self.enc, f)
+        print(f"Saved tokenizer encoding to {pickle_path}")
+
+    def render_conversation(self, conversation, max_tokens=2048):
+        """
+        Tokenize a single Chat conversation (which we call a "doc" or "document" here).
+        Returns:
+        - ids: list[int] is a list of token ids of this rendered conversation
+        - mask: list[int] of same length, mask = 1 for tokens that the Assistant is expected to train on.
+        """
+        # ids, masks that we will return and a helper function to help build them up.
+        ids, mask = [], []
+        def add_tokens(token_ids, mask_val):
+            if isinstance(token_ids, int):
+                token_ids = [token_ids]
+            ids.extend(token_ids)
+            mask.extend([mask_val] * len(token_ids))
+
+        # sometimes the first message is a system message...
+        # => just merge it with the second (user) message
+        if conversation["messages"][0]["role"] == "system":
+            # some conversation surgery is necessary here for now...
+            conversation = copy.deepcopy(conversation) # avoid mutating the original
+            messages = conversation["messages"]
+            assert messages[1]["role"] == "user", "System message must be followed by a user message"
+            messages[1]["content"] = messages[0]["content"] + "\n\n" + messages[1]["content"]
+            messages = messages[1:]
+        else:
+            messages = conversation["messages"]
+        assert len(messages) >= 1, f"Conversation has less than 1 message: {messages}"
+
+        # fetch all the special tokens we need
+        bos = self.get_bos_token_id()
+        user_start, user_end = self.encode_special("<|user_start|>"), self.encode_special("<|user_end|>")
+        assistant_start, assistant_end = self.encode_special("<|assistant_start|>"), self.encode_special("<|assistant_end|>")
+        python_start, python_end = self.encode_special("<|python_start|>"), self.encode_special("<|python_end|>")
+        output_start, output_end = self.encode_special("<|output_start|>"), self.encode_special("<|output_end|>")
+
+        # now we can tokenize the conversation
+        add_tokens(bos, 0)
+        for i, message in enumerate(messages):
+
+            # some sanity checking here around assumptions, to prevent footguns
+            must_be_from = "user" if i % 2 == 0 else "assistant"
+            assert message["role"] == must_be_from, f"Message {i} is from {message['role']} but should be from {must_be_from}"
+
+            # content can be either a simple string or a list of parts (e.g. containing tool calls)
+            content = message["content"]
+
+            if message["role"] == "user":
+                assert isinstance(content, str), "User messages are simply expected to be strings"
+                value_ids = self.encode(content)
+                add_tokens(user_start, 0)
+                add_tokens(value_ids, 0)
+                add_tokens(user_end, 0)
+            elif message["role"] == "assistant":
+                add_tokens(assistant_start, 0)
+                if isinstance(content, str):
+                    # simple string => simply add the tokens
+                    value_ids = self.encode(content)
+                    add_tokens(value_ids, 1)
+                elif isinstance(content, list):
+                    for part in content:
+                        value_ids = self.encode(part["text"])
+                        if part["type"] == "text":
+                            # string part => simply add the tokens
+                            add_tokens(value_ids, 1)
+                        elif part["type"] == "python":
+                            # python tool call => add the tokens inside <|python_start|> and <|python_end|>
+                            add_tokens(python_start, 1)
+                            add_tokens(value_ids, 1)
+                            add_tokens(python_end, 1)
+                        elif part["type"] == "python_output":
+                            # python output => add the tokens inside <|output_start|> and <|output_end|>
+                            # none of these tokens are supervised because the tokens come from Python at test time
+                            add_tokens(output_start, 0)
+                            add_tokens(value_ids, 0)
+                            add_tokens(output_end, 0)
+                        else:
+                            raise ValueError(f"Unknown part type: {part['type']}")
+                else:
+                    raise ValueError(f"Unknown content type: {type(content)}")
+                add_tokens(assistant_end, 1)
+
+        # truncate to max_tokens tokens MAX (helps prevent OOMs)
+        ids = ids[:max_tokens]
+        mask = mask[:max_tokens]
+        return ids, mask
+
+    def visualize_tokenization(self, ids, mask, with_token_id=False):
+        """Small helper function useful in debugging: visualize the tokenization of render_conversation"""
+        RED = '\033[91m'
+        GREEN = '\033[92m'
+        RESET = '\033[0m'
+        GRAY = '\033[90m'
+        tokens = []
+        for i, (token_id, mask_val) in enumerate(zip(ids, mask)):
+            token_str = self.decode([token_id])
+            color = GREEN if mask_val == 1 else RED
+            tokens.append(f"{color}{token_str}{RESET}")
+            if with_token_id:
+                tokens.append(f"{GRAY}({token_id}){RESET}")
+        return '|'.join(tokens)
+
+    def render_for_completion(self, conversation):
+        """
+        Used during Reinforcement Learning. In that setting, we want to
+        render the conversation priming the Assistant for a completion.
+        Unlike the Chat SFT case, we don't need to return the mask.
+        """
+        # We have some surgery to do: we need to pop the last message (of the Assistant)
+        conversation = copy.deepcopy(conversation) # avoid mutating the original
+        messages = conversation["messages"]
+        assert messages[-1]["role"] == "assistant", "Last message must be from the Assistant"
+        messages.pop() # remove the last message (of the Assistant) inplace
+
+        # Now tokenize the conversation
+        ids, mask = self.render_conversation(conversation)
+
+        # Finally, to prime the Assistant for a completion, append the Assistant start token
+        assistant_start = self.encode_special("<|assistant_start|>")
+        ids.append(assistant_start)
+        return ids
+
+# -----------------------------------------------------------------------------
+# nanochat-specific convenience functions
+
+def get_tokenizer():
+    from nanochat.common import get_base_dir
+    base_dir = get_base_dir()
+    tokenizer_dir = os.path.join(base_dir, "tokenizer")
+    return RustBPETokenizer.from_directory(tokenizer_dir)
+
+def get_token_bytes(device="cpu"):
+    import torch
+    from nanochat.common import get_base_dir
+    base_dir = get_base_dir()
+    tokenizer_dir = os.path.join(base_dir, "tokenizer")
+    token_bytes_path = os.path.join(tokenizer_dir, "token_bytes.pt")
+    assert os.path.exists(token_bytes_path), f"Token bytes not found at {token_bytes_path}? It gets written by tok_train.py"
+    with open(token_bytes_path, "rb") as f:
+        token_bytes = torch.load(f, map_location=device)
+    return token_bytes
+
+"""WP16 clean-room release & reproduction spine (Act CWC-ASCEND-2026-01, G0/G1).
+
+Regenerates the release provenance artifacts at the CURRENT commit, entirely machine-derived
+from real state -- no hand-maintained claim lists or package lists (those drift; the audit's
+'advertised rigor > enforced rigor' + fractal hardcoded-list defect). Sources of truth:
+  * git                 -> commit, tree, upstream (master merge-base)
+  * claim_registry.json -> supported/narrowed/not_supported/not_tested claim lists + counts
+  * uv.lock             -> full transitive dependency closure (name+version) for the SBOM
+  * artifacts/**        -> evidence bundle count (SHA256SUMS closures)
+
+Writes: RELEASE_MANIFEST.json, SBOM.spdx.json, and re-stamps CITATION.cff version/date.
+Deterministic given (commit, registry, lock). Usage:
+  PYTHONPATH=. python scripts/wp16_release_spine.py [--date YYYY-MM-DD]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import subprocess
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+
+# Best-effort SPDX license map for the direct runtime set; transitive deps carry NOASSERTION
+# (the authoritative, hash-pinned closure is uv.lock -- the SBOM points there for full detail).
+_LICENSE = {
+    "torch": "BSD-3-Clause", "numpy": "BSD-3-Clause", "tiktoken": "MIT", "pyarrow": "Apache-2.0",
+    "psutil": "BSD-3-Clause", "filelock": "Unlicense", "wandb": "MIT", "rustbpe": "MIT",
+    "kernels": "Apache-2.0", "python": "PSF-2.0",
+}
+
+
+def _sh(cmd: str) -> str:
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=ROOT).stdout.strip()
+
+
+def _lock_packages() -> list[dict[str, str]]:
+    """Parse uv.lock [[package]] blocks -> [{name, version}], sorted. Regex, no toml dep (py3.10)."""
+    text = (ROOT / "uv.lock").read_text(encoding="utf-8")
+    pkgs = []
+    for block in text.split("[[package]]")[1:]:
+        head = block.split("[[")[0]
+        nm = re.search(r'^\s*name\s*=\s*"([^"]+)"', head, re.MULTILINE)
+        vs = re.search(r'^\s*version\s*=\s*"([^"]+)"', head, re.MULTILINE)
+        if nm and vs:
+            pkgs.append({"name": nm.group(1), "version": vs.group(1)})
+    return sorted(pkgs, key=lambda p: p["name"])
+
+
+def _claims() -> dict[str, list[str]]:
+    reg = json.loads((ROOT / "claim_registry.json").read_text())
+    buckets: dict[str, list[str]] = {"SUPPORTED": [], "SUPPORTED_NARROWED": [],
+                                     "NOT_SUPPORTED": [], "NOT_TESTED": []}
+    for c in reg["claims"]:
+        buckets.setdefault(c["status"], []).append(c["claim_id"])
+    return {k: sorted(v) for k, v in buckets.items()}
+
+
+def _evidence_bundles() -> int:
+    return len(list((ROOT / "artifacts").rglob("SHA256SUMS")))
+
+
+def build_manifest() -> dict[str, Any]:
+    claims = _claims()
+    commit = _sh("git rev-parse HEAD")
+    return {
+        "project": "Cognitive Wiring Core",
+        "act": "CWC-ASCEND-2026-01 / WP16 clean-room release spine",
+        "version": f"1.1.0-{commit[:7]}",
+        "git_commit": commit,
+        "git_tree": _sh("git rev-parse HEAD^{tree}"),
+        "git_branch": _sh("git rev-parse --abbrev-ref HEAD"),
+        "upstream_commit": _sh("git rev-parse master 2>/dev/null") or "unknown",
+        "generated_from": ["git", "claim_registry.json", "uv.lock", "artifacts/**/SHA256SUMS"],
+        "note": "Machine-derived at the current commit; claim lists come from claim_registry.json "
+                "(not hand-maintained) and the dependency closure from uv.lock. Source+evidence "
+                "archives with per-archive SHA-256 are built by scripts/make_release.py.",
+        "claim_counts": {k: len(v) for k, v in claims.items()},
+        "supported_claims": claims["SUPPORTED"],
+        "narrowed_claims": claims["SUPPORTED_NARROWED"],
+        "not_supported_claims": claims["NOT_SUPPORTED"],
+        "not_tested_claims": claims["NOT_TESTED"],
+        "evidence_bundles": _evidence_bundles(),
+        "prohibited_claims": [
+            "autonomous adaptive routing at scale", "compute-equivalent Pareto on real workloads",
+            "energy efficiency", "independent replication", "deployment-ready",
+            "architectural advantage at scale",
+        ],
+        "gate_status": {"CWC-L7-real-pareto": "NOT_TESTED (cloud-blocked)",
+                        "CWC-L8-replication": "NOT_TESTED (needs independent operator)"},
+    }
+
+
+def build_sbom() -> dict[str, Any]:
+    commit = _sh("git rev-parse HEAD")
+    pkgs = _lock_packages()
+    py = _sh(".venv/bin/python -V 2>/dev/null").replace("Python ", "") or "3.10"
+    spdx_pkgs = [{"SPDXID": "SPDXRef-Package-python", "name": "python", "versionInfo": py,
+                  "licenseDeclared": "PSF-2.0"}]
+    for p in pkgs:
+        spdx_pkgs.append({
+            "SPDXID": f"SPDXRef-Package-{re.sub(r'[^A-Za-z0-9.-]', '-', p['name'])}",
+            "name": p["name"], "versionInfo": p["version"],
+            "licenseDeclared": _LICENSE.get(p["name"], "NOASSERTION"),
+        })
+    return {
+        "spdxVersion": "SPDX-2.3", "dataLicense": "CC0-1.0", "name": "cognitive-wiring-core",
+        "documentNamespace": f"cwc/sbom/{commit[:7]}",
+        "creationInfo": {
+            "created": _sh("git show -s --format=%cI HEAD"),
+            "creators": ["Tool: CWC-wp16_release_spine.py", "Person: Yaroslav Vasylenko"],
+            "comment": "Machine-derived from uv.lock at HEAD. Authoritative hash-pinned closure: uv.lock.",
+        },
+        "packages": spdx_pkgs,
+        "package_count": len(spdx_pkgs),
+        "note": "Full transitive closure with content hashes lives in uv.lock (authoritative).",
+    }
+
+
+def restamp_citation(date: str) -> bool:
+    cff = ROOT / "CITATION.cff"
+    if not cff.exists():
+        return False
+    commit = _sh("git rev-parse HEAD")
+    text = cff.read_text()
+    text = re.sub(r'^version:.*$', f'version: "1.1.0-{commit[:7]}"', text, flags=re.MULTILINE)
+    text = re.sub(r'^date-released:.*$', f'date-released: "{date}"', text, flags=re.MULTILINE)
+    cff.write_text(text)
+    return True
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--date", default=_sh("git show -s --format=%cs HEAD"))
+    args = ap.parse_args()
+    manifest = build_manifest()
+    sbom = build_sbom()
+    (ROOT / "RELEASE_MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    (ROOT / "SBOM.spdx.json").write_text(json.dumps(sbom, indent=2) + "\n")
+    cff = restamp_citation(args.date)
+    print(f"WP16 release-spine regenerated at {manifest['git_commit'][:9]}:")
+    print(f"  RELEASE_MANIFEST.json  claims={manifest['claim_counts']}  "
+          f"evidence_bundles={manifest['evidence_bundles']}")
+    print(f"  SBOM.spdx.json         packages={sbom['package_count']} (from uv.lock)")
+    print(f"  CITATION.cff           {'re-stamped' if cff else 'ABSENT'}")
+
+
+if __name__ == "__main__":
+    main()

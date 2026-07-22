@@ -1,0 +1,2216 @@
+"""AUDIT-mode-only adapters (Act 4.13, 6.3, 6.4): torch.profiler, roofline
+analysis, and MoE-CAP schema field reservations. Never invoked from the
+COUNTERS hot path — these are for periodic, offline, separate-run diagnosis,
+and their output always carries `claimable: false` / a `claim_run: false` tag
+so a summary cannot accidentally mix profiler-run latency with production
+latency (Act 4.13: "не змішувати profiler latency з production latency").
+"""
+from __future__ import annotations
+
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
+# Operators this module can compare analytically vs profiler-observed. Any
+# operator the profiler reports that is NOT in this set is left out of the
+# comparison entirely — it is never silently treated as zero cost (Act 4.13).
+_COVERED_OPERATOR_PREFIXES = ("aten::linear", "aten::matmul", "aten::mm", "aten::bmm", "aten::addmm")
+
+
+def run_torch_profiler(
+    fn: Callable[[], Any],
+    *,
+    steps: int,
+    warmup_steps: int = 3,
+    record_shapes: bool = True,
+    profile_memory: bool = True,
+    with_flops: bool = False,
+    trace_export_path: Path | None = None,
+) -> dict[str, Any]:
+    """AUDIT-only: a short, fixed-window torch.profiler run over `fn`, called
+    `steps` times after `warmup_steps` untimed warmup calls. Returns a summary
+    dict, never a bare profiler object (so callers cannot accidentally treat
+    it as a COUNTERS-mode latency record).
+    """
+    import torch
+    from torch.profiler import ProfilerActivity, profile
+
+    for _ in range(warmup_steps):
+        fn()
+
+    activities = [ProfilerActivity.CPU]
+    if torch.cuda.is_available():
+        activities.append(ProfilerActivity.CUDA)
+
+    with profile(
+        activities=activities,
+        record_shapes=record_shapes,
+        profile_memory=profile_memory,
+        with_flops=with_flops,
+    ) as prof:
+        for _ in range(steps):
+            fn()
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
+    if trace_export_path is not None:
+        trace_export_path.parent.mkdir(parents=True, exist_ok=True)
+        prof.export_chrome_trace(str(trace_export_path))
+
+    key_averages = prof.key_averages()
+    total_cuda_time_us = sum(getattr(event, "cuda_time_total", 0) or 0 for event in key_averages)
+    total_cpu_time_us = sum(getattr(event, "cpu_time_total", 0) or 0 for event in key_averages)
+
+    covered_flops = 0
+    uncovered_operator_names: list[str] = []
+    profiler_observed_flops: int | None = None
+    if with_flops:
+        profiler_observed_flops = 0
+        for event in key_averages:
+            event_flops = getattr(event, "flops", 0) or 0
+            profiler_observed_flops += event_flops
+            if any(event.key.startswith(prefix) for prefix in _COVERED_OPERATOR_PREFIXES):
+                covered_flops += event_flops
+            elif event_flops > 0:
+                uncovered_operator_names.append(event.key)
+
+    return {
+        "steps": steps,
+        "warmup_steps": warmup_steps,
+        "total_cuda_time_us": total_cuda_time_us,
+        "total_cpu_time_us": total_cpu_time_us,
+        "profiler_observed_flops": profiler_observed_flops,
+        "covered_flops": covered_flops if with_flops else None,
+        "uncovered_operator_names": sorted(set(uncovered_operator_names)),
+        "trace_export_path": str(trace_export_path) if trace_export_path else None,
+        "claim_run": False,  # an AUDIT profiler run never contributes to a claim
+    }
+
+
+def flop_model_comparison(*, analytical_flops: int, audit_result: dict[str, Any]) -> dict[str, Any]:
+    """Compares analytical (this package's FlopLedger) vs profiler-observed
+    FLOPs, restricted to operators this module actually covers. Uncovered
+    operators are reported separately, never folded into a 0-cost assumption.
+    """
+    profiler_flops = audit_result.get("covered_flops")
+    if profiler_flops is None or profiler_flops == 0:
+        return {
+            "comparable": False,
+            "reason": "profiler run did not use with_flops=True or reported no covered-operator FLOPs",
+            "uncovered_operator_names": audit_result.get("uncovered_operator_names", []),
+        }
+    error_percent = 100.0 * (profiler_flops - analytical_flops) / analytical_flops if analytical_flops else None
+    return {
+        "comparable": True,
+        "analytical_flops": analytical_flops,
+        "profiler_covered_flops": profiler_flops,
+        "flop_model_error_percent": error_percent,
+        "uncovered_operator_names": audit_result.get("uncovered_operator_names", []),
+    }
+
+
+def roofline_report(
+    *,
+    total_flops: int,
+    total_bytes_moved: int,
+    peak_flops_per_s: float,
+    peak_bandwidth_bytes_per_s: float,
+    hardware_ceiling_provenance: str,
+) -> dict[str, Any]:
+    if peak_flops_per_s <= 0.0 or peak_bandwidth_bytes_per_s <= 0.0:
+        raise ValueError("peak hardware rates must be positive")
+    operational_intensity = total_flops / total_bytes_moved if total_bytes_moved > 0 else 0.0
+    ridge_point = peak_flops_per_s / peak_bandwidth_bytes_per_s
+    attainable_flops_per_s = min(peak_flops_per_s, operational_intensity * peak_bandwidth_bytes_per_s)
+    if operational_intensity == 0.0:
+        bound = "unclassified"
+    elif operational_intensity < ridge_point:
+        bound = "memory_bound"
+    else:
+        bound = "compute_bound"
+    return {
+        "operational_intensity_flops_per_byte": operational_intensity,
+        "ridge_point_flops_per_byte": ridge_point,
+        "attainable_flops_per_s": attainable_flops_per_s,
+        "achieved_bandwidth_bytes_per_s": (
+            total_bytes_moved / (total_flops / attainable_flops_per_s) if attainable_flops_per_s > 0 else 0.0
+        ),
+        "bound": bound,
+        "hardware_ceiling_provenance": hardware_ceiling_provenance,
+    }
+
+
+def moe_cap_placeholder() -> dict[str, Any]:
+    """WP-1 reserves these MoE-CAP schema fields; none are computed until
+    WP-3 implements routing (Act 6.4).
+    """
+    return {
+        "implemented": False,
+        "s_mfu": None,
+        "s_mbu": None,
+        "active_experts": None,
+        "expert_capacity": None,
+        "load_imbalance": None,
+        "communication_bytes": None,
+    }
+
+"""CPU wall clock (perf_counter_ns) and deferred-synchronization CUDA clock
+(Act 4.4). No torch.cuda.synchronize() call happens on the start/end path —
+only inside resolve_windows(), once per batch.
+"""
+from __future__ import annotations
+
+import time
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+from .event_buffer import EventPair, EventPool
+
+if TYPE_CHECKING:
+    import torch
+
+
+def cpu_start_ns() -> int:
+    return time.perf_counter_ns()
+
+
+def cpu_elapsed_ms(start_ns: int) -> float:
+    return (time.perf_counter_ns() - start_ns) / 1_000_000.0
+
+
+@dataclass
+class CudaWindow:
+    """One pending start/end CUDA-event pair. Not resolved until
+    resolve_windows() runs — no synchronization is performed on this object's
+    own path.
+    """
+
+    pair: EventPair
+    device_index: int
+    stream_ptr: int | None = None
+
+    def mark_start(self) -> None:
+        start_event, _ = self.pair
+        start_event.record()
+
+    def mark_end(self) -> None:
+        _, end_event = self.pair
+        end_event.record()
+
+
+def open_window(pool: EventPool, *, device_index: int, stream: torch.cuda.Stream | None = None) -> CudaWindow | None:
+    pair = pool.acquire()
+    if pair is None:
+        return None
+    stream_ptr = stream.cuda_stream if stream is not None else None
+    return CudaWindow(pair=pair, device_index=device_index, stream_ptr=stream_ptr)
+
+
+def resolve_windows(windows: list[CudaWindow], pool: EventPool) -> list[float]:
+    """Synchronize exactly once for the whole batch, read elapsed_time for
+    each pair, then return the pairs to the pool. Events must not be
+    resolved across devices — every window in the batch must share the
+    same device_index.
+    """
+    if not windows:
+        return []
+    device_indices = {window.device_index for window in windows}
+    if len(device_indices) > 1:
+        raise ValueError("resolve_windows cannot mix CUDA events from different devices")
+
+    import torch
+
+    torch.cuda.synchronize(next(iter(device_indices)))
+    elapsed_ms: list[float] = []
+    for window in windows:
+        start_event, end_event = window.pair
+        elapsed_ms.append(float(start_event.elapsed_time(end_event)))
+        pool.release(window.pair)
+    return elapsed_ms
+
+from .analyzer import FractalCognitionReport, FractalMultiscaleAnalyzer
+from .cwc_adapter import observations_from_cwc_record
+from .metrics import FractalMetrics, compute_fractal_metrics
+from .types import CausalWindow, FeatureMapping, FractalValidationError, Scale, ScaleObservation
+
+__all__ = [
+    "CausalWindow",
+    "FeatureMapping",
+    "FractalCognitionReport",
+    "FractalMetrics",
+    "FractalMultiscaleAnalyzer",
+    "FractalValidationError",
+    "Scale",
+    "ScaleObservation",
+    "compute_fractal_metrics",
+    "observations_from_cwc_record",
+]
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+from .metrics import FractalMetrics, compute_fractal_metrics, cosine_similarity, zscore
+from .types import SCALE_ORDER, CausalWindow, FeatureMapping, FractalValidationError, Scale
+
+
+@dataclass(frozen=True)
+class ScaleReport:
+    scale: Scale
+    feature_metrics: dict[str, FractalMetrics]
+    aggregate_pressure: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "scale": self.scale.value,
+            "aggregate_pressure": self.aggregate_pressure,
+            "feature_metrics": {
+                name: metrics.to_dict() for name, metrics in sorted(self.feature_metrics.items())
+            },
+        }
+
+
+@dataclass(frozen=True)
+class CrossScaleReport:
+    source_scale: Scale
+    target_scale: Scale
+    coherence: float
+    mapped_pairs: tuple[tuple[str, str], ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source_scale": self.source_scale.value,
+            "target_scale": self.target_scale.value,
+            "coherence": self.coherence,
+            "mapped_pairs": [list(pair) for pair in self.mapped_pairs],
+        }
+
+
+@dataclass(frozen=True)
+class BoundaryReport:
+    distance: float
+    active: bool
+    drivers: dict[str, float]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "distance": self.distance,
+            "active": self.active,
+            "drivers": dict(sorted(self.drivers.items())),
+        }
+
+
+@dataclass(frozen=True)
+class FractalCognitionReport:
+    status: str
+    end_timestamp: int
+    scale_reports: dict[Scale, ScaleReport]
+    cross_scale_reports: tuple[CrossScaleReport, ...]
+    boundary: BoundaryReport
+    warnings: tuple[str, ...] = field(default_factory=tuple)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "end_timestamp": self.end_timestamp,
+            "scale_reports": {
+                scale.value: report.to_dict() for scale, report in self.scale_reports.items()
+            },
+            "cross_scale_reports": [report.to_dict() for report in self.cross_scale_reports],
+            "boundary": self.boundary.to_dict(),
+            "warnings": list(self.warnings),
+            "interpretation": "multiscale_diagnostic_not_capability_claim",
+        }
+
+
+class FractalMultiscaleAnalyzer:
+    def __init__(
+        self,
+        *,
+        mappings: tuple[FeatureMapping, ...],
+        boundary_threshold: float = 0.75,
+    ) -> None:
+        if not mappings:
+            raise FractalValidationError("at least one explicit feature mapping is required")
+        if not 0.0 < boundary_threshold < 10.0:
+            raise FractalValidationError("boundary_threshold must be positive and finite")
+        self.mappings = mappings
+        self.boundary_threshold = boundary_threshold
+
+    def analyze(self, window: CausalWindow) -> FractalCognitionReport:
+        scale_reports = {
+            scale: self._scale_report(scale, window)
+            for scale in SCALE_ORDER
+            if window.by_scale(scale)
+        }
+        cross_scale_reports = tuple(
+            self._cross_scale_report(mapping, window) for mapping in self.mappings
+        )
+        boundary = self._boundary_report(scale_reports, cross_scale_reports)
+        warnings: list[str] = []
+        if set(scale_reports) != set(SCALE_ORDER):
+            missing = sorted({scale.value for scale in SCALE_ORDER if scale not in scale_reports})
+            warnings.append(f"missing_scales={missing}")
+        status = "ok" if not warnings else "partial"
+        return FractalCognitionReport(
+            status=status,
+            end_timestamp=window.end_timestamp,
+            scale_reports=scale_reports,
+            cross_scale_reports=cross_scale_reports,
+            boundary=boundary,
+            warnings=tuple(warnings),
+        )
+
+    def _scale_report(self, scale: Scale, window: CausalWindow) -> ScaleReport:
+        observations = window.by_scale(scale)
+        feature_names = sorted({name for item in observations for name in item.features})
+        metrics: dict[str, FractalMetrics] = {}
+        latest_values: list[float] = []
+        for name in feature_names:
+            values = [item.features[name] for item in observations if name in item.features]
+            if len(values) >= 2:
+                metrics[name] = compute_fractal_metrics(values)
+                latest_values.append(float(values[-1]))
+        if len(latest_values) >= 2:
+            aggregate_pressure = sum(abs(value) for value in zscore(latest_values)) / len(
+                latest_values
+            )
+        else:
+            aggregate_pressure = 0.0
+        return ScaleReport(
+            scale=scale,
+            feature_metrics=metrics,
+            aggregate_pressure=aggregate_pressure,
+        )
+
+    def _cross_scale_report(
+        self,
+        mapping: FeatureMapping,
+        window: CausalWindow,
+    ) -> CrossScaleReport:
+        source = window.latest(mapping.source_scale)
+        target = window.latest(mapping.target_scale)
+        left, right = mapping.mapped_values(source, target)
+        return CrossScaleReport(
+            source_scale=mapping.source_scale,
+            target_scale=mapping.target_scale,
+            coherence=cosine_similarity(left, right),
+            mapped_pairs=mapping.pairs,
+        )
+
+    def _boundary_report(
+        self,
+        scale_reports: dict[Scale, ScaleReport],
+        cross_scale_reports: tuple[CrossScaleReport, ...],
+    ) -> BoundaryReport:
+        drivers: dict[str, float] = {}
+        for scale, scale_report in scale_reports.items():
+            drivers[f"{scale.value}.pressure"] = scale_report.aggregate_pressure
+            for feature, metrics in scale_report.feature_metrics.items():
+                drivers[f"{scale.value}.{feature}.roughness"] = metrics.roughness
+        for cross_report in cross_scale_reports:
+            key = (
+                f"{cross_report.source_scale.value}"
+                f"->{cross_report.target_scale.value}.coherence"
+            )
+            drivers[key] = abs(cross_report.coherence)
+        pressure = sum(drivers.values()) / max(len(drivers), 1)
+        distance = max(0.0, self.boundary_threshold - pressure)
+        return BoundaryReport(distance=distance, active=distance == 0.0, drivers=drivers)
+
+"""WP14 analysis: is the WP6 real-LM non-identifiability robust to a contextual (bigram) difficulty
+signal? Certificate G_lo on the bigram-difficulty compute utility + positive control on synthetic AC1.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import statistics
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import gap_lower_confidence_bound, plugin_gap
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp14-real-lm-contextual/raw_runs"
+AC1_RAW = ROOT / "artifacts/wp5-adaptive-compute-identifiability/raw_runs"
+OUT = ROOT / "artifacts/wp14-real-lm-contextual"
+LAMBDAS = [0.0, 0.3]
+DELTA = 0.05
+
+
+def _cert(mats, n_c, n_a, lam, ks, sign):
+    n = len(mats)
+    costs = [int(k) for k in ks]
+    km = max(costs)
+    uhat, se = [], 0.0
+    for ci in range(n_c):
+        row = []
+        for ai in range(n_a):
+            vals = [sign * mats[s][ci][ai] - lam * costs[ai] / km for s in range(n)]
+            row.append(sum(vals) / n)
+            v = statistics.pvariance(vals) * n / (n - 1) if n > 1 else 0.0
+            se = max(se, math.sqrt(v) / math.sqrt(n))
+        uhat.append(row)
+    return gap_lower_confidence_bound(plugin_gap(uhat), se, n_c, n_a, DELTA)
+
+
+def analyze() -> dict[str, Any]:
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    bk, ks = runs[0]["buckets"], [str(k) for k in runs[0]["k_choices"]]
+    real = [[[r["loss"][b][k] for k in ks] for b in bk] for r in runs]
+    real_glo = {str(lam): _cert(real, 3, 3, lam, ks, sign=-1) for lam in LAMBDAS}   # utility = -loss
+
+    ac1 = [json.load(open(f)) for f in sorted(glob.glob(str(AC1_RAW / "seed*.json")))]
+    dep, aks = [str(d) for d in ac1[0]["depths"]], [str(k) for k in ac1[0]["k_choices"]]
+    pos_glo = _cert([[[x["acc"][d][k] for k in aks] for d in dep] for x in ac1], 3, 3, 0.0, aks, sign=+1)
+
+    real_identifiable = any(real_glo[str(lam)] > 0.0 for lam in LAMBDAS)
+    pos_ok = pos_glo > 0.0
+    if not pos_ok:
+        verdict = "WP14_VOID"
+    elif real_identifiable:
+        verdict = "WP14_REAL_LM_IDENTIFIABLE_UNDER_CONTEXTUAL"
+    else:
+        verdict = "WP14_REAL_LM_NOT_IDENTIFIABLE_ROBUST"
+    return {
+        "experiment": "wp14_real_lm_contextual",
+        "verdict": verdict,
+        "tier": "REAL-DATA — robustness of the WP6 boundary to a contextual (bigram) difficulty signal",
+        "n_seeds": len(runs), "difficulty_signal": "bigram_surprisal", "lambdas": LAMBDAS,
+        "real_lm_g_lo": real_glo,
+        "positive_control_synthetic_ac1": pos_glo,
+        "real_identifiable": real_identifiable,
+        "note": "With a stronger contextual (bigram) difficulty signal the real-LM per-token compute "
+                "allocation is STILL not identifiable (G_lo<=0), while the synthetic positive control "
+                ">0. The WP6 negative is robust to the difficulty definition -- hard tokens are hard "
+                "because inherently unpredictable, not because they need more compute (more compute even "
+                "hurts them).",
+        "prohibited_extrapolations": ["adaptive compute never helps real LMs", "L7 compute-equivalent Pareto"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP14 VERDICT: {r['verdict']}")
+    for lam in LAMBDAS:
+        print(f"  real-LM (bigram) lambda={lam}: G_lo={r['real_lm_g_lo'][str(lam)]:+.4f}")
+    print(f"  positive control (synthetic AC1): G_lo={r['positive_control_synthetic_ac1']:+.4f} (>0)")
+
+
+if __name__ == "__main__":
+    main()
+
+"""R3-C — end-to-end routing WITHOUT oracle leakage (P0 #3). The decisive test
+of whether the routing-causality result survives once the three leaks are
+removed:
+  - capacity is FIXED before evaluation (not (vkind==HARD).sum());
+  - the controller trains ONLY on task loss under a hard top-K budget
+    (straight-through), with NO (direct_loss - sem_loss) distillation target and
+    NO ground-truth in its signal;
+  - metrics use the corrected symmetric NMI / average-rank AUROC.
+
+If R3-C still routes HARD->semantic and beats random/frozen at the fixed budget,
+the routing claim strengthens back toward autonomous. If it collapses, the
+earlier result was genuinely dependent on value distillation (claim stays
+narrowed). Either outcome is reported honestly.
+
+Run: PYTHONPATH=. python -m experiments.wp2_routing_v2.src.runner_r3c --seeds 0 1 2
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import torch
+
+from experiments.common.metrics import auroc, symmetric_nmi
+from experiments.wp2_routing_v2.src.contracts import TaskKind
+from experiments.wp2_routing_v2.src.controller import topk_mask
+from experiments.wp2_routing_v2.src.runner_final import _canon_loss_per_sample
+from experiments.wp2_routing_v2.src.runner_oracle import BATCH, VAL, _train_paths
+from experiments.wp2_routing_v2.src.task_semantic_route import generate_batch
+
+CTRL_STEPS = 2000
+LR = 1e-3
+FIXED_CAP_FRAC = 0.5   # capacity chosen BEFORE evaluation, label-free
+
+
+def _train_controller_e2e(g, seed, cap_frac, device, steps):
+    for p in list(g.direct.parameters()) + list(g.semantic.parameters()):
+        p.requires_grad_(False)
+    opt = torch.optim.AdamW(g.controller.parameters(), lr=LR, weight_decay=0.01)
+    gen = torch.Generator().manual_seed(seed + 11)
+    K = int(round(cap_frac * BATCH))
+    for _ in range(steps):
+        g.train()
+        tokens, _gt, canon, _kind = generate_batch(BATCH, gen, "train", 0.5, device)
+        need = g.controller.need_score(tokens)
+        hard = topk_mask(need, K)
+        gate = hard.float() + (torch.sigmoid(need) - torch.sigmoid(need).detach())   # straight-through
+        with torch.no_grad():
+            sem, _ = g.semantic(tokens)
+            direct = g.direct(tokens)
+        gm = gate.view(-1, 1, 1)
+        out = gm * sem + (1 - gm) * direct
+        loss = _canon_loss_per_sample(out, canon).mean()   # TASK LOSS ONLY — no distillation target
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(g.controller.parameters(), 1.0)
+        opt.step()
+    return g
+
+
+@torch.no_grad()
+def _eval(g, vx, vcanon, vkind, cap_frac, seed, device):
+    g.eval()
+    B = vx.shape[0]
+    K = int(round(cap_frac * B))     # FIXED capacity, label-free
+    need = g.controller.need_score(vx)
+    learned = topk_mask(need, K)
+    hard = vkind == int(TaskKind.HARD_SEMANTIC)
+
+    def routed_loss(mask):
+        out, _, _ = g(vx, capacity=int(mask.sum()), forced_mask=mask)
+        return _canon_loss_per_sample(out, vcanon).mean().item()
+
+    gg = torch.Generator(device="cpu").manual_seed(seed * 13 + B)
+    rand = torch.zeros(B, dtype=torch.bool)
+    rand[torch.randperm(B, generator=gg)[:K]] = True
+    rand = rand.to(device)
+    # frozen controller: reinit, no training
+    tpr = learned[hard].float().mean().item() if hard.any() else 0.0
+    tnr = (~learned[~hard]).float().mean().item() if (~hard).any() else 0.0
+    return {
+        "fixed_capacity_K": K, "n_hard": int(hard.sum().item()),
+        "learned_loss": routed_loss(learned), "random_loss": routed_loss(rand),
+        "route_balanced_acc": 0.5 * (tpr + tnr),
+        "route_symmetric_nmi": symmetric_nmi(learned.long(), hard.long()),
+        "route_auroc": auroc(need, hard.long()),
+        "semantic_used": int(learned.sum().item()),
+    }
+
+
+def run_seed(seed, device, path_steps, ctrl_steps):
+    g, _ = _train_paths(seed, device, path_steps)
+    g = _train_controller_e2e(g, seed, FIXED_CAP_FRAC, device, ctrl_steps)
+    gv = torch.Generator().manual_seed(999_999)
+    vx, _vgt, vcanon, vkind = generate_batch(VAL, gv, "test", 0.5, device)
+    return {"seed": seed, "eval": _eval(g, vx, vcanon, vkind, FIXED_CAP_FRAC, seed, device)}
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    ap.add_argument("--path-steps", type=int, default=2000)
+    ap.add_argument("--ctrl-steps", type=int, default=CTRL_STEPS)
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-routing-v3-r3c/raw_runs"))
+    args = ap.parse_args()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    args.out.mkdir(parents=True, exist_ok=True)
+    for seed in args.seeds:
+        r = run_seed(seed, device, args.path_steps, args.ctrl_steps)
+        (args.out / f"seed{seed}.json").write_text(json.dumps(r, indent=2))
+        e = r["eval"]
+        print(f"[s{seed}] learned_loss={e['learned_loss']:.3f} random_loss={e['random_loss']:.3f} "
+              f"bal_acc={e['route_balanced_acc']:.3f} nmi={e['route_symmetric_nmi']:.3f} "
+              f"auroc={e['route_auroc']:.3f} K={e['fixed_capacity_K']} hard={e['n_hard']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Surface-matched end-to-end routing (Routing v3, fully clean, local). Closes the
+surface caveat of runner_r3c_reinforce: the benchmark (surface_matched_task) has
+identical length/first-token/histogram for NEAR and FAR (leakage_probe ~0.5), so a
+controller that still routes correctly MUST use STRUCTURE, not surface.
+
+Mechanisms are EXACT operators (WP4 methodology -> no module-learning rabbit hole),
+isolating the ALLOCATION decision:
+  - LocalPath(w): finds the duplicate ONLY if its two occurrences fall in one
+    window of width w (NEAR-solvable); otherwise abstains (uniform) -> high loss on FAR.
+  - GlobalPath: full scan; always finds the duplicate -> low loss on both, but is
+    the "expensive" path that a budget rations.
+Controller is trained end-to-end by REINFORCE with an explicit per-use cost
+(L = L_task + lambda*C_use), NO task/mechanism label, NO privileged target, NO
+label-derived capacity. Eval routes top-K at a fixed label-free budget.
+
+Run: PYTHONPATH=. python -m experiments.wp2_routing_v2.src.surface_matched_routing --seeds 0 1 2 3 4 5 6 7
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from experiments.common.metrics import auroc, symmetric_nmi
+from experiments.wp2_routing_v2.src.controller import topk_mask
+from experiments.wp2_routing_v2.src.surface_matched_task import (
+    LOCAL_W,
+    SEQ_LEN,
+    VOCAB,
+    generate_batch,
+)
+
+BATCH = 64
+VAL = 1024
+CTRL_STEPS = 2000
+LR = 1e-3
+FIXED_CAP_FRAC = 0.5
+
+
+def local_logits(tokens: torch.Tensor, w: int) -> torch.Tensor:
+    """EXACT local mechanism: a value is 'found' iff it repeats within a window of
+    width w. Returns [B, VOCAB] logits: sharp on a found duplicate, else uniform."""
+    B, L = tokens.shape
+    out = torch.full((B, VOCAB), 0.0, device=tokens.device)
+    found = torch.zeros(B, dtype=torch.bool, device=tokens.device)
+    val = torch.zeros(B, dtype=torch.long, device=tokens.device)
+    for i in range(L):
+        for j in range(i + 1, min(i + w + 1, L)):     # only within local window w
+            same = (tokens[:, i] == tokens[:, j]) & ~found
+            val = torch.where(same, tokens[:, i], val)
+            found = found | same
+    sharp = F.one_hot(val, VOCAB).float() * 10.0
+    return torch.where(found.view(-1, 1), sharp, out)   # uniform (zeros) when not found
+
+
+def global_logits(tokens: torch.Tensor) -> torch.Tensor:
+    """EXACT global mechanism: full scan, always finds the unique duplicate."""
+    B, L = tokens.shape
+    val = torch.zeros(B, dtype=torch.long, device=tokens.device)
+    found = torch.zeros(B, dtype=torch.bool, device=tokens.device)
+    for i in range(L):
+        for j in range(i + 1, L):
+            same = (tokens[:, i] == tokens[:, j]) & ~found
+            val = torch.where(same, tokens[:, i], val)
+            found = found | same
+    return F.one_hot(val, VOCAB).float() * 10.0
+
+
+class NeedNet(nn.Module):
+    """CHEAP controller: embedding + positional + mean-pool + MLP. Cost << global
+    mechanism. Cannot represent pairwise duplicate-distance (pooling destroys it)."""
+
+    def __init__(self, d: int = 32):
+        super().__init__()
+        self.emb = nn.Embedding(VOCAB, d)
+        self.pos = nn.Parameter(torch.zeros(SEQ_LEN, d))
+        self.net = nn.Sequential(nn.Linear(d, 64), nn.ReLU(), nn.Linear(64, 1))
+
+    def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        x = self.emb(tokens) + self.pos.unsqueeze(0)
+        return self.net(x.mean(dim=1)).squeeze(-1)      # [B] need score
+
+
+class NeedNetAttn(nn.Module):
+    """POWERFUL controller: one self-attention layer (O(L^2), can in principle
+    detect duplicate pairs and their distance). Pre-empts the 'controller too weak'
+    rebuttal: if THIS also routes at chance, the structural property is genuinely
+    inaccessible below the cost of the global mechanism itself."""
+
+    def __init__(self, d: int = 32):
+        super().__init__()
+        self.emb = nn.Embedding(VOCAB, d)
+        self.pos = nn.Parameter(torch.zeros(SEQ_LEN, d))
+        self.attn = nn.MultiheadAttention(d, num_heads=4, batch_first=True)
+        self.net = nn.Sequential(nn.Linear(d, 64), nn.ReLU(), nn.Linear(64, 1))
+
+    def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        x = self.emb(tokens) + self.pos.unsqueeze(0)
+        a, _ = self.attn(x, x, x)
+        return self.net(a.mean(dim=1)).squeeze(-1)
+
+
+def _make_controller(kind: str, device):
+    return (NeedNetAttn() if kind == "attn" else NeedNet()).to(device)
+
+
+def _task_loss(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    return F.cross_entropy(logits, target, reduction="none")   # [B]
+
+
+def train_controller(seed, device, steps, lam, w, kind="cheap"):
+    torch.manual_seed(seed)
+    ctrl = _make_controller(kind, device)
+    opt = torch.optim.AdamW(ctrl.parameters(), lr=LR, weight_decay=0.01)
+    gen = torch.Generator().manual_seed(seed + 7)
+    pgen = torch.Generator(device="cpu").manual_seed(seed + 101)
+    for _ in range(steps):
+        tokens, target, _far = generate_batch(BATCH, gen, device)
+        need = ctrl(tokens)
+        p = torch.sigmoid(need)
+        act = (torch.rand(p.shape, generator=pgen).to(device) < p).float()
+        with torch.no_grad():
+            loc = local_logits(tokens, w)
+            glo = global_logits(tokens)
+            am = act.view(-1, 1)
+            routed = am * glo + (1 - am) * loc         # a=1 -> global (expensive)
+            taskloss = _task_loss(routed, target)
+            reward = -taskloss - lam * act             # explicit per-use cost
+            adv = reward - reward.mean()
+        logp = act * torch.log(p + 1e-8) + (1 - act) * torch.log(1 - p + 1e-8)
+        loss = -(adv * logp).mean()
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(ctrl.parameters(), 1.0)
+        opt.step()
+    return ctrl
+
+
+@torch.no_grad()
+def evaluate(ctrl, seed, device, cap_frac, w):
+    gv = torch.Generator().manual_seed(999_983)
+    tokens, target, far = generate_batch(VAL, gv, device)
+    B = tokens.shape[0]
+    K = int(round(cap_frac * B))
+    need = ctrl(tokens)
+    learned = topk_mask(need, K)                        # route K to global, label-free
+
+    loc = local_logits(tokens, w)
+    glo = global_logits(tokens)
+
+    def routed_loss(mask):
+        m = mask.view(-1, 1).float()
+        routed = m * glo + (1 - m) * loc
+        return _task_loss(routed, target).mean().item()
+
+    gg = torch.Generator(device="cpu").manual_seed(seed * 17 + B)
+    rand = torch.zeros(B, dtype=torch.bool)
+    rand[torch.randperm(B, generator=gg)[:K]] = True
+    rand = rand.to(device)
+
+    tpr = learned[far].float().mean().item() if far.any() else 0.0
+    tnr = (~learned[~far]).float().mean().item() if (~far).any() else 0.0
+    return {
+        "fixed_capacity_K": K, "n_far": int(far.sum().item()),
+        "learned_loss": routed_loss(learned),
+        "random_loss": routed_loss(rand),
+        "all_global_loss": routed_loss(torch.ones(B, dtype=torch.bool, device=device)),
+        "all_local_loss": routed_loss(torch.zeros(B, dtype=torch.bool, device=device)),
+        "route_balanced_acc": 0.5 * (tpr + tnr),
+        "route_symmetric_nmi": symmetric_nmi(learned.long(), far.long()),
+        "route_auroc": auroc(need, far.long()),
+        "induced_route_fraction": torch.sigmoid(need).mean().item(),
+    }
+
+
+def supervised_probe(seed, device, steps, w, kind):
+    """Representational-ceiling control: train the controller DIRECTLY on the far
+    label (cross-entropy). Separates 'structure is inaccessible to this controller'
+    (probe AUROC ~= 0.5) from 'RL credit-assignment failed' (probe AUROC high)."""
+    torch.manual_seed(seed)
+    ctrl = _make_controller(kind, device)
+    opt = torch.optim.AdamW(ctrl.parameters(), lr=LR, weight_decay=0.01)
+    gen = torch.Generator().manual_seed(seed + 7)
+    for _ in range(steps):
+        tokens, _target, far = generate_batch(BATCH, gen, device)
+        need = ctrl(tokens)
+        loss = F.binary_cross_entropy_with_logits(need, far.float())
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(ctrl.parameters(), 1.0)
+        opt.step()
+    gv = torch.Generator().manual_seed(999_983)
+    tokens, _t, far = generate_batch(VAL, gv, device)
+    with torch.no_grad():
+        need = ctrl(tokens)
+    return {"seed": seed, "controller": kind, "mode": "supervised_probe",
+            "probe_auroc": auroc(need, far.long()),
+            "probe_acc": ((need > 0) == far).float().mean().item()}
+
+
+def run_seed(seed, device, steps, lam, w, kind="cheap"):
+    ctrl = train_controller(seed, device, steps, lam, w, kind)
+    return {"seed": seed, "lambda_use": lam, "local_w": w, "controller": kind,
+            "eval": evaluate(ctrl, seed, device, FIXED_CAP_FRAC, w)}
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    ap.add_argument("--ctrl-steps", type=int, default=CTRL_STEPS)
+    ap.add_argument("--lambda-use", type=float, default=1.0)
+    ap.add_argument("--local-w", type=int, default=LOCAL_W)
+    ap.add_argument("--controller", choices=["cheap", "attn"], default="cheap")
+    ap.add_argument("--mode", choices=["reinforce", "supervised"], default="reinforce")
+    ap.add_argument("--out", type=Path,
+                    default=Path("artifacts/wp2-routing-v3-surface-matched/raw_runs"))
+    args = ap.parse_args()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    args.out.mkdir(parents=True, exist_ok=True)
+    for seed in args.seeds:
+        if args.mode == "supervised":
+            r = supervised_probe(seed, device, args.ctrl_steps, args.local_w, args.controller)
+            (args.out / f"seed{seed}_{args.controller}_probe.json").write_text(json.dumps(r, indent=2))
+            print(f"[s{seed}] supervised probe ({args.controller}): "
+                  f"auroc={r['probe_auroc']:.3f} acc={r['probe_acc']:.3f}")
+            continue
+        r = run_seed(seed, device, args.ctrl_steps, args.lambda_use, args.local_w,
+                     args.controller)
+        (args.out / f"seed{seed}_{args.controller}.json").write_text(json.dumps(r, indent=2))
+        e = r["eval"]
+        print(f"[s{seed}] learned={e['learned_loss']:.3f} random={e['random_loss']:.3f} "
+              f"allG={e['all_global_loss']:.3f} allL={e['all_local_loss']:.3f} "
+              f"bal={e['route_balanced_acc']:.3f} auroc={e['route_auroc']:.3f} "
+              f"frac={e['induced_route_fraction']:.2f}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""TypedCognitiveGraph (Act §6). Public forward returns its RoutingTrace
+directly — no mutable hidden diagnostics (`_last_mask` is banned)."""
+from __future__ import annotations
+
+import torch
+import torch.nn as nn
+
+from experiments.wp2_routing_v2.src.contracts import RoutingTrace, SemanticState
+from experiments.wp2_routing_v2.src.controller import NeedController, topk_mask
+from experiments.wp2_routing_v2.src.typed_modules import DirectPath, SemanticPath
+
+LESIONS = ("none", "semantic_parser_off", "semantic_state_permuted",
+           "polarity_corrupted", "subject_object_swapped", "renderer_off", "channel_zeroed")
+
+
+def _apply_lesion(state: SemanticState, lesion: str, gen: torch.Generator | None) -> SemanticState:
+    if lesion in ("none", "renderer_off"):
+        return state
+    if lesion == "semantic_parser_off" or lesion == "channel_zeroed":
+        z = torch.zeros_like(state.subject)
+        return SemanticState(z, z, z, torch.zeros_like(state.polarity), state.confidence)
+    if lesion == "semantic_state_permuted":
+        n = state.subject.shape[0]
+        dev = state.subject.device
+        perm = torch.randperm(n, generator=gen, device=dev) if gen else torch.randperm(n, device=dev)
+        return SemanticState(state.subject[perm], state.relation[perm], state.object[perm],
+                             state.polarity[perm], state.confidence)
+    if lesion == "polarity_corrupted":
+        return SemanticState(state.subject, state.relation, state.object,
+                             1 - state.polarity, state.confidence)
+    if lesion == "subject_object_swapped":
+        return SemanticState(state.object, state.relation, state.subject,
+                             state.polarity, state.confidence)
+    return state
+
+
+class TypedCognitiveGraph(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.direct = DirectPath()
+        self.semantic = SemanticPath()
+        self.controller = NeedController()
+
+    def forward(self, tokens, *, capacity, forced_mask=None, lesion=None, gen=None):
+        B = tokens.shape[0]
+        lesion = lesion or "none"
+        need = self.controller.need_score(tokens)
+        route_logits = self.controller.route_logits(need)
+        semantic_mask = forced_mask if forced_mask is not None else topk_mask(need, capacity)
+
+        # semantic path
+        sem_logits_full, state = self.semantic(tokens)
+        state = _apply_lesion(state, lesion, gen)
+        if lesion in ("semantic_parser_off", "semantic_state_permuted", "polarity_corrupted",
+                      "subject_object_swapped", "channel_zeroed"):
+            sem_logits_full = self.semantic.renderer(state)
+        if lesion == "renderer_off":
+            sem_logits_full = torch.zeros_like(sem_logits_full)
+
+        direct_logits = self.direct(tokens)
+        m = semantic_mask.view(B, 1, 1)
+        out = torch.where(m, sem_logits_full, direct_logits)
+
+        active_cost = semantic_mask.long()
+        trace = RoutingTrace(need_score=need.detach(), semantic_mask=semantic_mask.detach(),
+                             route_logits=route_logits.detach(), active_cost=active_cost.detach(),
+                             capacity=capacity)
+        out_state = state if semantic_mask.any() else None
+        return out, out_state, trace
+
+    def forward_sparse(self, tokens, *, capacity, forced_mask=None):
+        """Physical conditional execution (G2 / defect #3): each path runs ONLY
+        on its assigned subset of the batch, then results are scattered back to
+        the original order. Unlike forward(), the inactive path's kernels are
+        never launched for a given example -> real compute saving. Returns
+        (logits [B,L,V], semantic_mask, processed_counts)."""
+        B = tokens.shape[0]
+        need = self.controller.need_score(tokens)
+        semantic_mask = forced_mask if forced_mask is not None else topk_mask(need, capacity)
+        sem_idx = semantic_mask.nonzero(as_tuple=True)[0]
+        dir_idx = (~semantic_mask).nonzero(as_tuple=True)[0]
+        out: torch.Tensor | None = None
+        processed = {"semantic": int(sem_idx.numel()), "direct": int(dir_idx.numel())}
+        if sem_idx.numel() > 0:
+            sem_out, _ = self.semantic(tokens[sem_idx])       # only the semantic subset
+            out = tokens.new_zeros((B, *sem_out.shape[1:]), dtype=sem_out.dtype)
+            out[sem_idx] = sem_out
+        if dir_idx.numel() > 0:
+            dir_out = self.direct(tokens[dir_idx])            # only the direct subset
+            if out is None:
+                out = tokens.new_zeros((B, *dir_out.shape[1:]), dtype=dir_out.dtype)
+            out[dir_idx] = dir_out
+        return out, semantic_mask, processed
+
+"""L4k falsification boundary — the most decisive kill-conditions for the plasticity line.
+
+The line's foundation is a genuine context x arm interaction. This destroys the interaction three
+ways (additive, collapsed, arm-shuffle nulls) and confirms the gap vanishes each time while the
+real control keeps it. If a null still showed a gap, the whole line would be falsified. See
+PREREGISTRATION.md. Deterministic.
+"""
+from __future__ import annotations
+
+import glob
+import json
+import math
+import random
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import gap_lower_confidence_bound, plugin_gap
+
+ROOT = Path(__file__).resolve().parents[3]
+RAW = ROOT / "artifacts/wp3-plasticity-v2-confirmatory/raw_runs"
+OUT = ROOT / "artifacts/wp3-plasticity-v13-killtest"
+
+GROUPS = ["attn", "mlp", "head", "embed"]
+TASKS = ["lexical", "relational"]
+LAMBDA = 1.0
+DELTA = 0.05
+TRAIN_SEEDS = list(range(5, 13))
+EVAL_SEEDS = list(range(13, 21))
+CONTROLLER_SEEDS = 8
+N_EPISODES = 4000
+LR = 0.2
+
+
+def _per_seed_utils() -> dict[int, list[list[float]]]:
+    runs = [json.load(open(f)) for f in sorted(glob.glob(str(RAW / "seed*.json")))]
+    cost = {a: runs[0]["tasks"][TASKS[0]][a]["cost_params"] for a in GROUPS}
+    km = max(cost.values())
+    return {r["seed"]: [[r["tasks"][t][a]["new_acc"] - LAMBDA * cost[a] / km for a in GROUPS]
+                        for t in TASKS] for r in runs}
+
+
+def _mutate(util: dict[int, list[list[float]]], kind: str) -> dict[int, list[list[float]]]:
+    if kind == "real":
+        return util
+    out = {}
+    for s, m in util.items():
+        if kind == "additive":
+            n_t, n_a = len(m), len(m[0])
+            grand = sum(m[t][a] for t in range(n_t) for a in range(n_a)) / (n_t * n_a)
+            row = [sum(m[t]) / n_a for t in range(n_t)]
+            col = [sum(m[t][a] for t in range(n_t)) / n_t for a in range(n_a)]
+            out[s] = [[row[t] + col[a] - grand for a in range(n_a)] for t in range(n_t)]
+        elif kind == "collapsed":
+            out[s] = [m[0][:], m[0][:]]
+        elif kind == "aligned_best":
+            # move context 1's best arm onto context 0's best-arm index, so ONE fixed arm is
+            # optimal for both contexts -> context-conditioning genuinely destroyed.
+            n_a = len(GROUPS)
+            i0 = max(range(n_a), key=lambda a: m[0][a])   # context 0 argmax
+            i1 = max(range(n_a), key=lambda a: m[1][a])   # context 1 argmax
+            row1 = m[1][:]
+            row1[i0], row1[i1] = row1[i1], row1[i0]        # swap so context 1's max lands at i0
+            out[s] = [m[0][:], row1]
+    return out
+
+
+def _var(v: list[float]) -> float:
+    if len(v) < 2:
+        return 0.0
+    mu = sum(v) / len(v)
+    return sum((x - mu) ** 2 for x in v) / (len(v) - 1)
+
+
+def _certificate(util: dict[int, list[list[float]]]) -> float:
+    seeds = sorted(util)
+    n = len(seeds)
+    uhat, se = [], 0.0
+    for ti in range(len(TASKS)):
+        row = []
+        for ai in range(len(GROUPS)):
+            vals = [util[s][ti][ai] for s in seeds]
+            row.append(sum(vals) / n)
+            se = max(se, math.sqrt(_var(vals)) / math.sqrt(n))
+        uhat.append(row)
+    return gap_lower_confidence_bound(plugin_gap(uhat), se, len(TASKS), len(GROUPS), DELTA)
+
+
+def _softmax(theta: list[float]) -> list[float]:
+    mx = max(theta)
+    ex = [math.exp(t - mx) for t in theta]
+    return [e / sum(ex) for e in ex]
+
+
+def _mean_u(util, seeds, c, a):
+    return sum(util[s][c][a] for s in seeds) / len(seeds)
+
+
+def _governor_recovery(util: dict[int, list[list[float]]]) -> float:
+    n_a = len(GROUPS)
+    oracle = sum(max(_mean_u(util, EVAL_SEEDS, c, a) for a in range(n_a)) for c in range(2)) / 2.0
+    fixed = max(range(n_a), key=lambda a: sum(_mean_u(util, TRAIN_SEEDS, c, a) for c in range(2)))
+    best_fixed = sum(_mean_u(util, EVAL_SEEDS, c, fixed) for c in range(2)) / 2.0
+    gap = oracle - best_fixed
+    if gap <= 1e-9:
+        return 0.0
+    recs = []
+    for cs in range(CONTROLLER_SEEDS):
+        rng = random.Random(0x11 ^ cs)
+        theta = [[0.0] * n_a for _ in range(2)]
+        base = [0.0, 0.0]
+        for ep in range(N_EPISODES):
+            c = ep & 1
+            pi = _softmax(theta[c])
+            u = rng.random()
+            cum = 0.0
+            a = n_a - 1
+            for i, pr in enumerate(pi):
+                cum += pr
+                if u <= cum:
+                    a = i
+                    break
+            reward = util[rng.choice(TRAIN_SEEDS)][c][a]
+            base[c] = 0.99 * base[c] + 0.01 * reward
+            adv = reward - base[c]
+            for j in range(n_a):
+                theta[c][j] += LR * adv * ((1.0 - pi[j]) if j == a else -pi[j])
+        arm = [max(range(n_a), key=lambda a: theta[c][a]) for c in range(2)]
+        realised = sum(_mean_u(util, EVAL_SEEDS, c, arm[c]) for c in range(2)) / 2.0
+        recs.append((realised - best_fixed) / gap)
+    return min(recs)
+
+
+def analyze() -> dict[str, Any]:
+    util = _per_seed_utils()
+    conditions = {}
+    for kind in ("real", "additive", "collapsed", "aligned_best"):
+        u = _mutate(util, kind)
+        glo = _certificate(u)
+        rec = _governor_recovery(u)
+        conditions[kind] = {"gap_lower_bound": glo, "governor_recovery": rec}
+
+    real = conditions["real"]
+    real_ok = real["gap_lower_bound"] > 0.0 and real["governor_recovery"] >= 0.8
+    nulls_vanish = all(conditions[k]["gap_lower_bound"] <= 0.0 and conditions[k]["governor_recovery"] <= 0.10
+                       for k in ("additive", "collapsed", "aligned_best"))
+    verdict = "L4K_LINE_SURVIVES" if (real_ok and nulls_vanish) else "L4K_LINE_FALSIFIED"
+    return {
+        "experiment": "wp3_plasticity_v13_killtest",
+        "verdict": verdict,
+        "tier": "SYNTHETIC — falsification boundary / foundation check of the L4 line",
+        "lambda": LAMBDA, "delta": DELTA,
+        "conditions": conditions,
+        "real_shows_gap": real_ok,
+        "all_nulls_vanish": nulls_vanish,
+        "prohibited_extrapolations": ["real-workload behavior", "L7 compute-equivalent Pareto",
+                                      "external validity beyond synthetic"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4k FALSIFICATION-BOUNDARY VERDICT: {r['verdict']}")
+    for kind, c in r["conditions"].items():
+        print(f"  {kind:11s}  G_lo={c['gap_lower_bound']:+.4f}  gov_recovery={c['governor_recovery']:+.3f}")
+    print(f"  real_shows_gap={r['real_shows_gap']}  all_nulls_vanish={r['all_nulls_vanish']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Tests for the L4 plasticity cost-budget confirmatory analysis.
+
+Assert the preregistered decision on the committed held-out raw runs, and that the
+instrument can fail (controls) and actually debiases.
+"""
+from __future__ import annotations
+
+import math
+
+from experiments.wp3_plasticity_v2_confirmatory.src import analyze as A
+
+SEEDS = list(range(5, 21))
+
+
+def _r():
+    return A.analyze(SEEDS)
+
+
+def test_verdict_confirmed_and_deterministic():
+    r1, r2 = _r(), _r()
+    assert r1 == r2
+    assert r1["verdict"] == "L4_IDENTIFIABLE_CONFIRMED_SYNTHETIC"
+    assert r1["n_seeds"] == 16
+    assert r1["lambda_frozen"] == 1.0
+
+
+def test_certificate_debiases_and_stays_positive():
+    p = _r()["primary"]
+    assert p["gap_lower_bound"] < p["gap_hat"]          # debiasing subtracts
+    assert p["gap_lower_bound"] > 0.0                    # still certifies
+    assert math.isclose(p["gap_hat"], 0.1909, abs_tol=6e-3)
+
+
+def test_effect_in_every_held_out_seed():
+    r = _r()
+    assert r["fraction_seeds_positive"] == 1.0
+    assert r["worst_seed_gap"] > 0.0
+    assert len(r["per_seed_gaps"]) == 16
+
+
+def test_controls_behave():
+    c = _r()["controls"]
+    assert c["negative_A"]["identifiable"] is False
+    assert c["negative_B"]["identifiable"] is False
+    assert c["positive"]["identifiable"] is True
+    assert c["controls_ok"] is True
+
+
+def test_no_selection_correction_delta_is_direct():
+    # lambda frozen a priori => delta applied directly at 0.05 (no Bonferroni here).
+    assert _r()["delta"] == 0.05
+
+
+def test_certificate_self_falsification():
+    assert _r()["certificate_self_falsification"]["all_ok"] is True
+
+"""Tests for the L4a learned-governor study.
+
+Assert the preregistered decision AND that the instrument can fail: the NULL falsifier
+must return ~0 recovery, and the random baseline must trail the best fixed arm.
+"""
+from __future__ import annotations
+
+from experiments.wp3_plasticity_v3_governor.src import governor as G
+
+
+def _r():
+    return G.run()
+
+
+def test_verdict_supported_and_deterministic():
+    r1, r2 = _r(), _r()
+    assert r1 == r2  # deterministic PRNG
+    assert r1["verdict"] == "L4A_SUPPORTED"
+
+
+def test_learned_recovers_gap_out_of_sample():
+    real = _r()["real"]
+    assert real["learned_beats_fixed_worst"] is True
+    assert real["worst_recovery"] >= 0.80
+    assert real["worst_learned"] > real["best_fixed"] > real["random"]
+
+
+def test_null_falsifier_reports_no_gap():
+    r = _r()
+    # collapsed benchmark: a working governor+metric must NOT manufacture a gap
+    assert r["null_falsifier"]["worst_recovery"] <= 0.10
+
+
+def test_baselines_ordered():
+    real = _r()["real"]
+    assert real["random_below_fixed"] is True
+    assert real["oracle"] >= real["best_fixed"]
+
+
+def test_reward_only_every_controller_seed_recovers():
+    # robustness: the WORST of 8 independent inits still clears threshold
+    real = _r()["real"]
+    assert len(real["learned_per_seed"]) == 8
+    assert min(real["learned_per_seed"]) > real["best_fixed"]
+
+"""Tests for L4d — lock the higher-power scaling result deterministically.
+
+analyze() is expensive (24 seeds x 11 margins x 6 cells), so it is computed once and reused.
+"""
+from __future__ import annotations
+
+import math
+
+import pytest
+
+from experiments.wp3_plasticity_v6_scaling.src import scaling as S
+
+
+@pytest.fixture(scope="module")
+def result():
+    return S.analyze()
+
+
+def test_verdict_budget_scaling_violated(result):
+    assert result["verdict"] == "L4D_BUDGET_SCALING_VIOLATED"
+
+
+def test_delta_star_monotone_decreasing_no_nan(result):
+    ds = [result["budget_delta_star"][f"N_{n}"] for n in S.BUDGETS]
+    assert not any(math.isnan(x) for x in ds)          # extended grid: all measurable
+    assert all(ds[i] >= ds[i + 1] for i in range(len(ds) - 1))
+
+
+def test_budget_ratio_steeper_than_law(result):
+    # 0.247 < the 1/sqrt(8)=0.354 law and just below the a-priori band floor 0.25
+    r = result["budget_ratio_N12000_over_N1500"]
+    assert r < result["predicted_budget_ratio_1_over_sqrt8"]
+    assert r < 0.25
+
+
+def test_noise_axis_refutes_samplecomplexity(result):
+    # ratio < 1: more noise -> smaller collapse margin (exploration), opposite of (sigma/Delta)^2
+    r = result["sigma_scaling_ratio_highpower"]
+    assert r < 1.0
+    assert result["sigma_scaling_is_samplecomplexity"] is False
+
+"""Tests for WP5-AC2 learned compute-controller."""
+from __future__ import annotations
+
+import pytest
+
+from experiments.wp5_adaptive_compute.src import controller as C
+
+
+@pytest.fixture(scope="module")
+def result():
+    return C.analyze()
+
+
+def test_verdict_recovers(result):
+    assert result["verdict"] == "AC2_CONTROLLER_RECOVERS"
+
+
+def test_recovers_out_of_sample(result):
+    assert result["worst_recovery"] >= 0.8
+    assert result["oracle"] > result["best_fixed"] > result["random"]
+
+
+def test_null_falsifier_and_baseline(result):
+    assert result["null_recovery"] <= 0.10
+    assert result["random_below_fixed"] is True
+
+"""WP9 independence-assumption robustness.
+
+The corrected certificate's deviation term assumes per-context independence. This Monte-Carlos its
+coverage (FPR on a tied null) under CROSS-CONTEXT correlated noise (rho sweep). If FPR stays <= delta
+under strong correlation, the independence assumption is not load-bearing for validity. See
+PREREGISTRATION.md. Deterministic.
+"""
+from __future__ import annotations
+
+import math
+from typing import Any
+
+from experiments.common.identifiability_inference import (
+    _Rng,
+    gap_lower_confidence_bound_corrected,
+    plugin_gap,
+)
+
+SHAPES = [(4, 4), (2, 8), (6, 3)]
+RHOS = [0.0, 0.3, 0.6, 0.9]
+SE = 0.15
+MC_DELTA = 0.10
+TRIALS = 4000
+
+
+def _fpr(n_c, n_a, rho, seed) -> float:
+    rng = _Rng(seed)
+    fp = 0
+    for _ in range(TRIALS):
+        eta = [rng.gauss() for _ in range(n_a)]                     # shared per-action component
+        u = [[math.sqrt(1 - rho) * rng.gauss() * SE + math.sqrt(rho) * eta[a] * SE
+              for a in range(n_a)] for _ in range(n_c)]             # tied null (mean 0) + corr noise
+        if gap_lower_confidence_bound_corrected(plugin_gap(u), SE, n_c, n_a, MC_DELTA) > 0.0:
+            fp += 1
+    return fp / TRIALS
+
+
+def analyze() -> dict[str, Any]:
+    grid = []
+    max_fpr = 0.0
+    for (n_c, n_a) in SHAPES:
+        row = {"shape": f"{n_c}x{n_a}"}
+        for rho in RHOS:
+            f = _fpr(n_c, n_a, rho, 7)
+            row[f"rho_{rho}"] = f
+            max_fpr = max(max_fpr, f)
+        grid.append(row)
+    robust = max_fpr <= MC_DELTA
+    verdict = "INDEPENDENCE_ROBUST" if robust else "INDEPENDENCE_LOAD_BEARING"
+    return {
+        "experiment": "wp9_independence",
+        "verdict": verdict,
+        "tier": "META — corrected-bound coverage under cross-context correlation",
+        "mc_delta": MC_DELTA, "rhos": RHOS, "shapes": [f"{a}x{b}" for a, b in SHAPES],
+        "fpr_grid": grid,
+        "max_fpr_over_all": max_fpr,
+        "independence_robust": robust,
+        "note": "Corrected-bound FPR on a tied null under cross-context correlated noise. FPR<=delta up "
+                "to rho=0.9 => the per-context independence assumption is not load-bearing for validity "
+                "(the b-slack over-covers). Worst case is the tied null.",
+        "prohibited_extrapolations": ["independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    from pathlib import Path
+    out = Path(__file__).resolve().parents[3] / "artifacts/wp9-independence"
+    out.mkdir(parents=True, exist_ok=True)
+    import json
+    (out / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"WP9 INDEPENDENCE VERDICT: {r['verdict']}  (max FPR={r['max_fpr_over_all']:.3f} <= {MC_DELTA})")
+    print("  shape   rho=0.0 0.3   0.6   0.9")
+    for row in r["fpr_grid"]:
+        print(f"  {row['shape']:6s}  " + "  ".join(f"{row[f'rho_{rho}']:.3f}" for rho in RHOS))
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+Distributed dataloaders for pretraining.
+
+BOS-aligned bestfit:
+   - Every row starts with BOS token
+   - Documents packed using best-fit algorithm to minimize cropping
+   - When no document fits remaining space, crops a document to fill exactly
+   - 100% utilization (no padding), ~35% tokens cropped at T=2048
+
+Compared to the original tokenizing_distributed_data_loader:
+BOS-aligned loses ~35% of tokens to cropping, but ensures that
+there are fewer "confusing" tokens in the train/val batches as every token can
+now attend back to the BOS token and sees the full context of the document.
+
+Fallback to the original if you have very limited data AND long documents:
+https://github.com/karpathy/nanochat/blob/3c3a3d7/nanochat/dataloader.py#L78-L117
+"""
+
+import torch
+import pyarrow.parquet as pq
+
+from nanochat.common import get_dist_info
+from nanochat.dataset import list_parquet_files
+
+def _document_batches(split, resume_state_dict, tokenizer_batch_size):
+    """
+    Infinite iterator over document batches (list of text strings) from parquet files.
+
+    Handles DDP sharding and approximate resume. Each yield is (text_batch, (pq_idx, rg_idx, epoch))
+    where text_batch is a list of document strings, indices track position for resumption,
+    and epoch counts how many times we've cycled through the dataset (starts at 1).
+    """
+    ddp, ddp_rank, ddp_local_rank, ddp_world_size = get_dist_info()
+
+    warn_on_legacy = ddp_rank == 0 and split == "train" # rank 0 on train split will warn on legacy
+    parquet_paths = list_parquet_files(warn_on_legacy=warn_on_legacy)
+    assert len(parquet_paths) != 0, "No dataset parquet files found, did you run dataset.py?"
+    parquet_paths = parquet_paths[:-1] if split == "train" else parquet_paths[-1:]
+
+    resume_pq_idx = resume_state_dict["pq_idx"] if resume_state_dict is not None else 0
+    resume_rg_idx = resume_state_dict["rg_idx"] if resume_state_dict is not None else None
+    resume_epoch = resume_state_dict.get("epoch", 1) if resume_state_dict is not None else 1
+    first_pass = True
+    pq_idx = resume_pq_idx
+    epoch = resume_epoch
+
+    while True:  # iterate infinitely (multi-epoch)
+        pq_idx = resume_pq_idx if first_pass else 0
+        while pq_idx < len(parquet_paths):
+            filepath = parquet_paths[pq_idx]
+            pf = pq.ParquetFile(filepath)
+            # Start from resume point if resuming on same file, otherwise from DDP rank
+            if first_pass and (resume_rg_idx is not None) and (pq_idx == resume_pq_idx):
+                base_idx = resume_rg_idx // ddp_world_size
+                base_idx += 1  # advance by 1 so we don't repeat data after resuming
+                rg_idx = base_idx * ddp_world_size + ddp_rank
+                if rg_idx >= pf.num_row_groups:
+                    pq_idx += 1
+                    continue
+                resume_rg_idx = None  # only do this once
+            else:
+                rg_idx = ddp_rank
+            while rg_idx < pf.num_row_groups:
+                rg = pf.read_row_group(rg_idx)
+                batch = rg.column('text').to_pylist()
+                for i in range(0, len(batch), tokenizer_batch_size):
+                    yield batch[i:i+tokenizer_batch_size], (pq_idx, rg_idx, epoch)
+                rg_idx += ddp_world_size
+            pq_idx += 1
+        first_pass = False
+        epoch += 1
+
+
+def tokenizing_distributed_data_loader_with_state_bos_bestfit(
+    tokenizer, B, T, split,
+    tokenizer_threads=4, tokenizer_batch_size=128,
+    device="cuda", resume_state_dict=None,
+    buffer_size=1000
+):
+    """
+    BOS-aligned dataloader with Best-Fit Cropping.
+
+    Reduces token waste compared to simple greedy cropping by searching a buffer
+    for documents that fit well, while maintaining 100% utilization (no padding).
+
+    Algorithm for each row:
+    1. From buffered docs, pick the LARGEST doc that fits entirely
+    2. Repeat until no doc fits
+    3. When nothing fits, crop a doc to fill remaining space exactly
+
+    Key properties:
+    - Every row starts with BOS
+    - 100% utilization (no padding, every token is trained on)
+    - Approximately 35% of all tokens are discarded due to cropping
+    """
+    assert split in ["train", "val"], "split must be 'train' or 'val'"
+
+    row_capacity = T + 1
+    batches = _document_batches(split, resume_state_dict, tokenizer_batch_size)
+    bos_token = tokenizer.get_bos_token_id()
+    doc_buffer = []
+    pq_idx, rg_idx, epoch = 0, 0, 1
+
+    def refill_buffer():
+        nonlocal pq_idx, rg_idx, epoch
+        doc_batch, (pq_idx, rg_idx, epoch) = next(batches)
+        token_lists = tokenizer.encode(doc_batch, prepend=bos_token, num_threads=tokenizer_threads)
+        for tokens in token_lists:
+            doc_buffer.append(tokens)
+
+    # Pre-allocate buffers once: layout is [inputs (B*T) | targets (B*T)]
+    # This gives us contiguous views and a single HtoD transfer
+    use_cuda = device == "cuda"
+    row_buffer = torch.empty((B, row_capacity), dtype=torch.long) # for building rows without creating Python lists
+    cpu_buffer = torch.empty(2 * B * T, dtype=torch.long, pin_memory=use_cuda) # staging area (CPU)
+    gpu_buffer = torch.empty(2 * B * T, dtype=torch.long, device=device) # on-device buffer
+    cpu_inputs = cpu_buffer[:B * T].view(B, T) # a few views into these buffers just for convenience
+    cpu_targets = cpu_buffer[B * T:].view(B, T)
+    inputs = gpu_buffer[:B * T].view(B, T)
+    targets = gpu_buffer[B * T:].view(B, T)
+
+    while True:
+        for row_idx in range(B):
+            pos = 0
+            while pos < row_capacity:
+                # Ensure buffer has documents
+                while len(doc_buffer) < buffer_size:
+                    refill_buffer()
+
+                remaining = row_capacity - pos
+
+                # Find largest doc that fits entirely
+                best_idx = -1
+                best_len = 0
+                for i, doc in enumerate(doc_buffer):
+                    doc_len = len(doc)
+                    if doc_len <= remaining and doc_len > best_len:
+                        best_idx = i
+                        best_len = doc_len
+
+                if best_idx >= 0:
+                    doc = doc_buffer.pop(best_idx)
+                    doc_len = len(doc)
+                    row_buffer[row_idx, pos:pos + doc_len] = torch.tensor(doc, dtype=torch.long)
+                    pos += doc_len
+                else:
+                    # No doc fits - crop shortest in buffer to fill remaining and minimize waste
+                    shortest_idx = min(range(len(doc_buffer)), key=lambda i: len(doc_buffer[i]))
+                    doc = doc_buffer.pop(shortest_idx)
+                    row_buffer[row_idx, pos:pos + remaining] = torch.tensor(doc[:remaining], dtype=torch.long)
+                    pos += remaining
+
+        # Copy to pinned CPU buffer, then single HtoD transfer
+        cpu_inputs.copy_(row_buffer[:, :-1])
+        cpu_targets.copy_(row_buffer[:, 1:])
+
+        state_dict = {"pq_idx": pq_idx, "rg_idx": rg_idx, "epoch": epoch}
+
+        # Single HtoD copy into persistent GPU buffer and yield
+        gpu_buffer.copy_(cpu_buffer, non_blocking=use_cuda)
+        yield inputs, targets, state_dict
+
+def tokenizing_distributed_data_loader_bos_bestfit(*args, **kwargs):
+    """Helper that omits state_dict from yields."""
+    for inputs, targets, state_dict in tokenizing_distributed_data_loader_with_state_bos_bestfit(*args, **kwargs):
+        yield inputs, targets
+
+"""Mathematical theory of adaptive-mechanism identifiability, verified against
+the CWC experiments. Reproduces the note in docs/IDENTIFIABILITY_THEORY.md.
+
+Object: a utility matrix U[context c, choice a], optional cost K[a], budget κ
+(max fraction of the population that may take an expensive choice). We study the
+oracle gap G = V_oracle − V_fixed and prove it is governed by the context×choice
+INTERACTION under the operating budget.
+"""
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def decompose(U: list[list[float]], p: list[float] | None = None) -> dict:
+    """2-way (weighted-over-contexts, uniform-over-choices) ANOVA of U and the
+    unconstrained oracle gap. Returns the exact gap formula terms."""
+    m, n = len(U), len(U[0])
+    if p is None:
+        p = [1.0 / m] * m
+    mu = sum(p[c] * U[c][a] for c in range(m) for a in range(n)) / n
+    beta = [sum(p[c] * U[c][a] for c in range(m)) - mu for a in range(n)]
+    alpha = [sum(U[c][a] for a in range(n)) / n - mu for c in range(m)]
+    gamma = [[U[c][a] - mu - alpha[c] - beta[a] for a in range(n)] for c in range(m)]
+    v_oracle = sum(p[c] * max(U[c]) for c in range(m))
+    v_fixed = max(sum(p[c] * U[c][a] for c in range(m)) for a in range(n))
+    gap = v_oracle - v_fixed
+    gap_formula = sum(p[c] * max(beta[a] + gamma[c][a] for a in range(n)) for c in range(m)) - max(beta)
+    gamma_rms = math.sqrt(sum(p[c] * gamma[c][a] ** 2 for c in range(m) for a in range(n)) / n)
+    beta_spread = max(beta) - min(beta)
+    ctx_argmax = [max(range(n), key=lambda a: U[c][a]) for c in range(m)]
+    return {"gap": gap, "gap_formula": gap_formula, "beta": beta, "gamma_rms": gamma_rms,
+            "beta_spread": beta_spread, "quality_dominant_choice": len(set(ctx_argmax)) == 1,
+            "per_context_argmax": ctx_argmax}
+
+
+def constrained_gap(Q: list[list[float]], cheap: int, expensive: int,
+                    p_context: list[float], kappa: float) -> dict:
+    """Budget-constrained oracle gap. Two choices: `cheap` (cost 0) and
+    `expensive` (cost 1). At most fraction κ of the population may take the
+    expensive choice. Oracle sees context; fixed policy is context-blind.
+
+    Oracle: spend the κ budget on the contexts with the largest quality gain
+    Δ_c = Q[c,expensive] − Q[c,cheap], largest first.
+    Best context-blind policy: either all-cheap, or expensive to a random κ.
+    """
+    m = len(Q)
+    gains = sorted(range(m), key=lambda c: Q[c][expensive] - Q[c][cheap], reverse=True)
+    # oracle: fill budget with highest-gain contexts (fractional knapsack)
+    budget = kappa
+    v_oracle = sum(p_context[c] * Q[c][cheap] for c in range(m))
+    for c in gains:
+        take = min(p_context[c], budget)
+        v_oracle += take * max(0.0, Q[c][expensive] - Q[c][cheap])
+        budget -= take
+        if budget <= 1e-12:
+            break
+    # context-blind best: all-cheap vs κ-random-expensive
+    v_all_cheap = sum(p_context[c] * Q[c][cheap] for c in range(m))
+    # random κ expensive: each context gets expensive with prob κ
+    v_rand = sum(p_context[c] * ((1 - kappa) * Q[c][cheap] + kappa * Q[c][expensive]) for c in range(m))
+    v_fixed = max(v_all_cheap, v_rand)
+    return {"v_oracle": v_oracle, "v_fixed": v_fixed, "constrained_gap": v_oracle - v_fixed,
+            "v_all_cheap": v_all_cheap, "v_random_kappa": v_rand}
+
+
+def main() -> None:
+    out: dict = {}
+
+    # 1) PLASTICITY — real data, unconstrained (utility already = quality−retention)
+    runs = [json.loads((ROOT / f"artifacts/wp3-plasticity-v1/oracle-gap/raw_runs/seed{s}.json").read_text())
+            for s in range(5)]
+    allocs = ["attn", "mlp", "head", "embed"]
+    tasks = ["lexical", "relational"]
+    U_plast = [[sum(r["tasks"][t][a]["utility"] for r in runs) / len(runs) for a in allocs] for t in tasks]
+    out["plasticity"] = decompose(U_plast)
+    out["plasticity"]["explanation"] = ("gap~0: attention has the largest choice main-effect (beta) and its "
+                                        "interaction is never overtaken -> weak-interaction collapse regime.")
+
+    # 2) ROUTING v2 — quality only (unconstrained) vs budget-constrained
+    Q_route = [[1.00, 1.00],    # EASY: direct, semantic
+               [0.004, 1.00]]   # HARD: direct, semantic
+    out["routing_unconstrained"] = decompose(Q_route)
+    out["routing_unconstrained"]["explanation"] = ("gap=0 on quality alone: the semantic path dominates "
+                                                   "(solves EASY and HARD) -> quality-dominance collapse.")
+    out["routing_budget_kappa_0.5"] = constrained_gap(Q_route, cheap=0, expensive=1,
+                                                      p_context=[0.5, 0.5], kappa=0.5)
+    out["routing_budget_kappa_0.5"]["explanation"] = ("gap>0: the 50% budget forbids the dominant semantic "
+                                                      "path everywhere; the oracle spends it on HARD. This is "
+                                                      "why routing v2 was identifiable — cost, not quality.")
+
+    # 2b) PLASTICITY REVISITED under a parameter-COST budget (the AMG premise).
+    # utility_λ(task, group) = new_acc − λ·(params/params_max). Post-hoc λ sweep.
+    Kg = {a: runs[0]["tasks"]["lexical"][a]["cost_params"] for a in allocs}
+    kmax = max(Kg.values())
+    acc = {t: {a: sum(r["tasks"][t][a]["new_acc"] for r in runs) / len(runs) for a in allocs} for t in tasks}
+    sweep = {}
+    for lam in (0.0, 0.5, 1.0, 2.0):
+        Ul = [[acc[t][a] - lam * Kg[a] / kmax for a in allocs] for t in tasks]
+        d = decompose(Ul)
+        oc = {t: allocs[max(range(len(allocs)), key=lambda a: Ul[ti][a])] for ti, t in enumerate(tasks)}
+        # per-seed gaps for robustness
+        per_seed = []
+        for r in runs:
+            Us = [[r["tasks"][t][a]["new_acc"] - lam * Kg[a] / kmax for a in allocs] for t in tasks]
+            vo = sum(max(row) for row in Us) / len(tasks)
+            vf = max(sum(Us[ti][a] for ti in range(len(tasks))) / len(tasks) for a in range(len(allocs)))
+            per_seed.append(vo - vf)
+        sweep[f"lambda_{lam}"] = {"gap": d["gap"], "oracle_choice": oc,
+                                  "per_seed_gaps": per_seed, "min_seed_gap": min(per_seed)}
+    out["plasticity_cost_budget_sweep"] = sweep
+    out["plasticity_cost_budget_note"] = (
+        "REVIVAL: the original λ=0 gap is ~0, but for λ∈[0.5,1.0] the cost-weighted oracle allocates the CHEAP "
+        "'head' group to lexical (which it can solve) and reserves the expensive 'attn' only for relational "
+        "(structurally necessary) — beating any fixed group. gap≈0.19 at λ=1, identical across all 5 seeds. "
+        "EPISTEMIC STATUS: EXPLORATORY (λ chosen post-hoc). Generates a preregisterable hypothesis; requires a "
+        "fresh confirmatory run with a cost-aware oracle objective and λ frozen before execution.")
+
+    # 3) POSITIVE CONTROL — anti-dominant specialization
+    out["ideal_specialized"] = decompose([[1.0, 0.0], [0.0, 1.0]])
+
+    (ROOT / "docs").mkdir(exist_ok=True)
+    (ROOT / "artifacts/identifiability_theory.json").write_text(json.dumps(out, indent=2))
+    pl = out["plasticity"]
+    ratio = pl["gamma_rms"] / (pl["beta_spread"] + 1e-9)
+    print("PLASTICITY unconstrained gap      =", round(pl["gap"], 4),
+          "| quality-dominant?", pl["quality_dominant_choice"],
+          "| gamma_rms/beta_spread =", round(ratio, 3))
+    print("ROUTING quality-only gap          =", round(out["routing_unconstrained"]["gap"], 4),
+          "| quality-dominant?", out["routing_unconstrained"]["quality_dominant_choice"])
+    print("ROUTING budget-constrained gap    =", round(out["routing_budget_kappa_0.5"]["constrained_gap"], 4),
+          "  (oracle", round(out["routing_budget_kappa_0.5"]["v_oracle"], 3),
+          "vs fixed", round(out["routing_budget_kappa_0.5"]["v_fixed"], 3), ")")
+    print("IDEAL specialized gap             =", round(out["ideal_specialized"]["gap"], 4))
+
+
+if __name__ == "__main__":
+    main()
+
+"""Build clean release archives (G0): source (no .git / caches) + evidence,
+each with a SHA-256, plus RELEASE_MANIFEST.json. Deterministic file order.
+Usage: PYTHONPATH=. .venv/bin/python scripts/make_release.py --out /tmp/cwc-release
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+import tarfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+EXCLUDE = {".git", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache",
+           ".ruff_cache", ".hypothesis", ".coverage"}
+
+
+def _sh(cmd: str) -> str:
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=ROOT).stdout.strip()
+
+
+def _clean_files(subdirs: list[str]) -> list[Path]:
+    out = []
+    for sub in subdirs:
+        for p in sorted((ROOT / sub).rglob("*")):
+            if p.is_file() and not any(part in EXCLUDE or part.endswith(".pyc") for part in p.parts):
+                out.append(p)
+    return out
+
+
+def _tar(files: list[Path], dest: Path) -> str:
+    with tarfile.open(dest, "w:gz") as tf:
+        for f in files:
+            tf.add(f, arcname=str(f.relative_to(ROOT)))
+    return hashlib.sha256(dest.read_bytes()).hexdigest()
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, default=Path("/tmp/cwc-release"))
+    args = ap.parse_args()
+    args.out.mkdir(parents=True, exist_ok=True)
+    commit = _sh("git rev-parse HEAD")
+    src = _clean_files(["cwc", "experiments", "scripts", "docs", "schemas", "tests",
+                        "nanochat", "containers"]) + [ROOT / f for f in
+                        ("Makefile.cwc", "uv.lock", "pyproject.toml", "ruff.toml", "mypy.ini",
+                         "SYSTEM.md", "CITATION.cff", "claim_registry.json") if (ROOT / f).exists()]
+    ev = _clean_files(["artifacts"])
+    src_sha = _tar(src, args.out / f"cwc-source-{commit[:7]}.tar.gz")
+    ev_sha = _tar(ev, args.out / f"cwc-evidence-{commit[:7]}.tar.gz")
+    manifest = {
+        "project": "Cognitive Wiring Core", "version": "1.0.0", "git_commit": commit,
+        "git_tree": _sh("git rev-parse HEAD^{tree}"),
+        "upstream_commit": _sh("git rev-parse master"),
+        "source_archive_sha256": src_sha, "evidence_archive_sha256": ev_sha,
+        "source_files": len(src), "evidence_files": len(ev),
+        "supported_claims": ["CWC-L0-measurement", "CWC-L1-identifiability",
+                             "CWC-L2-routing-causality (NARROWED)", "CWC-L2p-jensen-gap"],
+        "prohibited_claims": ["autonomous adaptive routing", "compute-equivalent Pareto",
+                              "general adaptive intelligence", "energy efficiency"],
+    }
+    (args.out / "RELEASE_MANIFEST.json").write_text(json.dumps(manifest, indent=2))
+    sums = "\n".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}"
+                     for p in sorted(args.out.glob("*")) if p.name != "SHA256SUMS")
+    (args.out / "SHA256SUMS").write_text(sums + "\n")
+    print(f"release: {args.out} | source {len(src)} files sha {src_sha[:12]} "
+          f"| evidence {len(ev)} files sha {ev_sha[:12]}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""CWC WP-1 mutation probe: proves the test suite actually catches bugs, not
+just that it runs. For each mutation it applies one small, semantically-real
+defect to a source file, runs the targeted test subset, and asserts the suite
+FAILS (the mutant is killed). A surviving mutant is a genuine test-suite gap.
+
+This is deliberately a small, hand-curated, deterministic set focused on the
+mathematical cores (where a silent wrong answer is most dangerous), not a
+blanket AST mutator — every mutation here is one a real bug could plausibly be.
+
+Safety: each source file is backed up and restored in a finally block, so an
+interrupted run never leaves a mutated source on disk. Run from repo root:
+
+    python scripts/mutation_probe.py
+"""
+from __future__ import annotations
+
+import dataclasses
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+PY = sys.executable
+
+# Fast, targeted test subset — the suites that exercise the mutated logic.
+# (Excludes CUDA/slow tests so each mutant runs in a couple of seconds.)
+TEST_TARGETS = [
+    "tests/test_instrumentation_stats.py",
+    "tests/test_instrumentation_properties.py",
+    "tests/test_instrumentation_flops.py",
+    "tests/test_instrumentation_energy.py",
+    "tests/test_instrumentation_energy_nvml.py",
+    "tests/test_instrumentation_routing.py",
+]
+
+
+@dataclasses.dataclass(frozen=True)
+class Mutation:
+    file: str
+    original: str
+    mutated: str
+    description: str
+
+
+MUTATIONS: list[Mutation] = [
+    # --- stats.py: percentile / bootstrap -----------------------------------
+    Mutation(
+        "cwc/instrumentation/stats.py",
+        "return low_value * (1.0 - weight) + high_value * weight",
+        "return low_value * (1.0 + weight) + high_value * weight",
+        "percentile interpolation weight sign flip",
+    ),
+    Mutation(
+        "cwc/instrumentation/stats.py",
+        "upper = min(lower + 1, len(ordered) - 1)",
+        "upper = min(lower + 2, len(ordered) - 1)",
+        "percentile upper index off-by-one",
+    ),
+    Mutation(
+        "cwc/instrumentation/stats.py",
+        "tail = (1.0 - confidence) / 2.0",
+        "tail = (1.0 - confidence) / 1.0",
+        "bootstrap CI tail probability wrong (one-sided)",
+    ),
+    # --- flops.py: formulas -------------------------------------------------
+    Mutation(
+        "cwc/instrumentation/flops.py",
+        "return 2 * tokens * d_in * d_out",
+        "return 1 * tokens * d_in * d_out",
+        "dense linear FLOPs drops the 2-MAC factor",
+    ),
+    Mutation(
+        "cwc/instrumentation/flops.py",
+        "return seq_len * (seq_len + 1) // 2",
+        "return seq_len * (seq_len - 1) // 2",
+        "causal pair count off (n-1 instead of n+1)",
+    ),
+    Mutation(
+        "cwc/instrumentation/flops.py",
+        "return 4 * batch * valid_attention_pairs * d_model",
+        "return 2 * batch * valid_attention_pairs * d_model",
+        "attention-core QK+AV factor halved",
+    ),
+    Mutation(
+        "cwc/instrumentation/flops.py",
+        "return 2 * tokens * d_model * d_ff + 2 * tokens * d_ff * d_model",
+        "return 2 * tokens * d_model * d_ff",
+        "MLP FLOPs missing the down-projection term",
+    ),
+    Mutation(
+        "cwc/instrumentation/flops.py",
+        "total += i - left + 1",
+        "total += i - left",
+        "sliding-window pair count off-by-one per query",
+    ),
+    # --- energy.py: trapezoidal integration ---------------------------------
+    Mutation(
+        "cwc/instrumentation/energy.py",
+        "total += 0.5 * (w0 + w1) * dt",
+        "total += 1.0 * (w0 + w1) * dt",
+        "trapezoidal rule drops the 0.5 factor",
+    ),
+    Mutation(
+        "cwc/instrumentation/energy.py",
+        "joules = max(0, end_mj - self._start_mj) / 1000.0",
+        "joules = (end_mj - self._start_mj) / 1000.0",
+        "total-energy delta loses the negative clamp",
+    ),
+    # --- routing.py: aggregation --------------------------------------------
+    Mutation(
+        "cwc/instrumentation/routing.py",
+        "return value if current is None else min(current, value)",
+        "return value if current is None else max(current, value)",
+        "routing running-min computes max instead",
+    ),
+    Mutation(
+        "cwc/instrumentation/routing.py",
+        "self._active_tokens_sum += active_tokens",
+        "self._active_tokens_sum += active_blocks",
+        "routing token-sum accumulates the wrong field",
+    ),
+]
+
+
+def _purge_bytecode(source_path: Path) -> None:
+    """Remove any compiled bytecode for a mutated source file so the next
+    import always recompiles from the (restored) source, never a stale .pyc."""
+    cache_dir = source_path.parent / "__pycache__"
+    if cache_dir.is_dir():
+        for pyc in cache_dir.glob(f"{source_path.stem}.*.pyc"):
+            pyc.unlink(missing_ok=True)
+
+
+def _run_targets() -> bool:
+    """Returns True if the test subset PASSES (mutant survived), False if it
+    fails (mutant killed).
+
+    PYTHONDONTWRITEBYTECODE guarantees each run imports the freshly-mutated
+    source, never a stale .pyc — without it a cached bytecode of the original
+    can mask a mutation and produce a false 'killed'/'survived'.
+    """
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    result = subprocess.run(
+        [PY, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider", *TEST_TARGETS],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    return result.returncode == 0
+
+
+def main() -> int:
+    # Sanity: baseline must be green before mutating anything.
+    if not _run_targets():
+        print("BASELINE FAILED — refusing to run mutation probe on a red suite")
+        return 2
+
+    killed = 0
+    survived: list[Mutation] = []
+    for i, mut in enumerate(MUTATIONS, start=1):
+        path = REPO / mut.file
+        source = path.read_text(encoding="utf-8")
+        if mut.original not in source:
+            print(f"[{i:02d}/{len(MUTATIONS)}] SKIP (anchor not found): {mut.description}")
+            survived.append(mut)  # a missing anchor is a probe defect worth surfacing
+            continue
+        backup = source
+        try:
+            path.write_text(source.replace(mut.original, mut.mutated, 1), encoding="utf-8")
+            passed = _run_targets()
+        finally:
+            path.write_text(backup, encoding="utf-8")
+            # Purge the mutated file's bytecode so a same-second mtime cannot
+            # let a subsequent import trust a stale mutated .pyc (this is the
+            # documented mutation-probe poisoning gotcha).
+            _purge_bytecode(path)
+        if passed:
+            survived.append(mut)
+            print(f"[{i:02d}/{len(MUTATIONS)}] SURVIVED  ✗  {mut.description}")
+        else:
+            killed += 1
+            print(f"[{i:02d}/{len(MUTATIONS)}] killed    ✓  {mut.description}")
+
+    total = len(MUTATIONS)
+    rate = 100.0 * killed / total if total else 0.0
+    print(f"\nMUTATION KILL RATE: {killed}/{total} = {rate:.1f}%")
+    if survived:
+        print("SURVIVORS (test-suite gaps):")
+        for mut in survived:
+            print(f"  - {mut.file}: {mut.description}")
+        return 1
+    print("ALL MUTANTS KILLED")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+"""
+SmolTalk by HuggingFace. Good "general" conversational dataset.
+https://huggingface.co/datasets/HuggingFaceTB/smol-smoltalk
+We use the "smol" version, which is more appropriate for smaller models.
+"""
+
+from tasks.common import Task, load_hub_dataset
+
+class SmolTalk(Task):
+    """ smol-smoltalk dataset. train is 460K rows, test is 24K rows. """
+
+    def __init__(self, split, **kwargs):
+        super().__init__(**kwargs)
+        assert split in ["train", "test"], "SmolTalk split must be train|test"
+        self.ds = load_hub_dataset("HuggingFaceTB/smol-smoltalk", split=split).shuffle(seed=42)
+        self.length = len(self.ds)
+
+    def num_examples(self):
+        return self.length
+
+    def get_example(self, index):
+        row = self.ds[index]
+        messages = row["messages"]
+        # ---------------------------------------------------------------------
+        # sanity checking asserts here
+        # TODO: we could remove these asserts later, for now just don't want any footguns
+        # there is an optional system message at the beginning
+        assert len(messages) >= 1
+        first_message = messages[0]
+        if first_message["role"] == "system":
+            rest_messages = messages[1:] # optional system message is OK
+        else:
+            rest_messages = messages
+        assert len(rest_messages) >= 2, "SmolTalk messages must have at least 2 messages"
+        for i, message in enumerate(rest_messages):
+            # user and assistant alternate as user,assistant,user,assistant,...
+            expected_role = "user" if i % 2 == 0 else "assistant"
+            assert message["role"] == expected_role, f"Message {i} has role {message['role']} but should be {expected_role}"
+            assert isinstance(message["content"], str), "Content must be a string"
+        # ---------------------------------------------------------------------
+        # create and return the Conversation object (ok to emit the system message too)
+        conversation = {
+            "messages": messages,
+        }
+        return conversation
+
+"""python -m pytest tests/test_instrumentation_audit.py -v
+
+Act 8.4: profiler trace export; analytic vs profiler supported-op comparison;
+explicit list of unsupported operators; no claim from profiler-only FLOPs;
+audit run has claimable=false.
+"""
+
+from pathlib import Path
+
+import pytest
+
+from cwc.instrumentation.audit import flop_model_comparison, moe_cap_placeholder, roofline_report
+
+torch = pytest.importorskip("torch")
+
+
+def test_audit_run_is_never_claimable(tmp_path: Path):
+    from cwc.instrumentation.audit import run_torch_profiler
+
+    def workload():
+        x = torch.randn(64, 64)
+        return x @ x
+
+    result = run_torch_profiler(workload, steps=3, warmup_steps=1, trace_export_path=tmp_path / "trace.json")
+    assert result["claim_run"] is False
+
+
+def test_audit_exports_chrome_trace(tmp_path: Path):
+    from cwc.instrumentation.audit import run_torch_profiler
+
+    trace_path = tmp_path / "trace.json"
+
+    def workload():
+        x = torch.randn(64, 64)
+        return x @ x
+
+    run_torch_profiler(workload, steps=3, warmup_steps=1, trace_export_path=trace_path)
+    assert trace_path.exists()
+    assert trace_path.stat().st_size > 0
+
+
+@pytest.mark.cuda
+def test_flop_comparison_covers_matmul_and_lists_uncovered_ops():
+    from cwc.instrumentation.audit import run_torch_profiler
+
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA not available on this host")
+
+    def workload():
+        x = torch.randn(256, 256, device="cuda")
+        y = x @ x
+        return y.relu().sum()  # relu+sum are not in _COVERED_OPERATOR_PREFIXES
+
+    audit_result = run_torch_profiler(workload, steps=5, warmup_steps=2, with_flops=True)
+    analytical_flops = 2 * 256 * 256 * 256  # matches dense_linear_flops(tokens=256, d_in=256, d_out=256)
+    comparison = flop_model_comparison(analytical_flops=analytical_flops, audit_result=audit_result)
+    assert comparison["comparable"] is True
+    assert comparison["profiler_covered_flops"] > 0
+    assert "flop_model_error_percent" in comparison
+
+
+def test_flop_comparison_reports_not_comparable_without_flops_flag():
+    audit_result = {"covered_flops": None, "uncovered_operator_names": []}
+    comparison = flop_model_comparison(analytical_flops=1000, audit_result=audit_result)
+    assert comparison["comparable"] is False
+
+
+def test_roofline_report_classifies_memory_bound():
+    # low operational intensity (few flops per byte moved) -> memory bound
+    report = roofline_report(
+        total_flops=1_000,
+        total_bytes_moved=1_000_000,
+        peak_flops_per_s=1e12,
+        peak_bandwidth_bytes_per_s=1e9,
+        hardware_ceiling_provenance="test-fixture",
+    )
+    assert report["bound"] == "memory_bound"
+
+
+def test_roofline_report_classifies_compute_bound():
+    report = roofline_report(
+        total_flops=1_000_000_000,
+        total_bytes_moved=1_000,
+        peak_flops_per_s=1e12,
+        peak_bandwidth_bytes_per_s=1e9,
+        hardware_ceiling_provenance="test-fixture",
+    )
+    assert report["bound"] == "compute_bound"
+
+
+def test_roofline_report_rejects_nonpositive_hardware_rates():
+    with pytest.raises(ValueError):
+        roofline_report(
+            total_flops=1, total_bytes_moved=1, peak_flops_per_s=0.0,
+            peak_bandwidth_bytes_per_s=1e9, hardware_ceiling_provenance="x",
+        )
+
+
+def test_moe_cap_placeholder_is_unimplemented():
+    placeholder = moe_cap_placeholder()
+    assert placeholder["implemented"] is False
+    assert placeholder["s_mfu"] is None
+    assert placeholder["active_experts"] is None
+
+"""python -m pytest tests/test_instrumentation_writer.py -v"""
+
+import contextlib
+import json
+import math
+from pathlib import Path
+
+import pytest
+
+from cwc.instrumentation.writer import InstrumentationWriter
+
+
+def test_metrics_are_buffered_not_written_immediately(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path, buffer_size=10)
+    writer.write_metric({"step": 0})
+    metrics_path = tmp_path / "metrics.jsonl"
+    assert not metrics_path.exists() or metrics_path.read_text() == ""
+
+
+def test_metrics_flush_on_buffer_size(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path, buffer_size=2)
+    writer.write_metric({"step": 0})
+    writer.write_metric({"step": 1})  # triggers flush
+    metrics_path = tmp_path / "metrics.jsonl"
+    lines = metrics_path.read_text().splitlines()
+    assert len(lines) == 2
+
+
+def test_close_flushes_remaining_buffer(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path, buffer_size=100)
+    writer.write_metric({"step": 0})
+    writer.close()
+    lines = (tmp_path / "metrics.jsonl").read_text().splitlines()
+    assert len(lines) == 1
+    assert json.loads(lines[0]) == {"step": 0}
+
+
+def test_writing_after_close_raises(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    writer.close()
+    with pytest.raises(RuntimeError):
+        writer.write_metric({"step": 0})
+
+
+def test_summary_is_valid_json_and_atomic(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    path = writer.write_summary({"schema_version": "1.0.0"})
+    assert path.exists()
+    assert not (tmp_path / ".summary.json.tmp").exists()
+    data = json.loads(path.read_text())
+    assert data["schema_version"] == "1.0.0"
+
+
+def test_allow_nan_false_rejects_nan(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    with pytest.raises(ValueError):
+        writer.write_summary({"value": math.nan})
+
+
+def test_allow_nan_false_rejects_infinity(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    with pytest.raises(ValueError):
+        writer.write_summary({"value": math.inf})
+
+
+def test_no_pickle_import_in_writer_module():
+    import cwc.instrumentation.writer as writer_module
+
+    source = Path(writer_module.__file__).read_text(encoding="utf-8")
+    assert "import pickle" not in source
+
+
+def test_output_is_utf8(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    writer.write_metric({"note": "юнікод перевірка"})
+    writer.close()
+    text = (tmp_path / "metrics.jsonl").read_text(encoding="utf-8")
+    assert "юнікод перевірка" in text
+
+
+def test_compute_checksums_covers_all_written_files(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    writer.write_metric({"step": 0})
+    writer.write_summary({"ok": True})
+    writer.close()
+    sums_path = writer.compute_checksums()
+    content = sums_path.read_text()
+    assert "metrics.jsonl" in content
+    assert "summary.json" in content
+    assert "SHA256SUMS" not in content  # never hashes itself
+
+
+def test_crash_between_writes_does_not_corrupt_prior_summary(tmp_path: Path):
+    writer = InstrumentationWriter(tmp_path)
+    writer.write_summary({"version": 1})
+    first_content = (tmp_path / "summary.json").read_text()
+    with contextlib.suppress(ValueError):
+        writer.write_summary({"value": math.nan})  # simulated "crash" mid-write
+    # the previously-written summary.json must be untouched, not half-written
+    assert (tmp_path / "summary.json").read_text() == first_content

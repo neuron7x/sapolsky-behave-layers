@@ -1,0 +1,1512 @@
+"""Shared record types. Every field name carries its unit suffix
+(_ns, _ms, _sec, _bytes, _joules, _watts, _flops, _tokens) per Act 4.2 —
+no bare `lat`, `mem`, `energy` fields.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True)
+class RunIdentity:
+    run_id: str
+    created_at_utc: str
+    git_commit: str
+    git_branch: str
+    git_dirty: bool
+    command_line: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class DeviceManifest:
+    cuda_available: bool
+    device_name: str | None
+    cuda_runtime_version: str | None
+    driver_version: str | None
+    total_vram_bytes: int
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentManifest:
+    python_version: str
+    torch_version: str
+    cuda_runtime_version: str | None
+    os_name: str
+    hostname_hash: str
+    ddp_world_size: int
+    ddp_rank: int
+    compile_state: str
+    attention_backend: str
+    environment_match: bool
+    expected_torch_version: str
+
+
+@dataclass(frozen=True, slots=True)
+class LatencyRecord:
+    scope_name: str
+    step: int
+    status: str  # "ok" | "error"
+    end_to_end_ms: float
+    gpu_kernel_ms: float
+    tokens: int | None = None
+    error_type: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class VRAMRecord:
+    scope_name: str
+    device: str
+    start_allocated_bytes: int
+    start_reserved_bytes: int
+    peak_allocated_bytes: int
+    peak_reserved_bytes: int
+    end_allocated_bytes: int
+    end_reserved_bytes: int
+
+    @property
+    def delta_allocated_bytes(self) -> int:
+        return self.end_allocated_bytes - self.start_allocated_bytes
+
+
+@dataclass(frozen=True, slots=True)
+class EnergyRecord:
+    available: bool
+    method: str
+    sample_count: int
+    duration_sec: float
+    joules: float
+    average_watts: float
+    confidence: str  # "high" | "low_confidence" | "unavailable"
+
+
+@dataclass(frozen=True, slots=True)
+class FlopRecord:
+    name: str
+    kind: str
+    logical_flops: int
+    executed_estimate_flops: int
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class RoutingAggregate:
+    step_count: int
+    active_tokens_sum: int
+    active_tokens_min: int
+    active_tokens_max: int
+    active_blocks_sum: int
+    active_experts_sum: int
+    active_experts_min: int
+    active_experts_max: int
+    active_parameters_sum: int
+    dropped_tokens_sum: int
+    padded_tokens_sum: int
+    entropy_mean: float | None
+    dropped_trace_count: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class OverheadResult:
+    off_p50_ms: float
+    off_p95_ms: float
+    off_p99_ms: float
+    counters_p50_ms: float
+    counters_p95_ms: float
+    counters_p99_ms: float
+    relative_overhead_fraction: float
+    ci_lower_fraction: float
+    ci_upper_fraction: float
+    sample_count: int
+    cycles: int
+    gate_passed: bool
+    max_overhead_fraction: float
+    max_overhead_ci_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
+class InstrumentationSummary:
+    schema_version: str
+    run: dict[str, Any]
+    environment: dict[str, Any]
+    model: dict[str, Any]
+    workload: dict[str, Any]
+    instrumentation: dict[str, Any]
+    latency: dict[str, Any]
+    throughput: dict[str, Any]
+    vram: dict[str, Any]
+    flops: dict[str, Any]
+    energy: dict[str, Any]
+    routing: dict[str, Any]
+    validity: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "run": self.run,
+            "environment": self.environment,
+            "model": self.model,
+            "workload": self.workload,
+            "instrumentation": self.instrumentation,
+            "latency": self.latency,
+            "throughput": self.throughput,
+            "vram": self.vram,
+            "flops": self.flops,
+            "energy": self.energy,
+            "routing": self.routing,
+            "validity": self.validity,
+        }
+
+"""AMG data contracts (spec §6): the immutable vocabulary the governor speaks.
+
+WHY frozen dataclasses. Every type here is `frozen=True` / an `IntEnum` on purpose:
+a plasticity decision is *evidence*, and evidence must not be mutated after the fact.
+This is the same discipline the routing subsystem enforces by banning `_last_mask` —
+there is no hidden, mutable diagnostic state anywhere in the control path, so a logged
+decision always equals the decision that was executed.
+
+Everything is expressed at the granularity of a parameter *group* (length-G tensors),
+never per individual weight: the governor's unit of control is the structured group
+(see `registry`), which is what makes a decision human-interpretable.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import IntEnum
+
+import torch
+
+
+class AdaptationMode(IntEnum):
+    """The kind of update a decision authorizes. Integer-valued so it serializes into
+    a trace without a lookup table. `REQUEST_NEW_CAPACITY` is present in the vocabulary
+    but is *recorded and then rejected* by the first experiment's governor — the
+    ability to ask for growth is modelled, the ability to grant it is withheld until a
+    structural-plasticity study licenses it (kept explicit rather than silently absent).
+    """
+
+    NO_UPDATE = 0
+    UPDATE_EXISTING = 1
+    UPDATE_ADAPTER_ONLY = 2
+    REPLAY_PROTECTED_UPDATE = 3
+    REQUEST_NEW_CAPACITY = 4   # recorded but REJECTED in the first experiment
+
+
+@dataclass(frozen=True)
+class ParameterGroupSpec:
+    """Static description of one parameter group — the governor's unit of control.
+
+    A group is a set of parameters that share a role and a block (e.g. all of
+    `attention.qkv` in block 3). The `estimated_*` fields make the *cost* of updating
+    this group explicit and comparable, so the budget in a `PlasticityDecision` is
+    denominated in real resources, not in an abstract count:
+      - `estimated_update_flops`   ~ 2 . parameter_count (one multiply + one add each);
+      - `estimated_optimizer_bytes`~ parameter_count . bytes_per_param . state_mult
+                                     (e.g. Adam keeps ~2 state tensors per parameter).
+    `mutable` records whether the group is *allowed* to change at all; `group_id` is a
+    content-derived stable hash (see registry) so specs are reproducible and diffable.
+    """
+
+    group_id: int
+    name: str
+    module_path: str
+    parameter_names: tuple[str, ...]
+    group_type: str
+    parameter_count: int
+    estimated_update_flops: int
+    estimated_optimizer_bytes: int
+    mutable: bool
+
+
+@dataclass(frozen=True)
+class PlasticityDecision:
+    """One governor decision, expressed as length-G tensors over the G groups.
+
+    Operational reading (index g = group g):
+      - `group_mask[g]`      : may group g change this step? (the budgeted choice);
+      - `lr_multiplier[g]`   : scale on group g's gradient (metaplastic learning rate);
+      - `consolidation[g]`   : lambda pulling group g back toward the reference weights
+                               (the EWC/SI/MAS elastic term), weighted by importance Omega;
+      - `max_update_norm[g]` : hard per-group cap on the update norm (0 = uncapped);
+      - `replay_fraction`    : fraction of the batch drawn from replay;
+      - `selected_cost`/`budget` : chosen vs allowed number of active groups.
+
+    `budget` is the binding constraint that makes adaptivity *identifiable* at all
+    (see the package charter); `budget_ok()` is the invariant the optimizer refuses to
+    violate.
+    """
+
+    group_mask: torch.Tensor        # bool [G]
+    lr_multiplier: torch.Tensor     # float32 [G]
+    consolidation: torch.Tensor     # float32 [G]
+    max_update_norm: torch.Tensor   # float32 [G]
+    replay_fraction: float
+    mode: AdaptationMode
+    selected_cost: int
+    budget: int
+
+    def budget_ok(self) -> bool:
+        """True iff no more groups are active than the budget allows. The optimizer
+        raises rather than silently overspending, so a budget violation can never be
+        laundered into a result."""
+        return bool(self.group_mask.sum().item() <= self.budget)
+
+from __future__ import annotations
+
+from typing import Any
+
+from .types import Scale, ScaleObservation
+
+
+def observations_from_cwc_record(
+    record: dict[str, Any],
+    *,
+    timestamp: int,
+) -> tuple[ScaleObservation, ...]:
+    """Convert a CWC instrumentation JSON record into micro/meso/macro observations.
+
+    This adapter intentionally accepts plain dictionaries so the fractal module stays separate from
+    the main CWC package. The main project can feed `RunMeter` JSONL rows here without importing
+    this package into its core runtime.
+    """
+
+    latency = record.get("latency", {})
+    routing = record.get("routing", {})
+    flops = record.get("flops", {})
+    vram = record.get("vram", {})
+    energy = record.get("energy", {})
+
+    end_to_end = latency.get("end_to_end_ms", {})
+    gpu_kernel = latency.get("gpu_kernel_ms", {})
+    inference = latency.get("inference", {})
+
+    micro = ScaleObservation(
+        timestamp=timestamp,
+        scale=Scale.MICRO,
+        source="cwc.instrumentation",
+        features={
+            "gpu_kernel_p95_ms": float(gpu_kernel.get("p95", 0.0)),
+            "ttft_p50_ms": float(inference.get("ttft_ms", {}).get("p50", 0.0)),
+            "tpot_p50_ms": float(inference.get("tpot_ms", {}).get("p50", 0.0)),
+            "active_token_fraction": float(routing.get("active_token_fraction_mean", 0.0)),
+        },
+    )
+    meso = ScaleObservation(
+        timestamp=timestamp,
+        scale=Scale.MESO,
+        source="cwc.instrumentation",
+        features={
+            "route_expert_fraction": float(routing.get("active_expert_fraction_mean", 0.0)),
+            "operational_intensity": float(
+                flops.get("operational_intensity_flops_per_byte", 0.0)
+            ),
+            "communication_bytes": float(flops.get("communication_bytes", 0.0)),
+            "memory_bytes": float(flops.get("memory_bytes", 0.0)),
+        },
+    )
+    macro = ScaleObservation(
+        timestamp=timestamp,
+        scale=Scale.MACRO,
+        source="cwc.instrumentation",
+        features={
+            "end_to_end_p95_ms": float(end_to_end.get("p95", 0.0)),
+            "total_flops": float(flops.get("total_flops", 0.0)),
+            "peak_vram_bytes": float(vram.get("peak_allocated_bytes", 0.0)),
+            "joules": float(energy.get("joules", 0.0)),
+        },
+    )
+    return micro, meso, macro
+
+"""A2/A3 analysis + gates. Reads raw_runs/<stage>/<config>/seed*.json and emits
+the oracle-gap gate (A2) and the routing-causality gate (A3) per stage.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci, _mean
+
+CONFIGS = ["dense", "random", "frozen", "fixed", "oracle", "learned"]
+STAGES = ["A_marker", "B_inferred"]
+
+
+def _load(runs: Path, stage: str):
+    out = {}
+    for c in CONFIGS:
+        d = runs / stage / c
+        out[c] = sorted((json.loads(f.read_text()) for f in d.glob("seed*.json")),
+                        key=lambda r: r["seed"]) if d.exists() else []
+    return out
+
+
+def analyze_stage(runs: Path, stage: str) -> dict:
+    data = _load(runs, stage)
+
+    def ces(c):
+        return [r["eval"]["answer_ce"] for r in data[c]]
+
+    def accs(c):
+        return [r["eval"]["acc"] for r in data[c]]
+
+    per = {c: {"n": len(data[c]), "mean_ce": _mean(ces(c)), "mean_acc": _mean(accs(c)),
+               "mean_acc_local": _mean([r["eval"]["acc_local"] for r in data[c]]),
+               "mean_acc_far": _mean([r["eval"]["acc_far"] for r in data[c]])}
+           for c in CONFIGS}
+
+    # ---- A2 oracle-gap gate (loss-based), per seed: best-fixed = min(fixed, best static) ----
+    # fixed here = always E_A; the true best-fixed is min over {E_A-only, E_B-only}.
+    # E_B-only is captured by frozen's collapse OR we approximate best-fixed by the
+    # better of fixed(E_A) and frozen(E_B-collapsed). Use the explicit fixed run and
+    # the frozen run (which collapses to one block) as the two fixed candidates.
+    oracle_ce = {r["seed"]: r["eval"]["answer_ce"] for r in data["oracle"]}
+    fixedA_ce = {r["seed"]: r["eval"]["answer_ce"] for r in data["fixed"]}
+    frozen_ce = {r["seed"]: r["eval"]["answer_ce"] for r in data["frozen"]}
+    seeds = sorted(set(oracle_ce) & set(fixedA_ce) & set(frozen_ce))
+    gains = []
+    for s in seeds:
+        best_fixed = min(fixedA_ce[s], frozen_ce[s])
+        gains.append((best_fixed - oracle_ce[s]) / best_fixed if best_fixed > 0 else 0.0)
+    g_lo, g_hi = _bootstrap_ci(gains) if gains else (None, None)
+    oracle_acc = per["oracle"]["mean_acc"]
+    best_fixed_acc = max(per["fixed"]["mean_acc"], per["frozen"]["mean_acc"])
+    a2_pass = bool(gains and _mean(gains) >= 0.10 and g_lo is not None and g_lo > 0.05
+                   and per["oracle"]["mean_acc_local"] > 0.9 and per["oracle"]["mean_acc_far"] > 0.9)
+
+    # ---- A3 routing-causality (learned vs random/frozen/fixed) ----
+    def paired(a, b):
+        ra = {r["seed"]: r["eval"]["answer_ce"] for r in data[a]}
+        rb = {r["seed"]: r["eval"]["answer_ce"] for r in data[b]}
+        ss = sorted(set(ra) & set(rb))
+        d = [ra[s] - rb[s] for s in ss]
+        lo, hi = _bootstrap_ci(d) if d else (None, None)
+        return {"mean_delta": _mean(d), "ci95": [lo, hi], "learned_better": hi is not None and hi < 0,
+                "n": len(d)}
+
+    comps = {f"learned_vs_{c}": paired("learned", c) for c in ["random", "frozen", "fixed", "oracle"]}
+    inorm = [r["eval"].get("mi_i_norm", 0.0) for r in data["learned"]]
+    inorm_lo, inorm_hi = _bootstrap_ci(inorm) if inorm else (None, None)
+    perm_ps = [r.get("permutation_p", 1.0) for r in data["learned"]]
+    agree = [r["eval"].get("route_label_agreement", 0.0) for r in data["learned"]]
+
+    # interventions (mean over learned seeds)
+    iv = [r["interventions"] for r in data["learned"] if "interventions" in r]
+    iv_mean = {k: _mean([x[k] for x in iv]) for k in iv[0]} if iv else {}
+
+    beats = all(comps[f"learned_vs_{c}"]["learned_better"] for c in ["random", "frozen", "fixed"])
+    mi_ok = _mean(inorm) >= 0.25 and inorm_lo is not None and inorm_lo >= 0.15 and max(perm_ps) <= 0.01
+    # intervention checks: force-incorrect >> force-correct; permute destroys advantage
+    iv_ok = bool(iv_mean and iv_mean.get("incorrect_over_correct_ratio", 0) >= 1.5)
+    n = per["learned"]["n"]
+    if n == 0:
+        a3 = "NOT_TESTED"
+    elif beats and mi_ok and iv_ok and n >= 8:
+        a3 = "ROUTING_CAUSALITY_SUPPORTED"
+    elif beats and mi_ok:
+        a3 = "SUPPORTED_WEAK" + ("" if n >= 8 else "_PILOT")
+    else:
+        a3 = "NOT_SUPPORTED"
+
+    return {"stage": stage, "per_config": per,
+            "A2_oracle_gap": {"mean_relative_gain": _mean(gains), "ci95": [g_lo, g_hi],
+                              "oracle_acc": oracle_acc, "best_fixed_acc": best_fixed_acc,
+                              "acc_gap_pp": (oracle_acc - best_fixed_acc) * 100 if oracle_acc and best_fixed_acc else None,
+                              "PASS": a2_pass},
+            "A3_routing_causality": {"comparisons": comps,
+                                     "mean_i_norm": _mean(inorm), "i_norm_ci95": [inorm_lo, inorm_hi],
+                                     "max_permutation_p": max(perm_ps) if perm_ps else None,
+                                     "mean_route_label_agreement": _mean(agree),
+                                     "interventions_mean": iv_mean,
+                                     "beats_all_static": beats, "mi_gate": mi_ok, "intervention_gate": iv_ok,
+                                     "n_seeds": n, "VERDICT": a3}}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", type=Path, default=Path("artifacts/wp2-mechanism-v2/raw_runs"))
+    ap.add_argument("--out", type=Path, default=Path("artifacts/wp2-mechanism-v2/statistics"))
+    args = ap.parse_args()
+    res = {s: analyze_stage(args.runs, s) for s in STAGES}
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(res, indent=2))
+    for s in STAGES:
+        r = res[s]
+        print(f"=== {s} ===")
+        print(f"  A2 oracle-gap: gain={r['A2_oracle_gap']['mean_relative_gain']:.3f} "
+              f"ci={r['A2_oracle_gap']['ci95']} acc_gap_pp={r['A2_oracle_gap']['acc_gap_pp']} PASS={r['A2_oracle_gap']['PASS']}")
+        a3 = r["A3_routing_causality"]
+        print(f"  A3 verdict: {a3['VERDICT']}  beats_static={a3['beats_all_static']} "
+              f"i_norm={a3['mean_i_norm']:.3f} route~T={a3['mean_route_label_agreement']:.3f} "
+              f"max_perm_p={a3['max_permutation_p']}")
+        for c in CONFIGS:
+            p = r["per_config"][c]
+            print(f"    {c:8s} n={p['n']} ce={p['mean_ce']:.3f} acc={p['mean_acc']:.3f} (L={p['mean_acc_local']:.2f} F={p['mean_acc_far']:.2f})")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Observable semantic state + routing trace (Act §3). Every field has an exact
+ground-truth target; an unconstrained embedding is NOT a semantic state."""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import IntEnum
+
+import torch
+
+
+class TaskKind(IntEnum):
+    EASY_DIRECT = 0
+    HARD_SEMANTIC = 1
+
+
+class RoutingMode(IntEnum):
+    DENSE_SEMANTIC = 0   # every sample -> semantic path (quality ceiling)
+    DIRECT_ONLY = 1      # every sample -> cheap path
+    ORACLE = 2           # route by true task_kind
+    RANDOM = 3           # exactly K random samples -> semantic
+    FROZEN = 4           # frozen random-init controller
+    LEARNED = 5          # trainable controller
+    SHUFFLED_LEARNED = 6  # learned frequencies, decisions permuted across batch
+
+
+# --- vocabulary layout (vocab_size = 40) ---
+PAD, POS, NEG, NOT, F_IS, F_BY, F_DIST, F_SEP = 0, 1, 2, 3, 4, 5, 6, 7
+ENT_LO, ENT_HI = 10, 26      # 16 entities
+REL_LO, REL_HI = 30, 38      # 8 relations
+VOCAB_SIZE = 40
+
+
+@dataclass(frozen=True)
+class SemanticState:
+    subject: torch.Tensor       # int64 [B]
+    relation: torch.Tensor      # int64 [B]
+    object: torch.Tensor        # int64 [B]
+    polarity: torch.Tensor      # int64 [B], {0,1}
+    confidence: torch.Tensor    # float32 [B]
+
+
+@dataclass(frozen=True)
+class RoutingTrace:
+    need_score: torch.Tensor       # float32 [B]
+    semantic_mask: torch.Tensor    # bool [B]
+    route_logits: torch.Tensor     # float32 [B, 2]
+    active_cost: torch.Tensor      # int64 [B]
+    capacity: int
+
+"""Surface-matched mechanism-separable task (G3 fix / defect #4). EASY and HARD
+share identical length, identical first token, and identical token multiset
+(histogram) BY CONSTRUCTION — they differ ONLY in a structural property that
+determines which mechanism is needed, so a surface probe cannot classify them.
+
+Task: a fixed-length sequence contains exactly one DUPLICATED value (appears
+twice); all other positions are distinct fillers. The answer is the duplicated
+value. Whether a LOCAL path suffices depends on the DISTANCE between the two
+occurrences (structural, not surface):
+  - NEAR (distance <= w): a local window can see both -> local mechanism suffices.
+  - FAR  (distance >  w): needs a global search -> global mechanism required.
+The histogram is identical for NEAR and FAR (one duplicate + the same filler
+distribution), the length is fixed, and the first token is drawn identically.
+"""
+from __future__ import annotations
+
+import torch
+
+VOCAB = 40
+SEQ_LEN = 16
+LOCAL_W = 2   # local window; distance <= w is NEAR (local-solvable)
+
+
+def generate_batch(batch_size: int, gen: torch.Generator, device: str = "cpu"):
+    """Returns tokens (B, L), target (B,) = duplicated value, is_far (B,) bool
+    (True = needs global). Surface-matched: identical length/histogram shape."""
+    L = SEQ_LEN
+    tokens = torch.zeros(batch_size, L, dtype=torch.long)
+    target = torch.zeros(batch_size, dtype=torch.long)
+    is_far = torch.zeros(batch_size, dtype=torch.bool)
+    for b in range(batch_size):
+        far = bool(torch.rand(1, generator=gen).item() < 0.5)
+        is_far[b] = far
+        distinct = torch.randperm(VOCAB, generator=gen)[:L - 1].tolist()  # L-1 distinct values
+        dup = distinct[0]                                       # this value appears TWICE
+        fillers = distinct[1:]                                  # L-2 values, once each
+        # two positions for the duplicate, with the required distance class
+        if far:
+            i = int(torch.randint(0, L - LOCAL_W - 2, (1,), generator=gen).item())
+            j = int(torch.randint(i + LOCAL_W + 1, L, (1,), generator=gen).item())
+        else:
+            i = int(torch.randint(0, L - LOCAL_W - 1, (1,), generator=gen).item())
+            j = i + 1 + int(torch.randint(0, LOCAL_W, (1,), generator=gen).item())
+        seq = [-1] * L
+        seq[i] = dup
+        seq[j] = dup
+        fi = 0
+        for pos in range(L):
+            if seq[pos] == -1:
+                seq[pos] = fillers[fi]
+                fi += 1
+        tokens[b] = torch.tensor(seq, dtype=torch.long)
+        target[b] = dup
+    return tokens.to(device), target.to(device), is_far.to(device)
+
+"""Two physically different paths (Act §5). A different block index is not a
+different mechanism — these are structurally distinct, and the distinction is a
+hard *architectural* constraint, not a difference in training.
+
+DirectPath    : one LOCAL-attention block (window LOCAL_W = ±1, see below) whose L_OUT
+                output heads read positions 0..L_OUT-1. Because attention is masked to a
+                ±1 neighbourhood, a head *cannot* route information from tokens farther
+                away, no matter how it is trained -> it is structurally incapable of the
+                HARD task (which places the decisive content out of window). This is what
+                makes the benchmark mechanism-separable: HARD failure is by construction.
+SemanticParser: GLOBAL attention -> mean-pool -> 4 supervised field heads (S,R,O,polarity)
+                + a confidence scalar; comprehension is unconstrained in range.
+SemanticRenderer: emits canonical tokens from the discrete SemanticState ONLY — it never
+                sees the raw input, so it cannot leak surface form into the output.
+"""
+from __future__ import annotations
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from experiments.wp2_routing_v2.src.contracts import VOCAB_SIZE, SemanticState
+from experiments.wp2_routing_v2.src.task_semantic_route import L_OUT, SEQ_LEN
+
+D_MODEL = 64
+N_HEAD = 4
+LOCAL_W = 1  # ±1 window: DirectPath heads at positions 0-3 cannot reach HARD
+             # content placed farther away, so it structurally fails HARD.
+
+
+def _rms(x):
+    return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + 1e-6)
+
+
+class _Attn(nn.Module):
+    """Multi-head self-attention, optionally *masked to a local ±LOCAL_W window*.
+    The mask is the load-bearing part: when `local=True`, positions farther than
+    LOCAL_W apart are set to -inf before softmax, so the block has literally zero
+    weight on distant tokens. This is a structural capacity limit (a property of the
+    architecture), which is why DirectPath's HARD failure cannot be trained away."""
+
+    def __init__(self, local: bool):
+        super().__init__()
+        self.local = local
+        self.qkv = nn.Linear(D_MODEL, 3 * D_MODEL, bias=False)
+        self.proj = nn.Linear(D_MODEL, D_MODEL, bias=False)
+
+    def forward(self, x):
+        B, T, C = x.shape
+        mask = None
+        if self.local:
+            i = torch.arange(T, device=x.device).view(T, 1)
+            j = torch.arange(T, device=x.device).view(1, T)
+            allow = (j - i).abs() <= LOCAL_W
+            mask = torch.zeros(T, T, device=x.device).masked_fill(~allow, float("-inf")).view(1, 1, T, T)
+        q, k, v = self.qkv(x).split(C, dim=2)
+        q = q.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        k = k.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        v = v.view(B, T, N_HEAD, C // N_HEAD).transpose(1, 2)
+        y = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
+        return self.proj(y.transpose(1, 2).contiguous().view(B, T, C))
+
+
+class _Embed(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.tok = nn.Embedding(VOCAB_SIZE, D_MODEL)
+        self.pos = nn.Embedding(SEQ_LEN, D_MODEL)
+
+    def forward(self, tokens):
+        T = tokens.shape[1]
+        return self.tok(tokens) + self.pos(torch.arange(T, device=tokens.device)).unsqueeze(0)
+
+
+class DirectPath(nn.Module):
+    """Cheap LOCAL path: embed -> one ±LOCAL_W attention block -> MLP -> one head per
+    output position. Its receptive field is bounded by the local mask, so it solves EASY
+    (in-window content) but is structurally unable to solve HARD (out-of-window content).
+    Returns per-position vocab logits `[B, L_OUT, VOCAB_SIZE]`."""
+
+    def __init__(self):
+        super().__init__()
+        self.embed = _Embed()
+        self.attn = _Attn(local=True)
+        self.mlp = nn.Sequential(nn.Linear(D_MODEL, 128), nn.ReLU(), nn.Linear(128, D_MODEL))
+        self.heads = nn.ModuleList([nn.Linear(D_MODEL, VOCAB_SIZE) for _ in range(L_OUT)])
+
+    def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        x = self.embed(tokens)
+        x = x + self.attn(_rms(x))
+        x = x + self.mlp(_rms(x))
+        return torch.stack([self.heads[i](x[:, i]) for i in range(L_OUT)], dim=1)  # [B,L_OUT,vocab]
+
+
+class SemanticParser(nn.Module):
+    """Global comprehension -> discrete SemanticState. Field heads are supervised."""
+
+    def __init__(self):
+        super().__init__()
+        self.embed = _Embed()
+        self.attn = _Attn(local=False)
+        self.mlp = nn.Sequential(nn.Linear(D_MODEL, 128), nn.ReLU(), nn.Linear(128, D_MODEL))
+        self.h_subj = nn.Linear(D_MODEL, VOCAB_SIZE)
+        self.h_rel = nn.Linear(D_MODEL, VOCAB_SIZE)
+        self.h_obj = nn.Linear(D_MODEL, VOCAB_SIZE)
+        self.h_pol = nn.Linear(D_MODEL, 2)
+        self.h_conf = nn.Linear(D_MODEL, 1)
+
+    def logits(self, tokens):
+        x = self.embed(tokens)
+        x = x + self.attn(_rms(x))
+        x = x + self.mlp(_rms(x))
+        pooled = x.mean(dim=1)
+        return (self.h_subj(pooled), self.h_rel(pooled), self.h_obj(pooled),
+                self.h_pol(pooled), self.h_conf(pooled).squeeze(-1))
+
+    def forward(self, tokens: torch.Tensor) -> SemanticState:
+        ls, lr, lo, lp, lc = self.logits(tokens)
+        return SemanticState(subject=ls.argmax(-1), relation=lr.argmax(-1), object=lo.argmax(-1),
+                             polarity=lp.argmax(-1), confidence=torch.sigmoid(lc))
+
+
+class SemanticRenderer(nn.Module):
+    """Canonical tokens from SemanticState only (no raw input tokens)."""
+
+    def __init__(self):
+        super().__init__()
+        self.subj_e = nn.Embedding(VOCAB_SIZE, D_MODEL)
+        self.rel_e = nn.Embedding(VOCAB_SIZE, D_MODEL)
+        self.obj_e = nn.Embedding(VOCAB_SIZE, D_MODEL)
+        self.pol_e = nn.Embedding(2, D_MODEL)
+        self.heads = nn.ModuleList([nn.Linear(4 * D_MODEL, VOCAB_SIZE) for _ in range(L_OUT)])
+
+    def forward(self, state: SemanticState) -> torch.Tensor:
+        feat = torch.cat([self.subj_e(state.subject), self.rel_e(state.relation),
+                          self.obj_e(state.object), self.pol_e(state.polarity)], dim=-1)
+        return torch.stack([h(feat) for h in self.heads], dim=1)  # [B,L_OUT,vocab]
+
+
+class SemanticPath(nn.Module):
+    """The expensive path = parse-then-render: global comprehension into a discrete
+    SemanticState, then canonical output from that state alone. The intermediate state
+    is returned alongside the logits so lesion studies (typed_graph) can corrupt a single
+    field (polarity, subject/object, ...) and observe the predicted downstream failure —
+    the composition is what makes the mechanism *inspectable*, not a black box."""
+
+    def __init__(self):
+        super().__init__()
+        self.parser = SemanticParser()
+        self.renderer = SemanticRenderer()
+
+    def forward(self, tokens: torch.Tensor) -> tuple[torch.Tensor, SemanticState]:
+        state = self.parser(tokens)
+        return self.renderer(state), state
+
+import torch
+from experiments.wp2_routing_v2.src.controller import topk_mask
+from experiments.wp2_routing_v2.src.typed_graph import TypedCognitiveGraph
+from experiments.wp2_routing_v2.src.task_semantic_route import generate_batch
+
+def test_topk_exact():
+    need = torch.rand(64)
+    m = topk_mask(need, 32)
+    assert m.sum().item() == 32
+
+def test_graph_respects_capacity():
+    torch.manual_seed(0)
+    g = TypedCognitiveGraph().eval()
+    gg = torch.Generator().manual_seed(0)
+    tok, st, canon, kind = generate_batch(64, gg)
+    with torch.no_grad():
+        out, state, trace = g(tok, capacity=32)
+    assert trace.semantic_mask.sum().item() == 32
+    assert trace.active_cost.sum().item() == 32  # 1 per semantic sample
+
+import math
+
+import torch
+
+from experiments.common.metrics import auroc, mutual_information, symmetric_nmi, task_normalized_mi
+
+
+def test_auroc_perfect_and_reversed():
+    s=torch.tensor([0.1,0.2,0.3,0.4])
+    y=torch.tensor([0,0,1,1])
+    assert abs(auroc(s,y)-1.0)<1e-9
+    assert abs(auroc(-s,y)-0.0)<1e-9                 # reversed
+
+def test_auroc_all_tied_is_half():
+    s=torch.zeros(6)
+    y=torch.tensor([0,0,0,1,1,1])
+    assert abs(auroc(s,y)-0.5)<1e-9                  # average ranks -> 0.5
+
+def test_auroc_partial_ties():
+    # scores [1,1,2,3], labels [0,1,1,1]; average-rank AUROC vs brute force
+    s=torch.tensor([1.,1.,2.,3.])
+    y=torch.tensor([0,1,1,1])
+    # brute force: fraction of (pos,neg) pairs with pos>neg + 0.5*ties
+    pos=s[y==1]
+    neg=s[y==0]
+    tot=0.0
+    for p in pos:
+        for nq in neg:
+            tot += 1.0 if p>nq else (0.5 if p==nq else 0.0)
+    assert abs(auroc(s,y)-tot/(len(pos)*len(neg)))<1e-9
+
+def test_auroc_one_class_absent_is_nan():
+    assert math.isnan(auroc(torch.tensor([0.1,0.2]), torch.tensor([1,1])))
+
+def test_symmetric_nmi_bounds_and_identity():
+    r=torch.tensor([0,0,1,1])
+    t=torch.tensor([0,0,1,1])
+    assert abs(symmetric_nmi(r,t)-1.0)<1e-6          # identical partitions -> 1
+    ind_r=torch.tensor([0,1,0,1])
+    assert symmetric_nmi(ind_r,t)<1e-9               # independent -> 0
+
+def test_symmetric_differs_from_task_normalized_when_H_differ():
+    # R has lower entropy than T -> the two normalizations differ
+    r=torch.tensor([0,0,0,1])
+    t=torch.tensor([0,1,0,1])
+    assert abs(symmetric_nmi(r,t)-task_normalized_mi(r,t))>1e-6 or mutual_information(r,t,2,2)==0
+
+"""L4j sub-line consistency audit.
+
+Cross-checks that every CWC-L4* claim's registry status matches its artifact verdict polarity,
+and that no L4 evidence bundle is orphaned from the registry. A governance check the existing
+gates do not perform. See PREREGISTRATION.md. Deterministic, read-only over committed state.
+"""
+from __future__ import annotations
+
+import glob
+import json
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = ROOT / "artifacts/wp3-plasticity-v12-consistency"
+
+# NEG checked before POS. "INCONSISTENT" must precede the POS "CONSISTENT" substring test.
+POS_TOKENS = ("CONFIRMED", "SUPPORTED", "MAPPED", "GENERALIZES", "ROBUST", "CONSISTENT",
+              "SURVIVES", "_GO", "GO_")
+NEG_TOKENS = ("VIOLATED", "INCOMPLETE", "NOT_SUPPORTED", "NOT_MAPPED", "NOT_CONFIRMED", "VOID",
+              "INCONSISTENT", "FALSIFIED")
+SELF_CLAIM = "CWC-L4j-line-consistency"   # the auditor does not audit its own verdict (circular)
+
+
+def _verdict_polarity(v: str) -> str:
+    up = v.upper()
+    if any(t in up for t in NEG_TOKENS):
+        return "negative"
+    if any(t in up for t in POS_TOKENS):
+        return "positive"
+    return "unknown"
+
+
+def _status_polarity(status: str) -> str:
+    if status in ("SUPPORTED", "SUPPORTED_NARROWED"):
+        return "positive"
+    if status == "NOT_SUPPORTED":
+        return "negative"
+    return "untested"
+
+
+def _find_verdict(required: list[str]) -> dict[str, Any] | None:
+    for art in required:
+        p = ROOT / art.rstrip("/") / "verdict.json"
+        if p.is_file():
+            return json.loads(p.read_text())
+    return None
+
+
+def analyze() -> dict[str, Any]:
+    reg = json.loads((ROOT / "claim_registry.json").read_text())
+    l4_claims = [c for c in reg["claims"] if c["claim_id"].startswith("CWC-L4")]
+
+    checks = []
+    mismatches = 0
+    for c in l4_claims:
+        if c["claim_id"] == SELF_CLAIM:      # self-audit is circular; skip
+            continue
+        vj = _find_verdict(c.get("required_artifacts", []))
+        if vj is None:
+            checks.append({"claim": c["claim_id"], "status": c["status"], "verdict": None,
+                           "match": None, "note": "no artifact verdict.json"})
+            continue
+        vstr = str(vj.get("verdict") or vj.get("status") or "")
+        vp = _verdict_polarity(vstr)
+        sp = _status_polarity(c["status"])
+        match = (vp == sp) or (sp == "positive" and vp == "positive")
+        if not match:
+            mismatches += 1
+        checks.append({"claim": c["claim_id"], "status": c["status"], "status_polarity": sp,
+                       "verdict": vstr, "verdict_polarity": vp, "match": match})
+
+    # orphan evidence: any wp3-plasticity-v* bundle with a verdict.json not referenced by a claim
+    referenced = {a.rstrip("/") for c in reg["claims"] for a in c.get("required_artifacts", [])}
+    orphans = []
+    self_bundle = "artifacts/wp3-plasticity-v12-consistency"   # the auditor itself is exempt
+    for d in sorted(glob.glob(str(ROOT / "artifacts/wp3-plasticity-v*"))):
+        rel = str(Path(d).relative_to(ROOT))
+        if rel == self_bundle:
+            continue
+        if (Path(d) / "verdict.json").is_file() and rel not in referenced:
+            orphans.append(rel)
+
+    consistent = mismatches == 0 and len(orphans) == 0
+    verdict = "L4J_CONSISTENT" if consistent else "L4J_INCONSISTENT"
+    return {
+        "experiment": "wp3_plasticity_v12_consistency",
+        "verdict": verdict,
+        "tier": "PROCESS — governance consistency of the L4 sub-line",
+        "n_l4_claims": len(l4_claims),
+        "checks": checks,
+        "polarity_mismatches": mismatches,
+        "orphan_evidence": orphans,
+        "consistent": consistent,
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4j CONSISTENCY VERDICT: {r['verdict']}")
+    print(f"  L4 claims checked: {r['n_l4_claims']}  mismatches: {r['polarity_mismatches']}  "
+          f"orphans: {len(r['orphan_evidence'])}")
+    for ch in r["checks"]:
+        if ch["match"] is False:
+            print(f"  MISMATCH {ch['claim']}: status={ch['status']} verdict={ch['verdict']}")
+
+
+if __name__ == "__main__":
+    main()
+
+"""Tests for L4c — lock in the FROZEN FALSIFICATION deterministically.
+
+The preregistered (sigma/Delta)^2 scaling prediction was refuted; these tests pin that
+negative so a future change cannot silently 'improve' it into an unearned positive.
+"""
+from __future__ import annotations
+
+from experiments.wp3_plasticity_v5_thinmargin.src import thinmargin as T
+
+
+def _r():
+    return T.analyze()
+
+
+def test_verdict_scaling_violated_and_deterministic():
+    r1, r2 = _r(), _r()
+    assert r1 == r2
+    assert r1["verdict"] == "L4C_SCALING_VIOLATED"
+
+
+def test_collapse_exists():
+    r = _r()
+    for k in r["curves"]:
+        recs = [c["recovery"] for c in r["curves"][k]]
+        assert recs[0] >= 0.9            # wide margin -> learned
+        assert recs[-1] <= 0.5           # thin margin -> degraded
+
+
+def test_sqrt_law_scaling_is_refuted():
+    r = _r()
+    assert r["sqrt_law_scaling_holds"] is False
+    # noise-independence tell: ratio well below the predicted ~2
+    assert r["scaling_ratio_2sigma_over_sigma"] < 1.4
+
+
+def test_noise_does_not_monotonically_hurt():
+    # the falsifying observation: at Delta=0.05 more noise did not reduce recovery
+    r = _r()
+    d05_lo = next(c["recovery"] for c in r["curves"]["sigma_0.10"] if c["delta"] == 0.05)
+    d05_hi = next(c["recovery"] for c in r["curves"]["sigma_0.20"] if c["delta"] == 0.05)
+    assert d05_hi >= d05_lo - 0.05       # 2x noise not worse (contra (sigma/Delta)^2)
+
+"""L4d higher-power scaling revisit.
+
+Settles the question L4c opened: is the governor's credit-assignment collapse margin
+governed by the sample-complexity law? L4c falsified NOISE-scaling (confounded by REINFORCE
+exploration). Here, at fixed noise, we scale the EPISODE BUDGET N to isolate the clean
+prediction Delta* proportional to 1/sqrt(N); and re-test the noise-scaling at 24 seeds.
+See PREREGISTRATION.md. Deterministic (Box-Muller over a fixed LCG).
+"""
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import _Rng
+from experiments.wp3_plasticity_v5_thinmargin.src.thinmargin import _delta_star, _means, _recovery, _softmax
+
+OUT = Path(__file__).resolve().parents[3] / "artifacts/wp3-plasticity-v6-scaling"
+
+N_ARMS = 4
+DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02, 0.01, 0.005]
+CONTROLLER_SEEDS = 24
+BUDGETS = [1500, 3000, 6000, 12000]
+SIGMA0 = 0.10
+LR = 0.2
+
+
+def _train_greedy(means: list[list[float]], sigma: float, n_episodes: int, ctrl_seed: int) -> list[int]:
+    rng = _Rng(0xD00D ^ (ctrl_seed * 1409 + int(sigma * 1000) + n_episodes))
+    theta = [[0.0] * N_ARMS for _ in range(2)]
+    baseline = [0.0, 0.0]
+    for ep in range(n_episodes):
+        c = ep & 1
+        pi = _softmax(theta[c])
+        u = rng._unit()
+        cum = 0.0
+        a = N_ARMS - 1
+        for i, pr in enumerate(pi):
+            cum += pr
+            if u <= cum:
+                a = i
+                break
+        reward = means[c][a] + sigma * rng.gauss()
+        baseline[c] = 0.99 * baseline[c] + 0.01 * reward
+        adv = reward - baseline[c]
+        for j in range(N_ARMS):
+            grad = (1.0 - pi[j]) if j == a else (-pi[j])
+            theta[c][j] += LR * adv * grad
+    return [max(range(N_ARMS), key=lambda a: theta[c][a]) for c in range(2)]
+
+
+def _recovery_curve(sigma: float, n_episodes: int) -> list[float]:
+    out = []
+    for delta in DELTAS:
+        means = _means(delta)
+        r = [_recovery(means, _train_greedy(means, sigma, n_episodes, cs), delta)
+             for cs in range(CONTROLLER_SEEDS)]
+        out.append(sum(r) / len(r))
+    return out
+
+
+def analyze() -> dict[str, Any]:
+    # P1 — budget scaling at fixed sigma
+    budget_curves, budget_dstar = {}, {}
+    for n in BUDGETS:
+        recs = _recovery_curve(SIGMA0, n)
+        budget_curves[f"N_{n}"] = [{"delta": d, "recovery": rr} for d, rr in zip(DELTAS, recs)]
+        budget_dstar[f"N_{n}"] = _delta_star(DELTAS, recs)
+
+    ds_lo = budget_dstar[f"N_{BUDGETS[0]}"]     # N=1500
+    ds_hi = budget_dstar[f"N_{BUDGETS[-1]}"]    # N=12000
+    budget_ratio = ds_hi / ds_lo if ds_lo and not math.isnan(ds_lo) and ds_lo > 0 else float("nan")
+    dstar_seq = [budget_dstar[f"N_{n}"] for n in BUDGETS]
+    monotone_decreasing = all(
+        (math.isnan(dstar_seq[i]) or math.isnan(dstar_seq[i + 1]) or dstar_seq[i] >= dstar_seq[i + 1] - 0.01)
+        for i in range(len(dstar_seq) - 1))
+    predicted_ratio = 1.0 / math.sqrt(BUDGETS[-1] / BUDGETS[0])  # 1/sqrt(8)=0.354
+    budget_confirmed = (not math.isnan(budget_ratio)) and monotone_decreasing and (0.25 <= budget_ratio <= 0.55)
+
+    # P2 — sigma scaling re-test at high power, N=3000
+    sig_lo = _delta_star(DELTAS, _recovery_curve(SIGMA0, 3000))
+    sig_hi = _delta_star(DELTAS, _recovery_curve(2 * SIGMA0, 3000))
+    sigma_ratio = sig_hi / sig_lo if sig_lo and not math.isnan(sig_lo) and sig_lo > 0 else float("nan")
+    sigma_replicates_l4c = (not math.isnan(sigma_ratio)) and abs(sigma_ratio - 1.0) <= 0.4
+    sigma_is_samplecomplexity = (not math.isnan(sigma_ratio)) and 1.4 <= sigma_ratio <= 2.8
+
+    # A residual off-grid NaN is a measurement-range failure, NOT a scientific falsification.
+    any_nan = any(math.isnan(dstar_seq[i]) for i in range(len(dstar_seq)))
+    if budget_confirmed:
+        verdict = "L4D_BUDGET_SCALING_CONFIRMED"
+    elif any_nan:
+        verdict = "L4D_INSTRUMENT_LIMITED"
+    else:
+        verdict = "L4D_BUDGET_SCALING_VIOLATED"
+
+    return {
+        "experiment": "wp3_plasticity_v6_scaling",
+        "verdict": verdict,
+        "tier": "SYNTHETIC-PARAMETRIC — governor credit-assignment scaling",
+        "controller_seeds": CONTROLLER_SEEDS, "deltas": DELTAS, "budgets": BUDGETS, "sigma0": SIGMA0,
+        "budget_curves": budget_curves,
+        "budget_delta_star": budget_dstar,
+        "budget_ratio_N12000_over_N1500": budget_ratio,
+        "predicted_budget_ratio_1_over_sqrt8": predicted_ratio,
+        "budget_monotone_decreasing": monotone_decreasing,
+        "budget_scaling_confirmed": budget_confirmed,
+        "sigma_scaling_ratio_highpower": sigma_ratio,
+        "sigma_scaling_replicates_l4c": sigma_replicates_l4c,
+        "sigma_scaling_is_samplecomplexity": sigma_is_samplecomplexity,
+        "prohibited_extrapolations": ["real-workload behavior", "L7 compute-equivalent Pareto",
+                                      "energy or latency advantage", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4d SCALING VERDICT: {r['verdict']}")
+    print("  budget sweep (sigma=0.10):")
+    for n in BUDGETS:
+        print(f"    N={n:5d}  Δ*={r['budget_delta_star'][f'N_{n}']:.4f}")
+    print(f"  Δ*(12000)/Δ*(1500) = {r['budget_ratio_N12000_over_N1500']:.3f}  "
+          f"(predicted 1/√8 = {r['predicted_budget_ratio_1_over_sqrt8']:.3f}; "
+          f"monotone={r['budget_monotone_decreasing']})")
+    print(f"  σ re-test (24 seeds): Δ*(2σ)/Δ*(σ) = {r['sigma_scaling_ratio_highpower']:.3f}  "
+          f"[replicates L4c={r['sigma_scaling_replicates_l4c']}, "
+          f"sample-complexity={r['sigma_scaling_is_samplecomplexity']}]")
+
+
+if __name__ == "__main__":
+    main()
+
+"""L4f arm-count scaling of the collapse exponent.
+
+Tests L4e's account ("dead arms inject diffusion") as a monotone law: sweeps the number of
+arms K and fits the budget exponent for each. Prediction: the exponent shallows monotonically
+toward the diffusion limit -0.5 as K grows, from the 2-arm drift limit ~-1. See PREREGISTRATION.
+Deterministic (Box-Muller over a fixed LCG).
+"""
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from experiments.common.identifiability_inference import _Rng
+from experiments.wp3_plasticity_v5_thinmargin.src.thinmargin import _delta_star, _softmax
+
+OUT = Path(__file__).resolve().parents[3] / "artifacts/wp3-plasticity-v8-armscaling"
+
+DELTAS = [0.40, 0.30, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03, 0.02, 0.015, 0.01, 0.008, 0.005, 0.003, 0.001]
+CONTROLLER_SEEDS = 24
+BUDGETS = [1500, 3000, 6000, 12000]
+ARMS = [2, 3, 4, 6, 8]
+SIGMA0 = 0.10
+LR = 0.2
+
+
+def _means(k: int, delta: float) -> list[list[float]]:
+    """context 0 best = arm0, context 1 best = arm1, runner-up 1-delta, arms 2..k-1 dead."""
+    row0 = [1.0, 1.0 - delta] + [0.0] * (k - 2)
+    row1 = [1.0 - delta, 1.0] + [0.0] * (k - 2)
+    return [row0, row1]
+
+
+def _train_greedy(means: list[list[float]], k: int, sigma: float, n_episodes: int, ctrl_seed: int) -> list[int]:
+    rng = _Rng(0xF1F ^ (ctrl_seed * 1637 + k * 101 + n_episodes))
+    theta = [[0.0] * k for _ in range(2)]
+    baseline = [0.0, 0.0]
+    for ep in range(n_episodes):
+        c = ep & 1
+        pi = _softmax(theta[c])
+        u = rng._unit()
+        cum = 0.0
+        a = k - 1
+        for i, pr in enumerate(pi):
+            cum += pr
+            if u <= cum:
+                a = i
+                break
+        reward = means[c][a] + sigma * rng.gauss()
+        baseline[c] = 0.99 * baseline[c] + 0.01 * reward
+        adv = reward - baseline[c]
+        for j in range(k):
+            grad = (1.0 - pi[j]) if j == a else (-pi[j])
+            theta[c][j] += LR * adv * grad
+    return [max(range(k), key=lambda a: theta[c][a]) for c in range(2)]
+
+
+def _recovery(means: list[list[float]], arm: list[int], delta: float) -> float:
+    realised = (means[0][arm[0]] + means[1][arm[1]]) / 2.0
+    best_fixed = 1.0 - delta / 2.0
+    return (realised - best_fixed) / (delta / 2.0) if delta > 1e-12 else 0.0
+
+
+def _dstar(k: int, n_episodes: int) -> float:
+    recs = []
+    for delta in DELTAS:
+        means = _means(k, delta)
+        r = [_recovery(means, _train_greedy(means, k, SIGMA0, n_episodes, cs), delta)
+             for cs in range(CONTROLLER_SEEDS)]
+        recs.append(sum(r) / len(r))
+    return _delta_star(DELTAS, recs)
+
+
+def _loglog_slope(xs: list[float], ys: list[float]) -> float:
+    lx = [math.log(x) for x in xs]
+    ly = [math.log(y) for y in ys]
+    n = len(lx)
+    sx, sy, sxy, sxx = sum(lx), sum(ly), sum(a * b for a, b in zip(lx, ly)), sum(a * a for a in lx)
+    return (n * sxy - sx * sy) / (n * sxx - sx * sx)
+
+
+def analyze() -> dict[str, Any]:
+    per_arm = {}
+    any_nan = False
+    for k in ARMS:
+        dstar = {n: _dstar(k, n) for n in BUDGETS}
+        nanflag = any(math.isnan(v) for v in dstar.values())
+        any_nan = any_nan or nanflag
+        exp = float("nan") if nanflag else _loglog_slope(BUDGETS, [dstar[n] for n in BUDGETS])
+        per_arm[k] = {"delta_star": dstar, "exponent": exp}
+
+    exps = [per_arm[k]["exponent"] for k in ARMS]
+    if any_nan:
+        verdict = "L4F_INSTRUMENT_LIMITED"
+        monotone = shallows = False
+    else:
+        monotone = all(exps[i + 1] >= exps[i] - 0.10 for i in range(len(exps) - 1))
+        shallows = (exps[-1] - exps[0]) >= 0.25
+        drift_at_2 = exps[0] <= -0.9
+        exp_range = max(exps) - min(exps)
+        if monotone and shallows and drift_at_2:
+            verdict = "L4F_ARM_SCALING_MAPPED"
+        elif exp_range < 0.15:
+            verdict = "L4F_NO_ARM_DEPENDENCE"
+        else:
+            verdict = "L4F_NON_MONOTONE"
+
+    return {
+        "experiment": "wp3_plasticity_v8_armscaling",
+        "verdict": verdict,
+        "tier": "SYNTHETIC-PARAMETRIC — arm-count dependence of the governor-collapse exponent",
+        "controller_seeds": CONTROLLER_SEEDS, "budgets": BUDGETS, "arms": ARMS, "sigma0": SIGMA0,
+        "per_arm": {str(k): per_arm[k] for k in ARMS},
+        "exponents": {str(k): per_arm[k]["exponent"] for k in ARMS},
+        "monotone_shallowing": monotone if not any_nan else None,
+        "shallows_by_0.25": shallows if not any_nan else None,
+        "prediction": "exponent shallows monotonically from drift limit (~-1) toward diffusion (~-0.5) as K grows",
+        "prohibited_extrapolations": ["real-workload behavior", "L7 compute-equivalent Pareto",
+                                      "energy or latency advantage", "independent replication"],
+    }
+
+
+def main() -> None:
+    r = analyze()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "verdict.json").write_text(json.dumps(r, indent=2))
+    print(f"L4f ARM-SCALING VERDICT: {r['verdict']}")
+    for k in ARMS:
+        e = r["per_arm"][str(k)]["exponent"]
+        print(f"  K={k}  exponent={e:.3f}")
+    print(f"  monotone shallowing = {r['monotone_shallowing']}  shallows>=0.25 = {r['shallows_by_0.25']}")
+
+
+if __name__ == "__main__":
+    main()
+
+import torch
+from experiments.wp3_rcfr.src.task_ops import generate_batch, PERMS, N_SYMBOLS, N_ROLES
+from experiments.wp3_rcfr.src.rcfr_modules import OperatorModel, Mode
+
+def test_task_target_is_permutation():
+    g = torch.Generator().manual_seed(0)
+    tok, tgt, roles = generate_batch(16, g)
+    ops = tok[:, 1:]
+    for b in range(16):
+        assert torch.equal(tgt[b], PERMS[roles[b]][ops[b]])
+
+def test_task_deterministic():
+    a = generate_batch(8, torch.Generator().manual_seed(3))
+    b = generate_batch(8, torch.Generator().manual_seed(3))
+    assert torch.equal(a[0], b[0]) and torch.equal(a[1], b[1])
+
+def test_all_modes_forward():
+    g = torch.Generator().manual_seed(0)
+    tok, tgt, roles = generate_batch(8, g)
+    for mode in Mode:
+        torch.manual_seed(0)
+        m = OperatorModel(mode).eval()
+        with torch.no_grad():
+            out = m(tok)
+        assert out.shape == (8, tok.shape[1]-1, N_SYMBOLS)
+        assert torch.isfinite(out).all()
+
+def test_forced_role_changes_output():
+    g = torch.Generator().manual_seed(1)
+    tok, tgt, roles = generate_batch(8, g)
+    torch.manual_seed(0)
+    m = OperatorModel(Mode.RCFR).eval()
+    with torch.no_grad():
+        a = m(tok)
+        b = m(tok, forced_role=(roles+1) % N_ROLES)
+    assert not torch.equal(a.argmax(-1), b.argmax(-1))
+
+def test_operator_is_linear_no_relu():
+    # shared_no_role must be UNABLE to solve (linear operator); sanity: forward runs
+    torch.manual_seed(0)
+    m = OperatorModel(Mode.SHARED_NO_ROLE).eval()
+    g = torch.Generator().manual_seed(0)
+    tok, tgt, roles = generate_batch(8, g)
+    with torch.no_grad():
+        assert torch.isfinite(m(tok)).all()
+
+def test_rcfr_fewer_params_than_separate():
+    torch.manual_seed(0)
+    rcfr = sum(p.numel() for p in OperatorModel(Mode.RCFR).parameters())
+    sep = sum(p.numel() for p in OperatorModel(Mode.SEPARATE_MODULES).parameters())
+    assert rcfr < sep  # one shared operator + bank vs R full operators
+
+"""Exploratory exact-total-compute pilot; never licenses a confirmatory claim."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import torch
+
+from experiments.wp2_routing_v1.src.analyze import _bootstrap_ci
+from experiments.wp4_adaptive_depth.src.runner import DISTRIBUTIONS, stable_distribution_seed
+from experiments.wp4_adaptive_depth.src.substrate import run_policy
+from experiments.wp4_adaptive_depth.src.task_hops import generate_batch
+
+
+def run_pilot(
+    data_seeds: list[int], allocation_replicates: int, batch_size: int, device: str
+) -> dict[str, object]:
+    rows: list[dict[str, object]] = []
+    for distribution, weights in DISTRIBUTIONS.items():
+        for seed in data_seeds:
+            data_seed = stable_distribution_seed(seed, distribution)
+            batch = generate_batch(
+                batch_size,
+                torch.Generator().manual_seed(data_seed),
+                device,
+                m_weights=weights,
+            )
+            table, values, start, target, m = batch
+            adaptive = run_policy(
+                "adaptive", 0, table, values, start, target, m,
+                torch.Generator().manual_seed(0),
+            )
+            total_hops = adaptive["total_hops"]
+            controls = []
+            for replicate in range(allocation_replicates):
+                allocation_seed = stable_distribution_seed(
+                    seed * allocation_replicates + replicate, f"{distribution}:allocation"
+                )
+                controls.append(
+                    run_policy(
+                        "random_exact", 0, table, values, start, target, m,
+                        torch.Generator().manual_seed(allocation_seed),
+                        total_hops=total_hops,
+                    )
+                )
+            control_solved = sum(float(c["solved"]) for c in controls) / len(controls)
+            if any(c["total_hops"] != total_hops for c in controls):
+                raise RuntimeError("exact-total-compute invariant violated")
+            rows.append(
+                {
+                    "distribution": distribution,
+                    "data_seed_index": seed,
+                    "data_seed": data_seed,
+                    "batch_size": batch_size,
+                    "allocation_replicates": allocation_replicates,
+                    "total_hops_each_policy": total_hops,
+                    "adaptive_solved": adaptive["solved"],
+                    "input_blind_exact_solved_mean": control_solved,
+                    "paired_solved_difference": adaptive["solved"] - control_solved,
+                }
+            )
+
+    summary: dict[str, object] = {}
+    for distribution in DISTRIBUTIONS:
+        differences = [
+            float(row["paired_solved_difference"])
+            for row in rows
+            if row["distribution"] == distribution
+        ]
+        lo, hi = _bootstrap_ci(differences)
+        summary[distribution] = {
+            "n_data_seeds": len(differences),
+            "mean_paired_solved_difference": sum(differences) / len(differences),
+            "bootstrap_ci95": [lo, hi],
+            "exact_total_compute": True,
+        }
+    return {
+        "status": "EXPLORATORY_PILOT_NOT_PREREGISTERED",
+        "design": "adaptive exact halt vs input-blind floor/ceiling allocation",
+        "rows": rows,
+        "summary": summary,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-seeds", type=int, nargs="+", default=list(range(8)))
+    parser.add_argument("--allocation-replicates", type=int, default=16)
+    parser.add_argument("--batch-size", type=int, default=1024)
+    parser.add_argument("--out", type=Path)
+    args = parser.parse_args()
+    if args.allocation_replicates <= 0 or args.batch_size <= 0:
+        parser.error("allocation-replicates and batch-size must be positive")
+    result = run_pilot(
+        args.data_seeds,
+        args.allocation_replicates,
+        args.batch_size,
+        "cuda" if torch.cuda.is_available() else "cpu",
+    )
+    payload = json.dumps(result, indent=2)
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(payload)
+    print(payload)
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+Train a tokenizer using our own BPE Tokenizer library.
+In the style of GPT-4 tokenizer.
+"""
+import os
+import time
+import argparse
+import torch
+from nanochat.tokenizer import RustBPETokenizer
+from nanochat.common import get_base_dir
+from nanochat.dataset import parquets_iter_batched
+
+# -----------------------------------------------------------------------------
+# Parse command line arguments
+
+parser = argparse.ArgumentParser(description='Train a BPE tokenizer')
+parser.add_argument('--max-chars', type=int, default=2_000_000_000, help='Maximum characters to train on (default: 2B)')
+parser.add_argument('--doc-cap', type=int, default=10_000, help='Maximum characters per document (default: 10,000)')
+parser.add_argument('--vocab-size', type=int, default=32768, help='Vocabulary size (default: 32768 = 2^15)')
+args = parser.parse_args()
+print(f"max_chars: {args.max_chars:,}")
+print(f"doc_cap: {args.doc_cap:,}")
+print(f"vocab_size: {args.vocab_size:,}")
+
+# -----------------------------------------------------------------------------
+# Text iterator
+
+def text_iterator():
+    """
+    1) Flatten the batches into a single iterator
+    2) Crop every document to args.doc_cap characters
+    3) Break when we've seen args.max_chars characters
+    """
+    nchars = 0
+    for batch in parquets_iter_batched(split="train"):
+        for doc in batch:
+            doc_text = doc
+            if len(doc_text) > args.doc_cap:
+                doc_text = doc_text[:args.doc_cap]
+            nchars += len(doc_text)
+            yield doc_text
+            if nchars > args.max_chars:
+                return
+text_iter = text_iterator()
+
+# -----------------------------------------------------------------------------
+# Train the tokenizer
+t0 = time.time()
+tokenizer = RustBPETokenizer.train_from_iterator(text_iter, args.vocab_size)
+t1 = time.time()
+train_time = t1 - t0
+print(f"Training time: {train_time:.2f}s")
+
+# -----------------------------------------------------------------------------
+# Save the tokenizer to disk
+base_dir = get_base_dir()
+tokenizer_dir = os.path.join(base_dir, "tokenizer")
+tokenizer.save(tokenizer_dir)
+
+# -----------------------------------------------------------------------------
+# Quick inline sanity check
+test_text = """Hello world! This is a test.
+Numbers: 123, 4567, 89
+Contractions: I'm, you're, it's
+Special chars: @#$%^&*()
+Unicode: 你好世界 🌍"""
+encoded = tokenizer.encode(test_text)
+decoded = tokenizer.decode(encoded)
+assert decoded == test_text
+
+# -----------------------------------------------------------------------------
+# One more thing: we wish to cache a mapping from token id to number of bytes of that token
+# for efficient evaluation of bits per byte. Unlike the typical mean loss, this
+# allows us to report a loss that is invariant to the vocab size of the tokenizer.
+# The bits per byte on the validation set is then one of the primary metrics we care about.
+vocab_size = tokenizer.get_vocab_size()
+special_ids = set(tokenizer.encode_special(s) for s in tokenizer.get_special_tokens())
+token_bytes = []
+for token_id in range(vocab_size):
+    if token_id in special_ids:
+        token_bytes.append(0) # special tokens are not counted
+    else:
+        # use the raw bytes of the token: decoding to a string first corrupts
+        # tokens that are not valid standalone UTF-8 (e.g. the raw bytes >= 0x80)
+        num_bytes = len(tokenizer.decode_single_token_bytes(token_id))
+        token_bytes.append(num_bytes)
+token_bytes = torch.tensor(token_bytes, dtype=torch.int32, device='cpu')
+token_bytes_path = os.path.join(tokenizer_dir, "token_bytes.pt")
+with open(token_bytes_path, "wb") as f:
+    torch.save(token_bytes, f)
+print(f"Saved token_bytes to {token_bytes_path}")
+
+"""python -m pytest tests/test_instrumentation_overhead.py -v
+
+Unit tests for the statistical helpers in scripts/instrumentation_overhead.py
+(percentile, bootstrap CI). The actual paired GPU benchmark is not run on
+every test invocation — it takes minutes and needs a GPU; it is a separate,
+explicit, real measurement recorded in
+artifacts/instrumentation/overhead_report_canonical_run.json and discussed in
+docs/WP1_INSTRUMENTATION.md, not something this fast unit-test file
+reproduces per CI run.
+"""
+
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.instrumentation_overhead import _bootstrap_ci, _percentile
+
+
+def test_percentile_median_of_odd_list():
+    assert _percentile([1.0, 2.0, 3.0], 0.5) == 2.0
+
+
+def test_percentile_p0_and_p100():
+    values = [5.0, 1.0, 3.0]
+    assert _percentile(values, 0.0) == 1.0
+    assert _percentile(values, 1.0) == 5.0
+
+
+def test_percentile_empty_list_is_zero():
+    assert _percentile([], 0.5) == 0.0
+
+
+def test_percentile_single_value():
+    assert _percentile([7.0], 0.9) == 7.0
+
+
+def test_bootstrap_ci_tight_for_constant_deltas():
+    deltas = [0.01] * 50
+    lower, upper = _bootstrap_ci(deltas, resamples=500, seed=1)
+    assert lower == pytest.approx(0.01, abs=1e-9)
+    assert upper == pytest.approx(0.01, abs=1e-9)
+
+
+def test_bootstrap_ci_widens_with_variance():
+    low_variance = [0.01, 0.0105, 0.0098, 0.0102] * 10
+    high_variance = [0.0, 0.02, -0.01, 0.03] * 10
+    lo1, hi1 = _bootstrap_ci(low_variance, resamples=1000, seed=1)
+    lo2, hi2 = _bootstrap_ci(high_variance, resamples=1000, seed=1)
+    assert (hi2 - lo2) > (hi1 - lo1)
+
+
+def test_bootstrap_ci_is_reproducible_given_same_seed():
+    deltas = [0.01, 0.02, -0.005, 0.015, 0.008]
+    result_a = _bootstrap_ci(deltas, resamples=500, seed=42)
+    result_b = _bootstrap_ci(deltas, resamples=500, seed=42)
+    assert result_a == result_b

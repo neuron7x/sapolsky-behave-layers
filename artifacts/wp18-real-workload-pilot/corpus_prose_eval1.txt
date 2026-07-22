@@ -1,0 +1,131 @@
+# CWC Evaluation Plan
+
+## Tiers
+1. **Mechanism evaluation** (current): synthetic, mechanism-separable benchmarks that
+   isolate one causal question each. All shipped results are Tier 1.
+2. **Controlled evaluation**: harder synthetic distributions, generalization/extrapolation.
+3. **Real-workload evaluation** (NOT_TESTED): language modelling + structured
+   reasoning/retrieval/code, ≥2 workloads, multiple scales — cloud.
+
+## Primary evaluation vector
+`V = (Q, FLOPs, p95_latency, VRAM, transfer, forgetting, robustness)`.
+Energy is included **only** with a valid physical measurement; on this hardware it is
+`INSTRUMENT_INVALID` and excluded. No arbitrary single composite score.
+
+## Mechanism vs system
+Mechanism claims (routing causality, allocation gap) are separated from system claims
+(Pareto advantage). A mechanism positive never implies a system positive.
+
+## Cost accounting (mandatory in every comparison)
+controller overhead, dispatch overhead, parameter growth, optimizer state, replay &
+memory cost — all counted. See `BASELINE_SELECTION_AND_COMPUTE_PARITY_POLICY.md`.
+
+## Operating points
+Report all preregistered operating points (e.g. capacity 25/50/75/100%); select the
+operating point on validation only.
+
+# CWC Laboratory Notebook
+
+Running log of decisions, anomalies, errors, and interpretations. Per-run provenance is
+in `EXPERIMENT_LEDGER.jsonl`; this file records the *reasoning*.
+
+## 2026-07-16
+- Routing v2 result narrowed after external review identified three leaks (privileged
+  target, label-derived capacity, surface cues). Verified all three in-code; narrowed
+  without deleting the artifact.
+- **Key decision:** tested whether the R3-C collapse was optimization or signal. Ran
+  REINFORCE (H_opt) vs straight-through (H_deep). Anomaly: at λ≤0.5 the controller routed
+  everything to the semantic path and the route *inverted* (AUROC→0) — resolved as the
+  identifiability theory's prediction (quality-dominant without a binding budget).
+- **Interpretation:** collapse was an estimator artifact; value localizes to cheap
+  route-signal computability. Surface-matched study confirms structural routing is not
+  cheaply learnable → route-decision-cost extension to the theory.
+- Error caught: a Cyrillic path typo (`Desктоп`) misplaced one doc; moved and cleaned.
+
+## Earlier
+- Consolidation of three sibling projects into one system; WP1 instrumentation closure;
+  identifiability theory derived; WP4 Jensen gap confirmed to machine precision.
+
+# Author, Funding, COI and AI-Assistance Disclosure
+
+## Author
+Yaroslav Vasylenko — research direction, hypotheses, methodology, acceptance decisions,
+and responsibility for all claims.
+
+## Funding
+No external funding. Compute is the author's local hardware (RTX 3050 4GiB).
+
+## Conflicts of interest
+None declared.
+
+## AI assistance (full disclosure)
+- **Model / tool:** Claude (Anthropic), via Claude Code, acting as an autonomous coding
+  and analysis agent under the author's direction.
+- **Task types:** experiment implementation, running experiments, statistical analysis
+  scripts, artifact/verdict generation, and this documentation layer.
+- **Code:** the large majority of `experiments/`, `scripts/`, and `cwc/` code was
+  written by the AI agent; the author specified the hypotheses, review critiques, and
+  acceptance gates.
+- **Analysis:** metric computation, bootstrap CIs, and verdicts were produced by AI-written
+  code and are fully reproducible from the committed scripts.
+- **Documentation:** methodology, registries, cards, and reports in `docs/` were AI-drafted
+  and grounded in the real repository state.
+- **Verification status:** all claims are backed by committed code, tests, and
+  checksummed evidence bundles. The author is responsible for the scientific claims.
+  **Independent replication has NOT been performed** (CWC-L8 = NOT_TESTED); no third party
+  has yet re-derived the results.
+- **Not independently verified:** cross-hardware behaviour, scale generalization, and any
+  cloud-tier result (all marked NOT_TESTED).
+
+# Clean-Room Reproduction Protocol
+
+## Conditions
+Fresh checkout · fresh container · no author-local paths · no manual edits · no hidden
+credentials · source/data hash verification · separate output dir · no overwrite of
+canonical artifacts · automatic verdict · automatic checksum verification.
+
+## One command
+```bash
+make -f Makefile.cwc reproduce-primary
+```
+which must: verify source → build environment (`uv sync --frozen`) → verify deps →
+generate immutable data (seeded generators) → run the primary experiment → collect raw
+outputs → analyze → generate verdict → compare to preregistered tolerance → write a
+reproduction report → validate SHA256SUMS.
+
+## Containers
+Hermetic builds in `containers/` (`Dockerfile.cpu`, `Dockerfile.cuda`, `apptainer.def`).
+
+## Status
+`make reproduce-primary` exists and regenerates the WP4 primary result. Full
+fresh-container reproduction is `NOT_VALIDATED` until an independent operator runs it on
+a clean machine (see `docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md`). This is
+the honest current gap.
+
+## Acceptance
+fresh-machine PASS · one-command PASS · manual edits 0 · private paths 0 · checksum
+failures 0 · primary result within preregistered tolerance.
+
+# CWC Verification and Validation Plan
+
+## Verification (code ⟷ spec)
+Confirms: spec compliance, schema compliance, determinism, budget invariants,
+serialization, checkpoint/resume, numerical reference, error handling, release
+integrity. Executed by `make -f Makefile.cwc verify` (ruff, mypy --strict, unit +
+property + mutation + determinism + experiment tests) and the doc-status gate
+(`scripts/doc_status_gate.py`).
+
+## Validation (experiment ⟷ scientific construct)
+Confirms: construct validity, benchmark identifiability, oracle necessity, causal
+dependence, control adequacy, generalization scope, statistical support, absence of
+forbidden leakage, and claim⟷evidence agreement. Executed per experiment via its
+preregistration + `verdict.json` + the analyzers, and recorded in `VALIDATION_RECORD.md`.
+
+## Traceability
+`REQUIREMENTS_TRACEABILITY_MATRIX.csv` links requirement → implementation → test →
+experiment → artifact → claim. A claim with an unclosed critical requirement is not
+allowed.
+
+## Acceptance
+critical requirements without tests = 0; critical scientific requirements without
+validation = 0; claims without traceability = 0; stale records = 0.

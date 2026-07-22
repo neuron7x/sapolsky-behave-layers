@@ -1,0 +1,70 @@
+{
+  "workloads": {
+    "prose": {
+      "family": "prose",
+      "n_files_total": 62,
+      "n_train_files": 37,
+      "eval_shard_files": [
+        5,
+        5,
+        3,
+        8,
+        4
+      ],
+      "train_bytes": 158117,
+      "eval_shard_bytes": [
+        6480,
+        14884,
+        7831,
+        37525,
+        51247
+      ],
+      "file_partition_overlap": false,
+      "leaked_eval_files": [],
+      "contamination_clean": true,
+      "train_sha256": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09",
+      "eval_shard_sha256": [
+        "bc36bae46dd0611600691c5beeda4e7b75d0af90821ff3054005c9baf7664fbb",
+        "1d9839f79c24d8508d9341db8733fd459a5a75ff872a9332c4419a94efefc571",
+        "bf71b8544096e317f1557a932f4b299aa019cd8f1a414b94da88c3a63a108172",
+        "322caad772d06b92ec1b0af31f4f2798a4238032609c14c7378549e99d2e176f",
+        "9216ab79a57cb3d49cbbe06cfee9dfe3dd14145fa964a24128f52ee9a709d99f"
+      ]
+    },
+    "code": {
+      "family": "code",
+      "n_files_total": 255,
+      "n_train_files": 167,
+      "eval_shard_files": [
+        21,
+        21,
+        17,
+        14,
+        15
+      ],
+      "train_bytes": 908564,
+      "eval_shard_bytes": [
+        89183,
+        160085,
+        59321,
+        59203,
+        102267
+      ],
+      "file_partition_overlap": false,
+      "leaked_eval_files": [],
+      "contamination_clean": true,
+      "train_sha256": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+      "eval_shard_sha256": [
+        "5904959a4ba16dbed66d9aad4761aea52b51fd79874a59f3706c74d5794f50be",
+        "30b083fe083da170761564210cc7c522dada9bed947a9ac936ae8d14f55024e3",
+        "685749478c837bab57b1c1547d1f3efe54237c96e44aa2ec675ee5d16d3cdd5a",
+        "74826093a986246141fe9b2ad19770573a394991ea6a919ff12628d912d03e8d",
+        "1bd8b76723710d6115e9d381b9f4b01168e02212f22462efbef7f464bcfd5da0"
+      ]
+    }
+  },
+  "split_rule": "deterministic by SHA-256 of each source file; bucket 0 = train, 1..5 = eval",
+  "license": "repository's own content (MIT) -- no external dataset, no redistribution issue",
+  "provenance": "local repository files at the recorded commit; immutable given the commit",
+  "note": "Splitting by FILE, not byte offset, is what makes the contamination check meaningful: no eval file contributes any training byte."
+}
