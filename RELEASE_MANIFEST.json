@@ -1,26 +1,80 @@
 {
   "project": "Cognitive Wiring Core",
-  "version": "1.0.0",
-  "git_commit": "01a7d08681def7bb64dbd91a3619fcfb66a3939d",
-  "git_tree": "a4010183a88df4f95d4c93c0e6968ff2e4c64f44",
+  "act": "CWC-ASCEND-2026-01 / WP16 clean-room release spine",
+  "version": "1.1.0-5a0924c",
+  "git_commit": "5a0924ca1cadd2bd703dfd2e9316c1ab4593650e",
+  "git_tree": "3ec7ac93f3f9b94d8d4cfba6ef3204f35c93fe65",
+  "git_branch": "wp16-cleanroom-release",
   "upstream_commit": "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd",
-  "generated": "2026-07-16",
-  "note": "Full source+evidence archives with per-archive SHA-256 are built by scripts/make_release.py (make -f Makefile.cwc make-release). This root manifest records provenance for the current tree.",
+  "generated_from": [
+    "git",
+    "claim_registry.json",
+    "uv.lock",
+    "artifacts/**/SHA256SUMS"
+  ],
+  "note": "Machine-derived at the current commit; claim lists come from claim_registry.json (not hand-maintained) and the dependency closure from uv.lock. Source+evidence archives with per-archive SHA-256 are built by scripts/make_release.py.",
+  "claim_counts": {
+    "SUPPORTED": 23,
+    "SUPPORTED_NARROWED": 4,
+    "NOT_SUPPORTED": 8,
+    "NOT_TESTED": 2
+  },
   "supported_claims": [
+    "CWC-AC1-compute-identifiability",
+    "CWC-AC2-compute-controller",
+    "CWC-AC3-inferred-difficulty",
+    "CWC-AC4-rate-bridge",
     "CWC-L0-measurement",
     "CWC-L1-identifiability",
-    "CWC-L2p-jensen-gap",
     "CWC-L2a-e2e-reinforce",
-    "CWC-L2b-route-decision-cost"
+    "CWC-L2b-route-decision-cost",
+    "CWC-L4b-inferred-context",
+    "CWC-L4f-arm-scaling",
+    "CWC-L4g-cost-robust",
+    "CWC-L4h-context-scaling",
+    "CWC-L4i-rate-bridge",
+    "CWC-L4j-line-consistency",
+    "CWC-L4k-falsification-boundary",
+    "CWC-L7s-synthetic-pareto",
+    "CWC-RIGOR1-certificate",
+    "CWC-RIGOR2-fwer",
+    "CWC-RIGOR3-pinsker",
+    "CWC-RIGOR4-coherence",
+    "CWC-RIGOR5-independence",
+    "CWC-RIGOR6-effect-size",
+    "CWC-RIGOR7-prereg-integrity"
   ],
   "narrowed_claims": [
-    "CWC-L2-routing-causality"
+    "CWC-L2-routing-causality",
+    "CWC-L2p-jensen-gap",
+    "CWC-L2q-paid-halt-lookup",
+    "CWC-L4-plasticity"
   ],
+  "not_supported_claims": [
+    "CWC-L2c-e2e-straightthrough",
+    "CWC-L3-rcfr",
+    "CWC-L4c-credit-collapse",
+    "CWC-L4d-budget-scaling",
+    "CWC-L4e-mechanism",
+    "CWC-RD1-real-lm-boundary",
+    "CWC-RD2-real-lm-contextual",
+    "CWC-fractal"
+  ],
+  "not_tested_claims": [
+    "CWC-L7-pareto",
+    "CWC-L8-replication"
+  ],
+  "evidence_bundles": 48,
   "prohibited_claims": [
-    "autonomous adaptive routing",
-    "compute-equivalent Pareto",
+    "autonomous adaptive routing at scale",
+    "compute-equivalent Pareto on real workloads",
     "energy efficiency",
     "independent replication",
-    "deployment-ready"
-  ]
+    "deployment-ready",
+    "architectural advantage at scale"
+  ],
+  "gate_status": {
+    "CWC-L7-real-pareto": "NOT_TESTED (cloud-blocked)",
+    "CWC-L8-replication": "NOT_TESTED (needs independent operator)"
+  }
 }

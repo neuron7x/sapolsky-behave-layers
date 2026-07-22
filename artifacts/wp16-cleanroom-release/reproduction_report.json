@@ -1,0 +1,110 @@
+{
+  "experiment": "wp16_cleanroom_release",
+  "act": "CWC-ASCEND-2026-01 / WP16 G0-G1",
+  "verdict": "CLEANROOM_REPRODUCTION_PASS",
+  "interpreter": "/home/neuro7/cwc-cleanroom-venv/bin/python",
+  "note": "Full canonical gate set re-run in a FRESH venv built from uv.lock --frozen (independent of the author's .venv). Hardware-gated tests are NOT_MEASURED, never PASS. This closes the Act's audit boundary (capsule lacked exact .venv).",
+  "git_commit": "5a0924ca1cadd2bd703dfd2e9316c1ab4593650e",
+  "host": {
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "python": "3.10.20",
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU, 595.71.05"
+  },
+  "torch": {
+    "version": "2.9.1+cu128",
+    "cuda_available": "True",
+    "cuda_version": "12.8"
+  },
+  "seeds": {
+    "PYTHONHASHSEED": "0"
+  },
+  "gates": [
+    {
+      "gate": "lint",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "result": "PASS"
+    },
+    {
+      "gate": "typecheck",
+      "exit_code": 0,
+      "seconds": 0.1,
+      "result": "PASS"
+    },
+    {
+      "gate": "test",
+      "exit_code": 0,
+      "seconds": 8.2,
+      "result": "PASS",
+      "pytest": {
+        "skipped": 2,
+        "reasons": [
+          "tests/test_instrumentation_energy.py: NVML power sampling not available on this host",
+          "tests/test_instrumentation_energy.py: pynvml is not a nanochat dependency; energy graceful-degradation is covered by test_facade_reports_unavailable_when_no_backend_works instead"
+        ],
+        "hardware_skips_not_measured": [
+          "tests/test_instrumentation_energy.py: NVML power sampling not available on this host",
+          "tests/test_instrumentation_energy.py: pynvml is not a nanochat dependency; energy graceful-degradation is covered by test_facade_reports_unavailable_when_no_backend_works instead"
+        ]
+      }
+    },
+    {
+      "gate": "coverage",
+      "exit_code": 0,
+      "seconds": 11.1,
+      "result": "PASS",
+      "pytest": {
+        "skipped": 2,
+        "reasons": [
+          "tests/test_instrumentation_energy.py: NVML power sampling not available on this host",
+          "tests/test_instrumentation_energy.py: pynvml is not a nanochat dependency; energy graceful-degradation is covered by test_facade_reports_unavailable_when_no_backend_works instead"
+        ],
+        "hardware_skips_not_measured": [
+          "tests/test_instrumentation_energy.py: NVML power sampling not available on this host",
+          "tests/test_instrumentation_energy.py: pynvml is not a nanochat dependency; energy graceful-degradation is covered by test_facade_reports_unavailable_when_no_backend_works instead"
+        ]
+      }
+    },
+    {
+      "gate": "mutation",
+      "exit_code": 0,
+      "seconds": 33.0,
+      "result": "PASS"
+    },
+    {
+      "gate": "validate-evidence",
+      "exit_code": 0,
+      "seconds": 3.2,
+      "result": "PASS"
+    },
+    {
+      "gate": "doc-gate",
+      "exit_code": 0,
+      "seconds": 0.2,
+      "result": "PASS"
+    },
+    {
+      "gate": "reproduce-primary",
+      "exit_code": 0,
+      "seconds": 21.7,
+      "result": "PASS"
+    },
+    {
+      "gate": "experiment-tests",
+      "exit_code": 0,
+      "seconds": 301.2,
+      "result": "PASS",
+      "pytest": {
+        "skipped": 0,
+        "reasons": [],
+        "hardware_skips_not_measured": []
+      }
+    }
+  ],
+  "hardware_not_measured": [
+    "tests/test_instrumentation_energy.py: NVML power sampling not available on this host",
+    "tests/test_instrumentation_energy.py: pynvml is not a nanochat dependency; energy graceful-degradation is covered by test_facade_reports_unavailable_when_no_backend_works instead"
+  ],
+  "second_independent_host": "NOT_MEASURED (single-host environment; Act WP16 3rd env requires an independent runner/host not available here)"
+}

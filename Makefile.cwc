@@ -11,6 +11,12 @@ PY ?= .venv/bin/python
 verify: lint typecheck test coverage mutation experiment-tests validate-evidence doc-gate
 	@echo "CWC-VERIFY: ALL GATES PASSED"
 
+# WP16 (Act CWC-ASCEND-2026-01, G0/G1): the SINGLE canonical reproduction command --
+# the full gate PLUS evidence-checksum verification and from-scratch primary reproduction.
+# This is the one command a clean-room operator runs. Use PY=<fresh-venv> on a clean checkout.
+verify-full: verify verify-evidence reproduce-primary
+	@echo "CWC-VERIFY-FULL: reproduction spine complete (gates + checksums + primary reproduced)"
+
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
 # commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.
 doc-gate:

@@ -2,23 +2,653 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "name": "cognitive-wiring-core",
-  "documentNamespace": "cwc/sbom/d920f79",
+  "documentNamespace": "cwc/sbom/5a0924c",
   "creationInfo": {
-    "created": "2026-07-16T00:00:00Z",
-    "creators": ["Tool: CWC-manual", "Person: Yaroslav Vasylenko"],
-    "comment": "Advisory SBOM. Authoritative, hash-pinned dependency set is uv.lock."
+    "created": "2026-07-21T23:26:11+03:00",
+    "creators": [
+      "Tool: CWC-wp16_release_spine.py",
+      "Person: Yaroslav Vasylenko"
+    ],
+    "comment": "Machine-derived from uv.lock at HEAD. Authoritative hash-pinned closure: uv.lock."
   },
   "packages": [
-    {"SPDXID": "SPDXRef-Package-cwc", "name": "cognitive-wiring-core", "versionInfo": "1.0.0-d920f79", "licenseDeclared": "MIT"},
-    {"SPDXID": "SPDXRef-Package-python", "name": "python", "versionInfo": "3.10.20", "licenseDeclared": "PSF-2.0"},
-    {"SPDXID": "SPDXRef-Package-torch", "name": "torch", "versionInfo": "2.9.1+cu128", "licenseDeclared": "BSD-3-Clause"},
-    {"SPDXID": "SPDXRef-Package-numpy", "name": "numpy", "versionInfo": "1.26.4", "licenseDeclared": "BSD-3-Clause"},
-    {"SPDXID": "SPDXRef-Package-tiktoken", "name": "tiktoken", "versionInfo": "see uv.lock", "licenseDeclared": "MIT"},
-    {"SPDXID": "SPDXRef-Package-pyarrow", "name": "pyarrow", "versionInfo": "see uv.lock", "licenseDeclared": "Apache-2.0"}
+    {
+      "SPDXID": "SPDXRef-Package-python",
+      "name": "python",
+      "versionInfo": "3.10.20",
+      "licenseDeclared": "PSF-2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-annotated-types",
+      "name": "annotated-types",
+      "versionInfo": "0.7.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-appnope",
+      "name": "appnope",
+      "versionInfo": "0.1.4",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-asttokens",
+      "name": "asttokens",
+      "versionInfo": "3.0.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-certifi",
+      "name": "certifi",
+      "versionInfo": "2025.8.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cffi",
+      "name": "cffi",
+      "versionInfo": "2.0.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-charset-normalizer",
+      "name": "charset-normalizer",
+      "versionInfo": "3.4.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-click",
+      "name": "click",
+      "versionInfo": "8.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-colorama",
+      "name": "colorama",
+      "versionInfo": "0.4.6",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-comm",
+      "name": "comm",
+      "versionInfo": "0.2.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-contourpy",
+      "name": "contourpy",
+      "versionInfo": "1.3.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-contourpy",
+      "name": "contourpy",
+      "versionInfo": "1.3.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cycler",
+      "name": "cycler",
+      "versionInfo": "0.12.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-debugpy",
+      "name": "debugpy",
+      "versionInfo": "1.8.19",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-decorator",
+      "name": "decorator",
+      "versionInfo": "5.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-exceptiongroup",
+      "name": "exceptiongroup",
+      "versionInfo": "1.3.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-executing",
+      "name": "executing",
+      "versionInfo": "2.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-filelock",
+      "name": "filelock",
+      "versionInfo": "3.19.1",
+      "licenseDeclared": "Unlicense"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-fonttools",
+      "name": "fonttools",
+      "versionInfo": "4.61.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-fsspec",
+      "name": "fsspec",
+      "versionInfo": "2025.3.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gitdb",
+      "name": "gitdb",
+      "versionInfo": "4.0.12",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-gitpython",
+      "name": "gitpython",
+      "versionInfo": "3.1.45",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-hf-xet",
+      "name": "hf-xet",
+      "versionInfo": "1.1.9",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-huggingface-hub",
+      "name": "huggingface-hub",
+      "versionInfo": "0.34.4",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-idna",
+      "name": "idna",
+      "versionInfo": "3.10",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-iniconfig",
+      "name": "iniconfig",
+      "versionInfo": "2.1.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ipykernel",
+      "name": "ipykernel",
+      "versionInfo": "7.1.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ipython",
+      "name": "ipython",
+      "versionInfo": "8.37.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ipython",
+      "name": "ipython",
+      "versionInfo": "9.8.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ipython-pygments-lexers",
+      "name": "ipython-pygments-lexers",
+      "versionInfo": "1.1.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jedi",
+      "name": "jedi",
+      "versionInfo": "0.19.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jinja2",
+      "name": "jinja2",
+      "versionInfo": "3.1.6",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jupyter-client",
+      "name": "jupyter-client",
+      "versionInfo": "8.7.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jupyter-core",
+      "name": "jupyter-core",
+      "versionInfo": "5.9.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-kernels",
+      "name": "kernels",
+      "versionInfo": "0.11.7",
+      "licenseDeclared": "Apache-2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-kiwisolver",
+      "name": "kiwisolver",
+      "versionInfo": "1.4.9",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-markupsafe",
+      "name": "markupsafe",
+      "versionInfo": "3.0.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-matplotlib",
+      "name": "matplotlib",
+      "versionInfo": "3.10.8",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-matplotlib-inline",
+      "name": "matplotlib-inline",
+      "versionInfo": "0.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-mpmath",
+      "name": "mpmath",
+      "versionInfo": "1.3.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nanochat",
+      "name": "nanochat",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nest-asyncio",
+      "name": "nest-asyncio",
+      "versionInfo": "1.6.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-networkx",
+      "name": "networkx",
+      "versionInfo": "3.4.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-networkx",
+      "name": "networkx",
+      "versionInfo": "3.5",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-numpy",
+      "name": "numpy",
+      "versionInfo": "1.26.4",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cublas-cu12",
+      "name": "nvidia-cublas-cu12",
+      "versionInfo": "12.8.4.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cuda-cupti-cu12",
+      "name": "nvidia-cuda-cupti-cu12",
+      "versionInfo": "12.8.90",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cuda-nvrtc-cu12",
+      "name": "nvidia-cuda-nvrtc-cu12",
+      "versionInfo": "12.8.93",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cuda-runtime-cu12",
+      "name": "nvidia-cuda-runtime-cu12",
+      "versionInfo": "12.8.90",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cudnn-cu12",
+      "name": "nvidia-cudnn-cu12",
+      "versionInfo": "9.10.2.21",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cufft-cu12",
+      "name": "nvidia-cufft-cu12",
+      "versionInfo": "11.3.3.83",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cufile-cu12",
+      "name": "nvidia-cufile-cu12",
+      "versionInfo": "1.13.1.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-curand-cu12",
+      "name": "nvidia-curand-cu12",
+      "versionInfo": "10.3.9.90",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cusolver-cu12",
+      "name": "nvidia-cusolver-cu12",
+      "versionInfo": "11.7.3.90",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cusparse-cu12",
+      "name": "nvidia-cusparse-cu12",
+      "versionInfo": "12.5.8.93",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-cusparselt-cu12",
+      "name": "nvidia-cusparselt-cu12",
+      "versionInfo": "0.7.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-nccl-cu12",
+      "name": "nvidia-nccl-cu12",
+      "versionInfo": "2.27.5",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-nvjitlink-cu12",
+      "name": "nvidia-nvjitlink-cu12",
+      "versionInfo": "12.8.93",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-nvshmem-cu12",
+      "name": "nvidia-nvshmem-cu12",
+      "versionInfo": "3.3.20",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-nvidia-nvtx-cu12",
+      "name": "nvidia-nvtx-cu12",
+      "versionInfo": "12.8.90",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-packaging",
+      "name": "packaging",
+      "versionInfo": "25.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-parso",
+      "name": "parso",
+      "versionInfo": "0.8.5",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pexpect",
+      "name": "pexpect",
+      "versionInfo": "4.9.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pillow",
+      "name": "pillow",
+      "versionInfo": "12.1.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-platformdirs",
+      "name": "platformdirs",
+      "versionInfo": "4.4.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pluggy",
+      "name": "pluggy",
+      "versionInfo": "1.6.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-prompt-toolkit",
+      "name": "prompt-toolkit",
+      "versionInfo": "3.0.52",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-protobuf",
+      "name": "protobuf",
+      "versionInfo": "6.32.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-psutil",
+      "name": "psutil",
+      "versionInfo": "7.1.0",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ptyprocess",
+      "name": "ptyprocess",
+      "versionInfo": "0.7.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pure-eval",
+      "name": "pure-eval",
+      "versionInfo": "0.2.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pyarrow",
+      "name": "pyarrow",
+      "versionInfo": "21.0.0",
+      "licenseDeclared": "Apache-2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pycparser",
+      "name": "pycparser",
+      "versionInfo": "2.23",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic",
+      "name": "pydantic",
+      "versionInfo": "2.11.7",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic-core",
+      "name": "pydantic-core",
+      "versionInfo": "2.33.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pygments",
+      "name": "pygments",
+      "versionInfo": "2.19.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pyparsing",
+      "name": "pyparsing",
+      "versionInfo": "3.3.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pytest",
+      "name": "pytest",
+      "versionInfo": "8.4.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-python-dateutil",
+      "name": "python-dateutil",
+      "versionInfo": "2.9.0.post0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-python-dotenv",
+      "name": "python-dotenv",
+      "versionInfo": "1.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pyyaml",
+      "name": "pyyaml",
+      "versionInfo": "6.0.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pyzmq",
+      "name": "pyzmq",
+      "versionInfo": "27.1.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-regex",
+      "name": "regex",
+      "versionInfo": "2025.9.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-requests",
+      "name": "requests",
+      "versionInfo": "2.32.5",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-rustbpe",
+      "name": "rustbpe",
+      "versionInfo": "0.1.0",
+      "licenseDeclared": "MIT"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sentry-sdk",
+      "name": "sentry-sdk",
+      "versionInfo": "2.35.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-setuptools",
+      "name": "setuptools",
+      "versionInfo": "80.9.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-six",
+      "name": "six",
+      "versionInfo": "1.17.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-smmap",
+      "name": "smmap",
+      "versionInfo": "5.0.2",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-stack-data",
+      "name": "stack-data",
+      "versionInfo": "0.6.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sympy",
+      "name": "sympy",
+      "versionInfo": "1.14.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tiktoken",
+      "name": "tiktoken",
+      "versionInfo": "0.11.0",
+      "licenseDeclared": "MIT"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tomli",
+      "name": "tomli",
+      "versionInfo": "2.2.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-torch",
+      "name": "torch",
+      "versionInfo": "2.9.1",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-torch",
+      "name": "torch",
+      "versionInfo": "2.9.1",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-torch",
+      "name": "torch",
+      "versionInfo": "2.9.1+cpu",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-torch",
+      "name": "torch",
+      "versionInfo": "2.9.1+cu128",
+      "licenseDeclared": "BSD-3-Clause"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tornado",
+      "name": "tornado",
+      "versionInfo": "6.5.4",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tqdm",
+      "name": "tqdm",
+      "versionInfo": "4.67.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-traitlets",
+      "name": "traitlets",
+      "versionInfo": "5.14.3",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-triton",
+      "name": "triton",
+      "versionInfo": "3.5.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-typing-extensions",
+      "name": "typing-extensions",
+      "versionInfo": "4.15.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-typing-inspection",
+      "name": "typing-inspection",
+      "versionInfo": "0.4.1",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-urllib3",
+      "name": "urllib3",
+      "versionInfo": "2.5.0",
+      "licenseDeclared": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-wandb",
+      "name": "wandb",
+      "versionInfo": "0.21.3",
+      "licenseDeclared": "MIT"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-wcwidth",
+      "name": "wcwidth",
+      "versionInfo": "0.2.14",
+      "licenseDeclared": "NOASSERTION"
+    }
   ],
-  "relationships": [
-    {"spdxElementId": "SPDXRef-Package-cwc", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Package-torch"},
-    {"spdxElementId": "SPDXRef-Package-cwc", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Package-numpy"}
-  ],
-  "note": "Full transitive closure with hashes: uv.lock (authoritative)."
+  "package_count": 106,
+  "note": "Full transitive closure with content hashes lives in uv.lock (authoritative)."
 }
