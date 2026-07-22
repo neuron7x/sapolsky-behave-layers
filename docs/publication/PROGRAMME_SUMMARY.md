@@ -52,32 +52,69 @@ controller, an information-bounded value, and rate-function saturation all trans
 
 ## 5. The honest boundary and the frozen negatives
 
-- **WP6** — the clean identifiability does **not** transfer to real language-model per-token
-  difficulty (`G_lo=−0.09`; positive control `+0.62`). The sharp interaction is a property of the
-  synthetic benchmarks.
-- Seven `NOT_SUPPORTED` claims (L2c, L3, L4c, L4d, L4e, fractal, RD1) — the `(σ/Δ)²` law fails, the
-  collapse is drift-limited, RCFR ties prior art, real-data identifiability is absent. The negatives
-  are what make the positives credible.
+The real-data axis was tested **three independent times**, each stronger than the last, and it is
+now the boundary that governs the whole programme:
+
+| WP | design | result |
+|---|---|---|
+| **WP6** | unigram difficulty, 66 KB prose | `G_lo = −0.09` (control `+0.62`) — not identifiable |
+| **WP14** | bigram difficulty, same corpus | not identifiable — robust to the difficulty signal |
+| **WP18** | **2 task families** (prose + Python), 1.07 MB, hash-split with 5 held-out eval shards each, 2 scales × 2 sequence lengths, 24 models | `G_lo = −0.200 / −0.171` vs **measured** `c_route = 0.0006` → **kill rule fired** |
+| **WP19** | same workloads on an **untied-depth** compute axis, 18 models | `G_lo = −0.484 / −0.234` — decision **reinforced**, but the *explanation* falsified (below) |
+
+**The kill rule of the ascension act fired at WP18: architecture work stops.** Not because of cloud
+cost, but because at reachable scale no real workload shows a compute-allocation gap that exceeds
+the *physically measured* cost of making the routing decision (WP17).
+
+**WP19 is the part worth reading.** It attacked this programme-halting negative and **falsified the
+author's own explanation of it**. WP18 had claimed "there is no context × resource interaction on
+real data — every difficulty bucket wants the same compute". On an untied-depth axis that is
+**false**: on real prose, easy tokens are best served by depth 2 and harder tokens by depth 3. A
+genuine interaction exists. What survived is the *decision*, on both axes and both workloads:
+
+> The defensible statement is **not** "there is no interaction on real data" — that is false —
+> but **"the interaction is worth less than the decision costs."**
+
+- Ten `NOT_SUPPORTED` claims (L2c, L3, L4c, L4d, L4e, fractal, RD1, RD2, RD3, RIGOR10) — the
+  `(σ/Δ)²` law fails, the collapse is drift-limited, RCFR ties prior art, real-data identifiability
+  is absent on two signals and two task families, and the Act's timing-metrology spec is not
+  reachable on the available hardware. The negatives are what make the positives credible.
 
 ## 6. Ledger
 
-35 claims / 35 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
-`verify` GREEN, on GitLab. ≈18 `SUPPORTED`, 4 `SUPPORTED_NARROWED`, 7 `NOT_SUPPORTED`, 2 `NOT_TESTED`
-(L7 cloud, L8 replication).
+42 claims / 42 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
+`verify-full` GREEN, on GitLab. 25 `SUPPORTED`, 5 `SUPPORTED_NARROWED`, 10 `NOT_SUPPORTED`,
+2 `NOT_TESTED` (L7 cloud, L8 replication). Preregistration integrity is machine-audited: 18
+strict-ancestor, 5 disclosed-retrospective, **0 violations**.
 
 ## 7. Reproducibility capsule
 
 ```bash
-uv sync --frozen
-make -f Makefile.cwc verify            # lint+types+tests+coverage+mutation+experiment-tests+gates
-make -f Makefile.cwc verify-evidence   # checksum every evidence bundle
+uv sync --frozen                        # fresh env from the pinned lock
+make -f Makefile.cwc verify-full        # gates + evidence checksums + primary reproduced
 ```
-Every analysis is deterministic given committed raw seeds; every utility is frozen and checksummed;
-every verdict reproduces. A third party can replicate via
-`docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md`.
+`verify-full` is the single canonical command (WP16). It was executed in a **clean-room venv built
+from `uv.lock --frozen`, independent of the author's environment**: 9/9 gates pass and
+`reproduce-primary` regenerates the primary verdict from scratch. Machine-readable record with
+host/GPU/CUDA/timings and skip **reason codes**: `artifacts/wp16-cleanroom-release/`. Hardware-gated
+tests are recorded `NOT_MEASURED`, never `PASS`. Every analysis is deterministic given committed raw
+seeds; every utility is frozen and checksummed.
 
-## 8. The one decisive next step
+## 8. The decisive next step — and why it is *not* L7 any more
 
-**L7** — compute-equivalent Pareto of the identified mechanisms vs MoD/MoE on ≥2 real workloads at
-cloud scale, then independent replication (L8). Everything here is the strongest locally-provable
-case and decision instrument *for* L7 — WP6 shows it does not come free — but it is not L7.
+Until WP18 the answer was "spend on L7". **It no longer is.** The ascension act's own pilot
+instrument was built precisely to decide whether to spend cloud budget, and its verdict is
+**do not spend yet**: on two real task families, two compute axes, two model scales and two
+sequence lengths, the certified gap never exceeds the measured route-decision cost.
+
+L7 (compute-equivalent Pareto vs MoD/MoE at scale) and L8 (independent replication) remain
+`NOT_TESTED`. They are now gated behind a **prior** question, which is the honest next step:
+
+> **Find a real workload whose context × resource interaction is large enough to pay for its own
+> routing decision.** Everything downstream — strong baselines, causal controller, sparse
+> execution, the Pareto trial — is unfalsifiable ceremony until such a workload exists.
+
+Candidate directions (none attempted here, all beyond a 4 GB consumer GPU): tasks with genuinely
+heterogeneous per-instance difficulty (multi-step reasoning, retrieval-conditioned generation,
+mixed-modality batches) rather than per-token byte prediction, where the compute demand of an
+instance varies by orders of magnitude rather than by ~0.001 nats.

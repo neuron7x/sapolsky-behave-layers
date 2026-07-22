@@ -45,13 +45,16 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 | AC2 learned compute-controller | reward-only controller recovers K=d | **SUPPORTED** — held-out worst-of-8 recovery 1.000, NULL 0.000, random<best_fixed. Compute-axis analog of L4a; closes AC1→AC2 (identifiability→learned controller) on the 2nd mechanism | `artifacts/wp5-adaptive-compute-controller/` |
 | AC3 inferred-difficulty boundary | compute value bounded by I(C;Z) | **SUPPORTED** — noisy-difficulty sweep: recovery 1.0→0.0 monotone across I(C;Z) 1.585→0, vanishes at I=0, controller abstains. Master inequality quantitative on compute (compute analog of L4b) | `artifacts/wp5-adaptive-compute-inferred/` |
 | AC4 compute rate-bridge | controller realises V*(R) | **SUPPORTED** — V_gov ≤ V*(I) everywhere, high-info saturation 0.971 (≥0.90 for I≥1 bit); low-info 0.326 documented (committed≠RI, widens with contexts). Closes AC1→AC2→AC3→AC4 = twin of L4→L4a→L4b→L4i | `artifacts/wp5-adaptive-compute-ratebridge/` |
-| RD1 real-LM boundary (real data) | synthetic identifiability transfers to real LM | **NOT_SUPPORTED** — FROZEN NEGATIVE: on real byte-level prose, per-token compute allocation G_lo=−0.090 (gap ~0) while the synthetic positive control G_lo=+0.621. More compute helps all difficulty buckets ~uniformly; the sharp interaction is a synthetic-benchmark property, not real LM. Maps the framework edge; real-data-at-scale = L7 | `artifacts/wp6-real-lm/` |
+| RD1 real-LM boundary (real data) | synthetic identifiability transfers to real LM | **NOT_SUPPORTED** — FROZEN NEGATIVE: on real byte-level prose, per-token compute allocation G_lo=−0.090 (gap ~0) while the synthetic positive control G_lo=+0.621. Maps the framework edge. *(The original "more compute helps all buckets uniformly" reading was later NARROWED by WP19 — that was a property of the weight-tied axis, not of the data.)* | `artifacts/wp6-real-lm/` |
 | RIGOR1 certificate proof-gap closed | corrected bound valid + positives survive | **SUPPORTED** — proof-complete `b+2d` bound: Monte-Carlo FPR 0.000≤δ on 5 null families; every identifiability positive survives (L4 0.111→0.060, AC1 0.621→0.620). Closes the audit-flagged Proof caveat. Expert-class validity by construction | `artifacts/wp7-certificate-hardening/` |
 | RIGOR2 family-wise error controlled | positives survive multiplicity correction | **SUPPORTED** — Bonferroni (family + ultra-conservative all-29) + Holm on top of the proof-complete bound: L4 G_lo +0.053/+0.029, AC1 +0.619, all survive. Family-wise FPR over SUPPORTED certificate positives ≤0.05. Closes the multiplicity critique | `artifacts/wp8-family-wise-error/` |
+| RD3 real-workload pilot (2 task families) | a certifiable gap exceeds the MEASURED route cost on real workloads | **NOT_SUPPORTED** — ⛔ **KILL RULE FIRED**: prose G_lo −0.200, code −0.171 vs measured c_route 0.0006 (WP17); positive control +0.6195 certifies in the same run. 24 models, 2 families × 2 scales × 2 seq-lengths, 5 held-out eval shards each, contamination clean. **Architecture work stops by evidence, not budget** | `artifacts/wp18-real-workload-pilot/` |
+| RD4 negative robustness (2nd compute axis) | the WP18 negative is robust across compute axes | **SUPPORTED_NARROWED** — untied-depth axis (18 independently trained models): the DECISION holds and strengthens (G_lo −0.484 / −0.234) but WP18's *explanation* is **falsified** — on real prose easy tokens prefer depth 2, harder tokens depth 3, so a genuine context×resource interaction DOES exist. Defensible claim: *the interaction is worth less than the decision costs* | `artifacts/wp19-negative-robustness/` |
+| RIGOR10 timing metrology | Act G2 overhead p95 ≤2% and latency CV ≤3% are reachable | **NOT_SUPPORTED** — FROZEN NEGATIVE on this hardware: p95 4.87%/2.25%, CV up to 5.40%; median overhead 0.70% does pass. The gate flips between repeats, so the instrument requires pass-in-ALL. Hardware boundary, like energy | `artifacts/wp17-metrology/` |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
 | L6 joint-control advantage | joint > best isolated mechanism | **NOT_TESTED** | blocked |
-| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | **the decisive next step (cloud)** |
-| L8 independent replication | third party reproduces | **NOT_TESTED** | not self-certifiable |
+| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | cloud-blocked **and now evidence-blocked** — see `docs/publication/ASCENSION_ACT_STATUS.md` |
+| L8 independent replication | third party reproduces | **NOT_TESTED** | not self-certifiable (a clean-room venv is not a different operator) |
 
 Multiscale/fractal emergence: **NOT_SUPPORTED** (`artifacts/history/fractal/`,
 INSUFFICIENT_EVIDENCE at the null gate).
@@ -76,7 +79,7 @@ exhibits the phase transition (at a high info price the critical problem routes,
 one abstains). This is a learning system **realising a KNOWN analytic fixed point** (a
 fit-to-optimum convergence), NOT an independent empirical prediction; it closes the theory→
 learning-system loop at runnable scale but is **not** in `claim_registry.json` and is **not**
-the L7 Pareto (still cloud-blocked).
+the L7 Pareto (still cloud-blocked, and since WP18 also evidence-blocked).
 
 **⭐ Information-market theory — one coherent synthesis** (`docs/INFORMATION_MARKET_SYNTHESIS.md`):
 the map that ties the whole theory line into ONE object — the value-of-information rate
