@@ -1,0 +1,49 @@
+{
+  "experiment": "wp19_negative_robustness",
+  "verdict": "NEGATIVE_IS_MECHANISM_SPECIFIC",
+  "tier": "NEGATIVE-ROBUSTNESS -- untied-depth compute axis on the WP18 real workloads",
+  "class_ceiling": "can only confirm or NARROW an existing negative; cannot create a positive",
+  "compute_axis": "untied depth L in {1,2,3}, independent blocks, one model per depth",
+  "workloads": {
+    "prose": {
+      "n_replicate_matrices": 15,
+      "g_lo_by_lambda": {
+        "0.0": -0.48409813353371955,
+        "0.3": -0.4864016941085687
+      },
+      "best_g_lo": -0.48409813353371955,
+      "c_route": 0.0006,
+      "certifies": false,
+      "modal_best_depth_per_bucket": {
+        "easy": 2,
+        "med": 3,
+        "hard": 3
+      },
+      "single_best_depth_for_all_buckets": false
+    },
+    "code": {
+      "n_replicate_matrices": 15,
+      "g_lo_by_lambda": {
+        "0.0": -0.23379867007482286,
+        "0.3": -0.2318395985180956
+      },
+      "best_g_lo": -0.2318395985180956,
+      "c_route": 0.0006,
+      "certifies": false,
+      "modal_best_depth_per_bucket": {
+        "easy": 3,
+        "med": 3,
+        "hard": 3
+      },
+      "single_best_depth_for_all_buckets": true
+    }
+  },
+  "positive_control_synthetic_ac1_g_lo": 0.6195495381326336,
+  "implication": "WP18's CWC-RD3 must be NARROWED to the weight-tied compute axis.",
+  "prohibited_extrapolations": [
+    "any architecture claim",
+    "L7",
+    "adaptive compute never helps real LMs",
+    "the boundary at large pretrained scale"
+  ]
+}
