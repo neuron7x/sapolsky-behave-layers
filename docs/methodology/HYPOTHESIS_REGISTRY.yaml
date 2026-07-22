@@ -448,3 +448,39 @@ hypotheses:
     preregistration: experiments/wp15_compute_pareto/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-L7s-synthetic-pareto
+
+  - hypothesis_id: H-RIGOR8
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The analytical FLOP ledger disagrees with a profiler measurement of the same forward by >1%."
+    H1: "Ledger and profiler agree within 1% at every operating point (like-for-like)."
+    estimand: "relative error |analytic_linear - aten::mm| / aten::mm at K=1,2,3"
+    experimental_unit: "operating point (K)"
+    decision_rule: "reject H0 iff error <=1% at every K. RESULT 0.0000% at all K -> SUPPORTED. Disclosed boundary: torch.profiler with_flops does not attribute FLOPs to SDPA on CPU (5.60-5.85% of the forward), so that term is analytic-only."
+    preregistration: experiments/wp17_metrology/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR8-flop-metrology
+
+  - hypothesis_id: H-RIGOR9
+    research_question_id: RQ-adaptive-compute
+    type: confirmatory
+    H0: "Charging the physically measured route-decision cost removes the synthetic compute-Pareto advantage."
+    H1: "The advantage survives at matched TOTAL compute (model + controller)."
+    estimand: "adaptive accuracy - fixed-frontier accuracy at matched total compute"
+    experimental_unit: "policy"
+    decision_rule: "frozen BEFORE measurement: >0.05 survives, <=0 killed, in between narrowed; outside the measured fixed-K frontier the comparison is NOT_IDENTIFIED. RESULT rho=0.0006, advantage +0.6249 at total compute 2.001 -> SUPPORTED (survives)."
+    preregistration: experiments/wp17_metrology/PREREGISTRATION.md
+    status: SUPPORTED
+    claim_id: CWC-RIGOR9-route-cost-charged
+
+  - hypothesis_id: H-RIGOR10
+    research_question_id: RQ-rigor
+    type: confirmatory
+    H0: "The Act G2 timing gates (overhead p95 <=2%, latency CV <=3%) are not achievable on the available hardware."
+    H1: "They are achievable."
+    estimand: "overhead p95 and latency CV over alternating OFF/COUNTERS windows, 3 repeats"
+    experimental_unit: "measurement window"
+    decision_rule: "reject H0 iff BOTH gates hold in EVERY repeat (a single passing run is not evidence). RESULT p95 4.87%/2.25%, CV up to 5.40% -> H0 NOT rejected -> NOT_SUPPORTED, frozen as a hardware boundary."
+    preregistration: experiments/wp17_metrology/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RIGOR10-timing-metrology

@@ -1,45 +1,1110 @@
 {
-  "schema": "cwc-claim-registry/1.1",
-  "schema_file": "schemas/claim.schema.json",
-  "git_commit": "2a170c48fcebb2d50f8756b309bca47cf544e373",
-  "generated": "2026-07-21",
-  "claims": [
-    {"claim_id":"CWC-L0-measurement","hypothesis_id":"H-L0","statement":"The instrumentation records deterministic, internally-validated resource measurements.","status":"SUPPORTED","scope":{"tasks":["synthetic"],"hardware":["RTX3050"]},"required_artifacts":["artifacts/wp1-release/"],"supporting_metrics":["209 tests (wp1-release scoped suite)","99.46% branch cov","12/12 mutation"],"limitations":["energy INSTRUMENT_INVALID","overhead qualified only at depth-12 scale"],"prohibited_extrapolations":["energy efficiency"],"independent_replication":false},
-    {"claim_id":"CWC-L1-identifiability","hypothesis_id":"H-L1","statement":"A benchmark with a real adaptive-compute advantage exists (oracle beats best-fixed).","status":"SUPPORTED","required_artifacts":["artifacts/wp2-routing-v2/"],"supporting_metrics":["oracle gap 99.8%"],"limitations":["synthetic","surface-leaky (see surface_audit)"],"independent_replication":false},
-    {"claim_id":"CWC-L2-routing-causality","hypothesis_id":"H-L2","statement":"A learned controller routes causally and beats random/frozen/shuffled controls.","status":"SUPPORTED_NARROWED","scope":{"regime":["counterfactual value distillation","synthetic mechanism-separable benchmark","no physical compute saving"]},"required_artifacts":["artifacts/wp2-routing-v2/","artifacts/wp2-routing-v2/claim_boundary.json"],"supporting_metrics":["bal_acc 1.0","AUROC 1.0","8 seeds"],"failed_controls":["end-to-end straight-through R3-C collapses (artifacts/wp2-routing-v3-r3c/)"],"limitations":["target privileged during controller training","test capacity label-derived","surface cues present"],"prohibited_extrapolations":["autonomous adaptive routing","general adaptive intelligence"],"independent_replication":false},
-    {"claim_id":"CWC-L2a-e2e-reinforce","hypothesis_id":"H-L2a","statement":"End-to-end routing (no privileged target, label-free capacity, no distillation) is learnable via REINFORCE under a binding budget.","status":"SUPPORTED","scope":{"regime":["binding budget lambda>=1","surface cues still present"]},"required_artifacts":["artifacts/wp2-routing-v3-r3c-reinforce/"],"supporting_metrics":["learned 0.009 vs random 0.48","AUROC 1.0","8 seeds"],"limitations":["surface cues present (route may ride surface signal)","synthetic","no physical Pareto claim"],"prohibited_extrapolations":["surface-independent structural routing","real-workload routing"],"independent_replication":false},
-    {"claim_id":"CWC-L2b-route-decision-cost","hypothesis_id":"H-L2b","statement":"When difficulty is a deep structural property (surface-matched), the route decision costs ~the expensive computation; cheap routing saves nothing.","status":"SUPPORTED","required_artifacts":["artifacts/wp2-routing-v3-surface-matched/"],"supporting_metrics":["cheap+attn controllers AUROC ~0.51","chance even under direct supervision","8 seeds x 4 arms"],"note":"verdict ROUTE_DECISION_IS_THE_COMPUTATION; extends theory: V_realized = oracle_gap - route_decision_cost","independent_replication":false},
-    {"claim_id":"CWC-L2p-jensen-gap","hypothesis_id":"H-L2p","statement":"On the synthetic substrate and conditional on a free exact halt oracle, halt-conditioned allocation beats input-blind allocation at an identical frozen operator-hop budget.","status":"SUPPORTED_NARROWED","required_artifacts":["artifacts/wp4-adaptive-depth/","docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md","artifacts/wp4-exact-compute-v31/"],"supporting_metrics":["16 untouched seeds","4 development + 3 held-out distributions","exact integer operator-hop equality","worst-seed paired difference >0.25"],"limitations":["free exact halt oracle","halt evaluations excluded from primary compute ledger","synthetic","internal Git ordering only","no learned controller"],"prohibited_extrapolations":["end-to-end compute-equivalent Pareto advantage","latency or energy advantage","learned allocator","empirical novelty","real-workload generalization","external preregistration or independent replication"],"independent_replication":false},
-    {"claim_id":"CWC-L2c-e2e-straightthrough","hypothesis_id":"H-L2c","statement":"End-to-end task-loss routing via straight-through top-K (no oracle leak) is causal.","status":"NOT_SUPPORTED","required_artifacts":["artifacts/wp2-routing-v3-r3c/"],"supporting_metrics":["learned 0.91 > random 0.48, bal_acc ~0, 8 seeds"],"note":"credit-assignment collapse; superseded by CWC-L2a which shows REINFORCE recovers it -> the collapse was an estimator artifact","independent_replication":false},
-    {"claim_id":"CWC-L2q-paid-halt-lookup","hypothesis_id":"H-L2q","statement":"On the exact synthetic substrate, adaptive active-set allocation beats input-blind allocation when every successor observation, including terminal halt detection, is charged to the same frozen logical-lookup budget.","status":"SUPPORTED_NARROWED","required_artifacts":["artifacts/wp4-end-to-end-v4/"],"supporting_metrics":["16 untouched seeds","4 development + 3 held-out distributions","mean paired solved lift 0.042 to 0.169","positive worst-seed effect in every cell"],"limitations":["exact synthetic halt signal","logical lookup cost only","controller arithmetic and memory traffic unpriced","internal Git ordering only","no learned controller"],"prohibited_extrapolations":["physical FLOP latency or energy Pareto advantage","learned allocator","real-workload generalization","external preregistration or independent replication"],"independent_replication":false},
-    {"claim_id":"CWC-L3-rcfr","hypothesis_id":"H-L3","statement":"Role-conditioned functional reuse is a novel mechanism.","status":"NOT_SUPPORTED","required_artifacts":["artifacts/wp3-rcfr/"],"note":"works but ties DISeL-with-role (prior art)","independent_replication":false},
-    {"claim_id":"CWC-L4-plasticity","hypothesis_id":"H-L4","statement":"Under a hard parameter-cost budget, a context-conditioned plasticity allocation beats every fixed allocation (the metaplasticity oracle gap is real).","status":"SUPPORTED_NARROWED","scope":{"regime":["synthetic toy GroupedModel","given-context c_route=0 (task identity observed)","wide reward margins","learned reward-only governor recovers it out-of-sample"]},"required_artifacts":["artifacts/wp3-plasticity-v3-governor/","artifacts/wp3-plasticity-v2-confirmatory/","artifacts/wp3-plasticity-v1/","artifacts/act-j-pilot-decision/","docs/IDENTIFIABILITY_THEORY.md"],"supporting_metrics":["G_lo 0.111 > 0 at delta=0.05","effect in 16/16 held-out seeds","worst-seed gap 0.190","lambda frozen a priori","learned governor recovery 1.00 on held-out (8/8 controller seeds)"],"limitations":["synthetic benchmark","given-context (task identity observed, c_route=0)","wide reward margins (success expected)","unbudgeted gap ~0 (needs the binding budget)"],"prohibited_extrapolations":["inferred-context or surface-independent routing","L7 compute-equivalent Pareto","energy or latency advantage","real-workload generalization","independent replication"],"note":"Unbudgeted oracle gap ~0 (NOT_IDENTIFIABLE). EXPLORATORY revival at lambda~1 (seeds 0-4, post-hoc lambda) -> identifiability PILOT GO (artifacts/act-j-pilot-decision/) -> CONFIRMATORY run on 16 fresh held-out seeds with lambda frozen a priori: G_lo=0.111>0 at delta=0.05, present in every seed, controls pass (artifacts/wp3-plasticity-v2-confirmatory/). Confirms the ORACLE gap out-of-sample. L4a (artifacts/wp3-plasticity-v3-governor/): a reward-only REINFORCE governor recovers 100% of the gap on held-out seeds (8/8 controller inits), NULL falsifier at 0 -> the 'no learned governor' limitation is DISCHARGED in this given-context wide-margin regime. Still synthetic; does NOT touch L7.","independent_replication":false},
-    {"claim_id":"CWC-L4b-inferred-context","hypothesis_id":"H-L4b","statement":"Under inferred (noisy) context, the learned plasticity governor's realised value is bounded by I(C;Z): it tracks the master inequality's information discount and vanishes when the context cannot be cheaply inferred.","status":"SUPPORTED","scope":{"regime":["synthetic","noisy-observation route cost","reward-only REINFORCE governor"]},"required_artifacts":["artifacts/wp3-plasticity-v4-inferred/"],"supporting_metrics":["recovery tracks 1-2.146p to +/-0.001 for p<=0.3","monotone in I(C;Z)","recovery(I=0)=-0.018<=0.10","abstains 8/8 at zero information"],"limitations":["synthetic","given noisy label (not real features)","wide underlying margins"],"prohibited_extrapolations":["real-workload routing","L7 compute-equivalent Pareto","energy or latency advantage","independent replication"],"note":"plasticity analog of L2b (route-decision cost); instantiates V_realized <= oracle_gap - c_route and rational-inattention abstention at boundary p*~0.466","independent_replication":false},
-    {"claim_id":"CWC-L4c-credit-collapse","hypothesis_id":"H-L4c","statement":"The learned governor's credit-assignment collapse margin is governed by the (sigma/Delta)^2 sample-complexity law (Delta* scales linearly with reward noise).","status":"NOT_SUPPORTED","scope":{"regime":["synthetic-parametric","REINFORCE governor","fixed episode budget"]},"required_artifacts":["artifacts/wp3-plasticity-v5-thinmargin/"],"supporting_metrics":["collapse exists (recovery 1.0->~0.3 as Delta->0.02)","Delta*(2sigma)/Delta*(sigma)=0.91 (predicted ~2.0)","more noise gave better recovery at Delta=0.05"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"FROZEN FALSIFICATION: a collapse is real but its noise-scaling is refuted -- REINFORCE advantage (r-baseline) scales with sigma, so step size grows with noise and cancels distinguishability. Possibly underpowered (8 seeds, 5-pt grid); NOT re-run to flip. Does not change L4/L4a/L4b.","independent_replication":false},
-    {"claim_id":"CWC-L4d-budget-scaling","hypothesis_id":"H-L4d","statement":"The learned governor's credit-assignment collapse margin follows the (sigma/Delta)^2 sample-complexity law in the episode budget (Delta* ~ 1/sqrt(N)) and in noise.","status":"NOT_SUPPORTED","scope":{"regime":["synthetic-parametric","REINFORCE governor","24 controller seeds"]},"required_artifacts":["artifacts/wp3-plasticity-v6-scaling/"],"supporting_metrics":["Delta* monotone 0.0567->0.0140 over N=1500->12000","budget ratio 0.247 < law 0.354 (Delta* ~ N^-0.68)","noise ratio 0.500 < 1 (noise helps)"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"Higher-power revisit of L4c. Budget-scaling is DIRECTIONALLY real (monotone power law) but STEEPER than 1/sqrt(N) -> misses a-priori band [0.25,0.55] on the low side; noise axis robustly ANTI-scales (more noise -> smaller margin, exploration). The (sigma/Delta)^2 law governs NEITHER axis. Instrument-range grid amendment disclosed in prereg. Does not change L4/L4a/L4b/L4c.","independent_replication":false},
-    {"claim_id":"CWC-L4e-mechanism","hypothesis_id":"H-L4e","statement":"The governor's collapse-margin budget scaling is a pure 2-arm logit-dynamics phenomenon (a 2-arm ablation reproduces both the exponent and the noise sign).","status":"NOT_SUPPORTED","scope":{"regime":["synthetic-parametric","2-arm ablation","24 controller seeds"]},"required_artifacts":["artifacts/wp3-plasticity-v7-mechanism/"],"supporting_metrics":["2-arm exponent -1.117 (near drift limit) vs full -0.654","exponent mismatch 0.46 > 0.15","noise ratio 0.364<1 reproduced"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"PARTIAL explanation: noise-as-exploration IS a 2-arm effect (ratio<1 reproduced), but the budget exponent is NOT pure 2-arm -- the 2-arm limit is drift-limited (-1.12, confirming dg/dt~LR*Delta*pi(1-pi)) while the full 4-arm governor is -0.654; dead-arm suppression injects diffusion. Hypothesis 'collapse is 2-arm' falsified; truer picture = drift-limited-2-arm + 4-arm dilution. Grid amendment disclosed. Does not change L4/L4a/L4b/L4c/L4d.","independent_replication":false},
-    {"claim_id":"CWC-L4f-arm-scaling","hypothesis_id":"H-L4f","statement":"The governor's collapse-margin budget exponent shallows monotonically as the number of arms grows (dead arms inject diffusion).","status":"SUPPORTED","scope":{"regime":["synthetic-parametric","REINFORCE governor","arm sweep K in {2,3,4,6,8}"]},"required_artifacts":["artifacts/wp3-plasticity-v8-armscaling/"],"supporting_metrics":["exponent -1.026/-0.637/-0.459/-0.451/-0.094 for K=2/3/4/6/8","monotone shallowing","exp(8)-exp(2)=0.93"],"limitations":["asymptote overshoots -0.5 toward 0 (dead arms progressively kill budget-scaling, not just diffusion)","exact exponents grid-sensitive; monotone direction robust","synthetic-parametric"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"Closes L4e: the collapse exponent depends monotonically on arm count. Mechanistic chain: 2-arm REINFORCE is drift-limited (N^-1); adding dead arms dilutes b-vs-r mass and shallows the exponent past diffusion. Explains why the (sigma/Delta)^2 law (L4c/L4d) fails at K>=3.","independent_replication":false},
-    {"claim_id":"CWC-L4g-cost-robust","hypothesis_id":"H-L4g","statement":"The L4 cost-budget oracle gap and governor recovery are robust to the cost model (survive monotone cost transforms).","status":"SUPPORTED","scope":{"regime":["synthetic","cost transforms linear/sqrt/log/square","lambda=1"]},"required_artifacts":["artifacts/wp3-plasticity-v9-costrobust/"],"supporting_metrics":["G_lo>0 for all 4 transforms (0.111/0.101/0.035/0.043)","governor recovery 1.0 each"],"limitations":["gap magnitude is cost-shape dependent (log compresses to 0.035)","synthetic"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"Validity check: monotone transforms preserve the cost ORDERING (head<attn<mlp) that makes the interaction real, so identifiability survives; magnitude varies. Strengthens L4.","independent_replication":false},
-    {"claim_id":"CWC-L4h-context-scaling","hypothesis_id":"H-L4h","statement":"Identifiability and governor recovery generalize to more contexts at constant per-context budget (contexts do not interfere).","status":"SUPPORTED","scope":{"regime":["synthetic-parametric","|C| in {2,3,4,6}","constant per-context budget"]},"required_artifacts":["artifacts/wp3-plasticity-v10-contexts/"],"supporting_metrics":["G_lo 0.084/0.385/0.535/0.685 (grows with |C|)","governor recovery >=0.952 all |C|"],"limitations":["synthetic-parametric","recovery dips slightly at |C|=6 (0.952)","matched per-context budget (no dilution tested here)"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"G_lo GROWS with contexts (more valuable conditioning + tighter sqrt|C|); governor holds at matched per-context budget. Generalizes the 2-context L4/L4a result.","independent_replication":false},
-    {"claim_id":"CWC-L4i-rate-bridge","hypothesis_id":"H-L4i","statement":"The learned plasticity governor realises the master value-of-information rate function V*(R): its realised value stays under V*(I) and nearly saturates it.","status":"SUPPORTED","scope":{"regime":["synthetic","committed greedy governor","V* on the plasticity utility"]},"required_artifacts":["artifacts/wp3-plasticity-v11-ratebridge/"],"supporting_metrics":["V_gov<=V*(I) at every info level (ceiling holds)","saturation >=0.924 (>=0.98 at high info)"],"limitations":["synthetic utility","committed greedy governor (slightly below RI optimum at intermediate info)"],"prohibited_extrapolations":["real-workload behavior","L7 compute-equivalent Pareto"],"note":"Plasticity analog of act_j_pilot TRAINED_CONTROLLER_REALISES_V_STAR: the converse rate-function ceiling is non-vacuous on a real learned mechanism. Ties the L4 sub-line to the information-market synthesis.","independent_replication":false},
-    {"claim_id":"CWC-L4j-line-consistency","hypothesis_id":"H-L4j","statement":"The L4 sub-line is internally consistent: every claim's registry status matches its artifact verdict polarity and no evidence is orphaned.","status":"SUPPORTED","scope":{"regime":["governance","registry<->artifact cross-check"]},"required_artifacts":["artifacts/wp3-plasticity-v12-consistency/"],"supporting_metrics":["0 polarity mismatches","0 orphan evidence bundles","9+ L4 claims checked"],"prohibited_extrapolations":["scientific capability"],"note":"Governance check the existing gates miss (status<->verdict agreement). Can fail on drift.","independent_replication":false},
-    {"claim_id":"CWC-L4k-falsification-boundary","hypothesis_id":"H-L4k","statement":"The L4 line survives its most decisive falsification nulls: the cost-budget gap appears only with a real context x arm interaction and vanishes when the interaction is destroyed.","status":"SUPPORTED","scope":{"regime":["synthetic","additive/collapsed/aligned-best nulls"]},"required_artifacts":["artifacts/wp3-plasticity-v13-killtest/"],"supporting_metrics":["real G_lo=0.111 recovery 1.0","all three nulls G_lo<=0 recovery 0"],"limitations":["synthetic","surviving nulls is necessary not sufficient for external validity"],"prohibited_extrapolations":["real-workload validity","L7 compute-equivalent Pareto"],"note":"Harness caught a mis-specified null (arm_shuffle preserved interaction) -> disclosed amendment to aligned_best. Foundation check: the gap is a real interaction, not a structural artifact.","independent_replication":false},
-    {"claim_id":"CWC-fractal","hypothesis_id":"H-fractal","statement":"Emergent multiscale/fractal organization.","status":"NOT_SUPPORTED","required_artifacts":["artifacts/history/fractal/"],"note":"INSUFFICIENT_EVIDENCE at the null gate (archival)","independent_replication":false},
-    {"claim_id":"CWC-L7-pareto","hypothesis_id":"H-L7","statement":"Compute-equivalent Pareto advantage vs MoD/MoE on real workloads.","status":"NOT_TESTED","note":"the decisive next step; requires cloud scale + strong baselines","independent_replication":false},
-    {"claim_id":"CWC-L8-replication","hypothesis_id":"H-L8","statement":"Independent clean-room reproduction confirms the primary result.","status":"NOT_TESTED","note":"not self-certifiable","independent_replication":false},
-    {"claim_id":"CWC-AC1-compute-identifiability","hypothesis_id":"H-AC1","statement":"Adaptive-compute allocation is identifiable on a second real mechanism: an oracle compute-budget allocation beats any fixed compute, and the identifiability framework transfers off parameter-plasticity.","status":"SUPPORTED","scope":{"regime":["synthetic shift task","real trained recurrent model","compute = block iterations"]},"required_artifacts":["artifacts/wp5-adaptive-compute-identifiability/"],"supporting_metrics":["diagonal acc[d][d]>=0.998, off-diag<=0.068 (8 seeds)","real G_lo 0.621/0.455/0.289 at lambda 0/0.5/1.0","monotone+additive nulls vanish at lambda=0"],"limitations":["synthetic shift task","oracle allocation (no learned compute-controller yet)","given difficulty context"],"prohibited_extrapolations":["learned compute-controller","real-workload","L7 compute-equivalent Pareto","independent replication"],"note":"Second mechanism (adaptive COMPUTE, the L7-relevant axis). Two identifiability sources: overshoot (more compute hurts, lambda=0) + budget (lambda>0); plasticity had only budget. Framework is not plasticity-specific.","independent_replication":false},
-    {"claim_id":"CWC-AC2-compute-controller","hypothesis_id":"H-AC2","statement":"A reward-only learned controller recovers the oracle adaptive-compute allocation (K=d) out-of-sample.","status":"SUPPORTED","scope":{"regime":["synthetic","reward-only REINFORCE","given difficulty","lambda=0.5"]},"required_artifacts":["artifacts/wp5-adaptive-compute-controller/"],"supporting_metrics":["worst-of-8 held-out recovery 1.000","NULL falsifier 0.000","random 0.041 < best_fixed 0.208"],"limitations":["synthetic","given-difficulty (controller sees d)","no inferred-difficulty routing yet"],"prohibited_extrapolations":["inferred-difficulty routing","real-workload","L7 compute-equivalent Pareto","independent replication"],"note":"Compute-axis analog of L4a plasticity governor. Closes identifiability(AC1)->learned-controller(AC2) on the second mechanism.","independent_replication":false},
-    {"claim_id":"CWC-AC3-inferred-difficulty","hypothesis_id":"H-AC3","statement":"Under inferred (noisy) difficulty, the compute-controller's realised value is bounded by and tracks I(C;Z), vanishing when difficulty cannot be inferred.","status":"SUPPORTED","scope":{"regime":["synthetic","noisy 3-symbol difficulty channel","reward-only controller"]},"required_artifacts":["artifacts/wp5-adaptive-compute-inferred/"],"supporting_metrics":["recovery 1.0->0.0 monotone across I(C;Z) 1.585->0","rec(I=0)=0.0<=0.15","controller abstains (worst>=-0.05)"],"limitations":["synthetic","given noisy difficulty label (not inferred from raw input)"],"prohibited_extrapolations":["real-workload routing","L7 compute-equivalent Pareto","independent replication"],"note":"Compute-axis analog of L4b: master inequality V_realized<=oracle_gap-c_route made quantitative on the compute mechanism. Third rung AC1->AC2->AC3.","independent_replication":false},
-    {"claim_id":"CWC-AC4-rate-bridge","hypothesis_id":"H-AC4","statement":"The learned compute-controller realises the master rate function V*(R): its value stays under V*(I) everywhere and is tight (>=0.97) at high information.","status":"SUPPORTED","scope":{"regime":["synthetic","committed greedy controller","V* on the compute utility"]},"required_artifacts":["artifacts/wp5-adaptive-compute-ratebridge/"],"supporting_metrics":["V_gov<=V*(I) at every info level","high-info (I>=1 bit) saturation >=0.971"],"limitations":["synthetic","committed greedy (sub-RI at low info: saturation 0.326 at I=0.085; gap widens with contexts)"],"prohibited_extrapolations":["real-workload","L7 compute-equivalent Pareto","independent replication"],"note":"Compute-axis twin of L4i. Closes AC1->AC2->AC3->AC4 = structural mirror of L4->L4a->L4b->L4i. Value-of-information theory governs TWO real mechanisms. Honest: low-info committed-vs-RI gap documented.","independent_replication":false},
-    {"claim_id":"CWC-RD1-real-lm-boundary","hypothesis_id":"H-RD1","statement":"The clean adaptive-compute identifiability transfers to real language-model per-token difficulty.","status":"NOT_SUPPORTED","scope":{"regime":["real byte-level prose","tiny recurrent LM","unigram-surprisal difficulty"]},"required_artifacts":["artifacts/wp6-real-lm/"],"supporting_metrics":["real-LM G_lo=-0.090 at every lambda (plug-in gap ~0)","positive control (synthetic AC1) G_lo=+0.621 detects the gap"],"limitations":["byte-level tiny model","unigram-surprisal difficulty only","does NOT claim adaptive compute never helps real LMs"],"prohibited_extrapolations":["adaptive compute never helps real LMs","L7 compute-equivalent Pareto"],"note":"FROZEN NEGATIVE mapping the framework boundary: the sharp context x resource interaction is a property of the SYNTHETIC benchmarks (AC1 shift, plasticity), not of real LM per-token difficulty where more compute helps all buckets ~uniformly (and hurts hard tokens). Positive control proves the certificate works. Establishing identifiability on real data at scale = the cloud-blocked L7 problem.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR1-certificate","hypothesis_id":"H-RIGOR1","statement":"The inference certificate's coverage-proof gap is closed by a proof-complete corrected bound (FPR<=delta), and every identifiability positive survives it.","status":"SUPPORTED","scope":{"regime":["proof-complete b+2d bound","Monte-Carlo coverage","re-certified positives"]},"required_artifacts":["artifacts/wp7-certificate-hardening/"],"supporting_metrics":["corrected bound FPR=0.000<=delta on 5 null families","L4 G_lo 0.111->0.060>0","AC1 G_lo 0.621->0.620>0"],"limitations":["assumes sub-Gaussian per-context-independent noise","meta/analysis (no new empirical mechanism)"],"prohibited_extrapolations":["independent replication","L7 compute-equivalent Pareto"],"note":"Closes the audit-flagged Proof caveat in docs/IDENTIFIABILITY_INFERENCE.md. Corrected bound budgets both deviation terms union-bounded at delta/2. Expert-class validity by construction. Original bound retained (conservative-enough in practice).","independent_replication":false},
-    {"claim_id":"CWC-RIGOR2-fwer","hypothesis_id":"H-RIGOR2","statement":"The identifiability certificate positives survive family-wise multiplicity correction, so the family-wise false-positive rate over the SUPPORTED positives is <= 0.05.","status":"SUPPORTED","scope":{"regime":["Bonferroni + Holm","on top of the WP7 proof-complete bound","G_lo-certificate family"]},"required_artifacts":["artifacts/wp8-family-wise-error/"],"supporting_metrics":["L4 G_lo +0.053 (bonf-family) / +0.029 (bonf-all-29)","AC1 G_lo +0.619 both","Holm all survive"],"limitations":["family = the two G_lo-certificate positives (recovery/ceiling-gated excluded, pass by margin)","meta/analysis"],"prohibited_extrapolations":["independent replication","L7 compute-equivalent Pareto"],"note":"Closes the multiplicity critique: positives robust to Bonferroni (even all-29) + Holm simultaneously with the proof-complete corrected bound. Expert-class statistical validity.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR3-pinsker","hypothesis_id":"H-RIGOR3","statement":"The Pinsker small-rate dichotomy (regular Theta(R) vs critical Theta(sqrt R)) holds over a random sample of instances, not just curated ones.","status":"SUPPORTED","scope":{"regime":["numerical certification","random regular + constructed critical instances"]},"required_artifacts":["artifacts/wp11-pinsker/"],"supporting_metrics":["regular exponent 0.948~1 (60 instances, 85% in band)","critical exponent 0.530~0.5 (60 instances, 100% in band)"],"limitations":["numerical certification not a closed proof","beta(0+) finiteness argued not fully proved","measure-zero critical manifold constructed"],"prohibited_extrapolations":["a closed proof of the general dichotomy","independent replication"],"note":"Addresses the audit's 'curated numerics' critique with a random sample; the general-dichotomy proof remains a labeled sketch.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR4-coherence","hypothesis_id":"H-RIGOR4","statement":"The ladder is coherent by a non-circular check: every recorded status agrees with its certificate sign recomputed from committed real artifacts, in both directions.","status":"SUPPORTED","scope":{"regime":["non-circular","status vs G_lo sign from real raw seeds"]},"required_artifacts":["artifacts/wp10-coherence/"],"supporting_metrics":["0 contradictions","L4 +0.111 SUPPORTED","AC1 +0.621 SUPPORTED","RD1 -0.090 NOT_SUPPORTED (negative direction)"],"limitations":["covers the certificate-computable claims"],"prohibited_extrapolations":["independent replication"],"note":"Replaces the circular Audit C (hand-encoded table) with real-artifact derivation; checks both directions.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR5-independence","hypothesis_id":"H-RIGOR5","statement":"The corrected certificate's coverage is robust to violation of the per-context independence assumption (FPR<=delta under strong cross-context correlation).","status":"SUPPORTED","scope":{"regime":["tied null","cross-context correlated noise rho up to 0.9"]},"required_artifacts":["artifacts/wp9-independence/"],"supporting_metrics":["corrected-bound FPR=0.000<=delta at every rho up to 0.9, all shapes"],"limitations":["tied-null worst case","specific correlation model (per-action shared component)"],"prohibited_extrapolations":["independent replication"],"note":"Independence not load-bearing for validity; the b-slack over-covers even under correlation.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR6-effect-size","hypothesis_id":"H-RIGOR6","statement":"The certificate positives have bootstrap 95% CIs strictly above zero and exceed their sample-complexity, so the effects are robustly positive beyond the one-sided gate.","status":"SUPPORTED","scope":{"regime":["seed-bootstrap 95% CI","effect size + sample complexity"]},"required_artifacts":["artifacts/wp13-effect-size/"],"supporting_metrics":["L4 gap 0.191 CI95=[0.191,0.191] std-effect 2.1 n>=n*","AC1 gap 0.624 CI95=[0.623,0.625] std-effect 235 n>=n*"],"limitations":["seed-level bootstrap (synthetic benchmarks)"],"prohibited_extrapolations":["independent replication"],"note":"Complements the one-sided G_lo with two-sided bootstrap CIs and retrospective power.","independent_replication":false},
-    {"claim_id":"CWC-RIGOR7-prereg-integrity","hypothesis_id":"H-RIGOR7","statement":"Every experiment's preregistration is committed before its results (strict git ancestry), except disclosed same-commit retrospective cases.","status":"SUPPORTED","scope":{"regime":["git-ancestry audit across all experiments"]},"required_artifacts":["artifacts/wp12-prereg-integrity/"],"supporting_metrics":["14 experiments STRICT_ANCESTOR (prereg-before-results)","4 disclosed same-commit retrospective","0 undisclosed violations"],"limitations":["same-commit meta re-analyses (wp9/10/11/13) disclosed not separately committed","gate self-skips (circular)"],"prohibited_extrapolations":["independent replication"],"note":"The gate caught this run's own batching shortcut and disclosed it (allowlist) rather than hiding it. Mechanism arcs are genuine strict-ancestor.","independent_replication":false},
-    {"claim_id":"CWC-RD2-real-lm-contextual","hypothesis_id":"H-RD2","statement":"The WP6 real-LM non-identifiability transfers to a contextual (bigram) difficulty signal, i.e. it is an artifact of the crude unigram proxy.","status":"NOT_SUPPORTED","scope":{"regime":["real byte-level prose","bigram-surprisal difficulty"]},"required_artifacts":["artifacts/wp14-real-lm-contextual/"],"supporting_metrics":["real-LM G_lo=-0.182 at every lambda (more negative than WP6 unigram -0.09)","positive control AC1 +0.621"],"limitations":["byte-level tiny model","bigram difficulty"],"prohibited_extrapolations":["adaptive compute never helps real LMs","L7 compute-equivalent Pareto"],"note":"Robustifies CWC-RD1: the real-data boundary is NOT an artifact of the unigram proxy -- with a stronger contextual signal it is even clearer. Hard tokens are inherently unpredictable, not compute-starved (more compute hurts them).","independent_replication":false},
-    {"claim_id":"CWC-L7s-synthetic-pareto","hypothesis_id":"H-L7s","statement":"On the synthetic compute mechanism, adaptive-compute allocation Pareto-dominates every fixed-compute policy at matched average compute (the L7 shape, synthetic instantiation).","status":"SUPPORTED","scope":{"regime":["synthetic AC1 mechanism","matched average compute","oracle allocation"]},"required_artifacts":["artifacts/wp15-compute-pareto/"],"supporting_metrics":["adaptive acc 0.9996 vs fixed 0.375 at matched compute=2.0","advantage +0.625","dominates every fixed policy"],"limitations":["synthetic (not a real workload)","oracle allocation (learned controller = AC2)","no MoD/MoE baselines","NOT L7"],"prohibited_extrapolations":["real-workload compute-equivalent Pareto (L7)","beating MoD/MoE","independent replication"],"note":"Distinct from AC1 (Pareto dominance != identifiability). The synthetic precursor to L7 and the cloud-ready protocol; the real-workload L7 (CWC-L7-pareto) stays NOT_TESTED (cloud-blocked). PREREGISTRATION doubles as the frozen L7 decision rule.","independent_replication":false}
-  ]
+ "schema": "cwc-claim-registry/1.1",
+ "schema_file": "schemas/claim.schema.json",
+ "git_commit": "56afffd1aa605203fc3735f057cccdcdb0ed52df",
+ "generated": "2026-07-21",
+ "claims": [
+  {
+   "claim_id": "CWC-L0-measurement",
+   "hypothesis_id": "H-L0",
+   "statement": "The instrumentation records deterministic, internally-validated resource measurements.",
+   "status": "SUPPORTED",
+   "scope": {
+    "tasks": [
+     "synthetic"
+    ],
+    "hardware": [
+     "RTX3050"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp1-release/"
+   ],
+   "supporting_metrics": [
+    "209 tests (wp1-release scoped suite)",
+    "99.46% branch cov",
+    "12/12 mutation"
+   ],
+   "limitations": [
+    "energy INSTRUMENT_INVALID",
+    "overhead qualified only at depth-12 scale"
+   ],
+   "prohibited_extrapolations": [
+    "energy efficiency"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L1-identifiability",
+   "hypothesis_id": "H-L1",
+   "statement": "A benchmark with a real adaptive-compute advantage exists (oracle beats best-fixed).",
+   "status": "SUPPORTED",
+   "required_artifacts": [
+    "artifacts/wp2-routing-v2/"
+   ],
+   "supporting_metrics": [
+    "oracle gap 99.8%"
+   ],
+   "limitations": [
+    "synthetic",
+    "surface-leaky (see surface_audit)"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2-routing-causality",
+   "hypothesis_id": "H-L2",
+   "statement": "A learned controller routes causally and beats random/frozen/shuffled controls.",
+   "status": "SUPPORTED_NARROWED",
+   "scope": {
+    "regime": [
+     "counterfactual value distillation",
+     "synthetic mechanism-separable benchmark",
+     "no physical compute saving"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp2-routing-v2/",
+    "artifacts/wp2-routing-v2/claim_boundary.json"
+   ],
+   "supporting_metrics": [
+    "bal_acc 1.0",
+    "AUROC 1.0",
+    "8 seeds"
+   ],
+   "failed_controls": [
+    "end-to-end straight-through R3-C collapses (artifacts/wp2-routing-v3-r3c/)"
+   ],
+   "limitations": [
+    "target privileged during controller training",
+    "test capacity label-derived",
+    "surface cues present"
+   ],
+   "prohibited_extrapolations": [
+    "autonomous adaptive routing",
+    "general adaptive intelligence"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2a-e2e-reinforce",
+   "hypothesis_id": "H-L2a",
+   "statement": "End-to-end routing (no privileged target, label-free capacity, no distillation) is learnable via REINFORCE under a binding budget.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "binding budget lambda>=1",
+     "surface cues still present"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp2-routing-v3-r3c-reinforce/"
+   ],
+   "supporting_metrics": [
+    "learned 0.009 vs random 0.48",
+    "AUROC 1.0",
+    "8 seeds"
+   ],
+   "limitations": [
+    "surface cues present (route may ride surface signal)",
+    "synthetic",
+    "no physical Pareto claim"
+   ],
+   "prohibited_extrapolations": [
+    "surface-independent structural routing",
+    "real-workload routing"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2b-route-decision-cost",
+   "hypothesis_id": "H-L2b",
+   "statement": "When difficulty is a deep structural property (surface-matched), the route decision costs ~the expensive computation; cheap routing saves nothing.",
+   "status": "SUPPORTED",
+   "required_artifacts": [
+    "artifacts/wp2-routing-v3-surface-matched/"
+   ],
+   "supporting_metrics": [
+    "cheap+attn controllers AUROC ~0.51",
+    "chance even under direct supervision",
+    "8 seeds x 4 arms"
+   ],
+   "note": "verdict ROUTE_DECISION_IS_THE_COMPUTATION; extends theory: V_realized = oracle_gap - route_decision_cost",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2p-jensen-gap",
+   "hypothesis_id": "H-L2p",
+   "statement": "On the synthetic substrate and conditional on a free exact halt oracle, halt-conditioned allocation beats input-blind allocation at an identical frozen operator-hop budget.",
+   "status": "SUPPORTED_NARROWED",
+   "required_artifacts": [
+    "artifacts/wp4-adaptive-depth/",
+    "docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md",
+    "artifacts/wp4-exact-compute-v31/"
+   ],
+   "supporting_metrics": [
+    "16 untouched seeds",
+    "4 development + 3 held-out distributions",
+    "exact integer operator-hop equality",
+    "worst-seed paired difference >0.25"
+   ],
+   "limitations": [
+    "free exact halt oracle",
+    "halt evaluations excluded from primary compute ledger",
+    "synthetic",
+    "internal Git ordering only",
+    "no learned controller"
+   ],
+   "prohibited_extrapolations": [
+    "end-to-end compute-equivalent Pareto advantage",
+    "latency or energy advantage",
+    "learned allocator",
+    "empirical novelty",
+    "real-workload generalization",
+    "external preregistration or independent replication"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2c-e2e-straightthrough",
+   "hypothesis_id": "H-L2c",
+   "statement": "End-to-end task-loss routing via straight-through top-K (no oracle leak) is causal.",
+   "status": "NOT_SUPPORTED",
+   "required_artifacts": [
+    "artifacts/wp2-routing-v3-r3c/"
+   ],
+   "supporting_metrics": [
+    "learned 0.91 > random 0.48, bal_acc ~0, 8 seeds"
+   ],
+   "note": "credit-assignment collapse; superseded by CWC-L2a which shows REINFORCE recovers it -> the collapse was an estimator artifact",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L2q-paid-halt-lookup",
+   "hypothesis_id": "H-L2q",
+   "statement": "On the exact synthetic substrate, adaptive active-set allocation beats input-blind allocation when every successor observation, including terminal halt detection, is charged to the same frozen logical-lookup budget.",
+   "status": "SUPPORTED_NARROWED",
+   "required_artifacts": [
+    "artifacts/wp4-end-to-end-v4/"
+   ],
+   "supporting_metrics": [
+    "16 untouched seeds",
+    "4 development + 3 held-out distributions",
+    "mean paired solved lift 0.042 to 0.169",
+    "positive worst-seed effect in every cell"
+   ],
+   "limitations": [
+    "exact synthetic halt signal",
+    "logical lookup cost only",
+    "controller arithmetic and memory traffic unpriced",
+    "internal Git ordering only",
+    "no learned controller"
+   ],
+   "prohibited_extrapolations": [
+    "physical FLOP latency or energy Pareto advantage",
+    "learned allocator",
+    "real-workload generalization",
+    "external preregistration or independent replication"
+   ],
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L3-rcfr",
+   "hypothesis_id": "H-L3",
+   "statement": "Role-conditioned functional reuse is a novel mechanism.",
+   "status": "NOT_SUPPORTED",
+   "required_artifacts": [
+    "artifacts/wp3-rcfr/"
+   ],
+   "note": "works but ties DISeL-with-role (prior art)",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4-plasticity",
+   "hypothesis_id": "H-L4",
+   "statement": "Under a hard parameter-cost budget, a context-conditioned plasticity allocation beats every fixed allocation (the metaplasticity oracle gap is real).",
+   "status": "SUPPORTED_NARROWED",
+   "scope": {
+    "regime": [
+     "synthetic toy GroupedModel",
+     "given-context c_route=0 (task identity observed)",
+     "wide reward margins",
+     "learned reward-only governor recovers it out-of-sample"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v3-governor/",
+    "artifacts/wp3-plasticity-v2-confirmatory/",
+    "artifacts/wp3-plasticity-v1/",
+    "artifacts/act-j-pilot-decision/",
+    "docs/IDENTIFIABILITY_THEORY.md"
+   ],
+   "supporting_metrics": [
+    "G_lo 0.111 > 0 at delta=0.05",
+    "effect in 16/16 held-out seeds",
+    "worst-seed gap 0.190",
+    "lambda frozen a priori",
+    "learned governor recovery 1.00 on held-out (8/8 controller seeds)"
+   ],
+   "limitations": [
+    "synthetic benchmark",
+    "given-context (task identity observed, c_route=0)",
+    "wide reward margins (success expected)",
+    "unbudgeted gap ~0 (needs the binding budget)"
+   ],
+   "prohibited_extrapolations": [
+    "inferred-context or surface-independent routing",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "real-workload generalization",
+    "independent replication"
+   ],
+   "note": "Unbudgeted oracle gap ~0 (NOT_IDENTIFIABLE). EXPLORATORY revival at lambda~1 (seeds 0-4, post-hoc lambda) -> identifiability PILOT GO (artifacts/act-j-pilot-decision/) -> CONFIRMATORY run on 16 fresh held-out seeds with lambda frozen a priori: G_lo=0.111>0 at delta=0.05, present in every seed, controls pass (artifacts/wp3-plasticity-v2-confirmatory/). Confirms the ORACLE gap out-of-sample. L4a (artifacts/wp3-plasticity-v3-governor/): a reward-only REINFORCE governor recovers 100% of the gap on held-out seeds (8/8 controller inits), NULL falsifier at 0 -> the 'no learned governor' limitation is DISCHARGED in this given-context wide-margin regime. Still synthetic; does NOT touch L7.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4b-inferred-context",
+   "hypothesis_id": "H-L4b",
+   "statement": "Under inferred (noisy) context, the learned plasticity governor's realised value is bounded by I(C;Z): it tracks the master inequality's information discount and vanishes when the context cannot be cheaply inferred.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "noisy-observation route cost",
+     "reward-only REINFORCE governor"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v4-inferred/"
+   ],
+   "supporting_metrics": [
+    "recovery tracks 1-2.146p to +/-0.001 for p<=0.3",
+    "monotone in I(C;Z)",
+    "recovery(I=0)=-0.018<=0.10",
+    "abstains 8/8 at zero information"
+   ],
+   "limitations": [
+    "synthetic",
+    "given noisy label (not real features)",
+    "wide underlying margins"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload routing",
+    "L7 compute-equivalent Pareto",
+    "energy or latency advantage",
+    "independent replication"
+   ],
+   "note": "plasticity analog of L2b (route-decision cost); instantiates V_realized <= oracle_gap - c_route and rational-inattention abstention at boundary p*~0.466",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4c-credit-collapse",
+   "hypothesis_id": "H-L4c",
+   "statement": "The learned governor's credit-assignment collapse margin is governed by the (sigma/Delta)^2 sample-complexity law (Delta* scales linearly with reward noise).",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic-parametric",
+     "REINFORCE governor",
+     "fixed episode budget"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v5-thinmargin/"
+   ],
+   "supporting_metrics": [
+    "collapse exists (recovery 1.0->~0.3 as Delta->0.02)",
+    "Delta*(2sigma)/Delta*(sigma)=0.91 (predicted ~2.0)",
+    "more noise gave better recovery at Delta=0.05"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "FROZEN FALSIFICATION: a collapse is real but its noise-scaling is refuted -- REINFORCE advantage (r-baseline) scales with sigma, so step size grows with noise and cancels distinguishability. Possibly underpowered (8 seeds, 5-pt grid); NOT re-run to flip. Does not change L4/L4a/L4b.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4d-budget-scaling",
+   "hypothesis_id": "H-L4d",
+   "statement": "The learned governor's credit-assignment collapse margin follows the (sigma/Delta)^2 sample-complexity law in the episode budget (Delta* ~ 1/sqrt(N)) and in noise.",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic-parametric",
+     "REINFORCE governor",
+     "24 controller seeds"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v6-scaling/"
+   ],
+   "supporting_metrics": [
+    "Delta* monotone 0.0567->0.0140 over N=1500->12000",
+    "budget ratio 0.247 < law 0.354 (Delta* ~ N^-0.68)",
+    "noise ratio 0.500 < 1 (noise helps)"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Higher-power revisit of L4c. Budget-scaling is DIRECTIONALLY real (monotone power law) but STEEPER than 1/sqrt(N) -> misses a-priori band [0.25,0.55] on the low side; noise axis robustly ANTI-scales (more noise -> smaller margin, exploration). The (sigma/Delta)^2 law governs NEITHER axis. Instrument-range grid amendment disclosed in prereg. Does not change L4/L4a/L4b/L4c.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4e-mechanism",
+   "hypothesis_id": "H-L4e",
+   "statement": "The governor's collapse-margin budget scaling is a pure 2-arm logit-dynamics phenomenon (a 2-arm ablation reproduces both the exponent and the noise sign).",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic-parametric",
+     "2-arm ablation",
+     "24 controller seeds"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v7-mechanism/"
+   ],
+   "supporting_metrics": [
+    "2-arm exponent -1.117 (near drift limit) vs full -0.654",
+    "exponent mismatch 0.46 > 0.15",
+    "noise ratio 0.364<1 reproduced"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "PARTIAL explanation: noise-as-exploration IS a 2-arm effect (ratio<1 reproduced), but the budget exponent is NOT pure 2-arm -- the 2-arm limit is drift-limited (-1.12, confirming dg/dt~LR*Delta*pi(1-pi)) while the full 4-arm governor is -0.654; dead-arm suppression injects diffusion. Hypothesis 'collapse is 2-arm' falsified; truer picture = drift-limited-2-arm + 4-arm dilution. Grid amendment disclosed. Does not change L4/L4a/L4b/L4c/L4d.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4f-arm-scaling",
+   "hypothesis_id": "H-L4f",
+   "statement": "The governor's collapse-margin budget exponent shallows monotonically as the number of arms grows (dead arms inject diffusion).",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic-parametric",
+     "REINFORCE governor",
+     "arm sweep K in {2,3,4,6,8}"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v8-armscaling/"
+   ],
+   "supporting_metrics": [
+    "exponent -1.026/-0.637/-0.459/-0.451/-0.094 for K=2/3/4/6/8",
+    "monotone shallowing",
+    "exp(8)-exp(2)=0.93"
+   ],
+   "limitations": [
+    "asymptote overshoots -0.5 toward 0 (dead arms progressively kill budget-scaling, not just diffusion)",
+    "exact exponents grid-sensitive; monotone direction robust",
+    "synthetic-parametric"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Closes L4e: the collapse exponent depends monotonically on arm count. Mechanistic chain: 2-arm REINFORCE is drift-limited (N^-1); adding dead arms dilutes b-vs-r mass and shallows the exponent past diffusion. Explains why the (sigma/Delta)^2 law (L4c/L4d) fails at K>=3.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4g-cost-robust",
+   "hypothesis_id": "H-L4g",
+   "statement": "The L4 cost-budget oracle gap and governor recovery are robust to the cost model (survive monotone cost transforms).",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "cost transforms linear/sqrt/log/square",
+     "lambda=1"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v9-costrobust/"
+   ],
+   "supporting_metrics": [
+    "G_lo>0 for all 4 transforms (0.111/0.101/0.035/0.043)",
+    "governor recovery 1.0 each"
+   ],
+   "limitations": [
+    "gap magnitude is cost-shape dependent (log compresses to 0.035)",
+    "synthetic"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Validity check: monotone transforms preserve the cost ORDERING (head<attn<mlp) that makes the interaction real, so identifiability survives; magnitude varies. Strengthens L4.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4h-context-scaling",
+   "hypothesis_id": "H-L4h",
+   "statement": "Identifiability and governor recovery generalize to more contexts at constant per-context budget (contexts do not interfere).",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic-parametric",
+     "|C| in {2,3,4,6}",
+     "constant per-context budget"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v10-contexts/"
+   ],
+   "supporting_metrics": [
+    "G_lo 0.084/0.385/0.535/0.685 (grows with |C|)",
+    "governor recovery >=0.952 all |C|"
+   ],
+   "limitations": [
+    "synthetic-parametric",
+    "recovery dips slightly at |C|=6 (0.952)",
+    "matched per-context budget (no dilution tested here)"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "G_lo GROWS with contexts (more valuable conditioning + tighter sqrt|C|); governor holds at matched per-context budget. Generalizes the 2-context L4/L4a result.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4i-rate-bridge",
+   "hypothesis_id": "H-L4i",
+   "statement": "The learned plasticity governor realises the master value-of-information rate function V*(R): its realised value stays under V*(I) and nearly saturates it.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "committed greedy governor",
+     "V* on the plasticity utility"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v11-ratebridge/"
+   ],
+   "supporting_metrics": [
+    "V_gov<=V*(I) at every info level (ceiling holds)",
+    "saturation >=0.924 (>=0.98 at high info)"
+   ],
+   "limitations": [
+    "synthetic utility",
+    "committed greedy governor (slightly below RI optimum at intermediate info)"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload behavior",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Plasticity analog of act_j_pilot TRAINED_CONTROLLER_REALISES_V_STAR: the converse rate-function ceiling is non-vacuous on a real learned mechanism. Ties the L4 sub-line to the information-market synthesis.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4j-line-consistency",
+   "hypothesis_id": "H-L4j",
+   "statement": "The L4 sub-line is internally consistent: every claim's registry status matches its artifact verdict polarity and no evidence is orphaned.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "governance",
+     "registry<->artifact cross-check"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v12-consistency/"
+   ],
+   "supporting_metrics": [
+    "0 polarity mismatches",
+    "0 orphan evidence bundles",
+    "9+ L4 claims checked"
+   ],
+   "prohibited_extrapolations": [
+    "scientific capability"
+   ],
+   "note": "Governance check the existing gates miss (status<->verdict agreement). Can fail on drift.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L4k-falsification-boundary",
+   "hypothesis_id": "H-L4k",
+   "statement": "The L4 line survives its most decisive falsification nulls: the cost-budget gap appears only with a real context x arm interaction and vanishes when the interaction is destroyed.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "additive/collapsed/aligned-best nulls"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp3-plasticity-v13-killtest/"
+   ],
+   "supporting_metrics": [
+    "real G_lo=0.111 recovery 1.0",
+    "all three nulls G_lo<=0 recovery 0"
+   ],
+   "limitations": [
+    "synthetic",
+    "surviving nulls is necessary not sufficient for external validity"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload validity",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Harness caught a mis-specified null (arm_shuffle preserved interaction) -> disclosed amendment to aligned_best. Foundation check: the gap is a real interaction, not a structural artifact.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-fractal",
+   "hypothesis_id": "H-fractal",
+   "statement": "Emergent multiscale/fractal organization.",
+   "status": "NOT_SUPPORTED",
+   "required_artifacts": [
+    "artifacts/history/fractal/"
+   ],
+   "note": "INSUFFICIENT_EVIDENCE at the null gate (archival)",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L7-pareto",
+   "hypothesis_id": "H-L7",
+   "statement": "Compute-equivalent Pareto advantage vs MoD/MoE on real workloads.",
+   "status": "NOT_TESTED",
+   "note": "the decisive next step; requires cloud scale + strong baselines",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L8-replication",
+   "hypothesis_id": "H-L8",
+   "statement": "Independent clean-room reproduction confirms the primary result.",
+   "status": "NOT_TESTED",
+   "note": "not self-certifiable",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-AC1-compute-identifiability",
+   "hypothesis_id": "H-AC1",
+   "statement": "Adaptive-compute allocation is identifiable on a second real mechanism: an oracle compute-budget allocation beats any fixed compute, and the identifiability framework transfers off parameter-plasticity.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic shift task",
+     "real trained recurrent model",
+     "compute = block iterations"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp5-adaptive-compute-identifiability/"
+   ],
+   "supporting_metrics": [
+    "diagonal acc[d][d]>=0.998, off-diag<=0.068 (8 seeds)",
+    "real G_lo 0.621/0.455/0.289 at lambda 0/0.5/1.0",
+    "monotone+additive nulls vanish at lambda=0"
+   ],
+   "limitations": [
+    "synthetic shift task",
+    "oracle allocation (no learned compute-controller yet)",
+    "given difficulty context"
+   ],
+   "prohibited_extrapolations": [
+    "learned compute-controller",
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+   ],
+   "note": "Second mechanism (adaptive COMPUTE, the L7-relevant axis). Two identifiability sources: overshoot (more compute hurts, lambda=0) + budget (lambda>0); plasticity had only budget. Framework is not plasticity-specific.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-AC2-compute-controller",
+   "hypothesis_id": "H-AC2",
+   "statement": "A reward-only learned controller recovers the oracle adaptive-compute allocation (K=d) out-of-sample.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "reward-only REINFORCE",
+     "given difficulty",
+     "lambda=0.5"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp5-adaptive-compute-controller/"
+   ],
+   "supporting_metrics": [
+    "worst-of-8 held-out recovery 1.000",
+    "NULL falsifier 0.000",
+    "random 0.041 < best_fixed 0.208"
+   ],
+   "limitations": [
+    "synthetic",
+    "given-difficulty (controller sees d)",
+    "no inferred-difficulty routing yet"
+   ],
+   "prohibited_extrapolations": [
+    "inferred-difficulty routing",
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+   ],
+   "note": "Compute-axis analog of L4a plasticity governor. Closes identifiability(AC1)->learned-controller(AC2) on the second mechanism.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-AC3-inferred-difficulty",
+   "hypothesis_id": "H-AC3",
+   "statement": "Under inferred (noisy) difficulty, the compute-controller's realised value is bounded by and tracks I(C;Z), vanishing when difficulty cannot be inferred.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "noisy 3-symbol difficulty channel",
+     "reward-only controller"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp5-adaptive-compute-inferred/"
+   ],
+   "supporting_metrics": [
+    "recovery 1.0->0.0 monotone across I(C;Z) 1.585->0",
+    "rec(I=0)=0.0<=0.15",
+    "controller abstains (worst>=-0.05)"
+   ],
+   "limitations": [
+    "synthetic",
+    "given noisy difficulty label (not inferred from raw input)"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload routing",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+   ],
+   "note": "Compute-axis analog of L4b: master inequality V_realized<=oracle_gap-c_route made quantitative on the compute mechanism. Third rung AC1->AC2->AC3.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-AC4-rate-bridge",
+   "hypothesis_id": "H-AC4",
+   "statement": "The learned compute-controller realises the master rate function V*(R): its value stays under V*(I) everywhere and is tight (>=0.97) at high information.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic",
+     "committed greedy controller",
+     "V* on the compute utility"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp5-adaptive-compute-ratebridge/"
+   ],
+   "supporting_metrics": [
+    "V_gov<=V*(I) at every info level",
+    "high-info (I>=1 bit) saturation >=0.971"
+   ],
+   "limitations": [
+    "synthetic",
+    "committed greedy (sub-RI at low info: saturation 0.326 at I=0.085; gap widens with contexts)"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload",
+    "L7 compute-equivalent Pareto",
+    "independent replication"
+   ],
+   "note": "Compute-axis twin of L4i. Closes AC1->AC2->AC3->AC4 = structural mirror of L4->L4a->L4b->L4i. Value-of-information theory governs TWO real mechanisms. Honest: low-info committed-vs-RI gap documented.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RD1-real-lm-boundary",
+   "hypothesis_id": "H-RD1",
+   "statement": "The clean adaptive-compute identifiability transfers to real language-model per-token difficulty.",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "real byte-level prose",
+     "tiny recurrent LM",
+     "unigram-surprisal difficulty"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp6-real-lm/"
+   ],
+   "supporting_metrics": [
+    "real-LM G_lo=-0.090 at every lambda (plug-in gap ~0)",
+    "positive control (synthetic AC1) G_lo=+0.621 detects the gap"
+   ],
+   "limitations": [
+    "byte-level tiny model",
+    "unigram-surprisal difficulty only",
+    "does NOT claim adaptive compute never helps real LMs"
+   ],
+   "prohibited_extrapolations": [
+    "adaptive compute never helps real LMs",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "FROZEN NEGATIVE mapping the framework boundary: the sharp context x resource interaction is a property of the SYNTHETIC benchmarks (AC1 shift, plasticity), not of real LM per-token difficulty where more compute helps all buckets ~uniformly (and hurts hard tokens). Positive control proves the certificate works. Establishing identifiability on real data at scale = the cloud-blocked L7 problem.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR1-certificate",
+   "hypothesis_id": "H-RIGOR1",
+   "statement": "The inference certificate's coverage-proof gap is closed by a proof-complete corrected bound (FPR<=delta), and every identifiability positive survives it.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "proof-complete b+2d bound",
+     "Monte-Carlo coverage",
+     "re-certified positives"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp7-certificate-hardening/"
+   ],
+   "supporting_metrics": [
+    "corrected bound FPR=0.000<=delta on 5 null families",
+    "L4 G_lo 0.111->0.060>0",
+    "AC1 G_lo 0.621->0.620>0"
+   ],
+   "limitations": [
+    "assumes sub-Gaussian per-context-independent noise",
+    "meta/analysis (no new empirical mechanism)"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Closes the audit-flagged Proof caveat in docs/IDENTIFIABILITY_INFERENCE.md. Corrected bound budgets both deviation terms union-bounded at delta/2. Expert-class validity by construction. Original bound retained (conservative-enough in practice).",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR2-fwer",
+   "hypothesis_id": "H-RIGOR2",
+   "statement": "The identifiability certificate positives survive family-wise multiplicity correction, so the family-wise false-positive rate over the SUPPORTED positives is <= 0.05.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "Bonferroni + Holm",
+     "on top of the WP7 proof-complete bound",
+     "G_lo-certificate family"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp8-family-wise-error/"
+   ],
+   "supporting_metrics": [
+    "L4 G_lo +0.053 (bonf-family) / +0.029 (bonf-all-29)",
+    "AC1 G_lo +0.619 both",
+    "Holm all survive"
+   ],
+   "limitations": [
+    "family = the two G_lo-certificate positives (recovery/ceiling-gated excluded, pass by margin)",
+    "meta/analysis"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Closes the multiplicity critique: positives robust to Bonferroni (even all-29) + Holm simultaneously with the proof-complete corrected bound. Expert-class statistical validity.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR3-pinsker",
+   "hypothesis_id": "H-RIGOR3",
+   "statement": "The Pinsker small-rate dichotomy (regular Theta(R) vs critical Theta(sqrt R)) holds over a random sample of instances, not just curated ones.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "numerical certification",
+     "random regular + constructed critical instances"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp11-pinsker/"
+   ],
+   "supporting_metrics": [
+    "regular exponent 0.948~1 (60 instances, 85% in band)",
+    "critical exponent 0.530~0.5 (60 instances, 100% in band)"
+   ],
+   "limitations": [
+    "numerical certification not a closed proof",
+    "beta(0+) finiteness argued not fully proved",
+    "measure-zero critical manifold constructed"
+   ],
+   "prohibited_extrapolations": [
+    "a closed proof of the general dichotomy",
+    "independent replication"
+   ],
+   "note": "Addresses the audit's 'curated numerics' critique with a random sample; the general-dichotomy proof remains a labeled sketch.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR4-coherence",
+   "hypothesis_id": "H-RIGOR4",
+   "statement": "The ladder is coherent by a non-circular check: every recorded status agrees with its certificate sign recomputed from committed real artifacts, in both directions.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "non-circular",
+     "status vs G_lo sign from real raw seeds"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp10-coherence/"
+   ],
+   "supporting_metrics": [
+    "0 contradictions",
+    "L4 +0.111 SUPPORTED",
+    "AC1 +0.621 SUPPORTED",
+    "RD1 -0.090 NOT_SUPPORTED (negative direction)"
+   ],
+   "limitations": [
+    "covers the certificate-computable claims"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication"
+   ],
+   "note": "Replaces the circular Audit C (hand-encoded table) with real-artifact derivation; checks both directions.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR5-independence",
+   "hypothesis_id": "H-RIGOR5",
+   "statement": "The corrected certificate's coverage is robust to violation of the per-context independence assumption (FPR<=delta under strong cross-context correlation).",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "tied null",
+     "cross-context correlated noise rho up to 0.9"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp9-independence/"
+   ],
+   "supporting_metrics": [
+    "corrected-bound FPR=0.000<=delta at every rho up to 0.9, all shapes"
+   ],
+   "limitations": [
+    "tied-null worst case",
+    "specific correlation model (per-action shared component)"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication"
+   ],
+   "note": "Independence not load-bearing for validity; the b-slack over-covers even under correlation.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR6-effect-size",
+   "hypothesis_id": "H-RIGOR6",
+   "statement": "The certificate positives have bootstrap 95% CIs strictly above zero and exceed their sample-complexity, so the effects are robustly positive beyond the one-sided gate.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "seed-bootstrap 95% CI",
+     "effect size + sample complexity"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp13-effect-size/"
+   ],
+   "supporting_metrics": [
+    "L4 gap 0.191 CI95=[0.191,0.191] std-effect 2.1 n>=n*",
+    "AC1 gap 0.624 CI95=[0.623,0.625] std-effect 235 n>=n*"
+   ],
+   "limitations": [
+    "seed-level bootstrap (synthetic benchmarks)"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication"
+   ],
+   "note": "Complements the one-sided G_lo with two-sided bootstrap CIs and retrospective power.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR7-prereg-integrity",
+   "hypothesis_id": "H-RIGOR7",
+   "statement": "Every experiment's preregistration is committed before its results (strict git ancestry), except disclosed same-commit retrospective cases.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "git-ancestry audit across all experiments"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp12-prereg-integrity/"
+   ],
+   "supporting_metrics": [
+    "14 experiments STRICT_ANCESTOR (prereg-before-results)",
+    "4 disclosed same-commit retrospective",
+    "0 undisclosed violations"
+   ],
+   "limitations": [
+    "same-commit meta re-analyses (wp9/10/11/13) disclosed not separately committed",
+    "gate self-skips (circular)"
+   ],
+   "prohibited_extrapolations": [
+    "independent replication"
+   ],
+   "note": "The gate caught this run's own batching shortcut and disclosed it (allowlist) rather than hiding it. Mechanism arcs are genuine strict-ancestor.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RD2-real-lm-contextual",
+   "hypothesis_id": "H-RD2",
+   "statement": "The WP6 real-LM non-identifiability transfers to a contextual (bigram) difficulty signal, i.e. it is an artifact of the crude unigram proxy.",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "real byte-level prose",
+     "bigram-surprisal difficulty"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp14-real-lm-contextual/"
+   ],
+   "supporting_metrics": [
+    "real-LM G_lo=-0.182 at every lambda (more negative than WP6 unigram -0.09)",
+    "positive control AC1 +0.621"
+   ],
+   "limitations": [
+    "byte-level tiny model",
+    "bigram difficulty"
+   ],
+   "prohibited_extrapolations": [
+    "adaptive compute never helps real LMs",
+    "L7 compute-equivalent Pareto"
+   ],
+   "note": "Robustifies CWC-RD1: the real-data boundary is NOT an artifact of the unigram proxy -- with a stronger contextual signal it is even clearer. Hard tokens are inherently unpredictable, not compute-starved (more compute hurts them).",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-L7s-synthetic-pareto",
+   "hypothesis_id": "H-L7s",
+   "statement": "On the synthetic compute mechanism, adaptive-compute allocation Pareto-dominates every fixed-compute policy at matched average compute (the L7 shape, synthetic instantiation).",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic AC1 mechanism",
+     "matched average compute",
+     "oracle allocation"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp15-compute-pareto/"
+   ],
+   "supporting_metrics": [
+    "adaptive acc 0.9996 vs fixed 0.375 at matched compute=2.0",
+    "advantage +0.625",
+    "dominates every fixed policy",
+    "survives physical route-cost kill-test (WP17): +0.6249 at total compute 2.001"
+   ],
+   "limitations": [
+    "synthetic (not a real workload)",
+    "oracle allocation (learned controller = AC2)",
+    "no MoD/MoE baselines",
+    "NOT L7"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload compute-equivalent Pareto (L7)",
+    "beating MoD/MoE",
+    "independent replication"
+   ],
+   "note": "Distinct from AC1 (Pareto dominance != identifiability). The synthetic precursor to L7 and the cloud-ready protocol; the real-workload L7 (CWC-L7-pareto) stays NOT_TESTED (cloud-blocked). PREREGISTRATION doubles as the frozen L7 decision rule. WP17 (G2) charged the physically measured route cost: advantage +0.6249 at matched TOTAL compute survived the frozen 0.05 margin -> the claim is not an artefact of ignoring the controller (see CWC-RIGOR9).",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR8-flop-metrology",
+   "hypothesis_id": "H-RIGOR8",
+   "statement": "The analytical FLOP ledger matches a profiler measurement of the same forward exactly, like-for-like, at every operating point.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "real trained AC1 RecurrentModel",
+     "K in {1,2,3}",
+     "batch 64",
+     "single host"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp17-metrology/"
+   ],
+   "supporting_metrics": [
+    "like-for-like relative error 0.0000% at K=1,2,3",
+    "ledger linear terms == aten::mm exactly (19,660,800 / 38,535,168 / 57,409,536)"
+   ],
+   "limitations": [
+    "torch.profiler with_flops does NOT attribute FLOPs to scaled_dot_product_attention on CPU, so the attention-core term (5.60-5.85% of the forward) is profiler-invisible and validated analytically only",
+    "single model/host"
+   ],
+   "prohibited_extrapolations": [
+    "profiler-validated attention FLOPs",
+    "other hardware/kernels"
+   ],
+   "note": "Act CWC-ASCEND-2026-01 G2 Q1. The 5.7% full-ledger-vs-profiler gap measures the PROFILER's coverage gap, not a ledger error; both numbers recorded.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR9-route-cost-charged",
+   "hypothesis_id": "H-RIGOR9",
+   "statement": "When the physically measured route-decision cost is charged to the adaptive arm, the synthetic compute-Pareto advantage survives at matched TOTAL compute.",
+   "status": "SUPPORTED",
+   "scope": {
+    "regime": [
+     "synthetic AC1 mechanism",
+     "deployable encoder router (difficulty inferred, not given)",
+     "matched total compute inside the measured fixed-K frontier"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp17-metrology/"
+   ],
+   "supporting_metrics": [
+    "rho_flops encoder-router = 0.0006 model-forward(K=1)",
+    "rho_time = 0.19",
+    "advantage +0.6249 at total compute 2.001 (frozen survival margin 0.05)"
+   ],
+   "limitations": [
+    "rho is a LOWER bound: cheapest honest router on a synthetic task",
+    "tabular AC2 controller (0.000028) presumes the context label is GIVEN and is NOT used for the kill-test",
+    "beyond the measured fixed-K frontier the comparison is NOT_IDENTIFIED, by construction"
+   ],
+   "prohibited_extrapolations": [
+    "real-workload route cost",
+    "real-workload compute-equivalent Pareto (L7)"
+   ],
+   "note": "Act G2 Q3, a preregistered KILL-TEST on CWC-L7s. The instrument was hardened after its own test found it could not fail (silent clamping at the frontier edge) -> PARETO_NOT_IDENTIFIED_BEYOND_MEASURED_FRONTIER.",
+   "independent_replication": false
+  },
+  {
+   "claim_id": "CWC-RIGOR10-timing-metrology",
+   "hypothesis_id": "H-RIGOR10",
+   "statement": "Instrumentation overhead p95 <=2% and latency CV <=3% (Act G2 timing specification) are achievable on the available hardware.",
+   "status": "NOT_SUPPORTED",
+   "scope": {
+    "regime": [
+     "RTX 3050 Laptop, shared consumer OS",
+     "batch 64 (preregistered) and 1024 (disclosed amendment)",
+     "3 repeats per configuration"
+    ]
+   },
+   "required_artifacts": [
+    "artifacts/wp17-metrology/"
+   ],
+   "supporting_metrics": [
+    "overhead median 0.70% (PASS <=1%)",
+    "overhead p95 4.87% @batch64 / 2.25% @batch1024 (FAIL >2%)",
+    "latency CV over repeats min/med/max 2.94/3.36/5.40% (FAIL >3%)"
+   ],
+   "limitations": [
+    "hardware boundary, not a code defect: sub-ms steps + OS/thermal jitter",
+    "the gate itself flips between repeats, so a single passing run is not evidence"
+   ],
+   "prohibited_extrapolations": [
+    "timing metrology on quiesced server hardware",
+    "claiming the Act G2 timing gate is met"
+   ],
+   "note": "FROZEN NEGATIVE. Act G2 Q4/Q5. The median-overhead gate IS met; p95 and CV are not. Recorded as a hardware boundary exactly like energy INSTRUMENT_INVALID, not re-run until it passed.",
+   "independent_replication": false
+  }
+ ]
 }
