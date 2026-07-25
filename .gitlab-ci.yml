@@ -77,13 +77,14 @@ evidence-and-docs:
   variables:
     GIT_DEPTH: "0"
   before_script:
-    - python -m pip install PyYAML==6.0.3
+    - python -m pip install uv==0.10.12
+    - uv sync --frozen --extra cpu
   script:
-    - PYTHONPATH=. python scripts/verify_bibliography.py
-    - PYTHONPATH=. python scripts/doc_status_gate.py
-    - PYTHONPATH=. python scripts/validate_evidence.py
-    - make -f Makefile.cwc PY=python verify-evidence
-    - make -f Makefile.cwc PY=python docs-regen
+    - PYTHONPATH=. .venv/bin/python scripts/verify_bibliography.py
+    - PYTHONPATH=. .venv/bin/python scripts/doc_status_gate.py
+    - PYTHONPATH=. .venv/bin/python scripts/validate_evidence.py
+    - make -f Makefile.cwc PY=.venv/bin/python verify-evidence
+    - make -f Makefile.cwc PY=.venv/bin/python docs-regen
     - git diff --exit-code docs/lab/EXPERIMENT_LEDGER.jsonl docs/vnv/DOCUMENT_STATUS_REGISTER.csv
 
 fractal-verification:
