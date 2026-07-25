@@ -73,17 +73,19 @@ engineering-assurance:
 quality:
   stage: quality
   before_script:
-    - python -m pip install -r cwc-requirements-dev.txt
+    - python -m pip install uv==0.10.12
+    - uv sync --frozen --extra cpu
+    - VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
   script:
-    - python -m ruff check .
-    - python -m mypy --config-file mypy.ini cwc/
+    - .venv/bin/python -m ruff check .
+    - .venv/bin/python -m mypy --config-file mypy.ini cwc/
     - >
-      python -m pytest -q -m "not slow and not mutation and not cuda"
+      .venv/bin/python -m pytest -q -m "not slow and not mutation and not cuda"
       tests/test_instrumentation_*.py
       --cov=cwc/instrumentation --cov-branch
       --cov-report=term-missing --cov-fail-under=85
-    - PYTHONPATH=. python -m pytest -q tests/test_inference_integrity.py tests/test_engine.py
-    - python scripts/mutation_probe.py
+    - PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_inference_integrity.py tests/test_engine.py
+    - .venv/bin/python scripts/mutation_probe.py
 
 evidence-and-docs:
   stage: evidence
