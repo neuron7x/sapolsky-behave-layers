@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "scan_date": "2026-07-25",
+  "algorithm": "sha256",
+  "corpus_sha256": "313127c6bf7416dcefa29cd9e6c1cd36e6bace2f70d730b75cab2415940e97cf",
+  "complete": true,
+  "file_count": 145655,
+  "hashed_file_count": 145655,
+  "byte_count": 7225588269,
+  "symlink_count": 417,
+  "error_count": 0,
+  "duplicate_file_count": 52766,
+  "duplicate_reclaimable_bytes": 2379021811,
+  "category_file_count": {
+    "archive": 1347,
+    "candidate": 24189,
+    "restricted": 1886,
+    "vendor": 118233
+  },
+  "category_byte_count": {
+    "archive": 3917985337,
+    "candidate": 426489487,
+    "restricted": 339552125,
+    "vendor": 2541561320
+  },
+  "claim_boundary": "Aggregate baseline only. Symlink targets and archive members are outside byte coverage; classification does not establish license, truth, safety, or publishability."
+}

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
 from cwc.evidence.intake import audit_tree, classify_path
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_path_classification_is_conservative() -> None:
@@ -65,3 +68,16 @@ def test_hardlinks_are_duplicates_but_not_reclaimable_storage(tmp_path: Path) ->
     summary = audit_tree(tmp_path)
     assert summary["duplicate_file_count"] == 1
     assert summary["duplicate_reclaimable_bytes"] == 0
+
+
+def test_committed_data_baseline_is_complete_and_aggregate_only() -> None:
+    baseline = json.loads(
+        (ROOT / "engineering/data_corpus_baseline.json").read_text(encoding="utf-8")
+    )
+    assert baseline["complete"] is True
+    assert baseline["file_count"] == baseline["hashed_file_count"]
+    assert baseline["error_count"] == 0
+    assert sum(baseline["category_file_count"].values()) == baseline["file_count"]
+    assert sum(baseline["category_byte_count"].values()) == baseline["byte_count"]
+    assert baseline["category_file_count"]["restricted"] > 0
+    assert "paths" not in baseline
