@@ -7,7 +7,7 @@ lint:
 	ruff check src tests scripts
 
 typecheck:
-	mypy src/cwc_fractal
+	mypy -p cwc_fractal
 
 protocol:
 	PYTHONPATH=src python scripts/check_protocol.py

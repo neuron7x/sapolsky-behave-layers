@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from experiments.wp18_real_workload_pilot.src.analyze import C_ROUTE, _cert, _prospective
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -14,8 +12,8 @@ VERDICT = DATA / "verdict.json"
 CARD = DATA / "dataset_card.json"
 
 
-@pytest.mark.skipif(not CARD.is_file(), reason="corpora not built in this checkout")
 def test_contamination_control_is_clean_for_both_workloads() -> None:
+    assert CARD.is_file(), "required frozen dataset card is missing"
     card = json.loads(CARD.read_text())
     for fam in ("prose", "code"):
         w = card["workloads"][fam]
@@ -48,8 +46,8 @@ def test_prospective_power_math_is_monotone_in_noise() -> None:
     assert loose["mde_at_pilot_n"] > tight["mde_at_pilot_n"]
 
 
-@pytest.mark.skipif(not VERDICT.is_file(), reason="verdict not generated in this checkout")
 def test_recorded_verdict_is_internally_consistent() -> None:
+    assert VERDICT.is_file(), "required frozen verdict is missing"
     v = json.loads(VERDICT.read_text())
     # the positive control MUST certify, else nothing may be concluded
     assert v["positive_control_synthetic_ac1_g_lo"] > 0.0

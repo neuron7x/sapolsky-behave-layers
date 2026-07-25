@@ -22,8 +22,15 @@ The security target requires Docker and `uv`. Secret findings are redacted.
 - `cwc-quality`: Ruff, strict mypy, CPU-portable tests, branch coverage, mutation.
 - `cwc-doc-gates`: evidence checksums, bibliography, traceability, regenerated docs.
 - `cwc-full-pr-gate`: the canonical full verification/validation/falsification cycle.
+- `Fractal multiscale verification`: isolated Python 3.11 tests, strict types,
+  protocol validation, and lint from its own frozen lock.
 - `pr-audit`: Actionlint, Gitleaks, pip-audit, and dependency-diff review.
 - `codeql`: Python security-and-quality analysis.
+
+The anti-green `truth-gate` rejects non-hardware skips, all xfails, vacuous
+literal assertions, loss of the test-count floor, mutable Action/Docker refs,
+fail-open workflow tokens, and omission of any mandatory workflow. Evidence
+files are required assertions: deleting one is a failure, never a skip.
 
 The default branch is protected. Required checks must be current with the base
 branch; administrators cannot bypass the rule; force-push and deletion are disabled.

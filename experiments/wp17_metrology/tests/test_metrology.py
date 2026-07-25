@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from experiments.wp17_metrology.src.metrology import (
     ADVANTAGE_SURVIVE,
     analytic_flops,
@@ -57,8 +55,8 @@ def test_threshold_matches_preregistration() -> None:
     assert ADVANTAGE_SURVIVE == 0.05
 
 
-@pytest.mark.skipif(not VERDICT.is_file(), reason="verdict not generated in this checkout")
 def test_recorded_verdict_is_internally_consistent() -> None:
+    assert VERDICT.is_file(), "required frozen verdict is missing"
     v = json.loads(VERDICT.read_text())
     # ledger validated like-for-like at every operating point
     assert all(q["pass"] for q in v["q1_flop_ledger_vs_profiler"])

@@ -23,14 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Run actionlint
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -v "$PWD:/repo" \
             -w /repo \
-            rhysd/actionlint:1.7.7 \
+            rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
             -color \
             .github/workflows/*.yml
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - name: Run Gitleaks with redacted output
@@ -48,7 +48,7 @@ jobs:
             --user "$(id -u):$(id -g)" \
             -v "$PWD:/repo" \
             -w /repo \
-            zricethezav/gitleaks:v8.28.0 \
+            zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
             git --redact --no-banner --exit-code 1 --log-opts=--all
 
   dependency-audit:
@@ -56,11 +56,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install uv
-        run: pipx install uv
-      - name: Check pinned development dependencies against OSV
-        run: uvx --from pip-audit pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
+        run: pipx install uv==0.10.12
+      - name: Check locked runtime and pinned development dependencies against OSV
+        run: make -f Makefile.cwc dependency-audit
 
   dependency-review:
     name: Reject vulnerable dependency changes
@@ -71,7 +71,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: moderate

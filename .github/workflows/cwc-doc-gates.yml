@@ -20,11 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0                       # doc-gate needs history for ancestry check
       - name: Install uv
-        run: pipx install uv || pip install uv
+        run: pipx install uv==0.10.12
       - name: Sync frozen environment
         run: uv sync --frozen
       - name: Bibliography gate (every citation machine-resolved, argued, claim-attached)

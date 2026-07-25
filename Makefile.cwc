@@ -5,7 +5,7 @@
 # with `make -f Makefile.cwc PY=python verify` on a fresh checkout.
 PY ?= .venv/bin/python
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full workflow-lint secret-scan dependency-audit
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test coverage mutation experiment-tests validate-evidence doc-gate
@@ -20,27 +20,33 @@ verify-full: verify verify-evidence reproduce-primary
 # PR admission commands. The same targets are used locally and by GitHub Actions.
 # pr-fast is the feedback loop; pr-security is the public-repository safety gate;
 # pr-full is the merge-grade scientific verification and falsification cycle.
-pr-fast: lint typecheck test validate-evidence doc-gate
+pr-fast: truth-gate lint typecheck test validate-evidence doc-gate
 	@echo "CWC-PR-FAST: ALL GATES PASSED"
 
-pr-security: workflow-lint secret-scan dependency-audit
+pr-security: truth-gate workflow-lint secret-scan dependency-audit
 	@echo "CWC-PR-SECURITY: ALL GATES PASSED"
 
-pr-full: verify pr-security
+pr-full: verify-full pr-security
 	@echo "CWC-PR-FULL: ALL GATES PASSED"
+
+truth-gate:
+	PYTHONPATH=. $(PY) scripts/truth_gate.py
 
 workflow-lint:
 	docker run --rm --user "$$(id -u):$$(id -g)" \
-		-v "$$(pwd):/repo" -w /repo rhysd/actionlint:1.7.7 \
+		-v "$$(pwd):/repo" -w /repo rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
 		-color .github/workflows/*.yml
 
 secret-scan:
 	docker run --rm --user "$$(id -u):$$(id -g)" \
-		-v "$$(pwd):/repo" -w /repo zricethezav/gitleaks:v8.28.0 \
+		-v "$$(pwd):/repo" -w /repo zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
 		git --redact --no-banner --exit-code 1 --log-opts=--all
 
 dependency-audit:
-	uvx --from pip-audit pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
+	uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt
+	sed -E 's/(torch==[0-9.]+)\+cpu/\1/' /tmp/cwc-runtime-requirements.txt > /tmp/cwc-auditable-requirements.txt
+	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
+	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
 
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
 # commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.

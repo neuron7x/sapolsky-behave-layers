@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from experiments.wpr1_routability_spec.src.spec import (
     C_ROUTE,
     boundary_sweep,
@@ -47,8 +45,8 @@ def test_the_screen_is_binding_not_vacuous() -> None:
     assert verdicts == {True, False}
 
 
-@pytest.mark.skipif(not VERDICT.is_file(), reason="verdict not generated in this checkout")
 def test_recorded_verdict_matches_the_frozen_decision_rule() -> None:
+    assert VERDICT.is_file(), "required frozen verdict is missing"
     v = json.loads(VERDICT.read_text())
     total = v["mismatches"] + v["boundary_sweep"]["mismatches"]
     assert v["verdict"] == ("SPEC_PREDICTS_CERTIFICATE" if total == 0 else "SPEC_REFUTED")

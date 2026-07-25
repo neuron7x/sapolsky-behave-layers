@@ -15,10 +15,19 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.10"]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+  "mypy>=1.10",
+  "types-PyYAML>=6.0",
+  "types-jsonschema>=4.21",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+cwc_fractal = ["py.typed"]
 
 [tool.pytest.ini_options]
 addopts = "-q --strict-markers"
@@ -35,4 +44,5 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
+explicit_package_bases = true
 packages = ["cwc_fractal"]

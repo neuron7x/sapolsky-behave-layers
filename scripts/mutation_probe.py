@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -132,29 +133,43 @@ def _purge_bytecode(source_path: Path) -> None:
             pyc.unlink(missing_ok=True)
 
 
-def _run_targets() -> bool:
-    """Returns True if the test subset PASSES (mutant survived), False if it
-    fails (mutant killed).
+def _run_targets() -> subprocess.CompletedProcess[str]:
+    """Run the mutation targets and preserve enough evidence to classify failure.
 
     PYTHONDONTWRITEBYTECODE guarantees each run imports the freshly-mutated
     source, never a stale .pyc — without it a cached bytecode of the original
     can mask a mutation and produce a false 'killed'/'survived'.
     """
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
-    result = subprocess.run(
+    return subprocess.run(
         [PY, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider", *TEST_TARGETS],
         cwd=REPO,
         capture_output=True,
         text=True,
         env=env,
     )
-    return result.returncode == 0
+
+
+def _is_assertion_kill(result: subprocess.CompletedProcess[str]) -> bool:
+    """Only an actual test failure kills a mutant.
+
+    Import errors, collection errors, crashes, interrupts and infrastructure
+    failures used to be counted as successful kills. That produced a green
+    mutation score while the probe itself was broken.
+    """
+    output = f"{result.stdout}\n{result.stderr}"
+    has_failed_test = re.search(r"^FAILED\s+", output, re.MULTILINE) is not None
+    has_test_error = re.search(r"^ERROR\s+", output, re.MULTILINE) is not None
+    return result.returncode == 1 and has_failed_test and not has_test_error
 
 
 def main() -> int:
     # Sanity: baseline must be green before mutating anything.
-    if not _run_targets():
+    baseline = _run_targets()
+    if baseline.returncode != 0:
         print("BASELINE FAILED — refusing to run mutation probe on a red suite")
+        print(baseline.stdout)
+        print(baseline.stderr)
         return 2
 
     killed = 0
@@ -169,16 +184,22 @@ def main() -> int:
         backup = source
         try:
             path.write_text(source.replace(mut.original, mut.mutated, 1), encoding="utf-8")
-            passed = _run_targets()
+            result = _run_targets()
         finally:
             path.write_text(backup, encoding="utf-8")
             # Purge the mutated file's bytecode so a same-second mtime cannot
             # let a subsequent import trust a stale mutated .pyc (this is the
             # documented mutation-probe poisoning gotcha).
             _purge_bytecode(path)
-        if passed:
+        if result.returncode == 0:
             survived.append(mut)
             print(f"[{i:02d}/{len(MUTATIONS)}] SURVIVED  ✗  {mut.description}")
+        elif not _is_assertion_kill(result):
+            survived.append(mut)
+            print(
+                f"[{i:02d}/{len(MUTATIONS)}] INVALID   ✗  "
+                f"{mut.description} (non-assertion test failure)"
+            )
         else:
             killed += 1
             print(f"[{i:02d}/{len(MUTATIONS)}] killed    ✓  {mut.description}")
