@@ -5,13 +5,13 @@ successor pointer `h` times. `h=1` (easy) is solved at depth 3; `h=3` (hard) *us
 needs depth 4. A policy that spends depth 3 on easy examples and depth 4 on hard ones is
 compared to a static (context-blind) depth policy at MATCHED average compute.
 
-**Honest finding (destruction stage).** The compute-matched advantage is NOT robust
-across seeds. Adaptive is *never worse* than static at matched compute (by construction
-— it allocates the correct depth per difficulty), but its strict *gain* depends on the
-shallow model genuinely failing the hard task, which is a training-dynamics accident:
-over 3 seeds the shallow model's hop-3 accuracy was 0.96 / 0.41 / 0.21, giving gains
-+0.01 / +0.15 / +0.20 (mean +0.12, min +0.01). When the shallow model happens to learn
-the hard task (seed 0), the separation collapses and adaptivity buys almost nothing.
+**Corrected finding (CPU falsification, 2026-07-25).** The compute-matched advantage is
+not an invariant of independently trained finite models. The original CUDA evidence
+showed gains +0.01 / +0.15 / +0.20 over three seeds, but the hermetic CPU replication
+at seed 0 and 2,500 steps produced -0.2025 (adaptive 0.5825, static-matched 0.7850).
+The oracle theorem only applies when the policy can select the best available action per
+context; it does not guarantee that a separately trained deeper model learned that
+action. Backend and training dynamics can therefore reverse the empirical sign.
 
 This mirrors the CWC programme's own collapse findings (WP2 routing was bimodal too):
 adaptive computation pays exactly when the task is genuinely identifiable/separated, and
@@ -131,9 +131,7 @@ def run(steps: int = 6000, lr: float = 1e-3, batch: int = 128, eval_batch: int =
 
 
 def run_multi_seed(seeds: tuple[int, ...] = (0, 1, 2), steps: int = 6000) -> dict[str, object]:
-    """Run the experiment over several seeds and report the HONEST verdict: adaptive is
-    never worse than static at matched compute, and strictly helps only when the shallow
-    model genuinely fails the hard task (a seed-dependent, non-guaranteed property)."""
+    """Run multiple seeds and report rather than assume the empirical sign."""
     rows = []
     for s in seeds:
         r = run(steps=steps, seed=s)
@@ -149,5 +147,9 @@ def run_multi_seed(seeds: tuple[int, ...] = (0, 1, 2), steps: int = 6000) -> dic
         "min_gain": min(gains),
         "max_gain": max(gains),
         "adaptive_never_worse": never_worse,
-        "verdict": "ADAPTIVE_DEPTH_HELPS_WHEN_SEPARATED_NOT_GUARANTEED",
+        "verdict": (
+            "ADAPTIVE_DEPTH_NONINFERIOR_ON_OBSERVED_RUNS"
+            if never_worse
+            else "ADAPTIVE_DEPTH_NONINFERIORITY_FALSIFIED"
+        ),
     }

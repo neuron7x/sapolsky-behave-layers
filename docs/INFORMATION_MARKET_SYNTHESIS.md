@@ -78,7 +78,7 @@ justification of a decision all the way down to thermodynamics. The same trade �
 | Inference certificate | `G_lo`, FPR ≤ δ; sample complexity `n*` | `IDENTIFIABILITY_INFERENCE.md` |
 | CWC application | the budget tunes routing-v2 to near-criticality (17× value) | §4e |
 | Compute-axis theorem | adaptive ≥ static at matched compute for any `|A|` (= the budgeted oracle gap `G(B)`) | `compute_matched.py` |
-| Empirical bridge | a trained neural controller realises `V*(R)` to machine precision; compute-matched advantage on a real transformer (fragile, seed-dependent — honest) | `experiments/act_j_pilot/` |
+| Empirical bridge | a trained neural controller realises `V*(R)` to machine precision; the separate real-transformer noninferiority claim is backend-sensitive and was falsified on CPU | `experiments/act_j_pilot/`, `vnv/EPISTEMIC_CORRECTION_ACT_J_CPU_2026-07-25.md` |
 
 **Two cost axes, one gap.** The master inequality's `min{G(λ), Δu√(I/2)} − c_route` has
 two distinct costs: the *mechanism* compute cost `K[a]` (folded into `G(λ)` via the
