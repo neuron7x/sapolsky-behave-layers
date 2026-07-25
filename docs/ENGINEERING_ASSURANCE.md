@@ -32,6 +32,15 @@ Run all seven controls locally:
 make -f Makefile.cwc engineering-assurance
 ```
 
+## Fractal inference extension
+
+The admission system also enforces the recursive inference-integrity contract
+documented in `FRACTAL_INFERENCE_INTEGRITY.md`: bounded generation requests,
+finite logits, synchronized and capacity-safe KV caches, deterministic model
+state manifests, checkpoint verification, and metamorphic decoding behaviour.
+The assurance attack deliberately bypasses logit validation; a green gate
+requires that bypass to be detected.
+
 ## Claim boundary
 
 These controls show that declared boundaries and frozen supply-chain metadata

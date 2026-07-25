@@ -6,17 +6,24 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from scripts import architecture_gate, build_sbom, complexity_gate, hermeticity_gate
+from scripts import (
+    architecture_gate,
+    build_sbom,
+    complexity_gate,
+    hermeticity_gate,
+    inference_integrity_gate,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def _copy_fixture(destination: Path) -> None:
-    for directory in ("cwc", "experiments/common", "scripts", "engineering", "docs/security"):
+    for directory in ("cwc", "nanochat", "experiments/common", "scripts", "engineering", "docs/security"):
         source = ROOT / directory
         if source.exists():
             shutil.copytree(source, destination / directory)
     shutil.copy2(ROOT / "uv.lock", destination / "uv.lock")
+    shutil.copy2(ROOT / "Makefile.cwc", destination / "Makefile.cwc")
 
 
 def run_attacks() -> dict[str, bool]:
@@ -47,6 +54,14 @@ def run_attacks() -> dict[str, bool]:
         sbom["components"][0]["version"] = "0.0.0-corrupted"
         sbom_path.write_text(json.dumps(sbom), encoding="utf-8")
         results["sbom_tamper"] = bool(build_sbom.validate(root))
+
+        engine_path = root / "nanochat/engine.py"
+        engine = engine_path.read_text(encoding="utf-8")
+        engine_path.write_text(
+            engine.replace("validate_logits(logits)", "pass  # validation bypassed"),
+            encoding="utf-8",
+        )
+        results["inference_validation_bypass"] = bool(inference_integrity_gate.validate(root))
     return results
 
 

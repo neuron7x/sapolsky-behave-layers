@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "invariants": {
+    "request": [
+      "prompt_non_empty",
+      "token_ids_in_vocabulary",
+      "positive_sample_count",
+      "finite_non_negative_temperature",
+      "bounded_seed",
+      "prompt_and_decode_fit_sequence"
+    ],
+    "cache": [
+      "positive_geometry",
+      "synchronized_row_positions",
+      "bounded_advance",
+      "compatible_prefill"
+    ],
+    "sampling": [
+      "rank_two_non_empty_logits",
+      "floating_logits",
+      "finite_logits",
+      "seed_reproducibility",
+      "greedy_seed_invariance"
+    ],
+    "weights": [
+      "complete_sorted_inventory",
+      "shape_and_dtype_commitment",
+      "finite_tensor_content",
+      "per_tensor_sha256",
+      "state_root_sha256",
+      "single_bit_tamper_detection",
+      "checkpoint_load_verification"
+    ]
+  },
+  "claim_boundary": "These executable invariants detect malformed requests, cache corruption, non-finite sampling surfaces, and weight drift. They do not establish task accuracy, calibration, robustness outside tested transformations, or scientific validity."
+}

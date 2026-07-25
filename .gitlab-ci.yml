@@ -82,6 +82,7 @@ quality:
       tests/test_instrumentation_*.py
       --cov=cwc/instrumentation --cov-branch
       --cov-report=term-missing --cov-fail-under=85
+    - PYTHONPATH=. python -m pytest -q tests/test_inference_integrity.py tests/test_engine.py
     - python scripts/mutation_probe.py
 
 evidence-and-docs:

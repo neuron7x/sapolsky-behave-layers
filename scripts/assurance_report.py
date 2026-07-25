@@ -14,6 +14,7 @@ from scripts import (
     build_sbom,
     complexity_gate,
     hermeticity_gate,
+    inference_integrity_gate,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,7 @@ def build_report(root: Path = ROOT) -> dict[str, object]:
         ("hermeticity", lambda: hermeticity_gate.validate(root)),
         ("complexity", lambda: complexity_gate.validate(root)),
         ("sbom", lambda: build_sbom.validate(root)),
+        ("inference_integrity", lambda: inference_integrity_gate.validate(root)),
         ("assurance_attacks", assurance_attack.validate),
     ]
     results = []

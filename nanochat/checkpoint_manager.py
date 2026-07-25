@@ -11,6 +11,7 @@ from nanochat.common import get_base_dir
 from nanochat.gpt import GPT, GPTConfig
 from nanochat.tokenizer import get_tokenizer
 from nanochat.common import setup_default_logging
+from nanochat.model_integrity import build_state_manifest, verify_state_manifest
 
 # Set up logging
 setup_default_logging()
@@ -41,6 +42,8 @@ def _patch_missing_keys(model_data, model_config):
 def save_checkpoint(checkpoint_dir, step, model_data, optimizer_data, meta_data, rank=0):
     if rank == 0:
         os.makedirs(checkpoint_dir, exist_ok=True)
+        integrity = build_state_manifest(model_data)
+        meta_data = {**meta_data, "model_integrity": integrity}
         # Save the model state parameters
         model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
         torch.save(model_data, model_path)
@@ -60,16 +63,22 @@ def save_checkpoint(checkpoint_dir, step, model_data, optimizer_data, meta_data,
 def load_checkpoint(checkpoint_dir, step, device, load_optimizer=False, rank=0):
     # Load the model state
     model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
-    model_data = torch.load(model_path, map_location=device)
+    model_data = torch.load(model_path, map_location=device, weights_only=True)
     # Load the optimizer state if requested
     optimizer_data = None
     if load_optimizer:
         optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
-        optimizer_data = torch.load(optimizer_path, map_location=device)
+        optimizer_data = torch.load(optimizer_path, map_location=device, weights_only=True)
     # Load the metadata
     meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
     with open(meta_path, "r", encoding="utf-8") as f:
         meta_data = json.load(f)
+    expected_integrity = meta_data.get("model_integrity")
+    if expected_integrity is not None:
+        integrity_errors = verify_state_manifest(model_data, expected_integrity)
+        if integrity_errors:
+            detail = "; ".join(integrity_errors)
+            raise RuntimeError(f"Checkpoint weight integrity verification failed: {detail}")
     return model_data, optimizer_data, meta_data
 
 
@@ -189,5 +198,5 @@ def load_optimizer_state(source, device, rank, model_tag=None, step=None):
         log0(f"Optimizer checkpoint not found: {optimizer_path}")
         return None
     log0(f"Loading optimizer state from {optimizer_path}")
-    optimizer_data = torch.load(optimizer_path, map_location=device)
+    optimizer_data = torch.load(optimizer_path, map_location=device, weights_only=True)
     return optimizer_data

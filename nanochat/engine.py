@@ -11,14 +11,18 @@ Notes:
 The whole thing is made as efficient as possible.
 """
 
-import torch
-import torch.nn.functional as F
+import math
 import signal
 import warnings
-from contextlib import contextmanager
 from collections import deque
-from nanochat.common import compute_init, autodetect_device_type, COMPUTE_DTYPE
+from contextlib import contextmanager
+
+import torch
+import torch.nn.functional as F
+
 from nanochat.checkpoint_manager import load_model
+from nanochat.common import COMPUTE_DTYPE, autodetect_device_type, compute_init
+from nanochat.inference_contracts import validate_generation_request, validate_logits
 
 # -----------------------------------------------------------------------------
 # Calculator tool helpers
@@ -90,6 +94,15 @@ class KVCache:
     """
 
     def __init__(self, batch_size, num_heads, seq_len, head_dim, num_layers, device, dtype):
+        dimensions = {
+            "batch_size": batch_size,
+            "num_heads": num_heads,
+            "seq_len": seq_len,
+            "head_dim": head_dim,
+            "num_layers": num_layers,
+        }
+        if any(not isinstance(value, int) or isinstance(value, bool) or value < 1 for value in dimensions.values()):
+            raise ValueError(f"KV cache dimensions must be positive integers: {dimensions}")
         self.batch_size = batch_size
         self.max_seq_len = seq_len
         self.n_layers = num_layers
@@ -110,14 +123,22 @@ class KVCache:
 
     def get_pos(self):
         """Get current position (assumes all batch elements at same position)."""
+        if not torch.equal(self.cache_seqlens, self.cache_seqlens[:1].expand_as(self.cache_seqlens)):
+            raise RuntimeError("KV cache rows have divergent positions")
         return self.cache_seqlens[0].item()
 
     def get_layer_cache(self, layer_idx):
         """Return (k_cache, v_cache) views for a specific layer."""
+        if not isinstance(layer_idx, int) or isinstance(layer_idx, bool) or not 0 <= layer_idx < self.n_layers:
+            raise IndexError(f"layer_idx must be in [0, {self.n_layers})")
         return self.k_cache[layer_idx], self.v_cache[layer_idx]
 
     def advance(self, num_tokens):
         """Advance the cache position by num_tokens."""
+        if not isinstance(num_tokens, int) or isinstance(num_tokens, bool) or num_tokens < 0:
+            raise ValueError("num_tokens must be a non-negative integer")
+        if self.get_pos() + num_tokens > self.max_seq_len:
+            raise OverflowError("KV cache capacity exceeded")
         self.cache_seqlens += num_tokens
 
     def prefill(self, other):
@@ -125,10 +146,15 @@ class KVCache:
         Copy cached KV from another cache into this one.
         Used when we do batch=1 prefill and then want to generate multiple samples in parallel.
         """
-        assert self.get_pos() == 0, "Cannot prefill a non-empty KV cache"
-        assert self.n_layers == other.n_layers and self.n_heads == other.n_heads and self.head_dim == other.head_dim
-        assert self.max_seq_len >= other.max_seq_len
+        if self.get_pos() != 0:
+            raise ValueError("cannot prefill a non-empty KV cache")
+        if not isinstance(other, KVCache):
+            raise TypeError("prefill source must be a KVCache")
+        if (self.n_layers, self.n_heads, self.head_dim) != (other.n_layers, other.n_heads, other.head_dim):
+            raise ValueError("KV cache geometry differs")
         other_pos = other.get_pos()
+        if other_pos > self.max_seq_len:
+            raise OverflowError("prefill content exceeds destination capacity")
         self.k_cache[:, :, :other_pos, :, :] = other.k_cache[:, :, :other_pos, :, :]
         self.v_cache[:, :, :other_pos, :, :] = other.v_cache[:, :, :other_pos, :, :]
         self.cache_seqlens.fill_(other_pos)
@@ -140,7 +166,11 @@ class KVCache:
 @torch.inference_mode()
 def sample_next_token(logits, rng, temperature=1.0, top_k=None):
     """Sample a single next token from given logits of shape (B, vocab_size). Returns (B, 1)."""
-    assert temperature >= 0.0, "temperature must be non-negative"
+    validate_logits(logits)
+    if not isinstance(temperature, (int, float)) or isinstance(temperature, bool):
+        raise TypeError("temperature must be a real number")
+    if not math.isfinite(float(temperature)) or temperature < 0.0:
+        raise ValueError("temperature must be finite and non-negative")
     if temperature == 0.0:
         return torch.argmax(logits, dim=-1, keepdim=True)
     if top_k is not None and top_k > 0:
@@ -175,7 +205,16 @@ class Engine:
     @torch.inference_mode()
     def generate(self, tokens, num_samples=1, max_tokens=None, temperature=1.0, top_k=None, seed=42):
         """Same as generate, but does single prefill and then clones the KV cache."""
-        assert isinstance(tokens, list) and isinstance(tokens[0], int), "expecting list of ints"
+        validate_generation_request(
+            tokens,
+            num_samples=num_samples,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            seed=seed,
+            sequence_len=self.model.config.sequence_len,
+            vocab_size=getattr(self.model.config, "vocab_size", self.model.vocab_size),
+        )
         device = self.model.get_device()
         # Allocate the KV cache in the compute dtype so it matches what the forward pass emits
         dtype = COMPUTE_DTYPE

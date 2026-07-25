@@ -156,6 +156,11 @@ def _contract_errors(root: Path) -> list[str]:
         "scripts/build_sbom.py",
         "scripts/assurance_attack.py",
         "scripts/assurance_report.py",
+        "scripts/inference_integrity_gate.py",
+        "nanochat/inference_contracts.py",
+        "nanochat/model_integrity.py",
+        "engineering/inference_integrity_contract.json",
+        "tests/test_inference_integrity.py",
     )
     for rel in required_assurance:
         if not (root / rel).is_file():
