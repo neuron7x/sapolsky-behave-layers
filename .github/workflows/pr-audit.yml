@@ -34,6 +34,23 @@ jobs:
             -color \
             .github/workflows/*.yml
 
+  secret-audit:
+    name: Scan complete Git history for secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks with redacted output
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD:/repo" \
+            -w /repo \
+            zricethezav/gitleaks:v8.28.0 \
+            git --redact --no-banner --exit-code 1 --log-opts=--all
+
   dependency-audit:
     name: Audit Python tooling dependencies
     runs-on: ubuntu-latest
@@ -44,3 +61,17 @@ jobs:
         run: pipx install uv
       - name: Check pinned development dependencies against OSV
         run: uvx --from pip-audit pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
+
+  dependency-review:
+    name: Reject vulnerable dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
