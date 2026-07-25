@@ -1,0 +1,46 @@
+name: pr-audit
+
+# Free, read-only checks for supply-chain and workflow regressions.
+# All commands also run locally; no paid service or repository secret is required.
+on:
+  pull_request:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/**"
+      - "cwc-requirements-dev.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-audit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflow-audit:
+    name: Validate GitHub Actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run actionlint
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD:/repo" \
+            -w /repo \
+            rhysd/actionlint:1.7.7 \
+            -color \
+            .github/workflows/*.yml
+
+  dependency-audit:
+    name: Audit Python tooling dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: pipx install uv
+      - name: Check pinned development dependencies against OSV
+        run: uvx --from pip-audit pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
