@@ -103,6 +103,30 @@ def _workflow_errors(root: Path) -> list[str]:
                 errors.append(f"{rel}: fail-open workflow token is forbidden: {forbidden}")
         if "timeout-minutes:" not in text:
             errors.append(f"{rel}: every workflow must bound job runtime")
+
+    gitlab_path = root / ".gitlab-ci.yml"
+    if not gitlab_path.is_file():
+        errors.append("required workflow missing: .gitlab-ci.yml")
+    else:
+        text = gitlab_path.read_text(encoding="utf-8")
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            if re.search(r"^\s*name:\s+\S+", line) and "image" not in line and "@sha256:" not in line:
+                errors.append(f".gitlab-ci.yml:{line_no}: mutable container image")
+        for forbidden in ("allow_failure: true", "|| true", "--skip-checksum-verify"):
+            if forbidden in text:
+                errors.append(f".gitlab-ci.yml: fail-open token is forbidden: {forbidden}")
+        for job in (
+            "truth-gate:",
+            "workflow-audit:",
+            "secret-audit:",
+            "dependency-audit:",
+            "quality:",
+            "evidence-and-docs:",
+            "fractal-verification:",
+            "full-verification:",
+        ):
+            if job not in text:
+                errors.append(f".gitlab-ci.yml: mandatory job missing: {job}")
     return errors
 
 
@@ -110,6 +134,7 @@ def _contract_errors(root: Path) -> list[str]:
     errors: list[str] = []
     makefile = (root / "Makefile.cwc").read_text(encoding="utf-8")
     workflow = (root / ".github/workflows/cwc-full-pr-gate.yml").read_text(encoding="utf-8")
+    gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
     for token in ("verify-full:", "pr-full: verify-full pr-security", "truth-gate:"):
         if token not in makefile:
             errors.append(f"Makefile contract missing: {token}")
@@ -117,6 +142,8 @@ def _contract_errors(root: Path) -> list[str]:
         errors.append("full PR workflow does not invoke the canonical pr-full target")
     if "fractal-verification:" not in workflow:
         errors.append("full PR workflow omits the separate Python 3.11 fractal gate")
+    if "make -f Makefile.cwc verify-full" not in gitlab:
+        errors.append("GitLab full verification does not invoke verify-full")
     return errors
 
 
