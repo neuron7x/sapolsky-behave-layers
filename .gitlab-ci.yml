@@ -22,7 +22,7 @@ workflow:
 
 default:
   image:
-    name: python:3.10.20-slim-bookworm@sha256:9643927a6fc74bd81b0f1bbb5cce3cb4a491f46b4c5dbee770f28e575f180015
+    name: python:3.10.20-bookworm@sha256:be77ec026cf35f6adf5f4f02015d50b7aadaac98659a02be1fc8ce18c396f652
   tags:
     - cwc-docker
   interruptible: true
@@ -89,7 +89,7 @@ evidence-and-docs:
 fractal-verification:
   stage: evidence
   image:
-    name: python:3.11.15-slim-bookworm@sha256:b18992999dbe963a45a8a4da40ac2b1975be1a776d939d098c647482bcad5cba
+    name: python:3.11.15-bookworm@sha256:5c34b355088846dddc8afb7442c20b9433dccdc8d66192dc52c616adeaa106a3
   before_script:
     - python -m pip install uv==0.10.12
     - uv sync --frozen --project experiments/fractal_multiscale --extra dev
