@@ -37,7 +37,7 @@ on:
       - ".github/workflows/cwc-quality.yml"
 
 concurrency:
-  group: cwc-quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: cwc-quality-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
