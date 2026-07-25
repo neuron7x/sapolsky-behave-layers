@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "canonical_scripts": {
+    "scripts/reproduce_primary.py": {
+      "required_tokens": [
+        "tempfile.TemporaryDirectory",
+        "PYTHONHASHSEED",
+        "\"--seeds\", \"0\", \"1\", \"2\", \"3\", \"4\", \"5\", \"6\", \"7\""
+      ]
+    },
+    "scripts/validate_evidence.py": {
+      "required_tokens": ["The validator is read-only."]
+    },
+    "scripts/build_experiment_ledger.py": {
+      "required_tokens": ["subprocess.run"]
+    },
+    "scripts/build_document_register.py": {
+      "required_tokens": ["DOCUMENT_STATUS_REGISTER.csv"]
+    }
+  },
+  "forbidden_import_prefixes": [
+    "aiohttp",
+    "http.client",
+    "httpx",
+    "requests",
+    "socket",
+    "urllib.request"
+  ],
+  "forbidden_call_prefixes": [
+    "requests.",
+    "urllib.request.",
+    "socket.",
+    "httpx.",
+    "aiohttp."
+  ]
+}

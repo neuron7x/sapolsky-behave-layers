@@ -6,7 +6,7 @@
 PY ?= .venv/bin/python
 COVERAGE_FAIL_UNDER ?= 95
 
-.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit
+.PHONY: verify lint typecheck test coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate assurance-attack assurance-report engineering-assurance
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test coverage mutation experiment-tests validate-evidence doc-gate
@@ -24,7 +24,7 @@ verify-full: verify verify-evidence reproduce-primary
 pr-fast: truth-gate lint typecheck test validate-evidence doc-gate
 	@echo "CWC-PR-FAST: ALL GATES PASSED"
 
-pr-security: truth-gate workflow-lint secret-scan dependency-audit
+pr-security: truth-gate workflow-lint secret-scan dependency-audit engineering-assurance
 	@echo "CWC-PR-SECURITY: ALL GATES PASSED"
 
 pr-full: verify-full pr-security
@@ -49,6 +49,30 @@ dependency-audit:
 	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
 	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
 
+# Seven project-level engineering capabilities: explicit architecture, hermetic
+# reproduction, algorithmic budgets, deterministic SBOM, adversarial gate attacks,
+# machine-readable assurance evidence, and mandatory CI admission.
+architecture-gate:
+	PYTHONPATH=. $(PY) scripts/architecture_gate.py
+
+hermeticity-gate:
+	PYTHONPATH=. $(PY) scripts/hermeticity_gate.py
+
+complexity-gate:
+	PYTHONPATH=. $(PY) scripts/complexity_gate.py
+
+sbom-gate:
+	PYTHONPATH=. $(PY) scripts/build_sbom.py --check
+
+assurance-attack:
+	PYTHONPATH=. $(PY) scripts/assurance_attack.py
+
+assurance-report:
+	PYTHONPATH=. $(PY) scripts/assurance_report.py
+
+engineering-assurance: architecture-gate hermeticity-gate complexity-gate sbom-gate assurance-attack assurance-report
+	@echo "CWC-ENGINEERING-ASSURANCE: ALL GATES PASSED"
+
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
 # commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.
 # bib-gate is part of it: a bibliography is the one artefact a reader cannot check by
@@ -72,7 +96,7 @@ lint:
 	$(PY) -m ruff check .
 
 typecheck:
-	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py experiments/common/value_of_information_rate.py experiments/common/identifiability_inference.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py scripts/verify_bibliography.py scripts/build_bibliography.py scripts/build_document_register.py
+	$(PY) -m mypy --config-file mypy.ini cwc/ experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py experiments/common/value_of_information_rate.py experiments/common/identifiability_inference.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py scripts/verify_bibliography.py scripts/build_bibliography.py scripts/build_document_register.py scripts/architecture_gate.py scripts/hermeticity_gate.py scripts/complexity_gate.py scripts/build_sbom.py scripts/assurance_attack.py scripts/assurance_report.py
 
 # Fast behavioral suite (excludes CUDA-hardware and the minutes-long mutation gate).
 test:

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "boundaries": [
+    {
+      "root": "cwc/instrumentation",
+      "internal_namespace": "cwc",
+      "allowed_prefixes": ["cwc.instrumentation"]
+    },
+    {
+      "root": "cwc/plasticity",
+      "internal_namespace": "cwc",
+      "allowed_prefixes": ["cwc.plasticity"]
+    },
+    {
+      "root": "experiments/common",
+      "internal_namespace": "experiments",
+      "allowed_prefixes": [
+        "experiments.common",
+        "experiments.act_j_pilot.src.compute_matched"
+      ]
+    }
+  ]
+}

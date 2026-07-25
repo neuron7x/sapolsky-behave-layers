@@ -120,6 +120,7 @@ def _workflow_errors(root: Path) -> list[str]:
             "workflow-audit:",
             "secret-audit:",
             "dependency-audit:",
+            "engineering-assurance:",
             "quality:",
             "evidence-and-docs:",
             "fractal-verification:",
@@ -135,9 +136,30 @@ def _contract_errors(root: Path) -> list[str]:
     makefile = (root / "Makefile.cwc").read_text(encoding="utf-8")
     workflow = (root / ".github/workflows/cwc-full-pr-gate.yml").read_text(encoding="utf-8")
     gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
-    for token in ("verify-full:", "pr-full: verify-full pr-security", "truth-gate:"):
+    for token in (
+        "verify-full:",
+        "pr-full: verify-full pr-security",
+        "truth-gate:",
+        "engineering-assurance:",
+        "pr-security: truth-gate workflow-lint secret-scan dependency-audit engineering-assurance",
+    ):
         if token not in makefile:
             errors.append(f"Makefile contract missing: {token}")
+    required_assurance = (
+        "engineering/architecture_contract.json",
+        "engineering/hermeticity_contract.json",
+        "engineering/complexity_budgets.json",
+        "docs/security/SBOM.cdx.json",
+        "scripts/architecture_gate.py",
+        "scripts/hermeticity_gate.py",
+        "scripts/complexity_gate.py",
+        "scripts/build_sbom.py",
+        "scripts/assurance_attack.py",
+        "scripts/assurance_report.py",
+    )
+    for rel in required_assurance:
+        if not (root / rel).is_file():
+            errors.append(f"engineering assurance component missing: {rel}")
     if "make -f Makefile.cwc pr-full" not in workflow:
         errors.append("full PR workflow does not invoke the canonical pr-full target")
     if "fractal-verification:" not in workflow:
