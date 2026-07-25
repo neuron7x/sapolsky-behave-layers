@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
 
-from cwc.evidence.intake import audit_tree, classify_path
+import pytest
+
+from cwc.evidence import intake
+from cwc.evidence.intake import audit_tree, classify_path, hash_file
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -54,10 +58,14 @@ def test_symlinks_are_quarantined_and_never_followed(tmp_path: Path) -> None:
     outside.mkdir()
     (outside / "secret.txt").write_text("secret", encoding="utf-8")
     (tmp_path / "escape").symlink_to(outside, target_is_directory=True)
-    summary = audit_tree(tmp_path)
+    records: list[dict[str, object]] = []
+    summary = audit_tree(tmp_path, record=records.append)
     assert summary["file_count"] == 0
     assert summary["byte_count"] == 0
     assert summary["symlink_count"] == 1
+    assert records == [
+        {"path": "escape", "kind": "symlink", "category": "quarantined"}
+    ]
 
 
 def test_hardlinks_are_duplicates_but_not_reclaimable_storage(tmp_path: Path) -> None:
@@ -81,3 +89,57 @@ def test_committed_data_baseline_is_complete_and_aggregate_only() -> None:
     assert sum(baseline["category_byte_count"].values()) == baseline["byte_count"]
     assert baseline["category_file_count"]["restricted"] > 0
     assert "paths" not in baseline
+
+
+def test_hash_file_and_progress_callback_are_observable(tmp_path: Path) -> None:
+    target = tmp_path / "payload.bin"
+    target.write_bytes(b"x" * (intake.CHUNK_SIZE + 1))
+    progress: list[tuple[int, int]] = []
+
+    audit_tree(
+        tmp_path,
+        progress=lambda files, size: progress.append((files, size)),
+        progress_every=1,
+    )
+
+    assert hash_file(target) == hashlib.sha256(target.read_bytes()).hexdigest()
+    assert progress == [(1, intake.CHUNK_SIZE + 1)]
+
+
+def test_changed_file_is_fail_closed_and_recorded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / "evidence.txt"
+    target.write_text("before", encoding="utf-8")
+    original_hash = intake.hash_file
+
+    def mutate_after_hash(path: Path) -> str:
+        digest = original_hash(path)
+        path.write_text("after and different", encoding="utf-8")
+        return digest
+
+    monkeypatch.setattr(intake, "hash_file", mutate_after_hash)
+    records: list[dict[str, object]] = []
+    summary = audit_tree(tmp_path, record=records.append)
+
+    assert summary["complete"] is False
+    assert summary["error_count"] == 1
+    assert summary["hashed_file_count"] == 0
+    assert summary["byte_count"] == 0
+    assert summary["error_types"] == {"RuntimeError": 1}
+    assert records == [
+        {
+            "path": "evidence.txt",
+            "kind": "error",
+            "category": "candidate",
+            "error": "RuntimeError",
+        }
+    ]
+
+
+def test_non_directory_root_is_rejected(tmp_path: Path) -> None:
+    target = tmp_path / "file.txt"
+    target.write_text("not a tree", encoding="utf-8")
+
+    with pytest.raises(NotADirectoryError):
+        audit_tree(target)
