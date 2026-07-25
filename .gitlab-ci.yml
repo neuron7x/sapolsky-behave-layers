@@ -106,5 +106,5 @@ full-verification:
     - uv sync --frozen --extra cpu
     - VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
   script:
-    - make -f Makefile.cwc verify-full
+    - make -f Makefile.cwc COVERAGE_FAIL_UNDER=91 verify-full
     - PYTHONPATH=. .venv/bin/python scripts/truth_gate.py

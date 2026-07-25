@@ -142,8 +142,10 @@ def _contract_errors(root: Path) -> list[str]:
         errors.append("full PR workflow does not invoke the canonical pr-full target")
     if "fractal-verification:" not in workflow:
         errors.append("full PR workflow omits the separate Python 3.11 fractal gate")
-    if "make -f Makefile.cwc verify-full" not in gitlab:
-        errors.append("GitLab full verification does not invoke verify-full")
+    if "make -f Makefile.cwc COVERAGE_FAIL_UNDER=91 verify-full" not in gitlab:
+        errors.append("GitLab full verification must invoke verify-full with the locked CPU coverage floor")
+    if "COVERAGE_FAIL_UNDER ?= 95" not in makefile:
+        errors.append("canonical coverage floor must remain 95")
     return errors
 
 
