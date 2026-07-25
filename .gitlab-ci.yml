@@ -27,14 +27,6 @@ default:
     - cwc-docker
   interruptible: true
   timeout: 60m
-  cache:
-    key:
-      files:
-        - uv.lock
-        - cwc-requirements-dev.txt
-    paths:
-      - .cache/pip
-      - .cache/uv
 
 truth-gate:
   stage: audit
