@@ -117,7 +117,7 @@ data-intake-test:
 # its observed baseline is 91.04%, leaving essentially no regression margin.
 coverage:
 	$(PY) -m pytest -q -m "not slow and not mutation" \
-		tests/test_instrumentation_*.py experiments/wp3_plasticity_v1/tests/ \
+		tests/test_instrumentation_*.py tests/test_data_asset_audit.py experiments/wp3_plasticity_v1/tests/ \
 		--cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=$(COVERAGE_FAIL_UNDER)
 
 properties:
