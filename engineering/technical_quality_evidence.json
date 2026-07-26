@@ -27,6 +27,10 @@
     "TQ-026": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-027": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-028": ["experiments/common/tests/test_identifiability_inference.py"],
+    "TQ-031": ["experiments/common/identifiability_inference.py", "experiments/common/tests/test_identifiability_inference.py"],
+    "TQ-032": ["experiments/common/identifiability_inference.py", "experiments/common/tests/test_identifiability_inference.py"],
+    "TQ-035": ["experiments/common/identifiability_inference.py", "experiments/common/tests/test_identifiability_inference.py"],
+    "TQ-037": ["experiments/common/identifiability_inference.py", "experiments/common/tests/test_identifiability_inference.py"],
     "TQ-041": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-042": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-043": ["experiments/common/tests/test_identifiability_inference.py"],
@@ -36,6 +40,7 @@
     "TQ-047": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-048": ["experiments/common/tests/test_identifiability_inference.py"],
     "TQ-052": ["experiments/common/identifiability_inference.py", "experiments/common/value_information.py", "experiments/common/tests/test_identifiability_inference.py"],
+    "TQ-056": ["experiments/common/identifiability_inference.py", "experiments/common/tests/test_identifiability_inference.py"],
     "TQ-091": ["scripts/technical_quality_gate.py", "tests/test_technical_quality_gate.py"],
     "TQ-092": ["engineering/technical_quality_evidence.json", "scripts/technical_quality_gate.py", "tests/test_technical_quality_gate.py"]
   }

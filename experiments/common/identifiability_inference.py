@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from statistics import NormalDist
 
 Matrix = Sequence[Sequence[float]]
 Vector = Sequence[float]
@@ -71,6 +72,35 @@ def _validate_bound_inputs(
         raise ValueError("n_contexts and n_actions must be positive")
     if not math.isfinite(delta) or not 0.0 < delta < 1.0:
         raise ValueError("delta must lie in (0,1)")
+
+
+def wilson_upper_bound(successes: int, trials: int, *, alpha: float = 0.05) -> float:
+    """One-sided Wilson upper confidence bound for a binomial proportion."""
+    if isinstance(successes, bool) or isinstance(trials, bool):
+        raise ValueError("successes and trials must be integer counts, not booleans")
+    if successes < 0 or trials < 1 or successes > trials:
+        raise ValueError("require 0 <= successes <= trials and trials >= 1")
+    if not math.isfinite(alpha) or not 0.0 < alpha < 1.0:
+        raise ValueError("alpha must lie in (0,1)")
+    proportion = successes / trials
+    z = NormalDist().inv_cdf(1.0 - alpha)
+    z2 = z * z
+    denominator = 1.0 + z2 / trials
+    centre = proportion + z2 / (2.0 * trials)
+    radius = z * math.sqrt(
+        proportion * (1.0 - proportion) / trials + z2 / (4.0 * trials * trials)
+    )
+    return min(1.0, (centre + radius) / denominator)
+
+
+def binomial_standard_error(successes: int, trials: int) -> float:
+    """Monte Carlo standard error of an observed binomial proportion."""
+    if isinstance(successes, bool) or isinstance(trials, bool):
+        raise ValueError("successes and trials must be integer counts, not booleans")
+    if successes < 0 or trials < 1 or successes > trials:
+        raise ValueError("require 0 <= successes <= trials and trials >= 1")
+    proportion = successes / trials
+    return math.sqrt(proportion * (1.0 - proportion) / trials)
 
 
 # --------------------------------------------------------------------------- #
@@ -223,10 +253,11 @@ def calibration_experiment(
     _validate_bound_inputs(0.0, std_error, n_c, n_a, delta)
     if trials < 1:
         raise ValueError("trials must be positive")
-    rng = _Rng(seed)
+    null_rng = _Rng(seed)
+    alt_rng = _Rng(seed ^ 0x9E3779B97F4A7C15)
     naive_fp = calib_fp = 0
     for _ in range(trials):
-        g_hat = plugin_gap(_noisy(null_utility, std_error, rng))
+        g_hat = plugin_gap(_noisy(null_utility, std_error, null_rng))
         if g_hat > 0.0:
             naive_fp += 1
         if gap_lower_confidence_bound(g_hat, std_error, n_c, n_a, delta) > 0.0:
@@ -234,14 +265,19 @@ def calibration_experiment(
     power = 0
     na2, nc2 = len(alt_utility[0]), len(alt_utility)
     for _ in range(trials):
-        g_hat = plugin_gap(_noisy(alt_utility, std_error, rng))
+        g_hat = plugin_gap(_noisy(alt_utility, std_error, alt_rng))
         if gap_lower_confidence_bound(g_hat, std_error, nc2, na2, delta) > 0.0:
             power += 1
     return {
         "std_error": std_error,
         "naive_fpr": naive_fp / trials,
         "calibrated_fpr": calib_fp / trials,
+        "naive_fpr_upper": wilson_upper_bound(naive_fp, trials),
+        "calibrated_fpr_upper": wilson_upper_bound(calib_fp, trials),
+        "naive_fpr_mcse": binomial_standard_error(naive_fp, trials),
+        "calibrated_fpr_mcse": binomial_standard_error(calib_fp, trials),
         "power": power / trials,
+        "power_mcse": binomial_standard_error(power, trials),
         "delta": delta,
     }
 
@@ -266,7 +302,7 @@ def falsify_inference(seed: int = 20260720, trials: int = 2500) -> dict[str, flo
         # ALT: strong interaction => G > 0
         alt_u = [[2.0 if a == (c % n_a) else 0.0 for a in range(n_a)] for c in range(n_c)]
         rep = calibration_experiment(null_u, alt_u, std_error=0.12, delta=delta, trials=trials, seed=seed + k)
-        worst_calib_fpr = max(worst_calib_fpr, rep["calibrated_fpr"])
+        worst_calib_fpr = max(worst_calib_fpr, rep["calibrated_fpr_upper"])
         max_naive_fpr = max(max_naive_fpr, rep["naive_fpr"])
         min_power = min(min_power, rep["power"])
         checked += 1

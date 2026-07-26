@@ -14,6 +14,7 @@ from experiments.common.identifiability_inference import (
     _noisy,
     _Rng,
     adaptive_gap_lower_bound,
+    binomial_standard_error,
     bootstrap_debias,
     calibration_experiment,
     certifies_positive_value,
@@ -27,6 +28,7 @@ from experiments.common.identifiability_inference import (
     plugin_gap,
     power_comparison,
     sample_complexity,
+    wilson_upper_bound,
 )
 
 # additive utility => G = 0 exactly (null); interaction => G > 0 (alt)
@@ -118,14 +120,53 @@ def test_naive_rule_is_miscalibrated_but_debiased_is_valid():
     # small pilot: naive fires on the null far above delta; calibrated stays <= delta
     rep = calibration_experiment(NULL, ALT, std_error=0.14, delta=0.1, trials=4000)
     assert rep["naive_fpr"] > 0.3            # naive false-positive catastrophe
-    assert rep["calibrated_fpr"] <= 0.1      # valid: FPR <= delta
+    assert rep["calibrated_fpr_upper"] <= 0.1  # upper confidence bound <= delta
     assert rep["power"] > 0.9                # still powerful on the alternative
 
 
 def test_calibration_holds_across_pilot_sizes():
     for sd in (0.3, 0.1, 0.03):
         rep = calibration_experiment(NULL, ALT, std_error=sd, delta=0.1, trials=3000)
-        assert rep["calibrated_fpr"] <= 0.1
+        assert rep["calibrated_fpr_upper"] <= 0.1
+
+
+def test_wilson_upper_bound_has_exact_domain_and_conservative_edge_behavior():
+    assert 0.0 < wilson_upper_bound(0, 100) < 0.05
+    assert wilson_upper_bound(100, 100) == 1.0
+    assert wilson_upper_bound(10, 100) > 0.1
+    assert wilson_upper_bound(10, 1000) < wilson_upper_bound(10, 100)
+    assert binomial_standard_error(0, 100) == 0.0
+    assert binomial_standard_error(50, 100) == pytest.approx(0.05)
+
+
+@pytest.mark.parametrize(
+    "successes,trials,alpha",
+    [
+        (-1, 10, 0.05),
+        (11, 10, 0.05),
+        (0, 0, 0.05),
+        (True, 10, 0.05),
+        (0, False, 0.05),
+        (0, 10, 0.0),
+        (0, 10, 1.0),
+        (0, 10, math.nan),
+    ],
+)
+def test_wilson_upper_bound_rejects_invalid_counts(successes, trials, alpha):
+    with pytest.raises(ValueError):
+        wilson_upper_bound(successes, trials, alpha=alpha)
+    if alpha == 0.05:
+        with pytest.raises(ValueError):
+            binomial_standard_error(successes, trials)
+
+
+def test_calibration_reports_monte_carlo_uncertainty_deterministically():
+    first = calibration_experiment(NULL, ALT, std_error=0.1, trials=200, seed=17)
+    second = calibration_experiment(NULL, ALT, std_error=0.1, trials=200, seed=17)
+    assert first == second
+    assert first["naive_fpr_mcse"] >= 0.0
+    assert first["calibrated_fpr_mcse"] >= 0.0
+    assert first["power_mcse"] >= 0.0
 
 
 def test_max_bias_term_is_load_bearing_with_many_actions():

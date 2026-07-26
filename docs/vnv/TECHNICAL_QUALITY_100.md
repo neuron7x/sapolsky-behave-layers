@@ -37,13 +37,13 @@ claim of completion. IDs are stable and must not be renumbered.
 | TQ-028 | DONE | Proof | Test single-action oracle gap is exactly zero |
 | TQ-029 | OPEN | Proof | Add numerical tolerance policy for certificate comparisons |
 | TQ-030 | OPEN | Proof | Cross-check analytic bounds with high-precision arithmetic |
-| TQ-031 | OPEN | Statistics | Add Wilson upper confidence bound for simulated FPR |
-| TQ-032 | OPEN | Statistics | Replace empirical `FPR <= delta` point checks with CI checks |
+| TQ-031 | DONE | Statistics | Add Wilson upper confidence bound for simulated FPR |
+| TQ-032 | DONE | Statistics | Replace empirical `FPR <= delta` point checks with CI checks |
 | TQ-033 | OPEN | Statistics | Add deterministic sequential Monte Carlo stopping |
 | TQ-034 | OPEN | Statistics | Add family-wise calibration across null configurations |
-| TQ-035 | OPEN | Statistics | Report Monte Carlo standard error in every simulation |
+| TQ-035 | DONE | Statistics | Report Monte Carlo standard error in every simulation |
 | TQ-036 | OPEN | Statistics | Add minimum detectable effect calculation |
-| TQ-037 | OPEN | Statistics | Separate estimation and validation RNG streams |
+| TQ-037 | DONE | Statistics | Separate estimation and validation RNG streams |
 | TQ-038 | OPEN | Statistics | Add seed-sensitivity envelope |
 | TQ-039 | OPEN | Statistics | Add heavy-tail robustness falsification |
 | TQ-040 | OPEN | Statistics | Add heteroskedastic-noise falsification |
@@ -62,7 +62,7 @@ claim of completion. IDs are stable and must not be renumbered.
 | TQ-053 | OPEN | Numerics | Define underflow policy for tiny joint masses |
 | TQ-054 | OPEN | Numerics | Stress-test probabilities near machine epsilon |
 | TQ-055 | OPEN | Numerics | Stress-test extreme finite utility ranges |
-| TQ-056 | OPEN | Numerics | Reject boolean values where integer counts are required |
+| TQ-056 | DONE | Numerics | Reject boolean values where integer counts are required |
 | TQ-057 | OPEN | Numerics | Detect integer overflow in resource estimates |
 | TQ-058 | OPEN | Numerics | Test exact duplicate-byte accounting at zero-byte files |
 | TQ-059 | OPEN | Numerics | Verify SHA streaming across chunk boundaries |
@@ -108,5 +108,5 @@ claim of completion. IDs are stable and must not be renumbered.
 | TQ-099 | OPEN | Docs | Link every readiness blocker to a closure protocol |
 | TQ-100 | OPEN | Release | Require exact-SHA post-merge verification attestation |
 
-Current closure: **36/100 DONE**. The denominator is fixed. A task may move to
+Current closure: **41/100 DONE**. The denominator is fixed. A task may move to
 `DONE` only in the same change that adds its executable acceptance evidence.
