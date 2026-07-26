@@ -87,6 +87,8 @@ quality:
     - PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_inference_integrity.py tests/test_engine.py
     - PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_data_asset_audit.py
     - PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_readiness_oracle.py
+    - PYTHONPATH=. .venv/bin/python scripts/technical_quality_gate.py
+    - PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_technical_quality_gate.py
     - .venv/bin/python scripts/mutation_probe.py
 
 evidence-and-docs:

@@ -168,6 +168,10 @@ def _contract_errors(root: Path) -> list[str]:
         "cwc/assurance/readiness.py",
         "scripts/readiness_oracle.py",
         "tests/test_readiness_oracle.py",
+        "docs/vnv/TECHNICAL_QUALITY_100.md",
+        "engineering/technical_quality_evidence.json",
+        "scripts/technical_quality_gate.py",
+        "tests/test_technical_quality_gate.py",
     )
     for rel in required_assurance:
         if not (root / rel).is_file():

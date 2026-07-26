@@ -44,33 +44,69 @@ Matrix = Sequence[Sequence[float]]
 Vector = Sequence[float]
 
 
+def _validate_matrix(matrix: Matrix, *, name: str) -> tuple[int, int]:
+    """Return matrix shape after rejecting vacuous, ragged, or non-finite inputs."""
+    if not matrix or not matrix[0]:
+        raise ValueError(f"{name} must be non-empty")
+    n_actions = len(matrix[0])
+    if any(len(row) != n_actions for row in matrix):
+        raise ValueError(f"{name} must be rectangular")
+    if any(not math.isfinite(value) for row in matrix for value in row):
+        raise ValueError(f"{name} values must be finite")
+    return len(matrix), n_actions
+
+
+def _validate_bound_inputs(
+    gap_hat: float,
+    std_error: float,
+    n_contexts: int,
+    n_actions: int,
+    delta: float,
+) -> None:
+    if not math.isfinite(gap_hat):
+        raise ValueError("gap_hat must be finite")
+    if not math.isfinite(std_error) or std_error < 0:
+        raise ValueError("std_error must be finite and non-negative")
+    if n_contexts < 1 or n_actions < 1:
+        raise ValueError("n_contexts and n_actions must be positive")
+    if not math.isfinite(delta) or not 0.0 < delta < 1.0:
+        raise ValueError("delta must lie in (0,1)")
+
+
 # --------------------------------------------------------------------------- #
 # Point estimate and its correction terms                                     #
 # --------------------------------------------------------------------------- #
 def plugin_gap(utility_hat: Matrix, prior: Vector | None = None) -> float:
     """Plug-in oracle gap ``G-hat = E_c max_a U-hat - max_a E_c U-hat`` (upward biased)."""
-    n_c, n_a = len(utility_hat), len(utility_hat[0])
+    n_c, n_a = _validate_matrix(utility_hat, name="utility_hat")
     p = [1.0 / n_c] * n_c if prior is None else list(prior)
-    if len(p) != n_c or not math.isclose(sum(p), 1.0, abs_tol=1e-9):
+    if (
+        len(p) != n_c
+        or any(not math.isfinite(weight) or weight < 0 for weight in p)
+        or not math.isclose(math.fsum(p), 1.0, rel_tol=0.0, abs_tol=1e-12)
+    ):
         raise ValueError("prior must be a distribution over contexts")
-    v_oracle = sum(p[c] * max(utility_hat[c]) for c in range(n_c))
-    v_fixed = max(sum(p[c] * utility_hat[c][a] for c in range(n_c)) for a in range(n_a))
+    v_oracle = math.fsum(p[c] * max(utility_hat[c]) for c in range(n_c))
+    v_fixed = max(
+        math.fsum(p[c] * utility_hat[c][a] for c in range(n_c))
+        for a in range(n_a)
+    )
     return v_oracle - v_fixed
 
 
 def oracle_bias_bound(std_error: float, n_actions: int) -> float:
     """Upper bound on the plug-in oracle term's upward bias: ``sd*sqrt(2 ln|A|)``."""
-    if std_error < 0 or n_actions < 1:
-        raise ValueError("std_error must be >= 0 and n_actions >= 1")
+    if not math.isfinite(std_error) or std_error < 0 or n_actions < 1:
+        raise ValueError("std_error must be finite and >= 0; n_actions must be >= 1")
     return std_error * math.sqrt(2.0 * math.log(max(2, n_actions)))
 
 
 def deviation_bound(std_error: float, n_contexts: int, delta: float) -> float:
     """One-sided sub-Gaussian deviation of the context-averaged estimate at level delta."""
-    if not (0.0 < delta < 1.0):
+    if not math.isfinite(delta) or not 0.0 < delta < 1.0:
         raise ValueError("delta must lie in (0,1)")
-    if std_error < 0 or n_contexts < 1:
-        raise ValueError("std_error >= 0 and n_contexts >= 1 required")
+    if not math.isfinite(std_error) or std_error < 0 or n_contexts < 1:
+        raise ValueError("finite std_error >= 0 and n_contexts >= 1 required")
     return std_error / math.sqrt(n_contexts) * math.sqrt(2.0 * math.log(2.0 / delta))
 
 
@@ -78,6 +114,7 @@ def gap_lower_confidence_bound(
     gap_hat: float, std_error: float, n_contexts: int, n_actions: int, delta: float
 ) -> float:
     """Valid ``1-delta`` lower confidence bound ``G_lo`` on the true oracle gap."""
+    _validate_bound_inputs(gap_hat, std_error, n_contexts, n_actions, delta)
     return gap_hat - oracle_bias_bound(std_error, n_actions) - deviation_bound(std_error, n_contexts, delta)
 
 
@@ -102,6 +139,7 @@ def gap_lower_confidence_bound_corrected(
     Strictly more conservative than the original; empirically the identifiability positives
     survive it (see ``experiments/wp7_certificate_hardening``).
     """
+    _validate_bound_inputs(gap_hat, std_error, n_contexts, n_actions, delta)
     b = oracle_bias_bound(std_error, n_actions)
     d = deviation_bound(std_error, n_contexts, delta / 2.0)
     return gap_hat - b - 2.0 * d
@@ -124,8 +162,8 @@ def certifies_positive_value(
     gap_hat: float, std_error: float, n_contexts: int, n_actions: int, route_cost: float, *, delta: float = 0.05
 ) -> bool:
     """True iff the pilot certifies ``G - c_route > 0`` at confidence ``1-delta``."""
-    if route_cost < 0:
-        raise ValueError("route_cost must be non-negative")
+    if not math.isfinite(route_cost) or route_cost < 0:
+        raise ValueError("route_cost must be finite and non-negative")
     return gap_lower_confidence_bound(gap_hat, std_error, n_contexts, n_actions, delta) > route_cost
 
 
@@ -135,10 +173,9 @@ def sample_complexity(true_gap: float, sigma: float, n_contexts: int, n_actions:
     Solving ``G > (sigma/sqrt n)[sqrt(2 ln|A|) + sqrt(2 ln(2/delta))/sqrt|C|]`` for n:
     ``n* = ceil( (sigma * K / G)^2 )`` with ``K`` the bracketed constant.
     """
+    _validate_bound_inputs(true_gap, sigma, n_contexts, n_actions, delta)
     if true_gap <= 0:
         raise ValueError("true_gap must be positive to be certifiable")
-    if sigma < 0:
-        raise ValueError("sigma must be non-negative")
     k = math.sqrt(2.0 * math.log(max(2, n_actions))) + math.sqrt(2.0 * math.log(2.0 / delta)) / math.sqrt(n_contexts)
     return max(1, math.ceil((sigma * k / true_gap) ** 2))
 
@@ -163,6 +200,9 @@ class _Rng:
 
 
 def _noisy(utility: Matrix, std_error: float, rng: _Rng) -> list[list[float]]:
+    _validate_matrix(utility, name="utility")
+    if not math.isfinite(std_error) or std_error < 0:
+        raise ValueError("std_error must be finite and non-negative")
     return [[utility[c][a] + std_error * rng.gauss() for a in range(len(utility[0]))] for c in range(len(utility))]
 
 
@@ -178,7 +218,11 @@ def calibration_experiment(
     Returns ``naive_fpr`` (uncontrolled), ``calibrated_fpr`` (must be <= delta), and
     ``power`` (P[certify | alt]). Contexts/actions are read from the matrices.
     """
-    n_c, n_a = len(null_utility), len(null_utility[0])
+    n_c, n_a = _validate_matrix(null_utility, name="null_utility")
+    _validate_matrix(alt_utility, name="alt_utility")
+    _validate_bound_inputs(0.0, std_error, n_c, n_a, delta)
+    if trials < 1:
+        raise ValueError("trials must be positive")
     rng = _Rng(seed)
     naive_fp = calib_fp = 0
     for _ in range(trials):
@@ -258,7 +302,11 @@ def bootstrap_debias(
         detector (the max functional is non-smooth exactly at ties, where the
         bootstrap is known to fail, so this flags when to fall back).
     """
-    n_c, n_a = len(utility_hat), len(utility_hat[0])
+    n_c, n_a = _validate_matrix(utility_hat, name="utility_hat")
+    if not math.isfinite(std_error) or std_error < 0:
+        raise ValueError("std_error must be finite and non-negative")
+    if n_boot < 2:
+        raise ValueError("n_boot must be at least 2")
     point_argmax = [max(range(n_a), key=lambda a: utility_hat[c][a]) for c in range(n_c)]
     g0 = plugin_gap(utility_hat)
     vals: list[float] = []
@@ -287,6 +335,10 @@ def adaptive_gap_lower_bound(
     conservative bound. Under-separated benchmarks are correctly deferred, not
     green-lit (collect ``sample_complexity`` more samples first).
     """
+    shape = _validate_matrix(utility_hat, name="utility_hat")
+    if shape != (n_contexts, n_actions):
+        raise ValueError("declared matrix dimensions do not match utility_hat")
+    _validate_bound_inputs(0.0, std_error, n_contexts, n_actions, delta)
     g0 = plugin_gap(utility_hat)
     bias, gap_std, min_stability = bootstrap_debias(utility_hat, std_error, rng, n_boot=n_boot)
     if min_stability < 1.0 - delta:                       # near-tie / irregular

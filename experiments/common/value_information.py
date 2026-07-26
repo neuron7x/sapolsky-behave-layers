@@ -16,7 +16,12 @@ def _validate(joint: Sequence[Sequence[float]], utility: Sequence[Sequence[float
         raise ValueError("joint probabilities must be finite and non-negative")
     if any(not math.isfinite(u) for row in utility for u in row):
         raise ValueError("utilities must be finite")
-    if not math.isclose(sum(map(sum, joint)), 1.0, rel_tol=0.0, abs_tol=1e-12):
+    if not math.isclose(
+        math.fsum(p for row in joint for p in row),
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
         raise ValueError("joint probabilities must sum to one")
 
 
@@ -31,19 +36,31 @@ def information_value_certificate(
     if route_cost < 0 or not math.isfinite(route_cost):
         raise ValueError("route_cost must be finite and non-negative")
     n_contexts, n_signals, n_actions = len(joint_cz), len(joint_cz[0]), len(utility_ca[0])
-    p_c = [sum(joint_cz[c]) for c in range(n_contexts)]
-    p_z = [sum(joint_cz[c][z] for c in range(n_contexts)) for z in range(n_signals)]
-    prior = max(sum(p_c[c] * utility_ca[c][a] for c in range(n_contexts)) for a in range(n_actions))
+    p_c = [math.fsum(joint_cz[c]) for c in range(n_contexts)]
+    p_z = [
+        math.fsum(joint_cz[c][z] for c in range(n_contexts))
+        for z in range(n_signals)
+    ]
+    prior = max(
+        math.fsum(p_c[c] * utility_ca[c][a] for c in range(n_contexts))
+        for a in range(n_actions)
+    )
     informed = 0.0
     for z, mass in enumerate(p_z):
         if mass:
-            informed += max(sum(joint_cz[c][z] * utility_ca[c][a] for c in range(n_contexts)) for a in range(n_actions))
-    mutual_information = 0.0
-    for c in range(n_contexts):
-        for z in range(n_signals):
-            p = joint_cz[c][z]
-            if p:
-                mutual_information += p * math.log(p / (p_c[c] * p_z[z]))
+            informed += max(
+                math.fsum(
+                    joint_cz[c][z] * utility_ca[c][a]
+                    for c in range(n_contexts)
+                )
+                for a in range(n_actions)
+            )
+    mutual_information = math.fsum(
+        p * math.log(p / (p_c[c] * p_z[z]))
+        for c in range(n_contexts)
+        for z in range(n_signals)
+        if (p := joint_cz[c][z])
+    )
     flat_utility = [u for row in utility_ca for u in row]
     utility_range = max(flat_utility) - min(flat_utility)
     bound = utility_range * math.sqrt(max(0.0, mutual_information) / 2.0)

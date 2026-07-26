@@ -11,6 +11,7 @@ import math
 import pytest
 
 from experiments.common.identifiability_inference import (
+    _noisy,
     _Rng,
     adaptive_gap_lower_bound,
     bootstrap_debias,
@@ -21,6 +22,7 @@ from experiments.common.identifiability_inference import (
     falsify_adaptive,
     falsify_inference,
     gap_lower_confidence_bound,
+    gap_lower_confidence_bound_corrected,
     oracle_bias_bound,
     plugin_gap,
     power_comparison,
@@ -36,6 +38,66 @@ ALT = [[1.0 if a == c else 0.0 for a in range(3)] for c in range(3)]
 def test_plugin_gap_matches_definition():
     assert plugin_gap(ALT) == pytest.approx(2.0 / 3.0, abs=1e-12)  # E max = 1, V_fixed = 1/3
     assert plugin_gap(NULL) == pytest.approx(0.0, abs=1e-12)       # additive => G = 0
+
+
+@pytest.mark.parametrize(
+    "utility,prior",
+    [
+        ([], None),
+        ([[]], None),
+        ([[1.0], [1.0, 2.0]], None),
+        ([[math.nan]], None),
+        ([[math.inf]], None),
+        ([[1.0], [2.0]], [1.0]),
+        ([[1.0], [2.0]], [0.5, -0.5]),
+        ([[1.0], [2.0]], [math.nan, math.nan]),
+        ([[1.0], [2.0]], [0.4, 0.4]),
+    ],
+)
+def test_plugin_gap_rejects_malformed_decision_problems(utility, prior):
+    with pytest.raises(ValueError):
+        plugin_gap(utility, prior)
+
+
+def test_plugin_gap_is_invariant_to_positive_prior_rescaling_of_utility():
+    prior = [0.2, 0.3, 0.5]
+    shifted = [[7.0 + 3.0 * value for value in row] for row in ALT]
+    assert plugin_gap(shifted, prior) == pytest.approx(3.0 * plugin_gap(ALT, prior))
+
+
+def test_plugin_gap_metamorphic_symmetries():
+    prior = [0.2, 0.3, 0.5]
+    baseline = plugin_gap(ALT, prior)
+
+    action_permutation = [[row[index] for index in (2, 0, 1)] for row in ALT]
+    assert plugin_gap(action_permutation, prior) == pytest.approx(baseline)
+
+    context_permutation = [ALT[index] for index in (2, 0, 1)]
+    permuted_prior = [prior[index] for index in (2, 0, 1)]
+    assert plugin_gap(context_permutation, permuted_prior) == pytest.approx(baseline)
+
+    translated = [[value - 19.5 for value in row] for row in ALT]
+    assert plugin_gap(translated, prior) == pytest.approx(baseline)
+
+    scaled = [[7.0 * value for value in row] for row in ALT]
+    assert plugin_gap(scaled, prior) == pytest.approx(7.0 * baseline)
+
+
+def test_context_permutation_is_stable_under_catastrophic_cancellation():
+    utility = [[1e16, 0.0], [1.0, 0.0], [-1e16, 0.0]]
+    prior = [1 / 3, 1 / 3, 1 / 3]
+    baseline = plugin_gap(utility, prior)
+    assert plugin_gap(list(reversed(utility)), list(reversed(prior))) == baseline
+
+
+def test_duplicate_actions_and_zero_mass_context_do_not_change_gap():
+    prior = [0.2, 0.3, 0.5]
+    baseline = plugin_gap(ALT, prior)
+    duplicated = [[*row, row[1]] for row in ALT]
+    assert plugin_gap(duplicated, prior) == pytest.approx(baseline)
+    assert plugin_gap([*ALT, [100.0, -100.0, 50.0]], [*prior, 0.0]) == pytest.approx(
+        baseline
+    )
 
 
 # --------------------- correction terms (anti-mutation) -------------------- #
@@ -173,27 +235,71 @@ def test_fail_closed():
         certifies_positive_value(0.4, 0.02, 4, 4, route_cost=-0.1)
 
 
+@pytest.mark.parametrize("bad", [math.nan, math.inf, -math.inf])
+def test_nonfinite_scalar_inputs_fail_closed(bad):
+    with pytest.raises(ValueError):
+        oracle_bias_bound(bad, 4)
+    with pytest.raises(ValueError):
+        deviation_bound(bad, 4, 0.05)
+    with pytest.raises(ValueError):
+        gap_lower_confidence_bound(bad, 0.1, 4, 4, 0.05)
+    with pytest.raises(ValueError):
+        gap_lower_confidence_bound(0.2, bad, 4, 4, 0.05)
+    with pytest.raises(ValueError):
+        sample_complexity(0.2, bad, 4, 4, 0.05)
+    with pytest.raises(ValueError):
+        certifies_positive_value(0.4, 0.02, 4, 4, route_cost=bad)
+
+
+@pytest.mark.parametrize(
+    "n_contexts,n_actions,delta",
+    [(0, 4, 0.05), (4, 0, 0.05), (4, 4, 0.0), (4, 4, 1.0), (4, 4, math.nan)],
+)
+def test_invalid_bound_domain_fails_closed(n_contexts, n_actions, delta):
+    with pytest.raises(ValueError):
+        gap_lower_confidence_bound(0.2, 0.1, n_contexts, n_actions, delta)
+    with pytest.raises(ValueError):
+        sample_complexity(0.2, 1.0, n_contexts, n_actions, delta)
+
+
+def test_bootstrap_contract_rejects_degenerate_resampling():
+    with pytest.raises(ValueError):
+        bootstrap_debias(ALT, 0.1, _Rng(1), n_boot=1)
+    with pytest.raises(ValueError):
+        bootstrap_debias(ALT, -0.1, _Rng(1), n_boot=10)
+    with pytest.raises(ValueError):
+        adaptive_gap_lower_bound(ALT, 0.1, 2, 3, 0.05, _Rng(1), n_boot=10)
+
+
+@pytest.mark.parametrize("trials", [0, -1])
+def test_calibration_requires_positive_trial_count(trials):
+    with pytest.raises(ValueError):
+        calibration_experiment(NULL, ALT, 0.1, trials=trials)
+
+
 def test_corrected_bound_is_more_conservative():
-    from experiments.common.identifiability_inference import (
-        gap_lower_confidence_bound,
-        gap_lower_confidence_bound_corrected,
-    )
     orig = gap_lower_confidence_bound(0.5, 0.1, 4, 4, 0.05)
     corr = gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.05)
     assert corr < orig                      # budgets a second deviation term
     assert corr == gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.05)  # deterministic
 
 
+def test_corrected_bound_is_monotone_in_confidence_noise_and_action_count():
+    baseline = gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.05)
+    assert gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 4, 0.01) < baseline
+    assert gap_lower_confidence_bound_corrected(0.5, 0.2, 4, 4, 0.05) < baseline
+    assert gap_lower_confidence_bound_corrected(0.5, 0.1, 4, 16, 0.05) < baseline
+
+
+def test_zero_noise_bound_is_exact_and_single_action_gap_is_zero():
+    assert gap_lower_confidence_bound_corrected(0.5, 0.0, 4, 4, 0.05) == 0.5
+    assert plugin_gap([[1.0], [-3.0], [8.0]], [0.2, 0.3, 0.5]) == pytest.approx(
+        0.0, abs=1e-12
+    )
+
+
 def test_corrected_bound_fpr_within_delta_on_null():
     # the proof-complete bound must keep FPR <= delta on a tied null (its whole point)
-    import math
-
-    from experiments.common.identifiability_inference import (
-        _Rng,
-        _noisy,
-        gap_lower_confidence_bound_corrected,
-        plugin_gap,
-    )
     null_u = [[0.0] * 4 for _ in range(4)]
     rng = _Rng(2026)
     delta, se, trials, fp = 0.1, 0.15, 3000, 0

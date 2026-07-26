@@ -38,6 +38,27 @@ def test_bound_holds_under_seeded_adversarial_search():
         assert information_value_certificate(joint, utility)["bound_holds"] is True
 
 
+def test_signal_permutation_and_independent_refinement_are_invariant():
+    joint = [[0.30, 0.10], [0.05, 0.55]]
+    utility = [[1.0, -0.2], [0.1, 1.4]]
+    baseline = information_value_certificate(joint, utility)
+    permuted = information_value_certificate(
+        [[row[1], row[0]] for row in joint], utility
+    )
+    refined = information_value_certificate(
+        [[0.4 * row[0], 0.6 * row[0], row[1]] for row in joint], utility
+    )
+    for key in (
+        "prior_value",
+        "informed_value",
+        "gross_value",
+        "mutual_information_nats",
+        "information_upper_bound",
+    ):
+        assert permuted[key] == pytest.approx(baseline[key], abs=1e-12)
+        assert refined[key] == pytest.approx(baseline[key], abs=1e-12)
+
+
 @pytest.mark.parametrize(
     "joint,utility",
     [
