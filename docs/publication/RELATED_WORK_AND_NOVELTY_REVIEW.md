@@ -22,14 +22,14 @@ conceded or distinguished in writing.
 
 | Item | Value |
 |---|---|
-| Date of this pass | 2026-07-22 |
+| Date of this pass | 2026-07-22; §2.5.1 and the RIGOR3 rows amended 2026-08-08 |
 | Resolvers of record | arXiv Atom API; doi.org CSL content negotiation; OpenAlex; Open Library |
 | Anchor surveys (backward chase) | [@han2021dynamicnn], [@fedus2022sparsereview] |
-| Query families | adaptive computation time; conditional computation; dynamic depth / early exit; mixture-of-experts routing; test-time compute scaling; value of information; rational inattention; rate–distortion; family-wise error; preregistration; mutation testing |
+| Query families | adaptive computation time; conditional computation; dynamic depth / early exit; mixture-of-experts routing; test-time compute scaling; value of information; rational inattention; rate–distortion; nonconcavity in the value of information; marginal value of information at the null; family-wise error; preregistration; mutation testing |
 | Inclusion | work that (a) allocates or routes computation conditionally on the input, or (b) supplies a formal object CWC's theory or gates depend on |
 | Exclusion | uniform scaling with no conditional mechanism; distillation/quantisation (orthogonal compression axis); anything CWC does not implement or depend on |
-| Entries admitted | 65, all machine-resolved, 0 unresolved |
-| Known gap | no forward citation chasing on the 2025 entries; no non-English sources; single reviewer (the author) — see [`THREATS_TO_VALIDITY_AND_RED_TEAM.md`](THREATS_TO_VALIDITY_AND_RED_TEAM.md) |
+| Entries admitted | 70, all machine-resolved, 0 unresolved (65 at the 2026-07-22 pass; +5 in §2.5.1) |
+| Known gap | the 2026-07-22 pass missed the economics-of-information nonconcavity line entirely — found by an external audit, not by this procedure; no forward citation chasing on the 2025 entries; no non-English sources; single reviewer (the author) — see [`THREATS_TO_VALIDITY_AND_RED_TEAM.md`](THREATS_TO_VALIDITY_AND_RED_TEAM.md) |
 
 The repository forks nanochat [@karpathy2025nanochat]; the `master`/`baseline` branches
 are unmodified upstream history and all CWC work is additive.
@@ -158,6 +158,36 @@ Consequences that are now written into the record:
   sequential analysis [@wald1945sprt]; CWC contributes the exact empirical verification,
   not the identity.
 
+#### 2.5.1 The nonconcavity line — added 2026-08-08 after an independent audit
+
+The 2026-07-22 pass argued `CWC-RIGOR3-pinsker` against Pinsker [@kullback1967lower] and
+rational inattention [@sims2003inattention] and stopped there. An independent audit
+observed that the *marginal value of the first unit of information* has its own
+literature in the economics of information, that none of it was in `references.bib`, and
+that the one surviving novelty candidate was therefore argued against the wrong
+neighbours. That omission is corrected here rather than defended.
+
+[@radner1984nonconcavity] is the origin: the value of information is not concave, and
+under a regularity condition its marginal value **at zero information vanishes**.
+Reparameterised from their informativeness index into mutual information, that is the
+`Θ(R)` half of CWC's dichotomy. [@chade2002another] sharpens the regularity hypothesis —
+unique prior-optimal action with a strict margin — which is precisely the condition CWC
+calls REGULAR. [@delara2007tight] gives a tight sufficient condition for a zero marginal
+value at the null stated on the information structure alone, independent of preferences,
+and is the closest published statement to CWC's regular-case exponent.
+[@whitmeyer2024cavity] states the split itself — a regime where the marginal value at
+zero is strictly positive against one where it is almost always zero — but without rates
+or exponents. [@delara2020payoffs] reaches CWC's indifference manifold from convex
+duality: information is worth most exactly where the decision-maker is indifferent,
+because a small signal breaks the tie.
+
+**Consequence for the novelty claim.** The dichotomy *as a phenomenon* is prior art and
+CWC asserts no priority over it. What a targeted search did not locate is the
+quantitative form: the exponents `Θ(R)` versus `Θ(√R)` **in nats of mutual information**,
+tied to the tightness of the Pinsker step and with the leading constant `c = std(D)/Δu`
+pinned on the indifference manifold. §3 records `CWC-RIGOR3-pinsker` accordingly as a
+narrowed candidate, and no stronger statement is licensed.
+
 The biological precedent for per-instance variable processing time — evidence
 accumulation to a bound — is [@ratcliff1978] and [@goldshadlen2007]. The energy axis
 [@attwell2001energy], [@levy1996energy] names the currency CWC **abandoned**: energy is
@@ -225,7 +255,8 @@ covers the idea and CWC's contribution is narrower than an earlier draft implied
 | `V*(R)` decision rate function | L4i, AC4 | **OVERLAP_CONCEDED** | rate–distortion for decisions; [@ortega2013thermo], [@ortega2015bounded], [@cover2006elements] |
 | Halt-gap identity `= P(m>K)` | L2p | **NOT_NOVEL** | optimal stopping [@wald1945sprt]; CWC verifies, does not discover |
 | Role-conditioned functional reuse | L3 | **NOT_SUPPORTED / NOT_NOVEL** | ties prior art; recorded as a negative in the ledger |
-| Pinsker tightness dichotomy `Θ(R)` vs `Θ(√R)` at the decision-indifference manifold | RIGOR3 | **NOVELTY_CANDIDATE** | a statement about *where* [@kullback1967lower] is tight, certified over 60+60 de-curated random instances; no prior statement of this located |
+| Nonconcavity / vanishing marginal value of the first unit of information | RIGOR3 | **OVERLAP_CONCEDED** | [@radner1984nonconcavity], [@chade2002another], [@delara2007tight], [@whitmeyer2024cavity], [@delara2020payoffs] — the phenomenon and the regular/critical split are prior art (§2.5.1) |
+| Its quantitative form: exponents `Θ(R)` vs `Θ(√R)` in nats, identified with Pinsker tightness, constant `c=std(D)/Δu` on the manifold | RIGOR3 | **NOVELTY_CANDIDATE (NARROWED 2026-08-08)** | no prior statement of the *rate* located; certified over 60+60 de-curated random instances; narrowed from an unqualified candidate after §2.5.1 |
 | Certificate: proof-complete corrected lower bound `Ĝ − b − 2d` with measured `c_route` charged | RIGOR1, RIGOR9 | **NOVELTY_CANDIDATE** | assembled from standard parts [@hoeffding1963]; the *decision instrument* is the contribution, not the inequality |
 | Closed-form routability screen `Ĝ > c_route + κ·se` | R1 | **NOVELTY_CANDIDATE** | κ = 4.9007 is design-specific and must not be reported as universal; tested out-of-sample on 7 frozen bundles + a 61-point boundary sweep |
 | Three-way frozen real-data negative with positive control in the same run | RD1, RD2, RD3, RD4 | **NOVELTY_CANDIDATE (as evidence)** | negative results of this shape are rarely published; the contribution is the frozen, instrument-sensitivity-tested negative, not a mechanism |
@@ -238,6 +269,9 @@ value-of-information theory — both are prior art — but an **executable, fals
 tested instrument that decides, before spending, whether a given workload can pay for
 adaptivity**, together with the frozen negatives that instrument produced when turned on
 its author's own preferred hypothesis.
+
+That sentence survives the 2026-08-08 amendment unchanged: §2.5.1 removes a
+theory-side candidate, and the instrument and the negatives were never resting on it.
 
 ---
 

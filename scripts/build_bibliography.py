@@ -217,6 +217,41 @@ CURATED: list[tuple[str, str, str, str, list[str], str, str]] = [
      "inequality CWC's ceiling V(Z) <= du*sqrt(I/2) applies. CWC-RIGOR3 tests where that step is "
      "tight (Theta(R)) and where it is loose (Theta(sqrt R)); attribution matters because the "
      "dichotomy is a statement about THIS inequality, not a new one."),
+    # --- The nonconcavity line: the nearest prior art to CWC's only surviving novelty
+    # candidate. Added 2026-08-08 after an independent audit found that RIGOR3 was
+    # argued against Pinsker and rational inattention but NOT against the economics-of-
+    # information literature that already studies the marginal value of the first unit.
+    ("radner1984nonconcavity", "url",
+     "https://pages.stern.nyu.edu/~rradner/publishedpapers/50Nonconcavity.pdf",
+     "information-theory", ["CWC-RIGOR3-pinsker"], "prior-art",
+     "The original statement that the value of information need not be concave, and that under "
+     "regularity its marginal value at zero information VANISHES. Reparameterised from their "
+     "informativeness index to mutual information, this is the REGULAR half of CWC-RIGOR3's "
+     "dichotomy. CWC's contribution is therefore not the phenomenon but its rate in nats "
+     "(Theta(R) vs Theta(sqrt R)) and its identification with Pinsker tightness."),
+    ("chade2002another", "doi", "10.1006/jeth.2001.2960", "information-theory",
+     ["CWC-RIGOR3-pinsker"], "prior-art",
+     "Sharpens the conditions under which the Radner-Stiglitz nonconcavity holds. Read as the "
+     "regularity hypothesis CWC's REGULAR case assumes (unique prior-optimal action, strict "
+     "margin); it is the reason CWC's critical case must be stated as a measure-zero manifold "
+     "rather than as a generic property."),
+    ("delara2007tight", "doi", "10.1016/j.jet.2007.01.014", "information-theory",
+     ["CWC-RIGOR3-pinsker"], "prior-art",
+     "Gives a tight sufficient condition for zero marginal value of information at the null in "
+     "terms of the information structure alone, independent of preferences. This is the closest "
+     "published statement to CWC's regular-case exponent and must be read before any priority "
+     "claim on the Theta(R) side of the dichotomy."),
+    ("whitmeyer2024cavity", "arxiv", "2404.01190", "information-theory",
+     ["CWC-RIGOR3-pinsker"], "prior-art",
+     "Contrasts a regime where the marginal value of information at zero is strictly positive "
+     "with one where it is almost always zero. Qualitatively the same split CWC certifies, "
+     "WITHOUT rates or exponents — which is exactly the gap CWC's numerical certificate fills, "
+     "and exactly why CWC must not claim the dichotomy itself as new."),
+    ("delara2020payoffs", "arxiv", "1908.01633", "information-theory",
+     ["CWC-RIGOR3-pinsker", "CWC-L4i-rate-bridge"], "prior-art",
+     "Payoffs-beliefs duality: information is most valuable precisely where the decision-maker "
+     "is indifferent between optimal actions, since a small signal breaks the tie. That is CWC's "
+     "indifference manifold, arrived at from convex duality rather than from Pinsker."),
     ("blahut1972", "doi", "10.1109/TIT.1972.1054855", "information-theory",
      ["CWC-L4i-rate-bridge", "CWC-AC4-rate-bridge"], "method",
      "Blahut's algorithm for rate-distortion computation — the numerical method family used to "
@@ -525,6 +560,17 @@ MANUAL_FIELDS: dict[str, dict[str, Any]] = {
         "authors": ["Andrej Karpathy"],
         "year": 2025,
         "venue": "GitHub repository",
+    },
+    # A 1984 book chapter: no DOI, absent from OpenAlex, and its host volume carries no
+    # ISBN in Open Library. The resolver of record is a HEAD against the first author's
+    # own institutional copy; the bibliographic fields are supplied here and flagged
+    # manual so check B4 does not compare them against an empty resolver response.
+    "radner1984nonconcavity": {
+        "title": "A Nonconcavity in the Value of Information",
+        "authors": ["Roy Radner", "Joseph E. Stiglitz"],
+        "year": 1984,
+        "venue": "Bayesian Models in Economic Theory, eds. M. Boyer and R. E. Kihlstrom, "
+                 "North-Holland, pp. 33-52",
     },
 }
 

@@ -23,7 +23,7 @@
     "year": 1996
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:28:55Z"
+   "verified_utc": "2026-08-08T13:22:31Z"
   },
   "aljundi2018mas": {
    "area": "plasticity",
@@ -50,7 +50,7 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:52Z"
+   "verified_utc": "2026-08-08T13:22:29Z"
   },
   "arimoto1972": {
    "area": "information-theory",
@@ -74,7 +74,7 @@
     "year": 1972
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:10Z"
+   "verified_utc": "2026-08-08T13:23:01Z"
   },
   "attwell2001energy": {
    "area": "energy",
@@ -99,7 +99,7 @@
     "year": 2001
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:30:16Z"
+   "verified_utc": "2026-08-08T13:24:06Z"
   },
   "bae2025mor": {
    "area": "adaptive-computation",
@@ -132,7 +132,7 @@
     "year": 2025
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:37Z"
+   "verified_utc": "2026-08-08T13:21:18Z"
   },
   "banino2021pondernet": {
    "area": "adaptive-computation",
@@ -158,7 +158,7 @@
     "year": 2021
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:26:53Z"
+   "verified_utc": "2026-08-08T13:20:36Z"
   },
   "bengio2013ste": {
    "area": "adaptive-computation",
@@ -183,7 +183,7 @@
     "year": 2013
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:27:51Z"
+   "verified_utc": "2026-08-08T13:21:31Z"
   },
   "bengio2015conditional": {
    "area": "adaptive-computation",
@@ -209,7 +209,7 @@
     "year": 2015
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:55Z"
+   "verified_utc": "2026-08-08T13:21:35Z"
   },
   "benjamini1995fdr": {
    "area": "statistics",
@@ -233,7 +233,7 @@
     "year": 1995
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:42Z"
+   "verified_utc": "2026-08-08T13:23:32Z"
   },
   "blahut1972": {
    "area": "information-theory",
@@ -257,7 +257,7 @@
     "year": 1972
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:08Z"
+   "verified_utc": "2026-08-08T13:22:59Z"
   },
   "bolukbasi2017adaptive": {
    "area": "adaptive-computation",
@@ -283,7 +283,31 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:06Z"
+   "verified_utc": "2026-08-08T13:20:48Z"
+  },
+  "chade2002another": {
+   "area": "information-theory",
+   "argument": "Sharpens the conditions under which the Radner-Stiglitz nonconcavity holds. Read as the regularity hypothesis CWC's REGULAR case assumes (unique prior-optimal action, strict margin); it is the reason CWC's critical case must be stated as a measure-zero manifold rather than as a generic property.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "10.1006/jeth.2001.2960",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Hector Chade",
+     "Edward Schlee"
+    ],
+    "doi": "10.1006/jeth.2001.2960",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1006/jeth.2001.2960",
+    "title": "Another Look at the Radner–Stiglitz Nonconcavity in the Value of Information",
+    "url": "https://doi.org/10.1006/jeth.2001.2960",
+    "venue": "Journal of Economic Theory",
+    "year": 2002
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-08-08T13:22:46Z"
   },
   "chambers2013registered": {
    "area": "integrity",
@@ -306,7 +330,7 @@
     "year": 2013
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:29:55Z"
+   "verified_utc": "2026-08-08T13:23:45Z"
   },
   "cover2006elements": {
    "area": "information-theory",
@@ -332,7 +356,7 @@
     "year": 2005
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:01Z"
+   "verified_utc": "2026-08-08T13:22:38Z"
   },
   "dehghani2019universal": {
    "area": "adaptive-computation",
@@ -360,7 +384,56 @@
     "year": 2018
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:26:48Z"
+   "verified_utc": "2026-08-08T13:20:31Z"
+  },
+  "delara2007tight": {
+   "area": "information-theory",
+   "argument": "Gives a tight sufficient condition for zero marginal value of information at the null in terms of the information structure alone, independent of preferences. This is the closest published statement to CWC's regular-case exponent and must be read before any priority claim on the Theta(R) side of the dichotomy.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "10.1016/j.jet.2007.01.014",
+   "kind": "doi",
+   "resolved": {
+    "authors": [
+     "Michel De Lara",
+     "Laurent Gilotte"
+    ],
+    "doi": "10.1016/j.jet.2007.01.014",
+    "resolver": "doi-content-negotiation",
+    "resolver_url": "https://doi.org/10.1016/j.jet.2007.01.014",
+    "title": "A tight sufficient condition for Radner–Stiglitz nonconcavity in the value of information",
+    "url": "https://doi.org/10.1016/j.jet.2007.01.014",
+    "venue": "Journal of Economic Theory",
+    "year": 2007
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-08-08T13:22:48Z"
+  },
+  "delara2020payoffs": {
+   "area": "information-theory",
+   "argument": "Payoffs-beliefs duality: information is most valuable precisely where the decision-maker is indifferent between optimal actions, since a small signal breaks the tie. That is CWC's indifference manifold, arrived at from convex duality rather than from Pinsker.",
+   "claims": [
+    "CWC-RIGOR3-pinsker",
+    "CWC-L4i-rate-bridge"
+   ],
+   "identifier": "1908.01633",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Michel de Lara",
+     "Olivier Gossner"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=1908.01633",
+    "title": "Payoffs-Beliefs Duality and the Value of Information",
+    "url": "https://arxiv.org/abs/1908.01633",
+    "venue": "arXiv preprint",
+    "year": 2019
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-08-08T13:22:57Z"
   },
   "demillo1978hints": {
    "area": "software-verification",
@@ -385,7 +458,7 @@
     "year": 1978
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:30:09Z"
+   "verified_utc": "2026-08-08T13:23:59Z"
   },
   "efron1986bootstrap": {
    "area": "statistics",
@@ -409,7 +482,7 @@
     "year": 1986
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:44Z"
+   "verified_utc": "2026-08-08T13:23:34Z"
   },
   "elbayad2020depthadaptive": {
    "area": "adaptive-computation",
@@ -436,7 +509,7 @@
     "year": 2019
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:19Z"
+   "verified_utc": "2026-08-08T13:21:01Z"
   },
   "elhoushi2024layerskip": {
    "area": "adaptive-computation",
@@ -471,7 +544,7 @@
     "year": 2024
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:28Z"
+   "verified_utc": "2026-08-08T13:21:10Z"
   },
   "fedus2022sparsereview": {
    "area": "sparse-experts",
@@ -496,7 +569,7 @@
     "year": 2022
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:20Z"
+   "verified_utc": "2026-08-08T13:21:59Z"
   },
   "fedus2022switch": {
    "area": "sparse-experts",
@@ -521,7 +594,7 @@
     "year": 2021
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:15Z"
+   "verified_utc": "2026-08-08T13:21:54Z"
   },
   "figurnov2017sact": {
    "area": "adaptive-computation",
@@ -550,7 +623,7 @@
     "year": 2016
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:26:57Z"
+   "verified_utc": "2026-08-08T13:20:40Z"
   },
   "geiping2025recurrentdepth": {
    "area": "adaptive-computation",
@@ -582,7 +655,7 @@
     "year": 2025
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:42Z"
+   "verified_utc": "2026-08-08T13:21:22Z"
   },
   "goldshadlen2007": {
    "area": "decision-theory",
@@ -606,7 +679,7 @@
     "year": 2007
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:35Z"
+   "verified_utc": "2026-08-08T13:23:25Z"
   },
   "graves2016act": {
    "area": "adaptive-computation",
@@ -630,7 +703,7 @@
     "year": 2016
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:26:43Z"
+   "verified_utc": "2026-08-08T13:20:27Z"
   },
   "han2021dynamicnn": {
    "area": "adaptive-computation",
@@ -658,7 +731,7 @@
     "year": 2021
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:46Z"
+   "verified_utc": "2026-08-08T13:21:27Z"
   },
   "hao2024coconut": {
    "area": "test-time-compute",
@@ -687,7 +760,7 @@
     "year": 2024
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:38Z"
+   "verified_utc": "2026-08-08T13:22:16Z"
   },
   "hoeffding1963": {
    "area": "statistics",
@@ -711,7 +784,7 @@
     "year": 1963
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:38Z"
+   "verified_utc": "2026-08-08T13:23:28Z"
   },
   "holm1979": {
    "area": "statistics",
@@ -734,7 +807,7 @@
     "year": 1979
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:39Z"
+   "verified_utc": "2026-08-08T13:23:30Z"
   },
   "howard1966voi": {
    "area": "information-theory",
@@ -758,7 +831,7 @@
     "year": 1966
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:13Z"
+   "verified_utc": "2026-08-08T13:23:04Z"
   },
   "ioannidis2005": {
    "area": "integrity",
@@ -781,7 +854,7 @@
     "year": 2005
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:30:00Z"
+   "verified_utc": "2026-08-08T13:23:50Z"
   },
   "jacobs1991moe": {
    "area": "sparse-experts",
@@ -807,7 +880,7 @@
     "year": 1991
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:06Z"
+   "verified_utc": "2026-08-08T13:21:46Z"
   },
   "jia2011mutation": {
    "area": "software-verification",
@@ -831,7 +904,7 @@
     "year": 2011
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:30:12Z"
+   "verified_utc": "2026-08-08T13:24:01Z"
   },
   "johnson2013revised": {
    "area": "statistics",
@@ -854,7 +927,7 @@
     "year": 2013
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:29:46Z"
+   "verified_utc": "2026-08-08T13:23:36Z"
   },
   "just2014mutants": {
    "area": "software-verification",
@@ -882,7 +955,7 @@
     "year": 2014
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:30:14Z"
+   "verified_utc": "2026-08-08T13:24:04Z"
   },
   "karpathy2025nanochat": {
    "area": "upstream",
@@ -912,7 +985,7 @@
     "year": 2025
    },
    "role": "upstream",
-   "verified_utc": "2026-07-22T15:30:23Z"
+   "verified_utc": "2026-08-08T13:24:12Z"
   },
   "kirkpatrick2017ewc": {
    "area": "plasticity",
@@ -948,7 +1021,7 @@
     "year": 2016
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:43Z"
+   "verified_utc": "2026-08-08T13:22:20Z"
   },
   "kullback1951": {
    "area": "information-theory",
@@ -972,7 +1045,7 @@
     "year": 1951
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:04Z"
+   "verified_utc": "2026-08-08T13:22:40Z"
   },
   "kullback1967lower": {
    "area": "information-theory",
@@ -995,7 +1068,7 @@
     "year": 1967
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:06Z"
+   "verified_utc": "2026-08-08T13:22:42Z"
   },
   "leviathan2023speculative": {
    "area": "test-time-compute",
@@ -1020,7 +1093,7 @@
     "year": 2022
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:34Z"
+   "verified_utc": "2026-08-08T13:22:11Z"
   },
   "levy1996energy": {
    "area": "energy",
@@ -1044,7 +1117,7 @@
     "year": 1996
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:30:19Z"
+   "verified_utc": "2026-08-08T13:24:08Z"
   },
   "munafo2017manifesto": {
    "area": "integrity",
@@ -1077,7 +1150,7 @@
     "year": 2017
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:29:58Z"
+   "verified_utc": "2026-08-08T13:23:48Z"
   },
   "nosek2018prereg": {
    "area": "integrity",
@@ -1103,7 +1176,7 @@
     "year": 2018
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:29:53Z"
+   "verified_utc": "2026-08-08T13:23:43Z"
   },
   "ortega2013thermo": {
    "area": "information-theory",
@@ -1128,7 +1201,7 @@
     "year": 2012
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:19Z"
+   "verified_utc": "2026-08-08T13:23:10Z"
   },
   "ortega2015bounded": {
    "area": "information-theory",
@@ -1155,7 +1228,7 @@
     "year": 2015
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:24Z"
+   "verified_utc": "2026-08-08T13:23:14Z"
   },
   "pineau2021reproducibility": {
    "area": "integrity",
@@ -1185,7 +1258,38 @@
     "year": 2020
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:30:07Z"
+   "verified_utc": "2026-08-08T13:23:57Z"
+  },
+  "radner1984nonconcavity": {
+   "area": "information-theory",
+   "argument": "The original statement that the value of information need not be concave, and that under regularity its marginal value at zero information VANISHES. Reparameterised from their informativeness index to mutual information, this is the REGULAR half of CWC-RIGOR3's dichotomy. CWC's contribution is therefore not the phenomenon but its rate in nats (Theta(R) vs Theta(sqrt R)) and its identification with Pinsker tightness.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "https://pages.stern.nyu.edu/~rradner/publishedpapers/50Nonconcavity.pdf",
+   "kind": "url",
+   "resolved": {
+    "authors": [
+     "Roy Radner",
+     "Joseph E. Stiglitz"
+    ],
+    "doi": null,
+    "http_status": 200,
+    "manual_fields": [
+     "title",
+     "authors",
+     "year",
+     "venue"
+    ],
+    "resolver": "http-head",
+    "resolver_url": "https://pages.stern.nyu.edu/~rradner/publishedpapers/50Nonconcavity.pdf",
+    "title": "A Nonconcavity in the Value of Information",
+    "url": "https://pages.stern.nyu.edu/~rradner/publishedpapers/50Nonconcavity.pdf",
+    "venue": "Bayesian Models in Economic Theory, eds. M. Boyer and R. E. Kihlstrom, North-Holland, pp. 33-52",
+    "year": 1984
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-08-08T13:22:44Z"
   },
   "ramdas2022anytime": {
    "area": "statistics",
@@ -1211,7 +1315,7 @@
     "year": 2022
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:29:51Z"
+   "verified_utc": "2026-08-08T13:23:41Z"
   },
   "raposo2024mod": {
    "area": "adaptive-computation",
@@ -1240,7 +1344,7 @@
     "year": 2024
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:33Z"
+   "verified_utc": "2026-08-08T13:21:14Z"
   },
   "ratcliff1978": {
    "area": "decision-theory",
@@ -1263,7 +1367,7 @@
     "year": 1978
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:33Z"
+   "verified_utc": "2026-08-08T13:23:23Z"
   },
   "sapolsky2017behave": {
    "area": "plasticity",
@@ -1287,7 +1391,7 @@
     "year": 2017
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:28:57Z"
+   "verified_utc": "2026-08-08T13:22:33Z"
   },
   "schuster2022calm": {
    "area": "adaptive-computation",
@@ -1317,7 +1421,7 @@
     "year": 2022
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:24Z"
+   "verified_utc": "2026-08-08T13:21:05Z"
   },
   "schwartz2020righttool": {
    "area": "adaptive-computation",
@@ -1345,7 +1449,7 @@
     "year": 2020
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:10Z"
+   "verified_utc": "2026-08-08T13:20:53Z"
   },
   "shannon1948": {
    "area": "information-theory",
@@ -1369,7 +1473,7 @@
     "year": 1948
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:28:59Z"
+   "verified_utc": "2026-08-08T13:22:36Z"
   },
   "shazeer2017moe": {
    "area": "sparse-experts",
@@ -1398,7 +1502,7 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:11Z"
+   "verified_utc": "2026-08-08T13:21:50Z"
   },
   "simmons2011": {
    "area": "integrity",
@@ -1423,7 +1527,7 @@
     "year": 2011
    },
    "role": "integrity",
-   "verified_utc": "2026-07-22T15:30:02Z"
+   "verified_utc": "2026-08-08T13:23:52Z"
   },
   "sims2003inattention": {
    "area": "information-theory",
@@ -1447,7 +1551,7 @@
     "year": 2003
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:15Z"
+   "verified_utc": "2026-08-08T13:23:06Z"
   },
   "snell2024testtime": {
    "area": "test-time-compute",
@@ -1474,7 +1578,7 @@
     "year": 2024
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:30Z"
+   "verified_utc": "2026-08-08T13:22:07Z"
   },
   "teerapittayanon2016branchynet": {
    "area": "adaptive-computation",
@@ -1499,7 +1603,7 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:01Z"
+   "verified_utc": "2026-08-08T13:20:44Z"
   },
   "tishby2000ib": {
    "area": "information-theory",
@@ -1524,7 +1628,7 @@
     "year": 2000
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:28Z"
+   "verified_utc": "2026-08-08T13:23:18Z"
   },
   "wald1945sprt": {
    "area": "decision-theory",
@@ -1547,7 +1651,7 @@
     "year": 1945
    },
    "role": "foundation",
-   "verified_utc": "2026-07-22T15:29:31Z"
+   "verified_utc": "2026-08-08T13:23:21Z"
   },
   "wang2018skipnet": {
    "area": "adaptive-computation",
@@ -1574,7 +1678,7 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:59Z"
+   "verified_utc": "2026-08-08T13:21:39Z"
   },
   "wei2022cot": {
    "area": "test-time-compute",
@@ -1605,7 +1709,30 @@
     "year": 2022
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:24Z"
+   "verified_utc": "2026-08-08T13:22:03Z"
+  },
+  "whitmeyer2024cavity": {
+   "area": "information-theory",
+   "argument": "Contrasts a regime where the marginal value of information at zero is strictly positive with one where it is almost always zero. Qualitatively the same split CWC certifies, WITHOUT rates or exponents — which is exactly the gap CWC's numerical certificate fills, and exactly why CWC must not claim the dichotomy itself as new.",
+   "claims": [
+    "CWC-RIGOR3-pinsker"
+   ],
+   "identifier": "2404.01190",
+   "kind": "arxiv",
+   "resolved": {
+    "authors": [
+     "Mark Whitmeyer"
+    ],
+    "doi": null,
+    "resolver": "arxiv-api",
+    "resolver_url": "https://export.arxiv.org/api/query?id_list=2404.01190",
+    "title": "Call the Dentist! A (Con-)Cavity in the Value of Information",
+    "url": "https://arxiv.org/abs/2404.01190",
+    "venue": "arXiv preprint",
+    "year": 2024
+   },
+   "role": "prior-art",
+   "verified_utc": "2026-08-08T13:22:53Z"
   },
   "williams1992reinforce": {
    "area": "method",
@@ -1630,7 +1757,7 @@
     "year": 1992
    },
    "role": "method",
-   "verified_utc": "2026-07-22T15:30:21Z"
+   "verified_utc": "2026-08-08T13:24:11Z"
   },
   "wu2018blockdrop": {
    "area": "adaptive-computation",
@@ -1659,7 +1786,7 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:04Z"
+   "verified_utc": "2026-08-08T13:21:44Z"
   },
   "xin2020deebert": {
    "area": "adaptive-computation",
@@ -1686,7 +1813,7 @@
     "year": 2020
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:27:15Z"
+   "verified_utc": "2026-08-08T13:20:57Z"
   },
   "zenke2017si": {
    "area": "plasticity",
@@ -1711,11 +1838,11 @@
     "year": 2017
    },
    "role": "prior-art",
-   "verified_utc": "2026-07-22T15:28:47Z"
+   "verified_utc": "2026-08-08T13:22:24Z"
   }
  },
- "entry_count": 65,
- "generated_utc": "2026-07-22T15:30:23Z",
+ "entry_count": 70,
+ "generated_utc": "2026-08-08T13:24:12Z",
  "policy": "Every entry's bibliographic fields come from the named external resolver, not from the author and not from a language model. An identifier that does not resolve aborts the build. Re-check offline with scripts/verify_bibliography.py.",
  "resolvers": [
   "arxiv-api",

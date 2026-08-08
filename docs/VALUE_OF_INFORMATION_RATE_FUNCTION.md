@@ -322,9 +322,32 @@ Two consequences are load-bearing for how the results in this repository must be
    of the bounded-rationality literature. `CWC-L4i-rate-bridge` and `CWC-AC4-rate-bridge`
    are therefore ceiling-respect results, not optimality results.
 
-The genuinely open candidate here is narrower: **where Pinsker's inequality is tight**
-(`Θ(R)` regular vs `Θ(√R)` critical, located at the decision-indifference manifold,
-certified over 60+60 de-curated random instances, `CWC-RIGOR3-pinsker`). No prior
-statement of that dichotomy was located; the search was targeted, not exhaustive, and the
+### Amendment, 2026-08-08 — the dichotomy itself is prior art
+
+The paragraph below §3 already pointed at Radner–Stiglitz 1984 in prose. An independent
+audit found that this pointer was never carried into `references.bib`, into the novelty
+table, or into any gate — so the one construct this repository still called new was
+argued against Pinsker and rational inattention but never against the literature that
+studies exactly it. The correction, now enforced by `bib-gate`:
+
+* **Radner & Stiglitz (1984)** — the value of information is not concave, and under
+  regularity its marginal value at zero information vanishes. In mutual-information
+  coordinates this *is* the `Θ(R)` regular case.
+* **Chade & Schlee (2002)** — sharpens the regularity hypothesis (unique prior optimum,
+  strict margin): the exact condition this note calls REGULAR.
+* **De Lara & Gilotte (2007)** — a tight sufficient condition for zero marginal value at
+  the null, stated on the information structure alone.
+* **Whitmeyer (2024)** — states the split (marginal value strictly positive vs almost
+  always zero) without rates or exponents.
+* **De Lara & Gossner (2020)** — payoffs–beliefs duality reaches the same indifference
+  manifold from convex duality rather than from Pinsker.
+
+**What remains open, and it is narrower than this note originally implied:** the
+quantitative form — the exponents `Θ(R)` vs `Θ(√R)` measured in *nats of mutual
+information*, their identification with the tightness of the Pinsker step, and the exact
+leading constant `c = std(D)/Δu` on the indifference manifold (§4, §5). No prior
+statement of the *rate* was located; the search was targeted, not exhaustive, and the
 absence of forward citation chasing is recorded in
-[`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`](publication/RELATED_WORK_AND_NOVELTY_REVIEW.md) §1.
+[`docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md`](publication/RELATED_WORK_AND_NOVELTY_REVIEW.md)
+§1 and §2.5.1. `CWC-RIGOR3-pinsker` is registered there as `OVERLAP_CONCEDED` for the
+phenomenon and `NOVELTY_CANDIDATE (NARROWED)` for the rate.

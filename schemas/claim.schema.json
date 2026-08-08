@@ -19,7 +19,17 @@
     "limitations": {"type": "array", "items": {"type": "string"}},
     "prohibited_extrapolations": {"type": "array", "items": {"type": "string"}},
     "note": {"type": "string"},
-    "independent_replication": {"type": "boolean"}
+    "independent_replication": {"type": "boolean"},
+    "verdict_binding": {
+      "type": ["object", "null"],
+      "required": ["file", "pointer", "expected"],
+      "properties": {
+        "file": {"type": "string"},
+        "pointer": {"type": ["string", "null"]},
+        "expected": {"type": ["string", "boolean"]}
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

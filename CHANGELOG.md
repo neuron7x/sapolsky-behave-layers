@@ -3,6 +3,61 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [External-audit closure] — 2026-08-08
+
+An independent audit ran four break-in attempts against the gate battery. Two were
+repelled, two succeeded — and the two that succeeded were in the same place: the gates
+verified *code* but never verified that a registered status matched the evidence it
+claimed to rest on.
+
+### Broken by the audit (reproduced, then closed)
+- **Registry statuses were unguarded.** `CWC-L3-rcfr` and `CWC-L2c-e2e-straightthrough`
+  (`NOT_SUPPORTED`) and `CWC-L7-pareto` (`NOT_TESTED`) were flipped to `SUPPORTED` by
+  hand and `make -f Makefile.cwc pr-fast` still printed ALL GATES PASSED. Promoting
+  `CWC-L7-pareto` asserts a compute-equivalent Pareto win over MoD/MoE that has never
+  been run; nothing in the battery objected.
+- **Bundle numbers were unguarded in the every-run gate.** Rewriting
+  `artifacts/wp2-routing-v3-r3c-reinforce/verdict.json` (`worst_seed_auroc` 1.0 → 0.02,
+  `mean_balanced_acc` 0.994 → 0.01) while leaving the verdict string intact passed
+  `validate-evidence` and `doc-gate`. Only `verify-evidence` caught it — and that target
+  runs in `verify-full`, not in `verify` or `pr-fast`.
+- **The coherence ladder was decoupled from the ledger.** `coherence_audit._LADDER` is
+  six hand-written rows whose ids ("wp3-rcfr (ties DISeL-with-role)") do not appear in
+  `claim_registry.json`. Theorem C's "every registered verdict is coherent" was
+  reproducing its own copy, not the 43-claim registry.
+
+### Added
+- **`scripts/verdict_binding_gate.py` + `verdict-binding` target**, in both `verify` and
+  `pr-fast`. Every claim now carries `verdict_binding` (file, pointer, expected) and the
+  gate checks: binding present (fail-closed); file tracked in the registry's own stamped
+  commit; the value at the pointer equals `expected`; `expected` has a declared polarity
+  in a table that lives *in the gate's source*, not in the registry; that polarity equals
+  the one implied by `status`; the file's SHA-256 matches its `SHA256SUMS` entry — which
+  pulls the checksum guarantee out of `verify-full` into every run; `SUPPORTED_NARROWED`
+  names a non-empty `limitations`; and every ladder row resolves to a real `claim_id`
+  with the registry status it declares.
+- The gate runs its own falsifier first (`--self-test`): four injected defects must be
+  detected and the unmutated registry must pass, or the gate fails before it is trusted.
+- `tests/test_verdict_binding_gate.py` (9 tests) replays each successful break-in.
+- Stated limit, not glossed: a *coordinated* rewrite of verdict file + SHA256SUMS +
+  registry is a git-history and review problem, and this gate does not claim to catch it.
+
+### Changed
+- `schemas/claim.schema.json` accepts `verdict_binding`; all 43 claims bound (41 to
+  sealed verdicts, 2 `NOT_TESTED` unbound by design).
+- `experiments/common/coherence_audit._LADDER` rows now carry `registry_claim_id` and
+  `registry_status`.
+- **Novelty narrowed.** The audit also found that `CWC-RIGOR3-pinsker` — the last
+  unqualified `NOVELTY_CANDIDATE` — was argued against Pinsker and rational inattention
+  but never against the economics-of-information literature on the marginal value of the
+  first unit of information, which was absent from `references.bib` entirely. Added
+  Radner & Stiglitz (1984), Chade & Schlee (2002), De Lara & Gilotte (2007), Whitmeyer
+  (2024), De Lara & Gossner (2020) (70 machine-resolved references, was 65). The
+  dichotomy *as a phenomenon* is now `OVERLAP_CONCEDED`; only its quantitative form —
+  exponents in nats, tied to Pinsker tightness, with `c = std(D)/Δu` — remains a
+  candidate, recorded as `NOVELTY_CANDIDATE (NARROWED)`. See
+  `RELATED_WORK_AND_NOVELTY_REVIEW.md` §2.5.1.
+
 ## [Audit-closure] — 2026-07-20
 
 Closure of a full 4-axis adversarial audit (claim↔evidence, theory soundness,

@@ -76,30 +76,35 @@ _BIG = 10.0  # an information bound large enough not to bind (perfect-context re
 _LADDER: tuple[dict[str, object], ...] = (
     {
         "claim_id": "routing-v1/v2 (quality only)", "status": "COLLAPSE",
+        "registry_claim_id": "CWC-L2c-e2e-straightthrough", "registry_status": "NOT_SUPPORTED",
         "utility": [[1.0, 1.0], [0.004, 1.0]], "route_cost": 0.0,
         "expect": VETO_DOMINANCE,
         "note": "semantic path solves EASY and HARD -> weakly dominant -> ROUTER_COLLAPSE",
     },
     {
         "claim_id": "routing-v2 (under 50% budget)", "status": "SUPPORTED_NARROWED",
+        "registry_claim_id": "CWC-L2-routing-causality", "registry_status": "SUPPORTED_NARROWED",
         "utility": [[1.0, 1.0], [0.004, 1.0]], "cost": [0.0, 1.0], "lam": 0.5, "route_cost": 0.0,
         "expect": POSITIVE,
         "note": "binding budget breaks dominance -> G~0.25 -> identifiable (matches empirical 99.8% CE gap)",
     },
     {
         "claim_id": "wp3-rcfr (ties DISeL-with-role)", "status": "NOT_SUPPORTED",
+        "registry_claim_id": "CWC-L3-rcfr", "registry_status": "NOT_SUPPORTED",
         "utility": [[1.0, 1.0], [1.0, 1.0]], "route_cost": 0.0,
         "expect": VETO_DOMINANCE,
         "note": "role-conditioned reuse matches prior art everywhere -> G=0",
     },
     {
         "claim_id": "wp3-plasticity (unbudgeted)", "status": "NOT_IDENTIFIABLE",
+        "registry_claim_id": "CWC-L4-plasticity", "registry_status": "SUPPORTED_NARROWED",
         "utility": [[0.9, 0.6, 0.5, 0.3], [0.9, 0.5, 0.4, 0.3]], "route_cost": 0.0,
         "expect": VETO_DOMINANCE,
         "note": "attention has the largest main effect and is never overtaken -> G~0",
     },
     {
         "claim_id": "wp3-plasticity (under param cost)", "status": "EXPLORATORY_POSITIVE",
+        "registry_claim_id": "CWC-L4-plasticity", "registry_status": "SUPPORTED_NARROWED",
         "utility": [[0.9, 0.6, 0.85, 0.3], [0.9, 0.5, 0.4, 0.3]],
         "cost": [1.0, 0.5, 0.1, 0.05], "lam": 0.3, "route_cost": 0.0,
         "expect": POSITIVE,
@@ -107,6 +112,7 @@ _LADDER: tuple[dict[str, object], ...] = (
     },
     {
         "claim_id": "wp2-routing-v3 (surface-matched)", "status": "NOT_SUPPORTED",
+        "registry_claim_id": "CWC-L2b-route-decision-cost", "registry_status": "SUPPORTED",
         "utility": [[1.0, 0.0], [0.0, 1.0]], "route_cost": 0.5,
         "expect": VETO_COMPUTATION,
         "note": "large oracle gap but the route decision costs ~the expensive computation",
