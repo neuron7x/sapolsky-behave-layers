@@ -90,5 +90,10 @@
     "artifact": "artifacts/via-v1-attention-horizon-qualification/verdict.json",
     "qualification_has_ascension_authority": false,
     "prospective_real_pilot_requires_new_frozen_protocol": true
+  },
+  "frozen_evidence_sufficiency": {
+    "artifact": "artifacts/via-v1-evidence-sufficiency/verdict.json",
+    "required_verdict": "VIA_V1_INSTANCE_OPPORTUNITY_UNIDENTIFIED_FROM_FROZEN_REAL_EVIDENCE",
+    "interpretation": "existing frozen real evidence remains valid for registered bucket-conditioned claims but cannot identify per-unit instance-oracle opportunity"
   }
 }

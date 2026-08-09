@@ -1,0 +1,41 @@
+{
+  "schema": "cwc-via/evidence-sufficiency-1",
+  "question": "can frozen real-workload evidence identify per-unit VIA-V1 instance opportunity",
+  "wp18": {
+    "available": true,
+    "raw_run_files": 24,
+    "shards": 120,
+    "stored_granularity": "difficulty_bucket_action_mean",
+    "bucket_mean_shape_valid": true,
+    "independent_unit_ids_present": false,
+    "paired_per_unit_action_outcomes_present": false,
+    "instance_outcomes_recoverable": false,
+    "reason": "aggregation to difficulty-bucket means occurred before artifact sealing; instance-level paired potential outcomes cannot be reconstructed"
+  },
+  "wp19": {
+    "available": true,
+    "raw_run_files": 18,
+    "shards": 90,
+    "stored_granularity": "difficulty_bucket_mean_per_separately_trained_depth",
+    "bucket_mean_shape_valid": true,
+    "independent_unit_ids_present": false,
+    "paired_per_unit_action_outcomes_present": false,
+    "instance_outcomes_recoverable": false,
+    "additional_identification_problem": "depth actions are separately trained models, so even newly retained per-window losses would mix action effect with training realization unless the estimand explicitly allows it",
+    "reason": "only per-bucket means were sealed; the same independent evaluation unit is not stored with outcomes under every depth action"
+  },
+  "real_instance_opportunity_identified": false,
+  "verdict": "VIA_V1_INSTANCE_OPPORTUNITY_UNIDENTIFIED_FROM_FROZEN_REAL_EVIDENCE",
+  "required_future_artifact_contract": {
+    "independent_unit_id": true,
+    "immutable_unit_payload_hash": true,
+    "same_unit_all_actions": true,
+    "raw_quality_before_scalarization": true,
+    "raw_compute_per_action": true,
+    "action_execution_identity": true,
+    "cluster_id_if_units_share_source": true,
+    "no_preaggregation_before_evidence_seal": true
+  },
+  "scientific_implication": "WP18/WP19 remain valid for their registered bucket-conditioned estimands. The frozen artifacts are insufficient to answer the newly separated instance-oracle question; absence of that evidence is UNKNOWN, not positive or negative evidence for G_instance.",
+  "ascension_authorized": false
+}

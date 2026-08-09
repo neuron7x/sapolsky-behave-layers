@@ -29,6 +29,7 @@ REQUIRED = [
     "scripts/via_status.py",
     "artifacts/via-v1-causal-surface/verdict.json",
     "artifacts/via-v1-attention-horizon-qualification/verdict.json",
+    "artifacts/via-v1-evidence-sufficiency/verdict.json",
 ]
 
 
@@ -104,6 +105,26 @@ def validate(root: Path = ROOT) -> list[str]:
     if qualifier.get("verdict") == "ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY":
         if not isinstance(qchecks, dict) or not qchecks or not all(value is True for value in qchecks.values()):
             errors.append("qualified attention-horizon candidate has a failed qualification check")
+
+    try:
+        sufficiency = _read_json(root / "artifacts/via-v1-evidence-sufficiency/verdict.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        errors.append(f"invalid VIA-V1 evidence-sufficiency verdict: {exc}")
+        return errors
+    if sufficiency.get("verdict") != "VIA_V1_INSTANCE_OPPORTUNITY_UNIDENTIFIED_FROM_FROZEN_REAL_EVIDENCE":
+        errors.append("frozen real evidence must not be represented as identifying G_instance")
+    if sufficiency.get("real_instance_opportunity_identified") is not False:
+        errors.append("real instance opportunity identification flag must remain false")
+    if sufficiency.get("ascension_authorized") is not False:
+        errors.append("evidence-sufficiency audit must not authorize ascension")
+    future = sufficiency.get("required_future_artifact_contract")
+    required_future = {
+        "independent_unit_id", "immutable_unit_payload_hash", "same_unit_all_actions",
+        "raw_quality_before_scalarization", "raw_compute_per_action", "action_execution_identity",
+        "cluster_id_if_units_share_source", "no_preaggregation_before_evidence_seal",
+    }
+    if not isinstance(future, dict) or any(future.get(k) is not True for k in required_future):
+        errors.append("future VIA-V1 artifact contract is incomplete")
 
     # Descendant fail-closed rule.  Any later verdict that claims authorization
     # while V1 is blocked is a hard programme violation.
