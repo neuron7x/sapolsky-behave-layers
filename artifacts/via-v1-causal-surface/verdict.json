@@ -1,0 +1,256 @@
+{
+  "experiment": "via_v1_causal_surface",
+  "verdict": "VIA_V1_METHOD_VALIDATED_ASCENSION_BLOCKED",
+  "class": "RETROSPECTIVE_METHOD_VALIDATION_ONLY",
+  "scientific_level": "VIA-V1",
+  "ascension_authorized": false,
+  "next_scientific_level_authorized": false,
+  "blocking_fact": "WP18 preregistered kill rule remains binding; this run contains no new admissible preregistered mechanism/workload evidence",
+  "method_checks": {
+    "structural_nulls_zero": true,
+    "frozen_real_certificates_reproduced": true,
+    "real_evidence_not_promoted": true,
+    "synthetic_positive_control_positive": true,
+    "prior_kill_rule_bound": true
+  },
+  "route_cost": 0.0006,
+  "bundles": [
+    {
+      "name": "WP18-prose-tiedK",
+      "tier": "REAL_RETROSPECTIVE",
+      "n_replicate_matrices": 60,
+      "n_contexts": 3,
+      "n_actions": 3,
+      "plugin_gap": 0.0,
+      "max_cell_se": 0.0408963021023879,
+      "corrected_g_lo": -0.2004203392018265,
+      "route_cost": 0.0006,
+      "g_lo_minus_route_cost": -0.2010203392018265,
+      "retrospective_routable_by_frozen_rule": false,
+      "best_fixed_action_index": 1,
+      "mean_matrix": [
+        [
+          -1.1066749215126037,
+          -1.017628049850464,
+          -1.028891768058141
+        ],
+        [
+          -1.9808642049630483,
+          -1.8468983948230744,
+          -1.8660151263078053
+        ],
+        [
+          -3.6378109057744346,
+          -3.5190532485644024,
+          -3.5675377249717712
+        ]
+      ],
+      "structural_nulls": {
+        "interaction_destroyed_gap": 0.0,
+        "collapsed_context_gap": 0.0
+      },
+      "permutation_diagnostic": {
+        "n": 1000,
+        "seed": 20260809,
+        "mean_gap": 0.0,
+        "q95_gap": 0.0,
+        "right_tail_fraction_plus_one": 1.0,
+        "interpretation": "retrospective diagnostic only; not a confirmatory p-value"
+      },
+      "frozen_g_lo": -0.2004203392018265,
+      "frozen_g_lo_matches": true,
+      "source_bundle_sha256": "8f57fca9fb54be3fda128fcac79510c441aa12adebb812e8ca4615938c07ae13"
+    },
+    {
+      "name": "WP18-code-tiedK",
+      "tier": "REAL_RETROSPECTIVE",
+      "n_replicate_matrices": 60,
+      "n_contexts": 3,
+      "n_actions": 3,
+      "plugin_gap": 0.0,
+      "max_cell_se": 0.034871777366977164,
+      "corrected_g_lo": -0.17089597565477826,
+      "route_cost": 0.0006,
+      "g_lo_minus_route_cost": -0.17149597565477825,
+      "retrospective_routable_by_frozen_rule": false,
+      "best_fixed_action_index": 1,
+      "mean_matrix": [
+        [
+          -0.7782302995522817,
+          -0.7280651211738587,
+          -0.7423528591791789
+        ],
+        [
+          -2.0191832542419434,
+          -1.872355878353119,
+          -1.8924155533313751
+        ],
+        [
+          -3.6683277328809103,
+          -3.487440017859141,
+          -3.509059111277262
+        ]
+      ],
+      "structural_nulls": {
+        "interaction_destroyed_gap": 0.0,
+        "collapsed_context_gap": 0.0
+      },
+      "permutation_diagnostic": {
+        "n": 1000,
+        "seed": 20260809,
+        "mean_gap": 0.0,
+        "q95_gap": 0.0,
+        "right_tail_fraction_plus_one": 1.0,
+        "interpretation": "retrospective diagnostic only; not a confirmatory p-value"
+      },
+      "frozen_g_lo": -0.17089597565477826,
+      "frozen_g_lo_matches": true,
+      "source_bundle_sha256": "9b2c6c5444d344445543007fc9880ae3946ef3f9f96be118d3ba819da5a45bd8"
+    },
+    {
+      "name": "WP19-prose-untied-depth",
+      "tier": "REAL_RETROSPECTIVE",
+      "n_replicate_matrices": 15,
+      "n_contexts": 3,
+      "n_actions": 3,
+      "plugin_gap": 0.003706457879808056,
+      "max_cell_se": 0.0995378214448093,
+      "corrected_g_lo": -0.48409813353371955,
+      "route_cost": 0.0006,
+      "g_lo_minus_route_cost": -0.48469813353371954,
+      "retrospective_routable_by_frozen_rule": false,
+      "best_fixed_action_index": 2,
+      "mean_matrix": [
+        [
+          -0.8424801508585612,
+          -0.7780794699986776,
+          -0.7891988436381022
+        ],
+        [
+          -1.6262545267740884,
+          -1.5220458348592123,
+          -1.5130333264668783
+        ],
+        [
+          -3.318357308705648,
+          -3.2493741035461428,
+          -3.2232179005940753
+        ]
+      ],
+      "structural_nulls": {
+        "interaction_destroyed_gap": 0.0,
+        "collapsed_context_gap": 0.0
+      },
+      "permutation_diagnostic": {
+        "n": 1000,
+        "seed": 20260809,
+        "mean_gap": 0.0010921465675035795,
+        "q95_gap": 0.004012169241905249,
+        "right_tail_fraction_plus_one": 0.06593406593406594,
+        "interpretation": "retrospective diagnostic only; not a confirmatory p-value"
+      },
+      "frozen_g_lo": -0.48409813353371955,
+      "frozen_g_lo_matches": true,
+      "source_bundle_sha256": "d7bab039b5454b0e347ee7b028644b84e564f21ffdeed70d457976d3cff0bac1"
+    },
+    {
+      "name": "WP19-code-untied-depth",
+      "tier": "REAL_RETROSPECTIVE",
+      "n_replicate_matrices": 15,
+      "n_contexts": 3,
+      "n_actions": 3,
+      "plugin_gap": 0.0,
+      "max_cell_se": 0.04770723909856219,
+      "corrected_g_lo": -0.23379867007482286,
+      "route_cost": 0.0006,
+      "g_lo_minus_route_cost": -0.23439867007482285,
+      "retrospective_routable_by_frozen_rule": false,
+      "best_fixed_action_index": 2,
+      "mean_matrix": [
+        [
+          -0.6438285986582438,
+          -0.549705813328425,
+          -0.5200775265693665
+        ],
+        [
+          -1.5938134670257569,
+          -1.4135443051656087,
+          -1.3564405997594198
+        ],
+        [
+          -3.2200459957122805,
+          -2.9318403720855715,
+          -2.8472269058227537
+        ]
+      ],
+      "structural_nulls": {
+        "interaction_destroyed_gap": 0.0,
+        "collapsed_context_gap": 0.0
+      },
+      "permutation_diagnostic": {
+        "n": 1000,
+        "seed": 20260809,
+        "mean_gap": 0.0,
+        "q95_gap": 0.0,
+        "right_tail_fraction_plus_one": 1.0,
+        "interpretation": "retrospective diagnostic only; not a confirmatory p-value"
+      },
+      "frozen_g_lo": -0.23379867007482286,
+      "frozen_g_lo_matches": true,
+      "source_bundle_sha256": "0f75720348456a6c02d9e9d9387cab4d0bab55cec766bce879a7fc6f88fdf29b"
+    },
+    {
+      "name": "AC1-synthetic-positive",
+      "tier": "SYNTHETIC_POSITIVE_CONTROL",
+      "n_replicate_matrices": 8,
+      "n_contexts": 3,
+      "n_actions": 3,
+      "plugin_gap": 0.6241455155735214,
+      "max_cell_se": 0.0009378213939106736,
+      "corrected_g_lo": 0.6195495381326336,
+      "route_cost": 0.0006,
+      "g_lo_minus_route_cost": 0.6189495381326335,
+      "retrospective_routable_by_frozen_rule": true,
+      "best_fixed_action_index": 2,
+      "mean_matrix": [
+        [
+          1.0,
+          0.06202189205214381,
+          0.06529744667932391
+        ],
+        [
+          0.06182861467823386,
+          0.9997355416417122,
+          0.06200154824182391
+        ],
+        [
+          0.06244913907721639,
+          0.06242879433557391,
+          0.999064140021801
+        ]
+      ],
+      "structural_nulls": {
+        "interaction_destroyed_gap": 0.0,
+        "collapsed_context_gap": 0.0
+      },
+      "permutation_diagnostic": {
+        "n": 1000,
+        "seed": 20260809,
+        "mean_gap": 0.16059603765979408,
+        "q95_gap": 0.27304501427958405,
+        "right_tail_fraction_plus_one": 0.000999000999000999,
+        "interpretation": "retrospective diagnostic only; not a confirmatory p-value"
+      },
+      "frozen_g_lo": null,
+      "frozen_g_lo_matches": true,
+      "source_bundle_sha256": "4f72fb9c141c8d96021dc47feadec4ecb0287103eb98790f60b10b7db613a42f"
+    }
+  ],
+  "prohibited_extrapolations": [
+    "VIA-V1 scientific PASS",
+    "VIA-V2 authorization",
+    "architecture work reopened",
+    "large-model behavior",
+    "general adaptive-compute benefit"
+  ]
+}

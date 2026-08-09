@@ -1,0 +1,48 @@
+{
+  "schema": "cwc-via/execution-manifest-1",
+  "act": "CWC-VIA-01",
+  "implementation_commit": "2d703c173bb07ec4f6fce6470ba7c695787863bd",
+  "branch": "agent/cwc-via-v1-execution",
+  "executed_at_utc": "2026-08-09T18:05:11Z",
+  "execution_class": "RETROSPECTIVE_METHOD_VALIDATION_ONLY",
+  "environment": {
+    "python": "3.13.5",
+    "torch": "2.10.0+cpu",
+    "cuda_available": false,
+    "repository_target_torch": "2.13.0"
+  },
+  "result": {
+    "verdict": "VIA_V1_METHOD_VALIDATED_ASCENSION_BLOCKED",
+    "ascension_authorized": false,
+    "next_scientific_level_authorized": false,
+    "method_checks": {
+      "structural_nulls_zero": true,
+      "frozen_real_certificates_reproduced": true,
+      "real_evidence_not_promoted": true,
+      "synthetic_positive_control_positive": true,
+      "prior_kill_rule_bound": true
+    }
+  },
+  "verification": {
+    "via_tests_passed": 14,
+    "existing_regression_tests_passed": 116,
+    "explicit_tests_passed_total": 130,
+    "gates": {
+      "architecture": "PASS",
+      "hermeticity": "PASS",
+      "complexity": "PASS",
+      "inference_integrity": "PASS",
+      "verdict_binding": "PASS",
+      "via": "PASS"
+    }
+  },
+  "environment_blockers": [
+    "full pytest collection: missing rustbpe",
+    "full pytest collection: missing tomli",
+    "full pytest collection: missing hypothesis",
+    "full pytest collection: missing pyarrow",
+    "uv sync --frozen: external DNS/network unavailable"
+  ],
+  "scientific_frontier": "VIA-V1",
+  "scientific_status": "BLOCKED_BY_BINDING_PRIOR_KILL_RULE"
+}

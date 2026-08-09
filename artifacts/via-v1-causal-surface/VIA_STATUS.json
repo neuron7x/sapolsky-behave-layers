@@ -1,0 +1,49 @@
+{
+  "programme": "CWC-VIA",
+  "prior_kill_rule_active": true,
+  "current_scientific_frontier": "VIA-V1",
+  "levels": [
+    {
+      "id": "VIA-V1",
+      "name": "causal_opportunity",
+      "status": "BLOCKED",
+      "reason": "method validated retrospectively; binding WP18 kill rule remains active"
+    },
+    {
+      "id": "VIA-V2",
+      "name": "observability_ceiling",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V1 status=BLOCKED"
+    },
+    {
+      "id": "VIA-V3",
+      "name": "marginal_value_controller",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V2 status=BLOCKED_BY_ANCESTOR"
+    },
+    {
+      "id": "VIA-V4",
+      "name": "physical_conditional_execution",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V3 status=BLOCKED_BY_ANCESTOR"
+    },
+    {
+      "id": "VIA-V5",
+      "name": "stateful_adaptation",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V4 status=BLOCKED_BY_ANCESTOR"
+    },
+    {
+      "id": "VIA-V6",
+      "name": "hierarchical_governor",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V5 status=BLOCKED_BY_ANCESTOR"
+    },
+    {
+      "id": "VIA-V7",
+      "name": "grand_falsification",
+      "status": "BLOCKED_BY_ANCESTOR",
+      "reason": "ancestor VIA-V6 status=BLOCKED_BY_ANCESTOR"
+    }
+  ]
+}
