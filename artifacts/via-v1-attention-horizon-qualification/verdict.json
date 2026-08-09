@@ -1,0 +1,147 @@
+{
+  "action_count": 2,
+  "ascension_authorized": false,
+  "candidate_mechanism": "adaptive_attention_horizon",
+  "checks": {
+    "action_ranking_reversal_across_regimes": true,
+    "exhaustive_replay_valid": true,
+    "information_ordering_valid": true,
+    "no_ascension_authority": true,
+    "positive_controller_compute_allowance": true,
+    "positive_regime_opportunity_interval": true
+  },
+  "critical_lambdas": [
+    0.041666666666666664,
+    0.08333333333333333,
+    0.16666666666666666
+  ],
+  "max_controller_compute_allowance": 3.0,
+  "max_instance_gap": 0.1874999999999999,
+  "max_regime_gap": 0.125,
+  "points": [
+    {
+      "best_fixed_action": "full",
+      "fixed_value": 1.0,
+      "instance_gap": 0.0,
+      "instance_oracle_value": 1.0,
+      "lambda_compute": 0.0,
+      "regime_gap": 0.0,
+      "regime_net_gap": 0.0,
+      "regime_oracle_value": 1.0
+    },
+    {
+      "best_fixed_action": "full",
+      "fixed_value": 0.8333333333333334,
+      "instance_gap": 0.09375,
+      "instance_oracle_value": 0.9270833333333334,
+      "lambda_compute": 0.020833333333333332,
+      "regime_gap": 0.0625,
+      "regime_net_gap": 0.0625,
+      "regime_oracle_value": 0.8958333333333334
+    },
+    {
+      "best_fixed_action": "full",
+      "fixed_value": 0.6666666666666667,
+      "instance_gap": 0.1874999999999999,
+      "instance_oracle_value": 0.8541666666666666,
+      "lambda_compute": 0.041666666666666664,
+      "regime_gap": 0.125,
+      "regime_net_gap": 0.125,
+      "regime_oracle_value": 0.7916666666666667
+    },
+    {
+      "best_fixed_action": "short",
+      "fixed_value": 0.625,
+      "instance_gap": 0.15625,
+      "instance_oracle_value": 0.78125,
+      "lambda_compute": 0.0625,
+      "regime_gap": 0.0625,
+      "regime_net_gap": 0.0625,
+      "regime_oracle_value": 0.6875
+    },
+    {
+      "best_fixed_action": "short",
+      "fixed_value": 0.5833333333333334,
+      "instance_gap": 0.125,
+      "instance_oracle_value": 0.7083333333333334,
+      "lambda_compute": 0.08333333333333333,
+      "regime_gap": 0.0,
+      "regime_net_gap": 0.0,
+      "regime_oracle_value": 0.5833333333333334
+    },
+    {
+      "best_fixed_action": "short",
+      "fixed_value": 0.5,
+      "instance_gap": 0.0625,
+      "instance_oracle_value": 0.5625,
+      "lambda_compute": 0.125,
+      "regime_gap": 0.0,
+      "regime_net_gap": 0.0,
+      "regime_oracle_value": 0.5
+    },
+    {
+      "best_fixed_action": "short",
+      "fixed_value": 0.41666666666666674,
+      "instance_gap": 0.0,
+      "instance_oracle_value": 0.41666666666666674,
+      "lambda_compute": 0.16666666666666666,
+      "regime_gap": 0.0,
+      "regime_net_gap": 0.0,
+      "regime_oracle_value": 0.41666666666666674
+    },
+    {
+      "best_fixed_action": "short",
+      "fixed_value": 0.08333333333333337,
+      "instance_gap": 0.0,
+      "instance_oracle_value": 0.08333333333333337,
+      "lambda_compute": 0.3333333333333333,
+      "regime_gap": 0.0,
+      "regime_net_gap": 0.0,
+      "regime_oracle_value": 0.08333333333333337
+    }
+  ],
+  "prospective_real_pilot_candidate": true,
+  "regime_action_means": {
+    "local": {
+      "full": {
+        "compute_proxy": 8.0,
+        "n_units": 256,
+        "quality": 1.0
+      },
+      "short": {
+        "compute_proxy": 2.0,
+        "n_units": 256,
+        "quality": 1.0
+      }
+    },
+    "long": {
+      "full": {
+        "compute_proxy": 8.0,
+        "n_units": 256,
+        "quality": 1.0
+      },
+      "short": {
+        "compute_proxy": 2.0,
+        "n_units": 256,
+        "quality": 0.5
+      }
+    }
+  },
+  "resource_unit": "visible_symbol_count_controlled_proxy",
+  "sampled_lambdas": [
+    0.0,
+    0.020833333333333332,
+    0.041666666666666664,
+    0.0625,
+    0.08333333333333333,
+    0.125,
+    0.16666666666666666,
+    0.3333333333333333
+  ],
+  "schema": "cwc-via-v1q/verdict-1",
+  "scientific_pass": false,
+  "scope_limit": "controlled exact-enumeration mechanism qualification only; no trained-model, real-workload, GPU, latency, energy, or VIA ascension claim",
+  "unit_count": 512,
+  "verdict": "ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY",
+  "via_v2_authorized": false
+}
