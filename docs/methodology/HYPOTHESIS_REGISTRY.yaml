@@ -520,3 +520,51 @@ hypotheses:
     preregistration: experiments/wpr1_routability_spec/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-R1-routability-screen
+
+  - hypothesis_id: H-FRACTAL-ADV1
+    research_question_id: RQ-fractal-adversarial
+    type: exploratory
+    H0: "Residual multiscale organization does not replicate across the three prespecified fresh archived-CWK seeds under robust v2."
+    H1: "It replicates across the prespecified seeds."
+    estimand: "per-seed robust-v2 trace-gate replication plus one-way post-hoc replication veto"
+    experimental_unit: "model seed"
+    decision_rule: "Post-hoc veto only: fewer than 2/3 frozen per-seed passes prohibits generalized support; satisfying the veto would still require prospective confirmation. RESULT 1/3 -> NOT_SUPPORTED."
+    preregistration: docs/acts/CWC_FRACTAL_ADV_02.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-FRACTAL-ADV1-replication
+
+  - hypothesis_id: H-FRACTAL-ADV2
+    research_question_id: RQ-fractal-adversarial
+    type: confirmatory
+    H0: "Archived CWK active/depth controller gates do not physically reduce expert execution rows."
+    H1: "Tightening the gates reduces expert execution rows."
+    estimand: "shared and routed expert rows under matched weights/tokens across controller and budget interventions"
+    experimental_unit: "seed x input-shape x controller-mode x budget cell"
+    decision_rule: "Physical execution support requires expert rows to fall when semantic active/depth gates tighten. RESULT 96 gate-changing trials, 0 physical-skip successes -> NOT_SUPPORTED."
+    preregistration: docs/acts/CWC_FRACTAL_ADV_03.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-FRACTAL-ADV2-physical-execution
+
+  - hypothesis_id: H-FRACTAL-ADV3
+    research_question_id: RQ-fractal-adversarial
+    type: confirmatory
+    H0: "The archived local/global attention graph has no usable graph-distance scaling regime for a fractality claim."
+    H1: "It has a usable graph-distance scaling regime."
+    estimand: "exact edge scaling and undirected projected diameter across sequence lengths 8..256"
+    experimental_unit: "sequence length"
+    decision_rule: "A graph-distance fractality claim is not supported if the global hub collapses the tested graph-distance range to diameter <=2. RESULT diameter=2 at all 11 tested lengths -> NOT_SUPPORTED."
+    preregistration: docs/acts/CWC_FRACTAL_ADV_03.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-FRACTAL-ADV3-graph-fractality
+
+  - hypothesis_id: H-FRACTAL-ADV4
+    research_question_id: RQ-fractal-adversarial
+    type: confirmatory
+    H0: "The legacy short-series Hurst/box/sign-entropy diagnostics are not calibrated enough to be claim-bearing evidence of CWK fractality."
+    H1: "They are stable and discriminative enough to be claim-bearing in the frozen short-series regime."
+    estimand: "finite-sample estimator distributions over 60,000 simulated IID/AR1/random-walk/trend series at n=32/64/128"
+    experimental_unit: "simulated time series"
+    decision_rule: "Legacy metrics remain diagnostic-only if strong finite-length bias/length dependence or poor process discrimination is present. RESULT IID Hurst mean >0.60; IID box mean 0.976->1.531 with length; sign entropy near 1 across processes -> NOT_SUPPORTED."
+    preregistration: docs/acts/CWC_FRACTAL_ADV_01.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-FRACTAL-ADV4-estimator-authority
