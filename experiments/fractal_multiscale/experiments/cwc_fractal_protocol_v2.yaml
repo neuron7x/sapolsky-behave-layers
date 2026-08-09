@@ -1,0 +1,37 @@
+protocol_id: cwc_fractal_multiscale_v2
+status: frozen
+hypothesis: >-
+  Cross-scale organization is supported only when prespecified semantically related trajectories
+  retain non-degenerate association after exact repeated-shape effects are removed and the residual
+  association separates from all prespecified time-structure-preserving null families under a
+  family-wise max-null test.
+scales: [micro, meso, macro]
+minimum_series_length: 64
+feature_mappings:
+  - source_scale: micro
+    target_scale: meso
+    pairs:
+      - [route_entropy_mean, expert_utilization_entropy]
+      - [controller_depth_fraction, controller_memory_read_fraction]
+  - source_scale: meso
+    target_scale: macro
+    pairs:
+      - [expert_utilization_entropy, end_to_end_p95_ms]
+      - [operational_intensity, total_flops]
+confounder_strata: [batch_size, sequence_length]
+null_models:
+  - within_stratum_shuffle_target
+  - circular_shift_target
+  - block_permutation_target
+null_iterations: 2000
+acceptance_gates:
+  require_all_scales: true
+  require_all_edges: true
+  min_valid_pair_fraction: 0.75
+  min_residual_delta_vs_max_null: 0.10
+  max_familywise_p_value: 0.05
+  require_synthetic_control_calibration: true
+claim_boundary: >-
+  A PASS supports residual multiscale association only in the measured trace under this instrument,
+  mapping and confounder model. It does not establish fractal geometry, intelligence, biological
+  equivalence, useful adaptive computation, causal hierarchy, or physical GPU efficiency.

@@ -10,6 +10,10 @@ from .evaluation import evaluate_against_nulls
 from .protocol import load_yaml, mappings_from_protocol, validate_protocol
 from .types import CausalWindow, ScaleObservation
 
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PROTOCOL = PACKAGE_ROOT / "experiments" / "cwc_fractal_protocol_v1.yaml"
+DEFAULT_SCHEMA = PACKAGE_ROOT / "schemas" / "fractal_protocol.schema.json"
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="cwc-fractal")
@@ -20,12 +24,12 @@ def main() -> None:
     analyze.add_argument(
         "--protocol",
         type=Path,
-        default=Path("experiments/cwc_fractal_protocol_v1.yaml"),
+        default=DEFAULT_PROTOCOL,
     )
     analyze.add_argument(
         "--schema",
         type=Path,
-        default=Path("schemas/fractal_protocol.schema.json"),
+        default=DEFAULT_SCHEMA,
     )
     analyze.add_argument("--output", type=Path)
     analyze.add_argument("--end-timestamp", type=int)
