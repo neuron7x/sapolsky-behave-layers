@@ -111,3 +111,16 @@ The strongest surviving positive result is methodological: the hardened statisti
 ## 11. Reproducibility boundary
 
 All result files are machine-readable and are bound by `SHA256SUMS`. CPU timing is diagnostic only. No GPU speedup, biological equivalence, intelligence claim, or general absence of multiscale organization is inferred.
+
+## 12. Verification / environment boundary
+
+Executed after claim-ledger integration:
+
+- `experiments/fractal_multiscale/tests`: **21 collected / 21 PASS**.
+- Root environment-available suite with dependency-blocked modules and the mutation meta-test excluded: **251 PASS / 23 SKIP / 0 FAIL**.
+- The mutation meta-test itself fails closed because its internal baseline intentionally re-collects `test_instrumentation_properties.py`, which requires unavailable `hypothesis`; this is an environment dependency blocker, not a mutant survivor.
+- Full root collection: **275 tests discovered, 7 collection errors** due missing environment dependencies: `rustbpe`, `tomli`, `hypothesis`, `pyarrow`.
+- Core gates: `VIA`, `ARCHITECTURE`, `HERMETICITY`, `COMPLEXITY`, `INFERENCE-INTEGRITY`, `VERDICT-BINDING`, `DOC-GATE`, and `FRACTAL-ADVERSARIAL` all PASS.
+- `git diff --check`: PASS.
+
+The pre-existing hypothesis-schema validator still reports two historical entries (`H-L2q`) using legacy values `confirmatory_internal` / `SUPPORTED_INTERNAL`; this predates the present act. `DOC-GATE`, which is the repository's canonical documentation gate, passes with 47 claims ↔ 47 hypotheses and zero orphans. No attempt was made to rewrite unrelated historical evidence semantics in this act.

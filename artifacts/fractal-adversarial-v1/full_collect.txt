@@ -1,0 +1,379 @@
+tests/test_data_asset_audit.py::test_path_classification_is_conservative
+tests/test_data_asset_audit.py::test_audit_is_complete_deterministic_and_duplicate_aware
+tests/test_data_asset_audit.py::test_content_or_path_tamper_changes_corpus_root
+tests/test_data_asset_audit.py::test_symlinks_are_quarantined_and_never_followed
+tests/test_data_asset_audit.py::test_hardlinks_are_duplicates_but_not_reclaimable_storage
+tests/test_data_asset_audit.py::test_committed_data_baseline_is_complete_and_aggregate_only
+tests/test_data_asset_audit.py::test_hash_file_and_progress_callback_are_observable
+tests/test_data_asset_audit.py::test_changed_file_is_fail_closed_and_recorded
+tests/test_data_asset_audit.py::test_non_directory_root_is_rejected
+tests/test_evidence_validation.py::test_rejects_seed_filename_mismatch
+tests/test_evidence_validation.py::test_rejects_nonfinite_numbers
+tests/test_evidence_validation.py::test_rejects_probability_outside_unit_interval
+tests/test_execution.py::test_happy_path
+tests/test_execution.py::test_exception_is_captured
+tests/test_execution.py::test_timeout_kills_infinite_loop
+tests/test_execution.py::test_memory_limit
+tests/test_execution.py::test_destructive_functions_disabled[import os; os.system('echo pwned')]
+tests/test_execution.py::test_destructive_functions_disabled[import shutil; shutil.rmtree('/tmp')]
+tests/test_execution.py::test_destructive_functions_disabled[import subprocess; subprocess.Popen(['ls'])]
+tests/test_execution.py::test_destructive_functions_disabled[import os; os.kill(1, 9)]
+tests/test_execution.py::test_destructive_functions_disabled[import os; os.fork()]
+tests/test_execution.py::test_stdin_disabled
+tests/test_execution.py::test_writes_go_to_tempdir
+tests/test_execution.py::test_environment_is_scrubbed
+tests/test_execution.py::test_tricky_string_content
+tests/test_execution.py::test_fresh_globals
+tests/test_fractal_adversarial_gate.py::test_real_frozen_adversarial_evidence_is_fail_closed
+tests/test_instrumentation_audit.py::test_audit_run_is_never_claimable
+tests/test_instrumentation_audit.py::test_audit_exports_chrome_trace
+tests/test_instrumentation_audit.py::test_flop_comparison_covers_matmul_and_lists_uncovered_ops
+tests/test_instrumentation_audit.py::test_flop_comparison_reports_not_comparable_without_flops_flag
+tests/test_instrumentation_audit.py::test_roofline_report_classifies_memory_bound
+tests/test_instrumentation_audit.py::test_roofline_report_classifies_compute_bound
+tests/test_instrumentation_audit.py::test_roofline_report_rejects_nonpositive_hardware_rates
+tests/test_instrumentation_audit.py::test_moe_cap_placeholder_is_unimplemented
+tests/test_instrumentation_config.py::test_default_is_off
+tests/test_instrumentation_config.py::test_off_does_not_require_output_dir
+tests/test_instrumentation_config.py::test_counters_requires_output_dir
+tests/test_instrumentation_config.py::test_counters_with_output_dir_is_valid
+tests/test_instrumentation_config.py::test_trace_requires_trace_every_n_steps
+tests/test_instrumentation_config.py::test_trace_with_interval_is_valid
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs0]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs1]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs2]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs3]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs4]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs5]
+tests/test_instrumentation_config.py::test_invalid_numeric_fields_rejected[kwargs6]
+tests/test_instrumentation_config.py::test_output_dir_must_be_a_directory
+tests/test_instrumentation_config.py::test_unknown_field_fails_closed
+tests/test_instrumentation_config.py::test_config_is_frozen
+tests/test_instrumentation_config.py::test_energy_requires_cuda
+tests/test_instrumentation_config.py::test_energy_requires_instrument_invalid_ack
+tests/test_instrumentation_coverage.py::test_cuda_available_real_call_returns_bool
+tests/test_instrumentation_coverage.py::test_open_window_returns_none_when_pool_exhausted
+tests/test_instrumentation_coverage.py::test_resolve_windows_empty_returns_empty
+tests/test_instrumentation_coverage.py::test_cpu_clock_monotonic_nonnegative
+tests/test_instrumentation_coverage.py::test_event_pool_rejects_nonpositive_size
+tests/test_instrumentation_coverage.py::test_event_pool_warm_up_is_idempotent_when_already_warmed
+tests/test_instrumentation_coverage.py::test_flop_ledger_rejects_negative_executed_estimate
+tests/test_instrumentation_coverage.py::test_flop_ledger_noncausal_attention_branch
+tests/test_instrumentation_coverage.py::test_sliding_window_zero_raises_via_ledger
+tests/test_instrumentation_coverage.py::test_run_meter_cpu_path_no_cuda_events
+tests/test_instrumentation_coverage.py::test_run_meter_resolve_with_nothing_pending_returns_empty
+tests/test_instrumentation_coverage.py::test_run_meter_measure_step_returns_value
+tests/test_instrumentation_coverage.py::test_run_meter_cuda_available_false_when_torch_missing
+tests/test_instrumentation_coverage.py::test_run_meter_skips_mark_start_when_pool_exhausted
+tests/test_instrumentation_coverage.py::test_run_meter_error_scope_records_and_reraises
+tests/test_instrumentation_coverage.py::test_vram_record_delta
+tests/test_instrumentation_coverage.py::test_instrumentation_summary_to_dict_roundtrips_keys
+tests/test_instrumentation_coverage.py::test_external_wall_meter_adapter_is_not_auto_wired
+tests/test_instrumentation_coverage.py::test_trapezoidal_single_sample_zero
+tests/test_instrumentation_coverage.py::test_writer_overhead_report_and_energy_raw
+tests/test_instrumentation_coverage.py::test_writer_close_is_idempotent
+tests/test_instrumentation_coverage.py::test_writer_checksums_empty_dir_has_trailing_behavior
+tests/test_instrumentation_coverage.py::test_git_provenance_on_non_repo_returns_none
+tests/test_instrumentation_coverage.py::test_device_manifest_without_torch
+tests/test_instrumentation_coverage.py::test_environment_manifest_without_torch
+tests/test_instrumentation_coverage.py::test_audit_without_flops_flag_reports_none_profiler_flops
+tests/test_instrumentation_coverage.py::test_audit_mode_enum_values_are_stable
+tests/test_instrumentation_coverage.py::test_cuda_available_false_when_torch_missing
+tests/test_instrumentation_coverage.py::test_routing_histogram_rejects_nonpositive_bins
+tests/test_instrumentation_coverage.py::test_routing_histogram_zero_max_value_bins_at_zero
+tests/test_instrumentation_coverage.py::test_flops_rejects_negative_shared_expert_count
+tests/test_instrumentation_coverage.py::test_event_pool_size_property
+tests/test_instrumentation_coverage.py::test_writer_metric_flush_below_buffer_stays_buffered
+tests/test_instrumentation_coverage.py::test_writer_checksums_excludes_sha_file_itself
+tests/test_instrumentation_coverage.py::test_device_manifest_cuda_false_branch
+tests/test_instrumentation_coverage.py::test_device_manifest_driver_probe_failure
+tests/test_instrumentation_coverage.py::test_power_sampler_nvml_init_exception_is_unavailable
+tests/test_instrumentation_coverage.py::test_power_sampler_median_interval_with_few_samples
+tests/test_instrumentation_coverage.py::test_power_sampler_rejects_nonpositive_rate
+tests/test_instrumentation_coverage.py::test_routing_rejects_negative_dropped_tokens
+tests/test_instrumentation_coverage.py::test_roofline_zero_flops_is_unclassified_zero_bandwidth
+tests/test_instrumentation_coverage.py::test_writer_checksums_skips_subdirectories
+tests/test_instrumentation_cuda_events.py::test_event_pool_warms_up_and_acquires
+tests/test_instrumentation_cuda_events.py::test_event_pool_overflow_is_counted_not_raised
+tests/test_instrumentation_cuda_events.py::test_event_pool_release_returns_pair
+tests/test_instrumentation_cuda_events.py::test_cuda_event_elapsed_time_is_positive
+tests/test_instrumentation_cuda_events.py::test_resolve_windows_rejects_mixed_devices
+tests/test_instrumentation_cuda_events.py::test_no_synchronize_between_start_and_end
+tests/test_instrumentation_cuda_events.py::test_run_meter_scope_records_gpu_and_e2e_latency
+tests/test_instrumentation_cuda_events.py::test_run_meter_propagates_exceptions_and_tags_error_status
+tests/test_instrumentation_cuda_events.py::test_run_meter_close_is_idempotent
+tests/test_instrumentation_determinism.py::test_flop_ledger_to_dict_is_byte_identical
+tests/test_instrumentation_determinism.py::test_routing_snapshot_is_byte_identical
+tests/test_instrumentation_determinism.py::test_bootstrap_ci_byte_identical_given_seed
+tests/test_instrumentation_determinism.py::test_percentile_is_pure_and_repeatable
+tests/test_instrumentation_determinism.py::test_writer_summary_bytes_identical_for_identical_input
+tests/test_instrumentation_determinism.py::test_writer_checksums_stable_across_runs
+tests/test_instrumentation_determinism.py::test_manifest_deterministic_fields_are_stable
+tests/test_instrumentation_determinism.py::test_smoke_evidence_is_reproducible
+tests/test_instrumentation_energy.py::test_trapezoidal_joules_hand_calculated
+tests/test_instrumentation_energy.py::test_trapezoidal_joules_ramp
+tests/test_instrumentation_energy.py::test_trapezoidal_joules_requires_two_samples
+tests/test_instrumentation_energy.py::test_power_sampler_degrades_cleanly_without_nvml
+tests/test_instrumentation_energy.py::test_total_energy_sampler_degrades_cleanly_without_nvml
+tests/test_instrumentation_energy.py::test_facade_reports_unavailable_when_no_backend_works
+tests/test_instrumentation_energy.py::test_no_tdp_fallback_exists_in_module
+tests/test_instrumentation_energy.py::test_power_sampler_reports_real_samples_on_gpu
+tests/test_instrumentation_energy.py::test_energy_facade_selects_a_real_backend_on_gpu
+tests/test_instrumentation_energy_nvml.py::test_total_energy_backend_reports_delta
+tests/test_instrumentation_energy_nvml.py::test_total_energy_backend_unsupported_device_is_unavailable
+tests/test_instrumentation_energy_nvml.py::test_total_energy_delta_never_negative
+tests/test_instrumentation_energy_nvml.py::test_power_sampler_collects_real_samples
+tests/test_instrumentation_energy_nvml.py::test_power_sampler_counts_missed_samples
+tests/test_instrumentation_energy_nvml.py::test_power_sampler_single_sample_is_unavailable_not_fabricated_zero
+tests/test_instrumentation_energy_nvml.py::test_facade_prefers_total_energy_backend
+tests/test_instrumentation_energy_nvml.py::test_facade_falls_back_to_power_sampling
+tests/test_instrumentation_energy_nvml.py::test_power_sampler_high_confidence_path
+tests/test_instrumentation_energy_nvml.py::test_total_energy_high_confidence_path
+tests/test_instrumentation_flops.py::test_dense_linear_flops_hand_calculated
+tests/test_instrumentation_flops.py::test_full_noncausal_pairs
+tests/test_instrumentation_flops.py::test_full_causal_pairs
+tests/test_instrumentation_flops.py::test_sliding_causal_pairs_matches_full_causal_when_window_covers_all
+tests/test_instrumentation_flops.py::test_sliding_causal_pairs_hand_calculated
+tests/test_instrumentation_flops.py::test_sliding_causal_pairs_window_of_one_is_diagonal_only
+tests/test_instrumentation_flops.py::test_attention_core_flops_hand_calculated
+tests/test_instrumentation_flops.py::test_mlp_flops_hand_calculated
+tests/test_instrumentation_flops.py::test_gqa_projection_dimensions_differ_from_mha
+tests/test_instrumentation_flops.py::test_window_attention_uses_sliding_pairs
+tests/test_instrumentation_flops.py::test_ledger_totals_accumulate
+tests/test_instrumentation_flops.py::test_negative_flops_rejected
+tests/test_instrumentation_flops.py::test_embedding_lookup_is_zero_flops_not_dense
+tests/test_instrumentation_flops.py::test_flop_model_error_percent_none_when_no_entries
+tests/test_instrumentation_flops.py::test_flop_model_error_percent_zero_when_matched
+tests/test_instrumentation_flops.py::test_expert_assignment_api_is_measurement_ready_but_computes_no_flops
+tests/test_instrumentation_flops.py::test_expert_assignment_rejects_inconsistent_counts
+tests/test_instrumentation_flops.py::test_nanochat_estimator_agreement_on_dense_matmul_portion
+tests/test_instrumentation_integration.py::test_off_mode_creates_no_output_directory
+tests/test_instrumentation_integration.py::test_off_and_counters_produce_identical_loss
+tests/test_instrumentation_integration.py::test_counters_mode_produces_valid_evidence_bundle
+tests/test_instrumentation_integration.py::test_null_stack_matches_real_stack_interface
+tests/test_instrumentation_manifest.py::test_git_provenance_reads_real_repo_state
+tests/test_instrumentation_manifest.py::test_device_manifest_reports_cuda_availability
+tests/test_instrumentation_manifest.py::test_environment_manifest_flags_mismatch_against_expected_torch
+tests/test_instrumentation_manifest.py::test_environment_manifest_tolerates_cuda_build_metadata_suffix
+tests/test_instrumentation_manifest.py::test_environment_manifest_hostname_is_hashed_not_raw
+tests/test_instrumentation_manifest.py::test_build_manifest_assembles_all_required_sections
+tests/test_instrumentation_manifest.py::test_manifest_never_contains_secret_like_keys
+tests/test_instrumentation_noop.py::test_null_run_meter_scope_runs_wrapped_code_only
+tests/test_instrumentation_noop.py::test_null_run_meter_measure_step_returns_result
+tests/test_instrumentation_noop.py::test_null_run_meter_lifecycle_is_idempotent_and_side_effect_free
+tests/test_instrumentation_noop.py::test_null_vram_meter_returns_none_snapshot
+tests/test_instrumentation_noop.py::test_null_energy_sampler_reports_unavailable
+tests/test_instrumentation_noop.py::test_null_flop_ledger_reports_zero
+tests/test_instrumentation_noop.py::test_null_routing_counters_snapshot_is_empty
+tests/test_instrumentation_noop.py::test_null_writer_never_creates_output
+tests/test_instrumentation_overhead.py::test_percentile_median_of_odd_list
+tests/test_instrumentation_overhead.py::test_percentile_p0_and_p100
+tests/test_instrumentation_overhead.py::test_percentile_empty_list_is_zero
+tests/test_instrumentation_overhead.py::test_percentile_single_value
+tests/test_instrumentation_overhead.py::test_bootstrap_ci_tight_for_constant_deltas
+tests/test_instrumentation_overhead.py::test_bootstrap_ci_widens_with_variance
+tests/test_instrumentation_overhead.py::test_bootstrap_ci_is_reproducible_given_same_seed
+tests/test_instrumentation_routing.py::test_counters_mode_aggregates_only_no_per_step_records
+tests/test_instrumentation_routing.py::test_trace_mode_samples_every_n_steps
+tests/test_instrumentation_routing.py::test_trace_buffer_is_bounded_and_counts_dropped
+tests/test_instrumentation_routing.py::test_entropy_mean_none_when_never_supplied
+tests/test_instrumentation_routing.py::test_entropy_mean_computed_when_supplied
+tests/test_instrumentation_routing.py::test_negative_counts_rejected
+tests/test_instrumentation_routing.py::test_histogram_has_bounded_bins
+tests/test_instrumentation_stats.py::test_percentile_empty_is_zero
+tests/test_instrumentation_stats.py::test_percentile_single_element
+tests/test_instrumentation_stats.py::test_percentile_interpolates
+tests/test_instrumentation_stats.py::test_percentile_interior_interpolation_pins_upper_index
+tests/test_instrumentation_stats.py::test_percentile_quarter_pins_interpolation
+tests/test_instrumentation_stats.py::test_percentile_constant_is_exact
+tests/test_instrumentation_stats.py::test_bootstrap_ci_empty_is_zero
+tests/test_instrumentation_stats.py::test_bootstrap_ci_single_element
+tests/test_instrumentation_stats.py::test_bootstrap_ci_constant_is_exact
+tests/test_instrumentation_stats.py::test_bootstrap_ci_reproducible_given_seed
+tests/test_instrumentation_stats.py::test_bootstrap_ci_lower_le_upper
+tests/test_instrumentation_stats.py::test_bootstrap_ci_confidence_widens_interval
+tests/test_instrumentation_stats.py::test_bootstrap_ci_tail_is_two_sided
+tests/test_instrumentation_stats.py::test_percentile_endpoints[0.0]
+tests/test_instrumentation_stats.py::test_percentile_endpoints[0.5]
+tests/test_instrumentation_stats.py::test_percentile_endpoints[1.0]
+tests/test_instrumentation_vram.py::test_vram_meter_unavailable_reports_none_on_cpu_device_string
+tests/test_instrumentation_vram.py::test_vram_meter_reports_real_allocation
+tests/test_instrumentation_vram.py::test_vram_meter_never_calls_empty_cache
+tests/test_instrumentation_writer.py::test_metrics_are_buffered_not_written_immediately
+tests/test_instrumentation_writer.py::test_metrics_flush_on_buffer_size
+tests/test_instrumentation_writer.py::test_close_flushes_remaining_buffer
+tests/test_instrumentation_writer.py::test_writing_after_close_raises
+tests/test_instrumentation_writer.py::test_summary_is_valid_json_and_atomic
+tests/test_instrumentation_writer.py::test_allow_nan_false_rejects_nan
+tests/test_instrumentation_writer.py::test_allow_nan_false_rejects_infinity
+tests/test_instrumentation_writer.py::test_no_pickle_import_in_writer_module
+tests/test_instrumentation_writer.py::test_output_is_utf8
+tests/test_instrumentation_writer.py::test_compute_checksums_covers_all_written_files
+tests/test_instrumentation_writer.py::test_crash_between_writes_does_not_corrupt_prior_summary
+tests/test_mutation_kill_rate.py::test_all_curated_mutants_are_killed
+tests/test_optim.py::test_adamw_matches_torch_reference
+tests/test_optim.py::test_determinism
+tests/test_optim.py::test_convergence
+tests/test_optim.py::test_muon_update_is_orthogonalized
+tests/test_readiness_oracle.py::test_perfect_technical_score_cannot_override_blocking_facts
+tests/test_readiness_oracle.py::test_external_status_requires_every_blocker_closed
+tests/test_readiness_oracle.py::test_missing_core_contract_forces_not_ready_below_threshold
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[architecture_contract]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[inference_integrity]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[hermetic_reproduction]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[supply_chain_inventory]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[adversarial_gate]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[claim_artifacts_complete]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[negative_results_preserved]
+tests/test_readiness_oracle.py::test_every_missing_control_blocks_external_status[documentation_traceable]
+tests/test_readiness_oracle.py::test_impossible_claim_counts_are_rejected[supported_claims--1]
+tests/test_readiness_oracle.py::test_impossible_claim_counts_are_rejected[independently_replicated_supported_claims--1]
+tests/test_readiness_oracle.py::test_impossible_claim_counts_are_rejected[real_workload_supported_claims--1]
+tests/test_readiness_oracle.py::test_impossible_claim_counts_are_rejected[independently_replicated_supported_claims-4]
+tests/test_readiness_oracle.py::test_impossible_claim_counts_are_rejected[real_workload_supported_claims-4]
+tests/test_readiness_oracle.py::test_repository_facts_are_machine_derived
+tests/test_technical_quality_gate.py::test_repository_quality_ledger_is_consistent
+tests/test_technical_quality_gate.py::test_gate_rejects_missing_evidence
+tests/test_technical_quality_gate.py::test_gate_rejects_done_state_without_mapping
+tests/test_technical_quality_gate.py::test_gate_rejects_renumbered_or_missing_tasks
+tests/test_truth_gate.py::test_dotted_name_reconstruction_is_exact
+tests/test_truth_gate.py::test_real_repository_passes_the_anti_green_contract
+tests/test_verdict_binding_gate.py::test_the_real_registry_is_coherent
+tests/test_verdict_binding_gate.py::test_every_claim_carries_a_binding_decision
+tests/test_verdict_binding_gate.py::test_flipping_a_negative_verdict_is_detected
+tests/test_verdict_binding_gate.py::test_promoting_an_untested_claim_is_detected
+tests/test_verdict_binding_gate.py::test_unknown_verdict_string_fails_rather_than_defaults
+tests/test_verdict_binding_gate.py::test_ladder_desync_from_the_registry_is_detected
+tests/test_verdict_binding_gate.py::test_narrowed_status_must_name_its_limitation
+tests/test_verdict_binding_gate.py::test_polarity_table_is_not_a_substring_classifier
+tests/test_verdict_binding_gate.py::test_gate_self_test_passes
+tests/via/test_attention_horizon_qualification.py::test_exact_control_has_expected_information_surface
+tests/via/test_attention_horizon_qualification.py::test_controlled_qualification_never_authorizes_scientific_ascension
+tests/via/test_attention_horizon_qualification.py::test_controller_allowance_boundary_is_exact
+tests/via/test_causal_contracts.py::test_exhaustive_replay_aggregates_unit_weighted_surface
+tests/via/test_causal_contracts.py::test_exhaustive_replay_fails_closed_on_missing_or_duplicate_action
+tests/via/test_causal_contracts.py::test_context_cannot_change_inside_one_independent_unit
+tests/via/test_causal_contracts.py::test_structural_nulls_have_zero_oracle_gap
+tests/via/test_causal_contracts.py::test_treatment_effects_are_relative_to_frozen_baseline
+tests/via/test_causal_contracts.py::test_balanced_randomization_is_deterministic_and_stratified
+tests/via/test_causal_contracts.py::test_ips_and_doubly_robust_recover_known_policy_value
+tests/via/test_crossfit.py::test_grouped_kfold_never_leaks_group
+tests/via/test_crossfit.py::test_fold_assignment_is_deterministic_at_group_level
+tests/via/test_crossfit.py::test_invalid_number_of_folds_fails_closed
+tests/via/test_evidence_sufficiency.py::test_frozen_real_evidence_does_not_manufacture_instance_outcomes
+tests/via/test_evidence_sufficiency.py::test_future_contract_requires_same_unit_all_actions_and_raw_values
+tests/via/test_opportunity_separation.py::test_replay_contract_rejects_missing_action
+tests/via/test_opportunity_separation.py::test_information_order_fixed_le_regime_le_instance
+tests/via/test_opportunity_separation.py::test_attention_horizon_has_nonzero_cost_sensitive_opportunity
+tests/via/test_opportunity_separation.py::test_controller_cost_is_charged_in_compute_units
+tests/via/test_opportunity_separation.py::test_critical_lambdas_include_regime_and_fixed_policy_crossings
+tests/via/test_opportunity_separation.py::test_summary_finds_exact_region_without_grid_search
+tests/via/test_opportunity_separation.py::test_capture_fraction_is_fail_closed
+tests/via/test_via_status.py::test_status_propagates_v1_block_to_all_descendants
+tests/via/test_via_v1_reanalysis.py::test_normalized_input_binds_prior_kill_rule_and_contains_only_frozen_bundles
+tests/via/test_via_v1_reanalysis.py::test_reanalysis_reproduces_sealed_direction_without_authorizing_ascension
+tests/via/test_via_v1_reanalysis.py::test_via_gate_accepts_blocked_state_as_fail_closed_success
+
+==================================== ERRORS ====================================
+______________ ERROR collecting tests/test_attention_fallback.py _______________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_attention_fallback.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_attention_fallback.py:20: in <module>
+    ???
+nanochat/engine.py:23: in <module>
+    from nanochat.checkpoint_manager import load_model
+nanochat/checkpoint_manager.py:12: in <module>
+    from nanochat.tokenizer import get_tokenizer
+nanochat/tokenizer.py:31: in <module>
+    import rustbpe
+E   ModuleNotFoundError: No module named 'rustbpe'
+____________________ ERROR collecting tests/test_engine.py _____________________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_engine.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_engine.py:8: in <module>
+    ???
+nanochat/engine.py:23: in <module>
+    from nanochat.checkpoint_manager import load_model
+nanochat/checkpoint_manager.py:12: in <module>
+    from nanochat.tokenizer import get_tokenizer
+nanochat/tokenizer.py:31: in <module>
+    import rustbpe
+E   ModuleNotFoundError: No module named 'rustbpe'
+_____________ ERROR collecting tests/test_engineering_assurance.py _____________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_engineering_assurance.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_engineering_assurance.py:5: in <module>
+    ???
+scripts/assurance_attack.py:9: in <module>
+    from scripts import (
+scripts/build_sbom.py:12: in <module>
+    import tomli as tomllib
+E   ModuleNotFoundError: No module named 'tomli'
+______________ ERROR collecting tests/test_inference_integrity.py ______________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_inference_integrity.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_inference_integrity.py:10: in <module>
+    ???
+nanochat/checkpoint_manager.py:12: in <module>
+    from nanochat.tokenizer import get_tokenizer
+nanochat/tokenizer.py:31: in <module>
+    import rustbpe
+E   ModuleNotFoundError: No module named 'rustbpe'
+__________ ERROR collecting tests/test_instrumentation_properties.py ___________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_instrumentation_properties.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_instrumentation_properties.py:13: in <module>
+    ???
+E   ModuleNotFoundError: No module named 'hypothesis'
+_____________________ ERROR collecting tests/test_tasks.py _____________________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_tasks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_tasks.py:9: in <module>
+    ???
+E   ModuleNotFoundError: No module named 'pyarrow'
+___________________ ERROR collecting tests/test_tokenizer.py ___________________
+ImportError while importing test module '/mnt/data/cwc_fractal/cwc_next/tests/test_tokenizer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/data/cwc_work/nanochat-cwc-baseline/tests/test_tokenizer.py:10: in <module>
+    ???
+nanochat/tokenizer.py:31: in <module>
+    import rustbpe
+E   ModuleNotFoundError: No module named 'rustbpe'
+=========================== short test summary info ============================
+ERROR tests/test_attention_fallback.py
+ERROR tests/test_engine.py
+ERROR tests/test_engineering_assurance.py
+ERROR tests/test_inference_integrity.py
+ERROR tests/test_instrumentation_properties.py
+ERROR tests/test_tasks.py
+ERROR tests/test_tokenizer.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 7 errors during collection !!!!!!!!!!!!!!!!!!!!
+275 tests collected, 7 errors in 2.85s

@@ -1,0 +1,11 @@
+.............................s....................................s..... [ 26%]
+................s......sssssssss...............ss....................... [ 52%]
+.....sss...............................................ss...........ssss [ 78%]
+..........................................................               [100%]
+=============================== warnings summary ===============================
+tests/test_instrumentation_audit.py::test_audit_run_is_never_claimable
+  /opt/pyvenv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+    _warn_once(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+251 passed, 23 skipped, 1 warning in 12.05s

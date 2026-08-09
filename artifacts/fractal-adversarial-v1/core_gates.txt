@@ -1,0 +1,15 @@
+=== via_gate.py ===
+VIA-GATE: PASS (engineering substrate coherent; scientific ascension remains BLOCKED_AT_VIA_V1 by binding prior evidence)
+=== architecture_gate.py ===
+ARCHITECTURE: PASS (declared package boundaries are preserved)
+=== hermeticity_gate.py ===
+HERMETICITY: PASS (canonical evidence path is offline and seed-locked)
+=== complexity_gate.py ===
+COMPLEXITY: PASS (critical-function budgets preserved)
+=== inference_integrity_gate.py ===
+INFERENCE-INTEGRITY: PASS (request, cache, logits, weights, behaviour)
+=== verdict_binding_gate.py ===
+VERDICT-BINDING PASS: 45 claims bound to sealed verdicts, 2 NOT_TESTED unbound by design, ladder rows resolve to the registry.
+=== doc_status_gate.py ===
+P0 docs present: 24/24 | claims: 47 | hypotheses: 47 | HEAD 1143a05
+DOC-GATE PASS: registry schema-valid, commit current, 0 orphans, artifacts exist.
