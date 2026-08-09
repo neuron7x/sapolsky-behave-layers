@@ -15,13 +15,20 @@ REQUIRED = [
     "cwc/causal/interventions.py",
     "cwc/causal/cate.py",
     "cwc/causal/crossfit.py",
+    "cwc/causal/opportunity.py",
     "experiments/via_v1_causal_surface/PREREGISTRATION.md",
     "experiments/via_v1_causal_surface/protocol.yaml",
     "experiments/via_v1_causal_surface/run.py",
     "experiments/via_v1_causal_surface/analyze.py",
     "experiments/via_v1_causal_surface/nulls.py",
+    "docs/acts/CWC_VIA_02.md",
+    "experiments/via_v1_attention_horizon_qualification/PREREGISTRATION.md",
+    "experiments/via_v1_attention_horizon_qualification/protocol.yaml",
+    "experiments/via_v1_attention_horizon_qualification/run.py",
+    "experiments/via_v1_attention_horizon_qualification/analyze.py",
     "scripts/via_status.py",
     "artifacts/via-v1-causal-surface/verdict.json",
+    "artifacts/via-v1-attention-horizon-qualification/verdict.json",
 ]
 
 
@@ -75,6 +82,28 @@ def validate(root: Path = ROOT) -> list[str]:
     checks = via.get("method_checks")
     if not isinstance(checks, dict) or not checks or not all(value is True for value in checks.values()):
         errors.append("one or more VIA-V1 method checks failed")
+
+    try:
+        qualifier = _read_json(root / "artifacts/via-v1-attention-horizon-qualification/verdict.json")
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        errors.append(f"invalid attention-horizon qualification verdict: {exc}")
+        return errors
+    allowed_qualifier_verdicts = {
+        "ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY",
+        "ATTENTION_HORIZON_MECHANISM_REJECTED",
+    }
+    if qualifier.get("verdict") not in allowed_qualifier_verdicts:
+        errors.append(f"unexpected attention-horizon qualifier verdict {qualifier.get('verdict')!r}")
+    if qualifier.get("scientific_pass") is not False:
+        errors.append("controlled mechanism qualification must not claim scientific VIA-V1 PASS")
+    if qualifier.get("ascension_authorized") is not False:
+        errors.append("controlled mechanism qualification must not authorize ascension")
+    if qualifier.get("via_v2_authorized") is not False:
+        errors.append("attention-horizon qualification must not authorize VIA-V2")
+    qchecks = qualifier.get("checks")
+    if qualifier.get("verdict") == "ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY":
+        if not isinstance(qchecks, dict) or not qchecks or not all(value is True for value in qchecks.values()):
+            errors.append("qualified attention-horizon candidate has a failed qualification check")
 
     # Descendant fail-closed rule.  Any later verdict that claims authorization
     # while V1 is blocked is a hard programme violation.

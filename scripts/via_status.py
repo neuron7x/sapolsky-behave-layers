@@ -23,6 +23,12 @@ def resolve(root: Path = ROOT) -> dict[str, Any]:
         v1 and v1.get("verdict") == "VIA_V1_METHOD_VALIDATED_ASCENSION_BLOCKED"
     )
 
+    qpath = root / "artifacts/via-v1-attention-horizon-qualification/verdict.json"
+    qualifier = json.loads(qpath.read_text()) if qpath.is_file() else None
+    candidate_status = (
+        qualifier.get("verdict") if isinstance(qualifier, dict) else "NOT_EXECUTED"
+    )
+
     levels: list[dict[str, Any]] = []
     for level in contract["levels"]:
         lid = level["id"]
@@ -32,7 +38,13 @@ def resolve(root: Path = ROOT) -> dict[str, Any]:
                 reason = "scientific VIA-V1 pass artifact present"
             elif v1_method_validated:
                 status = "BLOCKED"
-                reason = "method validated retrospectively; binding WP18 kill rule remains active"
+                if candidate_status == "ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY":
+                    reason = (
+                        "retrospective method validated; attention-horizon mechanism qualified only "
+                        "for a future prospective real VIA-V1 pilot; binding scientific gate remains closed"
+                    )
+                else:
+                    reason = "method validated retrospectively; binding WP18 kill rule remains active"
             else:
                 status = "PENDING" if not kill_active else "BLOCKED"
                 reason = "no admissible new VIA-V1 scientific evidence"
@@ -49,6 +61,7 @@ def resolve(root: Path = ROOT) -> dict[str, Any]:
     return {
         "programme": "CWC-VIA",
         "prior_kill_rule_active": kill_active,
+        "candidate_qualification": candidate_status,
         "current_scientific_frontier": next(
             (item["id"] for item in levels if item["status"] != "PASS"), "COMPLETE"
         ),

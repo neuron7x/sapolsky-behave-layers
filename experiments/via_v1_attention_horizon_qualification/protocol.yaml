@@ -1,0 +1,39 @@
+schema: cwc-via-v1q/attention-horizon-qualification-1
+class: controlled_mechanism_qualification
+ascension_authority: false
+scientific_pass_authority: false
+seed: none_exact_enumeration
+sequence_length: 8
+alphabet: [0, 1]
+regimes:
+  local:
+    target_index: -1
+  long:
+    target_index: 0
+actions:
+  short:
+    horizon: 2
+    compute_proxy: 2.0
+  full:
+    horizon: 8
+    compute_proxy: 8.0
+quality: exact_match_accuracy
+scalarization: quality_minus_lambda_times_compute
+lambda_selection: exact_pairwise_crossings_plus_interval_representatives
+controller_compute_primary: 0.0
+primary_gate:
+  - exhaustive_replay_valid
+  - information_ordering_valid
+  - positive_regime_opportunity_interval
+  - positive_controller_compute_allowance
+  - action_ranking_reversal_across_regimes
+  - no_ascension_authority
+kill_rule: reject_candidate_on_any_primary_gate_failure
+prohibited:
+  - via_v1_scientific_pass
+  - via_v2_authorization
+  - real_workload_claim
+  - transformer_claim
+  - gpu_speedup_claim
+  - latency_claim
+  - energy_claim

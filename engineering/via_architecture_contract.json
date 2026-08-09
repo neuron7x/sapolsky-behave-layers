@@ -9,13 +9,53 @@
     "required_reinforcement": "NEGATIVE_IS_MECHANISM_SPECIFIC"
   },
   "levels": [
-    {"id": "VIA-V1", "name": "causal_opportunity", "requires": []},
-    {"id": "VIA-V2", "name": "observability_ceiling", "requires": ["VIA-V1:PASS"]},
-    {"id": "VIA-V3", "name": "marginal_value_controller", "requires": ["VIA-V2:PASS"]},
-    {"id": "VIA-V4", "name": "physical_conditional_execution", "requires": ["VIA-V3:PASS"]},
-    {"id": "VIA-V5", "name": "stateful_adaptation", "requires": ["VIA-V4:PASS"]},
-    {"id": "VIA-V6", "name": "hierarchical_governor", "requires": ["VIA-V5:PASS"]},
-    {"id": "VIA-V7", "name": "grand_falsification", "requires": ["VIA-V6:PASS"]}
+    {
+      "id": "VIA-V1",
+      "name": "causal_opportunity",
+      "requires": []
+    },
+    {
+      "id": "VIA-V2",
+      "name": "observability_ceiling",
+      "requires": [
+        "VIA-V1:PASS"
+      ]
+    },
+    {
+      "id": "VIA-V3",
+      "name": "marginal_value_controller",
+      "requires": [
+        "VIA-V2:PASS"
+      ]
+    },
+    {
+      "id": "VIA-V4",
+      "name": "physical_conditional_execution",
+      "requires": [
+        "VIA-V3:PASS"
+      ]
+    },
+    {
+      "id": "VIA-V5",
+      "name": "stateful_adaptation",
+      "requires": [
+        "VIA-V4:PASS"
+      ]
+    },
+    {
+      "id": "VIA-V6",
+      "name": "hierarchical_governor",
+      "requires": [
+        "VIA-V5:PASS"
+      ]
+    },
+    {
+      "id": "VIA-V7",
+      "name": "grand_falsification",
+      "requires": [
+        "VIA-V6:PASS"
+      ]
+    }
   ],
   "scientific_invariants": [
     "no_descendant_scientific_execution_without_ancestor_pass",
@@ -24,7 +64,10 @@
     "router_accuracy_is_not_a_primary_value_endpoint",
     "all_incremental_control_costs_are_charged",
     "unknown_quantities_remain_unknown_until_measured",
-    "negative_results_are_terminal_valid_results"
+    "negative_results_are_terminal_valid_results",
+    "opportunity_and_observability_are_separate_estimands",
+    "negative_coarse_context_result_does_not_imply_zero_instance_opportunity",
+    "candidate_qualification_cannot_authorize_via_v2"
   ],
   "v1_required_controls": [
     "best_fixed_action",
@@ -33,5 +76,19 @@
     "collapsed_context",
     "interaction_destroyed",
     "positive_control"
-  ]
+  ],
+  "v1_semantics": {
+    "primary_question": "does a mechanism possess economically relevant per-unit action opportunity before controller-state selection",
+    "instance_oracle_estimand": "E_i max_a U_i(a) - max_a E_i U_i(a)",
+    "regime_oracle_estimand": "E_Z max_a E[U(a)|Z] - max_a E[U(a)]",
+    "information_ordering": "best_fixed <= regime_oracle <= instance_oracle",
+    "observable_state_search_level": "VIA-V2",
+    "wp18_wp19_scope_preserved": true
+  },
+  "candidate_qualification": {
+    "mechanism": "adaptive_attention_horizon",
+    "artifact": "artifacts/via-v1-attention-horizon-qualification/verdict.json",
+    "qualification_has_ascension_authority": false,
+    "prospective_real_pilot_requires_new_frozen_protocol": true
+  }
 }
