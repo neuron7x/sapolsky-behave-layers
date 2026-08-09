@@ -1,0 +1,132 @@
+{
+  "archive": "/mnt/data/cwc_fractal/cwc_next/legacy/cognitive-weave-kernel-archive.zip",
+  "archive_sha256": "3ed560daec601f042021a36cd792257266cd98814da97e84d85cc39710c35e9b",
+  "claim_boundary": "The archived topology is a deterministic causal local/global mask. Sparse edge scaling or a short graph diameter does not establish fractal geometry, cognition, useful adaptive computation, or physical sparse attention execution.",
+  "config": {
+    "causal": true,
+    "global_tokens": 1,
+    "local_window": 3
+  },
+  "density_loglog_slope": -0.9314656103678375,
+  "edge_count_loglog_slope": 1.0685343896321626,
+  "exact_global1_formula_all_match": true,
+  "lengths": [
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96,
+    128,
+    192,
+    256
+  ],
+  "rows": [
+    {
+      "density": 0.46875,
+      "directed_edges": 30,
+      "exact_formula_match": true,
+      "exact_global1_edges": 30,
+      "sequence_length": 8,
+      "undirected_diameter": 2,
+      "wiring_cost": 56.0
+    },
+    {
+      "density": 0.3472222222222222,
+      "directed_edges": 50,
+      "exact_formula_match": true,
+      "exact_global1_edges": 50,
+      "sequence_length": 12,
+      "undirected_diameter": 2,
+      "wiring_cost": 118.0
+    },
+    {
+      "density": 0.2734375,
+      "directed_edges": 70,
+      "exact_formula_match": true,
+      "exact_global1_edges": 70,
+      "sequence_length": 16,
+      "undirected_diameter": 2,
+      "wiring_cost": 196.0
+    },
+    {
+      "density": 0.1909722222222222,
+      "directed_edges": 110,
+      "exact_formula_match": true,
+      "exact_global1_edges": 110,
+      "sequence_length": 24,
+      "undirected_diameter": 2,
+      "wiring_cost": 400.0
+    },
+    {
+      "density": 0.146484375,
+      "directed_edges": 150,
+      "exact_formula_match": true,
+      "exact_global1_edges": 150,
+      "sequence_length": 32,
+      "undirected_diameter": 2,
+      "wiring_cost": 668.0
+    },
+    {
+      "density": 0.0998263888888889,
+      "directed_edges": 230,
+      "exact_formula_match": true,
+      "exact_global1_edges": 230,
+      "sequence_length": 48,
+      "undirected_diameter": 2,
+      "wiring_cost": 1396.0
+    },
+    {
+      "density": 0.07568359375,
+      "directed_edges": 310,
+      "exact_formula_match": true,
+      "exact_global1_edges": 310,
+      "sequence_length": 64,
+      "undirected_diameter": 2,
+      "wiring_cost": 2380.0
+    },
+    {
+      "density": 0.05099826388888889,
+      "directed_edges": 470,
+      "exact_formula_match": true,
+      "exact_global1_edges": 470,
+      "sequence_length": 96,
+      "undirected_diameter": 2,
+      "wiring_cost": 5116.0
+    },
+    {
+      "density": 0.0384521484375,
+      "directed_edges": 630,
+      "exact_formula_match": true,
+      "exact_global1_edges": 630,
+      "sequence_length": 128,
+      "undirected_diameter": 2,
+      "wiring_cost": 8876.0
+    },
+    {
+      "density": 0.025770399305555556,
+      "directed_edges": 950,
+      "exact_formula_match": true,
+      "exact_global1_edges": 950,
+      "sequence_length": 192,
+      "undirected_diameter": 2,
+      "wiring_cost": 19468.0
+    },
+    {
+      "density": 0.019378662109375,
+      "directed_edges": 1270,
+      "exact_formula_match": true,
+      "exact_global1_edges": 1270,
+      "sequence_length": 256,
+      "undirected_diameter": 2,
+      "wiring_cost": 34156.0
+    }
+  ],
+  "schema_version": "cwc.topology_semantics_audit.v1",
+  "scientific_ascension_authority": false,
+  "undirected_diameter_le_2_for_scaling_range": true,
+  "verdict": "GRAPH_DISTANCE_FRACTALITY_NOT_IDENTIFIABLE_GLOBAL_HUB_COLLAPSES_SCALE",
+  "via_authority": false
+}

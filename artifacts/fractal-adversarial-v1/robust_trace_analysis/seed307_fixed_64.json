@@ -1,0 +1,87 @@
+{
+  "claim_boundary": "A PASS supports residual multiscale association only in the measured trace under this instrument, mapping and confounder model. It does not establish fractal geometry, intelligence, biological equivalence, useful adaptive computation, causal hierarchy, or physical GPU efficiency.",
+  "coherence": {
+    "pair_reports": [
+      {
+        "edge": "micro->meso",
+        "n": 64,
+        "raw_spearman": -0.2743499681360996,
+        "repeated_strata_fraction": 1.0,
+        "residual_spearman": -0.2743499681360996,
+        "source_feature": "route_entropy_mean",
+        "source_residual_std": 0.006355487665628239,
+        "status": "VALID",
+        "target_feature": "expert_utilization_entropy",
+        "target_residual_std": 0.015015309106520795
+      },
+      {
+        "edge": "micro->meso",
+        "n": 64,
+        "raw_spearman": null,
+        "repeated_strata_fraction": 1.0,
+        "residual_spearman": null,
+        "source_feature": "controller_depth_fraction",
+        "source_residual_std": 0.0,
+        "status": "COMMON_DRIVER_EXPLAINED_OR_DEGENERATE",
+        "target_feature": "controller_memory_read_fraction",
+        "target_residual_std": 0.0
+      },
+      {
+        "edge": "meso->macro",
+        "n": 64,
+        "raw_spearman": -0.132423492674323,
+        "repeated_strata_fraction": 1.0,
+        "residual_spearman": -0.132423492674323,
+        "source_feature": "expert_utilization_entropy",
+        "source_residual_std": 0.015015309106520795,
+        "status": "VALID",
+        "target_feature": "end_to_end_p95_ms",
+        "target_residual_std": 0.09798172171384752
+      },
+      {
+        "edge": "meso->macro",
+        "n": 64,
+        "raw_spearman": null,
+        "repeated_strata_fraction": 1.0,
+        "residual_spearman": null,
+        "source_feature": "operational_intensity",
+        "source_residual_std": 0.0,
+        "status": "COMMON_DRIVER_EXPLAINED_OR_DEGENERATE",
+        "target_feature": "total_flops",
+        "target_residual_std": 0.0
+      }
+    ],
+    "raw_mean_abs_coherence": 0.20338673040521127,
+    "required_edges": [
+      "meso->macro",
+      "micro->meso"
+    ],
+    "residual_mean_abs_coherence": 0.20338673040521127,
+    "valid_edges": [
+      "meso->macro",
+      "micro->meso"
+    ],
+    "valid_pair_fraction": 0.5
+  },
+  "gates": {
+    "all_required_edges_valid": true,
+    "enough_series_length": true,
+    "min_valid_pair_fraction": 0.75,
+    "valid_pair_fraction": 0.5
+  },
+  "input": "artifacts/fractal-adversarial-v1/fresh_traces/seed307_fixed_64.jsonl",
+  "input_sha256": "3e5bbc5dc1dc93bc28f862ad5929b9a2f64ffe48ed770594d5fc6f24a303b141",
+  "minimum_series_length": 64,
+  "null_evaluation": null,
+  "protocol_id": "cwc_fractal_multiscale_v2",
+  "record_count": 64,
+  "schema_version": "cwc_fractal_robust_evidence.v2",
+  "scientific_ascension_authority": false,
+  "series_counts_by_scale": {
+    "macro": 64,
+    "meso": 64,
+    "micro": 64
+  },
+  "verdict": "MULTISCALE_ORGANIZATION_NOT_IDENTIFIABLE_UNDER_CURRENT_INSTRUMENTATION",
+  "via_authority": false
+}

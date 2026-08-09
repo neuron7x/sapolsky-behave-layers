@@ -1,0 +1,12 @@
+seed=101 fixed
+artifacts/fractal-adversarial-v1/fresh_traces/seed101_fixed_64.jsonl
+seed=101 variable
+artifacts/fractal-adversarial-v1/fresh_traces/seed101_variable_72.jsonl
+seed=211 fixed
+artifacts/fractal-adversarial-v1/fresh_traces/seed211_fixed_64.jsonl
+seed=211 variable
+artifacts/fractal-adversarial-v1/fresh_traces/seed211_variable_72.jsonl
+seed=307 fixed
+artifacts/fractal-adversarial-v1/fresh_traces/seed307_fixed_64.jsonl
+seed=307 variable
+artifacts/fractal-adversarial-v1/fresh_traces/seed307_variable_72.jsonl

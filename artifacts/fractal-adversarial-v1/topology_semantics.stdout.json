@@ -1,0 +1,7 @@
+{
+  "density_loglog_slope": -0.9314656103678375,
+  "diameter_le_2": true,
+  "edge_count_loglog_slope": 1.0685343896321626,
+  "exact_formula_all_match": true,
+  "verdict": "GRAPH_DISTANCE_FRACTALITY_NOT_IDENTIFIABLE_GLOBAL_HUB_COLLAPSES_SCALE"
+}

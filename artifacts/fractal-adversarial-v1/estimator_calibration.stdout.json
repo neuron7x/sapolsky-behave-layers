@@ -1,0 +1,9 @@
+{
+  "overlap": {
+    "n=128": 0.0,
+    "n=32": 0.1644959827038378,
+    "n=64": 0.03407258971840699
+  },
+  "total_simulated_series": 60000,
+  "verdict": "SHORT_SERIES_FRACTAL_METRICS_DIAGNOSTIC_ONLY"
+}

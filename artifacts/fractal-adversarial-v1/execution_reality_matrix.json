@@ -1,0 +1,2673 @@
+{
+  "active_depth_gate_changed_trials": 96,
+  "active_depth_physical_skip_successes": 0,
+  "all_matrix_expert_rows_equal_dense_token_topk_semantics": true,
+  "archive": "/mnt/data/cwc_fractal/cwc_next/legacy/cognitive-weave-kernel-archive.zip",
+  "archive_sha256": "3ed560daec601f042021a36cd792257266cd98814da97e84d85cc39710c35e9b",
+  "attention_executed_before_guard_trials": 12,
+  "attention_guard_trials": 12,
+  "claim_boundary": "This CPU hook matrix audits call/row semantics in the archived CWK reference only. It does not establish GPU timing, current nanochat behavior, or useful adaptive compute.",
+  "matrix_row_count": 144,
+  "matrix_rows": [
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 1,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 1,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 1,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 8,
+        "output_rows": 8,
+        "routed_expert_rows_total": 16,
+        "shared_expert_rows": 8
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 2,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 2,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 2,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 24,
+        "output_rows": 24,
+        "routed_expert_rows_total": 48,
+        "shared_expert_rows": 24
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 4,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 4,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 4,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "learned",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "random",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "inverted",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 1.0,
+      "batch": 5,
+      "budget_case": "all_depth2",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 1.0,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.5,
+      "batch": 5,
+      "budget_case": "half_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.5,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "active_fraction": 0.25,
+      "batch": 5,
+      "budget_case": "quarter_depth1",
+      "controller_mode": "static",
+      "counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 120,
+        "output_rows": 120,
+        "routed_expert_rows_total": 240,
+        "shared_expert_rows": 120
+      },
+      "depth_fraction": 0.25,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    }
+  ],
+  "max_active_experts_route_effects": 0,
+  "max_active_experts_trials": 12,
+  "memory_probe_rows": [
+    {
+      "batch": 1,
+      "controller_memory_read_fraction": 0.25,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 8
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 101,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "batch": 2,
+      "controller_memory_read_fraction": 0.0833333358168602,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 24
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "batch": 4,
+      "controller_memory_read_fraction": 0.0416666679084301,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 48
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 101,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "batch": 5,
+      "controller_memory_read_fraction": 0.01666666753590107,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 120
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 101,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "batch": 1,
+      "controller_memory_read_fraction": 0.25,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 8
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 211,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "batch": 2,
+      "controller_memory_read_fraction": 0.0833333358168602,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 24
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "batch": 4,
+      "controller_memory_read_fraction": 0.0416666679084301,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 48
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 211,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "batch": 5,
+      "controller_memory_read_fraction": 0.01666666753590107,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 120
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 211,
+      "sequence_length": 24,
+      "total_tokens": 120
+    },
+    {
+      "batch": 1,
+      "controller_memory_read_fraction": 0.25,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 8
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 307,
+      "sequence_length": 8,
+      "total_tokens": 8
+    },
+    {
+      "batch": 2,
+      "controller_memory_read_fraction": 0.0833333358168602,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 24
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 24
+    },
+    {
+      "batch": 4,
+      "controller_memory_read_fraction": 0.0416666679084301,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 48
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 307,
+      "sequence_length": 12,
+      "total_tokens": 48
+    },
+    {
+      "batch": 5,
+      "controller_memory_read_fraction": 0.01666666753590107,
+      "memory_read_calls": [
+        {
+          "max_reads": 2,
+          "query_rows": 120
+        }
+      ],
+      "memory_reads_per_query": 2,
+      "seed": 307,
+      "sequence_length": 24,
+      "total_tokens": 120
+    }
+  ],
+  "memory_read_received_all_query_rows": true,
+  "modes": [
+    "learned",
+    "random",
+    "inverted",
+    "static"
+  ],
+  "schema_version": "cwc.execution_reality_matrix.v1",
+  "scientific_ascension_authority": false,
+  "seeds": [
+    101,
+    211,
+    307
+  ],
+  "shapes": [
+    [
+      1,
+      8
+    ],
+    [
+      2,
+      12
+    ],
+    [
+      4,
+      12
+    ],
+    [
+      5,
+      24
+    ]
+  ],
+  "verdict": {
+    "active_depth": "SEMANTIC_GATE_ONLY",
+    "attention_budget": "POST_EXECUTION_GUARD_NOT_GOVERNOR",
+    "max_active_experts": "LOWER_BOUND_CHECK_NOT_ACTIVE_EXPERT_GOVERNOR",
+    "memory_gate": "POST_RETRIEVAL_MEMORY_GATE",
+    "overall": "REFERENCE_RUNTIME_CONTROL_IS_PRIMARILY_SEMANTIC_NOT_PHYSICAL_CONDITIONAL_EXECUTION"
+  },
+  "via_authority": false
+}

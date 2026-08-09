@@ -1,0 +1,114 @@
+{
+  "claim_boundary": "This is a post-hoc one-way replication veto and exploratory pooled null diagnostic. It can narrow or reject generalized support but cannot upgrade inspected data to a confirmatory positive claim.",
+  "fixed_shape_identifiable_count": 0,
+  "fixed_shape_total": 3,
+  "generalized_support_authorized": false,
+  "input_hashes": {
+    "artifacts/fractal-adversarial-v1/fresh_traces/seed101_variable_72.jsonl": "31ec267183f92ec6e20fb521fb07ca3c984a5189a7ebda9924aae33f2a8ba84c",
+    "artifacts/fractal-adversarial-v1/fresh_traces/seed211_variable_72.jsonl": "3bc5315ba60b36bc730de38ff309cad987771bbb1cd267ec348ed6bbf7f2f38d",
+    "artifacts/fractal-adversarial-v1/fresh_traces/seed307_variable_72.jsonl": "4e0f313440f170f866a5fac075cfeaa95378621857731336b14e69a9d784b7a6",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed101_fixed_64.json": "a7861cc31bf3d7d41d21c599108a83edf21a6d29ac66554dcc4454c244e39f6e",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed101_variable_72.json": "116531e06c070d9fba2afa4a58704684a8946b05e92ac638984688f811c57a3c",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed211_fixed_64.json": "489f1b4fed9ecb766cc7dfbafc8863e62e2df9377c7108aeff0724da4e8847b3",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed211_variable_72.json": "8c1319a3ddfe86b7153b75cca523fd7e16eac30a1b487951957eee98ac578c4a",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed307_fixed_64.json": "e224fe04f8325b475667df5b9338b3358a9197ad1a4963eb7ca3c9d5091c61be",
+    "artifacts/fractal-adversarial-v1/robust_trace_analysis/seed307_variable_72.json": "66a9a9c52403b079a03d49f314d33ead53897d9a55ca2aacb7e7c666d1b18c89",
+    "artifacts/fractal-adversarial-v1/synthetic_controls.json": "8007d13b45b8f22035fcc2377eccf6d29fb4b71283ce8925b3818c50d9385f17"
+  },
+  "pair_diagnostics": [
+    {
+      "by_seed": {
+        "101": -0.2978189740511541,
+        "211": -0.1271474624411017,
+        "307": 0.059457677808193485
+      },
+      "descriptive_fisher_z_mean_r": -0.12449610470413931,
+      "edge": "meso->macro",
+      "range": [
+        -0.2978189740511541,
+        0.059457677808193485
+      ],
+      "sign_consistency_fraction": 0.6666666666666666,
+      "source_feature": "expert_utilization_entropy",
+      "target_feature": "end_to_end_p95_ms",
+      "valid_seed_count": 3
+    },
+    {
+      "by_seed": {
+        "101": null,
+        "211": null,
+        "307": null
+      },
+      "edge": "meso->macro",
+      "source_feature": "operational_intensity",
+      "target_feature": "total_flops",
+      "valid_seed_count": 0
+    },
+    {
+      "by_seed": {
+        "101": -0.12267836321224708,
+        "211": 0.6811421385861276,
+        "307": 0.06472225124958379
+      },
+      "descriptive_fisher_z_mean_r": 0.25203533800740474,
+      "edge": "micro->meso",
+      "range": [
+        -0.12267836321224708,
+        0.6811421385861276
+      ],
+      "sign_consistency_fraction": 0.6666666666666666,
+      "source_feature": "controller_depth_fraction",
+      "target_feature": "controller_memory_read_fraction",
+      "valid_seed_count": 3
+    },
+    {
+      "by_seed": {
+        "101": -0.1502520278846858,
+        "211": -0.01791126367721134,
+        "307": -0.32860898297562424
+      },
+      "descriptive_fisher_z_mean_r": -0.16856872977289028,
+      "edge": "micro->meso",
+      "range": [
+        -0.32860898297562424,
+        -0.01791126367721134
+      ],
+      "sign_consistency_fraction": 1.0,
+      "source_feature": "route_entropy_mean",
+      "target_feature": "expert_utilization_entropy",
+      "valid_seed_count": 3
+    }
+  ],
+  "pooled_null_diagnostic": {
+    "delta_vs_max_null_mean": 0.057612148771959054,
+    "family_means": {
+      "block_permutation_target": 0.11167081185177845,
+      "circular_shift_target": 0.10665340653172137,
+      "within_stratum_shuffle_target": 0.13696473677565357
+    },
+    "family_p_values": {
+      "block_permutation_target": 0.0011997600479904018,
+      "circular_shift_target": 0.006798640271945611,
+      "within_stratum_shuffle_target": 0.02959408118376325
+    },
+    "familywise_p_value": 0.03679264147170566,
+    "iterations": 5000,
+    "max_null_mean": 0.14791442254869974,
+    "observed": 0.2055265713206588
+  },
+  "protocol_id": "cwc_fractal_multiscale_v2",
+  "replication_veto_triggered": true,
+  "schema_version": "cwc.fractal.replication_audit.v1",
+  "scientific_ascension_authority": false,
+  "seeds": [
+    101,
+    211,
+    307
+  ],
+  "synthetic_control_calibration_pass": true,
+  "variable_trace_pass_count": 1,
+  "variable_trace_pass_fraction": 0.3333333333333333,
+  "variable_trace_total": 3,
+  "verdict": "CROSS_SEED_RESIDUAL_MULTISCALE_ORGANIZATION_NOT_REPLICATED",
+  "via_authority": false
+}

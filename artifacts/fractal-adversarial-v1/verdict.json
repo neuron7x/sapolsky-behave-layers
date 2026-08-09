@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "The programme establishes narrow evidence and implementation boundaries only. It does not show absence of all multiscale organization, does not establish or refute intelligence in general, and does not provide VIA-V2+ authority.",
+  "claims": {
+    "attention_budget_is_preexecution_governor": false,
+    "controller_memory_gate_precedes_retrieval_work": false,
+    "graph_distance_fractality_supported": false,
+    "max_active_experts_is_effective_governor_above_top_k": false,
+    "multiscale_replication_supported": false,
+    "physical_conditional_execution_supported": false,
+    "short_series_estimator_calibration_complete": true,
+    "short_series_fractal_estimators_claim_authorized": false,
+    "synthetic_statistical_gate_calibrated": true
+  },
+  "counts": {
+    "estimator_simulated_series": 60000,
+    "execution_gate_changed_trials": 96,
+    "execution_matrix_rows": 144,
+    "execution_physical_skip_successes": 0,
+    "fixed_shape_identifiable": 0,
+    "fixed_shape_total": 3,
+    "fresh_trace_records": 408,
+    "pooled_replication_null_iterations": 5000,
+    "prespecified_trace_seeds": 3,
+    "synthetic_null_iterations_per_control": 2000,
+    "topology_sequence_lengths": 11,
+    "variable_trace_passes": 1,
+    "variable_trace_total": 3
+  },
+  "diagnostics": {
+    "iid_vs_ar1_hurst_95_interval_overlap": {
+      "n=128": 0.0,
+      "n=32": 0.1644959827038378,
+      "n=64": 0.03407258971840699
+    },
+    "pooled_replication_delta_vs_max_null_mean": 0.057612148771959054,
+    "pooled_replication_familywise_p": 0.03679264147170566,
+    "pooled_replication_observed": 0.2055265713206588,
+    "topology_density_loglog_slope": -0.9314656103678375,
+    "topology_edge_count_loglog_slope": 1.0685343896321626
+  },
+  "evidence_hashes": {
+    "estimators": "c50158646a3f77115fc3d0c85cf3bf6e3e383892c179f88905b59eb7f7674b62",
+    "execution": "45982a7de8e7abe75297d7b301a7baedcfb0360a1950e7af610a5a31fe4d8d54",
+    "replication": "0f7f88100d8521a72a9625df29d4ddb37eca55644e812a4c1b07104c8ef1319f",
+    "synthetic": "8007d13b45b8f22035fcc2377eccf6d29fb4b71283ce8925b3818c50d9385f17",
+    "topology": "4875d6d70543b3e6bfab03937641b4c0cfbed90a8fdc79332fa5e7ce2965ff0d"
+  },
+  "programme_verdict": "ADVERSARIAL_BOUNDARIES_ESTABLISHED_NO_ASCENSION",
+  "schema_version": "cwc.fractal_adversarial.verdict.v1",
+  "scientific_ascension_authority": false,
+  "via_authority": false
+}

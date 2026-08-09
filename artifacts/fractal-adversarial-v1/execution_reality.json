@@ -1,0 +1,265 @@
+{
+  "archive": "/mnt/data/cwc_fractal/cwc_next/legacy/cognitive-weave-kernel-archive.zip",
+  "archive_sha256": "3ed560daec601f042021a36cd792257266cd98814da97e84d85cc39710c35e9b",
+  "claim_boundary": "This audit concerns the archived CWK reference implementation on CPU. It does not establish GPU behavior, useful adaptive-compute value, or the current nanochat VIA runtime.",
+  "environment": {
+    "device": "cpu",
+    "threads": 1,
+    "torch": "2.10.0+cpu"
+  },
+  "failing_attention_budget_probe": {
+    "attention_executed_before_guard": true,
+    "max_attention_density": 0.3,
+    "runtime_error": "attention density exceeded Activation Budget Contract",
+    "work_counts_before_error": {
+      "attention_calls": 1,
+      "attention_q_tokens": 48,
+      "output_rows": 48,
+      "routed_expert_rows_by_id": [
+        25,
+        30,
+        21,
+        20
+      ],
+      "routed_expert_rows_total": 96,
+      "shared_expert_rows": 48
+    }
+  },
+  "input_shape": {
+    "batch_size": 4,
+    "sequence_length": 12,
+    "total_tokens": 48
+  },
+  "interventions": [
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": null,
+        "max_attention_density": 0.45,
+        "max_depth": 2,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "learned",
+      "name": "depth2_active_all",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 1.0,
+        "controller_depth_fraction": 1.0,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.689125,
+        "p95_ms": 1.869112
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    },
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": null,
+        "max_attention_density": 0.45,
+        "max_depth": 1,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "learned",
+      "name": "depth1_active_all",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 1.0,
+        "controller_depth_fraction": 0.5,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.7566205,
+        "p95_ms": 1.929982
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    },
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": 24,
+        "max_attention_density": 0.45,
+        "max_depth": 1,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "learned",
+      "name": "depth1_active24",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 0.5,
+        "controller_depth_fraction": 0.5,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.768393,
+        "p95_ms": 1.889472
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    },
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": 12,
+        "max_attention_density": 0.45,
+        "max_depth": 1,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "learned",
+      "name": "depth1_active12",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 0.25,
+        "controller_depth_fraction": 0.25,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.764377,
+        "p95_ms": 1.941059
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    },
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": 12,
+        "max_attention_density": 0.45,
+        "max_depth": 1,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "static",
+      "name": "static_active12",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 0.25,
+        "controller_depth_fraction": 0.25,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.7683624999999998,
+        "p95_ms": 2.005565
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    },
+    {
+      "budget": {
+        "max_active_experts": 2,
+        "max_active_tokens": 12,
+        "max_attention_density": 0.45,
+        "max_depth": 1,
+        "max_memory_reads": 2
+      },
+      "controller_mode": "inverted",
+      "name": "inverted_active12",
+      "same_expert_row_counts_as_reference": true,
+      "same_route_as_reference": true,
+      "telemetry": {
+        "attention_density": 0.3472222222222222,
+        "controller_active_token_fraction": 0.25,
+        "controller_depth_fraction": 0.25,
+        "controller_memory_read_fraction": 0.0416666679084301
+      },
+      "timing_diagnostic": {
+        "median_ms": 1.7648875,
+        "p95_ms": 1.889092
+      },
+      "work_counts": {
+        "attention_calls": 1,
+        "attention_q_tokens": 48,
+        "output_rows": 48,
+        "routed_expert_rows_by_id": [
+          25,
+          30,
+          21,
+          20
+        ],
+        "routed_expert_rows_total": 96,
+        "shared_expert_rows": 48
+      }
+    }
+  ],
+  "max_active_experts_comparison": {
+    "same_route_for_budget_2_and_4": true,
+    "top_k": 2
+  },
+  "schema_version": "cwc.execution_reality_audit.v1",
+  "seed": 20260810,
+  "verdict": {
+    "attention_budget": "POST_EXECUTION_GUARD_NOT_GOVERNOR",
+    "attention_sparse_physical_execution": "NOT_ESTABLISHED_DENSE_MHA_REFERENCE_PATH",
+    "controller_active_depth_physical_skip": "NOT_SUPPORTED_SEMANTIC_GATE_ONLY",
+    "max_active_experts_governor": "NO_EFFECT_ABOVE_TOP_K",
+    "overall": "LEGACY_CWK_CONDITIONAL_EXECUTION_NOT_PHYSICALLY_ESTABLISHED"
+  },
+  "via_authority": false
+}

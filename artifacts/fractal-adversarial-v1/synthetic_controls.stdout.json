@@ -1,0 +1,297 @@
+{
+  "calibration_pass": true,
+  "claim_boundary": "Synthetic controls validate the statistic/gate behavior only; they do not validate CWC runtime organization.",
+  "protocol_id": "cwc_fractal_multiscale_v2",
+  "results": {
+    "common_driver": {
+      "name": "common_driver",
+      "null_evaluation": {
+        "delta_vs_max_null_mean": -0.047232713307107974,
+        "families": [
+          {
+            "mean": 0.08748820706728161,
+            "name": "within_stratum_shuffle_target",
+            "p_value": 0.7296351824087957,
+            "q95": 0.14658844275637548
+          },
+          {
+            "mean": 0.0880722090341834,
+            "name": "circular_shift_target",
+            "p_value": 0.7476261869065467,
+            "q95": 0.14360756918068368
+          },
+          {
+            "mean": 0.07983689975583287,
+            "name": "block_permutation_target",
+            "p_value": 0.6571714142928535,
+            "q95": 0.13149755832881171
+          }
+        ],
+        "familywise_p_value": 0.9775112443778111,
+        "iterations": 2000,
+        "max_null_mean": 0.11278480229245795,
+        "observed": 0.06555208898534998,
+        "passed": false,
+        "reason": "FAILED_MAX_NULL_GATE"
+      },
+      "passed_primary_gate": false,
+      "report": {
+        "pair_reports": [
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.9700623982637004,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": -0.005900705371676614,
+            "source_feature": "route_entropy_mean",
+            "source_residual_std": 0.05045300653284191,
+            "status": "VALID",
+            "target_feature": "expert_utilization_entropy",
+            "target_residual_std": 0.05245283756806195
+          },
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.8624796527400976,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": -0.12220564297341291,
+            "source_feature": "controller_depth_fraction",
+            "source_residual_std": 0.05648085762097714,
+            "status": "VALID",
+            "target_feature": "controller_memory_read_fraction",
+            "target_residual_std": 0.05067728539390595
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": 0.6946418882257189,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.034427563754747696,
+            "source_feature": "expert_utilization_entropy",
+            "source_residual_std": 0.05245283756806195,
+            "status": "VALID",
+            "target_feature": "end_to_end_p95_ms",
+            "target_residual_std": 0.06952695521904846
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": 0.9802088985349973,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.09967444384156267,
+            "source_feature": "operational_intensity",
+            "source_residual_std": 0.058315413370635304,
+            "status": "VALID",
+            "target_feature": "total_flops",
+            "target_residual_std": 0.07034685434583976
+          }
+        ],
+        "raw_mean_abs_coherence": 0.8768482094411285,
+        "required_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "residual_mean_abs_coherence": 0.06555208898534998,
+        "valid_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "valid_pair_fraction": 1.0
+      }
+    },
+    "endogenous": {
+      "name": "endogenous",
+      "null_evaluation": {
+        "delta_vs_max_null_mean": 0.6601305463239284,
+        "families": [
+          {
+            "mean": 0.09001932311448725,
+            "name": "within_stratum_shuffle_target",
+            "p_value": 0.0004997501249375312,
+            "q95": 0.15283844275637548
+          },
+          {
+            "mean": 0.32112586136733584,
+            "name": "circular_shift_target",
+            "p_value": 0.0004997501249375312,
+            "q95": 0.48170103092783506
+          },
+          {
+            "mean": 0.1815887886597938,
+            "name": "block_permutation_target",
+            "p_value": 0.0004997501249375312,
+            "q95": 0.2972632935431362
+          }
+        ],
+        "familywise_p_value": 0.0004997501249375312,
+        "iterations": 2000,
+        "max_null_mean": 0.32673529740911555,
+        "observed": 0.986865843733044,
+        "passed": true,
+        "reason": "PASS"
+      },
+      "passed_primary_gate": true,
+      "report": {
+        "pair_reports": [
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.9926885512750949,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.9923901247965274,
+            "source_feature": "route_entropy_mean",
+            "source_residual_std": 0.8255080594971762,
+            "status": "VALID",
+            "target_feature": "expert_utilization_entropy",
+            "target_residual_std": 0.6784359583471867
+          },
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.9884291915355399,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.9874118285404232,
+            "source_feature": "controller_depth_fraction",
+            "source_residual_std": 0.5645882757017264,
+            "status": "VALID",
+            "target_feature": "controller_memory_read_fraction",
+            "target_residual_std": 0.5071519231997277
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": 0.9400298426478567,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.9846039066739013,
+            "source_feature": "expert_utilization_entropy",
+            "source_residual_std": 0.6784359583471867,
+            "status": "VALID",
+            "target_feature": "end_to_end_p95_ms",
+            "target_residual_std": 0.569025548386269
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": 0.9582202930005426,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.983057514921324,
+            "source_feature": "operational_intensity",
+            "source_residual_std": 0.5993720007344222,
+            "status": "VALID",
+            "target_feature": "total_flops",
+            "target_residual_std": 0.5480676186834859
+          }
+        ],
+        "raw_mean_abs_coherence": 0.9698419696147585,
+        "required_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "residual_mean_abs_coherence": 0.986865843733044,
+        "valid_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "valid_pair_fraction": 1.0
+      }
+    },
+    "independent": {
+      "name": "independent",
+      "null_evaluation": {
+        "delta_vs_max_null_mean": -0.04422995964460119,
+        "families": [
+          {
+            "mean": 0.08725619574064027,
+            "name": "within_stratum_shuffle_target",
+            "p_value": 0.7141429285357321,
+            "q95": 0.14154910472056428
+          },
+          {
+            "mean": 0.09076547578676072,
+            "name": "circular_shift_target",
+            "p_value": 0.7526236881559221,
+            "q95": 0.14542525773195877
+          },
+          {
+            "mean": 0.07852115267227347,
+            "name": "block_permutation_target",
+            "p_value": 0.592703648175912,
+            "q95": 0.13041576234400434
+          }
+        ],
+        "familywise_p_value": 0.9715142428785607,
+        "iterations": 2000,
+        "max_null_mean": 0.1127832694655453,
+        "observed": 0.06855330982094411,
+        "passed": false,
+        "reason": "FAILED_MAX_NULL_GATE"
+      },
+      "passed_primary_gate": false,
+      "report": {
+        "pair_reports": [
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.1053038524145415,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.08944655453065654,
+            "source_feature": "route_entropy_mean",
+            "source_residual_std": 0.8937582744720147,
+            "status": "VALID",
+            "target_feature": "expert_utilization_entropy",
+            "target_residual_std": 0.9055799631843661
+          },
+          {
+            "edge": "micro->meso",
+            "n": 96,
+            "raw_spearman": 0.014880629408572979,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.004706999457406403,
+            "source_feature": "controller_depth_fraction",
+            "source_residual_std": 1.0117337854166504,
+            "status": "VALID",
+            "target_feature": "controller_memory_read_fraction",
+            "target_residual_std": 0.8498178596002938
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": -0.06661692892023874,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": -0.15142430819316333,
+            "source_feature": "expert_utilization_entropy",
+            "source_residual_std": 0.9055799631843661,
+            "status": "VALID",
+            "target_feature": "end_to_end_p95_ms",
+            "target_residual_std": 0.8622682820199851
+          },
+          {
+            "edge": "meso->macro",
+            "n": 96,
+            "raw_spearman": 0.2555344546934346,
+            "repeated_strata_fraction": 1.0,
+            "residual_spearman": 0.02863537710255019,
+            "source_feature": "operational_intensity",
+            "source_residual_std": 1.0027592111912424,
+            "status": "VALID",
+            "target_feature": "total_flops",
+            "target_residual_std": 1.0041177657511253
+          }
+        ],
+        "raw_mean_abs_coherence": 0.11058396635919696,
+        "required_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "residual_mean_abs_coherence": 0.06855330982094411,
+        "valid_edges": [
+          "meso->macro",
+          "micro->meso"
+        ],
+        "valid_pair_fraction": 1.0
+      }
+    }
+  },
+  "schema_version": "cwc.fractal.synthetic_controls.v2",
+  "verdict": "SYNTHETIC_CONTROL_CALIBRATION_PASS"
+}

@@ -1,0 +1,17 @@
+{
+  "attention_postexec": 12,
+  "attention_trials": 12,
+  "gate_changed_trials": 96,
+  "matrix_rows": 144,
+  "memory_all_queries": true,
+  "physical_skip_successes": 0,
+  "route_budget_effects": 0,
+  "route_budget_trials": 12,
+  "verdict": {
+    "active_depth": "SEMANTIC_GATE_ONLY",
+    "attention_budget": "POST_EXECUTION_GUARD_NOT_GOVERNOR",
+    "max_active_experts": "LOWER_BOUND_CHECK_NOT_ACTIVE_EXPERT_GOVERNOR",
+    "memory_gate": "POST_RETRIEVAL_MEMORY_GATE",
+    "overall": "REFERENCE_RUNTIME_CONTROL_IS_PRIMARILY_SEMANTIC_NOT_PHYSICAL_CONDITIONAL_EXECUTION"
+  }
+}
