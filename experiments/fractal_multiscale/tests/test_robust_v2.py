@@ -120,3 +120,18 @@ def test_adapter_preserves_shape_and_richer_routing_telemetry() -> None:
     assert meso.features["controller_memory_read_fraction"] == 0.1
     assert meso.features["attention_density"] == 0.3
     assert macro.features["total_flops"] == 1000.0
+
+
+def test_cross_seed_pair_diagnostics_reports_sign_consistency() -> None:
+    from cwc_fractal.replication import cross_seed_pair_diagnostics
+
+    rows = {
+        "1": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": 0.2}],
+        "2": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": -0.1}],
+        "3": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": 0.3}],
+    }
+    out = cross_seed_pair_diagnostics(rows)
+    assert len(out) == 1
+    assert out[0]["valid_seed_count"] == 3
+    assert out[0]["sign_consistency_fraction"] == 2 / 3
+    assert out[0]["range"] == [-0.1, 0.3]
