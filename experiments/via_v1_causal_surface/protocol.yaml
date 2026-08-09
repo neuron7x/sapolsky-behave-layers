@@ -1,0 +1,33 @@
+schema: cwc-via-v1/protocol-1
+class: retrospective_method_validation
+ascension_authority: false
+seed: 20260809
+delta: 0.05
+inputs:
+  - wp18_prose_tied_k
+  - wp18_code_tied_k
+  - wp19_prose_untied_depth
+  - wp19_code_untied_depth
+  - ac1_synthetic_positive
+primary_certificate: corrected_oracle_gap_lower_bound
+cost_policy:
+  route_cost_source: artifacts/wp18-real-workload-pilot/verdict.json
+  observation_cost: not_applicable_reanalysis
+  decision_cost: included_in_frozen_route_cost_for_regression_only
+controls:
+  - best_fixed_action
+  - collapsed_context
+  - interaction_destroyed
+  - context_row_permutation
+  - synthetic_positive_control
+kill_rules:
+  - any_structural_null_gap_above_1e-12
+  - any_disagreement_with_frozen_real_workload_certificate_direction
+  - positive_control_not_positive
+  - prior_kill_rule_not_detected
+prohibited:
+  - architecture_claim
+  - via_v2_authorization
+  - benchmark_search
+  - new_difficulty_signal
+  - large_model_extrapolation

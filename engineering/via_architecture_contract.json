@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "programme": "CWC-VIA",
+  "current_authorized_scientific_level": "VIA-V1",
+  "prior_kill_rule": {
+    "source": "artifacts/wp18-real-workload-pilot/verdict.json",
+    "required_verdict": "WP18_KILL_RULE_TRIGGERED_NO_REAL_IDENTIFIABILITY",
+    "reinforced_by": "artifacts/wp19-negative-robustness/verdict.json",
+    "required_reinforcement": "NEGATIVE_IS_MECHANISM_SPECIFIC"
+  },
+  "levels": [
+    {"id": "VIA-V1", "name": "causal_opportunity", "requires": []},
+    {"id": "VIA-V2", "name": "observability_ceiling", "requires": ["VIA-V1:PASS"]},
+    {"id": "VIA-V3", "name": "marginal_value_controller", "requires": ["VIA-V2:PASS"]},
+    {"id": "VIA-V4", "name": "physical_conditional_execution", "requires": ["VIA-V3:PASS"]},
+    {"id": "VIA-V5", "name": "stateful_adaptation", "requires": ["VIA-V4:PASS"]},
+    {"id": "VIA-V6", "name": "hierarchical_governor", "requires": ["VIA-V5:PASS"]},
+    {"id": "VIA-V7", "name": "grand_falsification", "requires": ["VIA-V6:PASS"]}
+  ],
+  "scientific_invariants": [
+    "no_descendant_scientific_execution_without_ancestor_pass",
+    "retrospective_reanalysis_cannot_unblock_ascension",
+    "nested_tokens_are_not_independent_units_by_default",
+    "router_accuracy_is_not_a_primary_value_endpoint",
+    "all_incremental_control_costs_are_charged",
+    "unknown_quantities_remain_unknown_until_measured",
+    "negative_results_are_terminal_valid_results"
+  ],
+  "v1_required_controls": [
+    "best_fixed_action",
+    "random_action",
+    "context_permutation",
+    "collapsed_context",
+    "interaction_destroyed",
+    "positive_control"
+  ]
+}

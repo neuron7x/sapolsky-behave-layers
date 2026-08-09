@@ -18,6 +18,11 @@
         "experiments.common",
         "experiments.act_j_pilot.src.compute_matched"
       ]
+    },
+    {
+      "root": "cwc/causal",
+      "internal_namespace": "cwc",
+      "allowed_prefixes": ["cwc.causal"]
     }
   ]
 }
