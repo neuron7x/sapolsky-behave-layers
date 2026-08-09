@@ -143,3 +143,24 @@ If and only if the controlled candidate qualifies, the next act is a **prospecti
 VIA-V1 pilot** with a frozen workload family, frozen split, fixed attention-horizon actions, exhaustive
 counterfactual replay where feasible, and no learned controller. The pilot first measures
 `G_instance`; only after a positive opportunity certificate may observability/state design begin.
+
+## 9. Frozen-evidence sufficiency audit
+
+A structural audit must be executed before attempting retrospective instance-oracle claims. The
+question is not whether old experiments were valid; it is whether their sealed artifacts preserve
+the granularity required by the new estimand.
+
+For `G_instance`, a future artifact must preserve, before aggregation:
+
+```
+independent_unit_id
+immutable_unit_payload_hash
+cluster_id (when applicable)
+action_id
+raw_quality
+raw_compute
+execution identity/provenance
+```
+
+and the same unit must have an outcome under every admissible action when exhaustive replay is the
+identification design. Bucket means cannot be inverted back into unit-level potential outcomes.
