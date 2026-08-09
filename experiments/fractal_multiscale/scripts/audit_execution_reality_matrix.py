@@ -92,6 +92,7 @@ def main() -> None:
         torch.set_num_threads(1)
         cfg = yaml.safe_load((project / "configs" / "smoke.yaml").read_text(encoding="utf-8"))
         base_budget = ActivationBudget(**cfg["budget"])
+        analysis_budget = replace(base_budget, max_attention_density=1.0)
         vocab = int(cfg["model"]["vocab_size"])
         top_k = int(cfg["model"]["top_k"])
         num_experts = int(cfg["model"]["num_experts"])
@@ -111,15 +112,15 @@ def main() -> None:
             # Populate memory deterministically once; memory probes later use identical stored rows.
             populate_tokens = tokens_for(2, 8, vocab)
             with torch.no_grad():
-                model(populate_tokens, base_budget, read_memory=False, write_memory=True)
+                model(populate_tokens, analysis_budget, read_memory=False, write_memory=True)
 
             for batch, seq in SHAPES:
                 toks = tokens_for(batch, seq, vocab)
                 total = batch * seq
                 budgets = (
-                    ("all_depth2", replace(base_budget, max_active_tokens=None, max_depth=2)),
-                    ("half_depth1", replace(base_budget, max_active_tokens=max(1, total // 2), max_depth=1)),
-                    ("quarter_depth1", replace(base_budget, max_active_tokens=max(1, total // 4), max_depth=1)),
+                    ("all_depth2", replace(analysis_budget, max_active_tokens=None, max_depth=2)),
+                    ("half_depth1", replace(analysis_budget, max_active_tokens=max(1, total // 2), max_depth=1)),
+                    ("quarter_depth1", replace(analysis_budget, max_active_tokens=max(1, total // 4), max_depth=1)),
                 )
                 reference_counts = None
                 reference_gate = None
@@ -153,8 +154,8 @@ def main() -> None:
                         })
 
                 # max_active_experts above top_k should be an actual governor if its name is literal.
-                b_lo = replace(base_budget, max_active_experts=top_k)
-                b_hi = replace(base_budget, max_active_experts=num_experts)
+                b_lo = replace(analysis_budget, max_active_experts=top_k)
+                b_hi = replace(analysis_budget, max_active_experts=num_experts)
                 with torch.no_grad():
                     out_lo = model(toks, b_lo, read_memory=False, write_memory=False)
                     out_hi = model(toks, b_hi, read_memory=False, write_memory=False)
@@ -164,7 +165,7 @@ def main() -> None:
 
                 # Deliberately fail below actual mask density; hook proves whether dense MHA ran first.
                 actual_density = float(out_lo.telemetry["attention_density"])
-                fail_budget = replace(base_budget, max_attention_density=max(1e-6, actual_density * 0.5))
+                fail_budget = replace(analysis_budget, max_attention_density=max(1e-6, actual_density * 0.5))
                 counter = Counter(model)
                 failed = False
                 try:
@@ -184,7 +185,7 @@ def main() -> None:
                     calls.append({"query_rows": int(queries.numel() // queries.shape[-1]), "max_reads": int(max_reads)})
                     return original_read(queries, max_reads)
                 model.memory.read = types.MethodType(wrapped_read, model.memory)
-                mem_budget = replace(base_budget, max_active_tokens=max(1, total // 4), max_depth=1, max_memory_reads=2)
+                mem_budget = replace(analysis_budget, max_active_tokens=max(1, total // 4), max_depth=1, max_memory_reads=2)
                 with torch.no_grad():
                     mem_out = model(toks, mem_budget, read_memory=True, write_memory=False, controller_mode="learned")
                 model.memory.read = original_read
