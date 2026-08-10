@@ -28,7 +28,7 @@ def test_two_sided_intervention_separates_slope_from_shared_nuisance_intercept()
 def test_single_intervention_can_be_exactly_equivalent_via_intercept():
     design = InterventionDesign({-1.0: 0, 1.0: 1}, COST)
     kl, _ = profiled_kl_to_model_class(
-        GaussianInterventionalLaw(0.8, 0.0, 1.0), design, model_slope=0.0, nuisance=NUIS
+        GaussianInterventionalLaw(0.7, 0.0, 1.0), design, model_slope=0.0, nuisance=NUIS
     )
     assert kl < 1e-12
 

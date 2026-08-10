@@ -68,7 +68,7 @@ For candidate M0 (`beta_M=0`):
 For candidate M+ (`beta_M=+0.8`):
 - S3 `SPURIOUS_CANDIDATE_EDGE`: true beta=0, gamma=0.8, sigma=0.7.
 
-Equivalence control E0: only one intervention level `do(X=+1)` is exposed, with nuisance intercept range wide enough to absorb the beta difference. Its exact profiled KL must be zero to numerical tolerance and the instrument must return `UNRESOLVED_INTERVENTIONAL_EQUIVALENCE`, not causal acceptance or graph falsification.
+Equivalence control E0: only one intervention level `do(X=+1)` is exposed with true beta=+0.7, so the frozen nuisance intercept range [-0.75,+0.75] can exactly absorb the apparent slope difference. Its exact profiled KL must be zero to numerical tolerance and the instrument must return `UNRESOLVED_INTERVENTIONAL_EQUIVALENCE`, not causal acceptance or graph falsification.
 
 Out-of-envelope O1: correct slope but SD outside the declared envelope. Any rejection must be labeled `MODEL_CLASS_FALSIFIED_NUISANCE_ATTRIBUTION_UNRESOLVED`, never topology-specific.
 
