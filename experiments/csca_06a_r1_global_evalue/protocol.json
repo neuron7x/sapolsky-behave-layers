@@ -1,0 +1,21 @@
+{
+  "experiment_id": "CSCA-06A-R1",
+  "parent": "CSCA-06A-IF",
+  "parent_verdict": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_NOT_QUALIFIED",
+  "status": "PREREGISTERED",
+  "mechanism_change": "GLOBAL_FIXED_CHECKPOINT_COMPOSITE_EVALUE",
+  "alpha": 0.01,
+  "checkpoint_costs": [64.0, 128.0, 256.0],
+  "max_cost": 256.0,
+  "confirmatory_block": {"-1.0": 8, "1.0": 8},
+  "action_costs": {"-1.0": 1.0, "1.0": 1.0},
+  "nuisance_envelope": {"intercept_min": -0.75, "intercept_max": 0.75, "sd_min": 0.5, "sd_max": 2.5},
+  "alternative_slope_offsets": [-0.8, -0.4, 0.4, 0.8],
+  "primary_seed_start": 151000,
+  "replication_seed_start": 161000,
+  "seeds_per_family": 128,
+  "minimum_structural_rejection_rate": 0.95,
+  "maximum_in_envelope_null_false_rejection_rate": 0.01,
+  "active_control_authorized": false,
+  "graph_truth_authorized": false
+}

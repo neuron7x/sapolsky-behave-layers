@@ -329,3 +329,92 @@ def model_class_falsifiability_state(
     if budget_exhausted:
         return "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET"
     return "RETAIN_NOT_FALSIFIED_NO_CAUSAL_AUTHORITY"
+
+
+class FixedCheckpointCompositeEValue:
+    """Composite-null e-values evaluated only at preregistered checkpoints.
+
+    For each checkpoint t, E_t = q(Y_1:t|A_1:t) / sup_theta p_theta(Y_1:t|A_1:t)
+    is an e-value under every theta in the declared null class. The sequence {E_t}
+    is not assumed to be a supermartingale, so optional stopping is NOT claimed.
+    Instead, with K predeclared checkpoints, reject if any E_t >= K/alpha.
+    Bonferroni then controls P(false rejection) <= alpha without independence.
+    """
+
+    def __init__(
+        self,
+        *,
+        model_slope: float,
+        nuisance: NuisanceEnvelope,
+        alternative: Sequence[AlternativeComponent],
+        alpha: float,
+        checkpoints_cost: Sequence[float],
+        max_cost: float,
+    ) -> None:
+        if not 0.0 < alpha < 1.0:
+            raise ValueError("alpha must be in (0,1)")
+        cps = tuple(float(x) for x in checkpoints_cost)
+        if not cps or any(x <= 0 for x in cps) or tuple(sorted(set(cps))) != cps:
+            raise ValueError("checkpoints must be strictly increasing positive costs")
+        if cps[-1] > max_cost + 1e-12:
+            raise ValueError("checkpoint exceeds max cost")
+        if not alternative:
+            raise ValueError("alternative mixture required")
+        self.model_slope = float(model_slope)
+        self.nuisance = nuisance
+        self.alternative = tuple(alternative)
+        self.alpha = float(alpha)
+        self.checkpoints_cost = cps
+        self.max_cost = float(max_cost)
+        self.outcomes: list[float] = []
+        self.actions: list[float] = []
+        self.cost = 0.0
+        self.rejected = False
+        self.checked: list[dict[str, float | bool]] = []
+
+    @property
+    def checkpoint_alpha(self) -> float:
+        return self.alpha / len(self.checkpoints_cost)
+
+    @property
+    def threshold_log_e(self) -> float:
+        return math.log(len(self.checkpoints_cost) / self.alpha)
+
+    def _alternative_log_density(self) -> float:
+        terms = []
+        for component in self.alternative:
+            terms.append(sum(
+                normal_logpdf(y, component.slope * a + component.intercept, component.sd)
+                for y, a in zip(self.outcomes, self.actions)
+            ))
+        return logsumexp(terms) - math.log(len(terms))
+
+    def add_block(self, outcomes: Sequence[float], design: InterventionDesign) -> dict[str, float | bool | None]:
+        if self.rejected:
+            raise RuntimeError("cannot update after rejection")
+        if self.cost + design.cost > self.max_cost + 1e-12:
+            raise RuntimeError("compute/intervention budget exceeded")
+        actions = design.actions
+        if len(outcomes) != len(actions):
+            raise ValueError("outcome count does not match design")
+        self.outcomes.extend(float(y) for y in outcomes)
+        self.actions.extend(actions)
+        self.cost += design.cost
+        is_checkpoint = any(abs(self.cost - cp) <= 1e-12 for cp in self.checkpoints_cost)
+        if not is_checkpoint:
+            return {"cost": self.cost, "checkpoint": False, "log_e": None, "rejected": False}
+        fit = profile_gaussian_null(
+            self.outcomes, self.actions, model_slope=self.model_slope, nuisance=self.nuisance
+        )
+        log_e = self._alternative_log_density() - fit.log_likelihood
+        self.rejected = log_e >= self.threshold_log_e
+        record = {
+            "cost": float(self.cost),
+            "checkpoint": True,
+            "log_e": float(log_e),
+            "rejected": bool(self.rejected),
+            "profiled_null_intercept": float(fit.intercept),
+            "profiled_null_sd": float(fit.sd),
+        }
+        self.checked.append(record)
+        return record
