@@ -53,7 +53,7 @@ def _source(context:str,cohort:str)->bytes:return _read(CONTEXT_FILES[context][c
 def fresh_base_specs(context:str,cohort:str)->list[PromptInterventionSpec]:
  raw=_source(context,cohort);content=40;n=int(PROTOCOL['prompts_per_context']);old=_all_previous_prompt_hashes();used=set();specs=[]
  for i in range(n):
-  digest=hashlib.sha256(f'CSCA06C:PROMPT:{cohort}:{context}:{i}'.encode()).digest();off=int.from_bytes(digest[:8],'big')%(len(raw)-content);attempts=0
+  digest=hashlib.sha256(f'CSCA06C-R1:PROMPT:{cohort}:{context}:{i}'.encode()).digest();off=int.from_bytes(digest[:8],'big')%(len(raw)-content);attempts=0
   while True:
    tokens=(MARKER[context],*raw[off:off+content]);spec=PromptInterventionSpec(tuple(int(x) for x in tokens),context,candidate_spans(len(tokens)))
    if off not in used and spec.prompt_hash not in old and all(spec.prompt_hash!=s.prompt_hash for s in specs):break
@@ -186,7 +186,7 @@ def run(cohort:str)->dict:
  if checks['content_pass'] and not mutation and overlap==0:verdict='CONTENT_SPECIFIC_CAUSAL_CREDIT_QUALIFIED_NARROWED'
  elif checks['position_pass'] and not mutation and overlap==0:verdict='POSITION_LOCALITY_EXPLANATION_SUPPORTED_NARROWED'
  else:verdict='POSITION_CONTENT_MECHANISM_UNRESOLVED'
- payload={'experiment_id':'CSCA-06C-PC','cohort':cohort.upper(),'verdict':verdict,'metrics':strata,'decision_checks':checks,'prompt_overlap_previous':overlap,'model_state_mutated':mutation,'wall_seconds':time.perf_counter()-t,'logical_intervention_realizations':sum(r['logical_intervention_realizations'] for r in rows),'physical_model_batch_calls':sum(r['physical_model_batch_calls'] for r in rows),'semantic_causality_authorized':False,'student_authorized':False,'replay_authorized':False,'active_control':False}
+ payload={'experiment_id':'CSCA-06C-R1','cohort':cohort.upper(),'verdict':verdict,'metrics':strata,'decision_checks':checks,'prompt_overlap_previous':overlap,'model_state_mutated':mutation,'wall_seconds':time.perf_counter()-t,'logical_intervention_realizations':sum(r['logical_intervention_realizations'] for r in rows),'physical_model_batch_calls':sum(r['physical_model_batch_calls'] for r in rows),'semantic_causality_authorized':False,'student_authorized':False,'replay_authorized':False,'active_control':False}
  _json(ART/f'{cohort}/rows.json',rows);_json(ART/f'{cohort}/result.json',payload);return payload
 
 

@@ -1,5 +1,5 @@
 {
-  "experiment_id": "CSCA-06C-PC",
+  "experiment_id": "CSCA-06C-R1",
   "status": "PREREGISTERED",
   "prompts_per_context": 12,
   "contexts": ["PROSE", "CODE"],
