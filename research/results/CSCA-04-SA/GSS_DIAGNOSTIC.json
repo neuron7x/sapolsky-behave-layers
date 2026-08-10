@@ -1,0 +1,559 @@
+{
+  "authority": "DIAGNOSTIC_ONLY",
+  "experiment": "CSCA-04-SA",
+  "phase": "P6_GSS_DIAGNOSTIC",
+  "records": [
+    {
+      "best_max_cell_idr": 1.8623952125400618,
+      "factual_rmse": 0.15233276442474697,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113000,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2187.275266213221,
+      "factual_rmse": 0.15698534236422126,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113000,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 176.09973383840762,
+      "factual_rmse": 0.14204951758700202,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113000,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.3157853105675579,
+      "factual_rmse": 0.1592360046294187,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113001,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1678.9659895073587,
+      "factual_rmse": 0.1489665899282303,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "D",
+      "seed": 113001,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 219.59477151032047,
+      "factual_rmse": 0.15633322093905697,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113001,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.2965633046765508,
+      "factual_rmse": 0.14045444592981074,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113002,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2591.1144857209665,
+      "factual_rmse": 0.14627220766253615,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "D",
+      "seed": 113002,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 174.6747437368407,
+      "factual_rmse": 0.15221910423162982,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113002,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.9777810983641422,
+      "factual_rmse": 0.1426105351319203,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113003,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1765.838897667533,
+      "factual_rmse": 0.14147366374816572,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113003,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 201.31545340410923,
+      "factual_rmse": 0.13911260528671765,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113003,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.3535567430369193,
+      "factual_rmse": 0.12768466192242858,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113004,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1872.668534084467,
+      "factual_rmse": 0.1499609149960964,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113004,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 171.1259663930291,
+      "factual_rmse": 0.1549353101939443,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113004,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.6024352163285827,
+      "factual_rmse": 0.14384624790403702,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113005,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2066.7902597974685,
+      "factual_rmse": 0.13108492368797467,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113005,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 162.38516643462899,
+      "factual_rmse": 0.1597364441625628,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113005,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.3750179394602136,
+      "factual_rmse": 0.1374921591338434,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113006,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1802.0104844100988,
+      "factual_rmse": 0.14750924854777145,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113006,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 183.02984675604742,
+      "factual_rmse": 0.14771983203686767,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113006,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.6760487235729988,
+      "factual_rmse": 0.16068032333287385,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113007,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2698.8059335936287,
+      "factual_rmse": 0.14486319385319285,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113007,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 198.947229315513,
+      "factual_rmse": 0.14485841108823788,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113007,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.4285742331024365,
+      "factual_rmse": 0.1487887678022042,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113008,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1976.9294582534185,
+      "factual_rmse": 0.1438546051543912,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113008,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 188.46016645440181,
+      "factual_rmse": 0.15180467551006388,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113008,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.5715963620528421,
+      "factual_rmse": 0.17394664529903606,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113009,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2388.526920128332,
+      "factual_rmse": 0.13824910039524452,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "D",
+      "seed": 113009,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 173.2756927149256,
+      "factual_rmse": 0.14166235186168305,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113009,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.6155965944472952,
+      "factual_rmse": 0.15513913420030173,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113010,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1896.1373198919541,
+      "factual_rmse": 0.1401995032800649,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113010,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 214.75437192307663,
+      "factual_rmse": 0.16962133691239606,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113010,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2.0967245947129074,
+      "factual_rmse": 0.15873405621758757,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113011,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1779.789930892761,
+      "factual_rmse": 0.15476499760922197,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113011,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 152.64995229790716,
+      "factual_rmse": 0.15951398071826278,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113011,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.9730956076527668,
+      "factual_rmse": 0.14689848435223227,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113012,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2231.3751014093605,
+      "factual_rmse": 0.15661549200420144,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113012,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 181.27792723389962,
+      "factual_rmse": 0.15662874089881754,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113012,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.3659037293302263,
+      "factual_rmse": 0.14413832337932203,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113013,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1757.957568662032,
+      "factual_rmse": 0.1641247983756599,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113013,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 202.22979294857655,
+      "factual_rmse": 0.14690947563882978,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113013,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.3631523781089008,
+      "factual_rmse": 0.1477697596567504,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113014,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2183.086119650544,
+      "factual_rmse": 0.1667450280676614,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113014,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 158.86129080500578,
+      "factual_rmse": 0.14785147350746203,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113014,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 1.0953641150326099,
+      "factual_rmse": 0.13781288560965255,
+      "family": "C0_LINEAR",
+      "gss_top_factual_candidate": "A",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113015,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 2050.2081173432416,
+      "factual_rmse": 0.1487513059268667,
+      "family": "M1_SHARED_WRONG_EDGE",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "B",
+      "seed": 113015,
+      "true_causal_set": [
+        "A"
+      ]
+    },
+    {
+      "best_max_cell_idr": 179.72633034994615,
+      "factual_rmse": 0.14718006905145722,
+      "family": "M10_COLLINEAR_IDENTIFIABILITY",
+      "gss_top_factual_candidate": "C",
+      "gss_top_interventional_candidate": "A",
+      "seed": 113015,
+      "true_causal_set": [
+        "A"
+      ]
+    }
+  ],
+  "seed_range": [
+    113000,
+    113015
+  ],
+  "summary": {
+    "C0_LINEAR": {
+      "gss_factual_top_C_rate": 0.0,
+      "gss_factual_top_is_true_cause_rate": 1.0,
+      "idr_reject_rate": 0.0,
+      "n": 16
+    },
+    "M10_COLLINEAR_IDENTIFIABILITY": {
+      "gss_factual_top_C_rate": 0.375,
+      "gss_factual_top_is_true_cause_rate": 0.625,
+      "idr_reject_rate": 1.0,
+      "n": 16
+    },
+    "M1_SHARED_WRONG_EDGE": {
+      "gss_factual_top_C_rate": 1.0,
+      "gss_factual_top_is_true_cause_rate": 0.0,
+      "idr_reject_rate": 1.0,
+      "n": 16
+    }
+  }
+}

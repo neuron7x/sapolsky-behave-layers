@@ -1,0 +1,202 @@
+{
+  "active_causal_control_authorized": false,
+  "artifact_sha256": {
+    "research/reports/CSCA_04_EXECUTION_REPORT.md": "5e3eba68674a7cbdb45e047b3ea95af69cf8e4f40ed2e3e3f5bf0ac31ae7f731",
+    "research/results/CSCA-04-SA/CALIBRATION.json": "383cdf5a2eb3cdb6c510fb8a42d467bcd253b55d9df9d8d7f0f17f96d674c806",
+    "research/results/CSCA-04-SA/FROZEN_POLICY.json": "7c17734afdd7402a04a04e42bf0fbe54aaf9b91eda760d02a95a33928c1c3bda",
+    "research/results/CSCA-04-SA/GSS_DIAGNOSTIC.json": "5459f22cc89176fdc7eed78e97678074198409eb55c9476bdf59063a406f4887",
+    "research/results/CSCA-04-SA/INDEPENDENT_REPLICATION.json": "725b5966a07e32d3825f464c8f967c40e032976ea10c2977d01dc7446e91634b",
+    "research/results/CSCA-04-SA/P1_ANALYTIC_BOUNDARY.md": "560f405b7370cc4e251901f10c6fda2ffcd7c25852897a83a833e4c8e19e590d",
+    "research/results/CSCA-04-SA/PRIMARY.json": "40e757aedfe69ff9b65c757981b48ef1ec13ec8d9668f6a1dde9e92f14d8b05c",
+    "research/results/CSCA-04-SA/STRATEGY_DIAGNOSTIC.json": "35da0f7387005aaf3c3971f576faf73435cfe7b76377aef01d26091d132f948c"
+  },
+  "authority": "RESEARCH_ONLY",
+  "experiment": "CSCA-04-SA",
+  "frozen_policy": {
+    "context_z_threshold": 3.2496168935684526,
+    "decision_states": [
+      "STRUCTURAL_ADEQUACY_ACCEPTED_SYNTHETIC",
+      "CONTEXT_CONDITIONAL_ONLY",
+      "ABSTAIN_STRUCTURAL_MISSPECIFICATION",
+      "ABSTAIN_INSUFFICIENT_STRUCTURAL_COVERAGE",
+      "FALSIFIED_NO_CAUSAL_LEVERAGE"
+    ],
+    "frozen_from": "CALIBRATION_ONLY",
+    "max_cell_idr_threshold": 4.264566468014008,
+    "min_probes_per_cell": 16,
+    "policy_id": "CSCA-04-SA-STRUCTURAL-AUTHORITY-v1",
+    "primary_budget_per_cell": 16,
+    "primary_strategy": "BALANCED",
+    "required_cells": 8,
+    "shadow_inference_authority": false,
+    "zero_cause_leverage_floor": 0.1
+  },
+  "independent_replication": {
+    "cases": 640,
+    "family_state_counts": {
+      "M10_COLLINEAR_IDENTIFIABILITY": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M1_SHARED_WRONG_EDGE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M2_MISSING_TRUE_EDGE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M3_SIGN_ERROR": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M4_WRONG_COEFFICIENT": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M5_LATENT_CONFOUNDER": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M6_ZERO_CAUSE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 0,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 64
+      },
+      "M7_TRIPLE_INTERACTION": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M8_CONTEXT_SWITCH": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 0,
+        "CONTEXT_CONDITIONAL_ONLY": 64,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M9_CONTEXT_SIGN_FLIP": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 0,
+        "CONTEXT_CONDITIONAL_ONLY": 64,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      }
+    },
+    "label": "INDEPENDENT_REPLICATION",
+    "m10_accepted": 0,
+    "m10_median_factual_rmse": 0.1525182662407203,
+    "m6_global_authority": 0,
+    "m9_global_direction_accept": 0,
+    "qualification_pass": true,
+    "seed_range": [
+      102000,
+      102063
+    ],
+    "sensitivity_structural_misspecification": 1.0,
+    "specificity_known_adequate": 1.0,
+    "state_counts": {
+      "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 448,
+      "CONTEXT_CONDITIONAL_ONLY": 128,
+      "FALSIFIED_NO_CAUSAL_LEVERAGE": 64
+    }
+  },
+  "next_hard_gate": "CSCA-05 \u2014 Composed Causal Authority & Real-Model Intervention Shadow Pilot",
+  "phase_status": {
+    "P1_ANALYTIC_IDENTIFIABILITY": "PASS",
+    "P2_INTERVENTIONAL_DIVERGENCE": "PASS",
+    "P3_INTERVENTION_ALLOCATION": "PASS_WITH_BALANCED_PRIMARY; SECONDARY_DIAGNOSTIC_ONLY",
+    "P4_PROSPECTIVE_CALIBRATION": "PASS",
+    "P5_STRUCTURAL_MISSPECIFICATION": "PASS",
+    "P6_CONTEXT_AND_GSS_ATTACK": "PASS_WITH_GSS_AUTHORITY_REJECTED",
+    "P7_STRUCTURAL_AUTHORITY_ENVELOPE": "PASS_SYNTHETIC_ONLY"
+  },
+  "primary": {
+    "cases": 640,
+    "family_state_counts": {
+      "M10_COLLINEAR_IDENTIFIABILITY": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M1_SHARED_WRONG_EDGE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M2_MISSING_TRUE_EDGE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M3_SIGN_ERROR": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M4_WRONG_COEFFICIENT": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M5_LATENT_CONFOUNDER": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M6_ZERO_CAUSE": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 0,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 64
+      },
+      "M7_TRIPLE_INTERACTION": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 64,
+        "CONTEXT_CONDITIONAL_ONLY": 0,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M8_CONTEXT_SWITCH": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 1,
+        "CONTEXT_CONDITIONAL_ONLY": 63,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      },
+      "M9_CONTEXT_SIGN_FLIP": {
+        "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 0,
+        "CONTEXT_CONDITIONAL_ONLY": 64,
+        "FALSIFIED_NO_CAUSAL_LEVERAGE": 0
+      }
+    },
+    "label": "PRIMARY",
+    "m10_accepted": 0,
+    "m10_median_factual_rmse": 0.15075107056033407,
+    "m6_global_authority": 0,
+    "m9_global_direction_accept": 0,
+    "qualification_pass": true,
+    "seed_range": [
+      92000,
+      92063
+    ],
+    "sensitivity_structural_misspecification": 1.0,
+    "specificity_known_adequate": 0.9921875,
+    "state_counts": {
+      "ABSTAIN_STRUCTURAL_MISSPECIFICATION": 449,
+      "CONTEXT_CONDITIONAL_ONLY": 127,
+      "FALSIFIED_NO_CAUSAL_LEVERAGE": 64
+    }
+  },
+  "prohibited_extrapolations": [
+    "real language-model causal adequacy",
+    "shadow-inference qualification",
+    "real-world semantic causality",
+    "biological mechanism",
+    "replay-control benefit",
+    "physical compute advantage",
+    "active causal control"
+  ],
+  "real_model_replay_qualified": false,
+  "scientific_pass": true,
+  "shadow_inference_qualified": false,
+  "structural_adequacy_synthetic_qualified": true,
+  "verdict": "STRUCTURAL_ADEQUACY_SYNTHETIC_QUALIFIED"
+}
