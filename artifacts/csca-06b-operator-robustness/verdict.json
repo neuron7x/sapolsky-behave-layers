@@ -1,0 +1,105 @@
+{
+  "active_control_authorized": false,
+  "amortized_student_authorized": false,
+  "authority": "DIRECT_INTERVENTION_OPERATOR_FAMILY_ROBUST_SHADOW_MEASUREMENT_ONLY",
+  "boundary": "Robustness across two explicitly declared stochastic soft-intervention kernels only. This is not proof that the kernels implement one latent semantic do-variable. All robust cases selected A_RECENT, so content-specific cognitive causal credit is not established.",
+  "calibration": {
+    "cohort": "CALIBRATION",
+    "delta": 0.25,
+    "experiment_id": "CSCA-06B-OP",
+    "model_state_mutated": false,
+    "n": 48,
+    "prompt_overlap_with_csca05": 0,
+    "q10_min_gap": 1.66525005325675
+  },
+  "experiment_id": "CSCA-06B-OP",
+  "model_state_mutated": {
+    "primary": false,
+    "replication": false
+  },
+  "primary_metrics": {
+    "CODE": {
+      "legacy_space_agreement_on_robust": 0.875,
+      "median_credit_l1_between_kernels": 0.19752733665518468,
+      "n": 24,
+      "robust_authority_count": 24,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 24,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    },
+    "PROSE": {
+      "legacy_space_agreement_on_robust": 0.9583333333333334,
+      "median_credit_l1_between_kernels": 0.1767589512746782,
+      "n": 24,
+      "robust_authority_count": 24,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 24,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    },
+    "pooled": {
+      "legacy_space_agreement_on_robust": 0.9166666666666666,
+      "median_credit_l1_between_kernels": 0.1796903819777072,
+      "n": 48,
+      "robust_authority_count": 48,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 48,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    }
+  },
+  "prompt_overlap_with_csca05": {
+    "primary": 0,
+    "replication": 0
+  },
+  "recency_boundary": {
+    "architectural_utility_status": "BLOCKED_RECENCY_DOMINATED_ZERO_NONRECENT_ROBUST_CASES",
+    "primary_robust_nonrecent": 0,
+    "primary_robust_recent": 48,
+    "replication_robust_nonrecent": 0,
+    "replication_robust_recent": 48
+  },
+  "replay_authorized": false,
+  "replication_metrics": {
+    "CODE": {
+      "legacy_space_agreement_on_robust": 0.9166666666666666,
+      "median_credit_l1_between_kernels": 0.2035352672295025,
+      "n": 24,
+      "robust_authority_count": 24,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 24,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    },
+    "PROSE": {
+      "legacy_space_agreement_on_robust": 1.0,
+      "median_credit_l1_between_kernels": 0.13293902420749268,
+      "n": 24,
+      "robust_authority_count": 24,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 24,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    },
+    "pooled": {
+      "legacy_space_agreement_on_robust": 0.9583333333333334,
+      "median_credit_l1_between_kernels": 0.17147863873591024,
+      "n": 48,
+      "robust_authority_count": 48,
+      "robust_authority_coverage": 1.0,
+      "robust_nonrecent_count": 0,
+      "robust_recent_count": 48,
+      "sign_agreement_rate": 1.0,
+      "top_agreement_rate": 1.0
+    }
+  },
+  "scientific_pass": true,
+  "semantic_causality_authorized": false,
+  "verdict": "OPERATOR_FAMILY_ROBUSTNESS_QUALIFIED_NARROWED"
+}
