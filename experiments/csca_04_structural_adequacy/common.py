@@ -263,7 +263,7 @@ class CaseAudit:
     true_causal_set: tuple[str,...]
 
 
-def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str) -> CaseAudit:
+def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, context_z_threshold: float = 3.0) -> CaseAudit:
     probes=select_probes(case,budget_per_cell,strategy)
     audits=interventional_divergence_audit(case.models,probes)
     best=best_family_audit(audits)
@@ -271,7 +271,7 @@ def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str) -> CaseA
     for p in probes:
         key=(p.candidate,p.context); supports[key]=supports.get(key,0)+1
     ctx=context_effect_audits(probes)
-    flips=tuple(sorted(x.candidate for x in ctx if x.sign_flip and x.standardized_difference>=3.0))
+    flips=tuple(sorted(x.candidate for x in ctx if x.sign_flip and x.standardized_difference>=context_z_threshold))
     gss=graph_structural_sensitivity(case.models,case.eval_rows,case.eval_y,probes)
     top_f=max(gss,key=lambda x:(x.factual_delta_mse,-CANDIDATES.index(x.candidate))).candidate
     top_i=max(gss,key=lambda x:(x.intervention_delta_mse,-CANDIDATES.index(x.candidate))).candidate
