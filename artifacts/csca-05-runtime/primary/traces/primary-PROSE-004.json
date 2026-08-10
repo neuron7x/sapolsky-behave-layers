@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 6.743775576353073,
+    "B_PREV": 0.06925463676452637,
+    "C_MIDDLE": 0.0029167532920837402,
+    "D_EARLY": -0.021625548601150513
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0011851045879121003,
+    "B_PREV": 0.001805420827679427,
+    "C_MIDDLE": 0.0004989530887975491,
+    "D_EARLY": 0.002978794552377373
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "dabd913971eae63a948824acde0f2c2d3b6a301bf3dcb2e2e167f19aa3bc5fa2",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "PROSE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 6.758127530415853,
+    "B_PREV": 0.06748296817143758,
+    "C_MIDDLE": 0.006029486656188963,
+    "D_EARLY": -0.0373185674349467
+  },
+  "factual_top_token": 120,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "390fc1a92be73d07b349133d174abdec094d749ac98a2e4cae4b0a09b3afb6b4",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 15,
+    "baseline_generation_seconds": 0.005897127000025648,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01305970100020204,
+    "instrumented_generation_plus_sidecar_seconds": 0.01755526099987037,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-PROSE-004",
+  "trace_sha256": "f1f1a2ee4531fa287f4c8cd54fcf95ae2e30c69e1ae36fa1886045453bbefdc9",
+  "unique_forward_evaluations": 14
+}

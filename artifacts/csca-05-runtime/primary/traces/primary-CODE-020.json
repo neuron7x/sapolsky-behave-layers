@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.8111761957406998,
+    "B_PREV": 0.20461690425872803,
+    "C_MIDDLE": -0.01061178743839264,
+    "D_EARLY": -0.07960808277130127
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.00034298423968182057,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.00034298423968182057,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "e349bec8b861b17b9bb32d2d9d6eb81eba463fc86c8e93d84fff7c3e04792904",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.768671035766601,
+    "B_PREV": 0.23570938905080158,
+    "C_MIDDLE": -0.01794504125912984,
+    "D_EARLY": -0.06086215376853943
+  },
+  "factual_top_token": 116,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "14bcea1e22f2c533472e50a600a93376c6c6fbf316a01402a84ea390fa601f62",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.004627611000614706,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.017659373999777017,
+    "instrumented_generation_plus_sidecar_seconds": 0.015773422000165738,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-020",
+  "trace_sha256": "bc90c5e801d83327a30eaa14184dbc44810074c52d971293d26d5fa222be1c95",
+  "unique_forward_evaluations": 10
+}

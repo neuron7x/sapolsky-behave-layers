@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "CREDIT_MAGNITUDE_INTERVALS_OVERLAP",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 0.3009597584605217,
+    "B_PREV": -0.11393910646438599,
+    "C_MIDDLE": -0.014608897268772125,
+    "D_EARLY": -0.11574210971593857
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.00972233101850907,
+    "B_PREV": 0.0006211303280912045,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0054286532505143925
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "681b962c70c99c8ae0f1ab9fa6919e53231b15441563f6f1e1881d96b83c910d",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "PROSE",
+  "decision_candidate": null,
+  "decision_sign": null,
+  "decision_state": "ABSTAIN_UNRESOLVED_CREDIT",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 0.32155755286415416,
+    "B_PREV": -0.14768033847212791,
+    "C_MIDDLE": -0.04349338759978612,
+    "D_EARLY": -0.07371418178081512
+  },
+  "factual_top_token": 32,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "58df794fe54908d56eb4b73699e94f9586441fe039a524b300c006115211e9dd",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.004826310000680678,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01718133400027,
+    "instrumented_generation_plus_sidecar_seconds": 0.04094228400026623,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-PROSE-005",
+  "trace_sha256": "52e4b0225bba8101a035814fa9f0e44a6a269d01f4789bc50cef8f7c96e3ce9a",
+  "unique_forward_evaluations": 12
+}

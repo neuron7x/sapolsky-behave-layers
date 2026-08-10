@@ -1,0 +1,17 @@
+{
+  "batch_size": 16,
+  "checkpoint_path": "/mnt/data/cwc_csca05_work/artifacts/csca-05-runtime/checkpoints/primary_seed2301.pt",
+  "checkpoint_sha256": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "data_hashes": {
+    "code": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+    "prose": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+  },
+  "final_loss": 2.3401973247528076,
+  "initial_loss": 5.576383113861084,
+  "learning_rate": 0.002,
+  "mean_last_50_loss": 2.2138893032073974,
+  "seed": 2301,
+  "state_dict_sha256": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "steps": 800,
+  "weight_decay": 0.01
+}

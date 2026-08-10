@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 5.683315753936768,
+    "B_PREV": -0.2990337014198303,
+    "C_MIDDLE": -0.08663064241409302,
+    "D_EARLY": 0.0
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0004046283322622912,
+    "B_PREV": 0.0004046283322622912,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "93e1f1807913e9c416cf18226cd4e29b6aa5355ed31a68e290607917ab0f270b",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 5.676610628763834,
+    "B_PREV": -0.30573882659276325,
+    "C_MIDDLE": -0.07322039206822713,
+    "D_EARLY": 0.0
+  },
+  "factual_top_token": 46,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "475bbbf0c24b829eaf763954006c5d36313ce374730e6661290c5df586aa5da1",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0043331400001989095,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.013464546000250266,
+    "instrumented_generation_plus_sidecar_seconds": 0.04166780300056416,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-015",
+  "trace_sha256": "b8150f65a6e4cfc492b54726da0a290f2bbee625993344908e8284bc08e09a52",
+  "unique_forward_evaluations": 12
+}

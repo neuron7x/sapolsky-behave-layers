@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 4.825515650212765,
+    "B_PREV": -0.017458193004131317,
+    "C_MIDDLE": 0.008695989847183228,
+    "D_EARLY": 0.0508439838886261
+  },
+  "approximate_variance": {
+    "A_RECENT": 1.1483761602149034e-05,
+    "B_PREV": 1.1483761602149034e-05,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "79a6e8f2d547ede79c75aaaa9a152b24d5b81b2b7092456c7befa6c4ef6ebd8f",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 4.79106563826402,
+    "B_PREV": -0.0337537427743276,
+    "C_MIDDLE": 0.035198360681533813,
+    "D_EARLY": 0.07508717477321625
+  },
+  "factual_top_token": 110,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "0eca424b60ebc78ccfb667f51e803b6ecc8c1dd4b968ad40812c764ac662fb77",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.026047747999655257,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01584803700006887,
+    "instrumented_generation_plus_sidecar_seconds": 0.014141308000034769,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-013",
+  "trace_sha256": "0129ee670946c48aa268645c8cdcfff417fede7fc642e67cd8fd4dc132237f95",
+  "unique_forward_evaluations": 10
+}

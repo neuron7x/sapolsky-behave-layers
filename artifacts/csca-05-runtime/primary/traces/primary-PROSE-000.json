@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 5.148273259401321,
+    "B_PREV": 0.2023206353187561,
+    "C_MIDDLE": 0.29842162132263184,
+    "D_EARLY": 0.17587211728096008
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0012471076189735086,
+    "B_PREV": 0.0015833132366083191,
+    "C_MIDDLE": 0.0015833132366083191,
+    "D_EARLY": 0.0012471076189735086
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "d724fd3ba8a2b3bcd28cdcb455802945d2491db7e4ee4c8d987c1f65e35aea34",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "PROSE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 5.159243921438853,
+    "B_PREV": 0.21386023362477619,
+    "C_MIDDLE": 0.2838977177937826,
+    "D_EARLY": 0.16788576046625772
+  },
+  "factual_top_token": 117,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "816ff4d1e8d81e38e8d969b382706fd4c75426f7531c0e6c7d32678c528b673d",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0055655749993093195,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.016782382000201324,
+    "instrumented_generation_plus_sidecar_seconds": 0.019902530999388546,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-PROSE-000",
+  "trace_sha256": "039f66d429c512e37ef460d7dc058f05f24dba7fe0af976f5543a31f413e990b",
+  "unique_forward_evaluations": 12
+}

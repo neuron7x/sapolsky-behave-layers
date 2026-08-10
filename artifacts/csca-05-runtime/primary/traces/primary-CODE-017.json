@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 1.9308930039405823,
+    "B_PREV": -0.3762451112270355,
+    "C_MIDDLE": -0.06847450137138367,
+    "D_EARLY": -0.3089902400970459
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0014297469320467826,
+    "B_PREV": 1.2456724540754749e-08,
+    "C_MIDDLE": 1.2456724540754749e-08,
+    "D_EARLY": 0.0014297469320467826
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "c670956cc0f94a870b496350ba48e6e68d33f9c7006cac4929702dbb7d542216",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 1.923495352268219,
+    "B_PREV": -0.35416563351949054,
+    "C_MIDDLE": -0.06542038917541504,
+    "D_EARLY": -0.3267261783281962
+  },
+  "factual_top_token": 34,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "9e57d58604e75f0de797a6addd924a630811b5e56130a22bec804cef21602a89",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0037673950000680634,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.014739261000613624,
+    "instrumented_generation_plus_sidecar_seconds": 0.03353566999976465,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-017",
+  "trace_sha256": "392d4fdbb7d6695411f7f7041396263675adb1f6c524eea491dbfc7d28efe41e",
+  "unique_forward_evaluations": 12
+}

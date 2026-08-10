@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.0185146927833557,
+    "B_PREV": 0.8278103470802307,
+    "C_MIDDLE": 0.025265991687774658,
+    "D_EARLY": 0.07796961069107056
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0,
+    "B_PREV": 0.0027237282668011176,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0027237282668011176
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "6dd733aabfc1cabd633c8d434f191aa9545bba17af9bb42a8cd8f9b9a89e9593",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.072623034318288,
+    "B_PREV": 0.7779951890309651,
+    "C_MIDDLE": 0.044581433137257896,
+    "D_EARLY": 0.05436098575592041
+  },
+  "factual_top_token": 105,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "4b49a0c129f671edd4a048bee05dbaf91463a36541564ea1e2958b9c6c58f4f9",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.004604917000506248,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01890317299967137,
+    "instrumented_generation_plus_sidecar_seconds": 0.012480612000217661,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-010",
+  "trace_sha256": "4093a2e1a37d431cb5ec801e6819e4b679df3e8ea7fb33d3dfa0dbf40f977500",
+  "unique_forward_evaluations": 10
+}

@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "CREDIT_MAGNITUDE_INTERVALS_OVERLAP",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": -0.08783035911619663,
+    "B_PREV": -0.0880955420434475,
+    "C_MIDDLE": -0.00823068805038929,
+    "D_EARLY": -0.044310808181762695
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0024375915023988094,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.00027804348345972577,
+    "D_EARLY": 0.0010691157086208936
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "530b4b3e8b1f3dc57e068cc59908d858684f3302994223c40a5aa233ffbe2adf",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "PROSE",
+  "decision_candidate": null,
+  "decision_sign": null,
+  "decision_state": "ABSTAIN_UNRESOLVED_CREDIT",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": -0.08233106570939223,
+    "B_PREV": -0.12129360872010389,
+    "C_MIDDLE": 0.008852393055955568,
+    "D_EARLY": -0.03369511601825555
+  },
+  "factual_top_token": 32,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "38647a8c87d975c670099eee5b51583b042dada59514a35fac5e84d396a5764a",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0037282579996826826,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.016934977999881085,
+    "instrumented_generation_plus_sidecar_seconds": 0.04655914600061806,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-PROSE-021",
+  "trace_sha256": "7f6a82678f8b527fb67176a63ef8f70c0d5e9690fe83d824a5d5eaebd98cdf01",
+  "unique_forward_evaluations": 12
+}

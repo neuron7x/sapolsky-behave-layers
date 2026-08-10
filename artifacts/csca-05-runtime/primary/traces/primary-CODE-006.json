@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.8643442541360855,
+    "B_PREV": -0.06889201700687408,
+    "C_MIDDLE": 0.051741600036621094,
+    "D_EARLY": 0.13590168952941895
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.002156692084787304,
+    "B_PREV": 0.002156692084787304,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "5dac89635ed07cf8f47bb27fbd1a780d9a74b76e533810e89b9fa11f82b604a5",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.8508700033028918,
+    "B_PREV": -0.08593988418579102,
+    "C_MIDDLE": 0.06073795755704244,
+    "D_EARLY": 0.157427450021108
+  },
+  "factual_top_token": 110,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "5f078d7314e4e5373516b63502eaac863d0429a5f8efe584a6c4df29cd3913ed",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.004661650000343798,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01871189699977549,
+    "instrumented_generation_plus_sidecar_seconds": 0.014715332999912789,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-006",
+  "trace_sha256": "1049411985c8c40a3065fa70bc4619fc43bba6ae44d4d4d5965a2291f449776b",
+  "unique_forward_evaluations": 10
+}

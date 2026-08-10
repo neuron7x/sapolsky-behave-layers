@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.651945650577545,
+    "B_PREV": 0.02262294292449951,
+    "C_MIDDLE": 0.04228860139846802,
+    "D_EARLY": 0.0
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "7fe1f27e3f728ffbf0e72551c412a42fc3e8e7efc3a03dbb1a3e78b11a4b513f",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "9c99cecd370e7bbfe60410bd86509647d8f6b124702e8b99e1a3de2b80cac6ee",
+  "cohort": "PRIMARY",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.660617252190908,
+    "B_PREV": 0.031294544537862144,
+    "C_MIDDLE": 0.024945398171742756,
+    "D_EARLY": 0.0
+  },
+  "factual_top_token": 110,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "model_state_hash_before": "b3e7901b538ffa5542d3b55f3ba5d0ac23360ae858e81a5f9fe389eadfa51685",
+  "prompt_hash": "0f0d31855f4e23fba18cd5a84b3cb00275711e84376a94d69a01ff19f529dd93",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 9,
+    "baseline_generation_seconds": 0.0041583550000723335,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.014908993000062765,
+    "instrumented_generation_plus_sidecar_seconds": 0.038609533999988344,
+    "process_maxrss_kb": 421536
+  },
+  "trace_id": "primary-CODE-002",
+  "trace_sha256": "f2aa1d82b254847db75971d5938c8441c93be0ef66711e1665b7391b4a3f69f3",
+  "unique_forward_evaluations": 8
+}
