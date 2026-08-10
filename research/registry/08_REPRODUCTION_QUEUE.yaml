@@ -7,16 +7,21 @@
     "blocked_by": [
       "full primary-source bytes/code unavailable in current execution environment",
       "human H5 integration review pending",
-      "real-model counterfactual utility untested"
+      "real-model replay utility untested",
+      "intervention-operator invariance not yet qualified"
     ],
     "promotion_target": "REPRODUCED",
-    "status": "CONTROLLED_KERNEL_REPRODUCED_AND_OOD_SEED_REPLICATED; MATCHED_BUDGET_ESTIMATOR_PENDING; PRIMARY_SOURCE_BYTES_QUARANTINED; PAPER_REPRODUCTION_PENDING; REAL_MODEL_UTILITY_PENDING",
+    "status": "CONTROLLED_KERNEL_REPRODUCED_AND_OOD_SEED_REPLICATED; MATCHED_BUDGET_ESTIMATOR_QUALIFIED_CONTROLLED; DIRECT_INTERVENTION_SHADOW_PATH_QUALIFIED_NARROWED; PRIMARY_SOURCE_BYTES_QUARANTINED; PAPER_REPRODUCTION_PENDING; REAL_MODEL_REPLAY_UTILITY_PENDING",
     "result_artifacts": [
       "artifacts/research-s01-skill-luck/verdict.json",
       "artifacts/research-s01-ood-credit/verdict.json",
       "research/results/CSCA-01/verdict.json",
       "artifacts/csca-01/primary/summary.json",
-      "artifacts/csca-01/replication/summary.json"
+      "artifacts/csca-01/replication/summary.json",
+      "research/results/CSCA-03R/verdict.json",
+      "research/results/CSCA-05-RUNTIME/verdict.json",
+      "artifacts/csca-05-runtime/primary/result.json",
+      "artifacts/csca-05-runtime/replication/result.json"
     ]
   },
   {
