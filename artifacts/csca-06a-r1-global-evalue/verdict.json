@@ -1,0 +1,224 @@
+{
+  "active_causal_control_authorized": false,
+  "alpha": 0.01,
+  "boundary": "Composite model-class falsification only; omitted nuisance mechanisms can mimic topology failure and latent-vs-aleatoric variance remains non-identifiable from scalar Y.",
+  "checkpoint_alpha": 0.0033333333333333335,
+  "checkpoint_evalue_threshold": 300.0,
+  "experiment_id": "CSCA-06A-R1",
+  "graph_truth_authorized": false,
+  "max_cost": 256.0,
+  "parent_verdict": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_NOT_QUALIFIED",
+  "primary_errors": [],
+  "primary_pass": true,
+  "primary_summary": {
+    "E0_SINGLE_ACTION_EQUIVALENCE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N0_NULL_CLEAN": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N1_NULL_LATENT_CONFOUNDING": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N2_NULL_ALEATORIC": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N3_NULL_MIXED_NUISANCE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "O1_OUT_OF_ENVELOPE_NOISE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0723399220684744,
+      "states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      }
+    },
+    "S1_MISSING_TRUE_EDGE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "S2_MISSING_TRUE_EDGE_NEGATIVE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "S3_SPURIOUS_CANDIDATE_EDGE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "W1_WEAK_EDGE_BUDGET_STRESS": {
+      "median_cost_if_rejected": 256.0,
+      "n": 128,
+      "rejection_count": 1,
+      "rejection_rate": 0.0078125,
+      "separation_rate_per_cost": 0.00985793158220849,
+      "states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 127,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 1
+      }
+    }
+  },
+  "replay_authorized": false,
+  "replication_errors": [],
+  "replication_pass": true,
+  "replication_summary": {
+    "E0_SINGLE_ACTION_EQUIVALENCE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N0_NULL_CLEAN": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N1_NULL_LATENT_CONFOUNDING": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N2_NULL_ALEATORIC": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "N3_NULL_MIXED_NUISANCE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0,
+      "states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      }
+    },
+    "O1_OUT_OF_ENVELOPE_NOISE": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0723399220684744,
+      "states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      }
+    },
+    "S1_MISSING_TRUE_EDGE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "S2_MISSING_TRUE_EDGE_NEGATIVE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "S3_SPURIOUS_CANDIDATE_EDGE": {
+      "median_cost_if_rejected": 64.0,
+      "n": 128,
+      "rejection_count": 128,
+      "rejection_rate": 1.0,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "states": {
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 128
+      }
+    },
+    "W1_WEAK_EDGE_BUDGET_STRESS": {
+      "median_cost_if_rejected": null,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.00985793158220849,
+      "states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      }
+    }
+  },
+  "scientific_pass": true,
+  "shadow_inference_promotion_authorized": false,
+  "verdict": "GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED"
+}
