@@ -1,0 +1,36 @@
+{
+  "active_control_authorized": false,
+  "content_specific_causal_credit": "NOT_SUPPORTED",
+  "graph_truth_authorized": false,
+  "information_converse": {
+    "alpha": 0.01,
+    "available_cost": 256.0,
+    "required_nats": 4.176898950135489,
+    "strong_edge_necessary_cost": 18.61521141219082,
+    "target_power": 0.95,
+    "weak_edge_necessary_cost": 423.70946839131244
+  },
+  "phase_verdicts": {
+    "CSCA-06A-IF": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_NOT_QUALIFIED",
+    "CSCA-06A-R1": "GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED",
+    "CSCA-06B-OP": "OPERATOR_FAMILY_ROBUSTNESS_QUALIFIED_NARROWED",
+    "CSCA-06C-R1": "POSITION_CONTENT_MECHANISM_UNRESOLVED"
+  },
+  "position_locality": "NOT_PROMOTED_REPLICATION_COVERAGE_BLOCK",
+  "programme": "CSCA-06",
+  "registry": {
+    "claims": 59,
+    "hypotheses": 59,
+    "orphans": 0
+  },
+  "replay_authorized": false,
+  "semantic_causality_authorized": false,
+  "status": "PASS_WITH_BOUNDARIES",
+  "student_authorized": false,
+  "verification": {
+    "collection_errors": 0,
+    "focused_tests_passed": 16,
+    "full_behavioral_suite": "NOT_COMPLETED_TOOL_EXECUTION_INTERRUPTED_AT_APPROX_17_PERCENT",
+    "pytest_collected": 407
+  }
+}
