@@ -4,8 +4,13 @@ import hashlib
 import json
 from pathlib import Path
 import statistics
+import sys
 import time
 from typing import FrozenSet, Mapping
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import numpy as np
 import torch
@@ -26,7 +31,6 @@ from experiments.csca_05_shadow_pilot.runtime_model import (
 )
 from experiments.csca_05_shadow_pilot.run import CONTEXT_FILES, _checkpoint_path
 
-ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = json.loads((ROOT / "experiments/csca_06b_operator_robustness/protocol.json").read_text())
 ART = ROOT / "artifacts/csca-06b-operator-robustness"
 RESULT = ROOT / "research/results/CSCA-06B-OP"
