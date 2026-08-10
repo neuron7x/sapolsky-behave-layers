@@ -1,0 +1,17 @@
+{
+  "experiment_id": "CSCA-06B-OP",
+  "status": "PREREGISTERED",
+  "contexts": ["PROSE", "CODE"],
+  "prompts_per_context": 24,
+  "prompt_content_bytes": 40,
+  "donor_assignments_per_kernel": 8,
+  "admissible_kernels": ["K_TRAIN_CONTIG8", "K_COHORT_CONTIG8"],
+  "legacy_diagnostic_kernel": "ASCII_SPACE",
+  "calibration_delta_rule": "clip(0.25*q10(min_gap_across_admissible_kernels),1e-6,0.25)",
+  "min_top_agreement": 0.90,
+  "min_sign_agreement": 0.90,
+  "min_robust_coverage": 0.50,
+  "exact_teacher": "EXACT_ABLATION_SHAPLEY_ON_FINITE_STOCHASTIC_KERNEL_EXPECTATION",
+  "active_control": false,
+  "amortized_student_authorized": false
+}
