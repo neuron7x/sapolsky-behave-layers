@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "a3e0b3ea0e544e49c16dae889125f7e4bf42868f",
-  "generated": "2026-08-10T20:50:00+03:00",
+  "git_commit": "da97085396aab8817fa3e7d3cf9f276cde089aa6",
+  "generated": "2026-08-10T21:25:00+03:00",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2054,6 +2054,104 @@
         "file": "research/results/CSCA-06A-R1/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD09-CSCA06B-operator-family",
+      "hypothesis_id": "H-CSCA-06B-OP",
+      "statement": "Exact direct-intervention causal-credit ranking is robust across the two declared same-context stochastic donor-resampling soft-intervention kernels on fresh PRIMARY and independent-replication nanochat prompts, but the qualified surface is entirely recency dominated.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "frozen small CSCA-05 nanochat GPT checkpoints",
+          "fresh PROSE/CODE prompt offsets with zero CSCA-05 overlap",
+          "K_TRAIN_CONTIG8 and K_COHORT_CONTIG8 finite stochastic soft interventions",
+          "exact Shapley on the exact eight-donor empirical intervention expectation",
+          "frozen delta=0.25 after calibration commit"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-06B-OP/verdict.json",
+        "artifacts/csca-06b-operator-robustness/verdict.json",
+        "artifacts/csca-06b-operator-robustness/SHA256SUMS",
+        "research/reports/CSCA_06B_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY pooled/PROSE/CODE top agreement=1.0, sign agreement=1.0, robust coverage=1.0",
+        "REPLICATION pooled/PROSE/CODE top agreement=1.0, sign agreement=1.0, robust coverage=1.0",
+        "zero prior-prompt overlap and zero model-state mutation",
+        "all 48/48 PRIMARY and 48/48 REPLICATION robust candidates are A_RECENT; robust non-recent count=0"
+      ],
+      "limitations": [
+        "the two kernels are a declared robustness family, not proven equivalent realizations of one semantic do-variable",
+        "all qualified cases are recency dominated",
+        "same small byte-level checkpoints and document families as CSCA-05",
+        "no amortized student, replay, semantic or active-control qualification"
+      ],
+      "prohibited_extrapolations": [
+        "semantic intervention equivalence",
+        "content-specific cognitive causal credit",
+        "semantic causality",
+        "amortized causal authority",
+        "replay benefit",
+        "active causal control"
+      ],
+      "note": "Operator-family robustness passes, but zero non-recent robust cases blocks architectural utility and triggers CSCA-06C position/content attack.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-06B-OP/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD10-CSCA06C-content-specific",
+      "hypothesis_id": "H-CSCA-06C-R1",
+      "statement": "The current real-model direct-intervention causal-credit signal is not supported as a content-identity mechanism under preregistered content-position rotations; a simpler position/locality pattern appears on every fully resolved case, but replication coverage is insufficient to promote that simpler mechanism either.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "CSCA-06C-R1 clean rerun after burned smoke namespace",
+          "fresh PROSE/CODE prompts",
+          "four cyclic rotations moving each original 4-byte content block through every candidate position",
+          "same frozen base target token across rotations",
+          "two CSCA-06B donor-resampling operator kernels",
+          "exact Shapley, inherited delta=0.25"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-06C-R1/verdict.json",
+        "artifacts/csca-06c-position-content/verdict.json",
+        "artifacts/csca-06c-position-content/SHA256SUMS",
+        "research/reports/CSCA_06C_R1_EXECUTION_REPORT.md",
+        "research/ruins/CSCA-06C-INVALID-SMOKE/BOUNDARY.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY fully-resolved 16/24=0.6667; PositionTracking=1.0, ContentTracking=0.25",
+        "REPLICATION fully-resolved 11/24=0.4583; every resolved case PositionTracking=1.0, ContentTracking=0.25",
+        "replication PROSE fully-resolved 4/12=0.3333 and pooled 11/24=0.4583, below frozen >=0.50 coverage gate",
+        "content-specific conjunction fails in every stratum/cohort; position/locality conjunction cannot be promoted because replication coverage fails",
+        "zero prior-prompt overlap and zero model-state mutation"
+      ],
+      "limitations": [
+        "NOT_SUPPORTED targets the content-specific interpretation on this byte-level benchmark, not all content causality in language models",
+        "position/locality pattern is compelling on resolved cases but remains unqualified due independent-replication coverage",
+        "same small nanochat model family and fixed internal next-token target",
+        "rotating byte blocks changes local syntactic compatibility even though target token is frozen"
+      ],
+      "prohibited_extrapolations": [
+        "all language-model causal attribution is only recency",
+        "position/locality is a universally qualified mechanism",
+        "semantic causality disproved globally",
+        "large-model transfer",
+        "student/replay/active-control authorization"
+      ],
+      "note": "Scientific final verdict is POSITION_CONTENT_MECHANISM_UNRESOLVED. Content-specific promotion is rejected; position/locality remains a candidate requiring a new non-degenerate benchmark/intervention surface.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-06C-R1/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": false
       }
     }
   ]

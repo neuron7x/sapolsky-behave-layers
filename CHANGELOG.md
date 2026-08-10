@@ -3,6 +3,23 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Real-model intervention semantics and position/content attack] — 2026-08-10
+
+### CSCA-06B
+- Replaced arbitrary SPACE/ZERO/0xFF/REVERSE equivalence language with two explicit stochastic soft-intervention kernels.
+- PRIMARY and independent REPLICATION: exact top/sign agreement and robust coverage `1.0` in pooled, PROSE and CODE.
+- Critical boundary: all 96 robust cases select `A_RECENT`; robust non-recent count is zero.
+
+### CSCA-06C-R1
+- Cyclically moved identical candidate content blocks across fixed positions while preserving the base next-token target.
+- Original CSCA-06C namespace was burned after one accidental performance-smoke boolean exposure; clean R1 used new prompt hashes.
+- PRIMARY fully resolved 16/24: PositionTracking `1.0`, ContentTracking `0.25`.
+- REPLICATION fully resolved 11/24 with the same position/content pattern, but PROSE `4/12=0.333` and pooled `11/24=0.458` fall below the frozen `0.50` resolution gate.
+- Final: `POSITION_CONTENT_MECHANISM_UNRESOLVED`; content-specific causal credit NOT_SUPPORTED, position/locality not promoted.
+
+### Boundary
+Amortized/student credit, replay, semantic causality and active causal control remain blocked. The next benchmark must independently manipulate content identity and distance-to-prediction while preserving non-degenerate intervention-family support.
+
 ## [Interventional model-class falsifiability] — 2026-08-10
 
 ### Added

@@ -116,3 +116,8 @@ The repository now contains an executable research-operations substrate (`cwc/re
 ### CSCA-06A falsifiability status (2026-08-10)
 
 The first blockwise composite-null interventional falsifier is preserved as a preregistered negative (`PRIMARY S2=120/128=0.9375 < 0.95`). A separately preregistered repair, `CSCA-06A-R1`, aggregates evidence globally at exactly three fixed cost checkpoints and, on fresh cohorts, rejects S1/S2/S3 `128/128` in both PRIMARY and independent REPLICATION while rejecting none of N0-N3/E0. This is **composite model-class falsification under a declared nuisance envelope**, not graph-truth identification. Hidden-confounder and aleatoric variance remain non-identifiable from the scalar intervention channel, and no shadow/replay/active-control promotion follows.
+
+
+### CSCA-06B/06C real-model boundary (2026-08-10)
+
+Two explicit same-context donor-resampling soft-intervention kernels give identical exact top/sign credit on every fresh CSCA-06B PRIMARY and replication prompt, but all 96 robust cases choose `A_RECENT`. CSCA-06C then cyclically moves the same four candidate contents through all four positions while freezing the base next-token target. Every fully resolved case follows fixed position (`PositionTracking=1.0`) rather than moved content (`ContentTracking=0.25`); however independent-replication resolution coverage falls below the frozen gate (PROSE 0.333, pooled 0.458). Therefore content-specific causal credit is **NOT_SUPPORTED**, while position/locality remains unpromoted. No student, replay, semantic or active-control authority follows.

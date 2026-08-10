@@ -693,3 +693,28 @@ hypotheses:
     preregistration: research/preregistration/CSCA_06A_R1_GLOBAL_CHECKPOINT_EVALUE.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD08-CSCA06A-R1-global-falsifiability
+
+
+  - hypothesis_id: H-CSCA-06B-OP
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "The CSCA-05 direct-intervention top credit is not robust across two explicitly declared same-context donor-resampling soft-intervention kernels."
+    H1: "Exact top candidate and sign agree across the two kernels with >=0.90 agreement and >=0.50 robust coverage in pooled, PROSE and CODE strata in both PRIMARY and independent REPLICATION."
+    estimand: "operator-family exact top agreement, sign agreement, robust-authority coverage, prompt overlap, model-state mutation and recency distribution"
+    experimental_unit: "fresh held-out prompt under two finite stochastic intervention kernels"
+    decision_rule: "Every stratum in both cohorts must meet top/sign agreement >=0.90 and robust coverage >=0.50, with zero prior-prompt overlap and model mutation. RESULT all agreement/coverage metrics=1.0 in both cohorts -> SUPPORTED_NARROWED; all robust cases A_RECENT so no content/semantic promotion."
+    preregistration: research/preregistration/CSCA_06B_OPERATOR_FAMILY_ROBUSTNESS.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD09-CSCA06B-operator-family
+
+  - hypothesis_id: H-CSCA-06C-R1
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "The current operator-robust credit can be explained by fixed position/locality rather than moved content identity."
+    H1: "Content identity remains the dominant credit object when the same four content blocks are cyclically moved through all candidate positions."
+    estimand: "fully-resolved prompt fraction, PositionTracking and ContentTracking under four rotations with a fixed base target"
+    experimental_unit: "fresh base prompt x four content-position rotations x two exact finite intervention kernels"
+    decision_rule: "Content qualification requires fully-resolved>=0.50, ContentTracking>=0.75 and Content-Position>=0.25 in every stratum/cohort. Position qualification requires fully-resolved>=0.50, PositionTracking>=0.90 and Position-Content>=0.50 in every stratum/cohort. RESULT content gate fails; all resolved cases position=1.0/content=0.25, but replication PROSE=0.333 and pooled=0.458 resolution coverage blocks position promotion -> NOT_SUPPORTED for content-specific claim; overall mechanism unresolved."
+    preregistration: research/preregistration/CSCA_06C_R1_POSITION_CONTENT_DISENTANGLEMENT.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD10-CSCA06C-content-specific
