@@ -1,0 +1,15 @@
+{
+  "architecture_authority": false,
+  "created_at": "2026-08-10",
+  "decision": "APPROVE_EXECUTION",
+  "decision_id": "H4-CSCA-02-AUTHOR-DIRECTIVE",
+  "evidence_refs": [
+    "docs/acts/ACT_RD_03.md",
+    "experiments/csca_02_ua/PREREGISTRATION.md"
+  ],
+  "gate": "H4_EXPERIMENT_DESIGN",
+  "rationale": "The author directive explicitly orders ACT-R&D-03 execution. The preregistration freezes the primary safety metric, calibration/held-out family split, nulls, failure predicates and replication rule before outcomes are observed. No architecture authority is granted.",
+  "reviewer": "AUTHOR_DIRECTIVE",
+  "reviewer_role": "HUMAN_RESEARCH_OWNER",
+  "subject_id": "CSCA-02-UA"
+}
