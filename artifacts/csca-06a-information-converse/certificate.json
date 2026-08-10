@@ -1,0 +1,65 @@
+{
+  "artifact_id": "CSCA-06A-INFORMATION-CONVERSE",
+  "authority": {
+    "active_control": false,
+    "graph_truth": false,
+    "nuisance_decomposition": false,
+    "shadow_promotion": false
+  },
+  "families": {
+    "E0_SINGLE_ACTION_EQUIVALENCE": {
+      "alpha": 0.01,
+      "available_cost": 256.0,
+      "necessary_cost_is_infinite": true,
+      "necessary_cost_lower_bound": null,
+      "required_information_nats": 4.176898950135489,
+      "separation_rate_per_cost": 0.0,
+      "state": "INTERVENTIONALLY_UNFALSIFIABLE_AT_THIS_DESIGN",
+      "target_power": 0.95
+    },
+    "S1_MISSING_TRUE_EDGE": {
+      "alpha": 0.01,
+      "available_cost": 256.0,
+      "necessary_cost_is_infinite": false,
+      "necessary_cost_lower_bound": 18.61521141219082,
+      "required_information_nats": 4.176898950135489,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE",
+      "target_power": 0.95
+    },
+    "S2_MISSING_TRUE_EDGE_NEGATIVE": {
+      "alpha": 0.01,
+      "available_cost": 256.0,
+      "necessary_cost_is_infinite": false,
+      "necessary_cost_lower_bound": 18.61521141219082,
+      "required_information_nats": 4.176898950135489,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE",
+      "target_power": 0.95
+    },
+    "S3_SPURIOUS_CANDIDATE_EDGE": {
+      "alpha": 0.01,
+      "available_cost": 256.0,
+      "necessary_cost_is_infinite": false,
+      "necessary_cost_lower_bound": 18.61521141219082,
+      "required_information_nats": 4.176898950135489,
+      "separation_rate_per_cost": 0.22438095693074434,
+      "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE",
+      "target_power": 0.95
+    },
+    "W1_WEAK_EDGE_BUDGET_STRESS": {
+      "alpha": 0.01,
+      "available_cost": 256.0,
+      "necessary_cost_is_infinite": false,
+      "necessary_cost_lower_bound": 423.70946839131244,
+      "required_information_nats": 4.176898950135489,
+      "separation_rate_per_cost": 0.00985793158220849,
+      "state": "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND",
+      "target_power": 0.95
+    }
+  },
+  "source_verdict": "research/results/CSCA-06A-R1/verdict.json",
+  "source_verdict_sha256": "84bba8a06df5b357128ced109bd4596fd22ef77d806e85709511f72c51cc2db1",
+  "status": "MATHEMATICAL_POSTCONFIRMATORY_DIAGNOSTIC",
+  "theorem": "For a level-alpha rejection event with power >=p under P*, data processing requires inf_Q KL(P*||Q) >= kl(p||alpha). For a fixed design with separation rate R nat/cost, Cost >= kl(p||alpha)/R is necessary, not sufficient."
+}

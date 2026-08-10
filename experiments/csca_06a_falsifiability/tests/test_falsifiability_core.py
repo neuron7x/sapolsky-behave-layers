@@ -65,3 +65,30 @@ def test_authority_never_converts_zero_separation_to_graph_falsification():
         budget_exhausted=False,
     )
     assert state == "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE"
+
+
+def test_information_converse_blocks_weak_edge_before_spend():
+    from cwc.counterfactual.falsifiability import information_budget_certificate
+    strong = information_budget_certificate(
+        alpha=0.01, target_power=0.95,
+        separation_rate_per_cost=0.22438095693074434, available_cost=256.0,
+    )
+    weak = information_budget_certificate(
+        alpha=0.01, target_power=0.95,
+        separation_rate_per_cost=0.00985793158220849, available_cost=256.0,
+    )
+    assert abs(strong.required_information_nats - 4.176898950135489) < 1e-12
+    assert abs(strong.necessary_cost_lower_bound - 18.61521141219082) < 1e-10
+    assert strong.state == "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+    assert abs(weak.necessary_cost_lower_bound - 423.70946839131244) < 1e-9
+    assert weak.state == "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND"
+
+
+def test_information_converse_zero_separation_is_infinite_cost():
+    import math
+    from cwc.counterfactual.falsifiability import information_budget_certificate
+    cert = information_budget_certificate(
+        alpha=0.01, target_power=0.95, separation_rate_per_cost=0.0, available_cost=10**9,
+    )
+    assert math.isinf(cert.necessary_cost_lower_bound)
+    assert cert.state == "INTERVENTIONALLY_UNFALSIFIABLE_AT_THIS_DESIGN"

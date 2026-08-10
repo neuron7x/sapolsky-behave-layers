@@ -16,6 +16,7 @@ All notable changes to the CWC evidence substrate. Format loosely follows
 - R1 independent REPLICATION: S1/S2/S3 `128/128`; N0/N1/N2/N3/E0 `0/128` rejected.
 - R1 uses the same alpha `0.01`, max cost `256`, nuisance envelope and structural power threshold as the failed parent; only evidence aggregation changed.
 - Scalar intervention observations identify total nuisance variance, not a unique latent-confounder versus aleatoric decomposition.
+- Added a post-confirmatory information converse: any level-0.01 test targeting power 0.95 needs at least `kl(0.95||0.01)=4.17689895` nats against the closest null. The weak W1 separation rate implies a necessary cost `>=423.71`, exceeding the frozen 256 budget; E0 has zero separation and infinite required cost.
 
 ### Scope boundary
 `GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED` means only that the declared composite model class is falsifiable on the frozen controlled family. It does not prove graph truth, exclude arbitrary hidden confounding, authorize real-model causal control, or establish a universal information threshold.

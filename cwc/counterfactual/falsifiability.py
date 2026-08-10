@@ -418,3 +418,89 @@ class FixedCheckpointCompositeEValue:
         }
         self.checked.append(record)
         return record
+
+@dataclass(frozen=True, slots=True)
+class InformationBudgetCertificate:
+    """Necessary information budget for a level-alpha, target-power falsifier.
+
+    This is a converse, never a sufficiency certificate.  If a reject/retain test T
+    has type-I error <= alpha for every member of the composite null and power
+    >= target_power under P*, data processing through the binary decision T implies
+
+        inf_Q KL(P* || Q) >= kl(target_power || alpha).
+
+    For a fixed repeated intervention design with separation rate R [nat/cost],
+    total cost C must therefore satisfy C*R >= kl(target_power || alpha).
+    """
+
+    alpha: float
+    target_power: float
+    separation_rate_per_cost: float
+    required_information_nats: float
+    necessary_cost_lower_bound: float
+    available_cost: float
+    state: str
+
+
+def binary_relative_entropy(p: float, q: float) -> float:
+    """KL(Bernoulli(p) || Bernoulli(q)) in nats, including boundary cases."""
+    p = float(p)
+    q = float(q)
+    if not 0.0 <= p <= 1.0 or not 0.0 <= q <= 1.0:
+        raise ValueError("Bernoulli probabilities must be in [0,1]")
+    if (p > 0.0 and q == 0.0) or (p < 1.0 and q == 1.0):
+        return math.inf
+    out = 0.0
+    if p > 0.0:
+        out += p * math.log(p / q)
+    if p < 1.0:
+        out += (1.0 - p) * math.log((1.0 - p) / (1.0 - q))
+    return float(out)
+
+
+def necessary_information_for_falsification(*, alpha: float, target_power: float) -> float:
+    """Necessary KL information for the requested binary test operating point.
+
+    For target_power > alpha this is kl(target_power || alpha).  It follows from
+    KL data processing under the measurable reject indicator.  It does not assert
+    that attaining this amount is sufficient for a particular finite-sample test.
+    """
+    if not 0.0 < alpha < 1.0:
+        raise ValueError("alpha must be in (0,1)")
+    if not 0.0 < target_power < 1.0:
+        raise ValueError("target_power must be in (0,1)")
+    if target_power <= alpha:
+        raise ValueError("target_power must exceed alpha for a nontrivial falsification target")
+    return binary_relative_entropy(target_power, alpha)
+
+
+def information_budget_certificate(
+    *,
+    alpha: float,
+    target_power: float,
+    separation_rate_per_cost: float,
+    available_cost: float,
+) -> InformationBudgetCertificate:
+    """Return a fail-closed *necessary*, not sufficient, compute-budget certificate."""
+    if separation_rate_per_cost < 0.0:
+        raise ValueError("separation rate cannot be negative")
+    if available_cost < 0.0:
+        raise ValueError("available cost cannot be negative")
+    required = necessary_information_for_falsification(alpha=alpha, target_power=target_power)
+    rate = float(separation_rate_per_cost)
+    necessary_cost = math.inf if rate <= 0.0 else required / rate
+    if rate <= 0.0:
+        state = "INTERVENTIONALLY_UNFALSIFIABLE_AT_THIS_DESIGN"
+    elif available_cost + 1e-12 < necessary_cost:
+        state = "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND"
+    else:
+        state = "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+    return InformationBudgetCertificate(
+        alpha=float(alpha),
+        target_power=float(target_power),
+        separation_rate_per_cost=rate,
+        required_information_nats=float(required),
+        necessary_cost_lower_bound=float(necessary_cost),
+        available_cost=float(available_cost),
+        state=state,
+    )
