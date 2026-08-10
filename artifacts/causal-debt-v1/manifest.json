@@ -1,0 +1,44 @@
+{
+  "budgets": [
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "policies": [
+    "fifo_obs",
+    "rpe_obs",
+    "uncertainty_obs",
+    "uniform_cf",
+    "rpe_cf",
+    "causal_debt_cf",
+    "oracle_invariant"
+  ],
+  "row_count": 700,
+  "schema": "cwc-cdl/raw-manifest-1",
+  "scope": "synthetic SCM control only",
+  "seeds": [
+    101,
+    211,
+    307,
+    401,
+    503,
+    601,
+    701,
+    809,
+    907,
+    1009,
+    1103,
+    1201,
+    1301,
+    1409,
+    1511,
+    1601,
+    1709,
+    1801,
+    1901,
+    2003
+  ],
+  "via_ascension_authority": false
+}
