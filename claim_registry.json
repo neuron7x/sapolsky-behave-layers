@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "45bc85ae80103473c7e21c414a308dd7dbf6b766",
+  "git_commit": "5c5aa63ada74cf6fbab678afbf651716d66d64b3",
   "generated": "2026-08-10",
   "claims": [
     {
@@ -36,7 +36,7 @@
       "verdict_binding": {
         "file": "artifacts/wp1-release/WP1_RELEASE_VERDICT.md",
         "pointer": null,
-        "expected": "## Baseline integrity (Act A2) \u2014 PASS"
+        "expected": "## Baseline integrity (Act A2) — PASS"
       }
     },
     {
@@ -1674,6 +1674,53 @@
         "file": "artifacts/causal-debt-v2/verdict.json",
         "pointer": "verdict",
         "expected": "CAUSAL_DEBT_V2_CONTROL_QUALIFIED"
+      }
+    },
+    {
+      "claim_id": "CWC-RD02-CSCA01-controlled-kernel",
+      "hypothesis_id": "H-CSCA-01",
+      "statement": "Exact counterfactual Shapley credit separates the known delayed structural cause from correlated, temporal and random non-causes in the preregistered controlled CSCA-01 SCM and reproduces on an independent seed cohort.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "controlled synthetic SCM",
+          "known structural counterfactual simulator",
+          "32 primary seeds + 32 replication seeds",
+          "two OOD contexts",
+          "zero-cause nulls"
+        ]
+      },
+      "required_artifacts": [
+        "artifacts/csca-01/",
+        "research/results/CSCA-01/verdict.json"
+      ],
+      "supporting_metrics": [
+        "exact OOD causal-rank accuracy 1.0 in primary and independent-seed replication cohorts",
+        "exact OOD normalized false-credit mass 0",
+        "destroyed-link, correlation-only and pure-noise nulls produce zero exact candidate credit",
+        "MC64 rank qualifier 1.0 in both OOD cohorts; false-credit mass remains ~0.23 and is not treated as calibrated credit"
+      ],
+      "limitations": [
+        "synthetic controlled environment only",
+        "counterfactual simulator is oracle-quality and structurally correct by construction",
+        "full primary-source paper bytes/code were unavailable locally, so this is not a paper-level reproduction",
+        "finite-budget MC estimator is an independent approximation rather than a verified reproduction of the external paper estimator",
+        "no real language-model memory, replay utility, physical inference savings or architecture integration tested"
+      ],
+      "prohibited_extrapolations": [
+        "learned causal discovery is solved",
+        "counterfactual credit is robust to model misspecification",
+        "language-model performance improvement",
+        "hippocampal or biological implementation",
+        "architecture promotion",
+        "general intelligence mechanism"
+      ],
+      "note": "Mechanism-level controlled reproduction only. H5 remains pending; the next weakest link is counterfactual-model adequacy.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "research/results/CSCA-01/verdict.json",
+        "pointer": "exact_pass",
+        "expected": true
       }
     }
   ]

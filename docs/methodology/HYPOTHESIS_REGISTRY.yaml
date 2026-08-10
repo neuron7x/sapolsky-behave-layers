@@ -593,3 +593,15 @@ hypotheses:
     preregistration: experiments/causal_debt_v2/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-CDL2-resolution-aware-control
+
+  - hypothesis_id: H-CSCA-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Exact counterfactual coalition credit cannot reliably distinguish a delayed structural cause from correlated, temporal and stochastic non-causes under the frozen controlled SCM and OOD shifts."
+    H1: "Exact counterfactual Shapley credit uniquely ranks the true cause, assigns zero credit to structural non-causes, survives zero-cause nulls, and reproduces on the independent seed cohort."
+    estimand: "causal-rank accuracy, normalized false-credit mass, Shapley efficiency error, null candidate credit and finite-budget approximation behavior"
+    experimental_unit: "seed x context after aggregation over 128 independently generated trajectories"
+    decision_rule: "Frozen in experiments/csca_01/PREREGISTRATION.md. Exact predicates must all pass in primary and replication cohorts and zero-cause nulls. RESULT exact predicates all passed; MC64 rank qualifier passed but retained ~0.23 false-credit mass -> SUPPORTED_NARROWED, controlled kernel only."
+    preregistration: experiments/csca_01/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD02-CSCA01-controlled-kernel
