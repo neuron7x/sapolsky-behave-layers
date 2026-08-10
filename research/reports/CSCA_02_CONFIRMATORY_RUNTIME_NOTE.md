@@ -1,3 +1,5 @@
 # CSCA-02 confirmatory runtime note
 
 The first full held-out execution attempt exceeded the available 240-second execution window before producing any result-bearing artifact. No confirmatory outcomes were observed. The implementation was then optimized only by vectorizing mathematically identical prediction, Shapley-aggregation and intervention-effect computations. The preregistration, calibration policy, frozen thresholds, seeds, structural-family split, metrics and decision rules were not changed.
+
+A second monolithic attempt also exceeded the execution window. The issue was isolated to long-lived repeated linear-algebra execution in one process: either cohort completes quickly in a fresh process. Confirmatory execution was therefore split into two fresh processes for the already-frozen PRIMARY and INDEPENDENT_REPLICATION cohorts, and a deterministic aggregator verifies the frozen seeds, seed counts and identical policy hash before emitting the verdict. No scientific threshold, model, data family, metric or decision rule is changed by this execution isolation.
