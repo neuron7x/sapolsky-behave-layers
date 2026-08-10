@@ -1,0 +1,17 @@
+{
+  "act": "ACT-R&D-03",
+  "models": [
+    {"family": "LINEAR", "basis": "main effects", "bootstraps": 4},
+    {"family": "CONTEXT", "basis": "main + candidate×context", "bootstraps": 4},
+    {"family": "NONLINEAR", "basis": "main + pairwise candidate interactions + candidate×context", "bootstraps": 4}
+  ],
+  "uncertainty_surfaces": [
+    "parameter/data bootstrap dispersion",
+    "model-family dispersion",
+    "intervention-prediction adequacy",
+    "context support surprisal",
+    "credit interval separation",
+    "rank stability"
+  ],
+  "boundary": "Synthetic qualification models only; not a canonical production counterfactual model."
+}
