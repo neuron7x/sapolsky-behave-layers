@@ -1,7 +1,7 @@
 {
   "active_causal_control_authorized": false,
   "artifact_sha256": {
-    "research/reports/CSCA_04_EXECUTION_REPORT.md": "5e3eba68674a7cbdb45e047b3ea95af69cf8e4f40ed2e3e3f5bf0ac31ae7f731",
+    "research/reports/CSCA_04_EXECUTION_REPORT.md": "a19b57bb9665123470610b4487d3ac6d7b9740f38dfee6b9528ebd98acc4857b",
     "research/results/CSCA-04-SA/CALIBRATION.json": "383cdf5a2eb3cdb6c510fb8a42d467bcd253b55d9df9d8d7f0f17f96d674c806",
     "research/results/CSCA-04-SA/FROZEN_POLICY.json": "7c17734afdd7402a04a04e42bf0fbe54aaf9b91eda760d02a95a33928c1c3bda",
     "research/results/CSCA-04-SA/GSS_DIAGNOSTIC.json": "5459f22cc89176fdc7eed78e97678074198409eb55c9476bdf59063a406f4887",
