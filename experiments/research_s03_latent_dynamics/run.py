@@ -88,7 +88,7 @@ def rollout(beta: np.ndarray, kind: str, x: np.ndarray, a: np.ndarray, horizon: 
                 np.array([prev]),
                 np.array([cur]),
                 np.array([a[j - 1]]),
-                np.array([a[j]),
+                np.array([a[j]]),
             )
             nxt = float(predict(beta, X)[0])
             prev, cur = cur, nxt
