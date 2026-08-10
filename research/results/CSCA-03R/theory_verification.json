@@ -1,0 +1,70 @@
+{
+  "crn_unbiased_exact": true,
+  "details": [
+    {
+      "A": -1,
+      "B": -1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": -1,
+      "crn_one_path_vector_mse": 1.2725
+    },
+    {
+      "A": -1,
+      "B": 1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": -1,
+      "crn_one_path_vector_mse": 0.8725
+    },
+    {
+      "A": 1,
+      "B": -1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": -1,
+      "crn_one_path_vector_mse": 0.9925
+    },
+    {
+      "A": 1,
+      "B": 1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": -1,
+      "crn_one_path_vector_mse": 0.5925
+    },
+    {
+      "A": -1,
+      "B": -1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": 1,
+      "crn_one_path_vector_mse": 0.5925
+    },
+    {
+      "A": -1,
+      "B": 1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": 1,
+      "crn_one_path_vector_mse": 0.9925
+    },
+    {
+      "A": 1,
+      "B": -1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": 1,
+      "crn_one_path_vector_mse": 0.8725
+    },
+    {
+      "A": 1,
+      "B": 1,
+      "antithetic_one_pair_vector_mse": 0.24,
+      "context": 1,
+      "crn_one_path_vector_mse": 1.2725
+    }
+  ],
+  "enumerated_states": 8,
+  "matched_budget_antithetic_over_crn_mse_ratio": 0.514745308310992,
+  "matched_budget_antithetic_over_crn_mse_ratio_fraction": "192/373",
+  "mean_antithetic_one_pair_vector_mse_fraction": "6/25",
+  "mean_crn_one_path_vector_mse_fraction": "373/400",
+  "per_state_microstates": 384,
+  "status": "POST_CONFIRMATORY_ANALYTIC_MECHANISM_CHECK_NO_CLAIM_UPGRADE",
+  "structural_null_C_D_exact_per_draw": true,
+  "total_microstates": 3072
+}

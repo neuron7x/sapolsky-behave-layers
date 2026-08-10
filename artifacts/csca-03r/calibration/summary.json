@@ -1,0 +1,36 @@
+{
+  "approx_structural_evaluations": 5242880,
+  "artifacts": {
+    "aggregate_sha256": "f95551682de63551161fc35c7eb681e977e38ef140f30265a07fba045734b372",
+    "case_results_sha256": "666e90861add9a0c045b43dd139775b51ac7269ad333968a616773ca087bd93c",
+    "context_authority_sha256": "9321a21fc90f4951f56b09d102ff5aba457595a37f469186da1cd57413ec974a"
+  },
+  "budgets": [
+    8,
+    16,
+    32,
+    64,
+    128,
+    256
+  ],
+  "case_records": 61440,
+  "context_authority_records": 768,
+  "exact_structural_evaluations": 269568,
+  "families": [
+    "E0_SINGLE_CAUSE",
+    "E1_TWO_CAUSE_INTERACTION",
+    "E2_CONTEXT_SIGN_FLIP",
+    "E3_PRECISELY_WRONG_MODEL"
+  ],
+  "methods": [
+    "LEGACY_INDEPENDENT_MC",
+    "CRN_CHAIN_MC",
+    "ANTITHETIC_CRN_MC",
+    "DOUBLE_ANTITHETIC_CRN_MC"
+  ],
+  "rows_per_context": 8,
+  "seed_count": 32,
+  "seed_start": 61000,
+  "total_structural_evaluations": 5512448,
+  "wall_seconds": 6.108130299999971
+}

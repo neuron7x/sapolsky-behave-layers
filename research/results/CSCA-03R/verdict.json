@@ -1,0 +1,76 @@
+{
+  "analyzer_version": "1.0-fresh-deterministic-baseline",
+  "architecture_promotion_authority": false,
+  "diagnostics": {
+    "metric_definition": "aggregate_MSE=mean(per_row_RMSE^2)",
+    "primary_e1_antithetic_mse_ratio": {
+      "128": 0.5230627238095075,
+      "16": 0.5154447445671851,
+      "256": 0.5170162376370461,
+      "32": 0.5401002909574479,
+      "64": 0.5218633041566797,
+      "8": 0.5129495376554658
+    },
+    "replication_e1_antithetic_mse_ratio": {
+      "128": 0.5169695893558363,
+      "16": 0.5306413902569398,
+      "256": 0.5198859233799247,
+      "32": 0.5558177992488406,
+      "64": 0.5183102442461311,
+      "8": 0.5083211671233876
+    },
+    "variance_only_counterexample": {
+      "primary:128": {
+        "mean_reported_estimator_variance": 9.968192094972998e-35,
+        "rmse_to_wrong_model_teacher": 6.91797658291109e-17,
+        "wrong_model_false_mass": 0.9
+      },
+      "primary:256": {
+        "mean_reported_estimator_variance": 5.113855456148236e-35,
+        "rmse_to_wrong_model_teacher": 6.912174254219151e-17,
+        "wrong_model_false_mass": 0.9
+      },
+      "primary:64": {
+        "mean_reported_estimator_variance": 2.0945518102166192e-34,
+        "rmse_to_wrong_model_teacher": 6.935490035730418e-17,
+        "wrong_model_false_mass": 0.9
+      },
+      "replication:128": {
+        "mean_reported_estimator_variance": 9.874936209807763e-35,
+        "rmse_to_wrong_model_teacher": 6.992022995287402e-17,
+        "wrong_model_false_mass": 0.9
+      },
+      "replication:256": {
+        "mean_reported_estimator_variance": 4.941885688512616e-35,
+        "rmse_to_wrong_model_teacher": 6.961628200704999e-17,
+        "wrong_model_false_mass": 0.9
+      },
+      "replication:64": {
+        "mean_reported_estimator_variance": 2.0058859506117386e-34,
+        "rmse_to_wrong_model_teacher": 6.974303178284888e-17,
+        "wrong_model_false_mass": 0.9
+      }
+    }
+  },
+  "experiment_id": "CSCA-03R",
+  "human_h5_required": true,
+  "predicates": {
+    "primary_context_no_global_direction": true,
+    "primary_e0_crn_beats_legacy": true,
+    "primary_e0_crn_topset": true,
+    "primary_e0_crn_zero_false": true,
+    "primary_e1_antithetic_4of6": true,
+    "primary_e1_crn_zero_false": true,
+    "replication_context_no_global_direction": true,
+    "replication_e0_crn_beats_legacy": true,
+    "replication_e0_crn_topset": true,
+    "replication_e0_crn_zero_false": true,
+    "replication_e1_antithetic_4of6": true,
+    "replication_e1_crn_zero_false": true,
+    "variance_only_authority_counterexample": true
+  },
+  "scientific_pass": true,
+  "shadow_inference_authority": false,
+  "variance_only_authority": false,
+  "verdict": "CSCA_03R_COUPLED_ESTIMATOR_QUALIFIED"
+}

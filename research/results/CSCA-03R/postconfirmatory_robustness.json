@@ -1,0 +1,136 @@
+{
+  "primary": {
+    "antithetic_mse_ratio": {
+      "128": 0.5230627238095075,
+      "16": 0.5154447445671851,
+      "256": 0.5170162376370461,
+      "32": 0.5401002909574479,
+      "64": 0.5218633041566797,
+      "8": 0.5129495376554658
+    },
+    "context_authority_states": {
+      "CONTEXT_CONDITIONAL_ONLY": 3072
+    },
+    "precisely_wrong_model": {
+      "128": {
+        "mean_estimator_variance": 9.968192094972998e-35,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.91797658291109e-17
+      },
+      "256": {
+        "mean_estimator_variance": 5.113855456148236e-35,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.912174254219151e-17
+      },
+      "64": {
+        "mean_estimator_variance": 2.0945518102166192e-34,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.935490035730418e-17
+      }
+    },
+    "precisely_wrong_model_factual_rmse": 0.14882351124738324,
+    "variance_ceiling_nonnecessity": {
+      "128": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.031179776755712364
+      },
+      "16": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.24709743923611108
+      },
+      "256": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.015632725266552475
+      },
+      "32": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.12527320498511904
+      },
+      "64": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.06252780490451389
+      },
+      "8": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.5009765625
+      }
+    }
+  },
+  "replication": {
+    "antithetic_mse_ratio": {
+      "128": 0.5169695893558363,
+      "16": 0.5306413902569398,
+      "256": 0.5198859233799247,
+      "32": 0.5558177992488406,
+      "64": 0.5183102442461311,
+      "8": 0.5083211671233876
+    },
+    "context_authority_states": {
+      "CONTEXT_CONDITIONAL_ONLY": 3072
+    },
+    "precisely_wrong_model": {
+      "128": {
+        "mean_estimator_variance": 9.874936209807763e-35,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.992022995287402e-17
+      },
+      "256": {
+        "mean_estimator_variance": 4.941885688512616e-35,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.961628200704999e-17
+      },
+      "64": {
+        "mean_estimator_variance": 2.0058859506117386e-34,
+        "mean_false_credit_mass_true": 0.9,
+        "rmse_to_true_teacher": 0.6363961030678927,
+        "rmse_to_wrong_model_teacher": 6.974303178284888e-17
+      }
+    },
+    "precisely_wrong_model_factual_rmse": 0.1948557158514987,
+    "variance_ceiling_nonnecessity": {
+      "128": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.03126201834729923
+      },
+      "16": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.24948459201388887
+      },
+      "256": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.015623087605471334
+      },
+      "32": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.12527029854910712
+      },
+      "64": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.062384372287326385
+      },
+      "8": {
+        "exceeds_diagnostic_ceiling": true,
+        "max_false_credit_mass": 0.0,
+        "mean_max_component_estimator_variance": 0.5078125
+      }
+    }
+  },
+  "status": "POST_CONFIRMATORY_ROBUSTNESS_NO_CLAIM_UPGRADE_AUTHORITY",
+  "variance_diagnostic_ceiling": 0.00791605240667618
+}

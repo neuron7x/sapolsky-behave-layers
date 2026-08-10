@@ -1,0 +1,37 @@
+{
+  "approx_structural_evaluations": 20971520,
+  "artifacts": {
+    "aggregate_sha256": "3eced98c18c0b2cb4560e68001636262b2ee51bc1f660f0fe7e33ee98c7d6149",
+    "case_results_sha256": "60cff2b6b1c99013550b95eb566ff6558191108c9747a41410c34675c24fafbb",
+    "context_authority_sha256": "ec95f201e93ed3441676a62c3275083f2386c33fc2fecc45ba3b3f2cfba2a2ad"
+  },
+  "budgets": [
+    8,
+    16,
+    32,
+    64,
+    128,
+    256
+  ],
+  "case_records": 245760,
+  "chunk_count": 16,
+  "context_authority_records": 3072,
+  "exact_structural_evaluations": 1078272,
+  "families": [
+    "E0_SINGLE_CAUSE",
+    "E1_TWO_CAUSE_INTERACTION",
+    "E2_CONTEXT_SIGN_FLIP",
+    "E3_PRECISELY_WRONG_MODEL"
+  ],
+  "methods": [
+    "LEGACY_INDEPENDENT_MC",
+    "CRN_CHAIN_MC",
+    "ANTITHETIC_CRN_MC",
+    "DOUBLE_ANTITHETIC_CRN_MC"
+  ],
+  "rows_per_context": 8,
+  "seed_count": 128,
+  "seed_start": 62000,
+  "total_structural_evaluations": 22049792,
+  "wall_seconds_sum_chunks": 36.847333604000255
+}
