@@ -11,14 +11,18 @@ import argparse
 import json
 import math
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from experiments.wp4_adaptive_depth.src.analyze import analyze as analyze_wp4
 from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v31 import analyze as analyze_wp4_v31
 from experiments.wp4_adaptive_depth.src.analyze_end_to_end_v4 import analyze as analyze_wp4_v4
 
-ROOT = Path(__file__).resolve().parents[1]
 SEED_FILE = re.compile(r"seed(?P<seed>\d+)(?P<arm>_[^.]+)?\.json$")
 REQUIRED_BUNDLE_FILES = ("RESULTS.md", "SHA256SUMS")
 UNIT_INTERVAL_KEYS = {
