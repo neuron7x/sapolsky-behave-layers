@@ -1,0 +1,20 @@
+{
+  "all_sign_same_fraction": 0.71875,
+  "all_top_same_fraction": 0.84375,
+  "diagnostic_only": true,
+  "interpretation": "Intervention sensitivity is a boundary diagnostic. It cannot upgrade CSCA-05 and does not redefine the preregistered SPACE intervention estimand.",
+  "mode_top_A_RECENT_fraction": {
+    "FF": 1.0,
+    "REVERSE": 1.0,
+    "SPACE": 0.84375,
+    "ZERO": 1.0
+  },
+  "modes": [
+    "SPACE",
+    "ZERO",
+    "FF",
+    "REVERSE"
+  ],
+  "n": 32,
+  "space_top_A_RECENT_fraction": 0.84375
+}

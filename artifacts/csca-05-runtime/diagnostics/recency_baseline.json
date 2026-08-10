@@ -1,0 +1,14 @@
+{
+  "baseline": "ALWAYS_A_RECENT",
+  "diagnostic_only": true,
+  "primary": {
+    "exact_top_accuracy": 0.953125,
+    "n": 64,
+    "wrong_count": 3
+  },
+  "replication": {
+    "exact_top_accuracy": 0.984375,
+    "n": 64,
+    "wrong_count": 1
+  }
+}

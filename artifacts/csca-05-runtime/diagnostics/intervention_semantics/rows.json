@@ -1,0 +1,1442 @@
+[
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.7010642637809115,
+        "B_PREV": -0.012481018900871277,
+        "C_MIDDLE": -0.012882207830746967,
+        "D_EARLY": -0.05334250628948211
+      },
+      "REVERSE": {
+        "A_RECENT": 8.06180881957213,
+        "B_PREV": 0.025317067901293434,
+        "C_MIDDLE": -0.04651591678460439,
+        "D_EARLY": 0.0004559308290481565
+      },
+      "SPACE": {
+        "A_RECENT": 4.58793743699789,
+        "B_PREV": 0.39571006347735727,
+        "C_MIDDLE": 0.17701078703006107,
+        "D_EARLY": 0.10551957537730534
+      },
+      "ZERO": {
+        "A_RECENT": 3.5325819576779995,
+        "B_PREV": 0.02628010263045629,
+        "C_MIDDLE": 0.04923170059919356,
+        "D_EARLY": 0.00811118632555008
+      }
+    },
+    "index": 0,
+    "prompt_hash": "7de50be3500bedb6f1f8c9124ba6be6a02d3ccdfde19d658187cc03e7ec13933",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.543262059489886,
+        "B_PREV": 0.1780717521905899,
+        "C_MIDDLE": 0.02937201162179311,
+        "D_EARLY": 0.14102382957935333
+      },
+      "REVERSE": {
+        "A_RECENT": 1.6881785889466603,
+        "B_PREV": 0.043216476837793984,
+        "C_MIDDLE": 0.003749589125315348,
+        "D_EARLY": -0.004294375578562418
+      },
+      "SPACE": {
+        "A_RECENT": 4.4064769595861435,
+        "B_PREV": 0.6553820222616196,
+        "C_MIDDLE": 0.10156099498271942,
+        "D_EARLY": 0.17699436843395233
+      },
+      "ZERO": {
+        "A_RECENT": 2.6254820078611374,
+        "B_PREV": 0.14128049711386362,
+        "C_MIDDLE": 0.15168655415376026,
+        "D_EARLY": 0.11879937350749968
+      }
+    },
+    "index": 1,
+    "prompt_hash": "5b2d9be8f51e3e00cc15029fe2b933c1586e0e5b556d82f365b0e01518bdc39b",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.950548221667607,
+        "B_PREV": -0.06549877921740213,
+        "C_MIDDLE": -0.22873635093371072,
+        "D_EARLY": 0.05024275183677673
+      },
+      "REVERSE": {
+        "A_RECENT": 2.812199423710505,
+        "B_PREV": 0.01781619588534037,
+        "C_MIDDLE": -0.028091996908187866,
+        "D_EARLY": -0.0024760862191518145
+      },
+      "SPACE": {
+        "A_RECENT": 3.4827328821023302,
+        "B_PREV": 0.4497958918412527,
+        "C_MIDDLE": 0.3248268067836762,
+        "D_EARLY": 0.1110869546731313
+      },
+      "ZERO": {
+        "A_RECENT": 4.429646412531535,
+        "B_PREV": -0.1486470103263855,
+        "C_MIDDLE": -0.12385114034016927,
+        "D_EARLY": 0.03682527939478556
+      }
+    },
+    "index": 2,
+    "prompt_hash": "1c76dade9abe6f91344617d52162464bd80da1b6da1990cd7d36759f06d1046c",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 6.84734916811188,
+        "B_PREV": -0.09047509605685872,
+        "C_MIDDLE": -0.034049758066733674,
+        "D_EARLY": -0.02958568309744198
+      },
+      "REVERSE": {
+        "A_RECENT": 7.028551210959752,
+        "B_PREV": 0.06743126610914865,
+        "C_MIDDLE": 0.0322330097357432,
+        "D_EARLY": 0.05884810288747151
+      },
+      "SPACE": {
+        "A_RECENT": 9.186207236101229,
+        "B_PREV": -0.019889353464047115,
+        "C_MIDDLE": 0.043583200623591736,
+        "D_EARLY": -0.05715880170464515
+      },
+      "ZERO": {
+        "A_RECENT": 8.73465018843611,
+        "B_PREV": -0.2504037382702033,
+        "C_MIDDLE": -0.08157211169600487,
+        "D_EARLY": 0.012957805146773655
+      }
+    },
+    "index": 3,
+    "prompt_hash": "521b0f12982dfa5d89bdeb00d0ba7f047d1e6ac4551fc885bc525e2b7ed13f22",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.5107659498850508,
+        "B_PREV": 0.059027274449666337,
+        "C_MIDDLE": 0.04849104086558024,
+        "D_EARLY": 0.07831271489461263
+      },
+      "REVERSE": {
+        "A_RECENT": 4.270227720340094,
+        "B_PREV": 0.016659011443456016,
+        "C_MIDDLE": 0.11265296737353007,
+        "D_EARLY": 0.030598769585291542
+      },
+      "SPACE": {
+        "A_RECENT": 3.1510011951128636,
+        "B_PREV": 0.35592039426167804,
+        "C_MIDDLE": 0.16439292828241986,
+        "D_EARLY": 0.03707273801167806
+      },
+      "ZERO": {
+        "A_RECENT": 5.215181847413381,
+        "B_PREV": 0.10265660285949707,
+        "C_MIDDLE": 0.026489516099294022,
+        "D_EARLY": 0.14320405324300128
+      }
+    },
+    "index": 4,
+    "prompt_hash": "83207308d2ee828dae879bd84bce77d2e8b25dd2a9252b66c9f45fab14d5e554",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": false,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.9331606229146323,
+        "B_PREV": -0.038790062069892876,
+        "C_MIDDLE": -0.11044496297836304,
+        "D_EARLY": -0.10088384648164114
+      },
+      "REVERSE": {
+        "A_RECENT": 5.158761302630107,
+        "B_PREV": -0.06983620921770732,
+        "C_MIDDLE": 0.01274190346399943,
+        "D_EARLY": 0.045035233100255326
+      },
+      "SPACE": {
+        "A_RECENT": 0.565534179409345,
+        "B_PREV": -0.7134587913751601,
+        "C_MIDDLE": -0.07253361741701761,
+        "D_EARLY": -0.030535469452540077
+      },
+      "ZERO": {
+        "A_RECENT": 0.377926896015803,
+        "B_PREV": 0.07850371301174164,
+        "C_MIDDLE": -0.018468131621678673,
+        "D_EARLY": 0.12641417483488718
+      }
+    },
+    "index": 5,
+    "prompt_hash": "e9fe5c364f1bbb7885b26e86e6352dfba36fe734e399db49e2773c3f35b44f5e",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "B_PREV",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.5282675226529436,
+        "B_PREV": -0.04096406698226929,
+        "C_MIDDLE": 0.041439274946848556,
+        "D_EARLY": 0.0847216248512268
+      },
+      "REVERSE": {
+        "A_RECENT": 4.440603097279866,
+        "B_PREV": -0.006494561831156412,
+        "C_MIDDLE": -0.005383968353271484,
+        "D_EARLY": -0.007297794024149576
+      },
+      "SPACE": {
+        "A_RECENT": 3.0747243066628775,
+        "B_PREV": 0.07303497195243838,
+        "C_MIDDLE": -0.005636066198348999,
+        "D_EARLY": -0.026037206252415974
+      },
+      "ZERO": {
+        "A_RECENT": 3.78150995572408,
+        "B_PREV": -0.09197370211283365,
+        "C_MIDDLE": -0.0021398067474365234,
+        "D_EARLY": -0.012220303217569992
+      }
+    },
+    "index": 6,
+    "prompt_hash": "ca30afd67a181574be5efa8b64ceb7121caed21cbac401a3965d12b22f519c65",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": false,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.150999374687672,
+        "B_PREV": 0.004599494238694504,
+        "C_MIDDLE": -0.056701923410097756,
+        "D_EARLY": -0.23756944636503854
+      },
+      "REVERSE": {
+        "A_RECENT": 5.206194743514061,
+        "B_PREV": 0.20822586119174957,
+        "C_MIDDLE": -0.1869771629571914,
+        "D_EARLY": 0.018891438841819763
+      },
+      "SPACE": {
+        "A_RECENT": -0.02995932847261429,
+        "B_PREV": -0.11896992723147073,
+        "C_MIDDLE": -0.05015375216801961,
+        "D_EARLY": -0.02720540016889572
+      },
+      "ZERO": {
+        "A_RECENT": 0.9582317943374316,
+        "B_PREV": 0.36812812834978104,
+        "C_MIDDLE": 0.07712250699599583,
+        "D_EARLY": 0.10581002384424208
+      }
+    },
+    "index": 7,
+    "prompt_hash": "da3b1334e7708288a5cd5f4b2a0d1206bb123f960914cf8dec90ee6176fdd9b1",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "B_PREV",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.9490976432959237,
+        "B_PREV": 0.034089416265487664,
+        "C_MIDDLE": 0.14304775993029276,
+        "D_EARLY": 0.039972017208735146
+      },
+      "REVERSE": {
+        "A_RECENT": -0.16520658135414124,
+        "B_PREV": 0.04669757684071858,
+        "C_MIDDLE": -0.007199307282765706,
+        "D_EARLY": -0.012861698865890503
+      },
+      "SPACE": {
+        "A_RECENT": -0.2679724767804146,
+        "B_PREV": -0.07326813042163849,
+        "C_MIDDLE": -0.08393045018116632,
+        "D_EARLY": -0.02566513915856679
+      },
+      "ZERO": {
+        "A_RECENT": 0.5581690917412441,
+        "B_PREV": -0.059532125790913895,
+        "C_MIDDLE": -0.05660036702950795,
+        "D_EARLY": 0.005764514207839959
+      }
+    },
+    "index": 8,
+    "prompt_hash": "fce85a1315fa696c6ec9e61c5d3c9497865282defa61bedc860b282ef11a01ab",
+    "signs": {
+      "FF": 1,
+      "REVERSE": -1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 1.8699297805627186,
+        "B_PREV": -0.1662648022174835,
+        "C_MIDDLE": -0.20054885745048523,
+        "D_EARLY": -0.1323574682076772
+      },
+      "REVERSE": {
+        "A_RECENT": 2.450538992881775,
+        "B_PREV": -0.0005582571029663086,
+        "C_MIDDLE": -0.02914959192276001,
+        "D_EARLY": -0.007007420063018799
+      },
+      "SPACE": {
+        "A_RECENT": 5.715791553258896,
+        "B_PREV": -0.4180691738923391,
+        "C_MIDDLE": -0.08440116047859192,
+        "D_EARLY": -0.1979054311911265
+      },
+      "ZERO": {
+        "A_RECENT": 1.544494330883026,
+        "B_PREV": -0.07250346740086873,
+        "C_MIDDLE": -0.08454767862955728,
+        "D_EARLY": -0.05408334732055664
+      }
+    },
+    "index": 9,
+    "prompt_hash": "90b2fcfcc5a32126b94aed3781d38749ac0f704c7065c4a4b26e40e7aabf0528",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.0986411273479457,
+        "B_PREV": 0.08972268303235371,
+        "C_MIDDLE": -0.1542229950428009,
+        "D_EARLY": 0.022486637036005654
+      },
+      "REVERSE": {
+        "A_RECENT": 0.8296175897121428,
+        "B_PREV": 0.028050641218821212,
+        "C_MIDDLE": -0.024053633213043213,
+        "D_EARLY": 0.04440908630688985
+      },
+      "SPACE": {
+        "A_RECENT": -0.6113636655112107,
+        "B_PREV": -0.11302964016795158,
+        "C_MIDDLE": -0.08849705383181572,
+        "D_EARLY": -0.016923031459252037
+      },
+      "ZERO": {
+        "A_RECENT": 0.8233543982108433,
+        "B_PREV": 0.028860822319984436,
+        "C_MIDDLE": -0.10633814831574757,
+        "D_EARLY": 0.16724170744419098
+      }
+    },
+    "index": 10,
+    "prompt_hash": "2d3b087a35349320feab29af91d53a0018ca0dc922eab7c3d3cab2c0e4d4fc78",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.477693955103556,
+        "B_PREV": -0.06606107950210571,
+        "C_MIDDLE": -0.17271520694096884,
+        "D_EARLY": -0.048457940419514976
+      },
+      "REVERSE": {
+        "A_RECENT": 0.8629021743933359,
+        "B_PREV": -0.008886804183324177,
+        "C_MIDDLE": 0.02829665939013163,
+        "D_EARLY": -0.004653900861740112
+      },
+      "SPACE": {
+        "A_RECENT": 2.8571823139985404,
+        "B_PREV": 0.22605859239896137,
+        "C_MIDDLE": 0.0802517036596934,
+        "D_EARLY": 0.017633507649103795
+      },
+      "ZERO": {
+        "A_RECENT": 5.462532778580984,
+        "B_PREV": -0.18218779563903809,
+        "C_MIDDLE": -0.08771197001139322,
+        "D_EARLY": -0.09292779366175334
+      }
+    },
+    "index": 11,
+    "prompt_hash": "38cb1b35dc532fc6b33711b544159f2c1d11fca72048bc73a6a6916e559303ad",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.343223847448826,
+        "B_PREV": -0.20954686651627225,
+        "C_MIDDLE": 0.01996896912654241,
+        "D_EARLY": -0.029084163407484688
+      },
+      "REVERSE": {
+        "A_RECENT": 5.703912893931071,
+        "B_PREV": -0.0799567997455597,
+        "C_MIDDLE": 0.002743452787399292,
+        "D_EARLY": -0.036415676275889076
+      },
+      "SPACE": {
+        "A_RECENT": 5.899574860930443,
+        "B_PREV": -0.069612517952919,
+        "C_MIDDLE": 0.10034377872943877,
+        "D_EARLY": 0.05684502422809601
+      },
+      "ZERO": {
+        "A_RECENT": 7.847493566572666,
+        "B_PREV": -0.37514540801445645,
+        "C_MIDDLE": -0.03776076684395472,
+        "D_EARLY": -0.05401984105507532
+      }
+    },
+    "index": 12,
+    "prompt_hash": "33a3f4018da09bd49167d7eb3f8b5c0e89c0a87d724ebd840edc0bd8813459aa",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.2854212621847787,
+        "B_PREV": 0.22157461444536844,
+        "C_MIDDLE": -0.0538081427415212,
+        "D_EARLY": 0.07874366641044617
+      },
+      "REVERSE": {
+        "A_RECENT": 2.551211724678675,
+        "B_PREV": 0.007996529340744019,
+        "C_MIDDLE": -0.01835528016090393,
+        "D_EARLY": -0.00678295890490214
+      },
+      "SPACE": {
+        "A_RECENT": 4.336937894423802,
+        "B_PREV": 0.4935637613137563,
+        "C_MIDDLE": 0.13928837577501935,
+        "D_EARLY": 0.08467049400011697
+      },
+      "ZERO": {
+        "A_RECENT": 5.194789409637451,
+        "B_PREV": -0.09932482242584229,
+        "C_MIDDLE": -0.06860462824503578,
+        "D_EARLY": -0.03324147065480548
+      }
+    },
+    "index": 13,
+    "prompt_hash": "e9dbc5ec04727b21df49a0f04818b3fe0dff1048f13c2f9d5294fef6989628da",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 1.8106406430403392,
+        "B_PREV": 0.009095321098963417,
+        "C_MIDDLE": -0.0011293192704518607,
+        "D_EARLY": 0.025229543447494507
+      },
+      "REVERSE": {
+        "A_RECENT": 0.2954641580581665,
+        "B_PREV": -0.006371458371480306,
+        "C_MIDDLE": 0.007991631825764973,
+        "D_EARLY": -0.0033451318740844727
+      },
+      "SPACE": {
+        "A_RECENT": 5.8279270231723785,
+        "B_PREV": 0.02793845534324646,
+        "C_MIDDLE": 0.044022887945175164,
+        "D_EARLY": -0.019442528486251828
+      },
+      "ZERO": {
+        "A_RECENT": 4.01416207353274,
+        "B_PREV": -0.01888790726661682,
+        "C_MIDDLE": -0.08391693234443665,
+        "D_EARLY": -0.11497587958971658
+      }
+    },
+    "index": 14,
+    "prompt_hash": "341ec6f6627c7fd789cf7e2ccc52a07242924be2268401284454ab85c8e6424d",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "PROSE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.432603572805722,
+        "B_PREV": 0.09365228315194447,
+        "C_MIDDLE": 0.08599930504957835,
+        "D_EARLY": -0.09163487454255423
+      },
+      "REVERSE": {
+        "A_RECENT": 5.5002551426490145,
+        "B_PREV": 0.06483162939548492,
+        "C_MIDDLE": -0.025136108199755355,
+        "D_EARLY": -0.003692979613939921
+      },
+      "SPACE": {
+        "A_RECENT": 3.7245536794265104,
+        "B_PREV": 0.7298050671815873,
+        "C_MIDDLE": 0.1518600434064865,
+        "D_EARLY": 0.1305422435204188
+      },
+      "ZERO": {
+        "A_RECENT": 4.741424009203911,
+        "B_PREV": -0.0901493082443873,
+        "C_MIDDLE": -0.029021923740704853,
+        "D_EARLY": -0.07090844213962555
+      }
+    },
+    "index": 15,
+    "prompt_hash": "514cf62324d815afc68779113deb74398150a1e5bb8caee0286872ea3e69b122",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.21479923526446,
+        "B_PREV": 0.1276040971279144,
+        "C_MIDDLE": -0.11244311928749084,
+        "D_EARLY": -0.1261646846930186
+      },
+      "REVERSE": {
+        "A_RECENT": 1.7259167830149331,
+        "B_PREV": 0.0,
+        "C_MIDDLE": -0.031579812367757164,
+        "D_EARLY": 0.020928303400675453
+      },
+      "SPACE": {
+        "A_RECENT": 3.1813740928967795,
+        "B_PREV": 0.0,
+        "C_MIDDLE": 0.03140964110692342,
+        "D_EARLY": -0.10630504290262859
+      },
+      "ZERO": {
+        "A_RECENT": 0.6298083066940307,
+        "B_PREV": 0.05576892693837483,
+        "C_MIDDLE": 0.2209690809249878,
+        "D_EARLY": 0.25900916258494056
+      }
+    },
+    "index": 0,
+    "prompt_hash": "0018672722331b0ea0798a61f2c2514a7e3d8d837749eee56d0d7e3b5bbf8dee",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 0.7566076119740803,
+        "B_PREV": 0.20036188761393228,
+        "C_MIDDLE": 0.01625208059946696,
+        "D_EARLY": 0.16896172364552814
+      },
+      "REVERSE": {
+        "A_RECENT": 2.2472371260325117,
+        "B_PREV": 0.014260212580362957,
+        "C_MIDDLE": 0.016357103983561196,
+        "D_EARLY": 0.04039144515991211
+      },
+      "SPACE": {
+        "A_RECENT": 1.4856378038724263,
+        "B_PREV": 0.2668960690498352,
+        "C_MIDDLE": 0.08402333656946817,
+        "D_EARLY": 0.023270785808563225
+      },
+      "ZERO": {
+        "A_RECENT": 2.9587418834368386,
+        "B_PREV": 0.16801522175470987,
+        "C_MIDDLE": 0.11178618669509888,
+        "D_EARLY": 0.0494115153948466
+      }
+    },
+    "index": 1,
+    "prompt_hash": "8d4e0cb8ebb77187331a841496c7f487390a71f5d9a5b15dfa6c35fb8d3c1dc1",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 1.5519982973734536,
+        "B_PREV": 0.003836989402770996,
+        "C_MIDDLE": 0.029809117317199707,
+        "D_EARLY": -0.006568829218546547
+      },
+      "REVERSE": {
+        "A_RECENT": 0.9159941673278807,
+        "B_PREV": -0.03828144073486328,
+        "C_MIDDLE": 0.0,
+        "D_EARLY": 0.02039504051208496
+      },
+      "SPACE": {
+        "A_RECENT": 2.259134531021118,
+        "B_PREV": 0.058891892433166504,
+        "C_MIDDLE": 0.0,
+        "D_EARLY": -0.04359924793243408
+      },
+      "ZERO": {
+        "A_RECENT": 3.101070562998453,
+        "B_PREV": 0.029451409975687664,
+        "C_MIDDLE": 0.07097208499908447,
+        "D_EARLY": 0.028173844019571938
+      }
+    },
+    "index": 2,
+    "prompt_hash": "0630253068dcb3b8c887eea0eeeeb0e9229784e8966c8ca24e3e45337d020317",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 1.2816049059232075,
+        "B_PREV": 0.008830845355987549,
+        "C_MIDDLE": 0.04374863704045613,
+        "D_EARLY": -0.03273747364679973
+      },
+      "REVERSE": {
+        "A_RECENT": 0.1530042092005412,
+        "B_PREV": 0.06799046198527017,
+        "C_MIDDLE": 0.0008647839228312186,
+        "D_EARLY": 0.0
+      },
+      "SPACE": {
+        "A_RECENT": 2.179615616798401,
+        "B_PREV": 0.18378138542175293,
+        "C_MIDDLE": 0.16221535205841064,
+        "D_EARLY": 0.0
+      },
+      "ZERO": {
+        "A_RECENT": 2.680745581785838,
+        "B_PREV": -0.11271105209986369,
+        "C_MIDDLE": 0.15993386507034302,
+        "D_EARLY": 0.14588099718093872
+      }
+    },
+    "index": 3,
+    "prompt_hash": "7a7dfc926b13ea062ef0014104510e8f4a6a2a0c2cb625c1592a9d0eaae50124",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": false,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.2125751581043005,
+        "B_PREV": -0.3149620847155651,
+        "C_MIDDLE": 0.0076474715024232864,
+        "D_EARLY": -0.06514481889704864
+      },
+      "REVERSE": {
+        "A_RECENT": -0.0876437146216631,
+        "B_PREV": -0.07405149253706136,
+        "C_MIDDLE": -0.021402673795819283,
+        "D_EARLY": 0.003589910144607226
+      },
+      "SPACE": {
+        "A_RECENT": 0.04625765110055605,
+        "B_PREV": -0.023913936068614323,
+        "C_MIDDLE": -0.06260642657677333,
+        "D_EARLY": -0.007843794922033945
+      },
+      "ZERO": {
+        "A_RECENT": 1.4766437026361625,
+        "B_PREV": -0.017213817685842514,
+        "C_MIDDLE": 0.06792589649558066,
+        "D_EARLY": 0.09565848981340724
+      }
+    },
+    "index": 4,
+    "prompt_hash": "4e6fd7a96cb0522fb2b9a724a9f51ad7a495454bf5db204ae5b676736fd66100",
+    "signs": {
+      "FF": 1,
+      "REVERSE": -1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "C_MIDDLE",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.98703051606814,
+        "B_PREV": -0.11066250999768576,
+        "C_MIDDLE": -0.06651821732521057,
+        "D_EARLY": -0.06528525551160178
+      },
+      "REVERSE": {
+        "A_RECENT": 3.8292850951353707,
+        "B_PREV": 0.08913344144821166,
+        "C_MIDDLE": 0.003271957238515218,
+        "D_EARLY": -0.009502917528152466
+      },
+      "SPACE": {
+        "A_RECENT": 3.8531168277064958,
+        "B_PREV": -0.2930188402533531,
+        "C_MIDDLE": -0.037620656192302704,
+        "D_EARLY": -0.05572241793076196
+      },
+      "ZERO": {
+        "A_RECENT": 5.166594957311948,
+        "B_PREV": 0.13242086271444956,
+        "C_MIDDLE": 0.026441559195518494,
+        "D_EARLY": -0.1404755562543869
+      }
+    },
+    "index": 5,
+    "prompt_hash": "a7112a27292d2aaa1effc5e3a443e8d384b04e092f786ecd9525ab0f9ea1b0fa",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": false,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.401350374023119,
+        "B_PREV": 0.018964851895968117,
+        "C_MIDDLE": -0.1914728432893753,
+        "D_EARLY": -0.05786645909150442
+      },
+      "REVERSE": {
+        "A_RECENT": 4.906982791920504,
+        "B_PREV": -0.013812539478143059,
+        "C_MIDDLE": 0.0050908997654914865,
+        "D_EARLY": -0.00196441262960434
+      },
+      "SPACE": {
+        "A_RECENT": -0.019517661382754643,
+        "B_PREV": -0.06460818275809288,
+        "C_MIDDLE": -0.025589877118666966,
+        "D_EARLY": 0.012013441572586695
+      },
+      "ZERO": {
+        "A_RECENT": 1.4484442348281543,
+        "B_PREV": 0.12878580143054325,
+        "C_MIDDLE": -0.04955408722162247,
+        "D_EARLY": 0.08791080862283707
+      }
+    },
+    "index": 6,
+    "prompt_hash": "abae23f735e52d644f7b8134caa83ae3a79e2425b9a65995eda88c4d49f223d3",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "B_PREV",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.2399201095104218,
+        "B_PREV": -0.15767770012219745,
+        "C_MIDDLE": -0.17103023330370584,
+        "D_EARLY": -0.15720924735069275
+      },
+      "REVERSE": {
+        "A_RECENT": 1.0357910195986428,
+        "B_PREV": 0.03308063745498658,
+        "C_MIDDLE": 0.03572690486907959,
+        "D_EARLY": 0.016790231068929035
+      },
+      "SPACE": {
+        "A_RECENT": 6.107168227434158,
+        "B_PREV": -0.1935623784859975,
+        "C_MIDDLE": -0.09645528594652812,
+        "D_EARLY": -0.09667834639549255
+      },
+      "ZERO": {
+        "A_RECENT": 0.4268334110577901,
+        "B_PREV": 0.06283360719680786,
+        "C_MIDDLE": 0.12564971049626666,
+        "D_EARLY": 0.29376461108525587
+      }
+    },
+    "index": 7,
+    "prompt_hash": "e22c1f56b288e3ffa6d45f3615c31f771cb7741df79e9048d6192489aec58b81",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.43374028801918,
+        "B_PREV": 0.14482022325197855,
+        "C_MIDDLE": -0.000376969575881958,
+        "D_EARLY": -0.004220734039942423
+      },
+      "REVERSE": {
+        "A_RECENT": 2.955844352642695,
+        "B_PREV": 0.047333985567092896,
+        "C_MIDDLE": 0.00040969252586364746,
+        "D_EARLY": -0.03171033660570781
+      },
+      "SPACE": {
+        "A_RECENT": 4.069643457730611,
+        "B_PREV": -0.042025883992513016,
+        "C_MIDDLE": 0.029911398887634277,
+        "D_EARLY": -0.06770360469818115
+      },
+      "ZERO": {
+        "A_RECENT": 1.4836311141649883,
+        "B_PREV": 0.3286621570587158,
+        "C_MIDDLE": 0.03788256645202637,
+        "D_EARLY": 0.14135088523228964
+      }
+    },
+    "index": 8,
+    "prompt_hash": "ddd6d64f3fdfc01757d10261bed0933739d1ce8ccaf4655cf77d869160e30b5e",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.8772279645005865,
+        "B_PREV": 0.3168705627322197,
+        "C_MIDDLE": -0.28253959864377975,
+        "D_EARLY": -0.37590015182892483
+      },
+      "REVERSE": {
+        "A_RECENT": 6.9045361777146645,
+        "B_PREV": -0.059392044941584274,
+        "C_MIDDLE": -0.03152363499005635,
+        "D_EARLY": 0.027582655350367226
+      },
+      "SPACE": {
+        "A_RECENT": 3.4281288037697473,
+        "B_PREV": 0.4339688072601954,
+        "C_MIDDLE": -0.27717432876427966,
+        "D_EARLY": -0.29030855000019073
+      },
+      "ZERO": {
+        "A_RECENT": 2.1799063930908833,
+        "B_PREV": 0.3144338379303614,
+        "C_MIDDLE": 0.048256302873293556,
+        "D_EARLY": -0.10189367830753326
+      }
+    },
+    "index": 9,
+    "prompt_hash": "32cbcff977bd81bbc3dfde94b0fd487930778209d886783d63f0db121f2fd0de",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 1.5778437058130899,
+        "B_PREV": 0.04495163758595784,
+        "C_MIDDLE": 0.09604799747467041,
+        "D_EARLY": -0.10032808780670166
+      },
+      "REVERSE": {
+        "A_RECENT": -2.0021442423264184,
+        "B_PREV": 0.05260054767131805,
+        "C_MIDDLE": 0.006347676118214925,
+        "D_EARLY": 0.04382394750912984
+      },
+      "SPACE": {
+        "A_RECENT": -1.8896522025267284,
+        "B_PREV": -0.03175966441631317,
+        "C_MIDDLE": 0.01169768472512563,
+        "D_EARLY": 0.10245712598164877
+      },
+      "ZERO": {
+        "A_RECENT": -0.7987987299760182,
+        "B_PREV": 0.04711811741193135,
+        "C_MIDDLE": 0.1354624330997467,
+        "D_EARLY": -0.08330085873603821
+      }
+    },
+    "index": 10,
+    "prompt_hash": "5f709b8d72defc499911696cfd377dfabf301b010198a37b91d4091effcd7492",
+    "signs": {
+      "FF": 1,
+      "REVERSE": -1,
+      "SPACE": -1,
+      "ZERO": -1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 2.029537945985794,
+        "B_PREV": 0.0013998448848724365,
+        "C_MIDDLE": 0.12388411164283752,
+        "D_EARLY": 0.08362278342247009
+      },
+      "REVERSE": {
+        "A_RECENT": 6.280145237843194,
+        "B_PREV": -0.040450066328048706,
+        "C_MIDDLE": 0.036865482727686555,
+        "D_EARLY": -0.02205728491147359
+      },
+      "SPACE": {
+        "A_RECENT": 4.224730302890142,
+        "B_PREV": -0.008896976709365845,
+        "C_MIDDLE": 0.0945652425289154,
+        "D_EARLY": 0.042036662499109895
+      },
+      "ZERO": {
+        "A_RECENT": 4.937308381001154,
+        "B_PREV": -0.12474873661994934,
+        "C_MIDDLE": 0.12069728970527649,
+        "D_EARLY": -0.0875904063383738
+      }
+    },
+    "index": 11,
+    "prompt_hash": "db7d64f4f6e61dce3dd5f47a4d97786f1fd3568a859766264efdee020bdffd6b",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 4.143213011324406,
+        "B_PREV": -0.13926710685094199,
+        "C_MIDDLE": -0.08007890234390894,
+        "D_EARLY": -0.00830136239528656
+      },
+      "REVERSE": {
+        "A_RECENT": -0.02561543385187785,
+        "B_PREV": -0.009426455944776535,
+        "C_MIDDLE": 0.0002741614977518717,
+        "D_EARLY": 0.0050537921488285065
+      },
+      "SPACE": {
+        "A_RECENT": 0.13653506059199572,
+        "B_PREV": 0.017511561202506225,
+        "C_MIDDLE": -0.037098211236298084,
+        "D_EARLY": -0.018811642813185852
+      },
+      "ZERO": {
+        "A_RECENT": 1.617390342056751,
+        "B_PREV": -0.02352340271075566,
+        "C_MIDDLE": 0.0025112032890319824,
+        "D_EARLY": 0.031754945715268455
+      }
+    },
+    "index": 12,
+    "prompt_hash": "121a62f030e395dc413b94bd8c5ec11206f83c1524023f153db7049d099a3d87",
+    "signs": {
+      "FF": 1,
+      "REVERSE": -1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": false,
+    "all_top_same": false,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.933925067385038,
+        "B_PREV": -0.12451970577239989,
+        "C_MIDDLE": -0.08120704690615337,
+        "D_EARLY": -0.05998974541823069
+      },
+      "REVERSE": {
+        "A_RECENT": 2.0409324690699577,
+        "B_PREV": -0.048250384628772736,
+        "C_MIDDLE": 0.008646550277868906,
+        "D_EARLY": 0.012507242461045582
+      },
+      "SPACE": {
+        "A_RECENT": -0.09107843289772669,
+        "B_PREV": -0.19552164524793625,
+        "C_MIDDLE": -0.01561303436756134,
+        "D_EARLY": 0.01034026841322581
+      },
+      "ZERO": {
+        "A_RECENT": 0.881072108944257,
+        "B_PREV": -0.015044036010901131,
+        "C_MIDDLE": -0.009234711527824402,
+        "D_EARLY": -0.0736589307586352
+      }
+    },
+    "index": 13,
+    "prompt_hash": "7ad1c59debee346cabc9d77910bc78401795a68dab835a9f3821a1e9c9411cd2",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": -1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "B_PREV",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.5433586041132608,
+        "B_PREV": 0.4762919545173645,
+        "C_MIDDLE": 0.04766692717870077,
+        "D_EARLY": 0.1372697353363037
+      },
+      "REVERSE": {
+        "A_RECENT": 4.08165063460668,
+        "B_PREV": 0.04894767204920451,
+        "C_MIDDLE": -0.024284919102986652,
+        "D_EARLY": -0.0022319952646891288
+      },
+      "SPACE": {
+        "A_RECENT": 5.7362025280793505,
+        "B_PREV": -0.3842222789923349,
+        "C_MIDDLE": -0.0007479687531789202,
+        "D_EARLY": -0.03908060987790425
+      },
+      "ZERO": {
+        "A_RECENT": 5.279254794120789,
+        "B_PREV": 0.42422958215077716,
+        "C_MIDDLE": 0.10099414984385172,
+        "D_EARLY": 0.11774909496307373
+      }
+    },
+    "index": 14,
+    "prompt_hash": "0f2780adb565028a231c94714505fd03adb9c64339e239f11f3c7dd6696b5c71",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  },
+  {
+    "all_sign_same": true,
+    "all_top_same": true,
+    "context": "CODE",
+    "credits": {
+      "FF": {
+        "A_RECENT": 3.493210792541504,
+        "B_PREV": 0.31784605979919434,
+        "C_MIDDLE": -0.03349383672078451,
+        "D_EARLY": 0.17043300469716388
+      },
+      "REVERSE": {
+        "A_RECENT": 3.5325944125652313,
+        "B_PREV": 0.039300670226414994,
+        "C_MIDDLE": 0.0269178052743276,
+        "D_EARLY": -0.038437316815058395
+      },
+      "SPACE": {
+        "A_RECENT": 3.9341376523176828,
+        "B_PREV": 0.013680328925450635,
+        "C_MIDDLE": 0.12820093830426535,
+        "D_EARLY": 0.003003845612208047
+      },
+      "ZERO": {
+        "A_RECENT": 2.303646504878998,
+        "B_PREV": 0.16193846861521402,
+        "C_MIDDLE": 0.08002920945485432,
+        "D_EARLY": 0.018842637538909912
+      }
+    },
+    "index": 15,
+    "prompt_hash": "21ed50927fd4faf8a657c6961be930b4904b2e7ea22ed3490b4c18cbebbdb4b4",
+    "signs": {
+      "FF": 1,
+      "REVERSE": 1,
+      "SPACE": 1,
+      "ZERO": 1
+    },
+    "tops": {
+      "FF": "A_RECENT",
+      "REVERSE": "A_RECENT",
+      "SPACE": "A_RECENT",
+      "ZERO": "A_RECENT"
+    }
+  }
+]

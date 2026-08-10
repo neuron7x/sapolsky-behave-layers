@@ -1,0 +1,64 @@
+{
+  "experiment_id": "CSCA-05-RUNTIME",
+  "verdict": "DIRECT_INTERVENTION_SHADOW_RUNTIME_QUALIFIED_NARROWED",
+  "scientific_pass": true,
+  "authority_before": "RESEARCH_ONLY",
+  "shadow_runtime_path_qualified_narrowed": true,
+  "general_shadow_inference_qualified": false,
+  "real_model_replay_qualified": false,
+  "physical_gpu_compute_qualified": false,
+  "active_causal_control_authorized": false,
+  "h5_architecture_integration_authorized": false,
+  "causal_domain": "THIS_SMALL_NANOCHAT_GPT x FROZEN_BYTE_SPAN_INTERVENTION x CURRENT_ARGMAX_NEXT_TOKEN_SUPPORT",
+  "runtime_substrate": "actual nanochat.gpt.GPT + nanochat.engine.Engine on frozen WP18 prose/code byte workloads; three independently trained from-scratch checkpoints",
+  "learned_counterfactual_world_model_used": false,
+  "structural_error_strategy": "directly re-execute the actual model under the declared intervention; no surrogate world-model is granted authority",
+  "frozen_policy": {
+    "antithetic_pairs": 2,
+    "delta": 0.004804476754119,
+    "interval_z": 3.2905267314919255,
+    "min_coverage": 0.2
+  },
+  "primary": {
+    "n": 64,
+    "coverage": 0.9682539682539683,
+    "accepted": 61,
+    "selective_false_causal_authority": 0.0,
+    "top_accuracy_given_accept": 1.0,
+    "output_mismatch_count": 0,
+    "model_state_mutation_count": 0,
+    "baseline_p50_seconds": 0.004524016499999561,
+    "instrumented_p50_seconds": 0.01839900899994973,
+    "median_overhead_ratio": 4.014050871422649
+  },
+  "replication": {
+    "n": 64,
+    "coverage": 0.984375,
+    "accepted": 63,
+    "selective_false_causal_authority": 0.0,
+    "top_accuracy_given_accept": 1.0,
+    "output_mismatch_count": 0,
+    "model_state_mutation_count": 0,
+    "baseline_p50_seconds": 0.003530687999955262,
+    "instrumented_p50_seconds": 0.014849144500203693,
+    "median_overhead_ratio": 4.186649594089983
+  },
+  "postconfirmatory_boundaries": {
+    "intervention_semantics_all_top_same_fraction": 0.84375,
+    "intervention_semantics_all_sign_same_fraction": 0.71875,
+    "always_recent_exact_top_accuracy_primary": 0.953125,
+    "always_recent_exact_top_accuracy_replication": 0.984375,
+    "interpretation": "The positive result is intervention-operator-specific and mostly recency-dominated. Rare non-recent exact-teacher cases exist and were correctly handled by the estimator, but this is not semantic-causal evidence."
+  },
+  "prohibited_extrapolations": [
+    "real-world semantic causality",
+    "biological causal mechanism",
+    "general counterfactual world-model adequacy",
+    "pretrained or production LLM utility",
+    "replay improvement",
+    "GPU or production latency qualification",
+    "direct logit manipulation",
+    "weight updates or active causal control"
+  ],
+  "next_hard_gate": "CSCA-06 — Intervention-Operator Invariance and Direct-Teacher-Constrained Amortization"
+}
