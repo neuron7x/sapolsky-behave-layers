@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CWC-RD03-InferenceTrace-v1",
+  "title": "InferenceTrace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "model_commit",
+    "checkpoint_hash",
+    "tokenizer_hash",
+    "prompt_hash",
+    "generation_seed",
+    "sampling_parameters",
+    "candidate_ids",
+    "counterfactual_model_version",
+    "credit_estimator_version",
+    "uncertainty_state",
+    "abstention_reason",
+    "runtime_telemetry"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "minLength": 1},
+    "model_commit": {"type": "string", "minLength": 1},
+    "checkpoint_hash": {"type": "string", "minLength": 1},
+    "tokenizer_hash": {"type": "string", "minLength": 1},
+    "prompt_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generation_seed": {"type": "integer"},
+    "sampling_parameters": {"type": "object"},
+    "candidate_ids": {"type": "array", "items": {"type": "string"}},
+    "counterfactual_model_version": {"type": "string"},
+    "credit_estimator_version": {"type": "string"},
+    "uncertainty_state": {"type": "string"},
+    "abstention_reason": {"type": "string"},
+    "runtime_telemetry": {"type": "object"}
+  }
+}

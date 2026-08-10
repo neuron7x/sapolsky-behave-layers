@@ -1,0 +1,135 @@
+{
+  "all_nulls_pass": false,
+  "checks": {
+    "NULL_01_ZERO_CAUSAL_EFFECT": {
+      "accepted": 0,
+      "pass": true
+    },
+    "NULL_02_CORRELATION_ONLY_HIGH_ASSOC_ZERO_INTERVENTION": {
+      "accepted": 0,
+      "pass": true
+    },
+    "NULL_03_DESTROYED_TRUE_LINK": {
+      "pass": true,
+      "proxy": "N0_ZERO_CAUSE"
+    },
+    "NULL_04_SPURIOUS_STRUCTURAL_EDGE": {
+      "accepted": 0,
+      "pass": true
+    },
+    "NULL_05_COMMON_WRONG_STRUCTURE_ENTIRE_ENSEMBLE": {
+      "accepted": 0,
+      "pass": true
+    },
+    "NULL_06_UNSEEN_CAUSAL_TOPOLOGY": {
+      "accepted": 0,
+      "false_authority": 0,
+      "pass": true
+    },
+    "NULL_07_FACTUAL_FIT_GOOD_COUNTERFACTUAL_WRONG": {
+      "decision_candidate": null,
+      "decision_state": "ABSTAIN_UNCERTAIN_MODEL",
+      "factual_rmse": 0.1391582860273864,
+      "intervention_nrmse": 2.4041790219800236,
+      "model_disagreement": 0.003395893217930671,
+      "pass": true,
+      "provisional_candidate": "C"
+    },
+    "NULL_08_LATENT_CONFOUNDER_SHIFT": {
+      "accepted": 0,
+      "pass": true
+    },
+    "NULL_09_INSUFFICIENT_INTERVENTION_SUPPORT": {
+      "pass": true,
+      "state": "ABSTAIN_INSUFFICIENT_INTERVENTION_SUPPORT"
+    },
+    "NULL_10_CONTEXT_DEPENDENT_AUTHORITY": {
+      "accepted_context_unstable_cases": [
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41003
+        },
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41007
+        },
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41009
+        },
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41023
+        },
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41030
+        },
+        {
+          "candidate": "A",
+          "cohort": "PRIMARY",
+          "context_stability": 0.5,
+          "seed": 41031
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51005
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51015
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51022
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51024
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51026
+        },
+        {
+          "candidate": "A",
+          "cohort": "INDEPENDENT_REPLICATION",
+          "context_stability": 0.5,
+          "seed": 51028
+        }
+      ],
+      "count": 12,
+      "interpretation": "A global causal candidate was accepted in cases where the top candidate changes across context strata; current policy does not gate context_stability.",
+      "pass": false
+    }
+  },
+  "experiment": "CSCA-02-UA mandatory post-confirmatory null attack suite",
+  "note": "Post-confirmatory diagnostic; it cannot rescue or alter the frozen CSCA-02 verdict.",
+  "policy_sha256": "459a5ab08c34dd25931b969ebe9351917beb9d066943a31cc4284caf025d13c9",
+  "promotion_authority": false,
+  "seed_range": [
+    61000,
+    61015
+  ],
+  "verdict": "NULL_ATTACK_EXPOSED_UNRESOLVED_FAILURE"
+}

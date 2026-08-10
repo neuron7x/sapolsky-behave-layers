@@ -1,0 +1,17 @@
+{
+  "act": "ACT-R&D-03",
+  "execution_status": "EXECUTION_COMPLETE_QUALIFICATION_FAILED",
+  "current_authority": "RESEARCH_ONLY",
+  "target_authority": "SHADOW_INFERENCE_QUALIFIED",
+  "target_reached": false,
+  "p0_hermetic_execution": "PASS_WITH_EXPLICIT_OPTIONAL_DEPENDENCY_ISOLATION",
+  "csca_02_ua": "UNCERTAINTY_MODEL_NOT_CAUSALLY_ADEQUATE",
+  "primary_pass": false,
+  "replication_pass": true,
+  "null_attack_suite": "NULL_ATTACK_EXPOSED_UNRESOLVED_FAILURE",
+  "shadow_inference_authorized": false,
+  "real_model_replay_authorized": false,
+  "physical_compute_authorized": false,
+  "active_causal_control_authorized": false,
+  "next_weakest_link": "GLOBAL_CAUSAL_AUTHORITY_DOES_NOT_REPRESENT_CONTEXT_CONDITIONAL_CAUSALITY"
+}

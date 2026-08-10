@@ -12,5 +12,21 @@
     "retest_condition": "A new preregistered transition-state mechanism or stabilization method; threshold may not be weakened post hoc.",
     "status": "KILLED_AS_PREREGISTERED",
     "artifact": "artifacts/research-s03-latent-dynamics/verdict.json"
+  },
+  {
+    "ruin_id": "RUIN-CSCA-02-UA-GLOBAL-UNCERTAINTY-AUTHORITY",
+    "hypothesis": "A single global uncertainty-aware counterfactual-credit envelope can safely issue causal authority with non-degenerate held-out coverage across unseen structural families.",
+    "expected": "PRIMARY and independent replication both satisfy false-authority reduction, <=0.05 false authority, >=0.90 accepted accuracy, >=0.20 coverage, zero null acceptance, M11 rejection and family false-authority <=0.10.",
+    "observed": "PRIMARY: 0/224 false authority but coverage 43/224=0.191964<0.20; replication: 0/224 false authority and coverage 45/224=0.200893. Post-confirmatory context attack found 12 accepted M10 cases with context_stability=0.5.",
+    "failed_gate": "PRIMARY_COVERAGE_GE_0_20_AND_CONTEXT_CONDITIONAL_AUTHORITY",
+    "likely_reason": "The frozen gate is safety-conservative but the authority object is too coarse: context-dependent causal structure is collapsed to one global candidate, causing abstention/coverage tension and allowing context-unstable global accepts.",
+    "source_dependencies": [
+      "ACT-R&D-03",
+      "CSCA-01",
+      "CSCA-01A"
+    ],
+    "retest_condition": "New preregistered context-conditional authority representation with fresh calibration and confirmatory seeds; do not weaken the existing coverage threshold or reuse held-out outcomes for tuning.",
+    "status": "KILLED_AS_PREREGISTERED",
+    "artifact": "research/results/CSCA-02-UA/15_CSCA_02_RESULTS.json"
   }
 ]

@@ -1,0 +1,16 @@
+{
+  "act": "ACT-R&D-03",
+  "status": "NOT_EXECUTED_ANCESTOR_GATE_FAILED",
+  "reason": "CSCA-02-UA did not qualify uncertainty-aware causal authority; shadow inference and replay/physical-compute stages are not authorized.",
+  "measured_hardware_claims": false,
+  "baseline_inference_latency": null,
+  "instrumented_inference_latency": null,
+  "p50": null,
+  "p95": null,
+  "p99": null,
+  "gpu_time": null,
+  "gpu_vram": null,
+  "energy": null,
+  "tokens_per_second": null,
+  "prohibited_interpretation": "No physical compute or inference-overhead claim may be derived from this null report."
+}

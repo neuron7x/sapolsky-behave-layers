@@ -1,0 +1,157 @@
+{
+  "active_causal_control_authorized": false,
+  "architecture_promotion_authority": false,
+  "authority": "RESEARCH_ONLY",
+  "biological_mechanism_authority": false,
+  "common_implementation_sha256": "a87bdd22fc016d40bf7df283a3b16b2ba931726ab498ef83571dde5c08677668",
+  "execution_mode": "fresh-process cohort isolation; mathematically identical run_cohort implementation",
+  "experiment": "CSCA-02-UA Counterfactual Uncertainty & Abstention Qualification",
+  "paper_reproduction_authority": false,
+  "policy_sha256": "459a5ab08c34dd25931b969ebe9351917beb9d066943a31cc4284caf025d13c9",
+  "preregistration_sha256": "57f68ef51b6d15053e6163d166ff5b630482142fcb050f22f16107812b9ee9d2",
+  "primary": {
+    "accepted": 43,
+    "by_family": {
+      "M10_CONTEXT_DEPENDENT_CAUSALITY": {
+        "accepted": 6,
+        "coverage": 0.1875,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M11_SHARED_MODEL_CLASS_MISSPECIFICATION": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M6_REDUNDANT_CAUSES": {
+        "accepted": 32,
+        "coverage": 1.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M7_SYNERGISTIC_CAUSES": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M8_VARIABLE_DELAY": {
+        "accepted": 5,
+        "coverage": 0.15625,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M9_LATENT_CONFOUNDER_SHIFT": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "N0_ZERO_CAUSE": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      }
+    },
+    "causal_rank_accuracy_given_accept": 1.0,
+    "coverage": 0.19196428571428573,
+    "failure_reasons": [
+      "COVERAGE_LT_0_20"
+    ],
+    "false_authority_count": 0,
+    "mean_false_credit_mass_given_accept": 0.0288676122278286,
+    "n": 224,
+    "no_abstention_false_causal_authority": 0.42857142857142855,
+    "no_abstention_false_count": 96,
+    "pass": false,
+    "selective_false_causal_authority": 0.0,
+    "state_counts": {
+      "ABSTAIN_UNCERTAIN_MODEL": 149,
+      "ACCEPT_CAUSAL_CREDIT": 43,
+      "FALSIFIED_NO_LEVERAGE": 32
+    }
+  },
+  "primary_chunk_sha256": "cc5de71b8ff77da147a4b4ec343147affc249fe7bee52c111870e3f9b334e438",
+  "replication": {
+    "accepted": 45,
+    "by_family": {
+      "M10_CONTEXT_DEPENDENT_CAUSALITY": {
+        "accepted": 6,
+        "coverage": 0.1875,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M11_SHARED_MODEL_CLASS_MISSPECIFICATION": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M6_REDUNDANT_CAUSES": {
+        "accepted": 32,
+        "coverage": 1.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M7_SYNERGISTIC_CAUSES": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M8_VARIABLE_DELAY": {
+        "accepted": 7,
+        "coverage": 0.21875,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M9_LATENT_CONFOUNDER_SHIFT": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "N0_ZERO_CAUSE": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      }
+    },
+    "causal_rank_accuracy_given_accept": 1.0,
+    "coverage": 0.20089285714285715,
+    "failure_reasons": [],
+    "false_authority_count": 0,
+    "mean_false_credit_mass_given_accept": 0.029139503672906214,
+    "n": 224,
+    "no_abstention_false_causal_authority": 0.42857142857142855,
+    "no_abstention_false_count": 96,
+    "pass": true,
+    "selective_false_causal_authority": 0.0,
+    "state_counts": {
+      "ABSTAIN_UNCERTAIN_MODEL": 147,
+      "ACCEPT_CAUSAL_CREDIT": 45,
+      "FALSIFIED_NO_LEVERAGE": 32
+    }
+  },
+  "replication_chunk_sha256": "0287f9e321102a3d0bec255a73486a46bca11d6821745cf69e18057fddf1018e",
+  "scientific_pass": false,
+  "shadow_inference_authorized": false,
+  "verdict": "UNCERTAINTY_MODEL_NOT_CAUSALLY_ADEQUATE"
+}
