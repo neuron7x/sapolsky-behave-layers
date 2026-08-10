@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "df52759ada082b7f56fdc55785127c26210a84be",
+  "git_commit": "218cc959c1bfaeac8a7b6c2e8becbcf2cf4234a8",
   "generated": "2026-08-10",
   "claims": [
     {
@@ -1846,6 +1846,58 @@
         "file": "research/results/CSCA-03R/verdict.json",
         "pointer": "variance_only_authority",
         "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-RD05-CSCA04-structural-adequacy",
+      "hypothesis_id": "H-CSCA-04-SA",
+      "statement": "A prospectively calibrated balanced interventional-response audit detects the controlled structural counterfactual misspecifications in CSCA-04 while preserving held-out known-adequate context-varying families across independent fresh-seed cohorts.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "controlled synthetic SCMs",
+          "64 PRIMARY seeds across 10 held-out families",
+          "64 independent-replication seeds across the same frozen family definitions",
+          "balanced 16 probes per candidate-context cell",
+          "calibration thresholds frozen before confirmatory execution"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-04-SA/verdict.json",
+        "research/results/CSCA-04-SA/PRIMARY.json",
+        "research/results/CSCA-04-SA/INDEPENDENT_REPLICATION.json",
+        "research/reports/CSCA_04_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY structural-misspecification sensitivity 512/512=1.0 and known-adequate specificity 127/128=0.9921875",
+        "independent replication sensitivity 512/512=1.0 and specificity 128/128=1.0",
+        "zero M6 zero-cause global authority in both cohorts",
+        "zero M9 context-sign-flip global-direction acceptance in both cohorts",
+        "M10 collinear observational-identifiability family rejected 64/64 in each cohort despite median factual RMSE 0.150751/0.152518"
+      ],
+      "limitations": [
+        "synthetic SCMs with explicit intervention semantics only",
+        "IDR is an internal operational diagnostic calibrated to this benchmark, not a universal causal-model score",
+        "primary budget 16 probes/cell is not established as minimal",
+        "GSS and secondary intervention-allocation analyses are diagnostic-only",
+        "no real-language-model intervention pilot executed",
+        "does not supersede negative ACT-R&D-03 shadow-inference qualification by itself"
+      ],
+      "prohibited_extrapolations": [
+        "real-world causal discovery solved",
+        "real language-model counterfactual adequacy",
+        "shadow inference qualification",
+        "semantic real-world causality",
+        "biological mechanism",
+        "replay-control benefit",
+        "active causal control"
+      ],
+      "note": "The next gate is prospective composition with finite-budget causal credit and real-model internal interventions. Shadow inference remains blocked.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-04-SA/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
       }
     }
   ]

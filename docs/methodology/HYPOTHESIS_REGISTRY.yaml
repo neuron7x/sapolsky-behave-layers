@@ -643,3 +643,15 @@ hypotheses:
     preregistration: experiments/csca_03r_budgeted_credit/PREREGISTRATION.md
     status: NOT_SUPPORTED
     claim_id: CWC-RD04-CSCA03R-variance-authority
+
+  - hypothesis_id: H-CSCA-04-SA
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A prospectively calibrated intervention-response audit cannot safely distinguish controlled structural counterfactual misspecification from known-adequate context-varying models under fresh held-out seeds."
+    H1: "Balanced candidate-by-context interventions with a frozen noise-normalized interventional-discrepancy threshold detect held-out structural misspecification, preserve known-adequate models, prevent zero-cause/global context authority, and independently replicate."
+    estimand: "structural-misspecification sensitivity, known-adequate specificity, zero-cause false authority, context-scope errors, and collinear-identifiability acceptance under the frozen CSCA-04 policy"
+    experimental_unit: "fresh seed x held-out structural family under one frozen calibration policy"
+    decision_rule: "Both PRIMARY and independent replication must satisfy sensitivity>=0.95, specificity>=0.95, zero M6 global authority, zero M9 global-direction acceptance, and zero M10 acceptance. RESULT PRIMARY sensitivity 1.0/specificity 0.9921875; replication 1.0/1.0; all safety predicates pass -> SUPPORTED_NARROWED (synthetic structural adequacy only)."
+    preregistration: experiments/csca_04_structural_adequacy/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD05-CSCA04-structural-adequacy
