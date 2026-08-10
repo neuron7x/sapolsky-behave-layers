@@ -75,8 +75,8 @@ Out-of-envelope O1: correct slope but SD outside the declared envelope. Any reje
 ## Cohorts
 
 - design pilot: seeds 41000..41063, non-authoritative;
-- PRIMARY: 128 fresh seeds/family from 61000 with deterministic family offsets;
-- REPLICATION: 128 fresh seeds/family from 71000 with deterministic family offsets.
+- PRIMARY: 128 fresh seeds/family from 81000 with deterministic family offsets;
+- REPLICATION: 128 fresh seeds/family from 91000 with deterministic family offsets.
 
 No confirmatory seed may occur in the pilot.
 

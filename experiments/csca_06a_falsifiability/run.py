@@ -6,7 +6,12 @@ import json
 import math
 from pathlib import Path
 import statistics
+import sys
 from typing import Iterable
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import numpy as np
 
@@ -22,7 +27,6 @@ from cwc.counterfactual.falsifiability import (
     separation_rate_per_cost,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = json.loads((Path(__file__).with_name('protocol.json')).read_text())
 ART = ROOT / 'artifacts/csca-06a-falsifiability'
 RES = ROOT / 'research/results/CSCA-06A-IF'

@@ -16,6 +16,8 @@
     0.8
   ],
   "authority_before": "SHADOW_RUNTIME_PATH_QUALIFIED_NARROWED",
+  "burned_non_authoritative_primary_seed_start": 61000,
+  "burned_non_authoritative_replication_seed_start": 71000,
   "confirmatory_block": {
     "-1.0": 8,
     "1.0": 8
@@ -39,8 +41,8 @@
     "sd_max": 2.5,
     "sd_min": 0.5
   },
-  "primary_seed_start": 61000,
-  "replication_seed_start": 71000,
+  "primary_seed_start": 81000,
+  "replication_seed_start": 91000,
   "required_equivalence_false_rejections": 0,
   "seeds_per_family": 128,
   "status": "PREREGISTERED",
