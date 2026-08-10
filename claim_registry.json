@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "b22af3d1b91a06cedeca6dd44366c51b9987f7f4",
+  "git_commit": "fe5c8511fe61ff4637544595d04461ff8b0f0d57",
   "generated": "2026-08-10T17:46:00+03:00",
   "claims": [
     {
@@ -1919,7 +1919,8 @@
         "artifacts/csca-05-runtime/calibration/",
         "artifacts/csca-05-runtime/primary/",
         "artifacts/csca-05-runtime/replication/",
-        "research/reports/CSCA_05_EXECUTION_REPORT.md"
+        "research/reports/CSCA_05_EXECUTION_REPORT.md",
+        "research/reports/CSCA_05_FINAL_VERIFICATION.md"
       ],
       "supporting_metrics": [
         "PRIMARY: accepted 61/63 exact-resolved cases, coverage 0.9682539683, selective false causal authority 0, accepted top accuracy 1.0",
