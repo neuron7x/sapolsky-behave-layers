@@ -1,0 +1,22 @@
+[
+  {
+    "baseline": "Exact Shapley reference plus finite-budget MC approximation and simple non-causal credit baselines.",
+    "causal_graph": "U->C; U->Y; A->Y; A~B observationally; D independent; C/B/D not structural parents of Y",
+    "failure_predicate": "Any exact primary predicate in experiments/csca_01/PREREGISTRATION.md fails.",
+    "formalization": "phi_i = Shapley_i[v(S)], v(S)=Y_obs-E[Y_do(S)]",
+    "hypothesis_id": "H-CSCA-01",
+    "integration_target": "cwc/replay candidate credit estimator; architecture integration explicitly withheld.",
+    "intervention": "Resample selected candidate actions from an explicit {-1,+1} baseline while reusing admissible exogenous row evidence.",
+    "mechanism": "Counterfactual coalition credit separates a delayed manipulable cause from temporal, correlated and stochastic non-causes.",
+    "metric": "causal_rank_accuracy; false_credit_mass; Shapley efficiency; structural evaluations; wall time.",
+    "negative_control": "Uniform, random, recency, observational association and delayed-error eligibility proxy.",
+    "null_model": "Destroy A->Y; latent-correlation-only; pure-noise; high-noise; OOD sign inversion.",
+    "ood_condition": "Weak confounder and sign-inverted confounder contexts on independent frozen seeds.",
+    "prediction": "A receives unique highest structural credit under IID and OOD context shifts; non-causes receive zero exact credit.",
+    "replication_protocol": "PRIMARY 12000..12031 then unchanged-code REPLICATION 22000..22031.",
+    "source_claims": [
+      "S01-C01",
+      "S01-C03"
+    ]
+  }
+]

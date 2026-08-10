@@ -6,10 +6,10 @@
 PY ?= .venv/bin/python
 COVERAGE_FAIL_UNDER ?= 95
 
-.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate
+.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
-verify: lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage mutation experiment-tests validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate doc-gate
+verify: lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage mutation experiment-tests validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate doc-gate
 	@echo "CWC-VERIFY: ALL GATES PASSED"
 
 # WP16 (Act CWC-ASCEND-2026-01, G0/G1): the SINGLE canonical reproduction command --
@@ -21,7 +21,7 @@ verify-full: verify verify-evidence reproduce-primary
 # PR admission commands. The same targets are used locally and by GitHub Actions.
 # pr-fast is the feedback loop; pr-security is the public-repository safety gate;
 # pr-full is the merge-grade scientific verification and falsification cycle.
-pr-fast: truth-gate lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate doc-gate
+pr-fast: truth-gate lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate doc-gate
 	@echo "CWC-PR-FAST: ALL GATES PASSED"
 
 pr-security: truth-gate workflow-lint secret-scan dependency-audit engineering-assurance
@@ -103,6 +103,10 @@ research-ingestion-gate:
 research-execution-gate:
 	PYTHONPATH=. $(PY) scripts/research_execution_gate.py
 	PYTHONPATH=. $(PY) -m pytest -q tests/test_research_execution_gate.py
+
+research-ops-gate:
+	PYTHONPATH=. $(PY) scripts/research_ops_gate.py
+	PYTHONPATH=. $(PY) -m pytest -q tests/research_ops tests/test_research_ops_gate.py
 
 # Offline bibliography gate: every citation machine-resolved, titles unaltered, every
 # reference attached to a real claim and argued in the related-work review.

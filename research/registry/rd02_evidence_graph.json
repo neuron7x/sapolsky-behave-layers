@@ -1,0 +1,64 @@
+{
+  "edges": [
+    {
+      "relation": "SUPPORTED_BY",
+      "source": "S01",
+      "target": "S01-C01"
+    },
+    {
+      "relation": "SUPPORTED_BY",
+      "source": "S01",
+      "target": "S01-C02"
+    },
+    {
+      "relation": "SUPPORTED_BY",
+      "source": "S01",
+      "target": "S01-C03"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "S01-C01",
+      "target": "H-CSCA-01"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "S01-C03",
+      "target": "H-CSCA-01"
+    }
+  ],
+  "nodes": {
+    "H-CSCA-01": {
+      "mechanism": "Counterfactual coalition credit separates a delayed manipulable cause from temporal, correlated and stochastic non-causes.",
+      "node_type": "Hypothesis"
+    },
+    "S01": {
+      "gate_status": "QUARANTINED",
+      "node_type": "Paper",
+      "title": "Counterfactual Shapley Credit Assignment"
+    },
+    "S01-C01": {
+      "automatic_flags": [
+        "coarse_source_span"
+      ],
+      "node_type": "Claim",
+      "status": "UNVERIFIED_EXTRACTION",
+      "text": "Counterfactual Shapley values are defined from counterfactual natural total effects and satisfy the paper's causal credit desiderata."
+    },
+    "S01-C02": {
+      "automatic_flags": [
+        "coarse_source_span"
+      ],
+      "node_type": "Claim",
+      "status": "UNVERIFIED_EXTRACTION",
+      "text": "The paper proves policy-gradient / optimal-policy equivalence for its phi-MDP reward redistribution."
+    },
+    "S01-C03": {
+      "automatic_flags": [
+        "coarse_source_span"
+      ],
+      "node_type": "Claim",
+      "status": "UNVERIFIED_EXTRACTION",
+      "text": "The paper proposes a consistent linear-time coalition-sampling estimator and Prioritized Trajectory Replay."
+    }
+  }
+}

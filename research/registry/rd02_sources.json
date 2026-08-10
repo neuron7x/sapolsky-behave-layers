@@ -1,0 +1,17 @@
+[
+  {
+    "boundary": "Local bytes are immutable but are not verified full primary-source bytes; paper-level reproduction authority is withheld.",
+    "canonical_title": "Counterfactual Shapley Credit Assignment",
+    "content_sha256": "11379e7c55c790d3d4656f50715a93ed9551b02ca0f8064a65d8a4d7e334b7ba",
+    "gate_status": "QUARANTINED",
+    "metadata_sha256": "b8946cb07bd84c15706d9b1bb434e751eaeb6ef7aa2d2d7e94101a73d34e4c6c",
+    "primary_source": true,
+    "primary_source_bytes": false,
+    "publication_status": "CONFERENCE",
+    "raw_path": "research/raw/arxiv/S01/11379e7c55c790d3d4656f50715a93ed9551b02ca0f8064a65d8a4d7e334b7ba.txt",
+    "retrieved_at": "2026-08-10",
+    "revision_of": null,
+    "source_id": "S01",
+    "version": "v2"
+  }
+]

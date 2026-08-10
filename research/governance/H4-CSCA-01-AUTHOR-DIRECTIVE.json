@@ -1,0 +1,15 @@
+{
+  "architecture_authority": false,
+  "created_at": "2026-08-10",
+  "decision": "APPROVE_EXECUTION",
+  "decision_id": "H4-CSCA-01-AUTHOR-DIRECTIVE",
+  "evidence_refs": [
+    "docs/acts/ACT_RD_02.md",
+    "experiments/csca_01/PREREGISTRATION.md"
+  ],
+  "gate": "H4_EXPERIMENT_DESIGN",
+  "rationale": "The uploaded ACT-R&D-02 explicitly fixes the CSCA-01 hypothesis, primary metric, null family and failure principle before execution. Architecture integration is not authorized.",
+  "reviewer": "AUTHOR_DIRECTIVE",
+  "reviewer_role": "HUMAN_RESEARCH_OWNER",
+  "subject_id": "CSCA-01"
+}

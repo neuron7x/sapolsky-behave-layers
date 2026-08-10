@@ -1,0 +1,80 @@
+[
+  {
+    "authors_interpretation": "principled causal credit assignment",
+    "automatic_flags": [
+      "coarse_source_span"
+    ],
+    "claim_id": "S01-C01",
+    "claim_text": "Counterfactual Shapley values are defined from counterfactual natural total effects and satisfy the paper's causal credit desiderata.",
+    "claim_type": "THEORETICAL",
+    "comparison": "causal admissibility/power/normality/scaling",
+    "intervention": "counterfactual action replacement under baseline policy",
+    "metric": "formal theorem",
+    "outcome": "non-causes -> zero; causes -> non-zero",
+    "relation": "CAUSES",
+    "result": "ANCHORED",
+    "source_id": "S01",
+    "source_span": {
+      "end_line": 1,
+      "section": "arXiv v2 Sec. 2.3-3.1, Theorem 3.2",
+      "source_id": "S01",
+      "source_path": "research/sources/papers/S01_PRIMARY_SOURCE_SNAPSHOT.txt",
+      "span_quality": "COARSE_SNAPSHOT_ONLY",
+      "start_line": 1
+    },
+    "status": "UNVERIFIED_EXTRACTION",
+    "variables": []
+  },
+  {
+    "authors_interpretation": "drop-in causal reward redistribution",
+    "automatic_flags": [
+      "coarse_source_span"
+    ],
+    "claim_id": "S01-C02",
+    "claim_text": "The paper proves policy-gradient / optimal-policy equivalence for its phi-MDP reward redistribution.",
+    "claim_type": "THEORETICAL",
+    "comparison": "original MDP vs phi-MDP",
+    "intervention": "reward redistribution",
+    "metric": "optimal policy equivalence",
+    "outcome": "same optimal policy",
+    "relation": "CAUSES",
+    "result": "ANCHORED",
+    "source_id": "S01",
+    "source_span": {
+      "end_line": 1,
+      "section": "arXiv v2 Lemma 3.5 / Theorem 3.7",
+      "source_id": "S01",
+      "source_path": "research/sources/papers/S01_PRIMARY_SOURCE_SNAPSHOT.txt",
+      "span_quality": "COARSE_SNAPSHOT_ONLY",
+      "start_line": 1
+    },
+    "status": "UNVERIFIED_EXTRACTION",
+    "variables": []
+  },
+  {
+    "authors_interpretation": "tractable credit estimation",
+    "automatic_flags": [
+      "coarse_source_span"
+    ],
+    "claim_id": "S01-C03",
+    "claim_text": "The paper proposes a consistent linear-time coalition-sampling estimator and Prioritized Trajectory Replay.",
+    "claim_type": "ALGORITHMIC",
+    "comparison": "exact combinatorial Shapley / standard replay",
+    "intervention": "coalition sampling",
+    "metric": "estimator complexity and replay priority",
+    "outcome": "lower practical estimation cost",
+    "relation": "CAUSES",
+    "result": "ANCHORED",
+    "source_id": "S01",
+    "source_span": {
+      "end_line": 1,
+      "section": "arXiv v2 Introduction / estimator section",
+      "source_id": "S01",
+      "source_path": "research/sources/papers/S01_PRIMARY_SOURCE_SNAPSHOT.txt",
+      "span_quality": "COARSE_SNAPSHOT_ONLY",
+      "start_line": 1
+    },
+    "status": "UNVERIFIED_EXTRACTION",
+    "variables": []
+  }
+]
