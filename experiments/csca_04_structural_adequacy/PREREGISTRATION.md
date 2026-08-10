@@ -23,7 +23,7 @@ The denominator estimates the full-sample intervention measurement-noise floor. 
 
 ## Fail-closed decision
 
-Primary intervention policy: `BALANCED`. Development-only seed 80001 is excluded from calibration/PRIMARY/replication.
+Primary intervention policy: `BALANCED`. Primary intervention budget is frozen at `16 probes per candidate×context cell` (128 probes/case). Budgets 2/4/8/32 are secondary sample-efficiency diagnostics only. Development-only seed 80001 is excluded from calibration/PRIMARY/replication.
 
 For each held-out case:
 
