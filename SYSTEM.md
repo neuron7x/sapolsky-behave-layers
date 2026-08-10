@@ -31,6 +31,8 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 - `CSCA-06B-OP`: exact credit is robust across two declared same-context stochastic donor-resampling soft-intervention kernels: top/sign agreement and robust coverage are 1.0 in pooled/PROSE/CODE for both PRIMARY and REPLICATION. However every robust case is `A_RECENT`; no semantic/content mechanism follows.
 - `CSCA-06C-R1`: content-position rotation attacks that recency confound. Every fully resolved case tracks fixed position (`PositionTracking=1.0`) rather than moved content (`ContentTracking=0.25`), but replication resolution coverage is only 0.333 PROSE / 0.458 pooled, below the frozen 0.50 gate. Final verdict: `POSITION_CONTENT_MECHANISM_UNRESOLVED`; content-specific causal credit is NOT_SUPPORTED and position/locality is not promoted either.
 
+- `CSCA-07-PR`: passive-replay identifiability boundary qualified. An anytime-valid factual-trace e-process falsifies wrong observable transition laws, but exact counterexamples prove that observationally equivalent latent topologies can share both the observable path and Jacobian spectrum; a stable invariant hidden replay attractor can carry zero factual information; and zero within-model fiber entropy does not identify latent semantics. Therefore passive non-rejection never promotes causal authority without explicit additional identifying assumptions.
+
 **ACT-R&D-03 remains negative for broad learned-model causal authority.** CSCA-06A-R1 closes a controlled model-class falsifiability subproblem; CSCA-06B qualifies only operator-family robustness; CSCA-06C blocks a content-specific interpretation. Student amortization, replay and active causal control remain blocked.
 
 ## Claim ladder — current state

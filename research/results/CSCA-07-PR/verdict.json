@@ -1,0 +1,242 @@
+{
+  "alpha": 0.01,
+  "alternative_coefficients": [
+    -0.75,
+    -0.4,
+    0.0,
+    0.25,
+    0.5,
+    0.68,
+    0.75,
+    0.9
+  ],
+  "authority": "PASSIVE_PREDICTIVE_FALSIFICATION_ONLY",
+  "central_theorem": {
+    "necessary_cost_when_rate_zero": "INFINITE",
+    "observational_equivalence_information_rate": 0.0,
+    "statement": "If candidate latent models induce the same probability law on D_fact, then I(M;D_fact)=0 and no passive test can distinguish their causal semantics. Positive Jacobian stability, invariant replay fixed points, or zero within-model fiber entropy do not override this observational-equivalence veto."
+  },
+  "checks": {
+    "cross_model_fiber_ambiguity_positive": true,
+    "different_latent_topology": true,
+    "hidden_fixed_point_context_invariant": true,
+    "hidden_fixed_point_observational_information_zero": true,
+    "hidden_fixed_point_stable": true,
+    "model_trace_mutual_information_zero": true,
+    "primary_null_fpr": true,
+    "primary_s1_power": true,
+    "primary_s2_power": true,
+    "replication_null_fpr": true,
+    "replication_s1_power": true,
+    "replication_s2_power": true,
+    "same_jacobian_spectrum": true,
+    "same_observation_path": true,
+    "weak_edge_information_veto_primary": true,
+    "weak_edge_information_veto_replication": true,
+    "zero_within_model_fiber_entropy": true
+  },
+  "cohorts": {
+    "PRIMARY": {
+      "N0_TRUE_OBSERVED_LAW": {
+        "candidate_coefficient": 0.75,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.0,
+          "necessary_transitions": null,
+          "necessary_transitions_is_infinite": true,
+          "required_information_nats": 4.176898950135489,
+          "state": "PASSIVELY_UNFALSIFIABLE_OBSERVATIONAL_EQUIVALENCE"
+        },
+        "information_rate_nats_per_transition": 0.0,
+        "mean_final_log_e": -1.6241846424070439,
+        "median_reject_transition": 17,
+        "rejection_count": 1,
+        "rejection_rate": 0.0078125,
+        "true_coefficient": 0.75
+      },
+      "S1_WRONG_DYNAMICS": {
+        "candidate_coefficient": 0.25,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.2857142857142857,
+          "necessary_transitions": 14.619146325474212,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+        },
+        "information_rate_nats_per_transition": 0.2857142857142857,
+        "mean_final_log_e": 67.64464438881703,
+        "median_reject_transition": 26.5,
+        "rejection_count": 128,
+        "rejection_rate": 1.0,
+        "true_coefficient": 0.75
+      },
+      "S2_WRONG_SIGN": {
+        "candidate_coefficient": -0.4,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 1.5114285714285711,
+          "necessary_transitions": 2.763543728823103,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+        },
+        "information_rate_nats_per_transition": 1.5114285714285711,
+        "mean_final_log_e": 385.86143971938634,
+        "median_reject_transition": 6.0,
+        "rejection_count": 128,
+        "rejection_rate": 1.0,
+        "true_coefficient": 0.75
+      },
+      "W1_WEAK_MISSPECIFICATION": {
+        "candidate_coefficient": 0.68,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.005599999999999938,
+          "necessary_transitions": 745.8748125242026,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND"
+        },
+        "information_rate_nats_per_transition": 0.005599999999999938,
+        "mean_final_log_e": -0.266799854169241,
+        "median_reject_transition": 42.5,
+        "rejection_count": 6,
+        "rejection_rate": 0.046875,
+        "true_coefficient": 0.75
+      }
+    },
+    "REPLICATION": {
+      "N0_TRUE_OBSERVED_LAW": {
+        "candidate_coefficient": 0.75,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.0,
+          "necessary_transitions": null,
+          "necessary_transitions_is_infinite": true,
+          "required_information_nats": 4.176898950135489,
+          "state": "PASSIVELY_UNFALSIFIABLE_OBSERVATIONAL_EQUIVALENCE"
+        },
+        "information_rate_nats_per_transition": 0.0,
+        "mean_final_log_e": -1.5997653996456302,
+        "median_reject_transition": 11,
+        "rejection_count": 1,
+        "rejection_rate": 0.0078125,
+        "true_coefficient": 0.75
+      },
+      "S1_WRONG_DYNAMICS": {
+        "candidate_coefficient": 0.25,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.2857142857142857,
+          "necessary_transitions": 14.619146325474212,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+        },
+        "information_rate_nats_per_transition": 0.2857142857142857,
+        "mean_final_log_e": 71.85058004938108,
+        "median_reject_transition": 21.0,
+        "rejection_count": 128,
+        "rejection_rate": 1.0,
+        "true_coefficient": 0.75
+      },
+      "S2_WRONG_SIGN": {
+        "candidate_coefficient": -0.4,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 1.5114285714285711,
+          "necessary_transitions": 2.763543728823103,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_NOT_RULED_OUT_BY_INFORMATION_CONVERSE"
+        },
+        "information_rate_nats_per_transition": 1.5114285714285711,
+        "mean_final_log_e": 379.7253789816753,
+        "median_reject_transition": 7.0,
+        "rejection_count": 128,
+        "rejection_rate": 1.0,
+        "true_coefficient": 0.75
+      },
+      "W1_WEAK_MISSPECIFICATION": {
+        "candidate_coefficient": 0.68,
+        "information_certificate": {
+          "available_transitions": 256,
+          "information_rate_nats_per_transition": 0.005599999999999938,
+          "necessary_transitions": 745.8748125242026,
+          "necessary_transitions_is_infinite": false,
+          "required_information_nats": 4.176898950135489,
+          "state": "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND"
+        },
+        "information_rate_nats_per_transition": 0.005599999999999938,
+        "mean_final_log_e": 0.18679101098281284,
+        "median_reject_transition": 136.0,
+        "rejection_count": 14,
+        "rejection_rate": 0.109375,
+        "true_coefficient": 0.75
+      }
+    }
+  },
+  "experiment_id": "CSCA-07-PR",
+  "fiber_entropy_counterexample": {
+    "mixture_fiber_entropy_bits": 1.0,
+    "mutual_information_model_trace_bits": 0.0,
+    "per_model_fiber_entropy_bits": 0.0
+  },
+  "hidden_autocatalytic_counterexample": {
+    "context_derivative": 0.0,
+    "fixed_point": 0.8087881752970774,
+    "local_jacobian": 0.13834467499984965,
+    "observational_information_about_hidden_state": 0.0,
+    "spectral_radius": 0.13834467499984965
+  },
+  "preregistration_sha256": "557145af5374ba8105962c9de11de926172749142add3ce7d22b2623a1cda4a6",
+  "promotion": {
+    "active_control": false,
+    "replay_control": false,
+    "semantic_causality": false,
+    "shadow_causal_authority": false,
+    "true_causal_abstraction": false
+  },
+  "runtime_policy": {
+    "nonrejection_without_identifying_assumptions": "PASSIVE_EQUIVALENCE_UNRESOLVED_CAUSAL_AUTHORITY_BLOCKED",
+    "predictive_rejection": "REJECT_REPLAY_PREDICTIVE_LAW"
+  },
+  "scientific_pass": true,
+  "seeds_per_family_per_cohort": 128,
+  "spectral_topology_counterexample": {
+    "adjacency_a": [
+      [
+        1,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "adjacency_b": [
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "eigenvalues_a": [
+      0.2,
+      0.7
+    ],
+    "eigenvalues_b": [
+      0.20000000000000007,
+      0.7
+    ],
+    "max_observation_path_error": 4.440892098500626e-16,
+    "spectral_distance": 5.551115123125783e-17
+  },
+  "target_power": 0.95,
+  "transitions_per_trace": 256,
+  "verdict": "PASSIVE_REPLAY_IDENTIFIABILITY_BOUNDARY_QUALIFIED"
+}

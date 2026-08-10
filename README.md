@@ -121,3 +121,8 @@ The first blockwise composite-null interventional falsifier is preserved as a pr
 ### CSCA-06B/06C real-model boundary (2026-08-10)
 
 Two explicit same-context donor-resampling soft-intervention kernels give identical exact top/sign credit on every fresh CSCA-06B PRIMARY and replication prompt, but all 96 robust cases choose `A_RECENT`. CSCA-06C then cyclically moves the same four candidate contents through all four positions while freezing the base next-token target. Every fully resolved case follows fixed position (`PositionTracking=1.0`) rather than moved content (`ContentTracking=0.25`); however independent-replication resolution coverage falls below the frozen gate (PROSE 0.333, pooled 0.458). Therefore content-specific causal credit is **NOT_SUPPORTED**, while position/locality remains unpromoted. No student, replay, semantic or active-control authority follows.
+
+
+### CSCA-07 passive replay boundary (2026-08-10)
+
+Passive factual traces can now falsify a declared predictive replay law with an anytime-valid e-process, but cannot silently certify latent causal truth. CSCA-07 includes exact observational-equivalence counterexamples: identical observed dynamics and Jacobian spectra with different latent topology, a stable invariant hidden replay attractor with zero observational information, and zero within-model fiber entropy with unresolved model semantics. Causal/replay/active authority remains blocked without separately justified identifying assumptions.

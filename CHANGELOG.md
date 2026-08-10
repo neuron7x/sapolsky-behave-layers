@@ -38,6 +38,22 @@ Amortized/student credit, replay, semantic causality and active causal control r
 ### Scope boundary
 `GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED` means only that the declared composite model class is falsifiable on the frozen controlled family. It does not prove graph truth, exclude arbitrary hidden confounding, authorize real-model causal control, or establish a universal information threshold.
 
+## [Passive replay identifiability boundary] — 2026-08-10
+
+### Added
+- `CSCA-07-PR`: passive-only factual-trace falsification with an anytime-valid AR(1) mixture e-process.
+- Exact information-cost converse `n >= kl(power||alpha)/R`; observational equivalence `R=0` implies infinite passive sample cost.
+- Spectral-topology, hidden-autocatalytic-fixed-point, and fiber-entropy counterexamples that prevent internal stability/compression from becoming causal authority.
+
+### Evidence
+- PRIMARY / REPLICATION N0 false rejection: 1/128 each at alpha=.01.
+- S1 and S2 predictive misspecification: 128/128 rejected in both cohorts.
+- W1 information rate .0056 nat/transition gives necessary 745.87 transitions for 95% power, above the frozen 256-transition budget.
+- Observationally equivalent latent realizations have different adjacency but identical eigen-spectrum to 5.6e-17 and observable path to 4.4e-16.
+
+### Boundary
+Predictive-law rejection is qualified; true causal abstraction, semantic causality, replay control and active control remain unauthorized from passive traces alone.
+
 ## [Structural counterfactual adequacy qualification] — 2026-08-10
 
 ### Added
