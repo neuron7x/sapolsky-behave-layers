@@ -1,0 +1,13 @@
+{
+  "schema": "cwc-cdl/program-verdict-1",
+  "verdict": "DEFERRED_CAUSAL_CREDIT_SYNTHETIC_CONTROL_ESTABLISHED_REAL_MODEL_UNTESTED",
+  "core_implemented": true,
+  "v1_negative_preserved": true,
+  "v2_control_qualified": true,
+  "mechanism_attribution_confirmatory": false,
+  "stress_sweep_confirmatory": false,
+  "real_model_tested": false,
+  "biological_claim_authorized": false,
+  "via_ascension_authorized": false,
+  "physical_compute_claim_authorized": false
+}

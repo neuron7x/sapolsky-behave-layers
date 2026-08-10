@@ -3,6 +3,42 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Deferred causal-credit controls] — 2026-08-10
+
+### Added
+- `cwc/memory/causal_debt.py`: append-only experimental ledger that separates
+  observational eligibility from causal authority, records replay evidence, measures
+  cross-context invariance, and gates consolidation fail-closed.
+- `cwc/replay/`: deterministic replay scheduling, explicit counterfactual probe
+  contracts, and exact paired random-sign max-T statistics.
+- `CWC-CDL-01` preregistration and a sealed negative V1 result. The original debt
+  rule starved the invariant cause by keeping interventionally dead but observationally
+  salient candidates permanently high-priority.
+- `CWC-CDL-02` preregistration and a separate resolution-aware V2 result. V2 keeps
+  the V1 implementation intact for reproduction, but adds a new priority rule in which
+  observational eligibility decays with intervention count and measured causal leverage
+  becomes the scheduling term.
+- `scripts/causal_debt_gate.py`, included in `verify` and `pr-fast`, binds the V1
+  negative parent, V2 synthetic-only scope, checksums, and explicit prohibition on
+  biological/VIA escalation.
+- Post-confirmatory mechanism ablation and 16-setting stress sweep, both explicitly
+  non-authoritative for claim upgrades.
+
+### Evidence
+- V1: `CAUSAL_DEBT_CONTROL_NOT_QUALIFIED`.
+- V2: `CAUSAL_DEBT_V2_CONTROL_QUALIFIED` **only on the frozen synthetic SCM control**;
+  mean paired OOS +0.1665 vs uniform-CF and +0.1932 vs RPE-CF, exact max-T FWER
+  p=1.91e-6 / 9.54e-7.
+- Ablation attributes most of the exploratory gain to resolution-aware candidate
+  scheduling (+0.1654 to +0.1743 under random-context comparisons); balanced context
+  coverage contributes only about +0.0077 in the debt condition.
+- Stress sweep: V2 mean OOS exceeded each matched control in 15/16 parameter settings;
+  the two individual non-superiority settings are preserved, not excluded.
+
+### Scope boundary
+No biological mechanism claim, no language-model memory claim, no physical inference
+efficiency claim, and no VIA-V2+ authorization.
+
 ## [External-audit closure] — 2026-08-08
 
 An independent audit ran four break-in attempts against the gate battery. Two were
