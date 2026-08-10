@@ -45,7 +45,7 @@ def main():
         for family in CONFIRMATORY_FAMILIES:
             case=prepare_case(seed,family)
             probes=select_probes(case,policy['primary_budget_per_cell'],policy['primary_strategy'])
-            audit=audit_case(case,policy['primary_budget_per_cell'],policy['primary_strategy'],context_z_threshold=policy['context_z_threshold'])
+            audit=audit_case(case,policy['primary_budget_per_cell'],policy['primary_strategy'],context_z_threshold=policy['context_z_threshold'], compute_gss=False)
             state=classify(audit,probes,policy)
             records.append({**asdict(audit), 'state': state, 'max_empirical_leverage': leverage(probes)})
     inadequate=[r for r in records if not r['expected_adequate']]

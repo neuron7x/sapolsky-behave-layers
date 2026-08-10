@@ -264,7 +264,7 @@ class CaseAudit:
     true_causal_set: tuple[str,...]
 
 
-def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, context_z_threshold: float = 3.0) -> CaseAudit:
+def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, context_z_threshold: float = 3.0, compute_gss: bool = True) -> CaseAudit:
     probes=select_probes(case,budget_per_cell,strategy)
     audits=interventional_divergence_audit(case.models,probes)
     best=best_family_audit(audits)
@@ -274,9 +274,13 @@ def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, conte
     ctx=context_effect_audits(probes)
     shifts=tuple(sorted(x.candidate for x in ctx if x.standardized_difference>=context_z_threshold))
     flips=tuple(sorted(x.candidate for x in ctx if x.sign_flip and x.standardized_difference>=context_z_threshold))
-    gss=graph_structural_sensitivity(case.models,case.eval_rows,case.eval_y,probes)
-    top_f=max(gss,key=lambda x:(x.factual_delta_mse,-CANDIDATES.index(x.candidate))).candidate
-    top_i=max(gss,key=lambda x:(x.intervention_delta_mse,-CANDIDATES.index(x.candidate))).candidate
+    if compute_gss:
+        gss=graph_structural_sensitivity(case.models,case.eval_rows,case.eval_y,probes)
+        top_f=max(gss,key=lambda x:(x.factual_delta_mse,-CANDIDATES.index(x.candidate))).candidate
+        top_i=max(gss,key=lambda x:(x.intervention_delta_mse,-CANDIDATES.index(x.candidate))).candidate
+    else:
+        top_f="NOT_COMPUTED"
+        top_i="NOT_COMPUTED"
     return CaseAudit(
         seed=case.seed,family=case.family,expected_adequate=case.expected_adequate,strategy=strategy,budget_per_cell=budget_per_cell,
         factual_rmse=case.factual_rmse,best_family=best.family,best_idr=best.idr,best_max_cell_idr=best.max_cell_idr,
