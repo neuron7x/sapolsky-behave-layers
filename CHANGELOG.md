@@ -315,3 +315,9 @@ fail-open, all closed here.
 - Consolidation of three sibling projects into one system (`526c6a5`).
 - Identifiability theory (`6322bed`); WP4 Jensen gap (`7e53ecd`); WP1
   instrumentation substrate (207 tests, 99.46% cov, 12/12 mutation).
+## 2026-08-10 — ACT-R&D-01 evidence ingestion / P0 pass
+
+- added primary-source research registry, claim ledger, contradiction matrix, executable hypotheses, reproduction queue and fail-closed ingestion gate;
+- reproduced a narrow S01 Skill/Luck Counterfactual-Shapley property and qualified an exact synthetic OOD causal-credit target over 7,962,624 counterfactual structural evaluations;
+- preserved a preregistered S03 controlled latent-dynamics negative result: h=8 OOD robustness reached 54/64 seeds versus the frozen >=56/64 gate;
+- no external mechanism received architecture-promotion authority.

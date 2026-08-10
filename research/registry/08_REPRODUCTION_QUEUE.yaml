@@ -6,7 +6,11 @@
     "task": "Minimal theorem/identity reproduction + SkillLuck causal-credit benchmark",
     "blocked_by": [],
     "promotion_target": "REPRODUCED",
-    "status": "READY"
+    "status": "NARROW_CONCEPT_AND_SYNTHETIC_OOD_TARGET_QUALIFIED; MATCHED_BUDGET_ESTIMATOR_PENDING",
+    "result_artifacts": [
+      "artifacts/research-s01-skill-luck/verdict.json",
+      "artifacts/research-s01-ood-credit/verdict.json"
+    ]
   },
   {
     "priority": "P0",
@@ -28,7 +32,10 @@
       "paper code not public at retrieval"
     ],
     "promotion_target": "REPRODUCED",
-    "status": "READY_FOR_INDEPENDENT_REIMPLEMENTATION"
+    "status": "CONTROLLED_TRANSFER_TEST_FAILED_PREREGISTERED_H8_ROBUSTNESS_GATE",
+    "result_artifacts": [
+      "artifacts/research-s03-latent-dynamics/verdict.json"
+    ]
   },
   {
     "priority": "P1",

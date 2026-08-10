@@ -1,0 +1,15 @@
+{
+  "architecture_promotion_authority": false,
+  "date": "2026-08-10",
+  "execution_scope": "controlled latent-dynamics transfer; negative result",
+  "files_sha256": {
+    "seed_results.csv": "28461f78030d218ab76161852602977bc7aeeb2ceb640afd94b9bc3bd74c7383",
+    "verdict.json": "a9054722847f4d09dd4fce2f8d8a39f1c603541c98b7c8124898a5751553e625"
+  },
+  "numpy": "2.3.5",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "pre_execution_bugfix_commit": "2ca9f4d",
+  "prereg_and_initial_implementation_commit": "4876918",
+  "python": "3.13.5",
+  "scipy": "1.17.0"
+}

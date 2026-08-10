@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "ruin_id": "RUIN-S03-CONTROLLED-LONG-HORIZON-ROBUSTNESS",
+    "hypothesis": "Capacity-matched history-bearing linear transition model robustly beats stateless predictor on OOD causal rollout through horizon 8.",
+    "expected": "DYNAMIC_HISTORY lower MSE on >=56/64 OOD seeds at h=8 and multiplicity-corrected sign tests pass at all horizons.",
+    "observed": "54/64 OOD seeds at h=8; Bonferroni sign-test remained significant, mean MSE was lower, but the preregistered 56/64 robustness threshold failed.",
+    "failed_gate": "ood_h8_dynamic_wins_ge_56_of_64",
+    "likely_reason": "Long-horizon autoregressive error under transition shift is seed-sensitive; a one-step/history advantage is not sufficient for robust h=8 rollout.",
+    "source_dependencies": [
+      "S03"
+    ],
+    "retest_condition": "A new preregistered transition-state mechanism or stabilization method; threshold may not be weakened post hoc.",
+    "status": "KILLED_AS_PREREGISTERED",
+    "artifact": "artifacts/research-s03-latent-dynamics/verdict.json"
+  }
+]

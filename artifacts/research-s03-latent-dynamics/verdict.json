@@ -1,0 +1,125 @@
+{
+  "architecture_promotion_authority": false,
+  "experiment": "S03 controlled latent-dynamics qualifier",
+  "frozen_parameters": {
+    "horizons": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "id_action_scale": 1.0,
+    "observation_sd": 0.05,
+    "ood_action_scale": 1.35,
+    "ood_rho": 0.65,
+    "process_sd": 0.08,
+    "ridge_alpha": 0.001,
+    "test_n": 600,
+    "train_n": 1200,
+    "train_rho": 0.85
+  },
+  "neuroscience_authority": false,
+  "ood_leakage_oracle_mean_mse": 5.6471120338139314e-12,
+  "ood_sign_tests": {
+    "1": {
+      "n": 64,
+      "p_bonferroni": 4.336808689942018e-19,
+      "p_raw": 1.0842021724855044e-19,
+      "wins": 64
+    },
+    "2": {
+      "n": 64,
+      "p_bonferroni": 4.336808689942018e-19,
+      "p_raw": 1.0842021724855044e-19,
+      "wins": 64
+    },
+    "4": {
+      "n": 64,
+      "p_bonferroni": 4.336808689942018e-19,
+      "p_raw": 1.0842021724855044e-19,
+      "wins": 64
+    },
+    "8": {
+      "n": 64,
+      "p_bonferroni": 7.985992895144858e-08,
+      "p_raw": 1.9964982237862146e-08,
+      "wins": 54
+    }
+  },
+  "paper_reproduction_authority": false,
+  "primary_predicates": {
+    "admissible_feature_contract_past_only": true,
+    "all_ood_horizons_bonferroni_p_lt_0p01": true,
+    "leakage_oracle_one_step_below_both": true,
+    "ood_h8_dynamic_wins_ge_56_of_64": false
+  },
+  "scope": "synthetic mechanism qualification; not NeuroWorld reproduction",
+  "seed_count": 64,
+  "seed_range": [
+    2000,
+    2063
+  ],
+  "summary": {
+    "ID": {
+      "1": {
+        "dynamic_mean_mse": 0.019272901750734497,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 13.275474328858762,
+        "stateless_mean_mse": 13.294747230609495,
+        "tie_count": 0
+      },
+      "2": {
+        "dynamic_mean_mse": 0.053850022800297576,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 49.37910726275875,
+        "stateless_mean_mse": 49.43295728555904,
+        "tie_count": 0
+      },
+      "4": {
+        "dynamic_mean_mse": 0.1990424600171698,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 177.68901618509193,
+        "stateless_mean_mse": 177.88805864510914,
+        "tie_count": 0
+      },
+      "8": {
+        "dynamic_mean_mse": 0.7670275661381838,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 594.4547342104648,
+        "stateless_mean_mse": 595.221761776603,
+        "tie_count": 0
+      }
+    },
+    "OOD": {
+      "1": {
+        "dynamic_mean_mse": 0.3937967475907682,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 7.6321571507000066,
+        "stateless_mean_mse": 8.025953898290775,
+        "tie_count": 0
+      },
+      "2": {
+        "dynamic_mean_mse": 2.9340272997011665,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 22.72125420783809,
+        "stateless_mean_mse": 25.655281507539257,
+        "tie_count": 0
+      },
+      "4": {
+        "dynamic_mean_mse": 23.607143844500115,
+        "dynamic_win_count": 64,
+        "paired_mean_improvement": 52.49229995083237,
+        "stateless_mean_mse": 76.09944379533249,
+        "tie_count": 0
+      },
+      "8": {
+        "dynamic_mean_mse": 166.82501176008253,
+        "dynamic_win_count": 54,
+        "paired_mean_improvement": 37.12172814022431,
+        "stateless_mean_mse": 203.94673990030685,
+        "tie_count": 0
+      }
+    }
+  },
+  "verdict": "S03_CONTROLLED_LATENT_DYNAMICS_NOT_QUALIFIED"
+}

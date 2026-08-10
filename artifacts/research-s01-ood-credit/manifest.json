@@ -1,0 +1,15 @@
+{
+  "architecture_promotion_authority": false,
+  "date": "2026-08-10",
+  "execution_scope": "exact synthetic OOD causal-credit qualifier",
+  "files_sha256": {
+    "seed_results.csv": "22477730334150914830d8ec8e0112b4d80bdd699fc8f0e6f294dd34d241d658",
+    "verdict.json": "9a7de868028d715cfccfafbfde0b16111f9526ff490ceacbfd2966990bc90faa"
+  },
+  "implementation_freeze_commit": "8ee2779",
+  "numpy": "2.3.5",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "prereg_commit": "c7cb1bd",
+  "python": "3.13.5",
+  "scipy": "1.17.0"
+}

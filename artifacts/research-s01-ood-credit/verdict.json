@@ -1,0 +1,155 @@
+{
+  "architecture_promotion_authority": false,
+  "contexts": {
+    "OOD_SIGN_FLIP": -1.5,
+    "OOD_WEAK_CONFOUNDER": 0.2,
+    "TRAIN_CONFOUNDED": 2.0
+  },
+  "counterfactual_structural_evaluations": 7962624,
+  "experiment": "S01 OOD causal-credit qualifier",
+  "frozen_preregistration": "experiments/research_s01_ood_credit/PREREGISTRATION.md",
+  "max_shapley_efficiency_error": 1.1102230246251565e-16,
+  "n_per_context_seed": 256,
+  "next_gate": "matched-budget approximate estimator vs resolution_aware_debt and RPE",
+  "paper_reproduction_authority": false,
+  "primary_predicates": {
+    "max_efficiency_error_le_1e12": true,
+    "ood_shapley_false_mass_le_1e12": true,
+    "ood_shapley_unique_A_all": true
+  },
+  "scope": "controlled synthetic qualification; not full S01 paper reproduction",
+  "seed_count": 128,
+  "seeds": [
+    1000,
+    1127
+  ],
+  "summary": {
+    "OOD_SIGN_FLIP": {
+      "EQUAL": {
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "top1_A_rate": 0.0
+      },
+      "EXACT_CF_SHAPLEY": {
+        "mean_false_credit_mass": 2.473347259183492e-16,
+        "mean_scores": {
+          "A": 0.5,
+          "B": 4.122245431972487e-17,
+          "C": 4.122245431972487e-17,
+          "D": 4.122245431972487e-17
+        },
+        "top1_A_rate": 1.0
+      },
+      "OBS_ASSOC": {
+        "mean_false_credit_mass": 0.6243769593625086,
+        "mean_scores": {
+          "A": 0.5439567553188965,
+          "B": 0.04770750756476044,
+          "C": 0.8129379786670596,
+          "D": 0.04371705053624209
+        },
+        "top1_A_rate": 0.0
+      },
+      "RECENCY": {
+        "mean_false_credit_mass": 0.9000000000000002,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "top1_A_rate": 0.0
+      }
+    },
+    "OOD_WEAK_CONFOUNDER": {
+      "EQUAL": {
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "top1_A_rate": 0.0
+      },
+      "EXACT_CF_SHAPLEY": {
+        "mean_false_credit_mass": 1.1100223195892782e-16,
+        "mean_scores": {
+          "A": 0.5,
+          "B": 1.8500371993154637e-17,
+          "C": 1.8500371993154637e-17,
+          "D": 1.8500371993154637e-17
+        },
+        "top1_A_rate": 1.0
+      },
+      "OBS_ASSOC": {
+        "mean_false_credit_mass": 0.22903509547814796,
+        "mean_scores": {
+          "A": 0.913415535920405,
+          "B": 0.049814546415931873,
+          "C": 0.17587086114871614,
+          "D": 0.05099905932312532
+        },
+        "top1_A_rate": 1.0
+      },
+      "RECENCY": {
+        "mean_false_credit_mass": 0.9000000000000002,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "top1_A_rate": 0.0
+      }
+    },
+    "TRAIN_CONFOUNDED": {
+      "EQUAL": {
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "top1_A_rate": 0.0
+      },
+      "EXACT_CF_SHAPLEY": {
+        "mean_false_credit_mass": 2.8568541315470855e-16,
+        "mean_scores": {
+          "A": 0.5,
+          "B": 4.761423552578476e-17,
+          "C": 4.761423552578476e-17,
+          "D": 4.761423552578476e-17
+        },
+        "top1_A_rate": 1.0
+      },
+      "OBS_ASSOC": {
+        "mean_false_credit_mass": 0.6929963852757031,
+        "mean_scores": {
+          "A": 0.43722405940464915,
+          "B": 0.05555682696722131,
+          "C": 0.8794793200953983,
+          "D": 0.05029457886512166
+        },
+        "top1_A_rate": 0.0
+      },
+      "RECENCY": {
+        "mean_false_credit_mass": 0.9000000000000002,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "top1_A_rate": 0.0
+      }
+    }
+  },
+  "verdict": "S01_OOD_CAUSAL_CREDIT_QUALIFIED"
+}

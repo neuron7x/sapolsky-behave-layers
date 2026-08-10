@@ -1,0 +1,13 @@
+{
+  "architecture_promotion_authority": false,
+  "date": "2026-08-10",
+  "execution_scope": "narrow conceptual Skill/Luck property",
+  "files_sha256": {
+    "verdict.json": "3d3fd015f1dc28196e99f3ff24182f7fda5809ac046bfe8fa19e90f1c99427c9"
+  },
+  "numpy": "2.3.5",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "prereg_commit": "5580076",
+  "python": "3.13.5",
+  "scipy": "1.17.0"
+}
