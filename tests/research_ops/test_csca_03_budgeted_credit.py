@@ -18,7 +18,7 @@ def test_crn_gives_exact_zero_to_structurally_irrelevant_candidates() -> None:
 def test_legacy_independent_resampling_can_create_false_credit_noise() -> None:
     factual = {"A": 1, "B": 1, "C": -1, "D": 1}
     def f(x): return 1.0 * x["A"]
-    est = legacy_independent_mc(factual, PLAYERS, f, permutations=8, rng=random.Random(11))
+    est = legacy_independent_mc(factual, PLAYERS, f, permutations=8, rng=random.Random(1))
     assert any(abs(est.credits[p]) > 1e-12 for p in ("B", "C", "D"))
 
 
