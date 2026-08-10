@@ -1,0 +1,10 @@
+{
+  "experiment_id": "CSCA-03",
+  "verdict": "INSTRUMENT_INVALID_LEGACY_COMPARATOR_NONDETERMINISTIC",
+  "scientific_pass": false,
+  "instrument_valid": false,
+  "architecture_promotion_authority": false,
+  "shadow_inference_authority": false,
+  "reason": "LEGACY_INDEPENDENT_MC consumes RNG draws while iterating an unordered Python set; identical declared seeds produce different comparator credit vectors under different PYTHONHASHSEED values.",
+  "retest_condition": "Use deterministic predecessor ordering, freeze a new experiment ID, and execute fresh primary and replication seed cohorts."
+}
