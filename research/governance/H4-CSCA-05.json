@@ -1,0 +1,16 @@
+{
+  "gate": "H4_EXPERIMENT_DESIGN",
+  "experiment_id": "CSCA-05-RUNTIME",
+  "status": "APPROVED_FOR_EXECUTION",
+  "approved_scope": "actual nanochat runtime, byte-level real-workload shadow pilot only",
+  "human_authorization_basis": "researcher/user explicitly instructed execution in the current research loop",
+  "primary_metric": "selective_false_causal_authority",
+  "negative_controls": [
+    "shadow observer failure cannot alter base generation",
+    "model parameter hash must remain unchanged",
+    "context disagreement forbids global authority",
+    "approximate credit must not outrank exact teacher on accepted cases"
+  ],
+  "failure_predicate": "any primary or replication false authority, output mutation, state mutation, coverage below frozen minimum, or calibration rule mutation",
+  "architecture_promotion_authorized": false
+}
