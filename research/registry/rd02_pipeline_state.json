@@ -1,11 +1,13 @@
 {
   "act": "ACT-R&D-02",
   "architecture_promotion_authority": false,
+  "csca_01_result": "research/results/CSCA-01/verdict.json",
+  "csca_01_verdict": "CSCA_01_CONTROLLED_KERNEL_REPRODUCED",
   "h4_record": "research/governance/H4-CSCA-01-AUTHOR-DIRECTIVE.json",
   "mechanism_test_authority": true,
-  "next": "EXECUTE_CSCA_01_PRIMARY_THEN_REPLICATION_AND_NULLS",
+  "next": "HUMAN_H5_REVIEW_AND_REAL_MODEL_UTILITY_TEST",
   "paper_reproduction_authority": false,
   "preregistration_sha256": "8536063b4634ee2ea4b582cb2a100ec7f856ab5f282991ece038d34942c3a5b2",
   "source_gate": "QUARANTINED",
-  "status": "PHASE_1_2_READY"
+  "status": "PHASE_4_COMPLETE_H5_PENDING"
 }

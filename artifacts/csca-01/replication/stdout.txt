@@ -1,0 +1,377 @@
+{
+  "contexts": {
+    "OOD_SIGN_INVERSION": {
+      "c_sign": -1,
+      "gamma": 1.5
+    },
+    "OOD_WEAK_CONFOUNDER": {
+      "c_sign": 1,
+      "gamma": 0.25
+    },
+    "TRAIN_CONFOUNDED": {
+      "c_sign": 1,
+      "gamma": 2.0
+    }
+  },
+  "experiment": "CSCA-01 Counterfactual Credit Kernel",
+  "mc_permutation_budgets": [
+    4,
+    16,
+    64
+  ],
+  "mode": "NORMAL",
+  "n_per_context": 128,
+  "scope": "independent controlled mechanism reproduction; not paper-level reproduction",
+  "seed_count": 32,
+  "seed_start": 22000,
+  "summary": {
+    "EXACT_CF_SHAPLEY": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 2.7755067395860556e-16,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 9.251689131953521e-17,
+          "C": 9.251689131953521e-17,
+          "D": 9.251689131953521e-17
+        },
+        "n": 32,
+        "structural_evaluations": 331776
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 8.41645817709763e-17,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 2.8054860590325435e-17,
+          "C": 2.8054860590325435e-17,
+          "D": 2.8054860590325435e-17
+        },
+        "n": 32,
+        "structural_evaluations": 331776
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 2.909761461725862e-16,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 9.699204872419542e-17,
+          "C": 9.699204872419542e-17,
+          "D": 9.699204872419542e-17
+        },
+        "n": 32,
+        "structural_evaluations": 331776
+      }
+    },
+    "MC_CF_SHAPLEY_16": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.36708910907854087,
+        "mean_scores": {
+          "A": 1.00042724609375,
+          "B": 0.191314697265625,
+          "C": 0.194915771484375,
+          "D": 0.19439697265625
+        },
+        "n": 32,
+        "structural_evaluations": 327680
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.36702810833305566,
+        "mean_scores": {
+          "A": 1.000030517578125,
+          "B": 0.19171142578125,
+          "C": 0.1920166015625,
+          "D": 0.1961669921875
+        },
+        "n": 32,
+        "structural_evaluations": 327680
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.36929260910330997,
+        "mean_scores": {
+          "A": 0.995697021484375,
+          "B": 0.193206787109375,
+          "C": 0.195709228515625,
+          "D": 0.194244384765625
+        },
+        "n": 32,
+        "structural_evaluations": 327680
+      }
+    },
+    "MC_CF_SHAPLEY_4": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.5147859669211116,
+        "mean_scores": {
+          "A": 0.997314453125,
+          "B": 0.357177734375,
+          "C": 0.3524169921875,
+          "D": 0.3497314453125
+        },
+        "n": 32,
+        "structural_evaluations": 81920
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.514977565938426,
+        "mean_scores": {
+          "A": 1.00439453125,
+          "B": 0.3560791015625,
+          "C": 0.3544921875,
+          "D": 0.3565673828125
+        },
+        "n": 32,
+        "structural_evaluations": 81920
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.5162011461740708,
+        "mean_scores": {
+          "A": 0.9947509765625,
+          "B": 0.3497314453125,
+          "C": 0.3507080078125,
+          "D": 0.36181640625
+        },
+        "n": 32,
+        "structural_evaluations": 81920
+      }
+    },
+    "MC_CF_SHAPLEY_64": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.22995162716599143,
+        "mean_scores": {
+          "A": 0.9976959228515625,
+          "B": 0.09932708740234375,
+          "C": 0.1007080078125,
+          "D": 0.09803009033203125
+        },
+        "n": 32,
+        "structural_evaluations": 1310720
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.23145362889543747,
+        "mean_scores": {
+          "A": 1.000030517578125,
+          "B": 0.100616455078125,
+          "C": 0.10015869140625,
+          "D": 0.1004791259765625
+        },
+        "n": 32,
+        "structural_evaluations": 1310720
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.22887662932124778,
+        "mean_scores": {
+          "A": 1.0025787353515625,
+          "B": 0.10042572021484375,
+          "C": 0.09860992431640625,
+          "D": 0.0985565185546875
+        },
+        "n": 32,
+        "structural_evaluations": 1310720
+      }
+    },
+    "OBS_ASSOC": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.6635905939281211,
+        "mean_scores": {
+          "A": 0.5678036840165067,
+          "B": 0.35916723894740527,
+          "C": 0.6896602853262488,
+          "D": 0.07474120054185997
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 1.0,
+        "mean_false_credit_mass": 0.472428876940618,
+        "mean_scores": {
+          "A": 0.95281111555408,
+          "B": 0.5767584168116063,
+          "C": 0.20428563747412157,
+          "D": 0.07765486284750396
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.7040834271703029,
+        "mean_scores": {
+          "A": 0.46553595419779076,
+          "B": 0.2844207909503861,
+          "C": 0.75042540380206,
+          "D": 0.0684709547196706
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      }
+    },
+    "RANDOM": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 0.15625,
+        "mean_false_credit_mass": 0.7704521111253065,
+        "mean_scores": {
+          "A": 0.4959309114870766,
+          "B": 0.5638560368864012,
+          "C": 0.511680429714852,
+          "D": 0.5563926711269758
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 0.21875,
+        "mean_false_credit_mass": 0.7812701793508858,
+        "mean_scores": {
+          "A": 0.4127246895859214,
+          "B": 0.5235991406584893,
+          "C": 0.48381838563404367,
+          "D": 0.42266155555838175
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 0.25,
+        "mean_false_credit_mass": 0.75547256351595,
+        "mean_scores": {
+          "A": 0.49737700980118305,
+          "B": 0.5430752123862153,
+          "C": 0.5733855276593218,
+          "D": 0.48683503362620356
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      }
+    },
+    "RECENCY": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.9,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.9,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.9,
+        "mean_scores": {
+          "A": 0.25,
+          "B": 1.0,
+          "C": 0.5,
+          "D": 0.75
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      }
+    },
+    "TD_ELIGIBILITY_PROXY": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.7463250443737434,
+        "mean_scores": {
+          "A": 0.5328097133472343,
+          "B": 0.6594230841270685,
+          "C": 0.8069065512685017,
+          "D": 0.10865001334065869
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 0.0625,
+        "mean_false_credit_mass": 0.6099707854315433,
+        "mean_scores": {
+          "A": 0.5091775739201604,
+          "B": 0.6011581084652569,
+          "C": 0.13686735685936377,
+          "D": 0.06453280487815503
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.7750149347112524,
+        "mean_scores": {
+          "A": 0.5393489312896694,
+          "B": 0.6425213715272314,
+          "C": 1.081724666732627,
+          "D": 0.12305609659154687
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      }
+    },
+    "UNIFORM": {
+      "OOD_SIGN_INVERSION": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "OOD_WEAK_CONFOUNDER": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      },
+      "TRAIN_CONFOUNDED": {
+        "causal_rank_accuracy": 0.0,
+        "mean_false_credit_mass": 0.75,
+        "mean_scores": {
+          "A": 1.0,
+          "B": 1.0,
+          "C": 1.0,
+          "D": 1.0
+        },
+        "n": 32,
+        "structural_evaluations": 0
+      }
+    }
+  },
+  "td_baseline": {
+    "boundary": "not canonical TD; no learned value function in this simulator",
+    "lambda": 0.8,
+    "name": "TD_ELIGIBILITY_PROXY"
+  },
+  "wall_seconds": 6.592996807999953
+}

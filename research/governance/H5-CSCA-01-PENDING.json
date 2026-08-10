@@ -1,0 +1,15 @@
+{
+  "architecture_authority": false,
+  "created_at": "2026-08-10",
+  "decision": "PENDING_HUMAN_REVIEW",
+  "decision_id": "H5-CSCA-01-PENDING",
+  "evidence_refs": [
+    "research/results/CSCA-01/verdict.json",
+    "experiments/csca_01/PREREGISTRATION.md"
+  ],
+  "gate": "H5_ARCHITECTURE_INTEGRATION",
+  "rationale": "Mechanism-level evidence is sealed, but source materialization and real-model utility remain unresolved; no integration authority is granted.",
+  "reviewer": "UNASSIGNED_HUMAN_REVIEWER",
+  "reviewer_role": "ADVERSARIAL_REVIEWER",
+  "subject_id": "CSCA-01"
+}

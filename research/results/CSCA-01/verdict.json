@@ -1,0 +1,40 @@
+{
+  "approximation_pass": true,
+  "architecture_promotion_authority": false,
+  "exact_pass": true,
+  "experiment_id": "CSCA-01",
+  "hypothesis_id": "H-CSCA-01",
+  "implementation_sha256": "ae36cab12a4a1eb9a7668519a81251206e72753561c7d4d6a2046aa74a7715f7",
+  "paper_reproduction_authority": false,
+  "predicates": {
+    "null_exact_zero_CORRELATION_ONLY": true,
+    "null_exact_zero_DESTROY_CAUSAL_LINK": true,
+    "null_exact_zero_PURE_NOISE": true,
+    "primary_efficiency": true,
+    "primary_exact_false_mass_OOD_SIGN_INVERSION": true,
+    "primary_exact_false_mass_OOD_WEAK_CONFOUNDER": true,
+    "primary_exact_rank_OOD_SIGN_INVERSION": true,
+    "primary_exact_rank_OOD_WEAK_CONFOUNDER": true,
+    "primary_mc64_rank_OOD_SIGN_INVERSION": true,
+    "primary_mc64_rank_OOD_WEAK_CONFOUNDER": true,
+    "replication_efficiency": true,
+    "replication_exact_false_mass_OOD_SIGN_INVERSION": true,
+    "replication_exact_false_mass_OOD_WEAK_CONFOUNDER": true,
+    "replication_exact_rank_OOD_SIGN_INVERSION": true,
+    "replication_exact_rank_OOD_WEAK_CONFOUNDER": true,
+    "replication_mc64_rank_OOD_SIGN_INVERSION": true,
+    "replication_mc64_rank_OOD_WEAK_CONFOUNDER": true
+  },
+  "preregistration_sha256": "8536063b4634ee2ea4b582cb2a100ec7f856ab5f282991ece038d34942c3a5b2",
+  "remaining_uncertainty": [
+    "full primary-source paper bytes/code unavailable in execution environment",
+    "MC estimator is an independent finite-budget approximation, not asserted to match the paper estimator",
+    "controlled synthetic SCM does not establish real-LM utility",
+    "human H5 architecture integration review remains pending"
+  ],
+  "scale_decision": "DO_NOT_SCALE_C1_IS_DECISION_SUFFICIENT",
+  "scope": "controlled independent mechanism reproduction; not full-paper reproduction",
+  "source_gate": "QUARANTINED",
+  "telemetry_sha256": "90a8400c022b273f72bae2ec7b05dd7aead89b93d7680ad5fb6304e42587e4f0",
+  "verdict": "CSCA_01_CONTROLLED_KERNEL_REPRODUCED"
+}

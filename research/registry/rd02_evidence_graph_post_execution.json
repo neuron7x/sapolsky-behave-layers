@@ -1,0 +1,61 @@
+{
+  "edges": [
+    {
+      "relation": "NULL_ATTACKED_BY",
+      "source": "CSCA-01",
+      "target": "NULL-CSCA-01-CORRELATION_ONLY"
+    },
+    {
+      "relation": "NULL_ATTACKED_BY",
+      "source": "CSCA-01",
+      "target": "NULL-CSCA-01-DESTROY_CAUSAL_LINK"
+    },
+    {
+      "relation": "NULL_ATTACKED_BY",
+      "source": "CSCA-01",
+      "target": "NULL-CSCA-01-PURE_NOISE"
+    },
+    {
+      "relation": "SUPPORTED_BY",
+      "source": "CSCA-01",
+      "target": "RESULT-CSCA-01"
+    },
+    {
+      "relation": "IMPLEMENTED_BY",
+      "source": "H-CSCA-01",
+      "target": "CSCA-01"
+    },
+    {
+      "relation": "DEPENDS_ON",
+      "source": "S01",
+      "target": "H-CSCA-01"
+    }
+  ],
+  "nodes": {
+    "CSCA-01": {
+      "node_type": "Experiment",
+      "preregistration_sha256": "8536063b4634ee2ea4b582cb2a100ec7f856ab5f282991ece038d34942c3a5b2"
+    },
+    "H-CSCA-01": {
+      "node_type": "Hypothesis"
+    },
+    "NULL-CSCA-01-CORRELATION_ONLY": {
+      "node_type": "NullModel"
+    },
+    "NULL-CSCA-01-DESTROY_CAUSAL_LINK": {
+      "node_type": "NullModel"
+    },
+    "NULL-CSCA-01-PURE_NOISE": {
+      "node_type": "NullModel"
+    },
+    "RESULT-CSCA-01": {
+      "architecture_promotion_authority": false,
+      "node_type": "Result",
+      "verdict": "CSCA_01_CONTROLLED_KERNEL_REPRODUCED"
+    },
+    "S01": {
+      "gate_status": "QUARANTINED",
+      "node_type": "Paper"
+    }
+  }
+}

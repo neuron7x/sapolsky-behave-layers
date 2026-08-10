@@ -33,3 +33,17 @@ All four sources stop at `CLAIM_EXTRACTED`. None is `REPRODUCED`, `NULL_ATTACKED
 S01 has now passed two *narrow synthetic* qualifiers (Skill/Luck conceptual separation and exact OOD cause ranking), but remains below `REPRODUCED` for the imported mechanism because the paper's efficient estimator/training/PTR stack and a matched-budget comparison with existing CWC replay policies have not been reproduced.
 
 S03's first independently implemented controlled transfer test is retained as a negative result: despite large mean short/mid-horizon gains, the preregistered h=8 OOD robustness predicate failed at 54/64 seeds versus the frozen 56/64 requirement. This result does not falsify NeuroWorld; it kills only the specific CWC controlled-transfer hypothesis/configuration tested here.
+
+## ACT-R&D-02 / CSCA-01 — 2026-08-10
+
+**Decision:** `NO_ARCHITECTURE_INTEGRATION / CONTROLLED_MECHANISM_RETAINED`.
+
+The exact counterfactual-credit kernel passed the frozen controlled SCM, OOD seed replication,
+and zero-cause nulls. A 64-permutation independent Monte-Carlo approximation also passed the
+preregistered rank qualifier. This does **not** authorize integration because the local source
+record is snapshot-only (`QUARANTINED`), the exact kernel uses oracle structural counterfactuals,
+real-model utility is untested, and H5 remains human-gated.
+
+Weakest causal link after this result: **counterfactual-model adequacy**. The next admissible attack
+must quantify how simulator/model misspecification converts into false causal credit before any
+real-model replay integration.

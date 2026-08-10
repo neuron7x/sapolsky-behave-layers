@@ -4,12 +4,19 @@
     "item_id": "R01",
     "source_id": "S01",
     "task": "Minimal theorem/identity reproduction + SkillLuck causal-credit benchmark",
-    "blocked_by": [],
+    "blocked_by": [
+      "full primary-source bytes/code unavailable in current execution environment",
+      "human H5 integration review pending",
+      "real-model counterfactual utility untested"
+    ],
     "promotion_target": "REPRODUCED",
-    "status": "NARROW_CONCEPT_AND_SYNTHETIC_OOD_TARGET_QUALIFIED; MATCHED_BUDGET_ESTIMATOR_PENDING",
+    "status": "CONTROLLED_KERNEL_REPRODUCED_AND_OOD_SEED_REPLICATED; MATCHED_BUDGET_ESTIMATOR_PENDING; PRIMARY_SOURCE_BYTES_QUARANTINED; PAPER_REPRODUCTION_PENDING; REAL_MODEL_UTILITY_PENDING",
     "result_artifacts": [
       "artifacts/research-s01-skill-luck/verdict.json",
-      "artifacts/research-s01-ood-credit/verdict.json"
+      "artifacts/research-s01-ood-credit/verdict.json",
+      "research/results/CSCA-01/verdict.json",
+      "artifacts/csca-01/primary/summary.json",
+      "artifacts/csca-01/replication/summary.json"
     ]
   },
   {
