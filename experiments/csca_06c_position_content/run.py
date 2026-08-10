@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 from pathlib import Path
 import statistics
@@ -108,6 +109,25 @@ def target_batch(model,prompts:list[list[int]],target:int)->list[float]:
  ids=torch.tensor(prompts,dtype=torch.long,device=model.get_device());lp=F.log_softmax(model(ids)[:,-1,:],dim=-1);return [float(x) for x in lp[:,target].cpu().tolist()]
 
 
+
+
+def precomputed_finite_game(model,spec:PromptInterventionSpec,donors:tuple[dict[str,tuple[int,...]],...],target:int):
+ coalitions=[]
+ for r in range(len(POSITIONS)+1):
+  for combo in itertools.combinations(POSITIONS,r):coalitions.append(frozenset(combo))
+ prompts=[]
+ for keep in coalitions:
+  for row in donors:
+   x=list(spec.prompt_tokens)
+   for p,(a,b) in spec.spans.items():
+    if p not in keep:x[a:b]=row[p]
+   prompts.append(x)
+ vals=target_batch(model,prompts,target)
+ game={}
+ n=len(donors)
+ for i,keep in enumerate(coalitions):game[keep]=float(sum(vals[i*n:(i+1)*n])/n)
+ return game, len(prompts), 1
+
 class FixedTargetFiniteKernelOracle:
  def __init__(self,model,spec:PromptInterventionSpec,donors:tuple[dict[str,tuple[int,...]],...],target:int):
   self.model=model;self.spec=spec;self.donors=donors;self.target=target;self.logical=0;self.batch_calls=0
@@ -127,7 +147,9 @@ def evaluate_base(model,base:PromptInterventionSpec,*,cohort:str)->dict:
  for r in range(4):
   spec,mapping=rotated_spec(base,r);credits={};counts={}
   for k in PROTOCOL['operator_kernels']:
-   oracle=FixedTargetFiniteKernelOracle(model,spec,donors[k],target);est=exact_ablation_shapley(POSITIONS,oracle);credits[k]=est.credits;counts[k]={'logical':oracle.logical,'batch_calls':oracle.batch_calls};total_logical+=oracle.logical;total_batches+=oracle.batch_calls
+   game,logical,batches=precomputed_finite_game(model,spec,donors[k],target)
+   est=exact_ablation_shapley(POSITIONS,lambda keep,g=game:g[frozenset(keep)])
+   credits[k]=est.credits;counts[k]={'logical':logical,'batch_calls':batches};total_logical+=logical;total_batches+=batches
   score=score_pair(credits['K_TRAIN_CONTIG8'],credits['K_COHORT_CONTIG8'],delta=float(PROTOCOL['inherited_delta']))
   rots.append({'rotation':r,'content_at_position':mapping,'score':score,'credits':credits,'counts':counts})
  fully=all(x['score']['robust_authority'] for x in rots)
