@@ -1,0 +1,17 @@
+{
+  "schema": "cwc-cdl/protocol-1",
+  "frozen_date": "2026-08-10",
+  "seeds": [101,211,307,401,503,601,701,809,907,1009,1103,1201,1301,1409,1511,1601,1709,1801,1901,2003],
+  "replay_budgets": [4,8,16,32,64],
+  "acquisition_samples": 256,
+  "evaluation_samples_per_regime": 512,
+  "evaluation_regimes": ["same", "decorrelated", "reversed"],
+  "candidates": ["C", "S", "N"],
+  "policies": ["fifo_obs","rpe_obs","uncertainty_obs","uniform_cf","rpe_cf","causal_debt_cf","oracle_invariant"],
+  "primary_policy": "causal_debt_cf",
+  "matched_cf_controls": ["uniform_cf","rpe_cf"],
+  "alpha_familywise": 0.05,
+  "min_budget_replication": 4,
+  "synthetic_only": true,
+  "via_ascension_authority": false
+}
