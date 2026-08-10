@@ -1,0 +1,489 @@
+{
+  "active_causal_control_authorized": false,
+  "analytic": {
+    "best_minimax_cost": 2.0,
+    "best_minimax_design": {
+      "-1.0": 1,
+      "0.0": 0,
+      "1.0": 1
+    },
+    "best_minimax_rate_per_cost": 0.03434826564311744,
+    "information_statement": "Evidence is in Y conditional on a chosen intervention; I(M;do(X)) is not a universal falsification threshold. The operational separation object is inf_Q KL(P*_d||Q_d)/Cost(d).",
+    "latent_aleatoric_pairs": [
+      {
+        "gamma": 0.0,
+        "sigma": 1.7,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 0.10625,
+        "sigma": 1.696676438658827,
+        "total_variance": 2.89
+      },
+      {
+        "gamma": 0.2125,
+        "sigma": 1.6866664608036765,
+        "total_variance": 2.89
+      },
+      {
+        "gamma": 0.31875,
+        "sigma": 1.6698498248345568,
+        "total_variance": 2.89
+      },
+      {
+        "gamma": 0.425,
+        "sigma": 1.6460179221381521,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 0.53125,
+        "sigma": 1.614860191316883,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 0.6375,
+        "sigma": 1.5759421785078283,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 0.74375,
+        "sigma": 1.5286712980559292,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 0.85,
+        "sigma": 1.4722431864335455,
+        "total_variance": 2.889999999999999
+      },
+      {
+        "gamma": 0.9562499999999999,
+        "sigma": 1.4055553840030637,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.0625,
+        "sigma": 1.3270620746596595,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.16875,
+        "sigma": 1.234513441603614,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.275,
+        "sigma": 1.1244443072024508,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.3812499999999999,
+        "sigma": 0.9910340243906867,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.4875,
+        "sigma": 0.8230089610690757,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.59375,
+        "sigma": 0.5915749635506896,
+        "total_variance": 2.8899999999999997
+      },
+      {
+        "gamma": 1.7,
+        "sigma": 0.0,
+        "total_variance": 2.8899999999999997
+      }
+    ],
+    "latent_aleatoric_variance_spread": 1.3322676295501878e-15,
+    "single_action_equivalence_rate": 0.0,
+    "top_designs": [
+      {
+        "cost": 2.0,
+        "counts": {
+          "-1.0": 1,
+          "0.0": 0,
+          "1.0": 1
+        },
+        "mean_separation_rate_per_cost": 0.10676349011190622,
+        "min_separation_rate_per_cost": 0.03434826564311744
+      },
+      {
+        "cost": 4.0,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 0,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.10676349011190622,
+        "min_separation_rate_per_cost": 0.03434826564311744
+      },
+      {
+        "cost": 6.0,
+        "counts": {
+          "-1.0": 3,
+          "0.0": 0,
+          "1.0": 3
+        },
+        "mean_separation_rate_per_cost": 0.10676349011190622,
+        "min_separation_rate_per_cost": 0.03434826564311744
+      },
+      {
+        "cost": 5.0,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 0,
+          "1.0": 3
+        },
+        "mean_separation_rate_per_cost": 0.1030652523797506,
+        "min_separation_rate_per_cost": 0.03301869863065361
+      },
+      {
+        "cost": 5.0,
+        "counts": {
+          "-1.0": 3,
+          "0.0": 0,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.1030652523797506,
+        "min_separation_rate_per_cost": 0.03301869863065361
+      },
+      {
+        "cost": 3.0,
+        "counts": {
+          "-1.0": 1,
+          "0.0": 0,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.09639612776536736,
+        "min_separation_rate_per_cost": 0.030646258911861752
+      },
+      {
+        "cost": 3.0,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 0,
+          "1.0": 1
+        },
+        "mean_separation_rate_per_cost": 0.09639612776536736,
+        "min_separation_rate_per_cost": 0.030646258911861752
+      },
+      {
+        "cost": 6.0,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 0,
+          "1.0": 4
+        },
+        "mean_separation_rate_per_cost": 0.09639612776536736,
+        "min_separation_rate_per_cost": 0.030646258911861752
+      },
+      {
+        "cost": 6.0,
+        "counts": {
+          "-1.0": 4,
+          "0.0": 0,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.09639612776536736,
+        "min_separation_rate_per_cost": 0.030646258911861752
+      },
+      {
+        "cost": 4.6,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 1,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.09552430004341257,
+        "min_separation_rate_per_cost": 0.030070425028402827
+      },
+      {
+        "cost": 5.6,
+        "counts": {
+          "-1.0": 2,
+          "0.0": 1,
+          "1.0": 3
+        },
+        "mean_separation_rate_per_cost": 0.09473617889689336,
+        "min_separation_rate_per_cost": 0.02984105841913048
+      },
+      {
+        "cost": 5.6,
+        "counts": {
+          "-1.0": 3,
+          "0.0": 1,
+          "1.0": 2
+        },
+        "mean_separation_rate_per_cost": 0.09473617889689336,
+        "min_separation_rate_per_cost": 0.02984105841913048
+      }
+    ]
+  },
+  "central_boundary": "Rejection cannot uniquely distinguish topology error from an omitted nuisance mechanism outside the declared envelope. Latent-confounder variance and aleatoric variance are non-identifiable from scalar interventional Y without additional measurements/assumptions.",
+  "experiment_id": "CSCA-06A-IF",
+  "falsification_scope": "DECLARED_INTERVENTIONAL_MODEL_PLUS_NUISANCE_CLASS_ONLY",
+  "graph_truth_authorized": false,
+  "information_condition": "Positive inf_Q KL(P*_d||Q_d)/Cost(d) is the separation condition; if zero, the candidate class is interventionally unfalsifiable under design d. Finite-budget rejection uses the anytime-valid e-process threshold E>=1/alpha.",
+  "primary_errors": [
+    "S2_MISSING_TRUE_EDGE_NEGATIVE structural rejection below 0.95"
+  ],
+  "primary_pass": false,
+  "primary_summary": {
+    "E0_SINGLE_ACTION_EQUIVALENCE": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": 0.0,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N0_NULL_CLEAN": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -48.33215266256461,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N1_NULL_LATENT_CONFOUNDING": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -37.331285435976,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N2_NULL_ALEATORIC": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -38.219852565646136,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N3_NULL_MIXED_NUISANCE": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -43.54922505490259,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "O1_OUT_OF_ENVELOPE_NOISE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -126.19468046563892,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0723399220684744
+    },
+    "S1_MISSING_TRUE_EDGE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 1,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 127
+      },
+      "median_blocks_if_rejected": 4,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.9618705259113725,
+      "n": 128,
+      "rejection_count": 127,
+      "rejection_rate": 0.9921875,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "S2_MISSING_TRUE_EDGE_NEGATIVE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 8,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 120
+      },
+      "median_blocks_if_rejected": 4.0,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.6136698309583934,
+      "n": 128,
+      "rejection_count": 120,
+      "rejection_rate": 0.9375,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "S3_SPURIOUS_CANDIDATE_EDGE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 3,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 125
+      },
+      "median_blocks_if_rejected": 4,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.5949336416114726,
+      "n": 128,
+      "rejection_count": 125,
+      "rejection_rate": 0.9765625,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "W1_WEAK_EDGE_BUDGET_STRESS": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -42.16957234429148,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.00985793158220849
+    }
+  },
+  "replay_authorized": false,
+  "replication_errors": [],
+  "replication_pass": true,
+  "replication_summary": {
+    "E0_SINGLE_ACTION_EQUIVALENCE": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": 0.0,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N0_NULL_CLEAN": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -48.697832175306914,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N1_NULL_LATENT_CONFOUNDING": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -37.160832146361116,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N2_NULL_ALEATORIC": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -37.74388186181215,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "N3_NULL_MIXED_NUISANCE": {
+      "authority_states": {
+        "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -43.943505502376084,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0
+    },
+    "O1_OUT_OF_ENVELOPE_NOISE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -126.64464297815519,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.0723399220684744
+    },
+    "S1_MISSING_TRUE_EDGE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 3,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 125
+      },
+      "median_blocks_if_rejected": 4,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.7738710778600435,
+      "n": 128,
+      "rejection_count": 125,
+      "rejection_rate": 0.9765625,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "S2_MISSING_TRUE_EDGE_NEGATIVE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 3,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 125
+      },
+      "median_blocks_if_rejected": 4,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.769440688157028,
+      "n": 128,
+      "rejection_count": 125,
+      "rejection_rate": 0.9765625,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "S3_SPURIOUS_CANDIDATE_EDGE": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 4,
+        "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS": 124
+      },
+      "median_blocks_if_rejected": 4.0,
+      "median_cost_if_rejected": 64.0,
+      "median_final_log_e": 5.7216059522711635,
+      "n": 128,
+      "rejection_count": 124,
+      "rejection_rate": 0.96875,
+      "separation_rate_per_cost": 0.22438095693074434
+    },
+    "W1_WEAK_EDGE_BUDGET_STRESS": {
+      "authority_states": {
+        "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET": 128
+      },
+      "median_blocks_if_rejected": null,
+      "median_cost_if_rejected": null,
+      "median_final_log_e": -43.018762012461146,
+      "n": 128,
+      "rejection_count": 0,
+      "rejection_rate": 0.0,
+      "separation_rate_per_cost": 0.00985793158220849
+    }
+  },
+  "scientific_pass": false,
+  "shadow_inference_promotion_authorized": false,
+  "verdict": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_NOT_QUALIFIED"
+}

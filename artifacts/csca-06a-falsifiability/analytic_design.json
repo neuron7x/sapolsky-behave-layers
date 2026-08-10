@@ -1,0 +1,221 @@
+{
+  "best_minimax_cost": 2.0,
+  "best_minimax_design": {
+    "-1.0": 1,
+    "0.0": 0,
+    "1.0": 1
+  },
+  "best_minimax_rate_per_cost": 0.03434826564311744,
+  "information_statement": "Evidence is in Y conditional on a chosen intervention; I(M;do(X)) is not a universal falsification threshold. The operational separation object is inf_Q KL(P*_d||Q_d)/Cost(d).",
+  "latent_aleatoric_pairs": [
+    {
+      "gamma": 0.0,
+      "sigma": 1.7,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 0.10625,
+      "sigma": 1.696676438658827,
+      "total_variance": 2.89
+    },
+    {
+      "gamma": 0.2125,
+      "sigma": 1.6866664608036765,
+      "total_variance": 2.89
+    },
+    {
+      "gamma": 0.31875,
+      "sigma": 1.6698498248345568,
+      "total_variance": 2.89
+    },
+    {
+      "gamma": 0.425,
+      "sigma": 1.6460179221381521,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 0.53125,
+      "sigma": 1.614860191316883,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 0.6375,
+      "sigma": 1.5759421785078283,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 0.74375,
+      "sigma": 1.5286712980559292,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 0.85,
+      "sigma": 1.4722431864335455,
+      "total_variance": 2.889999999999999
+    },
+    {
+      "gamma": 0.9562499999999999,
+      "sigma": 1.4055553840030637,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.0625,
+      "sigma": 1.3270620746596595,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.16875,
+      "sigma": 1.234513441603614,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.275,
+      "sigma": 1.1244443072024508,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.3812499999999999,
+      "sigma": 0.9910340243906867,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.4875,
+      "sigma": 0.8230089610690757,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.59375,
+      "sigma": 0.5915749635506896,
+      "total_variance": 2.8899999999999997
+    },
+    {
+      "gamma": 1.7,
+      "sigma": 0.0,
+      "total_variance": 2.8899999999999997
+    }
+  ],
+  "latent_aleatoric_variance_spread": 1.3322676295501878e-15,
+  "single_action_equivalence_rate": 0.0,
+  "top_designs": [
+    {
+      "cost": 2.0,
+      "counts": {
+        "-1.0": 1,
+        "0.0": 0,
+        "1.0": 1
+      },
+      "mean_separation_rate_per_cost": 0.10676349011190622,
+      "min_separation_rate_per_cost": 0.03434826564311744
+    },
+    {
+      "cost": 4.0,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 0,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.10676349011190622,
+      "min_separation_rate_per_cost": 0.03434826564311744
+    },
+    {
+      "cost": 6.0,
+      "counts": {
+        "-1.0": 3,
+        "0.0": 0,
+        "1.0": 3
+      },
+      "mean_separation_rate_per_cost": 0.10676349011190622,
+      "min_separation_rate_per_cost": 0.03434826564311744
+    },
+    {
+      "cost": 5.0,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 0,
+        "1.0": 3
+      },
+      "mean_separation_rate_per_cost": 0.1030652523797506,
+      "min_separation_rate_per_cost": 0.03301869863065361
+    },
+    {
+      "cost": 5.0,
+      "counts": {
+        "-1.0": 3,
+        "0.0": 0,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.1030652523797506,
+      "min_separation_rate_per_cost": 0.03301869863065361
+    },
+    {
+      "cost": 3.0,
+      "counts": {
+        "-1.0": 1,
+        "0.0": 0,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.09639612776536736,
+      "min_separation_rate_per_cost": 0.030646258911861752
+    },
+    {
+      "cost": 3.0,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 0,
+        "1.0": 1
+      },
+      "mean_separation_rate_per_cost": 0.09639612776536736,
+      "min_separation_rate_per_cost": 0.030646258911861752
+    },
+    {
+      "cost": 6.0,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 0,
+        "1.0": 4
+      },
+      "mean_separation_rate_per_cost": 0.09639612776536736,
+      "min_separation_rate_per_cost": 0.030646258911861752
+    },
+    {
+      "cost": 6.0,
+      "counts": {
+        "-1.0": 4,
+        "0.0": 0,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.09639612776536736,
+      "min_separation_rate_per_cost": 0.030646258911861752
+    },
+    {
+      "cost": 4.6,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 1,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.09552430004341257,
+      "min_separation_rate_per_cost": 0.030070425028402827
+    },
+    {
+      "cost": 5.6,
+      "counts": {
+        "-1.0": 2,
+        "0.0": 1,
+        "1.0": 3
+      },
+      "mean_separation_rate_per_cost": 0.09473617889689336,
+      "min_separation_rate_per_cost": 0.02984105841913048
+    },
+    {
+      "cost": 5.6,
+      "counts": {
+        "-1.0": 3,
+        "0.0": 1,
+        "1.0": 2
+      },
+      "mean_separation_rate_per_cost": 0.09473617889689336,
+      "min_separation_rate_per_cost": 0.02984105841913048
+    }
+  ]
+}
