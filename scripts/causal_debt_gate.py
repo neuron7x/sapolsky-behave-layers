@@ -19,6 +19,8 @@ REQUIRED = [
     "experiments/causal_debt_v2/protocol.json",
     "artifacts/causal-debt-v1/verdict.json",
     "artifacts/causal-debt-v2/verdict.json",
+    "artifacts/causal-debt-program/verdict.json",
+    "artifacts/causal-debt-program/EXECUTION_REPORT.md",
 ]
 
 
@@ -52,7 +54,7 @@ def _verify_sumfile(directory: Path) -> list[str]:
     return errors
 
 
-def audit_documents(v1: dict[str, Any], v2: dict[str, Any]) -> list[str]:
+def audit_documents(v1: dict[str, Any], v2: dict[str, Any], program: dict[str, Any] | None = None) -> list[str]:
     errors: list[str] = []
     if v1.get("verdict") != "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED":
         errors.append("V1 negative verdict changed or missing")
@@ -86,6 +88,23 @@ def audit_documents(v1: dict[str, Any], v2: dict[str, Any]) -> list[str]:
     else:
         if v2.get("control_qualification") is not False:
             errors.append("negative V2 verdict must set control_qualification=false")
+
+    if program is not None:
+        if program.get("verdict") != "DEFERRED_CAUSAL_CREDIT_SYNTHETIC_CONTROL_ESTABLISHED_REAL_MODEL_UNTESTED":
+            errors.append("program boundary verdict changed or missing")
+        required_false = (
+            "mechanism_attribution_confirmatory",
+            "stress_sweep_confirmatory",
+            "real_model_tested",
+            "biological_claim_authorized",
+            "via_ascension_authorized",
+            "physical_compute_claim_authorized",
+        )
+        for key in required_false:
+            if program.get(key) is not False:
+                errors.append(f"program boundary requires {key}=false")
+        if program.get("core_implemented") is not True or program.get("v1_negative_preserved") is not True or program.get("v2_control_qualified") is not True:
+            errors.append("program summary lost a binding core/V1/V2 state")
     return errors
 
 
@@ -99,10 +118,11 @@ def validate(root: Path = ROOT) -> list[str]:
     try:
         v1 = _read(root / "artifacts/causal-debt-v1/verdict.json")
         v2 = _read(root / "artifacts/causal-debt-v2/verdict.json")
+        program = _read(root / "artifacts/causal-debt-program/verdict.json")
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         return [f"invalid causal-debt verdict: {exc}"]
-    errors.extend(audit_documents(v1, v2))
-    for name in ("causal-debt-v1", "causal-debt-v2", "causal-debt-v2-ablation", "causal-debt-v2-stress"):
+    errors.extend(audit_documents(v1, v2, program))
+    for name in ("causal-debt-v1", "causal-debt-v2", "causal-debt-v2-ablation", "causal-debt-v2-stress", "causal-debt-program"):
         directory = root / "artifacts" / name
         if directory.exists():
             errors.extend(_verify_sumfile(directory))

@@ -29,3 +29,11 @@ def test_gate_rejects_rewriting_v1_negative() -> None:
     errors = audit_documents(v1, v2)
     assert any("V1 negative verdict" in error for error in errors)
     assert any("not bound" in error for error in errors)
+
+
+def test_gate_rejects_program_real_model_escalation() -> None:
+    v1 = _verdict("causal-debt-v1")
+    v2 = _verdict("causal-debt-v2")
+    program = json.loads((ROOT / "artifacts/causal-debt-program/verdict.json").read_text())
+    program["real_model_tested"] = True
+    assert any("real_model_tested=false" in error for error in audit_documents(v1, v2, program))
