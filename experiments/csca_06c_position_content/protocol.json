@@ -1,0 +1,17 @@
+{
+  "experiment_id": "CSCA-06C-PC",
+  "status": "PREREGISTERED",
+  "prompts_per_context": 12,
+  "contexts": ["PROSE", "CODE"],
+  "rotations": 4,
+  "operator_kernels": ["K_TRAIN_CONTIG8", "K_COHORT_CONTIG8"],
+  "donor_assignments_per_kernel": 8,
+  "inherited_delta": 0.25,
+  "min_fully_resolved_fraction": 0.50,
+  "content_tracking_min": 0.75,
+  "content_minus_position_min": 0.25,
+  "position_tracking_min": 0.90,
+  "position_minus_content_min": 0.50,
+  "active_control": false,
+  "student_authorized": false
+}
