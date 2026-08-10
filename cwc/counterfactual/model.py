@@ -38,7 +38,8 @@ class FittedCounterfactualModel:
         return float(sum(c * t.evaluate(row) for c, t in zip(self.coefficients, self.terms, strict=True)))
 
     def predict(self, rows: Sequence[Mapping[str, float]]) -> np.ndarray:
-        return np.asarray([self.predict_one(row) for row in rows], dtype=float)
+        matrix = _design(rows, self.terms)
+        return matrix @ np.asarray(self.coefficients, dtype=float)
 
     def exact_shapley_one(self, row: Mapping[str, float]) -> dict[str, float]:
         """Exact Shapley under independent symmetric {-1,+1} candidate baselines.
@@ -60,16 +61,19 @@ class FittedCounterfactualModel:
         return out
 
     def mean_credit(self, rows: Sequence[Mapping[str, float]]) -> tuple[dict[str, float], dict[str, float]]:
-        abs_values = {name: [] for name in CANDIDATES}
-        signed_values = {name: [] for name in CANDIDATES}
-        for row in rows:
-            phi = self.exact_shapley_one(row)
-            for name in CANDIDATES:
-                signed_values[name].append(phi[name])
-                abs_values[name].append(abs(phi[name]))
+        if not rows:
+            return ({name: 0.0 for name in CANDIDATES}, {name: 0.0 for name in CANDIDATES})
+        phi = np.zeros((len(rows), len(CANDIDATES)), dtype=float)
+        for coefficient, term in zip(self.coefficients, self.terms, strict=True):
+            if not term.players:
+                continue
+            values = np.fromiter((term.evaluate(row) for row in rows), dtype=float, count=len(rows))
+            share = coefficient * values / len(term.players)
+            for player in term.players:
+                phi[:, CANDIDATES.index(player)] += share
         return (
-            {name: float(np.mean(abs_values[name])) for name in CANDIDATES},
-            {name: float(np.mean(signed_values[name])) for name in CANDIDATES},
+            {name: float(np.mean(np.abs(phi[:, i]))) for i, name in enumerate(CANDIDATES)},
+            {name: float(np.mean(phi[:, i])) for i, name in enumerate(CANDIDATES)},
         )
 
     def intervention_effect(self, row: Mapping[str, float], candidate: str) -> float:
@@ -80,6 +84,25 @@ class FittedCounterfactualModel:
         plus[candidate] = 1.0
         minus[candidate] = -1.0
         return 0.5 * (self.predict_one(plus) - self.predict_one(minus))
+
+    def intervention_effects(self, rows: Sequence[Mapping[str, float]], candidates: Sequence[str]) -> np.ndarray:
+        if len(rows) != len(candidates):
+            raise ValueError("rows/candidates length mismatch")
+        out = np.zeros(len(rows), dtype=float)
+        for idx, (row, candidate) in enumerate(zip(rows, candidates, strict=True)):
+            if candidate not in CANDIDATES:
+                raise KeyError(candidate)
+            total = 0.0
+            for coefficient, term in zip(self.coefficients, self.terms, strict=True):
+                if candidate not in term.players:
+                    continue
+                value = float(row.get("context", 1.0)) ** term.context_power
+                for player in term.players:
+                    if player != candidate:
+                        value *= float(row[player])
+                total += coefficient * value
+            out[idx] = total
+        return out
 
     def config_probability(self, row: Mapping[str, float]) -> float:
         key = config_key(row)

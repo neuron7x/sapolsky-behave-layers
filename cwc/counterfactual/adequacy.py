@@ -49,8 +49,10 @@ def evaluate_intervention_adequacy(
     observed = np.asarray([p.observed_half_effect for p in support.probes], dtype=float)
     scale = max(float(np.sqrt(np.mean(observed**2))), 0.25)
     errors: list[float] = []
+    probe_rows = [p.base for p in support.probes]
+    probe_candidates = [p.candidate for p in support.probes]
     for model in models:
-        predicted = np.asarray([model.intervention_effect(p.base, p.candidate) for p in support.probes], dtype=float)
+        predicted = model.intervention_effects(probe_rows, probe_candidates)
         rmse = float(np.sqrt(np.mean((predicted - observed) ** 2)))
         errors.append(rmse / scale)
     return AdequacyMetrics(
