@@ -111,3 +111,8 @@ To cite, use [`CITATION.cff`](CITATION.cff).
 ### R&D-02 status (2026-08-10)
 
 The repository now contains an executable research-operations substrate (`cwc/research_ops/`) and the preregistered `CSCA-01` controlled causal-credit experiment. CSCA-01 reproduced the exact counterfactual-credit kernel on controlled OOD/null tests, but **does not** authorize architecture integration: the source remains primary-bytes-quarantined, the counterfactual simulator is oracle-quality, real-model utility is untested, and H5 human integration review is pending. See `research/reports/ACT_RD_02_EXECUTION_REPORT.md`.
+
+
+### CSCA-06A falsifiability status (2026-08-10)
+
+The first blockwise composite-null interventional falsifier is preserved as a preregistered negative (`PRIMARY S2=120/128=0.9375 < 0.95`). A separately preregistered repair, `CSCA-06A-R1`, aggregates evidence globally at exactly three fixed cost checkpoints and, on fresh cohorts, rejects S1/S2/S3 `128/128` in both PRIMARY and independent REPLICATION while rejecting none of N0-N3/E0. This is **composite model-class falsification under a declared nuisance envelope**, not graph-truth identification. Hidden-confounder and aleatoric variance remain non-identifiable from the scalar intervention channel, and no shadow/replay/active-control promotion follows.

@@ -668,3 +668,28 @@ hypotheses:
     preregistration: research/preregistration/CSCA_05_RUNTIME_SHADOW.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD06-CSCA05-direct-shadow
+
+
+  - hypothesis_id: H-CSCA-06A-IF
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "The blockwise composite-null intervention instrument cannot satisfy the frozen per-family >=0.95 structural-falsification power gate in both PRIMARY and independent replication at alpha=0.01 and maximum cost 256 while preserving null/equivalence safety."
+    H1: "It satisfies every frozen safety and structural-power predicate in both cohorts."
+    estimand: "per-family composite-null rejection rate, equivalence false rejection, nuisance-null false rejection, authority state, intervention cost and profiled KL/cost separation"
+    experimental_unit: "fresh seed x frozen structural/nuisance family under the preregistered intervention design"
+    decision_rule: "Every S1/S2/S3 family must reach rejection rate >=0.95 independently in PRIMARY and REPLICATION; null/equivalence safety gates must also pass. RESULT PRIMARY S2=120/128=0.9375 while replication passed -> NOT_SUPPORTED; threshold unchanged and replication cannot rescue PRIMARY."
+    preregistration: research/preregistration/CSCA_06A_INTERVENTIONAL_FALSIFIABILITY.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD07-CSCA06A-blockwise-falsifiability
+
+  - hypothesis_id: H-CSCA-06A-R1
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Replacing per-block nuisance re-profiling with preregistered global fixed-checkpoint evidence aggregation cannot recover the frozen structural-power gate at the same alpha, nuisance envelope and maximum intervention cost."
+    H1: "Global fixed-checkpoint aggregation reaches >=0.95 rejection independently for S1/S2/S3 in fresh PRIMARY and REPLICATION while preserving null/equivalence safety and no graph-truth promotion."
+    estimand: "fixed-checkpoint composite-model rejection rate, false rejection under in-envelope nuisance families, equivalence control, rejection cost and authority state"
+    experimental_unit: "fresh seed x frozen structural/nuisance family under exactly three cumulative-cost checkpoints"
+    decision_rule: "At alpha=0.01 with K=3 looks and E>=K/alpha=300, S1/S2/S3 must each reject >=0.95 in both fresh cohorts, N0-N3 must remain <=0.02 each, E0 must reject zero, and O1 must receive no topology-specific authority. RESULT S1/S2/S3=128/128 in both cohorts, all N0-N3/E0=0/128, O1 topology rejection=0 -> SUPPORTED_NARROWED."
+    preregistration: research/preregistration/CSCA_06A_R1_GLOBAL_CHECKPOINT_EVALUE.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD08-CSCA06A-R1-global-falsifiability

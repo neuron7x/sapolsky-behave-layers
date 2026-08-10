@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "fe5c8511fe61ff4637544595d04461ff8b0f0d57",
-  "generated": "2026-08-10T17:46:00+03:00",
+  "git_commit": "a3e0b3ea0e544e49c16dae889125f7e4bf42868f",
+  "generated": "2026-08-10T20:50:00+03:00",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -1951,6 +1951,107 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/CSCA-05-RUNTIME/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD07-CSCA06A-blockwise-falsifiability",
+      "hypothesis_id": "H-CSCA-06A-IF",
+      "statement": "The preregistered blockwise anytime-valid composite-null intervention instrument does not meet its frozen finite-budget structural-falsification power criterion across both confirmatory cohorts.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "controlled scalar Gaussian intervention model class",
+          "declared nuisance envelope h in [-0.75,0.75], total SD in [0.5,2.5]",
+          "balanced do(X) in {-1,+1}",
+          "maximum intervention cost 256",
+          "alpha 0.01",
+          "fresh PRIMARY 81000..81127 and independent REPLICATION 91000..91127 seeds per family"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-06A-IF/verdict.json",
+        "artifacts/csca-06a-falsifiability/verdict.json",
+        "research/reports/CSCA_06A_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY S1=127/128=0.9921875, S2=120/128=0.9375, S3=125/128=0.9765625; frozen per-family power gate was >=0.95",
+        "REPLICATION S1=125/128=0.9765625, S2=125/128=0.9765625, S3=124/128=0.96875",
+        "N0/N1/N2/N3 false rejection 0/128 per family in both cohorts",
+        "E0 profiled-KL equivalence control rejected 0/128 in both cohorts",
+        "replication was not permitted to rescue the failed PRIMARY"
+      ],
+      "limitations": [
+        "negative applies to the blockwise nuisance-reprofiling evidence aggregation at the frozen budget, not to all interventional falsification procedures",
+        "Gaussian controlled model family only",
+        "latent confounding and aleatoric variance are not separately identified by scalar Y",
+        "an accidentally exposed precommit cohort was burned and excluded before the authoritative fresh cohorts"
+      ],
+      "prohibited_extrapolations": [
+        "interventional causal falsification is impossible",
+        "graph M is true when not rejected",
+        "latent confounding is absent",
+        "aleatoric noise is identified separately",
+        "real-model shadow inference authority"
+      ],
+      "note": "This frozen negative is the parent of CSCA-06A-R1; it may not be retrospectively relabeled after the repaired mechanism succeeds.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-06A-IF/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-RD08-CSCA06A-R1-global-falsifiability",
+      "hypothesis_id": "H-CSCA-06A-R1",
+      "statement": "A fixed-checkpoint global shared-nuisance composite model-class falsifier reaches the frozen structural-misspecification power gate while preserving the declared in-envelope null and equivalence controls at the same alpha and maximum intervention cost in fresh PRIMARY and independent-replication cohorts.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "controlled scalar Gaussian intervention model class",
+          "declared nuisance envelope h in [-0.75,0.75], total SD in [0.5,2.5]",
+          "do(X) in {-1,+1}",
+          "three preregistered cumulative-cost checkpoints 64/128/256",
+          "alpha 0.01 with threshold K/alpha=300",
+          "fresh PRIMARY 151000..151127 and independent REPLICATION 161000..161127 seeds per family"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-06A-R1/verdict.json",
+        "artifacts/csca-06a-r1-global-evalue/verdict.json",
+        "artifacts/csca-06a-r1-global-evalue/SHA256SUMS",
+        "research/reports/CSCA_06A_R1_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY S1/S2/S3 each 128/128 rejected; median rejection cost 64",
+        "REPLICATION S1/S2/S3 each 128/128 rejected; median rejection cost 64",
+        "N0/N1/N2/N3 rejection 0/128 per family in both cohorts",
+        "E0 single-action equivalence rejection 0/128 in both cohorts",
+        "O1 out-of-envelope family received zero topology-specific rejection in both cohorts",
+        "parent S2 PRIMARY was 120/128=0.9375; R1 improved evidence aggregation without relaxing alpha, max cost, nuisance envelope or >=0.95 power gate"
+      ],
+      "limitations": [
+        "qualification is conditional on the declared nuisance model class and tested intervention support",
+        "rejection falsifies the composite graph-component+nuisance class, not graph topology uniquely when nuisance assumptions are wrong",
+        "fixed-checkpoint Markov plus union-bound validity is not arbitrary-time e-process validity",
+        "latent-confounder and aleatoric variance decomposition remains non-identifiable in the scalar observation channel",
+        "weak-edge W1 mostly abstains under the fixed cost",
+        "controlled Gaussian benchmark only; no real-LM structural claim"
+      ],
+      "prohibited_extrapolations": [
+        "graph truth established",
+        "all hidden confounders excluded",
+        "universal mutual-information threshold for graph falsification",
+        "semantic causal authority",
+        "real-model replay control",
+        "active causal control"
+      ],
+      "note": "This qualifies a narrow finite-checkpoint composite-model falsifier. The next real-model gate must attack intervention-operator semantics/invariance rather than promote graph truth.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-06A-R1/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

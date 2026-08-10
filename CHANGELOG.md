@@ -3,6 +3,23 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Interventional model-class falsifiability] — 2026-08-10
+
+### Added
+- `cwc/counterfactual/falsifiability.py`: profiled composite-null Gaussian intervention model, nuisance envelope, KL/cost design search, equivalence detector, block e-process and fixed-checkpoint global e-value.
+- `CSCA-06A-IF`: preregistered finite-budget falsifiability experiment, including latent-vs-aleatoric non-identifiability construction and an explicit nuisance-envelope boundary.
+- `CSCA-06A-R1`: new preregistration and fresh cohorts after the parent failed; exactly three cumulative-cost checkpoints with family-wise alpha control.
+
+### Evidence
+- Parent `CSCA-06A-IF` remains `NOT_SUPPORTED`: PRIMARY S2 `120/128=0.9375 < 0.95`; independent replication passed but cannot rescue the frozen PRIMARY.
+- R1 PRIMARY: S1/S2/S3 `128/128`; N0/N1/N2/N3/E0 `0/128` rejected.
+- R1 independent REPLICATION: S1/S2/S3 `128/128`; N0/N1/N2/N3/E0 `0/128` rejected.
+- R1 uses the same alpha `0.01`, max cost `256`, nuisance envelope and structural power threshold as the failed parent; only evidence aggregation changed.
+- Scalar intervention observations identify total nuisance variance, not a unique latent-confounder versus aleatoric decomposition.
+
+### Scope boundary
+`GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED` means only that the declared composite model class is falsifiable on the frozen controlled family. It does not prove graph truth, exclude arbitrary hidden confounding, authorize real-model causal control, or establish a universal information threshold.
+
 ## [Structural counterfactual adequacy qualification] — 2026-08-10
 
 ### Added
