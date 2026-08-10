@@ -131,6 +131,13 @@ def _target_log_prob(model, prompt: list[int], target: int) -> float:
     return float(lp[target].item())
 
 
+@torch.inference_mode()
+def _target_log_prob_batch(model, prompts: list[list[int]], target: int) -> list[float]:
+    ids = torch.tensor(prompts, dtype=torch.long, device=model.get_device())
+    lp = F.log_softmax(model(ids)[:, -1, :], dim=-1)
+    return [float(x) for x in lp[:, target].cpu().tolist()]
+
+
 class FiniteSoftInterventionOracle:
     """Exact expectation over a frozen finite stochastic intervention kernel."""
 
@@ -143,17 +150,20 @@ class FiniteSoftInterventionOracle:
         with torch.inference_mode():
             lp = F.log_softmax(model(ids)[:, -1, :], dim=-1)[0]
         self.target = int(torch.argmax(lp).item())
-        self.forward_calls = 1
+        self.forward_calls = 1  # logical factual intervention realization
+        self.model_batch_calls = 1
 
     def __call__(self, keep: FrozenSet[str]) -> float:
-        vals = []
+        prompts = []
         for assignment in self.assignments:
             prompt = list(self.spec.prompt_tokens)
             for player, (start, end) in self.spec.spans.items():
                 if player not in keep:
                     prompt[start:end] = assignment[player]
-            vals.append(_target_log_prob(self.model, prompt, self.target))
-            self.forward_calls += 1
+            prompts.append(prompt)
+        vals = _target_log_prob_batch(self.model, prompts, self.target)
+        self.forward_calls += len(prompts)
+        self.model_batch_calls += 1
         return float(sum(vals) / len(vals))
 
 
@@ -202,7 +212,7 @@ def _evaluate_prompt(model, spec: PromptInterventionSpec, *, cohort: str, includ
         assignments=donor_assignments(spec,cohort=cohort,kernel=kernel)
         oracle=FiniteSoftInterventionOracle(model,spec,assignments)
         t=time.perf_counter(); est=exact_ablation_shapley(PLAYERS,oracle); walls[kernel]=time.perf_counter()-t
-        credits[kernel]=est.credits; forward_calls[kernel]=oracle.forward_calls
+        credits[kernel]=est.credits; forward_calls[kernel]={"logical_intervention_realizations":oracle.forward_calls,"model_batch_calls":oracle.model_batch_calls}
     space=None
     if include_space:
         oracle=SpaceOracle(model,spec); t=time.perf_counter(); est=exact_ablation_shapley(PLAYERS,oracle)
@@ -276,7 +286,8 @@ def run_confirmatory(cohort: str) -> dict:
     payload={
         "experiment_id":"CSCA-06B-OP","cohort":cohort.upper(),"delta":delta,"metrics":strata,"threshold_checks":threshold_checks,
         "prompt_overlap_with_csca05":overlap,"model_state_mutated":mutation,"wall_seconds":wall,
-        "physical_forward_calls":sum(sum(r["forward_calls"].values())+r["space_forward_calls"] for r in rows),
+        "logical_intervention_realizations":sum(sum(x["logical_intervention_realizations"] for x in r["forward_calls"].values())+r["space_forward_calls"] for r in rows),
+        "physical_model_batch_calls":sum(sum(x["model_batch_calls"] for x in r["forward_calls"].values())+r["space_forward_calls"] for r in rows),
         "cohort_pass":passed,"authority":"DIRECT_INTERVENTION_OPERATOR_FAMILY_ROBUST_SHADOW_MEASUREMENT" if passed else "RESEARCH_ONLY",
         "semantic_causality_authorized":False,"amortized_student_authorized":False,"replay_authorized":False,"active_control":False,
     }
