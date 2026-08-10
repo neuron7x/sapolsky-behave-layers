@@ -1,0 +1,43 @@
+{
+  "architecture_promotion_authority": false,
+  "experiment": "S01 minimal Skill/Luck conceptual reproduction",
+  "luck": {
+    "observed_y": 1,
+    "phi": {
+      "1": 0.25,
+      "2": 0.0,
+      "f_all": 0.25
+    },
+    "trajectory": {
+      "u": 1,
+      "x1": 1,
+      "x2": 1
+    }
+  },
+  "naive_return_credit_x2": {
+    "luck": 1.0,
+    "skill": 1.0
+  },
+  "predicates": {
+    "luck_efficiency": true,
+    "luck_terminal_zero": true,
+    "naive_return_confounded": true,
+    "skill_efficiency": true,
+    "skill_terminal_positive": true
+  },
+  "scope": "conceptual property only; not full paper reproduction",
+  "skill": {
+    "observed_y": 1,
+    "phi": {
+      "1": -0.125,
+      "2": 0.375,
+      "f_all": 0.25
+    },
+    "trajectory": {
+      "u": 1,
+      "x1": 0,
+      "x2": 1
+    }
+  },
+  "verdict": "S01_SKILLLUCK_CONCEPT_REPRODUCED"
+}
