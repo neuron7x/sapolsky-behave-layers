@@ -1,0 +1,86 @@
+{
+  "source": {
+    "source_id": "S02",
+    "title": "Abstraction Induces the Brain Alignment of Language and Speech Models",
+    "authors": [
+      "Emily Cheng",
+      "Aditya R. Vaidya",
+      "Richard J. Antonello"
+    ],
+    "year": 2026,
+    "venue": "ICML 2026",
+    "doi": "10.48550/arXiv.2602.04081",
+    "arxiv_id": "2602.04081",
+    "version": "v2",
+    "publication_status": "CONFERENCE",
+    "primary_source": true,
+    "code_available": true,
+    "data_available": true,
+    "independent_replication": "unknown",
+    "retraction_or_correction": "none_found",
+    "retrieved_at": "2026-08-10",
+    "primary_url": "https://arxiv.org/abs/2602.04081v2",
+    "code_url": "https://github.com/chengemily1/brain-id-abstract",
+    "source_sha256": "UNKNOWN_NOT_MATERIALIZED",
+    "notes": "arXiv v2 is camera-ready and lists ICML 2026; official ICML 2026 downloads index contains the title.",
+    "snapshot_sha256": "f247995eb9889d0beab65610b1e53f01f94b4c0f1de4c4cbdbe3a4a3d7efc644",
+    "snapshot_path": "research/sources/papers/S02_PRIMARY_SOURCE_SNAPSHOT.txt"
+  },
+  "claims": [
+    {
+      "claim_id": "S02-C01",
+      "source_id": "S02",
+      "claim": "Layerwise intrinsic dimension is more strongly associated with brain encoding performance than layerwise surprisal in the reported aggregate analyses.",
+      "claim_type": "EMPIRICAL",
+      "status": "ANCHORED",
+      "evidence_location": "ICML/arXiv v2 Table 1, Sec. 4.1",
+      "metric": "Spearman rho / mixed-effects beta",
+      "comparison": "intrinsic dimension vs surprisal",
+      "sample": "3 fMRI subjects; 9 ECoG subjects; 6 LMs + 3 speech models",
+      "intervention": "none for this claim",
+      "baseline": "surprisal",
+      "effect_direction": "ID generally stronger",
+      "uncertainty": "association; limited human sample and model families",
+      "authors_interpretation": "abstraction better explains alignment",
+      "our_interpretation": "association-only for semantic-state transfer"
+    },
+    {
+      "claim_id": "S02-C02",
+      "source_id": "S02",
+      "claim": "Fine-tuning a speech model to predict brain responses increases intrinsic dimension and semantic content of representations.",
+      "claim_type": "EMPIRICAL",
+      "status": "ANCHORED",
+      "evidence_location": "ICML/arXiv v2 Sec. 4.3 and appendix F",
+      "metric": "encoding performance / intrinsic dimension / semantic probing",
+      "comparison": "pretrained vs brain-tuned",
+      "sample": "brain-tuning datasets described by paper",
+      "intervention": "training intervention on model weights",
+      "baseline": "pretrained WavLM",
+      "effect_direction": "increase",
+      "uncertainty": "causal for model representation change, not biological mechanism",
+      "authors_interpretation": "brain prediction objective drives richer semantic features",
+      "our_interpretation": "supports trainable abstraction candidate, not brain equivalence"
+    }
+  ],
+  "integration_questions": [
+    {
+      "hypothesis_id": "H-S02-SEMANTIC-STATE",
+      "source_claims": [
+        "S02-C01",
+        "S02-C02"
+      ],
+      "mechanism": "A causal memory unit should track context-sensitive semantic state rather than lexical identity if meaning-level invariants carry downstream predictive leverage.",
+      "formal_object": "within_semantic_effect_distance < within_lexical_effect_distance on held-out contexts",
+      "expected_effect": "paraphrases preserve effect; lexical minimal pairs with changed meaning do not",
+      "intervention": "semantic-preserving paraphrase, context inversion, negation and contradiction",
+      "control": "lexical identity, embedding cosine, surprisal, activation norm",
+      "null_model": "randomized semantic embeddings / context removed",
+      "dataset": "synthetic semantic minimal-pair corpus then real LM hidden-state pilot",
+      "metric": "effect-distance, OOD prediction gain, intervention consistency",
+      "decision_rule": "advance only if semantic-state model explains held-out causal effect beyond all lexical/statistical controls",
+      "failure_condition": "lexical controls match or exceed semantic-state model, or effect fails context inversion",
+      "integration_target": "candidate representation for CausalDebtLedger keys",
+      "promotion_status": "CLAIM_EXTRACTED"
+    }
+  ]
+}

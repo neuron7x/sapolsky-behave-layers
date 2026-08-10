@@ -1,0 +1,87 @@
+{
+  "source": {
+    "source_id": "S04",
+    "title": "Continual learning and refinement of causal models through dynamic predicate invention",
+    "authors": [
+      "Enrique Crespo-Fernandez",
+      "Oliver Ray",
+      "Telmo de Menezes e Silva Filho",
+      "Peter Flach"
+    ],
+    "year": 2026,
+    "venue": "UCRL@ICLR 2026 Workshop Poster",
+    "doi": "10.48550/arXiv.2602.17217",
+    "arxiv_id": "2602.17217",
+    "version": "v1",
+    "publication_status": "WORKSHOP",
+    "primary_source": true,
+    "code_available": false,
+    "data_available": false,
+    "independent_replication": "unknown",
+    "retraction_or_correction": "none_found",
+    "retrieved_at": "2026-08-10",
+    "primary_url": "https://openreview.net/forum?id=jJbzfjODQt",
+    "arxiv_url": "https://arxiv.org/abs/2602.17217v1",
+    "source_sha256": "UNKNOWN_NOT_MATERIALIZED",
+    "notes": "OpenReview explicitly labels this UCRL@ICLR2026 Poster; not ICLR main-track.",
+    "snapshot_sha256": "7ee8fea0460f876acee19fb737ea02be133b632dee1af205efbb106fc7c62efe",
+    "snapshot_path": "research/sources/papers/S04_PRIMARY_SOURCE_SNAPSHOT.txt"
+  },
+  "claims": [
+    {
+      "claim_id": "S04-C01",
+      "source_id": "S04",
+      "claim": "The method performs online Predict-Verify-Refine model repair with predicate invention and prunes hypotheses on prediction failures.",
+      "claim_type": "ALGORITHMIC",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v1 Sec. 2.1-2.2",
+      "metric": "symbolic transition prediction / model repair",
+      "comparison": "batch ILP / PPO context",
+      "sample": "deterministic fully observable MiniHack environments",
+      "intervention": "prediction-error-triggered generalization/specialization",
+      "baseline": "PPO and symbolic references",
+      "effect_direction": "online rule repair",
+      "uncertainty": "hand-specified metarules/types and restricted domain",
+      "authors_interpretation": "continual causal symbolic world model",
+      "our_interpretation": "candidate abstraction archive mechanism; not yet general"
+    },
+    {
+      "claim_id": "S04-C02",
+      "source_id": "S04",
+      "claim": "The learned symbolic model transfers from a 10x10 to 100x100 grid in the reported experiment.",
+      "claim_type": "EMPIRICAL",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v1 Sec. 3.2",
+      "metric": "zero-shot model transfer / sample efficiency",
+      "comparison": "grid sizes and PPO",
+      "sample": "MiniHack Lava Crossing",
+      "intervention": "environment scale change",
+      "baseline": "PPO",
+      "effect_direction": "reported zero-shot scale transfer",
+      "uncertainty": "single structured domain; does not establish general scale invariance",
+      "authors_interpretation": "scale-invariant lifted concepts",
+      "our_interpretation": "narrow positive result; broad scale-invariance claim withheld"
+    }
+  ],
+  "integration_questions": [
+    {
+      "hypothesis_id": "H-S04-PREDICATE-INVENTION",
+      "source_claims": [
+        "S04-C01",
+        "S04-C02"
+      ],
+      "mechanism": "Invented reusable predicates can compress recurrent causal regularities and improve cross-context transfer under explicit complexity penalties.",
+      "formal_object": "predictive_gain>0 AND transfer_gain>0 AND description_length_delta<budget",
+      "expected_effect": "invented predicate reused across distinct contexts with lower sample complexity",
+      "intervention": "withhold/perturb candidate predicate; force duplicate flat rules",
+      "control": "embedding-only archive, no-invention symbolic learner, random predicates",
+      "null_model": "predicate labels permuted across contexts",
+      "dataset": "controlled relational transition tasks",
+      "metric": "prediction error, OOD transfer, rule count/MDL, false-rule survival",
+      "decision_rule": "retain predicate only if OOD gain survives complexity penalty and ablation",
+      "failure_condition": "flat rules match transfer or invented predicate is context-specific/redundant",
+      "integration_target": "research archive abstraction layer only",
+      "promotion_status": "CLAIM_EXTRACTED"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+[
+  {
+    "null_id": "N1",
+    "name": "shuffled_labels",
+    "applies_to": [
+      "H-S01-PHI-CREDIT",
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N2",
+    "name": "shuffled_temporal_order",
+    "applies_to": [
+      "H-S01-PHI-CREDIT",
+      "H-S03-LATENT-DYNAMICS"
+    ]
+  },
+  {
+    "null_id": "N3",
+    "name": "randomized_semantic_embeddings",
+    "applies_to": [
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N4",
+    "name": "lexical_only_representation",
+    "applies_to": [
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N5",
+    "name": "context_removed_representation",
+    "applies_to": [
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N6",
+    "name": "equal_credit",
+    "applies_to": [
+      "H-S01-PHI-CREDIT"
+    ]
+  },
+  {
+    "null_id": "N7",
+    "name": "recency_only_credit",
+    "applies_to": [
+      "H-S01-PHI-CREDIT"
+    ]
+  },
+  {
+    "null_id": "N8",
+    "name": "random_replay",
+    "applies_to": [
+      "H-S01-PHI-CREDIT"
+    ]
+  },
+  {
+    "null_id": "N9",
+    "name": "reward_or_rpe_only_replay",
+    "applies_to": [
+      "H-S01-PHI-CREDIT"
+    ]
+  },
+  {
+    "null_id": "N10",
+    "name": "shorter_horizon",
+    "applies_to": [
+      "H-S03-LATENT-DYNAMICS"
+    ]
+  },
+  {
+    "null_id": "N11",
+    "name": "ood_context",
+    "applies_to": [
+      "H-S01-PHI-CREDIT",
+      "H-S02-SEMANTIC-STATE",
+      "H-S03-LATENT-DYNAMICS",
+      "H-S04-PREDICATE-INVENTION"
+    ]
+  },
+  {
+    "null_id": "N12",
+    "name": "adversarial_distractor",
+    "applies_to": [
+      "H-S01-PHI-CREDIT",
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N13",
+    "name": "semantic_preserving_paraphrase",
+    "applies_to": [
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N14",
+    "name": "semantic_changing_minimal_pair",
+    "applies_to": [
+      "H-S02-SEMANTIC-STATE"
+    ]
+  },
+  {
+    "null_id": "N15",
+    "name": "seed_replication",
+    "applies_to": [
+      "ALL"
+    ]
+  },
+  {
+    "null_id": "N16",
+    "name": "flat_no_predicate_invention",
+    "applies_to": [
+      "H-S04-PREDICATE-INVENTION"
+    ]
+  },
+  {
+    "null_id": "N17",
+    "name": "future_leakage_positive_control",
+    "applies_to": [
+      "H-S03-LATENT-DYNAMICS"
+    ]
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "priority": "P0",
+    "item_id": "R01",
+    "source_id": "S01",
+    "task": "Minimal theorem/identity reproduction + SkillLuck causal-credit benchmark",
+    "blocked_by": [],
+    "promotion_target": "REPRODUCED",
+    "status": "READY"
+  },
+  {
+    "priority": "P0",
+    "item_id": "R02",
+    "source_id": "S02",
+    "task": "Code/data provenance audit then lexical-vs-semantic CWC transfer test",
+    "blocked_by": [
+      "official code checkout unavailable in current offline container"
+    ],
+    "promotion_target": "REPRODUCED",
+    "status": "PARTIALLY_BLOCKED"
+  },
+  {
+    "priority": "P0",
+    "item_id": "R03",
+    "source_id": "S03",
+    "task": "Past-only latent transition reproduction on controlled CWC sequences",
+    "blocked_by": [
+      "paper code not public at retrieval"
+    ],
+    "promotion_target": "REPRODUCED",
+    "status": "READY_FOR_INDEPENDENT_REIMPLEMENTATION"
+  },
+  {
+    "priority": "P1",
+    "item_id": "R04",
+    "source_id": "S04",
+    "task": "Predicate-invention transfer test under stochasticity/partial observability with MDL control",
+    "blocked_by": [
+      "official code not located in primary-source pass"
+    ],
+    "promotion_target": "REPRODUCED",
+    "status": "READY_FOR_INDEPENDENT_REIMPLEMENTATION"
+  }
+]

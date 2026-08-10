@@ -1,0 +1,104 @@
+{
+  "source": {
+    "source_id": "S01",
+    "title": "Counterfactual Shapley Credit Assignment",
+    "authors": [
+      "Mingxuan Li",
+      "Kai-Zhan Lee",
+      "Elias Bareinboim"
+    ],
+    "year": 2026,
+    "venue": "Reinforcement Learning Journal 2026 / RLC 2026",
+    "doi": "10.48550/arXiv.2607.16999",
+    "arxiv_id": "2607.16999",
+    "version": "v2",
+    "publication_status": "PEER_REVIEWED",
+    "primary_source": true,
+    "code_available": false,
+    "data_available": false,
+    "independent_replication": "unknown",
+    "retraction_or_correction": "none_found",
+    "retrieved_at": "2026-08-10",
+    "primary_url": "https://arxiv.org/abs/2607.16999v2",
+    "secondary_status_url": "https://www.causalai.net/",
+    "source_sha256": "UNKNOWN_NOT_MATERIALIZED",
+    "notes": "arXiv v2 states RLJ 2026 / RLC 2026; no official code link found in the primary-source pass.",
+    "snapshot_sha256": "11379e7c55c790d3d4656f50715a93ed9551b02ca0f8064a65d8a4d7e334b7ba",
+    "snapshot_path": "research/sources/papers/S01_PRIMARY_SOURCE_SNAPSHOT.txt"
+  },
+  "claims": [
+    {
+      "claim_id": "S01-C01",
+      "source_id": "S01",
+      "claim": "Counterfactual Shapley values are defined from counterfactual natural total effects and satisfy the paper's causal credit desiderata.",
+      "claim_type": "THEORETICAL",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v2 Sec. 2.3-3.1, Theorem 3.2",
+      "metric": "formal theorem",
+      "comparison": "causal admissibility/power/normality/scaling",
+      "sample": "N/A",
+      "intervention": "counterfactual action replacement under baseline policy",
+      "baseline": "pi_base",
+      "effect_direction": "non-causes -> zero; causes -> non-zero",
+      "uncertainty": "paper theorem under stated SCM assumptions",
+      "authors_interpretation": "principled causal credit assignment",
+      "our_interpretation": "candidate formal credit operator; not yet reproduced in CWC"
+    },
+    {
+      "claim_id": "S01-C02",
+      "source_id": "S01",
+      "claim": "The paper proves policy-gradient / optimal-policy equivalence for its phi-MDP reward redistribution.",
+      "claim_type": "THEORETICAL",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v2 Lemma 3.5 / Theorem 3.7",
+      "metric": "optimal policy equivalence",
+      "comparison": "original MDP vs phi-MDP",
+      "sample": "N/A",
+      "intervention": "reward redistribution",
+      "baseline": "original return",
+      "effect_direction": "same optimal policy",
+      "uncertainty": "depends on theorem assumptions and undiscounted phi return",
+      "authors_interpretation": "drop-in causal reward redistribution",
+      "our_interpretation": "strong but domain-specific; CWC memory credit is not an MDP reward by default"
+    },
+    {
+      "claim_id": "S01-C03",
+      "source_id": "S01",
+      "claim": "The paper proposes a consistent linear-time coalition-sampling estimator and Prioritized Trajectory Replay.",
+      "claim_type": "ALGORITHMIC",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v2 Introduction / estimator section",
+      "metric": "estimator complexity and replay priority",
+      "comparison": "exact combinatorial Shapley / standard replay",
+      "sample": "paper experiments",
+      "intervention": "coalition sampling",
+      "baseline": "TD/PER and reported baselines",
+      "effect_direction": "lower practical estimation cost",
+      "uncertainty": "implementation/code not independently reproduced here",
+      "authors_interpretation": "tractable credit estimation",
+      "our_interpretation": "high-priority reproduction target"
+    }
+  ],
+  "integration_questions": [
+    {
+      "hypothesis_id": "H-S01-PHI-CREDIT",
+      "source_claims": [
+        "S01-C01",
+        "S01-C02",
+        "S01-C03"
+      ],
+      "mechanism": "Counterfactual coalition credit separates delayed causal action contribution from temporal adjacency, correlation and stochastic luck.",
+      "formal_object": "phi_i = Shapley_i(NTE(coalition, Y | trajectory))",
+      "expected_effect": "credit(A) > credit(B), credit(C), credit(D) on OOD contexts; non-causes approach zero",
+      "intervention": "replace candidate actions under fixed baseline policy while holding admissible exogenous evidence fixed/resampled per declared SCM",
+      "control": "resolution_aware_debt, RPE priority, recency, equal credit",
+      "null_model": "permuted causal labels and luck-only branch",
+      "dataset": "CWC synthetic Skill/Luck + delayed-cause SCM; then real-model replay pilot only if reproduced",
+      "metric": "cause ranking, false-credit rate, OOD credit stability, compute cost",
+      "decision_rule": "REPRODUCED only if theorem-level toy identities pass and preregistered OOD cause ranking beats all controls without excess false credit",
+      "failure_condition": "true cause not ranked first or non-cause/stochastic credit persists OOD; counterfactual cost dominates replay benefit",
+      "integration_target": "cwc/replay credit estimator",
+      "promotion_status": "CLAIM_EXTRACTED"
+    }
+  ]
+}

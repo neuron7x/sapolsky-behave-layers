@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <key id="status" for="node" attr.name="status" attr.type="string"/>
+  <key id="source" for="edge" attr.name="source_evidence" attr.type="string"/>
+  <graph id="G" edgedefault="directed">
+    <node id="semantic_input"><data key="status">RAW</data></node>
+    <node id="semantic_state"><data key="status">CANDIDATE</data></node>
+    <node id="latent_state"><data key="status">CANDIDATE</data></node>
+    <node id="eligibility"><data key="status">EXISTING</data></node>
+    <node id="causal_credit"><data key="status">EXISTING+CANDIDATE</data></node>
+    <node id="replay"><data key="status">EXISTING+CANDIDATE</data></node>
+    <node id="invariance"><data key="status">EXISTING</data></node>
+    <node id="value_update"><data key="status">CANDIDATE</data></node>
+    <node id="policy_change"><data key="status">TARGET</data></node>
+    <node id="predicate_invention"><data key="status">CANDIDATE</data></node>
+    <edge id="e0" source="semantic_input" target="semantic_state"><data key="source">S02</data></edge>
+    <edge id="e1" source="semantic_state" target="latent_state"><data key="source">S03</data></edge>
+    <edge id="e2" source="latent_state" target="eligibility"><data key="source">ACT</data></edge>
+    <edge id="e3" source="eligibility" target="causal_credit"><data key="source">S01</data></edge>
+    <edge id="e4" source="causal_credit" target="replay"><data key="source">S01</data></edge>
+    <edge id="e5" source="replay" target="invariance"><data key="source">ACT</data></edge>
+    <edge id="e6" source="invariance" target="value_update"><data key="source">ACT</data></edge>
+    <edge id="e7" source="value_update" target="policy_change"><data key="source">ACT</data></edge>
+    <edge id="e8" source="semantic_state" target="predicate_invention"><data key="source">S04</data></edge>
+    <edge id="e9" source="predicate_invention" target="causal_credit"><data key="source">S04</data></edge>
+  </graph>
+</graphml>

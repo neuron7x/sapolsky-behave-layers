@@ -1,0 +1,79 @@
+[
+  {
+    "hypothesis_id": "H-S01-PHI-CREDIT",
+    "source_claims": [
+      "S01-C01",
+      "S01-C02",
+      "S01-C03"
+    ],
+    "mechanism": "Counterfactual coalition credit separates delayed causal action contribution from temporal adjacency, correlation and stochastic luck.",
+    "formal_object": "phi_i = Shapley_i(NTE(coalition, Y | trajectory))",
+    "expected_effect": "credit(A) > credit(B), credit(C), credit(D) on OOD contexts; non-causes approach zero",
+    "intervention": "replace candidate actions under fixed baseline policy while holding admissible exogenous evidence fixed/resampled per declared SCM",
+    "control": "resolution_aware_debt, RPE priority, recency, equal credit",
+    "null_model": "permuted causal labels and luck-only branch",
+    "dataset": "CWC synthetic Skill/Luck + delayed-cause SCM; then real-model replay pilot only if reproduced",
+    "metric": "cause ranking, false-credit rate, OOD credit stability, compute cost",
+    "decision_rule": "REPRODUCED only if theorem-level toy identities pass and preregistered OOD cause ranking beats all controls without excess false credit",
+    "failure_condition": "true cause not ranked first or non-cause/stochastic credit persists OOD; counterfactual cost dominates replay benefit",
+    "integration_target": "cwc/replay credit estimator",
+    "promotion_status": "CLAIM_EXTRACTED"
+  },
+  {
+    "hypothesis_id": "H-S02-SEMANTIC-STATE",
+    "source_claims": [
+      "S02-C01",
+      "S02-C02"
+    ],
+    "mechanism": "A causal memory unit should track context-sensitive semantic state rather than lexical identity if meaning-level invariants carry downstream predictive leverage.",
+    "formal_object": "within_semantic_effect_distance < within_lexical_effect_distance on held-out contexts",
+    "expected_effect": "paraphrases preserve effect; lexical minimal pairs with changed meaning do not",
+    "intervention": "semantic-preserving paraphrase, context inversion, negation and contradiction",
+    "control": "lexical identity, embedding cosine, surprisal, activation norm",
+    "null_model": "randomized semantic embeddings / context removed",
+    "dataset": "synthetic semantic minimal-pair corpus then real LM hidden-state pilot",
+    "metric": "effect-distance, OOD prediction gain, intervention consistency",
+    "decision_rule": "advance only if semantic-state model explains held-out causal effect beyond all lexical/statistical controls",
+    "failure_condition": "lexical controls match or exceed semantic-state model, or effect fails context inversion",
+    "integration_target": "candidate representation for CausalDebtLedger keys",
+    "promotion_status": "CLAIM_EXTRACTED"
+  },
+  {
+    "hypothesis_id": "H-S03-LATENT-DYNAMICS",
+    "source_claims": [
+      "S03-C01",
+      "S03-C02"
+    ],
+    "mechanism": "Transition-sufficient latent state with strict past-only stimulus access improves multi-step state prediction over stateless encoding.",
+    "formal_object": "z_{t+1}=F(z_{<=t}, e_{<=t}) with no future e access",
+    "expected_effect": "lower held-out rollout error and lower horizon drift than stateless encoder at matched capacity",
+    "intervention": "remove state recurrence; inject future-stimulus leakage as positive leakage control",
+    "control": "stateless encoder, teacher-forced oracle, shuffled action timing",
+    "null_model": "future-leakage model and no-stimulus model",
+    "dataset": "CWC controlled sequence task before any neuroimaging use",
+    "metric": "multi-step error vs horizon, leakage sensitivity, state sufficiency probe",
+    "decision_rule": "advance only if causal-access latent model beats stateless baseline OOD and leakage audit is zero",
+    "failure_condition": "gain disappears when capacity/compute matched or requires future information",
+    "integration_target": "future CWC world-state substrate",
+    "promotion_status": "CLAIM_EXTRACTED"
+  },
+  {
+    "hypothesis_id": "H-S04-PREDICATE-INVENTION",
+    "source_claims": [
+      "S04-C01",
+      "S04-C02"
+    ],
+    "mechanism": "Invented reusable predicates can compress recurrent causal regularities and improve cross-context transfer under explicit complexity penalties.",
+    "formal_object": "predictive_gain>0 AND transfer_gain>0 AND description_length_delta<budget",
+    "expected_effect": "invented predicate reused across distinct contexts with lower sample complexity",
+    "intervention": "withhold/perturb candidate predicate; force duplicate flat rules",
+    "control": "embedding-only archive, no-invention symbolic learner, random predicates",
+    "null_model": "predicate labels permuted across contexts",
+    "dataset": "controlled relational transition tasks",
+    "metric": "prediction error, OOD transfer, rule count/MDL, false-rule survival",
+    "decision_rule": "retain predicate only if OOD gain survives complexity penalty and ablation",
+    "failure_condition": "flat rules match transfer or invented predicate is context-specific/redundant",
+    "integration_target": "research archive abstraction layer only",
+    "promotion_status": "CLAIM_EXTRACTED"
+  }
+]

@@ -1,0 +1,89 @@
+{
+  "source": {
+    "source_id": "S03",
+    "title": "NeuroWorld: A Latent Brain World Model for Stimulus-Conditioned Human Brain Dynamics",
+    "authors": [
+      "Zijian Dong",
+      "Jianxiong Zhou",
+      "Kwun Kei Ng",
+      "Jan Paolo Macapinlac Balagtas",
+      "Zhizhou Li",
+      "Zijiao Chen",
+      "Juan Helen Zhou"
+    ],
+    "year": 2026,
+    "venue": "arXiv",
+    "doi": "10.48550/arXiv.2608.01773",
+    "arxiv_id": "2608.01773",
+    "version": "v1",
+    "publication_status": "PREPRINT",
+    "primary_source": true,
+    "code_available": false,
+    "data_available": "partial_or_dataset_specific",
+    "independent_replication": "unknown",
+    "retraction_or_correction": "none_found",
+    "retrieved_at": "2026-08-10",
+    "primary_url": "https://arxiv.org/abs/2608.01773v1",
+    "source_sha256": "UNKNOWN_NOT_MATERIALIZED",
+    "notes": "Paper says code will be made public upon acceptance; therefore code_available=false at retrieval time.",
+    "snapshot_sha256": "0ed3f44b90769d15114c70d6453f123e59cdc250f05474394ff511947b9c0f3c",
+    "snapshot_path": "research/sources/papers/S03_PRIMARY_SOURCE_SNAPSHOT.txt"
+  },
+  "claims": [
+    {
+      "claim_id": "S03-C01",
+      "source_id": "S03",
+      "claim": "NeuroWorld separates endogenous latent brain state from exogenous stimulus-action tokens and trains a past-only next-latent transition.",
+      "claim_type": "ALGORITHMIC",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v1 Sec. 3.2-3.3",
+      "metric": "next-latent prediction",
+      "comparison": "stimulus-to-response encoders",
+      "sample": "three naturalistic movie-fMRI benchmarks",
+      "intervention": "architectural causal mask / past-only information constraint",
+      "baseline": "linear/TRIBE/MIRAGE variants",
+      "effect_direction": "strict temporal access",
+      "uncertainty": "temporal causality is not do-calculus identification",
+      "authors_interpretation": "causal latent brain world model",
+      "our_interpretation": "useful leakage-control design; causal-effect claims remain unproven"
+    },
+    {
+      "claim_id": "S03-C02",
+      "source_id": "S03",
+      "claim": "NeuroWorld reports best 20-step rollout metrics across all three evaluated benchmarks and degrades gradually to 100 TR on Algonauts 2025.",
+      "claim_type": "EMPIRICAL",
+      "status": "ANCHORED",
+      "evidence_location": "arXiv v1 Tables 2-3",
+      "metric": "r, Pearson, Cls@Top10",
+      "comparison": "reported causal baselines",
+      "sample": "30 participants total",
+      "intervention": "none",
+      "baseline": "Linear/TRIBE/MIRAGE/quoted BrainVista",
+      "effect_direction": "higher reported rollout scores",
+      "uncertainty": "preprint; code unavailable; BrainVista not reproduced by authors",
+      "authors_interpretation": "robust long-horizon rollout",
+      "our_interpretation": "reproduction required before CWC architecture transfer"
+    }
+  ],
+  "integration_questions": [
+    {
+      "hypothesis_id": "H-S03-LATENT-DYNAMICS",
+      "source_claims": [
+        "S03-C01",
+        "S03-C02"
+      ],
+      "mechanism": "Transition-sufficient latent state with strict past-only stimulus access improves multi-step state prediction over stateless encoding.",
+      "formal_object": "z_{t+1}=F(z_{<=t}, e_{<=t}) with no future e access",
+      "expected_effect": "lower held-out rollout error and lower horizon drift than stateless encoder at matched capacity",
+      "intervention": "remove state recurrence; inject future-stimulus leakage as positive leakage control",
+      "control": "stateless encoder, teacher-forced oracle, shuffled action timing",
+      "null_model": "future-leakage model and no-stimulus model",
+      "dataset": "CWC controlled sequence task before any neuroimaging use",
+      "metric": "multi-step error vs horizon, leakage sensitivity, state sufficiency probe",
+      "decision_rule": "advance only if causal-access latent model beats stateless baseline OOD and leakage audit is zero",
+      "failure_condition": "gain disappears when capacity/compute matched or requires future information",
+      "integration_target": "future CWC world-state substrate",
+      "promotion_status": "CLAIM_EXTRACTED"
+    }
+  ]
+}

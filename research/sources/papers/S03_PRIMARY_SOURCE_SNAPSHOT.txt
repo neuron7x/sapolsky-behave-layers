@@ -1,0 +1,1 @@
+Primary-source snapshot (2026-08-10): arXiv 2608.01773v1. NeuroWorld learns z_t=E(x_t), stimulus action a_t=A(s_t), and predicts z_{t+1} from past-only z_{1:t},a_{1:t}; rollout decoder is trained on autoregressive states. Three movie-fMRI benchmarks, 30 participants. Scope warning: temporal causality/past-only access is not an interventional causal-effect identification result.
