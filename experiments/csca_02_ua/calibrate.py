@@ -30,6 +30,11 @@ def sha256_bytes(data: bytes) -> str:
 
 
 def policy_candidates(raw_cases):
+    """Deterministic finite grid over calibration-derived quantiles.
+
+    The grid is intentionally compact: calibration is an epistemic filter, not a
+    brute-force hyperparameter leaderboard. Values are derived only from CALIBRATION.
+    """
     adequacy = sorted(r.intervention_nrmse for r in raw_cases)
     disagreement = sorted(r.model_disagreement for r in raw_cases)
     ood = sorted(r.ood_score for r in raw_cases)
@@ -38,14 +43,14 @@ def policy_candidates(raw_cases):
         idx = min(len(values) - 1, max(0, round((len(values) - 1) * p)))
         return values[idx]
 
-    adequacy_grid = sorted(set([0.15, 0.25, 0.40, 0.60, 0.85, 1.20, 2.0, q(adequacy, 0.50), q(adequacy, 0.75), q(adequacy, 0.90), q(adequacy, 0.95)]))
-    disagreement_grid = sorted(set([0.05, 0.10, 0.20, 0.35, 0.50, 0.75, 1.0, q(disagreement, 0.50), q(disagreement, 0.75), q(disagreement, 0.90), q(disagreement, 0.95)]))
-    ood_grid = sorted(set([q(ood, 0.75), q(ood, 0.90), q(ood, 0.95), max(ood) + 1e-9]))
+    adequacy_grid = sorted(set([0.40, 0.85, q(adequacy, 0.50), q(adequacy, 0.75), q(adequacy, 0.90), q(adequacy, 0.95)]))
+    disagreement_grid = sorted(set([q(disagreement, 0.50), q(disagreement, 0.75), q(disagreement, 0.90), q(disagreement, 0.95)]))
+    ood_grid = sorted(set([q(ood, 0.90), q(ood, 0.95), max(ood) + 1e-9]))
     for delta, max_nrmse, max_dis, min_rank, max_ood in itertools.product(
-        (0.0, 0.01, 0.02, 0.05, 0.10),
+        (0.0, 0.02, 0.05),
         adequacy_grid,
         disagreement_grid,
-        (0.50, 0.67, 0.75, 0.90),
+        (0.67, 0.75, 0.90),
         ood_grid,
     ):
         yield AbstentionPolicy(

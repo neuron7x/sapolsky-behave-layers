@@ -1,0 +1,3 @@
+# CSCA-02 calibration execution note
+
+A 4-seed calibration smoke run was executed after implementation to estimate runtime and verify that the calibration selector was operational. It is calibration-domain data and has **no confirmatory authority**. The initial deterministic grid caused the complete 32-seed calibration to exceed the available execution timeout twice. Before any complete calibration artifact or held-out outcome was produced, the grid implementation was reduced to a smaller set of calibration-derived quantiles. The preregistered scientific rule is unchanged: deterministic calibration-only grid search, maximum coverage subject to the frozen safety constraints, then policy freeze before confirmatory execution.
