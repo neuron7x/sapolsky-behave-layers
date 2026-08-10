@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 6.654746688902378,
+    "B_PREV": -0.12667712569236755,
+    "C_MIDDLE": 0.017233341932296753,
+    "D_EARLY": -0.018205977976322174
+  },
+  "approximate_variance": {
+    "A_RECENT": 4.3654661352532376e-05,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 6.754859225654997e-05,
+    "D_EARLY": 2.597343644661354e-06
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "b81814a35e693caf6b3dd318319a7a1af18539c3c6883fa543dcf2b076c57149",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 6.653042793273926,
+    "B_PREV": -0.12206549445788065,
+    "C_MIDDLE": 0.013581544160842896,
+    "D_EARLY": -0.017461915810902916
+  },
+  "factual_top_token": 117,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "0d1b9f64daef7210160cf9adf28931e0948807321a277c34f4035ea3b83589f3",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0032249720006802818,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.039742025999657926,
+    "instrumented_generation_plus_sidecar_seconds": 0.014066712999920128,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-026",
+  "trace_sha256": "81b571d533283a1630882231e2da5b0527b29e6be22b62f1572c2455bde1ae9a",
+  "unique_forward_evaluations": 12
+}

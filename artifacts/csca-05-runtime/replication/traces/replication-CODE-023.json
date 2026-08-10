@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.9221104979515076,
+    "B_PREV": 0.12572646141052246,
+    "C_MIDDLE": 0.041373759508132935,
+    "D_EARLY": 0.014209598302841187
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0,
+    "B_PREV": 7.288878922651065e-08,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 7.288878922651065e-08
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "874c953d0d6e107c94be17a9d9947d03f58e584d62705e4d04ee14b73dd76b19",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.9177672465642295,
+    "B_PREV": 0.12467000881830849,
+    "C_MIDDLE": 0.04304152727127075,
+    "D_EARLY": 0.017941534519195557
+  },
+  "factual_top_token": 111,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "b26a03f3a135b2975fe95518b0f1c184bea61ed43e96824927f3175857cc66a4",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.017645371000071464,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.0684405260008134,
+    "instrumented_generation_plus_sidecar_seconds": 0.06735415700040903,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-023",
+  "trace_sha256": "4777129d33f0ded6d619daebddbed609c93bf7757ebfa622b4ff5f71c1de0a00",
+  "unique_forward_evaluations": 10
+}

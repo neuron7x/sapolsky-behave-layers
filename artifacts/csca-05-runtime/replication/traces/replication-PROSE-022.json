@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": -0.8185954466462135,
+    "B_PREV": -0.12548859417438507,
+    "C_MIDDLE": -0.04645673930644989,
+    "D_EARLY": 0.1280267909169197
+  },
+  "approximate_variance": {
+    "A_RECENT": 4.118437611216885e-05,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 4.118437611216885e-05
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "208111730bc532ff5e96cccee2d8d0034a8757a34753a8f2af3bd16951cebafc",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "PROSE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": -1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": -0.8009477208058039,
+    "B_PREV": -0.13481049239635468,
+    "C_MIDDLE": -0.0600569744904836,
+    "D_EARLY": 0.13330119848251343
+  },
+  "factual_top_token": 32,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "2839e0dc6b5de47ba841fb1b3c124511f706fed7a148658ca32bb81267c33f31",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 11,
+    "baseline_generation_seconds": 0.0033279740000580205,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.010394894000455679,
+    "instrumented_generation_plus_sidecar_seconds": 0.010752627999863762,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-PROSE-022",
+  "trace_sha256": "93b932b79bce8a5c3c14705267eb7ec3552c5f19162c6be25352b92f0e44f5b9",
+  "unique_forward_evaluations": 10
+}

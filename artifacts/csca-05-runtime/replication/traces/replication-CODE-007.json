@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 4.575984418392181,
+    "B_PREV": -0.022112905979156494,
+    "C_MIDDLE": -0.23106268048286438,
+    "D_EARLY": -0.052191466093063354
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0016770880301386626,
+    "B_PREV": 0.0017906228092821053,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 1.8590942127971744e-06
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "5355f9610e025ca779b9d9658b90535a1466acef304c568b66766c60883f0ad8",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 4.557554453611374,
+    "B_PREV": -0.03571858008702596,
+    "C_MIDDLE": -0.2007123629252116,
+    "D_EARLY": -0.050506144762039185
+  },
+  "factual_top_token": 10,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "5b21a59e07d02a17f45aa32396ce0cfe60fddbcb145ecc89bfe37c48423eb78b",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0028218890001880936,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01171968300059234,
+    "instrumented_generation_plus_sidecar_seconds": 0.012022890000480402,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-007",
+  "trace_sha256": "d0df0e913af551eb9a2e429d03d3bca88c658d17b7df149477e8ecc8e5431b4d",
+  "unique_forward_evaluations": 12
+}

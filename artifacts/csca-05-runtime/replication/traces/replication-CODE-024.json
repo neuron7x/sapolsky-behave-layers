@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 2.367383748292923,
+    "B_PREV": 0.13096094131469727,
+    "C_MIDDLE": 0.015227586030960083,
+    "D_EARLY": -0.027070701122283936
+  },
+  "approximate_variance": {
+    "A_RECENT": 1.3161199152733616e-07,
+    "B_PREV": 0.00014613129096474609,
+    "C_MIDDLE": 0.0002373443039624945,
+    "D_EARLY": 8.730378851851128e-06
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "0473461d3ba3e751bd676b0212f42018a7f0b45ce75bdc9e808979256fec9ebe",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 2.3756405214468637,
+    "B_PREV": 0.12528035044670105,
+    "C_MIDDLE": 0.009773542483647667,
+    "D_EARLY": -0.024192839860916138
+  },
+  "factual_top_token": 115,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "9d06f3ae3b83274847dc8f185adc5b7f471e235fe3dd340550665dcc495e57ca",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 15,
+    "baseline_generation_seconds": 0.00630844699935551,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.03786567399947671,
+    "instrumented_generation_plus_sidecar_seconds": 0.03449666699998488,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-024",
+  "trace_sha256": "a9a92ad74b9df67e66c53f620c093dab931b5e1d93739bfa7da99049eb2a9023",
+  "unique_forward_evaluations": 14
+}

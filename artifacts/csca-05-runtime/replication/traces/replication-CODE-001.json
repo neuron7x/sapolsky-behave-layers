@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 2.8841644525527954,
+    "B_PREV": -0.10014131665229797,
+    "C_MIDDLE": -0.003785461187362671,
+    "D_EARLY": -0.00410771369934082
+  },
+  "approximate_variance": {
+    "A_RECENT": 2.0367935210430232e-05,
+    "B_PREV": 6.184743214454613e-06,
+    "C_MIDDLE": 4.105366863349502e-06,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "69069af7582f7315302f20ac49883e0c8179df1db772c71c53e205e16c55620f",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 2.884627530972163,
+    "B_PREV": -0.10246305664380391,
+    "C_MIDDLE": -0.0033474067846933995,
+    "D_EARLY": -0.002687106529871623
+  },
+  "factual_top_token": 114,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "69110c8106c91e2287589ff938757162a1ea05c0bc9f217ee327d802b189ecb5",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0027870580006492673,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.010265921999234706,
+    "instrumented_generation_plus_sidecar_seconds": 0.011608912999690801,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-001",
+  "trace_sha256": "b0df2d1cbf81d8f5062d3afd10c2f2c8f16105a7be269681714a902485346c9f",
+  "unique_forward_evaluations": 12
+}

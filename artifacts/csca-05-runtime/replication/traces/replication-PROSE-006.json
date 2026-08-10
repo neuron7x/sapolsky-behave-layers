@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 4.3107516169548035,
+    "B_PREV": 0.03471857309341431,
+    "C_MIDDLE": 0.061415255069732666,
+    "D_EARLY": 0.0
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "f20335416e564fcf49af99634b64c45c17568cf792dd864a16737ce535dc1189",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "PROSE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 4.310822149117788,
+    "B_PREV": 0.03457750876744588,
+    "C_MIDDLE": 0.061485787232716874,
+    "D_EARLY": 0.0
+  },
+  "factual_top_token": 111,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "6e19a9b4a187dd45ed8787adcbc7eb6bbf9400e937c2019aa5130385dd17e800",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0038333539996529,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.011074254000050132,
+    "instrumented_generation_plus_sidecar_seconds": 0.032613448000120115,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-PROSE-006",
+  "trace_sha256": "ec6273951f5a65d8a410d2b656aca6b2be2fe29070338f330ef3e6bd088f41c9",
+  "unique_forward_evaluations": 12
+}

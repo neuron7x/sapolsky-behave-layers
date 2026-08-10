@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 3.039902314543724,
+    "B_PREV": 0.09901806712150574,
+    "C_MIDDLE": -0.008444815874099731,
+    "D_EARLY": -0.005084201693534851
+  },
+  "approximate_variance": {
+    "A_RECENT": 9.465282113652052e-09,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 4.261737851507519e-07,
+    "D_EARLY": 3.0861379252122845e-07
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "643bcc757e018d5dde40629f6dd1b55f5e364fa4fee343066409e0fae36b827d",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "PROSE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 3.0312990844249725,
+    "B_PREV": 0.09938091039657593,
+    "C_MIDDLE": -0.004340837399164835,
+    "D_EARLY": -0.0009477933247884116
+  },
+  "factual_top_token": 110,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "8c0f982c26e1107852b67f5ac4b0159813171ef352378db19ba3baf83c1e563e",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.003540086000612064,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.015567037000437267,
+    "instrumented_generation_plus_sidecar_seconds": 0.01657174399952055,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-PROSE-000",
+  "trace_sha256": "12ba2427070b7cfbf7626926e61b3a1b2d2a0549c1bd4395c8de0d8fe7f5b3f8",
+  "unique_forward_evaluations": 12
+}

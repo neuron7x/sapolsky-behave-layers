@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 0.3472086936235428,
+    "B_PREV": -0.1986551284790039,
+    "C_MIDDLE": -0.01978110522031784,
+    "D_EARLY": -0.009639047086238861
+  },
+  "approximate_variance": {
+    "A_RECENT": 3.434342134234214e-06,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 2.8408305104365983e-05,
+    "D_EARLY": 1.2087765393131722e-05
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "c6b1fd0fa32771cfed6b2d12c9e5762dfafaf94bd8c3d691af5d22e86576d62f",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 0.3434333304564158,
+    "B_PREV": -0.19874205688635507,
+    "C_MIDDLE": -0.02054409682750702,
+    "D_EARLY": -0.005013763904571533
+  },
+  "factual_top_token": 32,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "826689bc27434b4791fe4d7928c333cd6ced5df6999f29a6a3848d1e975ae96f",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0029636769995704526,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.05425755499982188,
+    "instrumented_generation_plus_sidecar_seconds": 0.013407919000201218,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-010",
+  "trace_sha256": "145aeba5df59651977d74c651da5edf34c0699231c56211ff31b305b533e328e",
+  "unique_forward_evaluations": 12
+}

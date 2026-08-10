@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "CREDIT_MAGNITUDE_INTERVALS_OVERLAP",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": -0.09436263144016266,
+    "B_PREV": -0.04357969015836716,
+    "C_MIDDLE": -0.07971557229757309,
+    "D_EARLY": -0.003015190362930298
+  },
+  "approximate_variance": {
+    "A_RECENT": 2.812160263077068e-05,
+    "B_PREV": 3.476995702694774e-05,
+    "C_MIDDLE": 3.523906513813735e-07,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "39c6023d609057e1c8b72b7170df920df2333296a5017d1970f4ba0c8aa8b74d",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "PROSE",
+  "decision_candidate": null,
+  "decision_sign": null,
+  "decision_state": "ABSTAIN_UNRESOLVED_CREDIT",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": -0.09779069572687149,
+    "B_PREV": -0.0446963037053744,
+    "C_MIDDLE": -0.07641556610663733,
+    "D_EARLY": -0.001770518720149994
+  },
+  "factual_top_token": 32,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "8851e24a7b4717c2b14fd84bea4104c7abfc909dac4eb5ad0e27c77b1bbd4030",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.0028331299999990733,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.009941856999830634,
+    "instrumented_generation_plus_sidecar_seconds": 0.011958408999817038,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-PROSE-009",
+  "trace_sha256": "8afd24d5de8a65b973ac2aa2d45360c868162089b5bc0020b3507713540e74a1",
+  "unique_forward_evaluations": 12
+}

@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 4.050450414419174,
+    "B_PREV": 0.22605577111244202,
+    "C_MIDDLE": 0.1539706289768219,
+    "D_EARLY": 0.03400412201881409
+  },
+  "approximate_variance": {
+    "A_RECENT": 0.0,
+    "B_PREV": 0.0,
+    "C_MIDDLE": 0.0,
+    "D_EARLY": 0.0
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "b128a643a013d736aba49dd4ee3b9d341e2294536d5a444b673d87b737d9713b",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 4.03818254172802,
+    "B_PREV": 0.24684032301108044,
+    "C_MIDDLE": 0.144532377521197,
+    "D_EARLY": 0.034925694266955055
+  },
+  "factual_top_token": 111,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "9373d4e37f3879ed1fe2ea40f1b195d2e8cab99e60b3380ba3292d8ffc255b89",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 9,
+    "baseline_generation_seconds": 0.0028764529997715726,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.01105043899951852,
+    "instrumented_generation_plus_sidecar_seconds": 0.009024304999911692,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-009",
+  "trace_sha256": "cef6c96f4c569fdde514daa46bc930e7abe0f4f7bb487a27db0cd20b61c861d4",
+  "unique_forward_evaluations": 8
+}

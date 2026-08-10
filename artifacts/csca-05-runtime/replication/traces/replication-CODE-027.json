@@ -1,0 +1,66 @@
+{
+  "abstention_reason": "NONE",
+  "active_control": false,
+  "approximate_credits": {
+    "A_RECENT": 4.192586377263069,
+    "B_PREV": 0.08760879933834076,
+    "C_MIDDLE": 0.03777316212654114,
+    "D_EARLY": 0.011393219232559204
+  },
+  "approximate_variance": {
+    "A_RECENT": 2.3950976322462125e-05,
+    "B_PREV": 2.3950976322462125e-05,
+    "C_MIDDLE": 1.205292083028553e-06,
+    "D_EARLY": 1.205292083028553e-06
+  },
+  "authority_scope": "CONTEXT_ONLY",
+  "base_output_hash": "85f8867a87e9eabf963f299f66ea053cbab850e6de21996e354143c7871244ef",
+  "candidate_spans": {
+    "A_RECENT": [
+      37,
+      41
+    ],
+    "B_PREV": [
+      29,
+      33
+    ],
+    "C_MIDDLE": [
+      19,
+      23
+    ],
+    "D_EARLY": [
+      1,
+      5
+    ]
+  },
+  "checkpoint_hash": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "decision_candidate": "A_RECENT",
+  "decision_sign": 1,
+  "decision_state": "ACCEPT_SHADOW_CREDIT_CONTEXT_BOUND",
+  "estimator_budget": 2,
+  "estimator_method": "ANTITHETIC_PERMUTATION_ABLATION_SHAPLEY",
+  "exact_credits": {
+    "A_RECENT": 4.190349370241165,
+    "B_PREV": 0.08585125207901,
+    "C_MIDDLE": 0.03606688976287842,
+    "D_EARLY": 0.017094045877456665
+  },
+  "factual_top_token": 111,
+  "intervention_token": 32,
+  "logical_evaluations": 20,
+  "model_state_hash_after": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "model_state_hash_before": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "prompt_hash": "138c38c701dd8fcf094e785e8264d9f08acba6e5561497db1a08f5c2b3afdb72",
+  "runtime_telemetry": {
+    "approx_physical_forward_calls_including_factual": 13,
+    "baseline_generation_seconds": 0.004417203999764752,
+    "exact_evaluation_seconds_excluded_from_shadow_latency": 0.011875121999764815,
+    "instrumented_generation_plus_sidecar_seconds": 0.018116142000508262,
+    "process_maxrss_kb": 423168
+  },
+  "trace_id": "replication-CODE-027",
+  "trace_sha256": "5406a9a84f4a793f9469e7e9674e8b3a20ba6864edec0f753bbe7a253cca56c9",
+  "unique_forward_evaluations": 12
+}

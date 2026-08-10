@@ -1,0 +1,113 @@
+{
+  "active_control": false,
+  "checkpoint": {
+    "batch_size": 16,
+    "checkpoint_path": "/mnt/data/cwc_csca05_work/artifacts/csca-05-runtime/checkpoints/replication_seed3301.pt",
+    "checkpoint_sha256": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+    "data_hashes": {
+      "code": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+      "prose": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+    },
+    "final_loss": 1.9511914253234863,
+    "initial_loss": 5.577185153961182,
+    "learning_rate": 0.002,
+    "mean_last_50_loss": 2.2277662491798402,
+    "seed": 3301,
+    "state_dict_sha256": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+    "steps": 800,
+    "weight_decay": 0.01
+  },
+  "cohort": "REPLICATION",
+  "cohort_pass": true,
+  "context_mean_exact_credit": {
+    "CODE": {
+      "A_RECENT": 3.3213093503533555,
+      "B_PREV": 0.04941686295205727,
+      "C_MIDDLE": 0.04558835213538259,
+      "D_EARLY": -0.0015998134428324808
+    },
+    "PROSE": {
+      "A_RECENT": 2.514488422855114,
+      "B_PREV": 0.08644106281766045,
+      "C_MIDDLE": 0.04643753950949758,
+      "D_EARLY": 0.02335095110659798
+    }
+  },
+  "context_scope": {
+    "candidate": "A_RECENT",
+    "context_signs": {
+      "CODE": 1,
+      "PROSE": 1
+    },
+    "sign": 1,
+    "state": "GLOBAL_DIRECTION_ACCEPT"
+  },
+  "experiment_id": "CSCA-05-RUNTIME",
+  "metrics": {
+    "CODE": {
+      "accepted": 32,
+      "coverage": 1.0,
+      "exact_resolved": 32,
+      "false_authority_count": 0,
+      "median_credit_l1_error": 0.00441985328992206,
+      "median_exact_top_gap": 3.522143542766571,
+      "n": 32,
+      "selective_false_causal_authority": 0.0,
+      "top_accuracy_given_accept": 1.0
+    },
+    "PROSE": {
+      "accepted": 31,
+      "coverage": 0.96875,
+      "exact_resolved": 32,
+      "false_authority_count": 0,
+      "median_credit_l1_error": 0.0041008690992991184,
+      "median_exact_top_gap": 2.403347972780466,
+      "n": 32,
+      "selective_false_causal_authority": 0.0,
+      "top_accuracy_given_accept": 1.0
+    },
+    "pooled": {
+      "accepted": 63,
+      "coverage": 0.984375,
+      "exact_resolved": 64,
+      "false_authority_count": 0,
+      "median_credit_l1_error": 0.004152735074361206,
+      "median_exact_top_gap": 2.9608138451973596,
+      "n": 64,
+      "selective_false_causal_authority": 0.0,
+      "top_accuracy_given_accept": 1.0
+    }
+  },
+  "noninterference": {
+    "model_state_mutation_count": 0,
+    "output_mismatch_count": 0,
+    "pass": true
+  },
+  "physical_cpu_telemetry": {
+    "baseline_generation_p50_seconds": 0.003530687999955262,
+    "baseline_generation_p95_seconds": 0.020587562700529798,
+    "baseline_generation_p99_seconds": 0.02595110895017569,
+    "gpu_available": false,
+    "gpu_metrics": "NOT_MEASURED_CPU_ONLY_EXECUTION_ENVIRONMENT",
+    "instrumented_total_p50_seconds": 0.014849144500203693,
+    "instrumented_total_p95_seconds": 0.05131818294994443,
+    "instrumented_total_p99_seconds": 0.11487370655010604,
+    "median_approx_forward_calls_including_factual": 13.0,
+    "median_overhead_ratio": 4.186649594089983
+  },
+  "policy": {
+    "active_control": false,
+    "calibration_records_sha256": "84884a2de25cbaf9efd618724598c468550a15e3248cb597b56323efaf2e2755",
+    "chosen_antithetic_pairs": 2,
+    "delta": 0.004804476754119,
+    "experiment_id": "CSCA-05-RUNTIME",
+    "interval_z": 3.2905267314919255,
+    "max_unique_coalition_forwards": 16,
+    "min_coverage": 0.2,
+    "policy_version": "CSCA05-SHADOW-v1",
+    "required_accuracy_given_accept": 1.0,
+    "required_false_authority": 0.0
+  },
+  "trace_count": 64,
+  "trace_manifest_sha256": "a9289a7e6f1978d71d9cff6d081f1b7d14b487f933e5558319f8ed3a9d30174e"
+}

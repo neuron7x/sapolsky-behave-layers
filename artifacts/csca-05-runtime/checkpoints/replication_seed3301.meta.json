@@ -1,0 +1,17 @@
+{
+  "batch_size": 16,
+  "checkpoint_path": "/mnt/data/cwc_csca05_work/artifacts/csca-05-runtime/checkpoints/replication_seed3301.pt",
+  "checkpoint_sha256": "b1acb1b46bd59819712081c5d0d3b8695cba329b132c34ffa096c7016995a539",
+  "data_hashes": {
+    "code": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+    "prose": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+  },
+  "final_loss": 1.9511914253234863,
+  "initial_loss": 5.577185153961182,
+  "learning_rate": 0.002,
+  "mean_last_50_loss": 2.2277662491798402,
+  "seed": 3301,
+  "state_dict_sha256": "ff9a1e5578f047e708aadf92ec98d2cf5d7dde4ff3be7d456520914926795748",
+  "steps": 800,
+  "weight_decay": 0.01
+}
