@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "aa58272b9ce0c05ca16eda335dcc00a22774b7f3",
+  "git_commit": "48d98bc60889b60f146dd6d87961252afcdee3fb",
   "generated": "2026-08-10",
   "claims": [
     {
