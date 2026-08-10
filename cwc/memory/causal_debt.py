@@ -227,6 +227,29 @@ class CausalDebtLedger:
         exploration = 0.05 / math.sqrt(len(candidate.evidence) + 1.0)
         return max(0.0, candidate.eligibility * uncertainty + 0.5 * credit + unresolved + exploration)
 
+    def resolution_aware_debt(self, candidate_id: str) -> float:
+        """V2 replay priority that allows negative evidence to discharge debt.
+
+        This intentionally does **not** change consolidation semantics.  Before any
+        intervention, observational eligibility seeds priority.  As replay evidence
+        accumulates, that observational term decays as ``1/(n+1)`` and measured
+        causal leverage becomes the dominant term.  Thus repeated zero-effect probes
+        lower scheduling priority without being converted into a positive causal
+        claim.
+
+        The original :meth:`debt` method is retained unchanged for exact V1
+        reproducibility.
+        """
+        candidate = self._get(candidate_id)
+        decision = self.consolidation(candidate_id)
+        if decision.consolidated:
+            return 0.0
+        n = len(candidate.evidence)
+        decayed_eligibility = candidate.eligibility / (n + 1.0)
+        causal_term = abs(self.causal_credit(candidate_id)) * (1.0 + self.uncertainty(candidate_id))
+        exploration = 0.05 / math.sqrt(n + 1.0)
+        return max(0.0, decayed_eligibility + causal_term + exploration)
+
     def consolidation(self, candidate_id: str) -> ConsolidationDecision:
         candidate = self._get(candidate_id)
         n = len(candidate.evidence)

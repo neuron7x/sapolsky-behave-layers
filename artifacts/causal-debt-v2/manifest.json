@@ -1,0 +1,45 @@
+{
+  "budgets": [
+    4,
+    8,
+    16,
+    32
+  ],
+  "parent_verdict": "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED",
+  "policies": [
+    "causal_debt_v2_cf",
+    "uniform_cf",
+    "rpe_cf",
+    "oracle_invariant"
+  ],
+  "row_count": 640,
+  "schema": "cwc-cdl-v2/raw-manifest-1",
+  "scope": "synthetic SCM control only",
+  "seeds": [
+    101,
+    211,
+    307,
+    401,
+    503,
+    601,
+    701,
+    809,
+    907,
+    1009,
+    1103,
+    1201,
+    1301,
+    1409,
+    1511,
+    1601,
+    1709,
+    1801,
+    1901,
+    2003
+  ],
+  "variants": [
+    "proxy",
+    "descendant"
+  ],
+  "via_ascension_authority": false
+}

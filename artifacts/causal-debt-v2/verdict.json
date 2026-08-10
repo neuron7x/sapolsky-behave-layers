@@ -1,0 +1,175 @@
+{
+  "aggregate": {
+    "causal_debt_v2_cf": {
+      "false_credit_rate": 0.0,
+      "invariant_recall": 0.85625,
+      "mean_oos_accuracy": 0.843914794921875,
+      "median_oos_accuracy": 0.8994140625
+    },
+    "oracle_invariant": {
+      "false_credit_rate": 0.0,
+      "invariant_recall": 1.0,
+      "mean_oos_accuracy": 0.9015869140625,
+      "median_oos_accuracy": 0.90185546875
+    },
+    "rpe_cf": {
+      "false_credit_rate": 0.0,
+      "invariant_recall": 0.36875,
+      "mean_oos_accuracy": 0.6507568359375,
+      "median_oos_accuracy": 0.513671875
+    },
+    "uniform_cf": {
+      "false_credit_rate": 0.0,
+      "invariant_recall": 0.4375,
+      "mean_oos_accuracy": 0.677410888671875,
+      "median_oos_accuracy": 0.515625
+    }
+  },
+  "biological_claim_authorized": false,
+  "budget_summary": {
+    "16": {
+      "causal_debt_v2_cf": {
+        "median_descendant_oos": 0.9013671875,
+        "recall": 0.9
+      },
+      "rpe_cf": {
+        "median_descendant_oos": 0.50927734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "median_descendant_oos": 0.51318359375,
+        "recall": 0.4
+      }
+    },
+    "32": {
+      "causal_debt_v2_cf": {
+        "median_descendant_oos": 0.9033203125,
+        "recall": 1.0
+      },
+      "rpe_cf": {
+        "median_descendant_oos": 0.50927734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "median_descendant_oos": 0.9013671875,
+        "recall": 0.95
+      }
+    },
+    "4": {
+      "causal_debt_v2_cf": {
+        "median_descendant_oos": 0.9013671875,
+        "recall": 0.85
+      },
+      "rpe_cf": {
+        "median_descendant_oos": 0.50927734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "median_descendant_oos": 0.50927734375,
+        "recall": 0.1
+      }
+    },
+    "8": {
+      "causal_debt_v2_cf": {
+        "median_descendant_oos": 0.8984375,
+        "recall": 0.75
+      },
+      "rpe_cf": {
+        "median_descendant_oos": 0.50927734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "median_descendant_oos": 0.70361328125,
+        "recall": 0.5
+      }
+    }
+  },
+  "checks": {
+    "descendant_budget_superiority": true,
+    "false_credit_within_rpe_margin": true,
+    "false_credit_within_uniform_margin": true,
+    "fwer_rpe_cf_le_alpha": true,
+    "fwer_uniform_cf_le_alpha": true,
+    "non_authorizing": true,
+    "positive_mean_oos_vs_rpe_cf": true,
+    "positive_mean_oos_vs_uniform_cf": true,
+    "proxy_noninferior_to_rpe": true,
+    "recall_not_below_rpe_cf": true,
+    "recall_not_below_uniform_cf": true
+  },
+  "control_qualification": true,
+  "descendant_budget_superiority_count": 4,
+  "matched_cf_controls": [
+    "uniform_cf",
+    "rpe_cf"
+  ],
+  "mean_paired_oos_difference": {
+    "rpe_cf": 0.193157958984375,
+    "uniform_cf": 0.16650390625
+  },
+  "paired_fwer_p": {
+    "rpe_cf": 9.5367431640625e-07,
+    "uniform_cf": 1.9073486328125e-06
+  },
+  "parent_verdict": "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED",
+  "primary_policy": "causal_debt_v2_cf",
+  "schema": "cwc-cdl-v2/verdict-1",
+  "scientific_pass": false,
+  "scope": "synthetic SCM control only",
+  "variant_summary": {
+    "descendant": {
+      "causal_debt_v2_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.875,
+        "mean_oos_accuracy": 0.8525146484375,
+        "median_oos_accuracy": 0.8994140625
+      },
+      "oracle_invariant": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 1.0,
+        "mean_oos_accuracy": 0.902294921875,
+        "median_oos_accuracy": 0.9033203125
+      },
+      "rpe_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.0,
+        "mean_oos_accuracy": 0.505322265625,
+        "median_oos_accuracy": 0.50927734375
+      },
+      "uniform_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.4875,
+        "mean_oos_accuracy": 0.69923095703125,
+        "median_oos_accuracy": 0.517578125
+      }
+    },
+    "proxy": {
+      "causal_debt_v2_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.8375,
+        "mean_oos_accuracy": 0.83531494140625,
+        "median_oos_accuracy": 0.896484375
+      },
+      "oracle_invariant": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 1.0,
+        "mean_oos_accuracy": 0.90087890625,
+        "median_oos_accuracy": 0.89892578125
+      },
+      "rpe_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.7375,
+        "mean_oos_accuracy": 0.79619140625,
+        "median_oos_accuracy": 0.896484375
+      },
+      "uniform_cf": {
+        "false_credit_rate": 0.0,
+        "invariant_recall": 0.3875,
+        "mean_oos_accuracy": 0.6555908203125,
+        "median_oos_accuracy": 0.51513671875
+      }
+    }
+  },
+  "verdict": "CAUSAL_DEBT_V2_CONTROL_QUALIFIED",
+  "via_ascension_authorized": false
+}

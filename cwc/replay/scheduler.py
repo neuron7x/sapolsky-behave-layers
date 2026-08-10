@@ -42,6 +42,8 @@ def choose_candidate(
         return _argmax_stable({cid: abs(observational_strength[cid]) for cid in ids})
     if policy.startswith("uncertainty"):
         return _argmax_stable({cid: 1.0 / (1.0 + replay_counts.get(cid, 0)) for cid in ids})
+    if policy.startswith("causal_debt_v2"):
+        return _argmax_stable({cid: ledger.resolution_aware_debt(cid) for cid in ids})
     if policy.startswith("causal_debt"):
         return _argmax_stable({cid: ledger.debt(cid) for cid in ids})
     raise ValueError(f"unknown replay policy {policy!r}")
