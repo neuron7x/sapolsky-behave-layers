@@ -119,6 +119,7 @@ Not supported: causal adequacy of a real language-model world model, semantic re
 - doc gate: 54 claims / 54 hypotheses / 0 orphans.
 - verdict binding: 52 sealed claims + 2 NOT_TESTED unbound by design.
 - new CSCA-04 unit/gate tests: 4 PASS.
+- post-binding selected regression set (structural + verdict + inference-integrity): 33 PASS.
 - full test collection: 398 tests collected, 0 collection errors.
 - a complete behavioral `pytest -q` run exceeded the available 240 s execution window before completion; no full-suite PASS is claimed.
 
