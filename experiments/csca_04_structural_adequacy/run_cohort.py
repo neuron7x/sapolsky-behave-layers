@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import json
 from pathlib import Path
 import sys
@@ -46,7 +47,7 @@ def main():
             probes=select_probes(case,policy['primary_budget_per_cell'],policy['primary_strategy'])
             audit=audit_case(case,policy['primary_budget_per_cell'],policy['primary_strategy'],context_z_threshold=policy['context_z_threshold'])
             state=classify(audit,probes,policy)
-            records.append({**audit.__dict__ if hasattr(audit,'__dict__') else {f:getattr(audit,f) for f in audit.__dataclass_fields__},'state':state,'max_empirical_leverage':leverage(probes)})
+            records.append({**asdict(audit), 'state': state, 'max_empirical_leverage': leverage(probes)})
     inadequate=[r for r in records if not r['expected_adequate']]
     adequate=[r for r in records if r['expected_adequate']]
     bad_states={'ABSTAIN_STRUCTURAL_MISSPECIFICATION','FALSIFIED_NO_CAUSAL_LEVERAGE','ABSTAIN_INSUFFICIENT_STRUCTURAL_COVERAGE'}
