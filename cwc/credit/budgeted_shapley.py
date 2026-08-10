@@ -111,7 +111,7 @@ def legacy_independent_mc(
         for player in order:
             coalition.add(player)
             assignment = dict(factual)
-            for member in coalition:
+            for member in sorted(coalition):
                 assignment[member] = _sample_binary(rng)
             current_output = float(evaluator(assignment))
             evaluations += 1

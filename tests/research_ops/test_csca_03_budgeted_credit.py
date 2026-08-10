@@ -55,3 +55,25 @@ def test_context_sign_flip_forces_context_conditional_authority() -> None:
     assert decision.state == "CONTEXT_CONDITIONAL_ONLY"
     assert decision.candidate == "A"
     assert decision.sign is None
+
+
+def test_legacy_comparator_is_hash_seed_hermetic() -> None:
+    import json
+    import os
+    import subprocess
+    import sys
+
+    code = r'''
+import json, random
+from cwc.credit.budgeted_shapley import legacy_independent_mc
+from experiments.csca_03_budgeted_credit.environment import PLAYERS, generate_cases, make_evaluator, stable_seed
+case=generate_cases(family="E0_SINGLE_CAUSE",seed=62000,n=1)[0]
+est=legacy_independent_mc(case.factual,PLAYERS,make_evaluator(case),permutations=8,rng=random.Random(stable_seed(62000,"E0_SINGLE_CAUSE",0,32,"LEGACY_INDEPENDENT_MC")))
+print(json.dumps(est.credits,sort_keys=True))
+'''
+    outputs = []
+    for h in ("1", "2", "3", "4", "5"):
+        env = dict(os.environ); env["PYTHONHASHSEED"] = h
+        proc = subprocess.run([sys.executable, "-c", code], text=True, capture_output=True, env=env, check=True)
+        outputs.append(json.loads(proc.stdout))
+    assert all(x == outputs[0] for x in outputs[1:])
