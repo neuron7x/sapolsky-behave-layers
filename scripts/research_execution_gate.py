@@ -65,8 +65,20 @@ def validate(root: Path) -> None:
     queue = _json(root / "research/08_REPRODUCTION_QUEUE.yaml")
     r01 = next((x for x in queue if x.get("item_id") == "R01"), None)
     r03 = next((x for x in queue if x.get("item_id") == "R03"), None)
-    if not r01 or "MATCHED_BUDGET_ESTIMATOR_PENDING" not in r01.get("status", ""):
-        raise ValueError("S01 queue boundary drift")
+    # R01 is an advancing reproduction queue item, not a frozen verdict.  The
+    # historical gate must preserve the original S01 authority boundary while
+    # allowing later independently sealed estimator/shadow qualifications to
+    # advance the queue.  Do not require a stale *_PENDING token forever.
+    r01_status = r01.get("status", "") if r01 else ""
+    if not r01 or not any(token in r01_status for token in (
+        "MATCHED_BUDGET_ESTIMATOR_PENDING",
+        "MATCHED_BUDGET_ESTIMATOR_QUALIFIED_CONTROLLED",
+    )):
+        raise ValueError("S01 queue estimator boundary drift")
+    if "PRIMARY_SOURCE_BYTES_QUARANTINED" not in r01_status:
+        raise ValueError("S01 primary-source quarantine boundary drift")
+    if "PAPER_REPRODUCTION_PENDING" not in r01_status:
+        raise ValueError("S01 paper-reproduction boundary drift")
     if not r03 or "FAILED_PREREGISTERED_H8_ROBUSTNESS_GATE" not in r03.get("status", ""):
         raise ValueError("S03 queue failure boundary drift")
 
