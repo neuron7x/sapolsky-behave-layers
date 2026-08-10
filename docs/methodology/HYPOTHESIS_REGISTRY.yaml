@@ -617,3 +617,29 @@ hypotheses:
     preregistration: experiments/csca_02_ua/PREREGISTRATION.md
     status: NOT_SUPPORTED
     claim_id: CWC-RD03-CSCA02-UA
+
+
+  - hypothesis_id: H-CSCA-03R
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Deterministic CRN coupling does not improve finite-budget exact-teacher causal credit relative to the repaired historical independent-resampling comparator."
+    H1: "CRN coupling preserves exact structural-null cancellation, improves E0 exact-teacher error at every budget, and antithetic pairing reduces E1 matched-budget MSE on fresh PRIMARY and REPLICATION seeds."
+    estimand: "exact-teacher error, structural-null false-credit mass, top-set recovery, context-authority state and antithetic/CRN aggregate MSE"
+    experimental_unit: "fresh seed x family x context x factual row x budget"
+    decision_rule: "All frozen CSCA-03R predicates must pass independently in PRIMARY and REPLICATION; RESULT all pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/csca_03r_budgeted_credit/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD04-CSCA03R-estimator
+
+
+  - hypothesis_id: H-CSCA-03R-VAR
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Estimator variance alone is neither necessary nor sufficient for safe causal authority."
+    H1: "A global estimator-variance ceiling is sufficient and necessary for safe causal authority."
+    estimand: "false-credit mass jointly with estimator variance under correct-structure E0 and misspecified E3"
+    experimental_unit: "fresh seed x factual row x budget"
+    decision_rule: "Any non-necessity or non-sufficiency counterexample rejects standalone variance authority; RESULT both reproduced -> NOT_SUPPORTED."
+    preregistration: experiments/csca_03r_budgeted_credit/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD04-CSCA03R-variance-authority

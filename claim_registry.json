@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "cb892750f8dfcc67eeb03fe111b78706385b5447",
+  "git_commit": "df52759ada082b7f56fdc55785127c26210a84be",
   "generated": "2026-08-10",
   "claims": [
     {
@@ -1764,6 +1764,87 @@
       "verdict_binding": {
         "file": "research/results/CSCA-02-UA/15_CSCA_02_RESULTS.json",
         "pointer": "scientific_pass",
+        "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-RD04-CSCA03R-estimator",
+      "hypothesis_id": "H-CSCA-03R",
+      "statement": "Fresh-seed deterministic CSCA-03R qualifies common-random-number counterfactual Shapley estimation and antithetic variance reduction under the frozen controlled SCM suite.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "controlled synthetic SCMs",
+          "128 fresh PRIMARY seeds",
+          "128 fresh independent REPLICATION seeds",
+          "symmetric binary intervention baseline"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-03R/verdict.json",
+        "artifacts/csca-03r/primary/",
+        "artifacts/csca-03r/replication/",
+        "research/reports/CSCA_03R_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "CRN structural-null false-credit mass 0 at every frozen E0/E1 unit",
+        "CRN E0 exact-teacher RMSE lower than deterministic legacy at all 6 budgets in both cohorts",
+        "antithetic/CRN E1 aggregate-MSE ratio 0.508..0.556 and preregistered <=0.90 gate passes 6/6 in both cohorts",
+        "49,612,032 valid structural evaluations including calibration"
+      ],
+      "limitations": [
+        "synthetic SCMs only",
+        "counterfactual evaluator adequacy not established",
+        "ACT-R&D-03 remains negative",
+        "no real-LM/shadow/replay/physical-compute/biological claim"
+      ],
+      "prohibited_extrapolations": [
+        "counterfactual world-model adequacy",
+        "shadow inference",
+        "real-model replay benefit",
+        "active causal control",
+        "biological mechanism"
+      ],
+      "note": "CSCA-03 predecessor was instrument-invalid due PYTHONHASHSEED-dependent comparator and was not rescued; CSCA-03R used fresh seeds after deterministic correction.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-03R/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD04-CSCA03R-variance-authority",
+      "hypothesis_id": "H-CSCA-03R-VAR",
+      "statement": "A standalone global Monte-Carlo estimator-variance ceiling is sufficient and necessary for safe causal authority.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "CSCA-03R correct-structure E0",
+          "CSCA-03R precisely-wrong-model E3"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-03R/verdict.json",
+        "research/results/CSCA-03R/postconfirmatory_robustness.json"
+      ],
+      "supporting_metrics": [
+        "E0 zero false credit despite estimator variance above diagnostic ceiling",
+        "E3 false-credit mass 0.9 at estimator variance about 1e-34..1e-35 and near-exact fit to wrong-model teacher"
+      ],
+      "limitations": [
+        "controlled constructive counterexample",
+        "variance remains useful for stochastic-error accounting"
+      ],
+      "prohibited_extrapolations": [
+        "all uncertainty metrics are useless",
+        "causal inference is impossible"
+      ],
+      "note": "Structural-model error is not controlled by Monte-Carlo estimator variance.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-03R/verdict.json",
+        "pointer": "variance_only_authority",
         "expected": false
       }
     }
