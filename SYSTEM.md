@@ -25,8 +25,9 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 - `CSCA-02-UA`: global uncertainty/abstention policy failed coverage/context qualification (`NOT_SUPPORTED`); shadow inference remained blocked.
 - `CSCA-03R`: CRN/antithetic finite-budget credit estimation qualified on controlled SCMs; variance-only authority was falsified.
 - `CSCA-04-SA`: prospective interventional structural-adequacy gate qualified **synthetically** across fresh PRIMARY and independent replication cohorts. It detects controlled world-model misspecification that factual fit/GSS can miss and scopes context-varying mechanisms as `CONTEXT_CONDITIONAL_ONLY`.
+- `CSCA-05-RUNTIME`: a **narrow direct-intervention shadow measurement path** is qualified on independently trained small nanochat GPTs. Under the frozen `do(4-byte span=ASCII_SPACE)` operator, a two-pair antithetic ablation-Shapley estimator matched the exact teacher on every accepted PRIMARY/REPLICATION trace with zero base-output or model-state mutation. This is not broad shadow-inference authority: the task is mostly recency-dominated, intervention-operator invariance is incomplete, CPU sidecar overhead is about 4x p50, and no GPU/replay/active-control claim is authorized.
 
-**No shadow-inference promotion follows from CSCA-04 alone.** The next admissible gate is a composed, non-interfering real-model intervention pilot (`CSCA-05`).
+**ACT-R&D-03 remains negative for broad learned-model causal authority.** CSCA-05 qualifies only the explicitly bounded direct-intervention shadow path. The next admissible gate is `CSCA-06`: intervention-operator invariance plus direct-teacher-constrained amortization.
 
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |

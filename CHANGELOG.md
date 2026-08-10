@@ -348,3 +348,12 @@ fail-open, all closed here.
 - retained a source-provenance quarantine because full primary paper bytes/code were not materialized, so paper-reproduction and architecture-promotion authority remain false;
 - preserved CSCA-01A as an exploratory no-H4 diagnostic showing that counterfactual-model structural error propagates directly into false causal credit;
 - broad environment-available suite: 299 PASS / 23 SKIP; full collection remains blocked by rustbpe/tomli/hypothesis/pyarrow.
+
+## 2026-08-10 — CSCA-05 direct-intervention shadow qualification
+
+- Fixed an `Engine` vocabulary-contract bug exposed by actual runtime execution.
+- Added deterministic ablation-Shapley and antithetic finite-budget estimators for explicit byte-span interventions.
+- Trained independent small nanochat GPT checkpoints for calibration, PRIMARY, and REPLICATION cohorts.
+- Qualified a narrow shadow-only path: zero accepted-case false authority, exact-teacher top agreement 1.0, and zero generation/state interference in both confirmatory cohorts.
+- Preserved boundaries: mostly recency-dominated task, intervention-operator sensitivity, ~4x CPU p50 sidecar overhead, no GPU/replay/active-control promotion.
+- Repaired the CSCA-05 H4 record to the canonical `HumanDecision` schema without changing frozen scientific design fields; repair is explicitly documented post-execution.
