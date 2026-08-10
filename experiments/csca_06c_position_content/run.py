@@ -15,6 +15,9 @@ if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
 import torch
 import torch.nn.functional as F
 
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
+
 from cwc.credit.ablation_shapley import exact_ablation_shapley
 from experiments.csca_05_shadow_pilot.direct_credit import PLAYERS, PromptInterventionSpec, candidate_spans
 from experiments.csca_05_shadow_pilot.runtime_model import CODE_MARKER,PROSE_MARKER,load_checkpoint,state_dict_sha256
