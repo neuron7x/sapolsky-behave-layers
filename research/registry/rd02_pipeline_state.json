@@ -3,11 +3,14 @@
   "architecture_promotion_authority": false,
   "csca_01_result": "research/results/CSCA-01/verdict.json",
   "csca_01_verdict": "CSCA_01_CONTROLLED_KERNEL_REPRODUCED",
+  "exploratory_diagnostic": "artifacts/csca-01a-model-adequacy/verdict.json",
+  "exploratory_diagnostic_authority": false,
   "h4_record": "research/governance/H4-CSCA-01-AUTHOR-DIRECTIVE.json",
   "mechanism_test_authority": true,
-  "next": "HUMAN_H5_REVIEW_AND_REAL_MODEL_UTILITY_TEST",
+  "next": "HUMAN_H5_REVIEW_PLUS_H4_APPROVAL_FOR_MODEL_UNCERTAINTY_CREDIT_GATE",
   "paper_reproduction_authority": false,
   "preregistration_sha256": "8536063b4634ee2ea4b582cb2a100ec7f856ab5f282991ece038d34942c3a5b2",
   "source_gate": "QUARANTINED",
-  "status": "PHASE_4_COMPLETE_H5_PENDING"
+  "status": "PHASE_4_COMPLETE_H5_PENDING",
+  "weakest_causal_link": "COUNTERFACTUAL_MODEL_ADEQUACY"
 }

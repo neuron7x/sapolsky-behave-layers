@@ -114,3 +114,17 @@ the next hard question is not more scale. It is:
 > causal credit or changes the action ranking?**
 
 This becomes the next analytic/adversarial gate before real-model integration.
+
+## Post-result weak-link attack — CSCA-01A (exploratory only)
+
+After CSCA-01, the oracle counterfactual model became the weakest causal assumption. A separately
+preregistered analytic diagnostic injected a spurious edge `alpha*C` into the counterfactual model.
+The implementation matched the exact linear Shapley prediction to `8.33e-17`: false credit rises as
+`|alpha|/(|beta_hat|+|alpha|)` and the spurious candidate overtakes the true one when
+`|alpha|>|beta_hat|`.
+
+Because this follow-up lacked an experiment-specific human H4 approval, it is retained as
+`EXPLORATORY_DIAGNOSTIC_NO_H4_PROMOTION_AUTHORITY`; it does not upgrade the claim registry.
+Its operational consequence is narrower: a real CWC causal-credit primitive must represent
+counterfactual-model uncertainty and must be able to abstain rather than convert model error into
+causal authority.
