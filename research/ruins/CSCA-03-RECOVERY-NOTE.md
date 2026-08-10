@@ -1,0 +1,3 @@
+# CSCA-03 deterministic recovery note
+
+After the first full CSCA-03 computation and local verification, the ephemeral execution container was restarted before final packaging, removing the working tree. The frozen preregistration, seed ranges, estimators, environments, budgets and pre-primary amendments are therefore reconstructed from the execution transcript and rerun from the sealed ACT-R&D-03 package. The recovered run is a deterministic reproduction of the same protocol, not an independent new scientific cohort. Any result used for the final claim is generated again and checksum-bound in the recovered repository.
