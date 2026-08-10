@@ -1,0 +1,9 @@
+{
+  "cohort": "CALIBRATION",
+  "delta": 0.25,
+  "experiment_id": "CSCA-06B-OP",
+  "model_state_mutated": false,
+  "n": 48,
+  "prompt_overlap_with_csca05": 0,
+  "q10_min_gap": 1.66525005325675
+}

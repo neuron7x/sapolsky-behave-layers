@@ -1,0 +1,914 @@
+[
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.0819560047239065,
+        "B_PREV": -0.01768932801981767,
+        "C_MIDDLE": 0.07859057622651258,
+        "D_EARLY": 0.0326364121089379
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.905530481288831,
+        "B_PREV": 0.02345870559414228,
+        "C_MIDDLE": 0.08127575740218163,
+        "D_EARLY": 0.017875228077173233
+      }
+    },
+    "index": 0,
+    "prompt_hash": "2355440fb5336b63abf3b077f00bd85be24b7cc76a5cb3c4f69e70203f9dc563"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.306297664841016,
+        "B_PREV": 0.07145717740058899,
+        "C_MIDDLE": 0.00441347062587738,
+        "D_EARLY": 0.04366667071978251
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.418687667697668,
+        "B_PREV": -0.016301816950241722,
+        "C_MIDDLE": 0.0023543772598107644,
+        "D_EARLY": -0.005405886719624201
+      }
+    },
+    "index": 1,
+    "prompt_hash": "10c99ad57510a244219f71b8bd2b82c3dbb622f611441ee2e39b7c2e9df58300"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 5.055142425000668,
+        "B_PREV": 0.049518172939618424,
+        "C_MIDDLE": 0.03646538654963176,
+        "D_EARLY": 0.02250014990568161
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 7.115041781216859,
+        "B_PREV": -0.011735554784536362,
+        "C_MIDDLE": 0.013234390566746393,
+        "D_EARLY": 0.038583212842543915
+      }
+    },
+    "index": 2,
+    "prompt_hash": "16462f0ac08d254f53b45b1ee61696941ae49b4496a0cd9b0c1e442fb6e67d8c"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.568376662830512,
+        "B_PREV": 0.16219249616066617,
+        "C_MIDDLE": 0.04568413645029067,
+        "D_EARLY": 0.05371113369862238
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.0027856156229973,
+        "B_PREV": 0.032126498719056436,
+        "C_MIDDLE": 0.04426839202642441,
+        "D_EARLY": 0.06145850072304408
+      }
+    },
+    "index": 3,
+    "prompt_hash": "03c50aee92b7a5afeac3a9b2ebeb85917dd9a29b805d60567fdff0d6ef7d7464"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 7.934015239278476,
+        "B_PREV": 0.14260808378458023,
+        "C_MIDDLE": 0.015689000487327576,
+        "D_EARLY": -0.0329639787475268
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 8.49393271158139,
+        "B_PREV": 0.04256064196427663,
+        "C_MIDDLE": 0.014264911413192749,
+        "D_EARLY": -0.013132236897945404
+      }
+    },
+    "index": 4,
+    "prompt_hash": "e3430f2c6c8238c2187cfe434e085658c7913681854a86f371453d7e22fc84ca"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.7759123366946974,
+        "B_PREV": -0.03445774223655462,
+        "C_MIDDLE": 1.1143895486990033e-05,
+        "D_EARLY": -0.00012109273423751253
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.734652660787106,
+        "B_PREV": 0.021635714297493298,
+        "C_MIDDLE": 0.009450942277908325,
+        "D_EARLY": 0.017151449496547382
+      }
+    },
+    "index": 5,
+    "prompt_hash": "82b6cf3fbeb30b00b0cd3f246419020ff54c32b7ead49669cc989a0fe876e6e0"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.7881887126713991,
+        "B_PREV": -0.007692079370220502,
+        "C_MIDDLE": 0.030818387245138485,
+        "D_EARLY": -0.050592375919222825
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.2767031379044056,
+        "B_PREV": 0.04511022691925367,
+        "C_MIDDLE": 0.010655319939057032,
+        "D_EARLY": -0.054410334676504135
+      }
+    },
+    "index": 6,
+    "prompt_hash": "95fb31f384e9d3b43b28e1a56efb3e1f22085dcfd15243767d64154e2fb360e5"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.104721197237572,
+        "B_PREV": 0.08370621874928474,
+        "C_MIDDLE": -0.06290159871180853,
+        "D_EARLY": -0.006953880190849304
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.0998617894947524,
+        "B_PREV": 0.03588404878973961,
+        "C_MIDDLE": -0.06512530148029327,
+        "D_EARLY": -0.06802402436733246
+      }
+    },
+    "index": 7,
+    "prompt_hash": "d15b73f643ee1bf30e81bd260659157e6a2424bb90abb120d3ea38d29f7398a5"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.7326073199510572,
+        "B_PREV": -0.00384457657734553,
+        "C_MIDDLE": 0.0004830683271090184,
+        "D_EARLY": 0.030123919248580933
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 1.8976411819458008,
+        "B_PREV": -0.006723150610923767,
+        "C_MIDDLE": 0.025312935312589012,
+        "D_EARLY": -0.020228018363316853
+      }
+    },
+    "index": 8,
+    "prompt_hash": "59948b8dea8023822d4595ad3972abecd632697a28658e2fe2d3b663a35a8ebd"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.1271330170954266,
+        "B_PREV": -0.20493351016193628,
+        "C_MIDDLE": 0.004729025376339752,
+        "D_EARLY": -0.018263344652950764
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.8572262354816,
+        "B_PREV": -0.2104087599242727,
+        "C_MIDDLE": 0.04058800544589758,
+        "D_EARLY": -0.04203466977924108
+      }
+    },
+    "index": 9,
+    "prompt_hash": "034a91460296a38300486f95f444ad14f32f942193807e989273786706fc3f00"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.8201732334370413,
+        "B_PREV": 0.03716783318668604,
+        "C_MIDDLE": -0.013797165515522163,
+        "D_EARLY": -0.03401397075504064
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.145932374211649,
+        "B_PREV": 0.11280198736737171,
+        "C_MIDDLE": 0.0018170907472570726,
+        "D_EARLY": -0.010435364829997223
+      }
+    },
+    "index": 10,
+    "prompt_hash": "efeeeeb5617cb7f31b6d6afe624be95f0c438175542896cd741f3b7ce21b697c"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.55103828633825,
+        "B_PREV": 0.08309448386232057,
+        "C_MIDDLE": -0.025570818533500034,
+        "D_EARLY": -0.005750436335802078
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.4613796745737395,
+        "B_PREV": 0.03900380929311116,
+        "C_MIDDLE": -0.010587836305300396,
+        "D_EARLY": 0.06973550468683243
+      }
+    },
+    "index": 11,
+    "prompt_hash": "5fa70e2e272303e2b9d160cdca81921243bc47b76df2baf1a7b36a4ba1b00e1a"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.1526625404755273,
+        "B_PREV": -0.018235112229983013,
+        "C_MIDDLE": -0.02127871414025624,
+        "D_EARLY": 0.0013233770926793422
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 1.7917486168444157,
+        "B_PREV": 0.010916002094745636,
+        "C_MIDDLE": 0.0025770614544550576,
+        "D_EARLY": -0.015651634583870568
+      }
+    },
+    "index": 12,
+    "prompt_hash": "636ccb4778691243d5d2162b70a65ef01bbc5edd4ae4805695c55928fdc5ea81"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.7955803386867046,
+        "B_PREV": 0.024349977572758995,
+        "C_MIDDLE": 0.04138434554139773,
+        "D_EARLY": -0.021834947168827057
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.546659069756666,
+        "B_PREV": -0.07270021239916483,
+        "C_MIDDLE": 0.03937949612736702,
+        "D_EARLY": 0.026409421116113663
+      }
+    },
+    "index": 13,
+    "prompt_hash": "12e7a1466df3d5c8a5c6f8aab29a483e3e6c21a1db243d26a6dcc6b0a830f73f"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.31465528657039,
+        "B_PREV": 0.10764513413111368,
+        "C_MIDDLE": -0.004589108129342398,
+        "D_EARLY": -0.017954806486765545
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.626547771816452,
+        "B_PREV": 0.05712371381620565,
+        "C_MIDDLE": -0.02894105203449726,
+        "D_EARLY": -0.027451464906334877
+      }
+    },
+    "index": 14,
+    "prompt_hash": "a6f69d3411174ff68e2ba884789703aefbbc78c6f56eb9baf7b8d37d1f4e20e2"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.327962215679387,
+        "B_PREV": -0.02235371029625336,
+        "C_MIDDLE": -0.004117806442081928,
+        "D_EARLY": 0.02164208795875311
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.785348377500971,
+        "B_PREV": -0.04501473965744177,
+        "C_MIDDLE": 0.0016728645811478298,
+        "D_EARLY": 0.030196078742543857
+      }
+    },
+    "index": 15,
+    "prompt_hash": "9bda2970ffb31eeef1c4d3ce151f13e10922b111e922563c9a60ac1360903bf7"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.234559854492545,
+        "B_PREV": 0.025026442483067513,
+        "C_MIDDLE": -0.037758251652121544,
+        "D_EARLY": -0.10785547085106373
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.9250772930681705,
+        "B_PREV": 0.015912828346093495,
+        "C_MIDDLE": -0.06803480535745621,
+        "D_EARLY": -0.06994506095846494
+      }
+    },
+    "index": 16,
+    "prompt_hash": "6b68bf0bbf539e02aa50b73af901e0bfb663a1292809621a7098acbe389618e0"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.4390342819193997,
+        "B_PREV": -0.00449047858516375,
+        "C_MIDDLE": -0.016264998664458595,
+        "D_EARLY": 0.019749635209639863
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.8073839346567784,
+        "B_PREV": -0.004022742311159771,
+        "C_MIDDLE": 0.021787986159324646,
+        "D_EARLY": 0.017983853816986084
+      }
+    },
+    "index": 17,
+    "prompt_hash": "b5db9c600e564f1167ca47a811151f3fad8d6c14a53f9a10ce5c886325fa0405"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.9382356017207105,
+        "B_PREV": -0.009689422013858955,
+        "C_MIDDLE": -0.02140012352416913,
+        "D_EARLY": -0.02422687876969576
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.3048170742889242,
+        "B_PREV": -0.005539003759622573,
+        "C_MIDDLE": -0.01419347400466601,
+        "D_EARLY": -0.012751749406258265
+      }
+    },
+    "index": 18,
+    "prompt_hash": "16f1f77e871d7afb2d8b0484a232311262cc723e7c5c1d77b305cc77fb32beca"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.6732899844646454,
+        "B_PREV": 0.0730600853761037,
+        "C_MIDDLE": -0.025770716369152066,
+        "D_EARLY": -0.0013043855627377825
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.919699724763632,
+        "B_PREV": 0.023859954128662743,
+        "C_MIDDLE": 0.002845015376806259,
+        "D_EARLY": -0.007544993112484617
+      }
+    },
+    "index": 19,
+    "prompt_hash": "7447a727cfca64b5ec10c82d128b2f30159245836c6619211d7216991dab8428"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 5.520613913734754,
+        "B_PREV": 0.21851911644140876,
+        "C_MIDDLE": -0.07322668035825095,
+        "D_EARLY": -0.0073007742563883475
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 5.6464200951159,
+        "B_PREV": 0.30702480797966314,
+        "C_MIDDLE": -0.11990650370717047,
+        "D_EARLY": 0.0017190712193648023
+      }
+    },
+    "index": 20,
+    "prompt_hash": "7c6f95c0fcdf9f74eff0ee4712bf38bc465502e93f0467e91a0cfd937c2c5df9"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.897613904128472,
+        "B_PREV": -0.03787118817369143,
+        "C_MIDDLE": 0.03333927070101102,
+        "D_EARLY": 0.0034815433124701176
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.535501095155875,
+        "B_PREV": 0.01737789312998454,
+        "C_MIDDLE": -0.010415283342202505,
+        "D_EARLY": -0.012423679232597351
+      }
+    },
+    "index": 21,
+    "prompt_hash": "dc10af8f727ba71ff95c60779fa458a58ccc5ea8d6138444c5c2dcee8a16e30e"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.349353606191774,
+        "B_PREV": 0.03321396714697281,
+        "C_MIDDLE": 0.03621638969828685,
+        "D_EARLY": 0.011861458110312618
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.0457842235142984,
+        "B_PREV": 0.10670032569517693,
+        "C_MIDDLE": 0.033993396597603955,
+        "D_EARLY": 0.008605910775562126
+      }
+    },
+    "index": 22,
+    "prompt_hash": "51c6f668b8007b9e66598323683dc2c153d9c3ce271790f1598eab1185209d44"
+  },
+  {
+    "context": "PROSE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.9714421456058817,
+        "B_PREV": 0.23805465114613375,
+        "C_MIDDLE": 0.01759310315052668,
+        "D_EARLY": -0.039815566812952355
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.4599847095087166,
+        "B_PREV": 0.16191616995881,
+        "C_MIDDLE": 0.06336679154386123,
+        "D_EARLY": -0.014718028716742992
+      }
+    },
+    "index": 23,
+    "prompt_hash": "1d934f99004864042d70aeb1ba019a44d5a79ff798bacc36258b58ee72521acc"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.7193956238528094,
+        "B_PREV": 0.11179175972938536,
+        "C_MIDDLE": -0.010775822525223093,
+        "D_EARLY": 0.0010268632322549837
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 5.115085507432619,
+        "B_PREV": 0.1372552402317524,
+        "C_MIDDLE": -0.0004025362432003021,
+        "D_EARLY": -0.013725715378920237
+      }
+    },
+    "index": 0,
+    "prompt_hash": "dae271c2edb64e19e5abcbd234d54bbd636b6dc7acd7a616b11545a1eb147bd4"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 5.134431729714075,
+        "B_PREV": -0.05703769251704216,
+        "C_MIDDLE": 0.006452338149150213,
+        "D_EARLY": 0.03143282234668732
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.581694523493448,
+        "B_PREV": -0.028579314549763996,
+        "C_MIDDLE": 0.044472411274909966,
+        "D_EARLY": 0.027213881413141884
+      }
+    },
+    "index": 1,
+    "prompt_hash": "c72d06f4e1c462d0eabc5ea101e820436cffed47c5fe1ca9b04becdc418ddc5f"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.509443991817534,
+        "B_PREV": -0.05960835454364616,
+        "C_MIDDLE": -0.012616028698782127,
+        "D_EARLY": -0.00903090089559555
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.4448078656569123,
+        "B_PREV": -0.0041876112421353655,
+        "C_MIDDLE": -0.07326357221851745,
+        "D_EARLY": -0.07709077931940556
+      }
+    },
+    "index": 2,
+    "prompt_hash": "f1e240491a981b56a1bf53b1d30a13ec909681f7eca8c133148a87605f5ae032"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 5.840571880340576,
+        "B_PREV": -0.1298038711150487,
+        "C_MIDDLE": 0.19255180905262628,
+        "D_EARLY": -0.04182646920283636
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.786120579888423,
+        "B_PREV": -0.161126555254062,
+        "C_MIDDLE": 0.13582111274202663,
+        "D_EARLY": -0.07336115216215452
+      }
+    },
+    "index": 3,
+    "prompt_hash": "e3173205e8632c5fc49dfeaaafac7e598bdfe066be70007f618a69c0076d3f6c"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.888099122792482,
+        "B_PREV": 0.04346288119753201,
+        "C_MIDDLE": -0.06995642061034839,
+        "D_EARLY": 0.023630620290835697
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.450241743897398,
+        "B_PREV": 0.023917457088828083,
+        "C_MIDDLE": 0.0008119512349367176,
+        "D_EARLY": 0.038246580089131996
+      }
+    },
+    "index": 4,
+    "prompt_hash": "f522b15101e7e42ca9f55b40f4a71cd12086ee125775d7d64650eeb6d1f5df2f"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.506301612903674,
+        "B_PREV": 0.33335914214452106,
+        "C_MIDDLE": 0.1315949410200119,
+        "D_EARLY": -0.0830944466094176
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.2580477818846703,
+        "B_PREV": 0.3383364031712214,
+        "C_MIDDLE": 0.1077112704515457,
+        "D_EARLY": -0.12193151066700618
+      }
+    },
+    "index": 5,
+    "prompt_hash": "1a8c19396e8c3c12405ee1b8be8322acb825064ec59097cc2e51d3002b184a34"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.361225916693607,
+        "B_PREV": -0.04760844384630521,
+        "C_MIDDLE": 0.022937770932912827,
+        "D_EARLY": 0.012343912074963253
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.591572711865107,
+        "B_PREV": -0.05721373235185941,
+        "C_MIDDLE": 0.01269731360177199,
+        "D_EARLY": 0.038115495815873146
+      }
+    },
+    "index": 6,
+    "prompt_hash": "ed134e7998332b26a430e57a6707b3d6e2e6ddd1b1da81c1dce2c89b35eda5d0"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.5450662126143773,
+        "B_PREV": 0.1944507633646329,
+        "C_MIDDLE": 0.016308399538199108,
+        "D_EARLY": 3.094474474588018e-06
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.687736514955759,
+        "B_PREV": 0.19720971956849098,
+        "C_MIDDLE": 0.013887833803892132,
+        "D_EARLY": 0.0009729079902172084
+      }
+    },
+    "index": 7,
+    "prompt_hash": "4e41ab939e3af420cc545337515b0085efec40d98a9589436e8281982095f9cf"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.6046296432614329,
+        "B_PREV": -0.05418436477581659,
+        "C_MIDDLE": 0.1319892778992653,
+        "D_EARLY": -0.05349762489398321
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.9589905152097344,
+        "B_PREV": -0.01875115775813659,
+        "C_MIDDLE": 0.06776813386629024,
+        "D_EARLY": -0.034220183578630284
+      }
+    },
+    "index": 8,
+    "prompt_hash": "7a897cbb4fb120f2866fb5ed198437a23965c09e59beb521d6b2d70751d8fc15"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.8296586877355967,
+        "B_PREV": 0.0131341436256965,
+        "C_MIDDLE": -0.007943309222658476,
+        "D_EARLY": 0.008711590742071468
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.230322258546948,
+        "B_PREV": -0.007803043350577354,
+        "C_MIDDLE": 0.006794260814785957,
+        "D_EARLY": -0.0009335707873105994
+      }
+    },
+    "index": 9,
+    "prompt_hash": "20e9fc09f2d2255b8f0a1f420d7bfb44959ef8135f12aa542eaee68b7b5b5701"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.550099660642445,
+        "B_PREV": -0.013214610827465851,
+        "C_MIDDLE": -0.010595464147627354,
+        "D_EARLY": -0.011776271897057692
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.2375653871955965,
+        "B_PREV": 0.015587248373776674,
+        "C_MIDDLE": -0.01410435838624835,
+        "D_EARLY": -0.016526599569867052
+      }
+    },
+    "index": 10,
+    "prompt_hash": "0debf3ea3e0433e00a064eb228da108d92c27f44dc099bc82226d774ddefc20e"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.6254881010390818,
+        "B_PREV": 0.024198013202597696,
+        "C_MIDDLE": 0.04566753515973687,
+        "D_EARLY": -0.04711585848902662
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.3500354400215047,
+        "B_PREV": 0.08835805005704363,
+        "C_MIDDLE": -0.008517586315671604,
+        "D_EARLY": -0.058419473469257355
+      }
+    },
+    "index": 11,
+    "prompt_hash": "3ff89bdda03291c128b09f1b403ce176126abb8b2bfc5602bd9760bb7a81a9a6"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 6.494691434626778,
+        "B_PREV": -0.06003950474162896,
+        "C_MIDDLE": 0.09177491379280883,
+        "D_EARLY": 0.07573319288591543
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 6.430667806416749,
+        "B_PREV": -0.16937303791443506,
+        "C_MIDDLE": 0.1770588420331478,
+        "D_EARLY": 0.16635054598251978
+      }
+    },
+    "index": 12,
+    "prompt_hash": "59d61d4bec655d4d676833d69ef44f9bdea7a919dd3e59cbaa2e9041092403df"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.1068856520578265,
+        "B_PREV": 0.024110128171741962,
+        "C_MIDDLE": -0.06278466278066237,
+        "D_EARLY": -0.056797900858024754
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.1778845503383,
+        "B_PREV": -0.01606157433707267,
+        "C_MIDDLE": -0.040314210462383926,
+        "D_EARLY": -0.0008625942670429758
+      }
+    },
+    "index": 13,
+    "prompt_hash": "43fb1fc291b1e1e30f08058c37230f6b41827d0d718ff98c7c7f1e54d8451d06"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.161405111973484,
+        "B_PREV": 0.006393752371271452,
+        "C_MIDDLE": 0.009037153795361517,
+        "D_EARLY": -0.003033895666400591
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.6730194427073,
+        "B_PREV": 0.019061531871557236,
+        "C_MIDDLE": 0.005170021206140519,
+        "D_EARLY": -0.01329967752099037
+      }
+    },
+    "index": 14,
+    "prompt_hash": "a6bf72f82713f5f1593af9813ae20f5d639fc798739edc4c8393dc99406c8573"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.256757453083992,
+        "B_PREV": 0.1260894164443016,
+        "C_MIDDLE": -0.008272347350915272,
+        "D_EARLY": 0.06406800945599875
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.865234674885869,
+        "B_PREV": 0.05473809440930684,
+        "C_MIDDLE": 0.04885589207212131,
+        "D_EARLY": 0.04075856693089008
+      }
+    },
+    "index": 15,
+    "prompt_hash": "b1da0eccb772235e2292c7e9f2f874aa49d98a128f4f1ac18070df0a829a4a27"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.6801614481955767,
+        "B_PREV": 0.022819684818387025,
+        "C_MIDDLE": 0.012004728739460308,
+        "D_EARLY": 0.024536133433381714
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.3852916800727444,
+        "B_PREV": 0.012682222450772919,
+        "C_MIDDLE": -0.004797443126638731,
+        "D_EARLY": 0.002291358386476835
+      }
+    },
+    "index": 16,
+    "prompt_hash": "83ae6fa2c042031f238d5ec3197948b18c05c4a7d029e538a09b441afd67bf21"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.469941156605879,
+        "B_PREV": -0.0588134949405988,
+        "C_MIDDLE": 0.001773603260517122,
+        "D_EARLY": 0.05317528794209162
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.0231223690013085,
+        "B_PREV": -0.05897725249330203,
+        "C_MIDDLE": -0.06001067037383716,
+        "D_EARLY": 0.03997427845994631
+      }
+    },
+    "index": 17,
+    "prompt_hash": "74ca79c731b9177ae20988dc8c93e2b227b07017717ef846948f99a87d526a3c"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 1.8819310950736203,
+        "B_PREV": 0.16491015876332918,
+        "C_MIDDLE": -0.018492555866638817,
+        "D_EARLY": -0.007501518974701563
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.5143719327946505,
+        "B_PREV": 0.06363037104407945,
+        "C_MIDDLE": 0.030585056791702904,
+        "D_EARLY": 0.08057733749349913
+      }
+    },
+    "index": 18,
+    "prompt_hash": "0bd4393a933425dd1c2968958734c42dc70f1d3d27444f8bf41f731763237731"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 3.1671798316140967,
+        "B_PREV": 0.0664243611196677,
+        "C_MIDDLE": -0.04101479177673658,
+        "D_EARLY": -0.0016157316664854688
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 3.2388162463903427,
+        "B_PREV": -0.04019647588332494,
+        "C_MIDDLE": -0.012455992400646208,
+        "D_EARLY": -0.012721384565035502
+      }
+    },
+    "index": 19,
+    "prompt_hash": "96948d7832c95b49967c84a35ea0e91c3397ead2bb645dcb728dbb21e4d13615"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.4747533593326807,
+        "B_PREV": 0.10636523800591628,
+        "C_MIDDLE": -0.013852137451370558,
+        "D_EARLY": -0.029425750796993572
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 4.665818229317665,
+        "B_PREV": 0.07227466007073721,
+        "C_MIDDLE": -0.034300146003564194,
+        "D_EARLY": -0.0006808564066886902
+      }
+    },
+    "index": 20,
+    "prompt_hash": "c92c187e30d560b7f6ef27d77d2d5a7beaf564eedf99d7d8405b3fe3edd483ee"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 4.1967536459366475,
+        "B_PREV": -0.1225533684094747,
+        "C_MIDDLE": 0.06673191984494527,
+        "D_EARLY": 0.07520068188508353
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 2.6907009966671467,
+        "B_PREV": -0.020363366852204003,
+        "C_MIDDLE": 0.0602786826590697,
+        "D_EARLY": 0.06846391037106514
+      }
+    },
+    "index": 21,
+    "prompt_hash": "e8810d164d2f2dd06f5217543a5d0e0053ea47e00b0d00a5c54bf00bd8328973"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 7.746985745926697,
+        "B_PREV": 0.011508387823899588,
+        "C_MIDDLE": -0.0023037269711494446,
+        "D_EARLY": 0.01903392126162847
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 7.128900244832038,
+        "B_PREV": -0.034083465735117585,
+        "C_MIDDLE": 0.00127691775560379,
+        "D_EARLY": 0.019368367890516915
+      }
+    },
+    "index": 22,
+    "prompt_hash": "58e2cd069696b16d204897f5734b52bd680edaae62cf8cb8376f6f949753d373"
+  },
+  {
+    "context": "CODE",
+    "credits": {
+      "K_COHORT_CONTIG8": {
+        "A_RECENT": 2.3016989026218653,
+        "B_PREV": -0.08493615811069805,
+        "C_MIDDLE": -0.016333019981781643,
+        "D_EARLY": -0.028586240485310555
+      },
+      "K_TRAIN_CONTIG8": {
+        "A_RECENT": 1.546377249721748,
+        "B_PREV": -0.0957721903687343,
+        "C_MIDDLE": -0.06128615913136552,
+        "D_EARLY": -0.031937264876129724
+      }
+    },
+    "index": 23,
+    "prompt_hash": "2435f12cefeb5f381b2b9639eed714f4afd6964b7ff007bfd42c109cfb384d90"
+  }
+]
