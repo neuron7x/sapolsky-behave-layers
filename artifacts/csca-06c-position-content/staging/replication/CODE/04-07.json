@@ -1,0 +1,854 @@
+{
+  "cohort": "REPLICATION",
+  "context": "CODE",
+  "count": 4,
+  "experiment_id": "CSCA-06C-R1",
+  "model_state_mutated": false,
+  "rows": [
+    {
+      "baseline_top_content_identity": "A_RECENT",
+      "baseline_top_position": "A_RECENT",
+      "content_tracking": 0.25,
+      "context": "CODE",
+      "fully_resolved": true,
+      "index": 4,
+      "logical_intervention_realizations": 1024,
+      "physical_model_batch_calls": 9,
+      "position_tracking": 1.0,
+      "prompt_hash": "9656045ed1377079b07a8cdc7979340f0b419bbc848e7b9468508f8521aea7c6",
+      "rotations": [
+        {
+          "content_at_position": {
+            "A_RECENT": "A_RECENT",
+            "B_PREV": "B_PREV",
+            "C_MIDDLE": "C_MIDDLE",
+            "D_EARLY": "D_EARLY"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 4.110636132458845,
+              "B_PREV": 0.27799493074417114,
+              "C_MIDDLE": -0.07273629556099573,
+              "D_EARLY": -0.0021378248929977417
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 2.7021947751442594,
+              "B_PREV": 0.22193868458271027,
+              "C_MIDDLE": 0.007902182638645172,
+              "D_EARLY": -0.027612882355848946
+            }
+          },
+          "rotation": 0,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 3.832641201714674,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.39265278478463467,
+            "min_top_magnitude": 2.7021947751442594,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 2.480256090561549,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "D_EARLY",
+            "B_PREV": "A_RECENT",
+            "C_MIDDLE": "B_PREV",
+            "D_EARLY": "C_MIDDLE"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 2.1967337404688196,
+              "B_PREV": -0.02519390732049942,
+              "C_MIDDLE": -0.05113927274942398,
+              "D_EARLY": -0.03320516397555669
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 0.8240693832437197,
+              "B_PREV": -0.18721976627906162,
+              "C_MIDDLE": 0.008678384125232698,
+              "D_EARLY": 0.03233321259419123
+            }
+          },
+          "rotation": 1,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 2.1455944677193957,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.4150115624070167,
+            "min_top_magnitude": 0.8240693832437197,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 0.636849616964658,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "C_MIDDLE",
+            "B_PREV": "D_EARLY",
+            "C_MIDDLE": "A_RECENT",
+            "D_EARLY": "B_PREV"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 3.3048024053374925,
+              "B_PREV": 0.04716057330369949,
+              "C_MIDDLE": -0.07648549725612004,
+              "D_EARLY": 0.004145520428816477
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 1.9138889238238335,
+              "B_PREV": -0.003095271686712902,
+              "C_MIDDLE": -0.019290916621685028,
+              "D_EARLY": -0.021213916440804795
+            }
+          },
+          "rotation": 2,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 3.2283169080813723,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.3809308360020319,
+            "min_top_magnitude": 1.9138889238238335,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.8926750073830287,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "B_PREV",
+            "B_PREV": "C_MIDDLE",
+            "C_MIDDLE": "D_EARLY",
+            "D_EARLY": "A_RECENT"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 3.188503923515478,
+              "B_PREV": -0.044343662758668266,
+              "C_MIDDLE": -0.017418605585892994,
+              "D_EARLY": -0.007821805775165558
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 1.7749191696445146,
+              "B_PREV": -0.09189077963431674,
+              "C_MIDDLE": 0.026639538506666817,
+              "D_EARLY": -8.226186037063577e-05
+            }
+          },
+          "rotation": 3,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 3.1441602607568098,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.3782323896884917,
+            "min_top_magnitude": 1.7749191696445146,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.6830283900101979,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        }
+      ],
+      "target_token": 114
+    },
+    {
+      "baseline_top_content_identity": "A_RECENT",
+      "baseline_top_position": "A_RECENT",
+      "content_tracking": 0.25,
+      "context": "CODE",
+      "fully_resolved": true,
+      "index": 5,
+      "logical_intervention_realizations": 1024,
+      "physical_model_batch_calls": 9,
+      "position_tracking": 1.0,
+      "prompt_hash": "2ffe6bdf4a3a50e8299b7a6a2dee4c648bb9611591909f40b260cc66b3c839c3",
+      "rotations": [
+        {
+          "content_at_position": {
+            "A_RECENT": "A_RECENT",
+            "B_PREV": "B_PREV",
+            "C_MIDDLE": "C_MIDDLE",
+            "D_EARLY": "D_EARLY"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 6.2015770214299355,
+              "B_PREV": -0.0053227829436461125,
+              "C_MIDDLE": 0.02466184025009473,
+              "D_EARLY": 0.03172369177142779
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 5.845001692573229,
+              "B_PREV": 0.11003806193669637,
+              "C_MIDDLE": 0.013000709315141041,
+              "D_EARLY": 0.03422534714142481
+            }
+          },
+          "rotation": 0,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 6.169853329658507,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.12152474001049995,
+            "min_top_magnitude": 5.845001692573229,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 5.734963630636533,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "D_EARLY",
+            "B_PREV": "A_RECENT",
+            "C_MIDDLE": "B_PREV",
+            "D_EARLY": "C_MIDDLE"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 2.5646209170420966,
+              "B_PREV": 0.07300119102001192,
+              "C_MIDDLE": 0.03490449488162994,
+              "D_EARLY": 0.040114874641100556
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 2.223962453504403,
+              "B_PREV": 0.29380864153305686,
+              "C_MIDDLE": -0.06795009722312291,
+              "D_EARLY": 0.012446520229180656
+            }
+          },
+          "rotation": 1,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 2.4916197260220847,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.1729972151418528,
+            "min_top_magnitude": 2.223962453504403,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.9301538119713464,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "C_MIDDLE",
+            "B_PREV": "D_EARLY",
+            "C_MIDDLE": "A_RECENT",
+            "D_EARLY": "B_PREV"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": -1.1129594941933951,
+              "B_PREV": -0.09627251823743185,
+              "C_MIDDLE": 0.08234234650929768,
+              "D_EARLY": 0.0501334269841512
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": -1.6223086044192314,
+              "B_PREV": 0.190395491818587,
+              "C_MIDDLE": 0.05887515594561894,
+              "D_EARLY": 0.04590775817632675
+            }
+          },
+          "rotation": 2,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 1.0166869759559634,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": -1,
+            "credit_l1_between_kernels": 0.2059274949133396,
+            "min_top_magnitude": 1.1129594941933951,
+            "robust_authority": true,
+            "sign": -1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.4319131126006444,
+            "train_top": "A_RECENT",
+            "train_top_sign": -1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "B_PREV",
+            "B_PREV": "C_MIDDLE",
+            "C_MIDDLE": "D_EARLY",
+            "D_EARLY": "A_RECENT"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 3.0708401451508203,
+              "B_PREV": -0.15383475522200268,
+              "C_MIDDLE": 0.06024695932865142,
+              "D_EARLY": 0.06335629522800446
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 2.672857483228048,
+              "B_PREV": 0.06626224021116892,
+              "C_MIDDLE": 0.0036672006050745623,
+              "D_EARLY": 0.047447760899861656
+            }
+          },
+          "rotation": 3,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 2.9170053899288177,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.17264198760191593,
+            "min_top_magnitude": 2.672857483228048,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 2.606595243016879,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        }
+      ],
+      "target_token": 69
+    },
+    {
+      "baseline_top_content_identity": "A_RECENT",
+      "baseline_top_position": "A_RECENT",
+      "content_tracking": 0.25,
+      "context": "CODE",
+      "fully_resolved": true,
+      "index": 6,
+      "logical_intervention_realizations": 1024,
+      "physical_model_batch_calls": 9,
+      "position_tracking": 1.0,
+      "prompt_hash": "cccb4987b973c0db860dfb8881ac266559fc3d64bb050d76b23bff7db68308e7",
+      "rotations": [
+        {
+          "content_at_position": {
+            "A_RECENT": "A_RECENT",
+            "B_PREV": "B_PREV",
+            "C_MIDDLE": "C_MIDDLE",
+            "D_EARLY": "D_EARLY"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 3.759287691985567,
+              "B_PREV": -0.14818045310676098,
+              "C_MIDDLE": 0.02548763838907083,
+              "D_EARLY": 0.02717597720523675
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 3.2637854243318234,
+              "B_PREV": -0.062436651438474655,
+              "C_MIDDLE": -0.012669506172339121,
+              "D_EARLY": -0.01259075477719307
+            }
+          },
+          "rotation": 0,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 3.611107238878806,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.16479248646646746,
+            "min_top_magnitude": 3.2637854243318234,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 3.2013487728933487,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "D_EARLY",
+            "B_PREV": "A_RECENT",
+            "C_MIDDLE": "B_PREV",
+            "D_EARLY": "C_MIDDLE"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": -1.0477272172768912,
+              "B_PREV": -0.09924224515755971,
+              "C_MIDDLE": 0.021069238583246865,
+              "D_EARLY": -0.03848205506801605
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": -1.4885945236310363,
+              "B_PREV": -0.057375521399080746,
+              "C_MIDDLE": -0.050732788629829884,
+              "D_EARLY": -0.05536178778856991
+            }
+          },
+          "rotation": 1,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 0.9484849721193315,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": -1,
+            "credit_l1_between_kernels": 0.14285394751156366,
+            "min_top_magnitude": 1.0477272172768912,
+            "robust_authority": true,
+            "sign": -1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.4312190022319555,
+            "train_top": "A_RECENT",
+            "train_top_sign": -1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "C_MIDDLE",
+            "B_PREV": "D_EARLY",
+            "C_MIDDLE": "A_RECENT",
+            "D_EARLY": "B_PREV"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 2.0137303471565247,
+              "B_PREV": -0.4444933583339055,
+              "C_MIDDLE": 0.0863397866487503,
+              "D_EARLY": -0.03487719098726908
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 1.4698976272096236,
+              "B_PREV": -0.2945104409009218,
+              "C_MIDDLE": 0.023277375226219497,
+              "D_EARLY": -0.06564731958011785
+            }
+          },
+          "rotation": 2,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 1.5692369888226192,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.1969120443488161,
+            "min_top_magnitude": 1.4698976272096236,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.1753871863087018,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "B_PREV",
+            "B_PREV": "C_MIDDLE",
+            "C_MIDDLE": "D_EARLY",
+            "D_EARLY": "A_RECENT"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": -1.9456512729326882,
+              "B_PREV": -0.19417933622996011,
+              "C_MIDDLE": 0.022074267268180847,
+              "D_EARLY": -0.015875662366549175
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": -2.571400294701258,
+              "B_PREV": -0.02458817263444265,
+              "C_MIDDLE": -0.005648013204336166,
+              "D_EARLY": -0.019677866250276566
+            }
+          },
+          "rotation": 3,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 1.751471936702728,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": -1,
+            "credit_l1_between_kernels": 0.20671616743008295,
+            "min_top_magnitude": 1.9456512729326882,
+            "robust_authority": true,
+            "sign": -1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 2.5468121220668154,
+            "train_top": "A_RECENT",
+            "train_top_sign": -1
+          }
+        }
+      ],
+      "target_token": 32
+    },
+    {
+      "baseline_top_content_identity": "A_RECENT",
+      "baseline_top_position": "A_RECENT",
+      "content_tracking": 0.25,
+      "context": "CODE",
+      "fully_resolved": true,
+      "index": 7,
+      "logical_intervention_realizations": 1024,
+      "physical_model_batch_calls": 9,
+      "position_tracking": 1.0,
+      "prompt_hash": "844f2e9b356258036ab53912f152f4f328c3be2d165e608f35aac2b843233fc5",
+      "rotations": [
+        {
+          "content_at_position": {
+            "A_RECENT": "A_RECENT",
+            "B_PREV": "B_PREV",
+            "C_MIDDLE": "C_MIDDLE",
+            "D_EARLY": "D_EARLY"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 6.131607574721177,
+              "B_PREV": -0.06329631805419922,
+              "C_MIDDLE": 0.0014883851011594138,
+              "D_EARLY": 0.0025810201962788906
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 5.166951833913723,
+              "B_PREV": -0.06107419356703758,
+              "C_MIDDLE": -0.023692847539981205,
+              "D_EARLY": -0.03331506376465162
+            }
+          },
+          "rotation": 0,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 6.068311256666978,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.2569887954741717,
+            "min_top_magnitude": 5.166951833913723,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 5.1058776403466855,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "D_EARLY",
+            "B_PREV": "A_RECENT",
+            "C_MIDDLE": "B_PREV",
+            "D_EARLY": "C_MIDDLE"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": -1.7950142224629717,
+              "B_PREV": 0.02168982227643331,
+              "C_MIDDLE": 0.04730072617530823,
+              "D_EARLY": 0.00041675567626953125
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": -2.7302903657158217,
+              "B_PREV": 0.010725416243076324,
+              "C_MIDDLE": -0.014788957933584847,
+              "D_EARLY": -0.01476394385099411
+            }
+          },
+          "rotation": 1,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 1.7477134962876635,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": -1,
+            "credit_l1_between_kernels": 0.25587773323059093,
+            "min_top_magnitude": 1.7950142224629717,
+            "robust_authority": true,
+            "sign": -1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 2.715501407782237,
+            "train_top": "A_RECENT",
+            "train_top_sign": -1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "C_MIDDLE",
+            "B_PREV": "D_EARLY",
+            "C_MIDDLE": "A_RECENT",
+            "D_EARLY": "B_PREV"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 2.456938127676646,
+              "B_PREV": -0.10611366232236225,
+              "C_MIDDLE": -0.004480212926864624,
+              "D_EARLY": -0.007689734299977623
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 1.5238893851637838,
+              "B_PREV": -0.20636378973722458,
+              "C_MIDDLE": -0.03378058721621831,
+              "D_EARLY": 0.031398576994736985
+            }
+          },
+          "rotation": 2,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 2.350824465354284,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.2754218888779483,
+            "min_top_magnitude": 1.5238893851637838,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.3175255954265592,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        },
+        {
+          "content_at_position": {
+            "A_RECENT": "B_PREV",
+            "B_PREV": "C_MIDDLE",
+            "C_MIDDLE": "D_EARLY",
+            "D_EARLY": "A_RECENT"
+          },
+          "counts": {
+            "K_COHORT_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            },
+            "K_TRAIN_CONTIG8": {
+              "batch_calls": 1,
+              "logical": 128
+            }
+          },
+          "credits": {
+            "K_COHORT_CONTIG8": {
+              "A_RECENT": 2.0615864495436353,
+              "B_PREV": 0.05762019753456116,
+              "C_MIDDLE": -0.0965006947517395,
+              "D_EARLY": -0.012500683466593422
+            },
+            "K_TRAIN_CONTIG8": {
+              "A_RECENT": 1.2448452040553093,
+              "B_PREV": -0.05170282473166783,
+              "C_MIDDLE": -0.19486456364393234,
+              "D_EARLY": -0.011583479742209116
+            }
+          },
+          "rotation": 3,
+          "score": {
+            "candidate": "A_RECENT",
+            "cohort_gap": 1.9650857547918958,
+            "cohort_top": "A_RECENT",
+            "cohort_top_sign": 1,
+            "credit_l1_between_kernels": 0.25633633509278303,
+            "min_top_magnitude": 1.2448452040553093,
+            "robust_authority": true,
+            "sign": 1,
+            "sign_same": true,
+            "state": "OPERATOR_FAMILY_ROBUST_CONTEXT_ONLY",
+            "top_same": true,
+            "train_gap": 1.049980640411377,
+            "train_top": "A_RECENT",
+            "train_top_sign": 1
+          }
+        }
+      ],
+      "target_token": 65
+    }
+  ],
+  "start": 4
+}

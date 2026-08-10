@@ -1,0 +1,73 @@
+{
+  "active_control": false,
+  "cohort": "PRIMARY",
+  "decision_checks": {
+    "content_pass": false,
+    "content_specific": {
+      "CODE": false,
+      "PROSE": false,
+      "pooled": false
+    },
+    "coverage": {
+      "CODE": true,
+      "PROSE": true,
+      "pooled": true
+    },
+    "position_locality": {
+      "CODE": true,
+      "PROSE": true,
+      "pooled": true
+    },
+    "position_pass": true
+  },
+  "experiment_id": "CSCA-06C-R1",
+  "logical_intervention_realizations": 24576,
+  "metrics": {
+    "CODE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 8,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 8,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "PROSE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 8,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 8,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "pooled": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 16,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 16,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 24,
+      "position_tracking": 1.0
+    }
+  },
+  "model_state_mutated": false,
+  "physical_model_batch_calls": 216,
+  "prompt_overlap_previous": 0,
+  "replay_authorized": false,
+  "semantic_causality_authorized": false,
+  "student_authorized": false,
+  "verdict": "POSITION_LOCALITY_EXPLANATION_SUPPORTED_NARROWED"
+}

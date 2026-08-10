@@ -1,0 +1,117 @@
+{
+  "active_control_authorized": false,
+  "authority": "RESEARCH_ONLY_FOR_POSITION_CONTENT_MECHANISM",
+  "boundary": "Every fully resolved rotation set tracked fixed position rather than moved content (position=1.0, content=0.25), but independent replication failed the preregistered >=0.50 fully-resolved coverage gate in PROSE and pooled. Therefore content-specific causal credit is not supported and position/locality is not promoted as a replicated mechanism.",
+  "content_specific_claim_supported": false,
+  "experiment_id": "CSCA-06C-R1",
+  "model_state_mutated": {
+    "primary": false,
+    "replication": false
+  },
+  "position_locality_claim_supported": false,
+  "primary_metrics": {
+    "CODE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 8,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 8,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "PROSE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 8,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 8,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "pooled": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 16,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 16,
+      "fully_resolved_fraction": 0.6666666666666666,
+      "n": 24,
+      "position_tracking": 1.0
+    }
+  },
+  "primary_verdict": "POSITION_LOCALITY_EXPLANATION_SUPPORTED_NARROWED",
+  "prompt_overlap_previous": {
+    "primary": 0,
+    "replication": 0
+  },
+  "replay_authorized": false,
+  "replication_coverage_block": {
+    "CODE": 0.5833333333333334,
+    "PROSE": 0.3333333333333333,
+    "pooled": 0.4583333333333333,
+    "required": 0.5
+  },
+  "replication_metrics": {
+    "CODE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 7,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 7,
+      "fully_resolved_fraction": 0.5833333333333334,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "PROSE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 4,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 4,
+      "fully_resolved_fraction": 0.3333333333333333,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "pooled": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 11,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 11,
+      "fully_resolved_fraction": 0.4583333333333333,
+      "n": 24,
+      "position_tracking": 1.0
+    }
+  },
+  "replication_verdict": "POSITION_CONTENT_MECHANISM_UNRESOLVED",
+  "resolved_case_pattern": {
+    "primary_content_tracking": 0.25,
+    "primary_position_tracking": 1.0,
+    "replication_content_tracking": 0.25,
+    "replication_position_tracking": 1.0
+  },
+  "scientific_pass": false,
+  "semantic_causality_authorized": false,
+  "student_authorized": false,
+  "verdict": "POSITION_CONTENT_MECHANISM_UNRESOLVED"
+}

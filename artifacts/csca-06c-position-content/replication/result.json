@@ -1,0 +1,73 @@
+{
+  "active_control": false,
+  "cohort": "REPLICATION",
+  "decision_checks": {
+    "content_pass": false,
+    "content_specific": {
+      "CODE": false,
+      "PROSE": false,
+      "pooled": false
+    },
+    "coverage": {
+      "CODE": true,
+      "PROSE": false,
+      "pooled": false
+    },
+    "position_locality": {
+      "CODE": true,
+      "PROSE": false,
+      "pooled": false
+    },
+    "position_pass": false
+  },
+  "experiment_id": "CSCA-06C-R1",
+  "logical_intervention_realizations": 24576,
+  "metrics": {
+    "CODE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 7,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 7,
+      "fully_resolved_fraction": 0.5833333333333334,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "PROSE": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 4,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 4,
+      "fully_resolved_fraction": 0.3333333333333333,
+      "n": 12,
+      "position_tracking": 1.0
+    },
+    "pooled": {
+      "baseline_top_position_counts": {
+        "A_RECENT": 11,
+        "B_PREV": 0,
+        "C_MIDDLE": 0,
+        "D_EARLY": 0
+      },
+      "content_tracking": 0.25,
+      "fully_resolved_count": 11,
+      "fully_resolved_fraction": 0.4583333333333333,
+      "n": 24,
+      "position_tracking": 1.0
+    }
+  },
+  "model_state_mutated": false,
+  "physical_model_batch_calls": 216,
+  "prompt_overlap_previous": 0,
+  "replay_authorized": false,
+  "semantic_causality_authorized": false,
+  "student_authorized": false,
+  "verdict": "POSITION_CONTENT_MECHANISM_UNRESOLVED"
+}
