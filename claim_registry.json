@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "6faa5606edc041e4ffea06af2476ee7b7190e842",
+  "git_commit": "45bc85ae80103473c7e21c414a308dd7dbf6b766",
   "generated": "2026-08-10",
   "claims": [
     {
@@ -36,7 +36,7 @@
       "verdict_binding": {
         "file": "artifacts/wp1-release/WP1_RELEASE_VERDICT.md",
         "pointer": null,
-        "expected": "## Baseline integrity (Act A2) — PASS"
+        "expected": "## Baseline integrity (Act A2) \u2014 PASS"
       }
     },
     {
@@ -1584,6 +1584,96 @@
         "file": "artifacts/fractal-adversarial-v1/verdict.json",
         "pointer": "claims.short_series_fractal_estimators_claim_authorized",
         "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-CDL1-control",
+      "hypothesis_id": "H-CDL1",
+      "statement": "The preregistered first causal-debt replay scheduler outperforms matched counterfactual replay controls on the frozen synthetic structural-causal benchmark.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "synthetic SCM only",
+          "20 frozen seeds",
+          "5 replay budgets",
+          "matched counterfactual controls"
+        ]
+      },
+      "required_artifacts": [
+        "artifacts/causal-debt-v1/"
+      ],
+      "supporting_metrics": [
+        "causal_debt_cf median OOS 0.5049 vs uniform_cf 0.5361 and rpe_cf 0.8984",
+        "exact max-T FWER p=1.0 for both positive primary comparisons",
+        "invariant-cause recall 0.18 vs 0.48/0.84 matched controls"
+      ],
+      "failed_controls": [
+        "all positive V1 acceptance conditions except non-authorization failed",
+        "strict false-credit improvement criterion was unattainable at matched-control zero floor"
+      ],
+      "limitations": [
+        "synthetic benchmark only",
+        "V1 debt definition retained observational eligibility after zero-effect interventions",
+        "positive-acceptance conjunction contained an impossible floor condition"
+      ],
+      "prohibited_extrapolations": [
+        "biological replay",
+        "language-model memory",
+        "general intelligence",
+        "VIA ascension"
+      ],
+      "note": "Negative result preserved. Post-hoc diagnosis motivated but does not retroactively alter V1.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "artifacts/causal-debt-v1/verdict.json",
+        "pointer": "verdict",
+        "expected": "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED"
+      }
+    },
+    {
+      "claim_id": "CWC-CDL2-resolution-aware-control",
+      "hypothesis_id": "H-CDL2",
+      "statement": "Resolution-aware deferred causal-credit scheduling improves replay allocation over matched counterfactual controls on the preregistered two-environment synthetic SCM suite.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "synthetic SCM control only",
+          "proxy and descendant spurious mechanisms",
+          "20 frozen seeds",
+          "4 replay budgets",
+          "same counterfactual operator and consolidation gate across compared policies"
+        ]
+      },
+      "required_artifacts": [
+        "artifacts/causal-debt-v2/"
+      ],
+      "supporting_metrics": [
+        "mean paired OOS difference +0.1665 vs uniform_cf and +0.1932 vs rpe_cf",
+        "exact random-sign max-T FWER p=1.91e-6 and 9.54e-7",
+        "aggregate invariant recall 0.85625 vs 0.4375/0.36875",
+        "benign proxy median OOS non-inferior to rpe_cf",
+        "descendant median OOS superior to rpe_cf at 4/4 frozen budgets"
+      ],
+      "limitations": [
+        "synthetic structural-causal benchmark only",
+        "combined policy includes resolution-aware candidate priority plus balanced context selection",
+        "post-confirmatory ablations and stress sweeps are exploratory and cannot upgrade this claim",
+        "no real model, memory trace, or physical inference execution tested"
+      ],
+      "prohibited_extrapolations": [
+        "hippocampal replay performs causal falsification",
+        "biological eligibility traces implement this ledger",
+        "language-model performance improvement",
+        "production memory system advantage",
+        "VIA-V2+ authorization",
+        "general intelligence mechanism"
+      ],
+      "note": "Control qualification only. False-credit was 0 for all matched-CF policies; the positive effect is improved invariant-cause recovery/replay allocation, not superior false-positive control.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "artifacts/causal-debt-v2/verdict.json",
+        "pointer": "verdict",
+        "expected": "CAUSAL_DEBT_V2_CONTROL_QUALIFIED"
       }
     }
   ]

@@ -1,0 +1,45 @@
+{
+  "claim_upgrade_authority": false,
+  "confirmatory": false,
+  "contrasts": {
+    "context_coverage_with_debt": 0.007672119140625044,
+    "context_coverage_with_rpe": 0.002410888671875,
+    "context_coverage_with_uniform": -0.005017089843750044,
+    "debt_vs_rpe_random_context": 0.17431640625,
+    "debt_vs_uniform_random_context": 0.16539306640624996
+  },
+  "rows": 960,
+  "schema": "cwc-cdl-v2/ablation-1",
+  "summary": {
+    "debt_balanced": {
+      "false_credit": 0.0,
+      "mean_oos": 0.832684326171875,
+      "recall": 0.825
+    },
+    "debt_randomctx": {
+      "false_credit": 0.0,
+      "mean_oos": 0.82501220703125,
+      "recall": 0.80625
+    },
+    "rpe_balanced": {
+      "false_credit": 0.0,
+      "mean_oos": 0.653106689453125,
+      "recall": 0.375
+    },
+    "rpe_random": {
+      "false_credit": 0.0,
+      "mean_oos": 0.65069580078125,
+      "recall": 0.36875
+    },
+    "uniform_balanced": {
+      "false_credit": 0.0,
+      "mean_oos": 0.65460205078125,
+      "recall": 0.38125
+    },
+    "uniform_random": {
+      "false_credit": 0.0,
+      "mean_oos": 0.659619140625,
+      "recall": 0.39375
+    }
+  }
+}

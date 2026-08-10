@@ -1,0 +1,285 @@
+{
+  "budget": 16,
+  "claim_upgrade_authority": false,
+  "confirmatory": false,
+  "positive_setting_count": {
+    "rpe_cf": 15,
+    "uniform_cf": 15
+  },
+  "schema": "cwc-cdl-v2/stress-1",
+  "settings": 16,
+  "summary": {
+    "n256-y0.05-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.92509765625,
+        "recall": 0.95
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.5216796875,
+        "recall": 0.05
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.790673828125,
+        "recall": 0.65
+      }
+    },
+    "n256-y0.05-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.925341796875,
+        "recall": 0.95
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.948046875,
+        "recall": 1.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.7220703125,
+        "recall": 0.5
+      }
+    },
+    "n256-y0.10-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.859912109375,
+        "recall": 0.9
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.4982421875,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.740283203125,
+        "recall": 0.6
+      }
+    },
+    "n256-y0.10-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.800048828125,
+        "recall": 0.75
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.7029296875,
+        "recall": 0.5
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.80009765625,
+        "recall": 0.75
+      }
+    },
+    "n256-y0.20-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.704345703125,
+        "recall": 0.7
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.496533203125,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.614892578125,
+        "recall": 0.4
+      }
+    },
+    "n256-y0.20-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.691748046875,
+        "recall": 0.75
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.496533203125,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.57216796875,
+        "recall": 0.25
+      }
+    },
+    "n256-y0.30-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.54072265625,
+        "recall": 0.3
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.496240234375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.514404296875,
+        "recall": 0.1
+      }
+    },
+    "n256-y0.30-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.614013671875,
+        "recall": 0.6
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.496240234375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.53798828125,
+        "recall": 0.2
+      }
+    },
+    "n64-y0.05-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.95029296875,
+        "recall": 1.0
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.612841796875,
+        "recall": 0.25
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.816943359375,
+        "recall": 0.7
+      }
+    },
+    "n64-y0.05-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.95029296875,
+        "recall": 1.0
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.885107421875,
+        "recall": 0.85
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.839453125,
+        "recall": 0.75
+      }
+    },
+    "n64-y0.10-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.860791015625,
+        "recall": 0.9
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.5025390625,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.75947265625,
+        "recall": 0.65
+      }
+    },
+    "n64-y0.10-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.88076171875,
+        "recall": 0.95
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.660546875,
+        "recall": 0.4
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.660009765625,
+        "recall": 0.5
+      }
+    },
+    "n64-y0.20-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.680029296875,
+        "recall": 0.6
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.503271484375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.635498046875,
+        "recall": 0.45
+      }
+    },
+    "n64-y0.20-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.695361328125,
+        "recall": 0.65
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.503271484375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.63427734375,
+        "recall": 0.45
+      }
+    },
+    "n64-y0.30-s0.02": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.603076171875,
+        "recall": 0.5
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.50302734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.540771484375,
+        "recall": 0.2
+      }
+    },
+    "n64-y0.30-s0.10": {
+      "causal_debt_v2_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.588916015625,
+        "recall": 0.45
+      },
+      "rpe_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.50302734375,
+        "recall": 0.0
+      },
+      "uniform_cf": {
+        "false_credit": 0.0,
+        "mean_oos": 0.530615234375,
+        "recall": 0.15
+      }
+    }
+  }
+}

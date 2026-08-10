@@ -568,3 +568,28 @@ hypotheses:
     preregistration: docs/acts/CWC_FRACTAL_ADV_01.md
     status: NOT_SUPPORTED
     claim_id: CWC-FRACTAL-ADV4-estimator-authority
+
+
+  - hypothesis_id: H-CDL1
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "The preregistered causal-debt replay policy does not outperform matched counterfactual replay controls in the frozen synthetic SCM."
+    H1: "The preregistered causal-debt replay policy outperforms matched counterfactual replay controls under every frozen acceptance condition."
+    estimand: "paired OOS accuracy, false-credit rate, invariant-cause recall and budget replication across the frozen V1 seeds/budgets"
+    experimental_unit: "seed, paired across replay policies after within-seed aggregation over frozen budgets"
+    decision_rule: "All V1 preregistered conjunction checks must pass; RESULT CAUSAL_DEBT_CONTROL_NOT_QUALIFIED, including a mechanistic scheduler starvation defect and an unattainable strict false-credit floor condition -> NOT_SUPPORTED."
+    preregistration: experiments/causal_debt_v1/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-CDL1-control
+
+  - hypothesis_id: H-CDL2
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Resolution-aware causal debt does not improve replay allocation over matched counterfactual controls on the frozen two-environment synthetic suite."
+    H1: "Resolution-aware causal debt improves paired OOS performance while satisfying benign-case non-inferiority, recall, false-credit and budget-replication gates."
+    estimand: "seed-paired mean OOS accuracy over proxy+descendant environments and four frozen replay budgets, with max-T FWER correction"
+    experimental_unit: "seed, paired across policies after within-seed averaging over frozen environments and budgets"
+    decision_rule: "All V2 preregistered gates must pass. RESULT mean paired OOS +0.1665 vs uniform-CF and +0.1932 vs RPE-CF; exact max-T p=1.91e-6/9.54e-7; benign proxy non-inferior; descendant superiority 4/4 budgets -> SUPPORTED_NARROWED (synthetic control only)."
+    preregistration: experiments/causal_debt_v2/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-CDL2-resolution-aware-control
