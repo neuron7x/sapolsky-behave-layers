@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "5c5aa63ada74cf6fbab678afbf651716d66d64b3",
+  "git_commit": "cb892750f8dfcc67eeb03fe111b78706385b5447",
   "generated": "2026-08-10",
   "claims": [
     {
@@ -1721,6 +1721,50 @@
         "file": "research/results/CSCA-01/verdict.json",
         "pointer": "exact_pass",
         "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD03-CSCA02-UA",
+      "hypothesis_id": "H-CSCA-02-UA",
+      "statement": "The frozen global uncertainty-and-abstention policy qualifies counterfactual causal credit for shadow inference under held-out structural misspecification and mandatory null attacks.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "synthetic learned counterfactual models",
+          "frozen calibration policy",
+          "32 primary + 32 independent-seed replication seeds across held-out structural families",
+          "mandatory post-confirmatory null attacks"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-02-UA/15_CSCA_02_RESULTS.json",
+        "research/results/CSCA-02-UA/NULL_ATTACKS.json"
+      ],
+      "supporting_metrics": [
+        "PRIMARY selective false authority 0/224 but coverage 43/224=0.191964<0.20 frozen minimum",
+        "INDEPENDENT_REPLICATION selective false authority 0/224 and coverage 45/224=0.200893",
+        "mandatory context-conditional null exposed 12 accepted cases with context_stability=0.5"
+      ],
+      "limitations": [
+        "synthetic SCM qualification only",
+        "primary conjunction gate failed despite zero measured accepted false authority",
+        "post-confirmatory context diagnostic cannot modify frozen thresholds or rescue the experiment",
+        "no real-model shadow inference, replay-control, physical compute, or active causal control was authorized"
+      ],
+      "prohibited_extrapolations": [
+        "shadow inference qualification",
+        "real-model causal validity",
+        "physical compute advantage",
+        "biological mechanism",
+        "active causal control",
+        "architecture promotion"
+      ],
+      "note": "Fail-closed negative result. The next admissible mechanism must represent context-conditional causal authority using a newly preregistered experiment and fresh seeds; the 20% coverage threshold may not be weakened post hoc.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "research/results/CSCA-02-UA/15_CSCA_02_RESULTS.json",
+        "pointer": "scientific_pass",
+        "expected": false
       }
     }
   ]

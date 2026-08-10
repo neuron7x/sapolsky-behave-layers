@@ -605,3 +605,15 @@ hypotheses:
     preregistration: experiments/csca_01/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD02-CSCA01-controlled-kernel
+
+  - hypothesis_id: H-CSCA-02-UA
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A frozen global uncertainty-and-abstention policy cannot safely and non-degenerately qualify counterfactual causal credit across held-out structural misspecification and mandatory null attacks."
+    H1: "The frozen policy reduces false causal authority, retains preregistered non-degenerate coverage and discrimination in both frozen cohorts, rejects zero/common-wrong-structure cases, and survives every mandatory structural null."
+    estimand: "selective false causal authority jointly reported with coverage, accepted causal-rank accuracy, false-credit mass, structural misspecification nulls and independent-seed replication"
+    experimental_unit: "seed x held-out structural family after one frozen calibration policy"
+    decision_rule: "All preregistered qualification predicates must pass in PRIMARY and INDEPENDENT_REPLICATION and mandatory null attacks. RESULT PRIMARY coverage 43/224=0.191964<0.20 and NULL-10 exposed 12 context-unstable accepted cases -> NOT_SUPPORTED; no authority promotion."
+    preregistration: experiments/csca_02_ua/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD03-CSCA02-UA
