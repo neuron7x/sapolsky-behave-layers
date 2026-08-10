@@ -1,0 +1,19 @@
+{
+  "context_z_threshold": 3.2496168935684526,
+  "decision_states": [
+    "STRUCTURAL_ADEQUACY_ACCEPTED_SYNTHETIC",
+    "CONTEXT_CONDITIONAL_ONLY",
+    "ABSTAIN_STRUCTURAL_MISSPECIFICATION",
+    "ABSTAIN_INSUFFICIENT_STRUCTURAL_COVERAGE",
+    "FALSIFIED_NO_CAUSAL_LEVERAGE"
+  ],
+  "frozen_from": "CALIBRATION_ONLY",
+  "max_cell_idr_threshold": 4.264566468014008,
+  "min_probes_per_cell": 16,
+  "policy_id": "CSCA-04-SA-STRUCTURAL-AUTHORITY-v1",
+  "primary_budget_per_cell": 16,
+  "primary_strategy": "BALANCED",
+  "required_cells": 8,
+  "shadow_inference_authority": false,
+  "zero_cause_leverage_floor": 0.1
+}
