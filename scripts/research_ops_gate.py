@@ -3,12 +3,16 @@ from __future__ import annotations
 import json
 from dataclasses import fields
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from cwc.research_ops.compute_governor import ComputeGovernor, ComputeRequest
 from cwc.research_ops.governance import HumanDecision, validate_human_decision
 from cwc.research_ops.provenance import sha256_file
 
-ROOT = Path(__file__).resolve().parents[1]
 REG = ROOT / "research/registry"
 
 
@@ -48,6 +52,8 @@ def main() -> int:
     sources = load(REG / "rd02_sources.json")
     for source in sources:
         raw = Path(source["raw_path"])
+        if not raw.is_absolute():
+            raw = ROOT / raw
         check(raw.is_file(), f"frozen source missing: {raw}", errors)
         if raw.is_file():
             check(sha256_file(raw) == source["content_sha256"], f"source hash mismatch: {source['source_id']}", errors)

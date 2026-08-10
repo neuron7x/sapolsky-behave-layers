@@ -9,7 +9,10 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-import tomli as tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11 compatibility
+    import tomli as tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = Path("docs/security/SBOM.cdx.json")

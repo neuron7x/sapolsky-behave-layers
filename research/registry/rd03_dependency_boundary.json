@@ -1,0 +1,27 @@
+{
+  "act": "ACT-R&D-03",
+  "policy": "OPTIONAL_DEPENDENCIES_MAY_NOT_BREAK_UNRELATED_COLLECTION",
+  "dependencies": {
+    "rustbpe": {
+      "role": "tokenizer training only",
+      "current_environment": "UNAVAILABLE",
+      "isolation": "lazy import; tokenizer-training tests explicitly skipped when absent"
+    },
+    "pyarrow": {
+      "role": "Hub parquet task datasets",
+      "current_environment": "UNAVAILABLE",
+      "isolation": "lazy import; parquet-specific tests explicitly skipped when absent"
+    },
+    "hypothesis": {
+      "role": "property-based test generator",
+      "current_environment": "UNAVAILABLE",
+      "isolation": "property module explicitly skipped when absent; deterministic core tests remain active"
+    },
+    "tomli": {
+      "role": "Python <3.11 TOML compatibility",
+      "current_environment": "NOT_REQUIRED_ON_PYTHON_3_13",
+      "isolation": "stdlib tomllib preferred; tomli fallback retained for older Python"
+    }
+  },
+  "boundary": "An explicit skip is not evidence that the dependency-specific behavior passed. It only closes collection/import coupling for unrelated ACT-R&D-03 gates."
+}

@@ -11,8 +11,6 @@ import random
 import urllib.request
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
 from filelock import FileLock
 
 from nanochat.common import get_base_dir
@@ -49,6 +47,11 @@ def load_hub_dataset(repo_id, subset="default", split="train"):
     shards via the hub API, download them (once) into the local cache directory, and
     read them with pyarrow. Under torchrun, only one rank downloads, the others wait.
     """
+    try:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+    except ModuleNotFoundError as exc:
+        raise RuntimeError("pyarrow is required for Hub parquet datasets") from exc
     base_dir = get_base_dir()
     slug = repo_id.replace("/", "--")
     shards_dir = os.path.join(base_dir, "task_data", slug, subset, split)

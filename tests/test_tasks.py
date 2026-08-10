@@ -6,7 +6,9 @@ python -m pytest tests/test_tasks.py -v
 """
 
 import numpy as np
-import pyarrow as pa
+import pytest
+
+pa = pytest.importorskip("pyarrow", reason="optional parquet task dependency unavailable")
 from tasks.common import Task, TaskMixture, HubDataset, render_mc
 
 

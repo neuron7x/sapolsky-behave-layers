@@ -20,7 +20,6 @@ from contextlib import contextmanager
 import torch
 import torch.nn.functional as F
 
-from nanochat.checkpoint_manager import load_model
 from nanochat.common import COMPUTE_DTYPE, autodetect_device_type, compute_init
 from nanochat.inference_contracts import validate_generation_request, validate_logits
 
@@ -348,6 +347,7 @@ if __name__ == "__main__":
     device_type = autodetect_device_type()
     ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
     # load the model and tokenizer
+    from nanochat.checkpoint_manager import load_model
     model, tokenizer, meta = load_model("base", device, phase="eval")
     bos_token_id = tokenizer.get_bos_token_id()
     # common hyperparameters

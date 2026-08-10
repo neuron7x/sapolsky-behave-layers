@@ -10,6 +10,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+pytest.importorskip("hypothesis", reason="optional property-testing dependency unavailable")
+
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 

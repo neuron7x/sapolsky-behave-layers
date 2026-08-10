@@ -7,6 +7,8 @@ python -m pytest tests/test_tokenizer.py -v
 """
 
 import pytest
+
+pytest.importorskip("rustbpe", reason="optional tokenizer-training dependency unavailable")
 from nanochat.tokenizer import RustBPETokenizer, SPECIAL_TOKENS
 
 # a small corpus is enough to exercise the BPE machinery
