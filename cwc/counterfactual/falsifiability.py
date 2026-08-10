@@ -1,0 +1,331 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import itertools
+import math
+from typing import Iterable, Mapping, Sequence
+
+
+def normal_logpdf(y: float, mean: float, sd: float) -> float:
+    if not math.isfinite(sd) or sd <= 0:
+        raise ValueError("sd must be finite and >0")
+    z = (float(y) - float(mean)) / float(sd)
+    return -math.log(float(sd)) - 0.5 * math.log(2.0 * math.pi) - 0.5 * z * z
+
+
+def _clip(x: float, lo: float, hi: float) -> float:
+    if lo > hi:
+        raise ValueError("invalid interval")
+    return min(max(float(x), float(lo)), float(hi))
+
+
+def logsumexp(values: Sequence[float]) -> float:
+    if not values:
+        raise ValueError("values required")
+    m = max(values)
+    if not math.isfinite(m):
+        return m
+    return m + math.log(sum(math.exp(v - m) for v in values))
+
+
+@dataclass(frozen=True, slots=True)
+class NuisanceEnvelope:
+    intercept_min: float
+    intercept_max: float
+    sd_min: float
+    sd_max: float
+
+    def __post_init__(self) -> None:
+        if self.intercept_min > self.intercept_max:
+            raise ValueError("invalid intercept envelope")
+        if self.sd_min <= 0 or self.sd_min > self.sd_max:
+            raise ValueError("invalid sd envelope")
+
+
+@dataclass(frozen=True, slots=True)
+class InterventionDesign:
+    counts: Mapping[float, int]
+    costs: Mapping[float, float]
+
+    def __post_init__(self) -> None:
+        if not self.counts or sum(int(v) for v in self.counts.values()) <= 0:
+            raise ValueError("non-empty counts required")
+        for a, n in self.counts.items():
+            if int(n) < 0:
+                raise ValueError(f"negative count for action {a}")
+            if a not in self.costs or float(self.costs[a]) <= 0:
+                raise ValueError(f"positive cost missing for action {a}")
+
+    @property
+    def actions(self) -> tuple[float, ...]:
+        out: list[float] = []
+        for action in sorted(self.counts):
+            out.extend([float(action)] * int(self.counts[action]))
+        return tuple(out)
+
+    @property
+    def sample_count(self) -> int:
+        return sum(int(v) for v in self.counts.values())
+
+    @property
+    def cost(self) -> float:
+        return sum(float(self.costs[a]) * int(n) for a, n in self.counts.items())
+
+    @property
+    def distinct_actions(self) -> int:
+        return sum(int(n) > 0 for n in self.counts.values())
+
+
+@dataclass(frozen=True, slots=True)
+class GaussianInterventionalLaw:
+    slope: float
+    intercept: float
+    sd: float
+
+    def __post_init__(self) -> None:
+        if self.sd <= 0:
+            raise ValueError("sd must be >0")
+
+    def mean(self, action: float) -> float:
+        return self.slope * float(action) + self.intercept
+
+
+@dataclass(frozen=True, slots=True)
+class ProfiledNullFit:
+    intercept: float
+    sd: float
+    log_likelihood: float
+
+
+def profile_gaussian_null(
+    outcomes: Sequence[float],
+    actions: Sequence[float],
+    *,
+    model_slope: float,
+    nuisance: NuisanceEnvelope,
+) -> ProfiledNullFit:
+    if len(outcomes) != len(actions) or not outcomes:
+        raise ValueError("outcomes/actions must have equal nonzero length")
+    residuals = [float(y) - float(model_slope) * float(a) for y, a in zip(outcomes, actions)]
+    intercept = _clip(sum(residuals) / len(residuals), nuisance.intercept_min, nuisance.intercept_max)
+    rss = sum((r - intercept) ** 2 for r in residuals)
+    mle_sd = math.sqrt(rss / len(residuals)) if rss > 0 else nuisance.sd_min
+    sd = _clip(mle_sd, nuisance.sd_min, nuisance.sd_max)
+    ll = sum(normal_logpdf(y, float(model_slope) * a + intercept, sd) for y, a in zip(outcomes, actions))
+    return ProfiledNullFit(intercept=intercept, sd=sd, log_likelihood=ll)
+
+
+def profiled_kl_to_model_class(
+    true_law: GaussianInterventionalLaw,
+    design: InterventionDesign,
+    *,
+    model_slope: float,
+    nuisance: NuisanceEnvelope,
+) -> tuple[float, ProfiledNullFit]:
+    """Exact KL from an iid Gaussian intervention block to the closest null member.
+
+    The null family is Y|do(X=a) ~ N(model_slope*a+h, tau^2), with one shared h,tau
+    over the whole block. This is the information available to falsify the *model class*,
+    not a decomposition of hidden-confounder variance versus aleatoric variance.
+    """
+    actions = design.actions
+    target_residual_means = [
+        (true_law.slope - float(model_slope)) * a + true_law.intercept for a in actions
+    ]
+    h = _clip(
+        sum(target_residual_means) / len(target_residual_means),
+        nuisance.intercept_min,
+        nuisance.intercept_max,
+    )
+    mean_sq = sum((m - h) ** 2 for m in target_residual_means) / len(target_residual_means)
+    tau_unclipped = math.sqrt(true_law.sd * true_law.sd + mean_sq)
+    tau = _clip(tau_unclipped, nuisance.sd_min, nuisance.sd_max)
+    kl = 0.0
+    for action, target in zip(actions, target_residual_means):
+        delta = target - h
+        kl += (
+            math.log(tau / true_law.sd)
+            + (true_law.sd * true_law.sd + delta * delta) / (2.0 * tau * tau)
+            - 0.5
+        )
+    fit = ProfiledNullFit(intercept=h, sd=tau, log_likelihood=float("nan"))
+    return float(max(kl, 0.0)), fit
+
+
+def separation_rate_per_cost(
+    true_law: GaussianInterventionalLaw,
+    design: InterventionDesign,
+    *,
+    model_slope: float,
+    nuisance: NuisanceEnvelope,
+) -> float:
+    kl, _ = profiled_kl_to_model_class(true_law, design, model_slope=model_slope, nuisance=nuisance)
+    return kl / design.cost
+
+
+def optimize_minimax_design(
+    *,
+    actions: Sequence[float],
+    costs: Mapping[float, float],
+    alternative_laws: Sequence[GaussianInterventionalLaw],
+    model_slope: float,
+    nuisance: NuisanceEnvelope,
+    max_samples: int,
+    min_distinct_actions: int = 2,
+) -> tuple[InterventionDesign, list[dict[str, float | dict[str, int]]]]:
+    if max_samples < 1:
+        raise ValueError("max_samples must be positive")
+    actions = tuple(float(a) for a in actions)
+    rows: list[dict[str, float | dict[str, int]]] = []
+    best: InterventionDesign | None = None
+    best_score = -1.0
+    for counts in itertools.product(range(max_samples + 1), repeat=len(actions)):
+        total = sum(counts)
+        if total < 2 or total > max_samples:
+            continue
+        mapping = {a: int(n) for a, n in zip(actions, counts)}
+        design = InterventionDesign(mapping, costs)
+        if design.distinct_actions < min_distinct_actions:
+            continue
+        rates = [
+            separation_rate_per_cost(
+                law, design, model_slope=model_slope, nuisance=nuisance
+            )
+            for law in alternative_laws
+        ]
+        score = min(rates)
+        rows.append({
+            "counts": {str(a): int(mapping[a]) for a in actions},
+            "cost": design.cost,
+            "min_separation_rate_per_cost": float(score),
+            "mean_separation_rate_per_cost": float(sum(rates) / len(rates)),
+        })
+        key = (score, -design.sample_count, -design.cost)
+        best_key = (best_score, -(best.sample_count if best else 10**9), -(best.cost if best else float("inf")))
+        if best is None or key > best_key:
+            best = design
+            best_score = score
+    if best is None:
+        raise RuntimeError("no admissible design")
+    rows.sort(key=lambda r: (-float(r["min_separation_rate_per_cost"]), float(r["cost"])))
+    return best, rows
+
+
+@dataclass(frozen=True, slots=True)
+class AlternativeComponent:
+    slope: float
+    intercept: float
+    sd: float
+
+
+class CompositeNullEProcess:
+    """Anytime-valid e-process for a composite Gaussian null class.
+
+    For each predeclared block, e = q(y|a) / sup_{theta in M} p_theta(y|a).
+    Since sup_theta p_theta >= p_theta0 pointwise for every theta0 in M and q is a
+    normalized density, E_theta0[e | past] <= 1. Products therefore form a test
+    supermartingale under every member of the null family. Reject at E >= 1/alpha.
+
+    The result falsifies the *declared model+nuisance class*. It does not logically prove
+    that topology rather than an omitted nuisance mechanism is wrong.
+    """
+
+    def __init__(
+        self,
+        *,
+        model_slope: float,
+        nuisance: NuisanceEnvelope,
+        alternative: Sequence[AlternativeComponent],
+        alpha: float,
+        max_cost: float,
+    ) -> None:
+        if not 0.0 < alpha < 1.0:
+            raise ValueError("alpha must be in (0,1)")
+        if max_cost <= 0:
+            raise ValueError("max_cost must be positive")
+        if not alternative:
+            raise ValueError("alternative mixture required")
+        self.model_slope = float(model_slope)
+        self.nuisance = nuisance
+        self.alternative = tuple(alternative)
+        self.alpha = float(alpha)
+        self.max_cost = float(max_cost)
+        self.log_e = 0.0
+        self.cost = 0.0
+        self.blocks = 0
+        self.rejected = False
+
+    @property
+    def threshold_log_e(self) -> float:
+        return math.log(1.0 / self.alpha)
+
+    def _alternative_log_density(self, outcomes: Sequence[float], actions: Sequence[float]) -> float:
+        terms = []
+        for component in self.alternative:
+            terms.append(sum(
+                normal_logpdf(y, component.slope * a + component.intercept, component.sd)
+                for y, a in zip(outcomes, actions)
+            ))
+        return logsumexp(terms) - math.log(len(terms))
+
+    def step(self, outcomes: Sequence[float], design: InterventionDesign) -> dict[str, float | int | bool]:
+        if self.rejected:
+            raise RuntimeError("cannot update after rejection")
+        if self.cost + design.cost > self.max_cost + 1e-12:
+            raise RuntimeError("compute/intervention budget exceeded")
+        actions = design.actions
+        if len(outcomes) != len(actions):
+            raise ValueError("outcome count does not match design")
+        null_fit = profile_gaussian_null(
+            outcomes, actions, model_slope=self.model_slope, nuisance=self.nuisance
+        )
+        log_q = self._alternative_log_density(outcomes, actions)
+        increment = log_q - null_fit.log_likelihood
+        self.log_e += increment
+        self.cost += design.cost
+        self.blocks += 1
+        self.rejected = self.log_e >= self.threshold_log_e
+        return {
+            "block": self.blocks,
+            "log_e_increment": float(increment),
+            "log_e": float(self.log_e),
+            "e_value_capped": float(math.exp(min(self.log_e, 700.0))),
+            "cost": float(self.cost),
+            "rejected": bool(self.rejected),
+            "profiled_null_intercept": float(null_fit.intercept),
+            "profiled_null_sd": float(null_fit.sd),
+        }
+
+
+def latent_aleatoric_equivalence(total_sd: float, *, points: int = 11) -> tuple[tuple[float, float], ...]:
+    """Construct observationally/interventionally equivalent variance decompositions.
+
+    In Y=beta*do(X)+gamma*U+eps, U~N(0,1), eps~N(0,sigma^2), only
+    gamma^2+sigma^2 is identified from scalar Y when no proxy for U is observed.
+    """
+    if total_sd <= 0 or points < 2:
+        raise ValueError("positive total_sd and points>=2 required")
+    out = []
+    for i in range(points):
+        gamma = total_sd * i / (points - 1)
+        sigma = math.sqrt(max(total_sd * total_sd - gamma * gamma, 0.0))
+        out.append((float(gamma), float(sigma)))
+    return tuple(out)
+
+
+def model_class_falsifiability_state(
+    *,
+    separation_rate: float,
+    observed_rejection: bool,
+    nuisance_scope_certified: bool,
+    budget_exhausted: bool,
+) -> str:
+    if separation_rate <= 1e-15:
+        return "UNRESOLVED_INTERVENTIONAL_EQUIVALENCE"
+    if observed_rejection:
+        if nuisance_scope_certified:
+            return "GRAPH_COMPONENT_FALSIFIED_CONDITIONAL_ON_NUISANCE_CLASS"
+        return "MODEL_CLASS_FALSIFIED_NUISANCE_ATTRIBUTION_UNRESOLVED"
+    if budget_exhausted:
+        return "ABSTAIN_INSUFFICIENT_INTERVENTION_BUDGET"
+    return "RETAIN_NOT_FALSIFIED_NO_CAUSAL_AUTHORITY"
