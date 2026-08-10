@@ -19,6 +19,15 @@ the substrate verifies the algebraic identity adaptive−static =
 an independently predicted empirical effect or an exactly compute-matched Pareto
 result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 
+## Causal-credit / counterfactual-model sub-line — current boundary
+
+- `CSCA-01`: exact counterfactual Shapley separates the controlled true cause from confounders/non-causes (`SUPPORTED_NARROWED`).
+- `CSCA-02-UA`: global uncertainty/abstention policy failed coverage/context qualification (`NOT_SUPPORTED`); shadow inference remained blocked.
+- `CSCA-03R`: CRN/antithetic finite-budget credit estimation qualified on controlled SCMs; variance-only authority was falsified.
+- `CSCA-04-SA`: prospective interventional structural-adequacy gate qualified **synthetically** across fresh PRIMARY and independent replication cohorts. It detects controlled world-model misspecification that factual fit/GSS can miss and scopes context-varying mechanisms as `CONTEXT_CONDITIONAL_ONLY`.
+
+**No shadow-inference promotion follows from CSCA-04 alone.** The next admissible gate is a composed, non-interfering real-model intervention pilot (`CSCA-05`).
+
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |
 |---|---|---|---|

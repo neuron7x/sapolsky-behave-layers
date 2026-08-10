@@ -3,6 +3,25 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Structural counterfactual adequacy qualification] — 2026-08-10
+
+### Added
+- `CSCA-04-SA`, a seven-phase structural world-model adequacy attack.
+- Prospectively calibrated intervention-noise-normalized discrepancy (`IDR`) with frozen balanced candidate×context support.
+- `cwc/counterfactual/structural_adequacy.py` and `structural_authority.py`.
+- Context-conditional structural authority and fail-closed states for misspecification, insufficient support and zero leverage.
+- Independent PRIMARY/replication cohorts plus secondary intervention-allocation, GSS and sample-efficiency diagnostics.
+
+### Evidence
+- PRIMARY: 512/512 controlled structurally inadequate cases rejected/falsified; 127/128 known-adequate cases preserved.
+- Independent replication: 512/512 inadequate rejected/falsified; 128/128 adequate preserved.
+- Zero global authority on zero-cause and context-sign-flip families.
+- Collinear observational-identifiability family rejected 64/64 in each cohort despite median factual RMSE about 0.151/0.153.
+- GSS is retained as diagnostic-only: under a shared wrong edge it selected spurious `C` as top factual reliance in 16/16 fresh diagnostic seeds while intervention-based adequacy rejected 16/16.
+
+### Scope boundary
+`STRUCTURAL_ADEQUACY_SYNTHETIC_QUALIFIED` does **not** authorize shadow inference, real-model replay, semantic real-world causality, biological claims, or active causal control. Next gate: `CSCA-05` composed causal authority on real-model intervention traces.
+
 ## [Deferred causal-credit controls] — 2026-08-10
 
 ### Added

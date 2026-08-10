@@ -108,6 +108,20 @@ Supported narrowly: explicit interventions can expose the controlled structural 
 
 Not supported: causal adequacy of a real language-model world model, semantic real-world causality, biological causality, shadow-inference qualification, replay-control utility, physical-compute advantage, or active causal control.
 
+
+## Verification
+
+- `CSCA04-GATE`: PASS.
+- `CSCA03R-GATE`: PASS.
+- `RD03-GATE`: PASS while preserving the negative uncertainty verdict.
+- research-ops / research-execution / research-ingestion: PASS.
+- architecture / hermeticity / complexity / inference-integrity: PASS.
+- doc gate: 54 claims / 54 hypotheses / 0 orphans.
+- verdict binding: 52 sealed claims + 2 NOT_TESTED unbound by design.
+- new CSCA-04 unit/gate tests: 4 PASS.
+- full test collection: 398 tests collected, 0 collection errors.
+- a complete behavioral `pytest -q` run exceeded the available 240 s execution window before completion; no full-suite PASS is claimed.
+
 ## Next hard gate
 
 `CSCA-05 — Composed Causal Authority & Real-Model Intervention Shadow Pilot`.
