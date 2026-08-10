@@ -1,0 +1,18 @@
+{
+  "alpha": 0.01,
+  "families": {
+    "N0_TRUE": {
+      "median_reject_transition": 38,
+      "rate": 0.004638671875,
+      "rejections": 19
+    },
+    "W1_WEAK": {
+      "median_reject_transition": 120.5,
+      "rate": 0.052734375,
+      "rejections": 216
+    }
+  },
+  "seeds": 4096,
+  "status": "POSTCONFIRMATORY_DIAGNOSTIC_NO_CLAIM_UPGRADE",
+  "transitions": 256
+}

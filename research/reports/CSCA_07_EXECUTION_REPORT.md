@@ -109,3 +109,12 @@ The experiment does **not** authorize semantic causality, shadow causal authorit
 ## Scientific interpretation
 
 The strongest result is negative and architectural: **passive factual fit can falsify a bad predictive replay model, but cannot in general certify that a self-consistent latent abstraction is the environment's true causal abstraction.** Spectral stability and fiber compression are useful diagnostics only after identifiability assumptions are established. The next admissible research step is to search for an explicit observational identifying structure (e.g. valid grouping, temporal/noise asymmetry, known exogenous regime labels, instruments) and preregister the exact assumptions before any causal promotion.
+
+## Post-confirmatory stress diagnostic
+
+A separate non-authoritative stress run used 4096 fresh traces per family after the confirmatory verdict was sealed. It is explicitly `POSTCONFIRMATORY_DIAGNOSTIC_NO_CLAIM_UPGRADE`.
+
+- N0 true-law false rejection: `19/4096 = 0.004638671875` at alpha .01;
+- W1 weak misspecification rejection: `216/4096 = 0.052734375` within 256 transitions.
+
+This is consistent with the confirmatory boundary: the e-process remains conservative under the true law, while W1 has low finite-budget power exactly where the information converse says 95% power is unavailable at 256 transitions.
