@@ -19,9 +19,11 @@ For independent split intervention-effect estimates `d1,d2`, let `d=(d1+d2)/2` a
 
 `IDR = mean((d-m)^2) / [0.25 * mean((d1-d2)^2)]`.
 
-The denominator estimates the full-sample intervention measurement-noise floor. IDR has no universal cutoff. A budget-specific threshold is frozen as the empirical 99th percentile of the *best-family maximum cell IDR* on calibration-only, interventionally correct SCMs. No confirmatory result may alter it.
+The denominator estimates the full-sample intervention measurement-noise floor. IDR has no universal cutoff. A budget-specific threshold is frozen as the empirical 99th percentile of the *best-family maximum cell IDR* on calibration-only, interventionally correct SCMs. Cell numerators use the same global split-noise denominator as the overall IDR; see PRE_CALIBRATION_AMENDMENT_001. No confirmatory result may alter it.
 
 ## Fail-closed decision
+
+Primary intervention policy: `BALANCED`. Development-only seed 80001 is excluded from calibration/PRIMARY/replication.
 
 For each held-out case:
 

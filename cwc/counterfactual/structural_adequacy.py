@@ -106,7 +106,7 @@ def interventional_divergence_audit(
         cells: dict[str, float] = {}
         supports: dict[str, int] = {}
         for key in sorted(cell_errors):
-            cells[key] = float(np.mean(cell_errors[key]) / max(float(np.mean(cell_noise[key])), epsilon))
+            cells[key] = float(np.mean(cell_errors[key]) / max(denominator, epsilon))
             supports[key] = len(cell_errors[key])
         audits.append(
             FamilyInterventionalAudit(
