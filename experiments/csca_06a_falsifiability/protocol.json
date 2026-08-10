@@ -1,30 +1,48 @@
 {
-  "experiment_id": "CSCA-06A-IF",
-  "status": "PREREGISTERED",
-  "authority_before": "SHADOW_RUNTIME_PATH_QUALIFIED_NARROWED",
-  "target_authority": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_QUALIFIED_NARROWED",
-  "alpha": 0.01,
-  "model_slopes": [0.0, 0.8],
-  "actions": [-1.0, 1.0],
-  "action_costs": {"-1.0": 1.0, "1.0": 1.0},
-  "nuisance_envelope": {
-    "intercept_min": -0.75,
-    "intercept_max": 0.75,
-    "sd_min": 0.5,
-    "sd_max": 2.5
+  "action_costs": {
+    "-1.0": 1.0,
+    "1.0": 1.0
   },
-  "design_pilot_seed_start": 41000,
+  "actions": [
+    -1.0,
+    1.0
+  ],
+  "active_control_authorized": false,
+  "alpha": 0.01,
+  "alternative_slope_offsets": [
+    -0.8,
+    -0.4,
+    0.4,
+    0.8
+  ],
+  "authority_before": "SHADOW_RUNTIME_PATH_QUALIFIED_NARROWED",
+  "confirmatory_block": {
+    "-1.0": 8,
+    "1.0": 8
+  },
   "design_pilot_seed_count": 64,
-  "confirmatory_block": {"-1.0": 8, "1.0": 8},
+  "design_pilot_seed_start": 41000,
+  "experiment_id": "CSCA-06A-IF",
+  "graph_truth_authorized": false,
   "max_blocks": 16,
   "max_cost": 256.0,
+  "maximum_in_envelope_null_false_rejection_rate": 0.01,
+  "minimum_structural_rejection_rate": 0.95,
+  "model_slopes": [
+    0.0,
+    0.8
+  ],
+  "note": "Falsification is only of the declared graph+nuisance model class. Hidden-confounder and aleatoric variance are not separately identifiable from scalar interventional Y without additional information.",
+  "nuisance_envelope": {
+    "intercept_max": 0.75,
+    "intercept_min": -0.75,
+    "sd_max": 2.5,
+    "sd_min": 0.5
+  },
   "primary_seed_start": 61000,
   "replication_seed_start": 71000,
-  "seeds_per_family": 128,
-  "minimum_structural_rejection_rate": 0.95,
-  "maximum_in_envelope_null_false_rejection_rate": 0.01,
   "required_equivalence_false_rejections": 0,
-  "active_control_authorized": false,
-  "graph_truth_authorized": false,
-  "note": "Falsification is only of the declared graph+nuisance model class. Hidden-confounder and aleatoric variance are not separately identifiable from scalar interventional Y without additional information."
+  "seeds_per_family": 128,
+  "status": "PREREGISTERED",
+  "target_authority": "INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_QUALIFIED_NARROWED"
 }

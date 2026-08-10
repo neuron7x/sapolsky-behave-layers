@@ -50,7 +50,7 @@ Actions: `do(X=-1)` and `do(X=+1)`, each unit cost. A pre-preregistration **desi
 
 Frozen confirmatory block: 8 samples at each extreme intervention (16 samples, cost 16). Maximum 16 blocks (cost 256).
 
-Alternative test density q is an equal mixture over slopes `{-0.8,-0.4,+0.4,+0.8}`, intercepts `{-0.5,0,+0.5}`, and SDs `{0.8,1.2,1.8}`. This mixture is fixed before confirmatory execution and carries no causal authority.
+Alternative test density q is an equal mixture over slope offsets `beta_M + {-0.8,-0.4,+0.4,+0.8}`, intercepts `{-0.5,0,+0.5}`, and SDs `{0.8,1.2,1.8}`. This mixture is fixed before confirmatory execution and carries no causal authority.
 
 Composite nuisance envelope: shared intercept `h in [-0.75,0.75]`, interventional SD `tau in [0.5,2.5]`.
 
