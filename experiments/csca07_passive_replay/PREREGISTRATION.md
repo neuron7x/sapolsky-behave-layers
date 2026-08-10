@@ -37,7 +37,7 @@ Use an anytime-valid likelihood-ratio e-process:
 `alpha = 0.01`. This may reject the candidate predictive law only; never the latent graph.
 
 ## P5 confirmatory families
-Fresh seeds; 256 seeds/family; 256 transitions/trace.
+Fresh cohorts: PRIMARY 128 seeds/family and independent REPLICATION 128 seeds/family; 256 transitions/trace. Seed blocks are disjoint between cohorts. Thus each family has 256 confirmatory traces total.
 
 - `N0_TRUE_OBSERVED_LAW`: true a=.75, candidate a=.75. Required rejection rate <= .02.
 - `S1_WRONG_DYNAMICS`: true a=.75, candidate a=.25. Required rejection rate >= .95.
