@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "48d98bc60889b60f146dd6d87961252afcdee3fb",
-  "generated": "2026-08-10",
+  "git_commit": "b22af3d1b91a06cedeca6dd44366c51b9987f7f4",
+  "generated": "2026-08-10T17:46:00+03:00",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -1896,6 +1896,60 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/CSCA-04-SA/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD06-CSCA05-direct-shadow",
+      "hypothesis_id": "H-CSCA-05-RUNTIME",
+      "statement": "A preregistered direct-intervention causal-credit sidecar on independently trained small nanochat GPTs matches exact ablation-Shapley on every accepted held-out and replication case while leaving base Engine generation outputs and model state unchanged.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "small from-scratch nanochat GPTs: 2 layers, 4 heads, embedding width 64",
+          "frozen WP18 prose/code byte corpora",
+          "direct do(4-byte span = ASCII_SPACE) intervention",
+          "current argmax next-token log-probability as the model-internal outcome",
+          "frozen calibration policy plus independent PRIMARY and REPLICATION checkpoints/data partitions"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-05-RUNTIME/verdict.json",
+        "artifacts/csca-05-runtime/calibration/",
+        "artifacts/csca-05-runtime/primary/",
+        "artifacts/csca-05-runtime/replication/",
+        "research/reports/CSCA_05_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY: accepted 61/63 exact-resolved cases, coverage 0.9682539683, selective false causal authority 0, accepted top accuracy 1.0",
+        "REPLICATION: accepted 63/64 exact-resolved cases, coverage 0.984375, selective false causal authority 0, accepted top accuracy 1.0",
+        "shadow ON/OFF output mismatch count 0/64 in both PRIMARY and REPLICATION",
+        "model-state mutation count 0/64 in both PRIMARY and REPLICATION",
+        "postconfirmatory intervention-operator top-candidate invariance only 0.84375 and sign invariance 0.71875, bounding interpretation"
+      ],
+      "limitations": [
+        "intervention-operator-specific: ASCII-space span replacement is the authoritative intervention",
+        "most exact top-credit cases are recency dominated; always-recent baseline reaches 0.953125 PRIMARY and 0.984375 REPLICATION",
+        "small byte-level from-scratch GPTs only; no pretrained or large-model transfer",
+        "CPU sidecar p50 overhead about 4x and therefore not production-latency qualified",
+        "no CUDA/GPU physical-compute qualification in this environment",
+        "no replay utility, semantic abstraction, real-world causality, or active control claim"
+      ],
+      "prohibited_extrapolations": [
+        "real-world semantic causality",
+        "biological causal mechanism",
+        "general counterfactual world-model adequacy",
+        "pretrained or production LLM utility",
+        "real-model replay improvement",
+        "GPU or production latency qualification",
+        "direct logit manipulation",
+        "weight updates or active causal control"
+      ],
+      "note": "This qualifies only a direct-intervention shadow measurement path. ACT-R&D-03 remains negative for broad learned-model causal authority; CSCA-06 must attack intervention-operator invariance before any semantic or amortized promotion.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-05-RUNTIME/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

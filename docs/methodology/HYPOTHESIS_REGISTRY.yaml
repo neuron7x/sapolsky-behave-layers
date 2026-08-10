@@ -655,3 +655,16 @@ hypotheses:
     preregistration: experiments/csca_04_structural_adequacy/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD05-CSCA04-structural-adequacy
+
+
+  - hypothesis_id: H-CSCA-05-RUNTIME
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A finite-budget direct-intervention causal-credit sidecar cannot match the exact ablation-Shapley teacher on a non-degenerate fraction of held-out real nanochat runtime traces without false authority or interference with base generation."
+    H1: "A calibration-frozen antithetic direct-intervention estimator matches the exact teacher on accepted held-out and independent-replication traces, maintains non-degenerate coverage, and leaves base Engine outputs and model state unchanged."
+    estimand: "selective false causal authority, coverage among exact-resolved traces, accepted top-credit accuracy, credit L1 error, shadow output mismatch count, model-state mutation count and measured CPU overhead"
+    experimental_unit: "independently trained checkpoint x held-out document-derived prompt x context (PROSE/CODE)"
+    decision_rule: "Frozen before PRIMARY: false authority=0, accepted top accuracy=1.0, coverage>=0.20 pooled and separately in PROSE/CODE, zero output mismatches and zero state mutations, replicated under a fresh checkpoint/data split. RESULT all scientific/noninterference predicates pass; CPU overhead remains non-production and operator-sensitivity bounds interpretation -> SUPPORTED_NARROWED."
+    preregistration: research/preregistration/CSCA_05_RUNTIME_SHADOW.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD06-CSCA05-direct-shadow
