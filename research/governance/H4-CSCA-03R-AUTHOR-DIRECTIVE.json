@@ -1,0 +1,15 @@
+{
+  "architecture_authority": false,
+  "created_at": "2026-08-10",
+  "decision": "APPROVE_EXECUTION",
+  "decision_id": "H4-CSCA-03R-AUTHOR-DIRECTIVE",
+  "evidence_refs": [
+    "experiments/csca_03r_budgeted_credit/PREREGISTRATION.md",
+    "research/results/CSCA-03-INVALID/verdict.json"
+  ],
+  "gate": "H4_EXPERIMENT_DESIGN",
+  "rationale": "The research owner directed maximal adversarial execution. CSCA-03 was invalidated after a reproducibility defect was found, so a fresh-seed deterministic retest is authorized. No H5, shadow inference, replay authority or architecture promotion is granted.",
+  "reviewer": "AUTHOR_DIRECTIVE",
+  "reviewer_role": "HUMAN_RESEARCH_OWNER",
+  "subject_id": "CSCA-03R"
+}
