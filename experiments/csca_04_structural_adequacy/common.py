@@ -258,6 +258,7 @@ class CaseAudit:
     total_cells: int
     context_conditional: bool
     context_sign_flip_candidates: tuple[str,...]
+    context_shift_candidates: tuple[str,...]
     gss_top_factual_candidate: str
     gss_top_interventional_candidate: str
     true_causal_set: tuple[str,...]
@@ -271,6 +272,7 @@ def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, conte
     for p in probes:
         key=(p.candidate,p.context); supports[key]=supports.get(key,0)+1
     ctx=context_effect_audits(probes)
+    shifts=tuple(sorted(x.candidate for x in ctx if x.standardized_difference>=context_z_threshold))
     flips=tuple(sorted(x.candidate for x in ctx if x.sign_flip and x.standardized_difference>=context_z_threshold))
     gss=graph_structural_sensitivity(case.models,case.eval_rows,case.eval_y,probes)
     top_f=max(gss,key=lambda x:(x.factual_delta_mse,-CANDIDATES.index(x.candidate))).candidate
@@ -280,7 +282,7 @@ def audit_case(case: PreparedCase, budget_per_cell: int, strategy: str, *, conte
         factual_rmse=case.factual_rmse,best_family=best.family,best_idr=best.idr,best_max_cell_idr=best.max_cell_idr,
         all_family_idr={x.family:x.max_cell_idr for x in audits},min_cell_support=min(supports.values()) if supports else 0,
         covered_cells=len(supports),total_cells=len(CANDIDATES)*2,context_conditional=case.family in CONTEXT_CONDITIONAL_FAMILIES,
-        context_sign_flip_candidates=flips,gss_top_factual_candidate=top_f,gss_top_interventional_candidate=top_i,true_causal_set=case.true_causal_set,
+        context_sign_flip_candidates=flips,context_shift_candidates=shifts,gss_top_factual_candidate=top_f,gss_top_interventional_candidate=top_i,true_causal_set=case.true_causal_set,
     )
 
 
