@@ -1,0 +1,95 @@
+{
+  "calibration_score": {
+    "accepted": 64,
+    "by_family": {
+      "M0_CORRECT_STRUCTURE": {
+        "accepted": 32,
+        "coverage": 1.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M1_SPURIOUS_EDGE": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M2_MISSING_TRUE_EDGE": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M3_WRONG_COEFFICIENT": {
+        "accepted": 32,
+        "coverage": 1.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M4_SIGN_ERROR": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "M5_NONLINEAR_INTERACTION": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      },
+      "N0_ZERO_CAUSE": {
+        "accepted": 0,
+        "coverage": 0.0,
+        "false_authority": 0,
+        "false_authority_rate": 0.0,
+        "n": 32
+      }
+    },
+    "causal_rank_accuracy_given_accept": 1.0,
+    "coverage": 0.2857142857142857,
+    "false_authority_count": 0,
+    "mean_false_credit_mass_given_accept": 0.10187356868469688,
+    "n": 224,
+    "no_abstention_false_causal_authority": 0.42857142857142855,
+    "no_abstention_false_count": 96,
+    "selective_false_causal_authority": 0.0,
+    "state_counts": {
+      "ABSTAIN_UNCERTAIN_MODEL": 128,
+      "ACCEPT_CAUSAL_CREDIT": 64,
+      "FALSIFIED_NO_LEVERAGE": 32
+    }
+  },
+  "confirmatory_authority": true,
+  "families": [
+    "M0_CORRECT_STRUCTURE",
+    "M1_SPURIOUS_EDGE",
+    "M2_MISSING_TRUE_EDGE",
+    "M3_WRONG_COEFFICIENT",
+    "M4_SIGN_ERROR",
+    "M5_NONLINEAR_INTERACTION",
+    "N0_ZERO_CAUSE"
+  ],
+  "n_cases": 224,
+  "seed_count": 32,
+  "seed_start": 31000,
+  "selected_policy": {
+    "delta": 0.0,
+    "leverage_floor": 0.1,
+    "max_intervention_nrmse": 0.85,
+    "max_model_disagreement": 0.033199602653558334,
+    "max_ood_score": 3.514866869624703,
+    "min_intervention_support": 32,
+    "min_rank_stability": 0.9,
+    "version": "CSCA-02-UA-POLICY-V1"
+  },
+  "selected_policy_sha256": "459a5ab08c34dd25931b969ebe9351917beb9d066943a31cc4284caf025d13c9",
+  "status": "CALIBRATION_PASS_POLICY_FROZEN",
+  "wall_seconds": 26.13553558000001
+}
