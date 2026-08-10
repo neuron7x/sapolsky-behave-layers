@@ -1,0 +1,21 @@
+{
+  "schema": "cwc-cdl-v2/protocol-1",
+  "frozen_date": "2026-08-10",
+  "parent_verdict": "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED",
+  "seeds": [101,211,307,401,503,601,701,809,907,1009,1103,1201,1301,1409,1511,1601,1709,1801,1901,2003],
+  "replay_budgets": [4,8,16,32],
+  "environment_variants": ["proxy","descendant"],
+  "evaluation_regimes": ["same","decorrelated","reversed"],
+  "acquisition_samples": 256,
+  "evaluation_samples_per_regime": 512,
+  "candidates": ["C","S","N"],
+  "primary_policy": "causal_debt_v2_cf",
+  "matched_cf_controls": ["uniform_cf","rpe_cf"],
+  "oracle_reference": "oracle_invariant",
+  "alpha_familywise": 0.05,
+  "proxy_noninferiority_margin": 0.02,
+  "min_descendant_budget_superiority": 3,
+  "false_credit_margin": 0.05,
+  "via_ascension_authority": false,
+  "biological_claim_authority": false
+}
