@@ -43,6 +43,10 @@ def validate(root: Path, *, result_override=None, null_override=None) -> list[st
         null_path,
         reg / "rd03_pipeline_state.json",
         root / "experiments/csca_02_ua/PREREGISTRATION.md",
+        root / "research/results/ACT-RD-03/verdict.json",
+        root / "research/results/ACT-RD-03/SHA256SUMS",
+        root / "research/reports/ACT_RD_03_EXECUTION_REPORT.md",
+        root / "research/results/CSCA-02-UA/SHA256SUMS",
     ]
     for path in required:
         if not path.exists():
@@ -115,6 +119,23 @@ def validate(root: Path, *, result_override=None, null_override=None) -> list[st
     for key in ("shadow_inference_authorized", "real_model_replay_authorized", "physical_compute_authorized", "active_causal_control_authorized"):
         if pipeline.get(key) is not False:
             errors.append(f"pipeline unauthorized state: {key}")
+
+    act_verdict = load_json(root / "research/results/ACT-RD-03/verdict.json")
+    if act_verdict.get("scientific_eval") != "FAIL" or act_verdict.get("current_authority") != "RESEARCH_ONLY":
+        errors.append("ACT-RD-03 overall verdict lost fail-closed scientific decision")
+    if act_verdict.get("target_reached") is not False:
+        errors.append("ACT-RD-03 target silently marked reached")
+
+    # Verify every act-level evidence binding. Paths are repository-relative.
+    for line in (root / "research/results/ACT-RD-03/SHA256SUMS").read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        expected, rel = line.split(None, 1)
+        path = root / rel.strip()
+        if not path.is_file():
+            errors.append(f"act evidence binding missing: {rel.strip()}")
+        elif sha256_file(path) != expected:
+            errors.append(f"act evidence SHA mismatch: {rel.strip()}")
 
     return errors
 
