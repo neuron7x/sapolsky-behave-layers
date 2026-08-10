@@ -212,7 +212,7 @@ def select_probes(case: PreparedCase, budget_per_cell: int, strategy: str) -> tu
     total=budget_per_cell*len(cells)
     if strategy == "BALANCED":
         return tuple(p for key in sorted(cells) for p in cells[key][:budget_per_cell])
-    scored=sorted(case.full_probe_pool,key=lambda p:(-_disagreement(case,p),p.candidate,p.context,stable_seed(case.seed,p.candidate,p.context,p.effect)))
+    scored=sorted(case.full_probe_pool,key=lambda p:(-_disagreement(case,p),p.candidate,p.context,stable_seed(case.seed,p.candidate,p.context,p.base['A'],p.base['B'],p.base['C'],p.base['D'])))
     if strategy == "DISAGREEMENT_ONLY":
         return tuple(scored[:total])
     if strategy == "CREDIT_PRIORITY":
