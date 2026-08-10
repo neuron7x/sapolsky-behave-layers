@@ -80,3 +80,22 @@ No external mechanism is promoted into CWC architecture.
 2. S02 real-model semantic minimal-pair test only when an admissible local language-model representation is available; do not substitute hand-coded semantic labels and call it evidence.
 3. S03 only retest after introducing a genuinely new preregistered state-transition/stabilization mechanism; do not relax 56/64 post hoc.
 4. S04 controlled predicate-invention reimplementation after S01 P0 estimator gate or in a separate branch.
+
+## Verification
+
+Post-commit verification on the execution environment:
+
+- `RESEARCH-INGESTION-GATE`: PASS;
+- `RESEARCH-EXECUTION-GATE`: PASS;
+- causal-debt gate: PASS;
+- VIA gate: PASS with scientific ascension still blocked by prior evidence;
+- architecture/hermeticity/complexity/inference-integrity: PASS;
+- doc gate: PASS (`49 claims / 49 hypotheses / 0 orphans` in the existing central CWC registry);
+- verdict binding: PASS (`47` sealed bindings + `2 NOT_TESTED`);
+- evidence validation: PASS;
+- focused ACT-R&D + causal-debt suite: `34 PASS`;
+- broad environment-available suite with dependency-blocked modules and mutation meta-test excluded: `285 PASS / 23 SKIP`;
+- full pytest collection: blocked by 7 modules requiring unavailable `rustbpe`, `tomli`, `hypothesis`, or `pyarrow`;
+- mutation meta-test remains environment-blocked because it internally executes the missing-`hypothesis` property suite.
+
+No full-suite PASS is claimed.
