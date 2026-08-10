@@ -1,16 +1,29 @@
 {
-  "gate": "H4_EXPERIMENT_DESIGN",
-  "experiment_id": "CSCA-05-RUNTIME",
-  "status": "APPROVED_FOR_EXECUTION",
   "approved_scope": "actual nanochat runtime, byte-level real-workload shadow pilot only",
+  "architecture_authority": false,
+  "architecture_promotion_authorized": false,
+  "created_at": "2026-08-10",
+  "decision": "APPROVE_EXECUTION",
+  "decision_id": "H4-CSCA-05",
+  "evidence_refs": [
+    "research/preregistration/CSCA_05_RUNTIME_SHADOW.md",
+    "research/preregistration/CSCA_05_PRE_EXECUTION_AMENDMENT_001.md",
+    "research/preregistration/CSCA_05_PRE_EXECUTION_AMENDMENT_002.md"
+  ],
+  "experiment_id": "CSCA-05-RUNTIME",
+  "failure_predicate": "any primary or replication false authority, output mutation, state mutation, coverage below frozen minimum, or calibration rule mutation",
+  "gate": "H4_EXPERIMENT_DESIGN",
   "human_authorization_basis": "researcher/user explicitly instructed execution in the current research loop",
-  "primary_metric": "selective_false_causal_authority",
   "negative_controls": [
     "shadow observer failure cannot alter base generation",
     "model parameter hash must remain unchanged",
     "context disagreement forbids global authority",
     "approximate credit must not outrank exact teacher on accepted cases"
   ],
-  "failure_predicate": "any primary or replication false authority, output mutation, state mutation, coverage below frozen minimum, or calibration rule mutation",
-  "architecture_promotion_authorized": false
+  "primary_metric": "selective_false_causal_authority",
+  "rationale": "The researcher explicitly authorized continuation of the frozen CSCA-05 research loop; the preregistration, intervention definition, metrics, negative controls and failure predicates were fixed before authoritative calibration/confirmatory execution. No architecture integration is authorized.",
+  "reviewer": "AUTHOR_DIRECTIVE",
+  "reviewer_role": "HUMAN_RESEARCH_OWNER",
+  "status": "APPROVED_FOR_EXECUTION",
+  "subject_id": "CSCA-05-RUNTIME"
 }
