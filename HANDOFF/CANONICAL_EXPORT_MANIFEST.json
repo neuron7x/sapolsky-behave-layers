@@ -1,0 +1,67 @@
+{
+  "schema": "CWC_CANONICAL_HANDOFF_V1",
+  "created_date": "2026-08-10",
+  "scientific_evidence_head": "dec58d26711d2ce523fbd240bd9ab927f321f509",
+  "latest_scientific_verdict": "PASSIVE_REPLAY_IDENTIFIABILITY_BOUNDARY_QUALIFIED",
+  "latest_authority": "PASSIVE_PREDICTIVE_FALSIFICATION_ONLY",
+  "canonical_rule": "Git history plus checksum-bound evidence is authoritative; handoff files are navigation only.",
+  "full_export_policy": {
+    "include_entire_repository_tree": true,
+    "include_dot_git_history": true,
+    "include_artifacts": true,
+    "include_research": true,
+    "include_experiments": true,
+    "include_tests": true,
+    "include_docs": true,
+    "nested_historical_distribution_zips": false,
+    "reason_nested_zips_excluded": "Historical distribution ZIP wrappers are redundant exports, not canonical repository state; their scientific content is preserved in Git history/evidence. Nesting them would recursively duplicate the project."
+  },
+  "critical_files": [
+    {
+      "path": "SYSTEM.md",
+      "sha256": "29d61e9b6313186fb21f88ded24fe629d0a813a5daaae1729cc9fa9e4981dc31",
+      "bytes": 29935
+    },
+    {
+      "path": "README.md",
+      "sha256": "fff80491c6ef999b86dac45a34068ddd5a6e7ba53b3abb0e11b28bef0c9af570",
+      "bytes": 9639
+    },
+    {
+      "path": "claim_registry.json",
+      "sha256": "ba678d748f12279904b73859a0198fb1aa7b91f78212b5ebcf786535a867b9cf",
+      "bytes": 98687
+    },
+    {
+      "path": "research/reports/CSCA_07_EXECUTION_REPORT.md",
+      "sha256": "4bbd088a4231dfb54558fea93691dbcf80543c36928708fc6e838878f95de01c",
+      "bytes": 6598
+    },
+    {
+      "path": "research/reports/CSCA_07_FINAL_VERIFICATION.md",
+      "sha256": "db6e77efb4f35e6aee37a1ef6880faeebf7715dfc3a75dc6d3c3597d0cf29db2",
+      "bytes": 3678
+    },
+    {
+      "path": "research/results/CSCA-07-PR/verdict.json",
+      "sha256": "450d6f8c220d370db254ffeece61525caf572f0e44afba2d556953abaf7b08f4",
+      "bytes": 8740
+    },
+    {
+      "path": "docs/CSCA_07_PASSIVE_REPLAY_IDENTIFIABILITY_THEORY.md",
+      "sha256": "03c117e5a97422b6f3d93fefbc13614e918016dc89b33ca49132bf73c78bfb5d",
+      "bytes": 5039
+    },
+    {
+      "path": "HANDOFF/CWC_CANONICAL_AGENT_HANDOFF_2026-08-10.md",
+      "sha256": "f65d7714d7fd96a89bfd3dfe5cbf30f74414178a4301c53620b0963bf51ab332",
+      "bytes": 6842
+    },
+    {
+      "path": "HANDOFF/NEXT_7_TASKS_FOR_AGENTS.md",
+      "sha256": "e5f3f5d63afd3d1f3ca52f982daef93b6e4594d99b76a238bd3f0adbe67da6e6",
+      "bytes": 6075
+    }
+  ],
+  "next_task_file": "HANDOFF/NEXT_7_TASKS_FOR_AGENTS.md"
+}
