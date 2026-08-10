@@ -204,6 +204,11 @@ class Engine:
     @torch.inference_mode()
     def generate(self, tokens, num_samples=1, max_tokens=None, temperature=1.0, top_k=None, seed=42):
         """Same as generate, but does single prefill and then clones the KV cache."""
+        config_vocab_size = getattr(self.model.config, "vocab_size", None)
+        model_vocab_size = getattr(self.model, "vocab_size", None)
+        vocab_size = config_vocab_size if config_vocab_size is not None else model_vocab_size
+        if vocab_size is None:
+            raise AttributeError("model must expose vocab_size on model.config or model")
         validate_generation_request(
             tokens,
             num_samples=num_samples,
@@ -212,7 +217,7 @@ class Engine:
             top_k=top_k,
             seed=seed,
             sequence_len=self.model.config.sequence_len,
-            vocab_size=getattr(self.model.config, "vocab_size", self.model.vocab_size),
+            vocab_size=vocab_size,
         )
         device = self.model.get_device()
         # Allocate the KV cache in the compute dtype so it matches what the forward pass emits
