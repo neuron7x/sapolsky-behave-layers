@@ -321,3 +321,11 @@ fail-open, all closed here.
 - reproduced a narrow S01 Skill/Luck Counterfactual-Shapley property and qualified an exact synthetic OOD causal-credit target over 7,962,624 counterfactual structural evaluations;
 - preserved a preregistered S03 controlled latent-dynamics negative result: h=8 OOD robustness reached 54/64 seeds versus the frozen >=56/64 gate;
 - no external mechanism received architecture-promotion authority.
+
+## 2026-08-10 — ACT-R&D-02 execution / CSCA-01
+
+- added immutable evidence ingestion, claim-attack flags, evidence graph, human governance records, run telemetry, and a C0→C3 fail-closed compute governor;
+- executed CSCA-01 on 49,152 controlled trajectories with 24,625,152 counted structural counterfactual evaluations; exact counterfactual credit reproduced across frozen primary/replication cohorts and zero-cause nulls;
+- retained a source-provenance quarantine because full primary paper bytes/code were not materialized, so paper-reproduction and architecture-promotion authority remain false;
+- preserved CSCA-01A as an exploratory no-H4 diagnostic showing that counterfactual-model structural error propagates directly into false causal credit;
+- broad environment-available suite: 299 PASS / 23 SKIP; full collection remains blocked by rustbpe/tomli/hypothesis/pyarrow.

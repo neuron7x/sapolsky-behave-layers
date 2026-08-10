@@ -1,0 +1,51 @@
+{
+  "act": "ACT-R&D-02",
+  "date": "2026-08-10",
+  "status": "PASS_WITH_BOUNDARIES",
+  "phases": {
+    "evidence_substrate": "PASS",
+    "compute_governor": "PASS",
+    "csca_01_controlled_kernel": "REPRODUCED",
+    "null_attack_and_ood": "PASS",
+    "architecture_integration": "BLOCKED_H5_PENDING"
+  },
+  "source_gate": "QUARANTINED_PRIMARY_BYTES_NOT_MATERIALIZED",
+  "paper_reproduction_authority": false,
+  "architecture_promotion_authority": false,
+  "csca_01": {
+    "verdict": "CSCA_01_CONTROLLED_KERNEL_REPRODUCED",
+    "generated_trajectories": 49152,
+    "counted_structural_counterfactual_evaluations": 24625152,
+    "measured_wrapper_wall_seconds": 30.100311735001014,
+    "primary_exact_ood_rank_accuracy": 1.0,
+    "replication_exact_ood_rank_accuracy": 1.0,
+    "exact_ood_false_credit_mass": 0.0,
+    "mc64_rank_qualifier": "PASS",
+    "mc64_false_credit_mass_boundary": "approximately 0.23; not calibrated authority"
+  },
+  "exploratory_weak_link": {
+    "experiment": "CSCA-01A",
+    "status": "EXPLORATORY_DIAGNOSTIC_NO_H4_PROMOTION_AUTHORITY",
+    "result": "COUNTERFACTUAL_MODEL_ERROR_PROPAGATES_TO_CAUSAL_CREDIT",
+    "max_analytic_error": 8.326672684688674e-17
+  },
+  "verification": {
+    "focused_rd02_and_governance_tests": "39 PASS",
+    "broad_environment_available_suite": "299 PASS / 23 SKIP",
+    "full_collection": "BLOCKED by rustbpe, tomli, hypothesis, pyarrow in 7 test modules",
+    "mutation_meta_test": "ENVIRONMENT_BLOCKED because hypothesis is unavailable",
+    "research_ops_gate": "PASS",
+    "research_ingestion_gate": "PASS",
+    "research_execution_gate": "PASS",
+    "causal_debt_gate": "PASS",
+    "via_gate": "PASS with scientific ascension blocked",
+    "architecture_gate": "PASS",
+    "hermeticity_gate": "PASS",
+    "complexity_gate": "PASS",
+    "inference_integrity_gate": "PASS",
+    "doc_gate": "PASS",
+    "verdict_binding": "PASS",
+    "evidence_validation": "PASS"
+  },
+  "next_hard_gate": "Human-approved counterfactual-model uncertainty / abstention experiment, followed by a prospective real-model causal-credit utility pilot if that gate survives."
+}

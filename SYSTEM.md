@@ -246,3 +246,11 @@ adaptive-compute results that the RD1/RD2/RD3 negatives must confront.
 ## Provenance
 Branch `wp1-instrumentation`, baseline `92d63d4e` (== upstream karpathy/nanochat,
 verified pristine). Full backup: `~/CWC_CONSOLIDATION_BACKUP_2026-07-16/`.
+
+## ACT-R&D-02 research-operations boundary
+
+The research plane now includes a fail-closed operational path:
+
+`immutable source -> traceable claim -> hypothesis -> H4 design record -> compute governor -> preregistered run -> null/OOD -> sealed result -> H5 integration gate`.
+
+Automation may generate candidates, code, nulls and measurements, but cannot self-grant causal truth or architecture authority. `C0 -> C1 -> C2 -> C3` escalation is enforced: expensive compute is rejected when a cheaper experiment can settle the current decision. Snapshot-only source material is quarantined rather than silently treated as full primary evidence.

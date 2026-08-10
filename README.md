@@ -107,3 +107,7 @@ Every experiment ships `artifacts/<exp>/{RESULTS.md, verdict.json, SHA256SUMS}` 
 
 MIT ([`LICENSE`](LICENSE)). Third-party components: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 To cite, use [`CITATION.cff`](CITATION.cff).
+
+### R&D-02 status (2026-08-10)
+
+The repository now contains an executable research-operations substrate (`cwc/research_ops/`) and the preregistered `CSCA-01` controlled causal-credit experiment. CSCA-01 reproduced the exact counterfactual-credit kernel on controlled OOD/null tests, but **does not** authorize architecture integration: the source remains primary-bytes-quarantined, the counterfactual simulator is oracle-quality, real-model utility is untested, and H5 human integration review is pending. See `research/reports/ACT_RD_02_EXECUTION_REPORT.md`.
