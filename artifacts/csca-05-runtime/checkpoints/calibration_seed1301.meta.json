@@ -1,0 +1,17 @@
+{
+  "batch_size": 16,
+  "checkpoint_path": "/mnt/data/cwc_csca05_work/artifacts/csca-05-runtime/checkpoints/calibration_seed1301.pt",
+  "checkpoint_sha256": "96b0275152859daee7927c10a5dd30ed85569868c65eca5671fcaea8638afd65",
+  "data_hashes": {
+    "code": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+    "prose": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+  },
+  "final_loss": 2.1688497066497803,
+  "initial_loss": 5.575018405914307,
+  "learning_rate": 0.002,
+  "mean_last_50_loss": 2.2600541496276856,
+  "seed": 1301,
+  "state_dict_sha256": "f96b01578c1b1689b70e0c6847f5ba226af021684826eba13bd7b8f8448065a6",
+  "steps": 800,
+  "weight_decay": 0.01
+}

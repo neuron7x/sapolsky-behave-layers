@@ -1,0 +1,13 @@
+{
+  "active_control": false,
+  "calibration_records_sha256": "84884a2de25cbaf9efd618724598c468550a15e3248cb597b56323efaf2e2755",
+  "chosen_antithetic_pairs": 2,
+  "delta": 0.004804476754119,
+  "experiment_id": "CSCA-05-RUNTIME",
+  "interval_z": 3.2905267314919255,
+  "max_unique_coalition_forwards": 16,
+  "min_coverage": 0.2,
+  "policy_version": "CSCA05-SHADOW-v1",
+  "required_accuracy_given_accept": 1.0,
+  "required_false_authority": 0.0
+}
