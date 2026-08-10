@@ -718,3 +718,16 @@ hypotheses:
     preregistration: research/preregistration/CSCA_06C_R1_POSITION_CONTENT_DISENTANGLEMENT.md
     status: NOT_SUPPORTED
     claim_id: CWC-RD10-CSCA06C-content-specific
+
+
+  - hypothesis_id: H-CSCA-07-PR
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Passive factual evidence, latent Jacobian spectrum, or within-model fiber entropy is sufficient to certify that an internally stable replay abstraction is the environment's true causal abstraction."
+    H1: "Without additional identifying assumptions, observational equivalence blocks causal certification: passive data may falsify a wrong observable law, while spectrally stable or perfectly compressed latent alternatives can remain causally indistinguishable."
+    estimand: "anytime-valid predictive-law rejection rate; passive relative-entropy rate and necessary sample cost; observable-path/spectral equality under topology-changing latent realization; hidden-attractor visibility; within-model versus cross-model fiber entropy"
+    experimental_unit: "fresh passive AR(1) trace for e-process qualification plus exact algebraic counterexample construction"
+    decision_rule: "At alpha=.01, N0 false rejection must be <=.02 and S1/S2 rejection >=.95 independently in PRIMARY/REPLICATION; W1 must retain the predeclared information-cost veto; exact spectral/path and fiber/hidden counterexamples must hold. RESULT all predicates pass -> SUPPORTED_NARROWED for passive predictive falsification and the no-assumption observational-equivalence boundary; causal promotion remains forbidden."
+    preregistration: experiments/csca07_passive_replay/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD11-CSCA07-passive-identifiability

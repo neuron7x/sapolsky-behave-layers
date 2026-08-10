@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "da97085396aab8817fa3e7d3cf9f276cde089aa6",
-  "generated": "2026-08-10T21:25:00+03:00",
+  "git_commit": "04eea577c78437a790f02e1a9e087589b15a3fa5",
+  "generated": "2026-08-10T18:10:00Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2152,6 +2152,57 @@
         "file": "research/results/CSCA-06C-R1/verdict.json",
         "pointer": "scientific_pass",
         "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-RD11-CSCA07-passive-identifiability",
+      "hypothesis_id": "H-CSCA-07-PR",
+      "statement": "Passive factual traces can falsify a declared observable replay transition law under anytime-valid testing, but observationally equivalent latent causal models are not distinguishable by passive data alone; Jacobian spectral stability and zero within-model fiber entropy are not sufficient causal-identification criteria.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "Gaussian stationary AR(1) passive factual traces for the executable e-process qualification",
+          "two-state linearly similar latent dynamical realizations for the Jacobian-spectrum/topology counterexample",
+          "hidden stable predicate-supported replay coordinate absent from the observation map",
+          "discrete two-model fiber-entropy counterexample",
+          "alpha=0.01, 128 fresh seeds/family/cohort, 256 transitions/trace, independent PRIMARY and REPLICATION seed blocks"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/CSCA-07-PR/verdict.json",
+        "artifacts/csca-07-passive-replay/verdict.json",
+        "artifacts/csca-07-passive-replay/SHA256SUMS",
+        "research/reports/CSCA_07_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "N0 true-law rejection 1/128=0.0078125 in PRIMARY and 1/128=0.0078125 in REPLICATION at alpha=0.01",
+        "S1 wrong dynamics and S2 wrong sign rejected 128/128 in both independent cohorts",
+        "W1 exact information rate 0.0056 nat/transition implies necessary 745.8748 transitions for target power 0.95, above frozen budget 256",
+        "spectral counterexample: different latent adjacency with spectral distance 5.55e-17 and maximum observed-path error 4.44e-16",
+        "stable hidden replay fixed point spectral radius 0.1383 with zero observational information by construction",
+        "fiber counterexample H(Z|X,M)=0 but I(M;X)=0 and cross-model H(Z|X)=1 bit"
+      ],
+      "limitations": [
+        "positive result qualifies passive predictive-law falsification, not causal graph identification",
+        "AR(1) e-process qualification is a controlled model class and does not imply universal nonparametric power",
+        "purely observational causal identification may become possible under additional explicit structural assumptions; this claim is the no-assumption/equivalence boundary",
+        "the information-cost inequality is necessary, not sufficient",
+        "no semantic abstraction, replay utility or real-world causal claim follows"
+      ],
+      "prohibited_extrapolations": [
+        "passive non-rejection proves causal truth",
+        "spectral radius below one proves environment causality",
+        "zero fiber entropy proves unique causal semantics",
+        "all observational causal discovery is impossible under every structural assumption",
+        "replay control authorization",
+        "active causal control"
+      ],
+      "note": "The decisive authority rule is fail-closed: observational equivalence or zero passive information rate yields unresolved causal authority, not acceptance. The next gate must declare and test an identifying assumption rather than adding replay compute.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/CSCA-07-PR/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
       }
     }
   ]
