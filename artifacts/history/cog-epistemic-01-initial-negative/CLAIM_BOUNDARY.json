@@ -1,0 +1,12 @@
+{
+  "experiment": "COG-EPISTEMIC-01",
+  "status": "NOT_QUALIFIED",
+  "scientific_pass": false,
+  "authority": "NO_PROMOTION",
+  "verdict": "TYPED_EPISTEMIC_LATTICE_NOT_QUALIFIED",
+  "failure_mode": "HARNESS_PRECONDITION_DEFECT",
+  "reusable_as_positive_evidence": false,
+  "architecture_promotion": false,
+  "superseded_qualification_attempt": "COG-EPISTEMIC-01R",
+  "note": "Frozen negative. The original confirmatory harness failed its zero-error endpoint because F11 conflated an upstream stochastic scientific state with the downstream typed-transition property. Raw verdict and transition matrix remain unchanged; this boundary is additive governance metadata required by the frozen-negative validator."
+}
