@@ -1,0 +1,15 @@
+{
+  "admissible_execution_after_implementation": true,
+  "amendment_commit": "b96c97bb99abfe925945f0774f29f80fd9534e26",
+  "claim_boundary": "Kills first-order sufficiency only; does not refute curvature-bounded or set-valued identifiability-aware inhibitory control.",
+  "frozen_radii_all_killed": true,
+  "frozen_radii_count": 5,
+  "hypothesis_id": "H-NPI-01",
+  "implementation_commit": "4eeec25845e7188da949e3868c52605837f7fcf9",
+  "mutation_kills": "6/6",
+  "preregistration_commit": "a9d0ddfccb77886655566e0d3fe9c6734b7d8a46",
+  "reason": "For every frozen positive radius, an analytic observationally equivalent point exists strictly inside the radius where the preferred action reverses despite an identical positive-margin, zero first-order nullspace-sensitivity certificate.",
+  "schema": "cwc-verdict/1.0",
+  "status": "NOT_SUPPORTED",
+  "verdict": "NPI_01_FIRST_ORDER_CERTIFICATE_NOT_SUPPORTED"
+}

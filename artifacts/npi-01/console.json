@@ -1,0 +1,123 @@
+{
+  "certificate_identity": true,
+  "claim_boundary": "Kills first-order sufficiency only; does not refute curvature-bounded or set-valued identifiability-aware inhibitory control.",
+  "counterexample_all_radii": true,
+  "hypothesis_id": "H-NPI-01",
+  "local_certificate": {
+    "gradient": [
+      "0/1",
+      "0/1"
+    ],
+    "jacobian": [
+      [
+        "1/1",
+        "0/1"
+      ]
+    ],
+    "margin": "1/1",
+    "nullspace_basis": [
+      [
+        "0/1",
+        "1/1"
+      ]
+    ],
+    "observation": [
+      "0/1"
+    ],
+    "score_squared": "0/1"
+  },
+  "mutation_kill_count": 6,
+  "mutation_kills": {
+    "INSUFFICIENT_CURVATURE": true,
+    "NONPOSITIVE_MARGIN": true,
+    "NONZERO_FIRST_ORDER_GRADIENT": true,
+    "OBSERVABLE_V": true,
+    "POINT_OUTSIDE_RADIUS": true,
+    "WRONG_NULLSPACE_BASIS": true
+  },
+  "mutation_total": 6,
+  "radii": [
+    {
+      "baseline_margin_positive": true,
+      "distance": "1/2",
+      "inside_radius": true,
+      "k": "8/1",
+      "nullspace_valid": true,
+      "observation_equal": true,
+      "passed": true,
+      "radius": "1/1",
+      "reversed_action": true,
+      "score_zero": true,
+      "test_point": [
+        "0/1",
+        "1/2"
+      ]
+    },
+    {
+      "baseline_margin_positive": true,
+      "distance": "1/20",
+      "inside_radius": true,
+      "k": "800/1",
+      "nullspace_valid": true,
+      "observation_equal": true,
+      "passed": true,
+      "radius": "1/10",
+      "reversed_action": true,
+      "score_zero": true,
+      "test_point": [
+        "0/1",
+        "1/20"
+      ]
+    },
+    {
+      "baseline_margin_positive": true,
+      "distance": "1/200",
+      "inside_radius": true,
+      "k": "80000/1",
+      "nullspace_valid": true,
+      "observation_equal": true,
+      "passed": true,
+      "radius": "1/100",
+      "reversed_action": true,
+      "score_zero": true,
+      "test_point": [
+        "0/1",
+        "1/200"
+      ]
+    },
+    {
+      "baseline_margin_positive": true,
+      "distance": "1/20000",
+      "inside_radius": true,
+      "k": "800000000/1",
+      "nullspace_valid": true,
+      "observation_equal": true,
+      "passed": true,
+      "radius": "1/10000",
+      "reversed_action": true,
+      "score_zero": true,
+      "test_point": [
+        "0/1",
+        "1/20000"
+      ]
+    },
+    {
+      "baseline_margin_positive": true,
+      "distance": "1/200000000",
+      "inside_radius": true,
+      "k": "80000000000000000/1",
+      "nullspace_valid": true,
+      "observation_equal": true,
+      "passed": true,
+      "radius": "1/100000000",
+      "reversed_action": true,
+      "score_zero": true,
+      "test_point": [
+        "0/1",
+        "1/200000000"
+      ]
+    }
+  ],
+  "schema": "cwc-npi-01/1.0",
+  "verdict": "NPI_01_FIRST_ORDER_CERTIFICATE_NOT_SUPPORTED"
+}
