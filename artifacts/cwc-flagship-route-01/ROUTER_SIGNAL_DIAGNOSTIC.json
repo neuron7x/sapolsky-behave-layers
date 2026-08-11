@@ -1,0 +1,142 @@
+{
+  "definition": "Post-hoc held-out signal diagnostics; no thresholds or scientific verdict depend on these values.",
+  "results": {
+    "PRIMARY": [
+      {
+        "candidate_oracle_jaccard": 1.0,
+        "candidate_oracle_overlap_fraction_of_k": null,
+        "continue_rate": 0.0,
+        "difficulty_pearson": -0.38628595067648686,
+        "difficulty_spearman": -0.42574047793444425,
+        "family": "PROSE",
+        "gain_pearson": 0.016653344812211136,
+        "gain_spearman": 0.026838033327229446,
+        "seed": 74201
+      },
+      {
+        "candidate_oracle_jaccard": 1.0,
+        "candidate_oracle_overlap_fraction_of_k": null,
+        "continue_rate": 0.0,
+        "difficulty_pearson": -0.2858689994559954,
+        "difficulty_spearman": -0.2562717451016297,
+        "family": "CODE",
+        "gain_pearson": -0.20217918058250353,
+        "gain_spearman": -0.20518220106207652,
+        "seed": 74201
+      },
+      {
+        "candidate_oracle_jaccard": 0.7398373983739838,
+        "candidate_oracle_overlap_fraction_of_k": 0.8504672897196262,
+        "continue_rate": 0.8359375,
+        "difficulty_pearson": 0.493771052230086,
+        "difficulty_spearman": 0.5428264054202527,
+        "family": "PROSE",
+        "gain_pearson": 0.048438533401735755,
+        "gain_spearman": 0.02293535982420802,
+        "seed": 74202
+      },
+      {
+        "candidate_oracle_jaccard": 0.38613861386138615,
+        "candidate_oracle_overlap_fraction_of_k": 0.5571428571428572,
+        "continue_rate": 0.546875,
+        "difficulty_pearson": 0.1034466635119194,
+        "difficulty_spearman": 0.11717176341329427,
+        "family": "CODE",
+        "gain_pearson": -0.02221938425498183,
+        "gain_spearman": -0.048308459989012995,
+        "seed": 74202
+      },
+      {
+        "candidate_oracle_jaccard": 1.0,
+        "candidate_oracle_overlap_fraction_of_k": 1.0,
+        "continue_rate": 1.0,
+        "difficulty_pearson": 0.27434929819754034,
+        "difficulty_spearman": 0.17527124153085516,
+        "family": "PROSE",
+        "gain_pearson": 0.13308697097997071,
+        "gain_spearman": 0.14226446621497893,
+        "seed": 74203
+      },
+      {
+        "candidate_oracle_jaccard": 0.984375,
+        "candidate_oracle_overlap_fraction_of_k": 0.9921259842519685,
+        "continue_rate": 0.9921875,
+        "difficulty_pearson": 0.5496061824881031,
+        "difficulty_spearman": 0.4522122779710675,
+        "family": "CODE",
+        "gain_pearson": 0.12034126188421139,
+        "gain_spearman": 0.15395531953854605,
+        "seed": 74203
+      }
+    ],
+    "REPLICATION": [
+      {
+        "candidate_oracle_jaccard": 0.3157894736842105,
+        "candidate_oracle_overlap_fraction_of_k": 0.48,
+        "continue_rate": 0.390625,
+        "difficulty_pearson": 0.007858139446196866,
+        "difficulty_spearman": 0.07619047619047618,
+        "family": "PROSE",
+        "gain_pearson": -0.2300142985050665,
+        "gain_spearman": -0.1819139194139194,
+        "seed": 74301
+      },
+      {
+        "candidate_oracle_jaccard": 0.56,
+        "candidate_oracle_overlap_fraction_of_k": 0.717948717948718,
+        "continue_rate": 0.609375,
+        "difficulty_pearson": 0.5433592278634274,
+        "difficulty_spearman": -0.368543956043956,
+        "family": "CODE",
+        "gain_pearson": 0.22640938668156954,
+        "gain_spearman": 0.44546703296703294,
+        "seed": 74301
+      },
+      {
+        "candidate_oracle_jaccard": 0.0,
+        "candidate_oracle_overlap_fraction_of_k": 0.0,
+        "continue_rate": 0.09375,
+        "difficulty_pearson": 0.1630593967086811,
+        "difficulty_spearman": 0.3250457875457875,
+        "family": "PROSE",
+        "gain_pearson": -0.15214326381999038,
+        "gain_spearman": -0.21561355311355312,
+        "seed": 74302
+      },
+      {
+        "candidate_oracle_jaccard": 0.3170731707317073,
+        "candidate_oracle_overlap_fraction_of_k": 0.48148148148148145,
+        "continue_rate": 0.421875,
+        "difficulty_pearson": -0.33227971982349813,
+        "difficulty_spearman": -0.3238553113553113,
+        "family": "CODE",
+        "gain_pearson": 0.2716584813825838,
+        "gain_spearman": 0.2876831501831501,
+        "seed": 74302
+      },
+      {
+        "candidate_oracle_jaccard": 1.0,
+        "candidate_oracle_overlap_fraction_of_k": 1.0,
+        "continue_rate": 1.0,
+        "difficulty_pearson": 0.3305017144762953,
+        "difficulty_spearman": 0.3592490842490842,
+        "family": "PROSE",
+        "gain_pearson": 0.10893974135190994,
+        "gain_spearman": 0.12335164835164833,
+        "seed": 74303
+      },
+      {
+        "candidate_oracle_jaccard": 0.9375,
+        "candidate_oracle_overlap_fraction_of_k": 0.967741935483871,
+        "continue_rate": 0.96875,
+        "difficulty_pearson": -0.23965305810352144,
+        "difficulty_spearman": 0.24010989010989006,
+        "family": "CODE",
+        "gain_pearson": -0.03512236901840758,
+        "gain_spearman": -0.004624542124542124,
+        "seed": 74303
+      }
+    ]
+  },
+  "status": "EXPLORATORY_NON_PROMOTING"
+}

@@ -1,0 +1,21 @@
+{
+  "architecture_promotion_from_this_branch": "BLOCKED",
+  "calibration_checkpoint_sha256": "97b45d3e3f66a133704ae864e588fbdd3fcd97a8a17a188cef860727a4049490",
+  "calibration_policy_sha256": "4e64318bfe32a76c22056bdb5ec0b8c63d19b312fe5ae8a44ff802713ca3e222",
+  "diagnostics_authority": "EXPLORATORY_NON_PROMOTING",
+  "experiment": "CWC-FLAGSHIP-ROUTE-01",
+  "primary_cell_passes": 0,
+  "primary_cells": 6,
+  "protocol_commits": {
+    "amendment_001": "bbf2ef90eafefd19b7f60e185d82b26c95f795dc",
+    "amendment_002": "3fcc09e9cc4a91b03eef6b3c0040f35a598dbf28",
+    "calibration_freeze": "9cab08f",
+    "hermeticity_repair": "cb7857b",
+    "implementation": "61771ad",
+    "pre_primary_amendment_003": "4023fa9",
+    "preregistration": "cc1609ad6b944c613737c8103fc3d695ec9b31c9"
+  },
+  "replication_cell_passes": 2,
+  "replication_cells": 6,
+  "scientific_verdict": "CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED"
+}

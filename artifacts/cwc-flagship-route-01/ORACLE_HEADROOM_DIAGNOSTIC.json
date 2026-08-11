@@ -1,0 +1,142 @@
+{
+  "definition": "Post-hoc exhaustive oracle over continuation counts using held-out per-window realized gains. Diagnostic only; target-dependent and not admissible as route policy evidence.",
+  "results": {
+    "PRIMARY": [
+      {
+        "best_continue_count": 60,
+        "best_continue_rate": 0.46875,
+        "cohort": "PRIMARY",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.7157083545052982,
+        "logical_flops_per_window": 12124035.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.01498520748555432,
+        "oracle_loss": 2.700723147019744,
+        "seed": 74201
+      },
+      {
+        "best_continue_count": 66,
+        "best_continue_rate": 0.515625,
+        "cohort": "PRIMARY",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.588563378454858,
+        "logical_flops_per_window": 12443907.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.01843192104410507,
+        "oracle_loss": 2.5701314574107528,
+        "seed": 74201
+      },
+      {
+        "best_continue_count": 67,
+        "best_continue_rate": 0.5234375,
+        "cohort": "PRIMARY",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.677564832508609,
+        "logical_flops_per_window": 12497219.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.01240208478276461,
+        "oracle_loss": 2.6651627477258444,
+        "seed": 74202
+      },
+      {
+        "best_continue_count": 56,
+        "best_continue_rate": 0.4375,
+        "cohort": "PRIMARY",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.565979556945421,
+        "logical_flops_per_window": 11910787.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.018663069066859883,
+        "oracle_loss": 2.547316487878561,
+        "seed": 74202
+      },
+      {
+        "best_continue_count": 58,
+        "best_continue_rate": 0.453125,
+        "cohort": "PRIMARY",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.6709837601183413,
+        "logical_flops_per_window": 12017411.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.016440149828648387,
+        "oracle_loss": 2.654543610289693,
+        "seed": 74203
+      },
+      {
+        "best_continue_count": 61,
+        "best_continue_rate": 0.4765625,
+        "cohort": "PRIMARY",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.5978962162507475,
+        "logical_flops_per_window": 12177347.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.018681284785062147,
+        "oracle_loss": 2.5792149314656854,
+        "seed": 74203
+      }
+    ],
+    "REPLICATION": [
+      {
+        "best_continue_count": 32,
+        "best_continue_rate": 0.5,
+        "cohort": "REPLICATION",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.7960404959114844,
+        "logical_flops_per_window": 12337283.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.021722963133698148,
+        "oracle_loss": 2.7743175327777863,
+        "seed": 74301
+      },
+      {
+        "best_continue_count": 34,
+        "best_continue_rate": 0.53125,
+        "cohort": "REPLICATION",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.604822952205239,
+        "logical_flops_per_window": 12550531.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.019109474225359246,
+        "oracle_loss": 2.58571347797988,
+        "seed": 74301
+      },
+      {
+        "best_continue_count": 30,
+        "best_continue_rate": 0.46875,
+        "cohort": "REPLICATION",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.784566479473913,
+        "logical_flops_per_window": 12124035.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.016672855913245854,
+        "oracle_loss": 2.767893623560667,
+        "seed": 74302
+      },
+      {
+        "best_continue_count": 32,
+        "best_continue_rate": 0.5,
+        "cohort": "REPLICATION",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.636422909638261,
+        "logical_flops_per_window": 12337283.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.019861352588398162,
+        "oracle_loss": 2.616561557049863,
+        "seed": 74302
+      },
+      {
+        "best_continue_count": 32,
+        "best_continue_rate": 0.5,
+        "cohort": "REPLICATION",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.769366028050651,
+        "logical_flops_per_window": 12337283.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.017539920548667265,
+        "oracle_loss": 2.7518261075019836,
+        "seed": 74303
+      },
+      {
+        "best_continue_count": 28,
+        "best_continue_rate": 0.4375,
+        "cohort": "REPLICATION",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6334682463335124,
+        "logical_flops_per_window": 11910787.0,
+        "max_oracle_advantage_vs_fixed_frontier": 0.021154807311694057,
+        "oracle_loss": 2.6123134390218183,
+        "seed": 74303
+      }
+    ]
+  },
+  "status": "EXPLORATORY_NON_PROMOTING"
+}

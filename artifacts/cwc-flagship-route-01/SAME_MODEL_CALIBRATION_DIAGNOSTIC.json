@@ -1,0 +1,294 @@
+{
+  "cells": [
+    {
+      "candidate_advantage_vs_fixed_frontier": -0.002487689064762044,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.390625,
+      "endpoints": {
+        "beats_difficulty_matched": false,
+        "beats_fixed_frontier": false,
+        "beats_random_matched": false,
+        "matched_counts": true,
+        "no_worse_hidden_norm": false,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.7210354059934616,
+        "DIFFICULTY_MATCHED": 2.717097321525216,
+        "HIDDEN_NORM_MATCHED": 2.719002541154623,
+        "ORACLE_MATCHED": 2.7038587369024754,
+        "RANDOM_MATCHED": 2.718376763164997
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74201
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.005758491510498676,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.5,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.5835528494790196,
+        "DIFFICULTY_MATCHED": 2.587355725467205,
+        "HIDDEN_NORM_MATCHED": 2.5908897314220667,
+        "ORACLE_MATCHED": 2.5708851451054215,
+        "RANDOM_MATCHED": 2.5875511188060045
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74201
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.00012864946194302007,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.28125,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": false,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.6878254506736994,
+        "DIFFICULTY_MATCHED": 2.6883558575063944,
+        "HIDDEN_NORM_MATCHED": 2.6867175325751305,
+        "ORACLE_MATCHED": 2.677566623315215,
+        "RANDOM_MATCHED": 2.688476739451289
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74202
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.004308204946027239,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.453125,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.5610607294365764,
+        "DIFFICULTY_MATCHED": 2.56280255690217,
+        "HIDDEN_NORM_MATCHED": 2.5693519404157996,
+        "ORACLE_MATCHED": 2.5467346012592316,
+        "RANDOM_MATCHED": 2.565288808196783
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74202
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.007378479956040351,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.5390625,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.660131888464093,
+        "DIFFICULTY_MATCHED": 2.663107741624117,
+        "HIDDEN_NORM_MATCHED": 2.6741179432719946,
+        "ORACLE_MATCHED": 2.651335794478655,
+        "RANDOM_MATCHED": 2.6675926875323057
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74203
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.008039870607690958,
+      "cohort": "PRIMARY",
+      "continue_rate": 0.53125,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.5874051647260785,
+        "DIFFICULTY_MATCHED": 2.5937614860013127,
+        "HIDDEN_NORM_MATCHED": 2.597272024489939,
+        "ORACLE_MATCHED": 2.5770014794543386,
+        "RANDOM_MATCHED": 2.594871991313994
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74203
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.0011716029796393634,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.578125,
+      "endpoints": {
+        "beats_difficulty_matched": false,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.791554156690836,
+        "DIFFICULTY_MATCHED": 2.7859730757772923,
+        "HIDDEN_NORM_MATCHED": 2.797334663569927,
+        "ORACLE_MATCHED": 2.7718103379011154,
+        "RANDOM_MATCHED": 2.795268591493368
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74301
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.006263853625085414,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.453125,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.602730803366285,
+        "DIFFICULTY_MATCHED": 2.6096510125207715,
+        "HIDDEN_NORM_MATCHED": 2.6106436999398284,
+        "ORACLE_MATCHED": 2.5901089256512932,
+        "RANDOM_MATCHED": 2.608990967448335
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74301
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": -0.0036737015754191304,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.390625,
+      "endpoints": {
+        "beats_difficulty_matched": false,
+        "beats_fixed_frontier": false,
+        "beats_random_matched": false,
+        "matched_counts": true,
+        "no_worse_hidden_norm": false,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.790803149342537,
+        "DIFFICULTY_MATCHED": 2.7876074016094208,
+        "HIDDEN_NORM_MATCHED": 2.784722499549389,
+        "ORACLE_MATCHED": 2.770632166415453,
+        "RANDOM_MATCHED": 2.787733990699053
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74302
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.007704750760515466,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.53125,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": true,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.627281288499944,
+        "DIFFICULTY_MATCHED": 2.6345854204846546,
+        "HIDDEN_NORM_MATCHED": 2.633771982626058,
+        "ORACLE_MATCHED": 2.6152096510631964,
+        "RANDOM_MATCHED": 2.634956796304323
+      },
+      "passed_under_same_model_calibration": true,
+      "seed": 74302
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.0011235338475006351,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.484375,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": true,
+        "matched_counts": true,
+        "no_worse_hidden_norm": false,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "PROSE",
+      "losses": {
+        "DECISION_RELEVANT": 2.768750622868538,
+        "DIFFICULTY_MATCHED": 2.770427919924259,
+        "HIDDEN_NORM_MATCHED": 2.768130626529455,
+        "ORACLE_MATCHED": 2.752352699637413,
+        "RANDOM_MATCHED": 2.775993186980486
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74303
+    },
+    {
+      "candidate_advantage_vs_fixed_frontier": 0.0025824952632031994,
+      "cohort": "REPLICATION",
+      "continue_rate": 0.46875,
+      "endpoints": {
+        "beats_difficulty_matched": true,
+        "beats_fixed_frontier": true,
+        "beats_random_matched": false,
+        "matched_counts": true,
+        "no_worse_hidden_norm": false,
+        "oracle_sanity": true,
+        "within_fixed_frontier": true
+      },
+      "family": "CODE",
+      "losses": {
+        "DECISION_RELEVANT": 2.629892521421425,
+        "DIFFICULTY_MATCHED": 2.638333597104065,
+        "HIDDEN_NORM_MATCHED": 2.6285509821027517,
+        "ORACLE_MATCHED": 2.611351352999918,
+        "RANDOM_MATCHED": 2.6291146371513605
+      },
+      "passed_under_same_model_calibration": false,
+      "seed": 74303
+    }
+  ],
+  "definition": "Per-model router refit on that model's CALIBRATION cases only, then evaluated on its frozen cohort. This violates the frozen shared-router candidate definition and cannot alter the scientific verdict; it diagnoses cross-seed representation alignment.",
+  "status": "EXPLORATORY_POST_HOC_NON_RESCUING"
+}
