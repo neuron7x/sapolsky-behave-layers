@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "00036f5fdf1df6706ad47dc0ab959fe8cb11a666",
-  "generated": "2026-08-11T22:53:00+03:00",
+  "git_commit": "d1de33628ec9321a9305889ea0f902c474aa3d9b",
+  "generated": "2026-08-12T00:27:00+03:00",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2766,6 +2766,52 @@
         "file": "artifacts/cwc-flagship-route-02/verdict.json",
         "pointer": "verdict",
         "expected": "CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED"
+      }
+    },
+    {
+      "claim_id": "CWC-RD23-NPI-first-order-inhibition",
+      "hypothesis_id": "H-NPI-01",
+      "statement": "A zero first-order projection of action-value sensitivity onto the structural-identifiability nullspace, even with a strictly positive current action margin, is not sufficient by itself to certify any universal positive action-safe radius; higher-order curvature can reverse the preferred action arbitrarily close along an observationally invisible direction.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "smooth analytic two-parameter causal decision systems",
+          "local structural identifiability certificate using observation Jacobian/nullspace and first-order action-value gradient",
+          "constructive exact-arithmetic counterexample family"
+        ]
+      },
+      "required_artifacts": [
+        "research/preregistration/NPI_01_NULLSPACE_PROJECTED_INHIBITION.md",
+        "research/preregistration/NPI_01_PRE_EXECUTION_AMENDMENT_001.md",
+        "artifacts/npi-01/raw_result.json",
+        "artifacts/npi-01/verdict.json",
+        "artifacts/npi-01/RESULTS.md",
+        "artifacts/npi-01/SHA256SUMS",
+        "scripts/verify_npi_01_result.py"
+      ],
+      "supporting_metrics": [
+        "5/5 frozen positive radii admit an observationally equivalent point strictly inside the radius with exact action reversal Delta=-1",
+        "local certificate is identical across the counterexample family: margin=1, J=[1,0], nullspace=span(e_v), grad Delta=(0,0), projected score=0",
+        "6/6 preregistered harness mutations killed",
+        "independent post-result verifier recomputes the exact polynomial relations and rejects serialized result mutations"
+      ],
+      "limitations": [
+        "kills only first-order sufficiency, not identifiability-aware inhibitory control as a class",
+        "does not test curvature-bounded, Hessian-certified or set-valued robust successors",
+        "novelty is provisional; pre-execution landscape search found adjacent component literatures but is not an exhaustive global novelty proof"
+      ],
+      "prohibited_extrapolations": [
+        "structural identifiability is irrelevant to decisions",
+        "inhibitory control cannot improve AI agents",
+        "all nullspace-based control mechanisms are invalid",
+        "a Hessian-bounded or robust-equivalence-set certificate cannot work"
+      ],
+      "note": "Ambitious mechanism was deliberately killed before training: no learned-model result can rescue the universal first-order certificate. The surviving research problem is whether higher-order/action-set identifiability can support a falsifiable inhibitory control primitive.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "artifacts/npi-01/verdict.json",
+        "pointer": "verdict",
+        "expected": "NPI_01_FIRST_ORDER_CERTIFICATE_NOT_SUPPORTED"
       }
     }
   ]

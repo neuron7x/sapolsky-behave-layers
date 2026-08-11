@@ -64,6 +64,13 @@
       "verdict": "CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED",
       "artifact": "artifacts/cwc-flagship-route-02/",
       "reason": "Final preregistered per-model calibration rescue: PRIMARY 5/6 and REPLICATION 4/6. CODE robust (6/6), PROSE not robust (3/6). No R3 rescue permitted; current two-exit learned adaptive-depth lineage closed."
+    },
+    {
+      "id": "NEG-npi-01-first-order-inhibition",
+      "claim_id": "CWC-RD23-NPI-first-order-inhibition",
+      "verdict": "NPI_01_FIRST_ORDER_CERTIFICATE_NOT_SUPPORTED",
+      "artifact": "artifacts/npi-01/",
+      "reason": "Exact analytic counterexample: identical positive-margin zero-score first-order certificate can coexist with action reversal arbitrarily close along an observationally invisible direction. Higher-order curvature is not controlled by the proposed certificate."
     }
   ]
 }

@@ -864,3 +864,15 @@ hypotheses:
     preregistration: "experiments/cwc_flagship_route_02_PREREGISTRATION.md"
     status: NOT_SUPPORTED
     claim_id: CWC-RD22-FLAGSHIP-route02-per-model-rescue
+
+  - hypothesis_id: H-NPI-01
+    research_question_id: RQ-identifiability-action-control
+    type: confirmatory
+    H0: "First-order projection of action-value sensitivity onto the structural-identifiability nullspace is insufficient to certify a universal nonzero action-safe neighborhood because higher-order invisible variation can reverse the decision."
+    H1: "A positive action margin plus zero first-order nullspace action sensitivity is sufficient to derive a strictly positive safety radius from the first-order local certificate alone, within which every observationally equivalent state preserves the current optimal action."
+    estimand: "existence of a universal positive action-safe radius determined only by local observation/Jacobian/nullspace/action-margin/action-gradient quantities"
+    experimental_unit: "analytic counterexample family member x frozen proposed radius"
+    decision_rule: "NOT_SUPPORTED if one smooth family preserves the complete first-order certificate while producing an observationally equivalent action reversal inside every frozen positive radius; RESULT 5/5 radii killed and 6/6 mutations killed."
+    preregistration: "research/preregistration/NPI_01_NULLSPACE_PROJECTED_INHIBITION.md; research/preregistration/NPI_01_PRE_EXECUTION_AMENDMENT_001.md"
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD23-NPI-first-order-inhibition
