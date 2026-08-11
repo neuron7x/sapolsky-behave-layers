@@ -155,3 +155,190 @@ def select_maximin_information_action(
         bottlenecks,
         "Chosen by maximin certified information-per-cost. This is a spend permission, not a correctness guarantee.",
     )
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionRelevantInformationDecision:
+    """Fail-closed spend decision on the quotient induced by the current action.
+
+    This object intentionally distinguishes *model* uncertainty from *decision*
+    uncertainty. Same-decision alternatives remain epistemically unresolved and are
+    recorded, but they cannot become a bottleneck for an information spend whose only
+    declared purpose is resolving the immediate action choice.
+    """
+
+    state: str
+    action_id: str | None
+    candidate_decision: str
+    required_information_nats: float
+    guaranteed_information_per_cost: float
+    necessary_cost_lower_bound: float
+    available_budget: float
+    cross_decision_alternatives: tuple[str, ...]
+    ignored_same_decision_alternatives: tuple[str, ...]
+    bottleneck_alternatives: tuple[str, ...]
+    reason: str
+
+
+def select_decision_relevant_information_action(
+    *,
+    actions: Sequence[InformationAction],
+    candidate_decision: str,
+    alternative_decisions: Mapping[str, str],
+    alpha: float,
+    target_power: float,
+    available_budget: float,
+) -> DecisionRelevantInformationDecision:
+    """Choose evidence only for distinctions that can change the immediate decision.
+
+    Let g(m) be the predeclared optimal-action/decision class under surviving model m.
+    Alternatives with g(m)==g(candidate) remain unresolved causal countermodels, but
+    identifying them has zero value for deciding *which immediate action* to take.
+
+    This function therefore computes the maximin certified information-per-cost only
+    over cross-decision alternatives.  It is a decision-identification governor, not a
+    causal-model identification procedure.  The KL cost calculation remains a
+    necessary converse only and can license spend, never causal truth.
+    """
+    if not candidate_decision or not str(candidate_decision).strip():
+        raise ValueError("candidate_decision required")
+    if not (0 < alpha < target_power < 1):
+        raise ValueError("require 0 < alpha < target_power < 1")
+    if not math.isfinite(available_budget) or available_budget < 0:
+        raise ValueError("available_budget must be finite and >=0")
+
+    normalized = {str(k): str(v) for k, v in alternative_decisions.items()}
+    if any(not k or not v for k, v in normalized.items()):
+        raise ValueError("alternative ids and decisions must be non-empty")
+
+    cross = tuple(sorted(k for k, v in normalized.items() if v != candidate_decision))
+    same = tuple(sorted(k for k, v in normalized.items() if v == candidate_decision))
+    required = binary_kl(target_power, alpha)
+
+    if not cross:
+        return DecisionRelevantInformationDecision(
+            state="DECISION_ALREADY_IDENTIFIED_NO_ACQUISITION",
+            action_id=None,
+            candidate_decision=candidate_decision,
+            required_information_nats=required,
+            guaranteed_information_per_cost=math.inf,
+            necessary_cost_lower_bound=0.0,
+            available_budget=available_budget,
+            cross_decision_alternatives=(),
+            ignored_same_decision_alternatives=same,
+            bottleneck_alternatives=(),
+            reason=(
+                "Every admitted alternative is in the same decision-equivalence cell. "
+                "Causal-model identity remains unresolved, but no evidence is required "
+                "for the immediate action choice."
+            ),
+        )
+
+    eligible: list[tuple[float, InformationAction, tuple[str, ...], float]] = []
+    saw_uncertified = False
+    for action in actions:
+        if action.rate_certificate != "CERTIFIED_LOWER_BOUND":
+            saw_uncertified = True
+            continue
+        if any(m not in action.information_rate_lower_bounds for m in cross):
+            continue
+        rates = {m: float(action.information_rate_lower_bounds[m]) for m in cross}
+        min_rate = min(rates.values())
+        bottlenecks = tuple(sorted(m for m, value in rates.items() if abs(value - min_rate) <= 1e-15))
+        q = min_rate / action.unit_cost
+        max_total_cost = math.inf if action.max_units is None else action.max_units * action.unit_cost
+        eligible.append((q, action, bottlenecks, max_total_cost))
+
+    if not eligible:
+        return DecisionRelevantInformationDecision(
+            state="NO_CERTIFIED_DECISION_INFORMATION_RATE",
+            action_id=None,
+            candidate_decision=candidate_decision,
+            required_information_nats=required,
+            guaranteed_information_per_cost=0.0,
+            necessary_cost_lower_bound=math.inf,
+            available_budget=available_budget,
+            cross_decision_alternatives=cross,
+            ignored_same_decision_alternatives=same,
+            bottleneck_alternatives=cross,
+            reason=(
+                "No action has a complete certified lower-bound rate vector for every "
+                "cross-decision alternative."
+                if not saw_uncertified
+                else "Only uncertified or incomplete rates cover the cross-decision alternatives."
+            ),
+        )
+
+    eligible.sort(key=lambda item: (-item[0], item[1].unit_cost, item[1].action_id))
+    q, action, bottlenecks, action_capacity_cost = eligible[0]
+    if q <= 0:
+        return DecisionRelevantInformationDecision(
+            state="NO_DECISION_IDENTIFYING_INFORMATION_CHANNEL",
+            action_id=action.action_id,
+            candidate_decision=candidate_decision,
+            required_information_nats=required,
+            guaranteed_information_per_cost=0.0,
+            necessary_cost_lower_bound=math.inf,
+            available_budget=available_budget,
+            cross_decision_alternatives=cross,
+            ignored_same_decision_alternatives=same,
+            bottleneck_alternatives=bottlenecks,
+            reason=(
+                "At least one cross-decision alternative has zero certified information "
+                "rate under every admissible complete action. Extra compute cannot "
+                "resolve the current decision through this channel set."
+            ),
+        )
+
+    necessary_cost = required / q
+    if necessary_cost > action_capacity_cost:
+        return DecisionRelevantInformationDecision(
+            state="DECISION_ACTION_CAPACITY_BELOW_NECESSARY_BOUND",
+            action_id=action.action_id,
+            candidate_decision=candidate_decision,
+            required_information_nats=required,
+            guaranteed_information_per_cost=q,
+            necessary_cost_lower_bound=necessary_cost,
+            available_budget=available_budget,
+            cross_decision_alternatives=cross,
+            ignored_same_decision_alternatives=same,
+            bottleneck_alternatives=bottlenecks,
+            reason=(
+                "The selected action cannot supply enough acquisition units even to "
+                "meet the necessary decision-information converse."
+            ),
+        )
+    if available_budget < necessary_cost:
+        return DecisionRelevantInformationDecision(
+            state="INSUFFICIENT_DECISION_INFORMATION_BUDGET",
+            action_id=action.action_id,
+            candidate_decision=candidate_decision,
+            required_information_nats=required,
+            guaranteed_information_per_cost=q,
+            necessary_cost_lower_bound=necessary_cost,
+            available_budget=available_budget,
+            cross_decision_alternatives=cross,
+            ignored_same_decision_alternatives=same,
+            bottleneck_alternatives=bottlenecks,
+            reason=(
+                "Available budget is below the information-theoretic necessary lower "
+                "bound for resolving the current decision."
+            ),
+        )
+    return DecisionRelevantInformationDecision(
+        state="ACQUIRE_DECISION_RELEVANT_EVIDENCE_BUDGET_NOT_RULED_OUT_BY_CONVERSE",
+        action_id=action.action_id,
+        candidate_decision=candidate_decision,
+        required_information_nats=required,
+        guaranteed_information_per_cost=q,
+        necessary_cost_lower_bound=necessary_cost,
+        available_budget=available_budget,
+        cross_decision_alternatives=cross,
+        ignored_same_decision_alternatives=same,
+        bottleneck_alternatives=bottlenecks,
+        reason=(
+            "Spend is selected by the maximin certified information-per-cost over only "
+            "cross-decision alternatives. Same-decision causal ambiguity is preserved, "
+            "not silently resolved. This is spend permission, not a sufficiency or truth certificate."
+        ),
+    )
