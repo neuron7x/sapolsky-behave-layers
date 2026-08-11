@@ -1,0 +1,273 @@
+{
+  "alpha": 0.01,
+  "authority": "DECISION_INFORMATION_ALLOCATION_PRIMITIVE_ONLY",
+  "cohorts": {
+    "PRIMARY": {
+      "families": {
+        "D0": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D1": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 128,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D10": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D11": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 128,
+          "wrong_action_count": 0
+        },
+        "D2": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D3": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D4": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D5": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D6": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D7": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D8": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D9": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        }
+      },
+      "seed_base": 104201
+    },
+    "REPLICATION": {
+      "families": {
+        "D0": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D1": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 128,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D10": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D11": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 128,
+          "wrong_action_count": 0
+        },
+        "D2": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D3": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D4": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D5": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D6": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D7": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D8": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        },
+        "D9": {
+          "false_spend_count": 0,
+          "legacy_rescue_count": 0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "permutation_disagreement_count": 0,
+          "strict_cost_improvement_count": 0,
+          "wrong_action_count": 0
+        }
+      },
+      "seed_base": 204201
+    }
+  },
+  "errors": [],
+  "experiment_id": "COG-INFO-02",
+  "implementation_commit": "3283c09",
+  "n_per_family_per_cohort": 128,
+  "non_promotion_boundary": {
+    "active_control": false,
+    "external_replication": false,
+    "large_model_transfer": false,
+    "pareto_superiority": false,
+    "real_world_planning_value": false,
+    "semantic_causal_truth": false
+  },
+  "novelty_status": "UNKNOWN_OVERLAP_CONCEDED",
+  "preconfirmatory_preregistration_commit": "87dbd88ae9f8cc72c15db6128d08a9fa25464e59",
+  "scientific_pass": true,
+  "target_power": 0.95,
+  "verdict": "DECISION_RELEVANT_INFORMATION_GOVERNOR_QUALIFIED_SYNTHETIC_NARROWED"
+}
