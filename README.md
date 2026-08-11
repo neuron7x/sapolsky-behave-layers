@@ -135,3 +135,13 @@ A synthetic multi-regime IV-style identifying contract now separates some observ
 ### COG-EPISTEMIC-01R typed authority boundary (2026-08-11)
 
 CWC now has an immutable capability-bound runtime state machine: `OBSERVED -> PREDICTIVE -> ASSUMPTION_CONDITIONAL -> INTERVENTION_SUPPORTED`, with absorbing `UNIDENTIFIED/FALSIFIED/OOD/ABSTAIN` states. A fresh repaired confirmatory run rejected every frozen illegal promotion (`0/1536` PRIMARY and `0/1536` REPLICATION) while accepting every legal chain (`128/128` each). The parent run remains preserved as non-passing because one stochastic F11 precondition was never reached. `INTERVENTION_SUPPORTED` is explicitly scoped to its operator/context and is not semantic or unconditional causal truth. Next gate: assumption-aware memory consolidation.
+
+### COG-MEMORY-01 assumption-aware memory boundary (2026-08-11)
+
+CWC now binds reusable memory to the exact typed epistemic record, assumptions,
+evidence hashes, countermodel set, dependencies and revision lineage. Assumption-
+conditional memories remain quarantined; surviving countermodels veto active causal
+consolidation; parent retraction and assumption invalidation propagate transitively.
+PRIMARY and fresh REPLICATION passed all 12 frozen families at 128/128 with zero false
+causal consolidation. This is a runtime safety primitive, not proof of semantic causal
+truth or planning/replay value. Next hard gate: proof-carrying counterfactual planning.

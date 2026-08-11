@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "0de6c760d32791cb785efe4e61dbe59a3d5ce4ea",
+  "git_commit": "756c262ebd1f8f977801f567e4c9bb9e65c377c8",
   "generated": "2026-08-11T10:45:00Z",
   "claims": [
     {
@@ -2396,6 +2396,56 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/COG-EPISTEMIC-01R/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD16-COG-memory01-assumption-aware",
+      "hypothesis_id": "H-COG-MEMORY-01",
+      "statement": "Through the supported CWC runtime API, reusable memory preserves typed epistemic authority: assumption-conditional and surviving-countermodel records cannot become active causal memory, while parent retraction and assumption invalidation propagate transitively through dependent memories.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "runtime/software epistemic-memory safety primitive",
+          "12 frozen consolidation/retraction adversarial families",
+          "128 cases per family in fresh PRIMARY and REPLICATION namespaces",
+          "typed COG-EPISTEMIC-01R records only"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-MEMORY-01/verdict.json",
+        "artifacts/cog-memory-01/verdict.json",
+        "artifacts/cog-memory-01/SHA256SUMS",
+        "experiments/cog_memory_01/PREREGISTRATION.md",
+        "research/reports/COG_MEMORY_01_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY: every M0-M11 family passed 128/128 with zero false causal consolidation, invariant failure and event-chain failure",
+        "REPLICATION: every M0-M11 family passed 128/128 with zero false causal consolidation, invariant failure and event-chain failure",
+        "M7 parent retraction and M8 assumption invalidation propagated transitively at rate 1.0 in both cohorts",
+        "M9 tampered-binding acceptance and M10 legacy-string acceptance were 0.0 in both cohorts",
+        "semantic gate self-test killed 6/6 frozen consolidation/retraction authority mutations"
+      ],
+      "limitations": [
+        "qualifies the supported Python runtime memory API, not tamper-proof security against an adversary controlling interpreter/process memory",
+        "synthetic software-transition qualification; no real-trace causal identification follows",
+        "INTERVENTION_SUPPORTED memory remains operator/context scoped and is not semantic or unconditional causal truth",
+        "does not establish planning utility, replay benefit, active-control safety, large-model transfer or compute Pareto advantage",
+        "internal fresh-seed replication is not external third-party reproduction"
+      ],
+      "prohibited_extrapolations": [
+        "memory consolidation proves a causal model is true",
+        "quarantined assumption-conditional memory may be treated as unconditional fact",
+        "replay control authorization",
+        "active causal control",
+        "production deployment authority",
+        "large-scale architecture promotion"
+      ],
+      "note": "The cognitive advance is authority-preserving memory: evidence invalidation monotonically removes reusable authority and surviving countermodels remain explicit consolidation debt.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-MEMORY-01/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

@@ -3,6 +3,20 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Assumption-aware epistemic memory] — 2026-08-11
+
+### Added
+- `cwc/memory/epistemic_store.py`: immutable typed-memory records, revision history, surviving-countermodel veto, dependency/assumption retraction closure and hash-chained memory events.
+- `COG-MEMORY-01`: preregistered PRIMARY/REPLICATION attack over 12 consolidation/retraction families.
+
+### Evidence
+- PRIMARY and REPLICATION: every M0-M11 family passed `128/128`; zero false causal consolidations, invariant failures or event-chain failures.
+- Parent retraction and assumption invalidation propagated transitively at `1.0`; tampered-binding and legacy-string acceptance were `0.0`.
+- Semantic gate self-test killed `6/6` frozen authority/retraction mutations.
+
+### Boundary
+This qualifies an authority-preserving runtime memory primitive only. It does not establish semantic causality, planning value, replay control, active control, malicious-host unforgeability or architecture Pareto advantage.
+
 ## [Typed epistemic runtime lattice] — 2026-08-11
 
 ### Added

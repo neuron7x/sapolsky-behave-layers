@@ -780,3 +780,15 @@ hypotheses:
     preregistration: experiments/cog_epistemic_01r/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD15-COG-epistemic01r-typed-lattice
+
+  - hypothesis_id: H-COG-MEMORY-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A reusable memory layer can silently strengthen epistemic authority, forget surviving countermodels, or retain dependent causal memories after parent/assumption invalidation."
+    H1: "An immutable typed memory ledger preserves epistemic scope, quarantines assumption-conditional/surviving-countermodel records, rejects tampered/legacy authority, and propagates parent/assumption retraction transitively in fresh PRIMARY and REPLICATION cohorts."
+    estimand: "false causal consolidation rate, legal storage rate, transitive retraction rate, tampered/legacy acceptance rate, event/invariant failure rate and in-place authority-upgrade acceptance"
+    experimental_unit: "independently bound typed epistemic claim/context lineage under one frozen memory attack family"
+    decision_rule: "PASS requires all M0-M11 families 128/128 in both cohorts, zero false causal consolidation, zero invariant/event-chain failures, M7/M8 transitive retraction 1.0, M9/M10 acceptance 0.0, no in-place upgrade, and semantic self-test success. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/cog_memory_01/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD16-COG-memory01-assumption-aware
