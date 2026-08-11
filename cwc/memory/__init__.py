@@ -1,15 +1,23 @@
-"""Memory primitives for experimental CWC research modules."""
+"""CWC memory primitives."""
 
-from .causal_debt import (
-    CandidateSnapshot,
-    CausalDebtLedger,
-    ConsolidationDecision,
-    ReplayEvidence,
+from cwc.memory.epistemic_store import (
+    DependencyError,
+    EpistemicMemoryLedger,
+    MemoryBindingError,
+    MemoryError,
+    MemoryEvent,
+    MemoryEventType,
+    MemoryRecord,
+    MemoryStatus,
 )
 
 __all__ = [
-    "CandidateSnapshot",
-    "CausalDebtLedger",
-    "ConsolidationDecision",
-    "ReplayEvidence",
+    "DependencyError",
+    "EpistemicMemoryLedger",
+    "MemoryBindingError",
+    "MemoryError",
+    "MemoryEvent",
+    "MemoryEventType",
+    "MemoryRecord",
+    "MemoryStatus",
 ]
