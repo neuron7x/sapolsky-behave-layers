@@ -88,7 +88,7 @@ promotion from this branch is blocked. See `artifacts/cwc-flagship-route-01/` an
 | RIGOR10 timing metrology | Act G2 overhead p95 ≤2% and latency CV ≤3% are reachable | **NOT_SUPPORTED** — FROZEN NEGATIVE on this hardware: p95 4.87%/2.25%, CV up to 5.40%; median overhead 0.70% does pass. The gate flips between repeats, so the instrument requires pass-in-ALL. Hardware boundary, like energy | `artifacts/wp17-metrology/` |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
 | L6 joint-control advantage | joint > best isolated mechanism | **NOT_TESTED** | blocked |
-| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | current shared-router adaptive-depth branch is `NOT_SUPPORTED` (`CWC-FLAGSHIP-ROUTE-01`), but full L7 remains undecided because no frozen MoD/MoE external-panel comparison has executed; current existential “>=2 workloads” wording also requires a fixed-panel revision before it can have a finite kill-test |
+| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | current shared-router adaptive-depth branch is `NOT_SUPPORTED` (`CWC-FLAGSHIP-ROUTE-01`), but full L7 remains undecided because no frozen MoD/MoE external-panel comparison has executed; historical existential “>=2 workloads” wording is now narrowed operationally by `docs/methodology/L7_FIXED_PANEL_REVISION_2026-08-11.md` to a finite fixed-panel kill-test |
 | L8 independent replication | third party reproduces | **NOT_TESTED** | not self-certifiable (a clean-room venv is not a different operator) |
 
 Multiscale/fractal emergence: **NOT_SUPPORTED** (`artifacts/history/fractal/`,

@@ -348,8 +348,8 @@ hypotheses:
     H1: "CWC Pareto-dominates MoD/MoE at equal budget on >=2 real workloads."
     estimand: "compute-equivalent Pareto dominance vector"
     experimental_unit: "system x seed x scale"
-    decision_rule: "SUPPORTED iff CWC dominates on the primary vector with CI support"
-    preregistration: PENDING
+    decision_rule: "Historical broad wording remains NOT_TESTED. The next admissible finite test is narrowed by L7_FIXED_PANEL_REVISION_2026-08-11.md: fixed AVeriTeC+HybridQA panel, fail-closed sequential static→generic-dynamic→MoD/MoE→replication gates, with no workload substitution after outcomes."
+    preregistration: docs/methodology/L7_FIXED_PANEL_REVISION_2026-08-11.md
     status: NOT_TESTED
     claim_id: CWC-L7-pareto
 

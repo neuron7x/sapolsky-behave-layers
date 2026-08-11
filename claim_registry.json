@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "9bf21e943e37a98cbab3be5cd50380fb4398e4a1",
-  "generated": "2026-08-11T19:42:15Z",
+  "git_commit": "92f6495e5414324d2da41e2b86ec78bc4057687c",
+  "generated": "2026-08-11T19:45:51Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -674,11 +674,27 @@
     {
       "claim_id": "CWC-L7-pareto",
       "hypothesis_id": "H-L7",
-      "statement": "Compute-equivalent Pareto advantage vs MoD/MoE on real workloads.",
+      "statement": "Compute-equivalent Pareto advantage versus matched static, generic-dynamic, MoD and MoE comparators on the fixed AVeriTeC+HybridQA panel.",
       "status": "NOT_TESTED",
-      "note": "the decisive next step; requires cloud scale + strong baselines",
+      "note": "The historical open-ended >=2-workload wording is operationally repaired by a finite fixed-panel sequential kill/promotion protocol. Scientific status remains NOT_TESTED until source/model/comparator blockers are resolved.",
       "independent_replication": false,
-      "verdict_binding": null
+      "verdict_binding": null,
+      "required_artifacts": [
+        "docs/methodology/L7_FIXED_PANEL_REVISION_2026-08-11.md"
+      ],
+      "limitations": [
+        "no checksum-bound external L7-R1 source snapshot has been materialized",
+        "no frozen L7-R1 base-model/checkpoint/runner manifest has been bound",
+        "matched executable MoD/MoE comparators have not run",
+        "CWC-FLAGSHIP-ROUTE-01 is NOT_SUPPORTED and cannot be silently reused as a promoted candidate",
+        "independent third-party replication is absent"
+      ],
+      "prohibited_extrapolations": [
+        "internal synthetic positives establish L7",
+        "the CWC-FLAGSHIP-ROUTE-01 negative proves adaptive computation impossible",
+        "workloads may be substituted after observing an L7-R1 failure",
+        "NOT_TESTED is positive evidence"
+      ]
     },
     {
       "claim_id": "CWC-L8-replication",
