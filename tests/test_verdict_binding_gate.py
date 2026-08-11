@@ -92,6 +92,7 @@ def test_polarity_table_is_not_a_substring_classifier() -> None:
     """`NEGATIVE_IS_MECHANISM_SPECIFIC` supports its claim; a naive matcher inverts it."""
     assert VERDICT_POLARITY["NEGATIVE_IS_MECHANISM_SPECIFIC"] == "POSITIVE"
     assert VERDICT_POLARITY["ROUTING_END_TO_END_NOT_SUPPORTED"] == "NEGATIVE"
+    assert VERDICT_POLARITY["CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED"] == "NEGATIVE"
     assert STATUS_POLARITY["SUPPORTED_NARROWED"] == "POSITIVE"
 
 

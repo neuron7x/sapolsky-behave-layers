@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "fea29b2f55644432afb5c9c3604f783feae2f463",
-  "generated": "2026-08-11T17:16:16Z",
+  "git_commit": "9bf21e943e37a98cbab3be5cd50380fb4398e4a1",
+  "generated": "2026-08-11T19:42:15Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2646,6 +2646,61 @@
       "note": "Parent preregistration, two pre-execution amendments, implementation contract, semantic/temporal kill gates, provenance validators, and fail-closed execution readiness are frozen in Git. Scientific authority remains NOT_TESTED until checksum-bound external source snapshots, frozen model/runner/comparator identity, contamination state, and both external cohorts are executed and sealed.",
       "independent_replication": false,
       "verdict_binding": null
+    },
+    {
+      "claim_id": "CWC-RD21-FLAGSHIP-route01-shared-router",
+      "hypothesis_id": "H-CWC-FLAGSHIP-ROUTE-01",
+      "statement": "On the frozen internal real-data PROSE/CODE panel, one calibration-seed linear decision-relevant router over raw block-1 mean-hidden-state coordinates did not stably convert second-layer value heterogeneity into compute-matched Pareto improvement across fresh independently trained model seeds.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "two-exit byte-level Transformer, d_model=64, two blocks, 400 training steps",
+          "frozen WP18 PROSE/CODE corpora with file-disjoint CALIBRATION/PRIMARY/REPLICATION",
+          "one shared ridge gain router fitted only on CALIBRATION seed 74101",
+          "exact logical-FLOP fixed depth-1/depth-2 Pareto envelope"
+        ]
+      },
+      "required_artifacts": [
+        "experiments/cwc_flagship_route_01/PREREGISTRATION.md",
+        "experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_001.md",
+        "experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_002.md",
+        "experiments/cwc_flagship_route_01/PRE_PRIMARY_AMENDMENT_003.md",
+        "artifacts/cwc-flagship-route-01/verdict.json",
+        "artifacts/cwc-flagship-route-01/RESULTS.md",
+        "artifacts/cwc-flagship-route-01/SHA256SUMS",
+        "research/reports/CWC_FLAGSHIP_ROUTE_01_EXECUTION_REPORT.md",
+        "scripts/verify_cwc_flagship_route_01.py"
+      ],
+      "supporting_metrics": [
+        "PRIMARY: 0/6 seed-family cells passed all frozen endpoints",
+        "REPLICATION: 2/6 seed-family cells passed all frozen endpoints; replication cannot rescue PRIMARY",
+        "PRIMARY fixed-frontier superiority held in only 2/6 cells and strict DIFFICULTY_MATCHED superiority in only 1/6",
+        "independent serialized-result verifier reproduces NOT_SUPPORTED and kills 5/5 verifier mutations",
+        "post-hoc non-promoting exhaustive oracle diagnostic finds positive allocation headroom in 12/12 cells, so the negative localizes to routing rather than proving absence of adaptive opportunity",
+        "post-hoc non-rescuing same-model calibration diagnostic passes 6/12 cells, identifying cross-seed hidden-coordinate nonalignment as one but not the only failure source"
+      ],
+      "limitations": [
+        "internal repository prose/code corpora, not external public benchmarks",
+        "small two-exit model; no large pretrained-model scaling result",
+        "the frozen candidate intentionally transfers one raw-coordinate ridge router across independently initialized models, whose hidden coordinates are not guaranteed to align",
+        "post-hoc oracle and same-model-calibration diagnostics are explanatory only and cannot rescue or promote the verdict",
+        "no MoD/MoE implementation is included, so broad L7 remains NOT_TESTED",
+        "internal fresh-seed replication is not independent third-party reproduction"
+      ],
+      "prohibited_extrapolations": [
+        "adaptive computation is impossible in general",
+        "no routing representation can exploit the observed oracle headroom",
+        "CWC is globally refuted",
+        "the broad existential H-L7 null is proved",
+        "external transfer or production conclusions"
+      ],
+      "note": "This is a mechanism kill, not an architecture-wide impossibility result. Architecture promotion from this shared-router branch is blocked. WP18 route-cost wording is separately corrected because its FLOP-ratio-to-utility comparison was not dimensionally established.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "artifacts/cwc-flagship-route-01/verdict.json",
+        "pointer": "verdict",
+        "expected": "CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED"
+      }
     }
   ]
 }

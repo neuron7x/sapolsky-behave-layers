@@ -7,17 +7,28 @@ document is the entry point and the map. Consolidated 2026-07-16 (the two former
 sibling projects were merged in; see `legacy/` and `experiments/fractal_multiscale/`).
 
 ## What this system IS (honest one-line)
-A verified measurement substrate + a falsification harness that has produced
-**two claim-tier positives** (adaptive routing is causally real; adaptive
-compute allocation achieves the theory-predicted Jensen gap) and **four
-claim-tier negatives**, plus a **mathematical theory** that unifies and predicts
-them all. It is not yet an architecture with a proven Pareto advantage at scale.
+A verified measurement substrate + falsification/governance runtime with multiple
+narrow supported mechanisms and preserved negative results, plus a mathematical
+value/identifiability theory. The current direct real-data shared-router adaptive-depth
+branch is `NOT_SUPPORTED`; the broader L7 architecture-level Pareto claim remains
+`NOT_TESTED`. It is not an architecture with a proven Pareto advantage at scale.
 
 **WP4 corrected interpretation** (`docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`):
 the substrate verifies the algebraic identity adaptive−static =
 `P_sample(m>K)` under an exact halt oracle. It is a useful positive control, not
 an independently predicted empirical effect or an exactly compute-matched Pareto
 result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
+
+**Current flagship direct gate — CWC-FLAGSHIP-ROUTE-01 (2026-08-11):** a fresh preregistered
+two-exit Transformer test removed WP18's cost-unit ambiguity by comparing cross-entropy directly
+against the best fixed depth-1/depth-2 envelope at exact logical FLOPs. The frozen shared
+decision-relevant router passed `0/6` PRIMARY seed-family cells and `2/6` REPLICATION cells;
+verdict `CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED`. Post-hoc non-promoting exhaustive oracle allocation
+found positive headroom in `12/12` cells, so the failure localizes to the routing policy rather than
+proving adaptive compute has no value. Same-model calibration passed `6/12` cells, showing raw
+hidden-coordinate cross-seed nonalignment explains part, but not all, of the failure. Architecture
+promotion from this branch is blocked. See `artifacts/cwc-flagship-route-01/` and
+`docs/vnv/WP18_ROUTE_COST_DIMENSIONAL_CORRECTION_2026-08-11.md`.
 
 ## Causal-credit / counterfactual-model sub-line — current boundary
 
@@ -41,7 +52,7 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 - `COG-PLAN-01`: proof-carrying counterfactual planner qualified **synthetically and narrowly**. Across 12 frozen families, PRIMARY and REPLICATION passed 128/128 per family. Robust action requires the same margin-separated action in every admitted world; hidden averaging cannot create authority; assumption-conditional memory remains conditional; stale or dropped-world certificates fail; disagreement invokes the certified information/budget governor or abstention. Real-world planning value and active control remain unqualified.
 - `COG-INFO-02`: decision-relevant information governor qualified **synthetically and narrowly**. It quotients surviving worlds by the predeclared immediate decision and spends evidence only against worlds capable of changing that decision. In the frozen same-decision zero-rate trap, the legacy model-identification maximin governor was blocked in 256/256 pooled cases while the decision-relevant governor selected the decisive probe in 256/256; when both could spend, the frozen D11 necessary-cost bound was strictly lower in 256/256 cases (median legacy/new ratio 9.7754x). Same-decision countermodels remain unresolved causal debt; no causal truth, real-world utility, or novelty claim follows.
 
-**ACT-R&D-03 remains negative for broad learned-model causal authority.** The cognitive line now carries unresolved worlds through typed epistemics, memory and proof-carrying planning, and COG-INFO-02 removes decision-irrelevant model distinctions from the immediate acquisition bottleneck. This still does not establish semantic causality, complete world sets, real-world planning utility, replay, active causal control, large-model Pareto advantage, or external replication. Next hard gate: `COG-SELF-01` autonomous falsification governor; external flagship promotion is blocked until a matched-compute public benchmark and third-party reproduction.
+**ACT-R&D-03 remains negative for broad learned-model causal authority.** The cognitive line now carries unresolved worlds through typed epistemics, memory, proof-carrying planning, decision-relevant information acquisition and autonomous monotone-negative self-falsification. This still does not establish semantic causality, complete world sets, real-world planning utility, active causal control, large-model Pareto advantage or external replication. `COG-SELF-01` is complete; `REAL-TRANSFER-01` remains `NOT_TESTED`, and the direct internal real-data `CWC-FLAGSHIP-ROUTE-01` shared-router branch is `NOT_SUPPORTED`.
 
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |
@@ -72,12 +83,12 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 | RD1 real-LM boundary (real data) | synthetic identifiability transfers to real LM | **NOT_SUPPORTED** — FROZEN NEGATIVE: on real byte-level prose, per-token compute allocation G_lo=−0.090 (gap ~0) while the synthetic positive control G_lo=+0.621. Maps the framework edge. *(The original "more compute helps all buckets uniformly" reading was later NARROWED by WP19 — that was a property of the weight-tied axis, not of the data.)* | `artifacts/wp6-real-lm/` |
 | RIGOR1 certificate proof-gap closed | corrected bound valid + positives survive | **SUPPORTED** — proof-complete `b+2d` bound: Monte-Carlo FPR 0.000≤δ on 5 null families; every identifiability positive survives (L4 0.111→0.060, AC1 0.621→0.620). Closes the audit-flagged Proof caveat. Expert-class validity by construction | `artifacts/wp7-certificate-hardening/` |
 | RIGOR2 family-wise error controlled | positives survive multiplicity correction | **SUPPORTED** — Bonferroni (family + ultra-conservative all-29) + Holm on top of the proof-complete bound: L4 G_lo +0.053/+0.029, AC1 +0.619, all survive. Family-wise FPR over SUPPORTED certificate positives ≤0.05. Closes the multiplicity critique | `artifacts/wp8-family-wise-error/` |
-| RD3 real-workload pilot (2 task families) | a certifiable gap exceeds the MEASURED route cost on real workloads | **NOT_SUPPORTED** — ⛔ **KILL RULE FIRED**: prose G_lo −0.200, code −0.171 vs measured c_route 0.0006 (WP17); positive control +0.6195 certifies in the same run. 24 models, 2 families × 2 scales × 2 seq-lengths, 5 held-out eval shards each, contamination clean. **Architecture work stops by evidence, not budget** | `artifacts/wp18-real-workload-pilot/` |
-| RD4 negative robustness (2nd compute axis) | the WP18 negative is robust across compute axes | **SUPPORTED_NARROWED** — untied-depth axis (18 independently trained models): the DECISION holds and strengthens (G_lo −0.484 / −0.234) but WP18's *explanation* is **falsified** — on real prose easy tokens prefer depth 2, harder tokens depth 3, so a genuine context×resource interaction DOES exist. Defensible claim: *the interaction is worth less than the decision costs* | `artifacts/wp19-negative-robustness/` |
+| RD3 real-workload pilot (2 task families) | historical preregistered stop rule on real workloads | **NOT_SUPPORTED / INTERPRETATION CORRECTED** — historical programme stop fired with prose G_lo −0.200 and code −0.171. However WP17 `c_route=0.0006` is a FLOP ratio while WP18 `G_lo` is in loss/utility units, so the old direct `G_lo > c_route` bridge is not dimensionally established. The pilot failed to certify positive value; it did not prove the true gap is below routing cost. | `artifacts/wp18-real-workload-pilot/`, `docs/vnv/WP18_ROUTE_COST_DIMENSIONAL_CORRECTION_2026-08-11.md` |
+| RD4 negative robustness (2nd compute axis) | the conservative certificate still does not qualify a positive real-workload advantage | **SUPPORTED_NARROWED / INTERPRETATION CORRECTED** — untied-depth axis preserves the non-qualification result (G_lo −0.484 / −0.234) while falsifying WP18's no-interaction explanation: real prose has a context×resource interaction. The stronger phrase “worth less than decision costs” is withdrawn because the old cost-to-utility bridge was not unit-consistent. | `artifacts/wp19-negative-robustness/`, `docs/vnv/WP18_ROUTE_COST_DIMENSIONAL_CORRECTION_2026-08-11.md` |
 | RIGOR10 timing metrology | Act G2 overhead p95 ≤2% and latency CV ≤3% are reachable | **NOT_SUPPORTED** — FROZEN NEGATIVE on this hardware: p95 4.87%/2.25%, CV up to 5.40%; median overhead 0.70% does pass. The gate flips between repeats, so the instrument requires pass-in-ALL. Hardware boundary, like energy | `artifacts/wp17-metrology/` |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
 | L6 joint-control advantage | joint > best isolated mechanism | **NOT_TESTED** | blocked |
-| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | cloud-blocked **and now evidence-blocked** — see `docs/publication/ASCENSION_ACT_STATUS.md` |
+| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | current shared-router adaptive-depth branch is `NOT_SUPPORTED` (`CWC-FLAGSHIP-ROUTE-01`), but full L7 remains undecided because no frozen MoD/MoE external-panel comparison has executed; current existential “>=2 workloads” wording also requires a fixed-panel revision before it can have a finite kill-test |
 | L8 independent replication | third party reproduces | **NOT_TESTED** | not self-certifiable (a clean-room venv is not a different operator) |
 
 Multiscale/fractal emergence: **NOT_SUPPORTED** (`artifacts/history/fractal/`,

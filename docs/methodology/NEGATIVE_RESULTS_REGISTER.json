@@ -50,6 +50,13 @@
       "verdict": "REJECTED",
       "artifact": "docs/IDENTIFIABILITY_INFERENCE.md",
       "reason": "Double (iterated) bootstrap tested to cut conservatism near the irregular boundary; no power gain (0.996 vs 0.996) and WORSE least-favourable-tie calibration (FPR 0.166->0.193). Over-corrects at the non-differentiable tie where the bootstrap is inconsistent (Bickel-Freedman). Tie-safeguarded single bootstrap retained."
+    },
+    {
+      "id": "NEG-cwc-flagship-route-01",
+      "claim_id": "CWC-RD21-FLAGSHIP-route01-shared-router",
+      "verdict": "CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED",
+      "artifact": "artifacts/cwc-flagship-route-01/",
+      "reason": "Frozen direct matched-logical-FLOP gate: 0/6 PRIMARY cells pass. Positive post-hoc oracle headroom localizes the failure to the shared routing policy rather than absence of adaptive allocation opportunity."
     }
   ]
 }

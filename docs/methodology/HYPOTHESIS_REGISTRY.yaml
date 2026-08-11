@@ -840,3 +840,15 @@ hypotheses:
     preregistration: "experiments/real_transfer_01/PREREGISTRATION.md; experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_001.md; experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md"
     status: NOT_TESTED
     claim_id: CWC-RD20-REAL-transfer01-external-decision-control
+
+  - hypothesis_id: H-CWC-FLAGSHIP-ROUTE-01
+    research_question_id: RQ-pareto
+    type: confirmatory
+    H0: "One CALIBRATION-fitted decision-relevant linear router over the raw 65-dimensional block-1 mean-hidden-state coordinate system does not stably beat the fixed-depth Pareto frontier and matched generic controls across both frozen real-data families and every fresh model seed."
+    H1: "The frozen shared decision-relevant router beats the exact fixed-depth Pareto frontier, RANDOM_MATCHED and DIFFICULTY_MATCHED, is no worse than HIDDEN_NORM_MATCHED, stays within the fixed compute frontier and satisfies all semantic/resource controls in every PROSE/CODE PRIMARY cell and again in REPLICATION."
+    estimand: "per-seed/family candidate CE advantage over the <=budget fixed-depth Pareto envelope, matched-control loss differences, continuation rate, logical FLOPs and all-cell cohort conjunction"
+    experimental_unit: "fresh independently trained two-exit model seed x frozen PROSE/CODE real-data family"
+    decision_rule: "Any PRIMARY endpoint failure gives CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED and cannot be rescued by REPLICATION; full narrow support requires every endpoint in all 6 PRIMARY and all 6 REPLICATION cells plus positive median fixed-frontier advantage in both families. RESULT PRIMARY 0/6 cells pass and REPLICATION 2/6 -> NOT_SUPPORTED."
+    preregistration: "experiments/cwc_flagship_route_01/PREREGISTRATION.md; experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_001.md; experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_002.md; experiments/cwc_flagship_route_01/PRE_PRIMARY_AMENDMENT_003.md"
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD21-FLAGSHIP-route01-shared-router
