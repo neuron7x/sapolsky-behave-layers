@@ -792,3 +792,15 @@ hypotheses:
     preregistration: experiments/cog_memory_01/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD16-COG-memory01-assumption-aware
+
+  - hypothesis_id: H-COG-PLAN-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A planner will silently average incompatible worlds, drop surviving countermodels, use stale/assumption-conditional memory as unconditional authority, or spend information budget without a certified discriminating channel."
+    H1: "A proof-carrying planner emits robust action only when one margin-separated action wins in every admitted world, otherwise preserves assumption conditionality, requests certified information when budget-feasible, or abstains; stale/dropped-world certificates fail verification."
+    estimand: "state correctness by 12 attack families, false robust-action rate, stale/dropped/mutated certificate acceptance, digest determinism and information-spend state"
+    experimental_unit: "typed memory ledger plus explicit admitted world utility set under one frozen planning attack"
+    decision_rule: "PASS requires every P0-P11 family 128/128 in both cohorts, zero false robust actions in unsafe families, zero stale/dropped/mutated certificate acceptance, deterministic certificates, no causal-truth field, and 7/7 semantic mutations killed. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/cog_plan_01/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD17-COG-plan01-proof-carrying

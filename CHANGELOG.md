@@ -3,6 +3,21 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Proof-carrying counterfactual planning] — 2026-08-11
+
+### Added
+- `cwc/planning/proof_carrying.py`: admitted-world robust action selection, assumption-conditional plan state, certified information-acquisition fallback, and SHA-bound memory/world plan certificates.
+- `COG-PLAN-01`: preregistered 12-family PRIMARY/REPLICATION attack against hidden averaging, dropped countermodels, stale memory and unjustified information spend.
+
+### Evidence
+- PRIMARY and REPLICATION: every P0-P11 family passed `128/128`; false robust action count in unsafe families `0`.
+- Stale-memory, dropped-world and mutated-world certificate acceptance `0`; certificate digest nondeterminism `0`.
+- Information was requested only when the certified maximin KL/cost converse did not already veto the budget.
+- Semantic gate self-test killed `7/7` frozen planning-authority mutations.
+
+### Boundary
+Decision robustness under an explicit world set is not causal-world identification. Real-world utility, world-set completeness, replay, active control and architecture Pareto claims remain unqualified.
+
 ## [Assumption-aware epistemic memory] — 2026-08-11
 
 ### Added

@@ -1,7 +1,7 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "756c26263cc2d9f5394e6050496924b1875fe0e3",
+  "git_commit": "eee920d79ecb3afb8e73df02cd3125dc9ddf4ca1",
   "generated": "2026-08-11T10:45:00Z",
   "claims": [
     {
@@ -2446,6 +2446,56 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/COG-MEMORY-01/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD17-COG-plan01-proof-carrying",
+      "hypothesis_id": "H-COG-PLAN-01",
+      "statement": "Through the supported CWC runtime API, counterfactual planning can preserve the complete admitted world set to the action boundary: robust action authority requires the same margin-separated action in every represented world; disagreement triggers certified information acquisition or abstention, and stale/dropped-world certificates fail closed.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "synthetic proof-carrying planning safety primitive",
+          "12 frozen planning/certificate attack families",
+          "128 cases per family in fresh PRIMARY and REPLICATION namespaces",
+          "robust action margin 0.05"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-PLAN-01/verdict.json",
+        "artifacts/cog-plan-01/verdict.json",
+        "artifacts/cog-plan-01/SHA256SUMS",
+        "experiments/cog_plan_01/PREREGISTRATION.md",
+        "research/reports/COG_PLAN_01_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY: every P0-P11 family passed 128/128 with zero false robust actions in unsafe families",
+        "REPLICATION: every P0-P11 family passed 128/128 with zero false robust actions in unsafe families",
+        "P9 stale-memory certificate acceptance 0.0 and P10 dropped-world certificate acceptance 0.0 in both cohorts",
+        "mutated-world certificate acceptance 0 and certificate digest nondeterminism 0 across all families/cohorts",
+        "semantic gate self-test killed 7/7 planning-authority mutations"
+      ],
+      "limitations": [
+        "synthetic utility/world families only; completeness of the admitted world set is an input assumption",
+        "utility correctness and semantic causal correspondence are not established",
+        "information acquisition uses a necessary converse spend permission, not a sufficient correctness guarantee",
+        "does not establish real-world planning utility, replay benefit, active-control safety, large-model transfer or compute Pareto advantage",
+        "internal fresh-seed replication is not external third-party reproduction"
+      ],
+      "prohibited_extrapolations": [
+        "robust action identifies the true causal world",
+        "assumption-conditional plan is unconditional action authority",
+        "planning certificate proves utility model correctness",
+        "active causal control authorization",
+        "production deployment authority",
+        "large-scale architecture promotion"
+      ],
+      "note": "The cognitive advance is decision identification under unresolved causal ambiguity: causal worlds may remain unknown while action is permitted only if invariant across all admitted alternatives.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-PLAN-01/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

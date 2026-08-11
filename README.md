@@ -145,3 +145,14 @@ consolidation; parent retraction and assumption invalidation propagate transitiv
 PRIMARY and fresh REPLICATION passed all 12 frozen families at 128/128 with zero false
 causal consolidation. This is a runtime safety primitive, not proof of semantic causal
 truth or planning/replay value. Next hard gate: proof-carrying counterfactual planning.
+
+### COG-PLAN-01 proof-carrying planning boundary (2026-08-11)
+
+CWC now carries epistemic uncertainty through memory into action selection. A
+`ROBUST_ACTION` requires the same margin-separated action in every admitted world;
+world disagreement triggers certified information acquisition or abstention rather
+than hidden averaging. Assumption-conditional memory remains conditional, surviving
+countermodels must be represented, and memory/world mutations invalidate old plan
+certificates. PRIMARY and fresh REPLICATION passed all 12 frozen families at 128/128.
+This is a synthetic planning-safety primitive, not proof of real-world planning value
+or causal truth.
