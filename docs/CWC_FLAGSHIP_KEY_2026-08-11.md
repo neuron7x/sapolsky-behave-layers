@@ -6,6 +6,16 @@ The external objective is not to maximize repository size or the number of inter
 mechanisms. A memorable research contribution needs one compact claim that another
 researcher can understand, attack, reproduce, and use without knowing the CWC history.
 
+
+## Current programme boundary after direct route falsification
+
+The learned two-exit adaptive-depth route lineage is now closed: R1 shared routing was
+`NOT_SUPPORTED`, and the single preregistered per-model-calibration rescue R2 also returned
+`NOT_SUPPORTED` (PRIMARY `5/6`, REPLICATION `4/6`; no R3 permitted). This removes adaptive-depth
+Pareto routing as the current flagship candidate. The thesis below is therefore the sole surviving
+scientific flagship and must stand or fall on `REAL-TRANSFER-01`; internal routing evidence cannot
+rescue it.
+
 ## Current strongest candidate thesis
 
 > **Do not spend computation identifying a causal world when the surviving worlds are

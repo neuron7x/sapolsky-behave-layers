@@ -19,16 +19,7 @@ the substrate verifies the algebraic identity adaptive−static =
 an independently predicted empirical effect or an exactly compute-matched Pareto
 result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 
-**Current flagship direct gate — CWC-FLAGSHIP-ROUTE-01 (2026-08-11):** a fresh preregistered
-two-exit Transformer test removed WP18's cost-unit ambiguity by comparing cross-entropy directly
-against the best fixed depth-1/depth-2 envelope at exact logical FLOPs. The frozen shared
-decision-relevant router passed `0/6` PRIMARY seed-family cells and `2/6` REPLICATION cells;
-verdict `CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED`. Post-hoc non-promoting exhaustive oracle allocation
-found positive headroom in `12/12` cells, so the failure localizes to the routing policy rather than
-proving adaptive compute has no value. Same-model calibration passed `6/12` cells, showing raw
-hidden-coordinate cross-seed nonalignment explains part, but not all, of the failure. Architecture
-promotion from this branch is blocked. See `artifacts/cwc-flagship-route-01/` and
-`docs/vnv/WP18_ROUTE_COST_DIMENSIONAL_CORRECTION_2026-08-11.md`.
+**Current adaptive-depth boundary — CWC-FLAGSHIP-ROUTE-01/02 (2026-08-11):** R1 shared raw-coordinate routing failed `0/6` PRIMARY and `2/6` REPLICATION cells. A preregistered final rescue then removed cross-seed router transfer by fitting the same frozen ridge rule separately on each fresh model's CALIBRATION windows while keeping model/training/FLOP/frontier/baseline semantics fixed and using R1-disjoint evaluation offsets. R2 improved to `5/6` PRIMARY and `4/6` REPLICATION; CODE passed `6/6` seed-cohort cells but PROSE only `3/6`. Verdict `CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED`. The R2 preregistration explicitly forbids R3 rescue, so the current two-exit learned adaptive-depth lineage is **terminated**. Broad adaptive computation is not declared impossible. L7 architecture promotion has no surviving adaptive-depth candidate and remains blocked/`NOT_TESTED`. CWC programme continuation is narrowed to the mechanistically independent decision-relevant epistemic-control line and its external `REAL-TRANSFER-01` gate. See `artifacts/cwc-flagship-route-01/`, `artifacts/cwc-flagship-route-02/`, and `docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md`.
 
 ## Causal-credit / counterfactual-model sub-line — current boundary
 
@@ -88,7 +79,7 @@ promotion from this branch is blocked. See `artifacts/cwc-flagship-route-01/` an
 | RIGOR10 timing metrology | Act G2 overhead p95 ≤2% and latency CV ≤3% are reachable | **NOT_SUPPORTED** — FROZEN NEGATIVE on this hardware: p95 4.87%/2.25%, CV up to 5.40%; median overhead 0.70% does pass. The gate flips between repeats, so the instrument requires pass-in-ALL. Hardware boundary, like energy | `artifacts/wp17-metrology/` |
 | L5 structural plasticity | grow/prune/merge helps | **NOT_TESTED** | blocked |
 | L6 joint-control advantage | joint > best isolated mechanism | **NOT_TESTED** | blocked |
-| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED** | current shared-router adaptive-depth branch is `NOT_SUPPORTED` (`CWC-FLAGSHIP-ROUTE-01`), but full L7 remains undecided because no frozen MoD/MoE external-panel comparison has executed; historical existential “>=2 workloads” wording is now narrowed operationally by `docs/methodology/L7_FIXED_PANEL_REVISION_2026-08-11.md` to a finite fixed-panel kill-test |
+| L7 compute-equivalent Pareto | beats MoD/MoE at equal budget | **NOT_TESTED / BLOCKED** | both current two-exit adaptive-depth candidates are `NOT_SUPPORTED` (R1 `0/6` PRIMARY; final R2 rescue `5/6` PRIMARY, with no R3 permitted). The broad L7 logical claim is not globally falsified because matched MoD/MoE on the external fixed panel never executed, but there is now **no surviving adaptive-depth CWC candidate** authorized for promotion. |
 | L8 independent replication | third party reproduces | **NOT_TESTED** | not self-certifiable (a clean-room venv is not a different operator) |
 
 Multiscale/fractal emergence: **NOT_SUPPORTED** (`artifacts/history/fractal/`,

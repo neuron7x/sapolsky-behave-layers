@@ -102,17 +102,22 @@ At minimum the promotion vector records, for every system/seed/family:
 
 No scalar weighted score may hide a dominated dimension for a Pareto claim.
 
-## Relation to CWC-FLAGSHIP-ROUTE-01
+## Relation to CWC-FLAGSHIP-ROUTE-01/02
 
-`CWC-FLAGSHIP-ROUTE-01` is already `NOT_SUPPORTED` on the internal frozen PROSE/CODE panel and
-therefore cannot be promoted as the L7-R1 candidate unchanged. Its post-hoc oracle diagnostic shows
-allocation headroom, but the frozen shared raw-coordinate router did not capture that headroom
-reliably. Any replacement routing representation/mechanism is a new candidate and requires its own
-pre-result freeze; the negative cannot be silently overwritten.
+`CWC-FLAGSHIP-ROUTE-01` is `NOT_SUPPORTED` on the internal frozen PROSE/CODE panel. Its post-hoc
+same-model calibration diagnostic identified cross-seed hidden-coordinate transfer as a concrete
+failure mode, so one final preregistered rescue was allowed: `CWC-FLAGSHIP-ROUTE-02` fitted the same
+fixed ridge rule separately on each model's CALIBRATION windows while keeping the model, training,
+resource accounting, frontier and matched-control semantics fixed and using R1-disjoint evaluation
+offsets. R2 improved to PRIMARY `5/6` and REPLICATION `4/6` but still failed the frozen all-cell rule.
+Its preregistration explicitly forbids R3 rescue. The current two-exit learned adaptive-depth lineage
+is therefore terminated and cannot be nominated as L7-R1.
 
 ## Current state
 
-`L7-R1 = NOT_TESTED`.
+`L7-R1 = NOT_TESTED / BLOCKED`.
 
-Execution blockers are source materialization, frozen model/runner identity, and executable matched
-MoD/MoE comparators. These are blockers, not negative evidence.
+The broad L7 logical claim is not globally falsified because the external fixed-panel MoD/MoE
+comparison never executed. However, there is now no surviving adaptive-depth CWC candidate authorized
+for that promotion path. Programme continuation is narrowed to the independent decision-relevant
+epistemic-control flagship and `REAL-TRANSFER-01`; see `docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md`.

@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "92f6495e5414324d2da41e2b86ec78bc4057687c",
-  "generated": "2026-08-11T19:45:51Z",
+  "git_commit": "00036f5fdf1df6706ad47dc0ab959fe8cb11a666",
+  "generated": "2026-08-11T22:53:00+03:00",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2716,6 +2716,56 @@
         "file": "artifacts/cwc-flagship-route-01/verdict.json",
         "pointer": "verdict",
         "expected": "CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED"
+      }
+    },
+    {
+      "claim_id": "CWC-RD22-FLAGSHIP-route02-per-model-rescue",
+      "hypothesis_id": "H-CWC-FLAGSHIP-ROUTE-02",
+      "statement": "Per-model CALIBRATION-only linear decision-relevant routing materially improves the R1 shared-router failure but still does not robustly convert second-layer marginal-value heterogeneity into compute-matched Pareto improvement across every fresh PROSE/CODE seed and replication; the current two-exit learned adaptive-depth lineage is therefore closed under its preregistered no-R3 rule.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "two-exit byte-level Transformer, d_model=64, two blocks, 400 training steps",
+          "frozen WP18 PROSE/CODE corpora with R2 windows explicitly disjoint from R1 offsets",
+          "per-model ridge gain/difficulty routers fitted on each model seed CALIBRATION windows only",
+          "exact logical-FLOP fixed depth-1/depth-2 Pareto envelope"
+        ]
+      },
+      "required_artifacts": [
+        "experiments/cwc_flagship_route_02_PREREGISTRATION.md",
+        "artifacts/cwc-flagship-route-02/CALIBRATION_LOCK.json",
+        "artifacts/cwc-flagship-route-02/verdict.json",
+        "artifacts/cwc-flagship-route-02/RESULTS.md",
+        "artifacts/cwc-flagship-route-02/SHA256SUMS",
+        "scripts/verify_cwc_flagship_route_02.py",
+        "docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY: 5/6 seed-family cells passed all frozen endpoints; one PROSE PRIMARY failure makes the cohort FAIL",
+        "REPLICATION: 4/6 seed-family cells passed; replication cannot rescue PRIMARY",
+        "CODE passed 6/6 seed-cohort cells; PROSE passed 3/6",
+        "PRIMARY median fixed-frontier advantage remained positive in both families, but the preregistered all-cell conjunction failed",
+        "independent verifier recomputes PRIMARY 5/6, REPLICATION 4/6 and kills 5/5 serialized-result mutations"
+      ],
+      "limitations": [
+        "internal repository prose/code corpora, not the external fixed panel",
+        "small two-exit model; no MoD/MoE comparison",
+        "internal fresh-seed replication is not third-party replication",
+        "negative closes this learned two-exit lineage, not adaptive computation in general"
+      ],
+      "prohibited_extrapolations": [
+        "adaptive computation is impossible in general",
+        "CWC as a research runtime is globally refuted",
+        "decision-relevant epistemic control is refuted",
+        "external REAL-TRANSFER-01 is negative",
+        "all possible L7 architectures are impossible"
+      ],
+      "note": "Final preregistered rescue for the current two-exit adaptive-depth lineage. No R3 router/feature/threshold rescue is permitted. CWC continues only on the mechanistically independent decision-relevant epistemic-control flagship pending REAL-TRANSFER-01.",
+      "independent_replication": false,
+      "verdict_binding": {
+        "file": "artifacts/cwc-flagship-route-02/verdict.json",
+        "pointer": "verdict",
+        "expected": "CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED"
       }
     }
   ]

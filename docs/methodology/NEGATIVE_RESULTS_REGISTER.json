@@ -57,6 +57,13 @@
       "verdict": "CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED",
       "artifact": "artifacts/cwc-flagship-route-01/",
       "reason": "Frozen direct matched-logical-FLOP gate: 0/6 PRIMARY cells pass. Positive post-hoc oracle headroom localizes the failure to the shared routing policy rather than absence of adaptive allocation opportunity."
+    },
+    {
+      "id": "NEG-cwc-flagship-route-02",
+      "claim_id": "CWC-RD22-FLAGSHIP-route02-per-model-rescue",
+      "verdict": "CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED",
+      "artifact": "artifacts/cwc-flagship-route-02/",
+      "reason": "Final preregistered per-model calibration rescue: PRIMARY 5/6 and REPLICATION 4/6. CODE robust (6/6), PROSE not robust (3/6). No R3 rescue permitted; current two-exit learned adaptive-depth lineage closed."
     }
   ]
 }

@@ -852,3 +852,15 @@ hypotheses:
     preregistration: "experiments/cwc_flagship_route_01/PREREGISTRATION.md; experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_001.md; experiments/cwc_flagship_route_01/PRE_EXECUTION_AMENDMENT_002.md; experiments/cwc_flagship_route_01/PRE_PRIMARY_AMENDMENT_003.md"
     status: NOT_SUPPORTED
     claim_id: CWC-RD21-FLAGSHIP-route01-shared-router
+
+  - hypothesis_id: H-CWC-FLAGSHIP-ROUTE-02
+    research_question_id: RQ-pareto
+    type: confirmatory
+    H0: "Per-model CALIBRATION-only linear decision-relevant routing does not robustly beat the fixed-depth Pareto frontier and matched generic controls across every fresh PROSE/CODE model seed and replication."
+    H1: "After removing cross-seed hidden-coordinate transfer by fitting the same frozen ridge rule separately on each model's CALIBRATION windows, DECISION_RELEVANT beats the exact fixed-depth Pareto frontier, RANDOM_MATCHED and DIFFICULTY_MATCHED, is no worse than HIDDEN_NORM_MATCHED, and satisfies every semantic/resource/anti-reuse endpoint in all PRIMARY and REPLICATION cells."
+    estimand: "per-model seed/family candidate CE advantage over the <=budget fixed-depth envelope, matched-control loss differences, continuation rate, logical FLOPs, anti-R1-window-reuse and the all-cell cohort conjunction"
+    experimental_unit: "fresh independently trained two-exit model seed x frozen PROSE/CODE real-data family, with R2 evaluation offsets disjoint from R1"
+    decision_rule: "Any PRIMARY endpoint failure gives CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED and closes the current two-exit learned adaptive-depth subprogramme with no R3 rescue; full support requires all 6 PRIMARY and all 6 REPLICATION cells plus positive median fixed-frontier advantage in both families. RESULT PRIMARY 5/6, REPLICATION 4/6 -> NOT_SUPPORTED; lineage closed."
+    preregistration: "experiments/cwc_flagship_route_02_PREREGISTRATION.md"
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD22-FLAGSHIP-route02-per-model-rescue
