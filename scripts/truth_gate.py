@@ -178,6 +178,19 @@ def _contract_errors(root: Path) -> list[str]:
     for rel in required_assurance:
         if not (root / rel).is_file():
             errors.append(f"engineering assurance component missing: {rel}")
+    formal_components = (
+        "docs/FORMAL_IDENTIFIABILITY_CERTIFICATE.md",
+        "cwc/causal/observability.py",
+        "scripts/formal_identifiability_gate.py",
+        "tests/test_formal_identifiability.py",
+    )
+    for rel in formal_components:
+        if not (root / rel).is_file():
+            errors.append(f"formal identifiability component missing: {rel}")
+    for target in ("verify:", "pr-fast:"):
+        line = next((row for row in makefile.splitlines() if row.startswith(target)), "")
+        if "formal-identifiability-gate" not in line:
+            errors.append(f"{target[:-1]} must include formal-identifiability-gate")
     if "make -f Makefile.cwc pr-full" not in workflow:
         errors.append("full PR workflow does not invoke the canonical pr-full target")
     if "fractal-verification:" not in workflow:
