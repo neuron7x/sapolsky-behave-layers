@@ -1,0 +1,434 @@
+{
+  "anti_reuse": {
+    "overlaps": 0,
+    "r2_offsets_checked": 640
+  },
+  "cells": {
+    "PRIMARY": [
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.0029852851433553873,
+        "cohort": "PRIMARY",
+        "continue_count": 70,
+        "continue_rate": 0.546875,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.6592423371178904,
+        "logical_flops_per_window": 12657155.0,
+        "loss1": 2.6796503867954016,
+        "loss2": 2.6423750314861536,
+        "losses": {
+          "DECISION_RELEVANT": 2.656257051974535,
+          "DIFFICULTY_MATCHED": 2.6562577076256275,
+          "HIDDEN_NORM_MATCHED": 2.661721872165799,
+          "ORACLE_MATCHED": 2.6445481423288584,
+          "RANDOM_MATCHED": 2.6606957111507654
+        },
+        "n_cases": 128,
+        "passed": true,
+        "seed": 74401
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.0025385439933085507,
+        "cohort": "PRIMARY",
+        "continue_count": 86,
+        "continue_rate": 0.671875,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6598183166772866,
+        "logical_flops_per_window": 13510147.0,
+        "loss1": 2.6863277964293957,
+        "loss2": 2.6469081696122885,
+        "losses": {
+          "DECISION_RELEVANT": 2.657279772683978,
+          "DIFFICULTY_MATCHED": 2.6625516582280397,
+          "HIDDEN_NORM_MATCHED": 2.660468326881528,
+          "ORACLE_MATCHED": 2.642251180484891,
+          "RANDOM_MATCHED": 2.661144751124084
+        },
+        "n_cases": 128,
+        "passed": true,
+        "seed": 74401
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.001789749358110715,
+        "cohort": "PRIMARY",
+        "continue_count": 59,
+        "continue_rate": 0.4609375,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.648880635146313,
+        "logical_flops_per_window": 12070723.0,
+        "loss1": 2.663216844201088,
+        "loss2": 2.632156301289797,
+        "losses": {
+          "DECISION_RELEVANT": 2.6470908857882023,
+          "DIFFICULTY_MATCHED": 2.647218322381377,
+          "HIDDEN_NORM_MATCHED": 2.65014817006886,
+          "ORACLE_MATCHED": 2.634717833250761,
+          "RANDOM_MATCHED": 2.649073136970401
+        },
+        "n_cases": 128,
+        "passed": true,
+        "seed": 74402
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.008010640159822557,
+        "cohort": "PRIMARY",
+        "continue_count": 67,
+        "continue_rate": 0.5234375,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6572373084506165,
+        "logical_flops_per_window": 12497219.0,
+        "loss1": 2.6777773639187217,
+        "loss2": 2.638583043590188,
+        "losses": {
+          "DECISION_RELEVANT": 2.649226668290794,
+          "DIFFICULTY_MATCHED": 2.658135156147182,
+          "HIDDEN_NORM_MATCHED": 2.654725993052125,
+          "ORACLE_MATCHED": 2.6361253643408418,
+          "RANDOM_MATCHED": 2.6527579305693507
+        },
+        "n_cases": 128,
+        "passed": true,
+        "seed": 74402
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": -4.9913513709309854e-05,
+        "cohort": "PRIMARY",
+        "continue_count": 62,
+        "continue_rate": 0.484375,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": false,
+          "beats_random_matched": false,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.6759998237460363,
+        "logical_flops_per_window": 12230659.0,
+        "loss1": 2.6941250767558813,
+        "loss2": 2.6567529924213886,
+        "losses": {
+          "DECISION_RELEVANT": 2.6760497372597456,
+          "DIFFICULTY_MATCHED": 2.677895123139024,
+          "HIDDEN_NORM_MATCHED": 2.6765224747359753,
+          "ORACLE_MATCHED": 2.6589767411351204,
+          "RANDOM_MATCHED": 2.6757757924497128
+        },
+        "n_cases": 128,
+        "passed": false,
+        "seed": 74403
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.013457544534380972,
+        "cohort": "PRIMARY",
+        "continue_count": 58,
+        "continue_rate": 0.453125,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.684961698404427,
+        "logical_flops_per_window": 12017411.0,
+        "loss1": 2.7084349505603313,
+        "loss2": 2.6567026311531663,
+        "losses": {
+          "DECISION_RELEVANT": 2.671504153870046,
+          "DIFFICULTY_MATCHED": 2.684013467282057,
+          "HIDDEN_NORM_MATCHED": 2.686307788826525,
+          "ORACLE_MATCHED": 2.6604755828157067,
+          "RANDOM_MATCHED": 2.681565840728581
+        },
+        "n_cases": 128,
+        "passed": true,
+        "seed": 74403
+      }
+    ],
+    "REPLICATION": [
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.0043847323769123925,
+        "cohort": "REPLICATION",
+        "continue_count": 37,
+        "continue_rate": 0.578125,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": false,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.807172937821725,
+        "logical_flops_per_window": 12870403.0,
+        "loss1": 2.8276184983551502,
+        "loss2": 2.7922910563647747,
+        "losses": {
+          "DECISION_RELEVANT": 2.8027882054448128,
+          "DIFFICULTY_MATCHED": 2.802686434239149,
+          "HIDDEN_NORM_MATCHED": 2.815843626856804,
+          "ORACLE_MATCHED": 2.7903689555823803,
+          "RANDOM_MATCHED": 2.8111480735242367
+        },
+        "n_cases": 64,
+        "passed": false,
+        "seed": 74501
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.005744606475337921,
+        "cohort": "REPLICATION",
+        "continue_count": 31,
+        "continue_rate": 0.484375,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6627766641182746,
+        "logical_flops_per_window": 12230659.0,
+        "loss1": 2.680629273876548,
+        "loss2": 2.643819347023964,
+        "losses": {
+          "DECISION_RELEVANT": 2.6570320576429367,
+          "DIFFICULTY_MATCHED": 2.6639499086886644,
+          "HIDDEN_NORM_MATCHED": 2.664679080247879,
+          "ORACLE_MATCHED": 2.6459486708045006,
+          "RANDOM_MATCHED": 2.660751186311245
+        },
+        "n_cases": 64,
+        "passed": true,
+        "seed": 74501
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.003171648476432587,
+        "cohort": "REPLICATION",
+        "continue_count": 38,
+        "continue_rate": 0.59375,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": false,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.8244665745833624,
+        "logical_flops_per_window": 12977027.0,
+        "loss1": 2.8404918797314167,
+        "loss2": 2.813530020415783,
+        "losses": {
+          "DECISION_RELEVANT": 2.82129492610693,
+          "DIFFICULTY_MATCHED": 2.816044483333826,
+          "HIDDEN_NORM_MATCHED": 2.8297024220228195,
+          "ORACLE_MATCHED": 2.8093777410686016,
+          "RANDOM_MATCHED": 2.828379489481449
+        },
+        "n_cases": 64,
+        "passed": false,
+        "seed": 74502
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.0067385932366734735,
+        "cohort": "REPLICATION",
+        "continue_count": 36,
+        "continue_rate": 0.5625,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6307317981432563,
+        "logical_flops_per_window": 12763779.0,
+        "loss1": 2.6604377292096615,
+        "loss2": 2.607685277238488,
+        "losses": {
+          "DECISION_RELEVANT": 2.623993204906583,
+          "DIFFICULTY_MATCHED": 2.630188386887312,
+          "HIDDEN_NORM_MATCHED": 2.6356467697769403,
+          "ORACLE_MATCHED": 2.6109320614486933,
+          "RANDOM_MATCHED": 2.6340458299964666
+        },
+        "n_cases": 64,
+        "passed": true,
+        "seed": 74502
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.0053832960205024705,
+        "cohort": "REPLICATION",
+        "continue_count": 29,
+        "continue_rate": 0.453125,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "PROSE",
+        "fixed_frontier_loss": 2.7935542707221455,
+        "logical_flops_per_window": 12017411.0,
+        "loss1": 2.8063491135835648,
+        "loss2": 2.7781507670879364,
+        "losses": {
+          "DECISION_RELEVANT": 2.788170974701643,
+          "DIFFICULTY_MATCHED": 2.791698645800352,
+          "HIDDEN_NORM_MATCHED": 2.792865738272667,
+          "ORACLE_MATCHED": 2.7788542360067368,
+          "RANDOM_MATCHED": 2.788825463503599
+        },
+        "n_cases": 64,
+        "passed": true,
+        "seed": 74503
+      },
+      {
+        "candidate_advantage_vs_fixed_frontier": 0.008840479805632295,
+        "cohort": "REPLICATION",
+        "continue_count": 33,
+        "continue_rate": 0.515625,
+        "endpoints": {
+          "anti_reuse": true,
+          "beats_difficulty_matched": true,
+          "beats_fixed_frontier": true,
+          "beats_random_matched": true,
+          "matched_counts": true,
+          "no_worse_hidden_norm": true,
+          "oracle_sanity": true,
+          "within_fixed_frontier": true
+        },
+        "experiment": "CWC-FLAGSHIP-ROUTE-02",
+        "family": "CODE",
+        "fixed_frontier_loss": 2.6458871745611865,
+        "logical_flops_per_window": 12443907.0,
+        "loss1": 2.6673418134450912,
+        "loss2": 2.6257827430963516,
+        "losses": {
+          "DECISION_RELEVANT": 2.637046694755554,
+          "DIFFICULTY_MATCHED": 2.6510921865701675,
+          "HIDDEN_NORM_MATCHED": 2.642937511205673,
+          "ORACLE_MATCHED": 2.6251871958374977,
+          "RANDOM_MATCHED": 2.647602628916502
+        },
+        "n_cases": 64,
+        "passed": true,
+        "seed": 74503
+      }
+    ]
+  },
+  "data_sha256": {
+    "corpus_code_eval1.txt": "5904959a4ba16dbed66d9aad4761aea52b51fd79874a59f3706c74d5794f50be",
+    "corpus_code_eval2.txt": "30b083fe083da170761564210cc7c522dada9bed947a9ac936ae8d14f55024e3",
+    "corpus_code_eval3.txt": "685749478c837bab57b1c1547d1f3efe54237c96e44aa2ec675ee5d16d3cdd5a",
+    "corpus_code_eval4.txt": "74826093a986246141fe9b2ad19770573a394991ea6a919ff12628d912d03e8d",
+    "corpus_code_eval5.txt": "1bd8b76723710d6115e9d381b9f4b01168e02212f22462efbef7f464bcfd5da0",
+    "corpus_code_train.txt": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+    "corpus_prose_eval1.txt": "bc36bae46dd0611600691c5beeda4e7b75d0af90821ff3054005c9baf7664fbb",
+    "corpus_prose_eval2.txt": "1d9839f79c24d8508d9341db8733fd459a5a75ff872a9332c4419a94efefc571",
+    "corpus_prose_eval3.txt": "bf71b8544096e317f1557a932f4b299aa019cd8f1a414b94da88c3a63a108172",
+    "corpus_prose_eval4.txt": "322caad772d06b92ec1b0af31f4f2798a4238032609c14c7378549e99d2e176f",
+    "corpus_prose_eval5.txt": "9216ab79a57cb3d49cbbe06cfee9dfe3dd14145fa964a24128f52ee9a709d99f",
+    "corpus_prose_train.txt": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+  },
+  "experiment": "CWC-FLAGSHIP-ROUTE-02",
+  "primary": {
+    "cell_count": 6,
+    "cell_pass_count": 5,
+    "cohort": "PRIMARY",
+    "median_advantage_by_family": {
+      "CODE": 0.008010640159822557,
+      "PROSE": 0.001789749358110715
+    },
+    "passed": false
+  },
+  "programme_rule": "R2 failure closes current two-exit learned adaptive-depth subprogramme; no R3 rescue.",
+  "replication": {
+    "cell_count": 6,
+    "cell_pass_count": 4,
+    "cohort": "REPLICATION",
+    "median_advantage_by_family": {
+      "CODE": 0.0067385932366734735,
+      "PROSE": 0.0043847323769123925
+    },
+    "passed": false
+  },
+  "tier": "REAL-DATA / SMALL-MODEL / FINAL TWO-EXIT MECHANISM RESCUE",
+  "verdict": "CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED"
+}

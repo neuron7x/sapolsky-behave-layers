@@ -1,0 +1,32 @@
+{
+  "candidate_advantage_vs_fixed_frontier": 0.0029852851433553873,
+  "cohort": "PRIMARY",
+  "continue_count": 70,
+  "continue_rate": 0.546875,
+  "endpoints": {
+    "anti_reuse": true,
+    "beats_difficulty_matched": true,
+    "beats_fixed_frontier": true,
+    "beats_random_matched": true,
+    "matched_counts": true,
+    "no_worse_hidden_norm": true,
+    "oracle_sanity": true,
+    "within_fixed_frontier": true
+  },
+  "experiment": "CWC-FLAGSHIP-ROUTE-02",
+  "family": "PROSE",
+  "fixed_frontier_loss": 2.6592423371178904,
+  "logical_flops_per_window": 12657155.0,
+  "loss1": 2.6796503867954016,
+  "loss2": 2.6423750314861536,
+  "losses": {
+    "DECISION_RELEVANT": 2.656257051974535,
+    "DIFFICULTY_MATCHED": 2.6562577076256275,
+    "HIDDEN_NORM_MATCHED": 2.661721872165799,
+    "ORACLE_MATCHED": 2.6445481423288584,
+    "RANDOM_MATCHED": 2.6606957111507654
+  },
+  "n_cases": 128,
+  "passed": true,
+  "seed": 74401
+}
