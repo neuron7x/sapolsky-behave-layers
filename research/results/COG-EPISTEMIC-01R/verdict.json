@@ -1,0 +1,215 @@
+{
+  "authority": "EPISTEMIC_RUNTIME_SAFETY_PRIMITIVE_ONLY",
+  "cases_per_family_per_cohort": 128,
+  "cohorts": {
+    "PRIMARY": {
+      "digest_checks": {
+        "deterministic_identical_content": true,
+        "payload_change_changes_digest": true
+      },
+      "families": {
+        "F0_DIRECT_CONSTRUCTION_BYPASS": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F10_LEGACY_ASSUMPTION_VIOLATION_PROMOTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F11_LEGACY_COUNTERMODEL_COLLAPSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F1_WRONG_CAPABILITY_CLASS": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F2_UNIDENTIFIED_RESURRECTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F3_FALSIFIED_RESURRECTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F4_NO_DIRECT_INTERVENTION_EVIDENCE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F5_SURROGATE_AS_DIRECT_INTERVENTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F6_CROSS_CLAIM_TOKEN_REUSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F7_STALE_PARENT_TOKEN_REUSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F8_SCOPE_ESCALATION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F9_EVIDENCE_HASH_OR_CLASS_MUTATION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        }
+      },
+      "legal_chain_accept_count": 128,
+      "legal_chain_n": 128,
+      "legal_transition_acceptance_rate": 1.0,
+      "namespace": "R1_PRIMARY",
+      "seed_base": 81001
+    },
+    "REPLICATION": {
+      "digest_checks": {
+        "deterministic_identical_content": true,
+        "payload_change_changes_digest": true
+      },
+      "families": {
+        "F0_DIRECT_CONSTRUCTION_BYPASS": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F10_LEGACY_ASSUMPTION_VIOLATION_PROMOTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F11_LEGACY_COUNTERMODEL_COLLAPSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F1_WRONG_CAPABILITY_CLASS": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F2_UNIDENTIFIED_RESURRECTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F3_FALSIFIED_RESURRECTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F4_NO_DIRECT_INTERVENTION_EVIDENCE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F5_SURROGATE_AS_DIRECT_INTERVENTION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F6_CROSS_CLAIM_TOKEN_REUSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F7_STALE_PARENT_TOKEN_REUSE": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F8_SCOPE_ESCALATION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        },
+        "F9_EVIDENCE_HASH_OR_CLASS_MUTATION": {
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
+          "n": 128,
+          "unexpected_or_harness_error_count": 0
+        }
+      },
+      "legal_chain_accept_count": 128,
+      "legal_chain_n": 128,
+      "legal_transition_acceptance_rate": 1.0,
+      "namespace": "R1_REPLICATION",
+      "seed_base": 91001
+    }
+  },
+  "epistemic_boundary": {
+    "active_control": false,
+    "architecture_promotion": false,
+    "intervention_supported_equals_true_causal_model": false,
+    "real_trace_identification": false,
+    "replay_control": false,
+    "semantic_causality": false,
+    "surrogate_or_replay_can_mint_direct_intervention_authority": false,
+    "terminal_record_resurrection_allowed": false,
+    "unconditional_causal_truth_state_exists": false
+  },
+  "errors": [],
+  "experiment_id": "COG-EPISTEMIC-01R",
+  "parent_experiment": "COG-EPISTEMIC-01",
+  "parent_invalidation_reason": "F11 stochastic upstream precondition not guaranteed; one replication case never exercised target adapter",
+  "parent_raw_verdict": "TYPED_EPISTEMIC_LATTICE_NOT_QUALIFIED",
+  "positive_chain": [
+    "OBSERVED",
+    "PREDICTIVE",
+    "ASSUMPTION_CONDITIONAL",
+    "INTERVENTION_SUPPORTED"
+  ],
+  "preconfirmatory_preregistration_commit": "608e629a01490d58645d9c3f7fc73293b83ea3e4",
+  "primary_endpoint": "forbidden_transition_acceptance_rate==0 in every family/cohort",
+  "repair": {
+    "F10_F11_preconditions_changed_to_immutable_api_state_fixtures": true,
+    "fresh_namespaces": true,
+    "frozen_family_semantics_changed": false,
+    "thresholds_weakened": false
+  },
+  "scientific_pass": true,
+  "terminal_states": [
+    "UNIDENTIFIED",
+    "FALSIFIED",
+    "OOD",
+    "ABSTAIN"
+  ],
+  "verdict": "TYPED_EPISTEMIC_LATTICE_QUALIFIED_SYNTHETIC_NARROWED",
+  "wall_seconds": 0.6520218450000357
+}
