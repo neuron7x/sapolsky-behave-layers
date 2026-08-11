@@ -5,12 +5,16 @@ import hashlib
 import json
 from pathlib import Path
 import time
+import sys
 
 import numpy as np
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from cwc.causal.regime_identifiability import coordinated_exclusion_counterexample, evaluate_regime_iv
 
-ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "artifacts/csca-08-regime-identifiability"
 RESULT = ROOT / "research/results/CSCA-08A"
 
