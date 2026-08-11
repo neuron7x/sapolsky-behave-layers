@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from scripts.counterfactual_basis_identifiability_gate import FAMILIES, factorial_rows, run_gate
-from cwc.counterfactual.identifiability import certify_counterfactual_basis
+from cwc.counterfactual.identifiability import (
+    audit_counterfactual_basis_orthogonality,
+    certify_counterfactual_basis,
+)
 
 
 def test_full_factorial_identifies_all_declared_counterfactual_bases():
@@ -36,3 +39,23 @@ def test_gate_distinguishes_interventional_design_from_confounded_observation():
     assert result["state"] == "PASS"
     assert result["full_factorial_rows"] == 32
     assert result["confounded_rows"] == 16
+
+
+def test_full_factorial_basis_is_exactly_orthogonal_and_unit_conditioned_up_to_scale():
+    rows = factorial_rows()
+    for family in FAMILIES:
+        audit = audit_counterfactual_basis_orthogonality(family, rows)
+        assert audit.orthogonal_equal_norm is True
+        assert audit.expected_diagonal == 32.0
+        assert audit.minimum_diagonal == 32.0
+        assert audit.maximum_diagonal == 32.0
+        assert audit.maximum_absolute_off_diagonal == 0.0
+        assert abs(audit.gram_condition_number - 1.0) < 1e-12
+
+
+def test_confounded_slice_breaks_exact_orthogonality():
+    rows = [row for row in factorial_rows() if row["C"] == row["A"]]
+    for family in FAMILIES:
+        audit = audit_counterfactual_basis_orthogonality(family, rows)
+        assert audit.orthogonal_equal_norm is False
+        assert audit.gram_condition_number > 1e12

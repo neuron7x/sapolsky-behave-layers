@@ -98,3 +98,23 @@ The executable gate must reject or expose:
 ## 6. Promotion rule
 
 This certificate is a preflight gate. Passing it permits an experiment to proceed; it never upgrades a scientific hypothesis by itself. Empirical authority still requires preregistration, execution, evidence binding, negative controls, replication, and the experiment-specific promotion predicate.
+
+## 7. CWC Boolean counterfactual basis: orthogonal intervention design
+
+The current counterfactual families use distinct multilinear monomials over the five
+binary coordinates `(A,C,D,B,context) in {-1,+1}^5`. On the complete 32-state
+intervention cube, any two distinct monomials are orthogonal: their product is a
+non-constant parity character and sums to zero over the cube. Every monomial has squared
+norm 32. Therefore, for every declared CWC basis that is a subset of these distinct
+characters,
+
+`X^T X = 32 I`.
+
+This is stronger than full column rank. Under the declared basis it gives exact equal
+norms, zero cross-term correlation, and Gram condition number 1. The executable gate
+checks this identity for `LINEAR`, `CONTEXT`, and `NONLINEAR` rather than assuming it.
+
+The factual restriction `C=A` destroys the full cube. The same gate requires that this
+restricted channel lose rank and return explicit null directions. Thus the repository
+contains both a positive structural control (orthogonal full intervention design) and a
+negative control (confounded factual slice) for identifiability machinery.
