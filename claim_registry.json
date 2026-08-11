@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "940f647494db4aea177ea62668ea8263d458fab6",
-  "generated": "2026-08-11T17:06:42Z",
+  "git_commit": "fea29b2f55644432afb5c9c3604f783feae2f463",
+  "generated": "2026-08-11T17:16:16Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2626,7 +2626,8 @@
         "experiments/real_transfer_01/evaluator.py",
         "experiments/real_transfer_01/preflight.py",
         "experiments/real_transfer_01/semantic_gate.py",
-        "experiments/real_transfer_01/temporal_gate.py"
+        "experiments/real_transfer_01/temporal_gate.py",
+        "experiments/real_transfer_01/readiness.py"
       ],
       "supporting_metrics": [],
       "limitations": [
@@ -2642,7 +2643,7 @@
         "NOT_TESTED is positive evidence",
         "production or causal-truth authority"
       ],
-      "note": "Parent preregistration, two pre-execution amendments, implementation contract, and semantic kill gate are frozen in Git. Scientific authority remains NOT_TESTED until external source snapshots, frozen model identity, comparator implementations, contamination state, and both external cohorts are executed and sealed.",
+      "note": "Parent preregistration, two pre-execution amendments, implementation contract, semantic/temporal kill gates, provenance validators, and fail-closed execution readiness are frozen in Git. Scientific authority remains NOT_TESTED until checksum-bound external source snapshots, frozen model/runner/comparator identity, contamination state, and both external cohorts are executed and sealed.",
       "independent_replication": false,
       "verdict_binding": null
     }
