@@ -256,12 +256,15 @@ def plan_counterfactual(
         if not isinstance(obj, MemoryRecord):
             invalid_memory = True
             continue
-        memories.append(obj)
         try:
             current = ledger.record(obj.memory_id)
         except KeyError:
             invalid_memory = True
             continue
+        # Certificates bind the ledger's current record, even when the caller supplied
+        # a stale version. This makes a BLOCKED result itself auditable instead of
+        # minting a certificate around the stale input it rejected.
+        memories.append(current)
         if current.memory_digest != obj.memory_digest or current.status is MemoryStatus.RETRACTED:
             invalid_memory = True
             continue
