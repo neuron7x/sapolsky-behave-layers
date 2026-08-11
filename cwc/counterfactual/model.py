@@ -132,6 +132,18 @@ def _design(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -
     return np.asarray([[term.evaluate(row) for term in terms] for row in rows], dtype=float)
 
 
+def counterfactual_terms(family: str) -> tuple[FeatureTerm, ...]:
+    """Public structural basis for identifiability/preflight analysis."""
+    return _terms(family)
+
+
+def counterfactual_design_matrix(
+    rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]
+) -> np.ndarray:
+    """Public design matrix; does not fit coefficients or grant model authority."""
+    return _design(rows, terms)
+
+
 def _stable_seed(*parts: object) -> int:
     digest = hashlib.sha256("|".join(map(str, parts)).encode()).digest()
     return int.from_bytes(digest[:8], "big")

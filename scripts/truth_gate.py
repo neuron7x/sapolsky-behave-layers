@@ -183,6 +183,9 @@ def _contract_errors(root: Path) -> list[str]:
         "cwc/causal/observability.py",
         "scripts/formal_identifiability_gate.py",
         "tests/test_formal_identifiability.py",
+        "cwc/counterfactual/identifiability.py",
+        "scripts/counterfactual_basis_identifiability_gate.py",
+        "tests/test_counterfactual_basis_identifiability.py",
     )
     for rel in formal_components:
         if not (root / rel).is_file():

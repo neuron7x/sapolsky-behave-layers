@@ -105,7 +105,8 @@ verdict-binding:
 formal-identifiability-gate:
 	PYTHONPATH=. $(PY) scripts/formal_identifiability_gate.py --self-test
 	PYTHONPATH=. $(PY) scripts/formal_identifiability_gate.py
-	PYTHONPATH=. $(PY) -m pytest -q tests/test_formal_identifiability.py
+	PYTHONPATH=. $(PY) scripts/counterfactual_basis_identifiability_gate.py
+	PYTHONPATH=. $(PY) -m pytest -q tests/test_formal_identifiability.py tests/test_counterfactual_basis_identifiability.py
 
 causal-debt-gate:
 	PYTHONPATH=. $(PY) scripts/causal_debt_gate.py
