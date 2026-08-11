@@ -1,0 +1,13 @@
+{
+  "calibration_policy_sha256": "4e64318bfe32a76c22056bdb5ec0b8c63d19b312fe5ae8a44ff802713ca3e222",
+  "calibration_seed": 74101,
+  "checkpoint_sha256": "97b45d3e3f66a133704ae864e588fbdd3fcd97a8a17a188cef860727a4049490",
+  "experiment": "CWC-FLAGSHIP-ROUTE-01",
+  "hermeticity_repair_commit": "cb7857b",
+  "implementation_commit": "61771ad",
+  "pre_primary_amendment_003": "4023fa9",
+  "pre_primary_code_head": "cb7857bcd1bfd5c7d039487210e7c0e3a06a6c59",
+  "primary_executed_at_freeze": false,
+  "replication_executed_at_freeze": false,
+  "status": "CALIBRATION_FROZEN_BEFORE_PRIMARY"
+}

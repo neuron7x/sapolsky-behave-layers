@@ -1,0 +1,11 @@
+{
+  "batch": 16,
+  "checkpoint": "artifacts/cwc-flagship-route-01/checkpoints/seed74101.pt",
+  "final_loss": 2.6557607650756836,
+  "first_loss": 6.015631675720215,
+  "lr": 0.003,
+  "seed": 74101,
+  "sha256": "97b45d3e3f66a133704ae864e588fbdd3fcd97a8a17a188cef860727a4049490",
+  "steps": 400,
+  "weight_decay": 0.01
+}
