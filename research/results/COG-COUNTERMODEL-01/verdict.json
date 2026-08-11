@@ -1,0 +1,146 @@
+{
+  "authority": "NO_PROMOTION",
+  "beta_grid": {
+    "max": 2.0,
+    "min": -0.5,
+    "points": 101,
+    "step": 0.025
+  },
+  "cohort_errors": {
+    "PRIMARY": [
+      "C1 near-0.8 countermodel recovery"
+    ],
+    "REPLICATION": [
+      "C1 near-0.8 countermodel recovery"
+    ]
+  },
+  "cohorts": {
+    "PRIMARY": {
+      "C0_VALID": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 3.552713678800501e-15,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C1_COORDINATED_EXCLUSION": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 2.6645352591003757e-15,
+        "max_near_true_path_error": 1.7763568394002505e-15,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.5,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C2_ALEATORIC_HIGH": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 3.552713678800501e-15,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C3_UPSTREAM_INVALID": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": null,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 0.0,
+        "strict_exclusion_assumption_conditional_rate": 0.0,
+        "unrestricted_countermodel_survival_rate": 0.0,
+        "upstream_candidate_rate": 0.0,
+        "upstream_ineligible_countermodel_rate": 1.0,
+        "upstream_invalid_rate": 1.0
+      }
+    },
+    "REPLICATION": {
+      "C0_VALID": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 2.220446049250313e-15,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C1_COORDINATED_EXCLUSION": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 2.6645352591003757e-15,
+        "max_near_true_path_error": 1.7763568394002505e-15,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.640625,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C2_ALEATORIC_HIGH": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": 3.552713678800501e-15,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 1.0,
+        "strict_exclusion_assumption_conditional_rate": 1.0,
+        "unrestricted_countermodel_survival_rate": 1.0,
+        "upstream_candidate_rate": 1.0,
+        "upstream_ineligible_countermodel_rate": 0.0,
+        "upstream_invalid_rate": 0.0
+      },
+      "C3_UPSTREAM_INVALID": {
+        "causal_authority_count": 0,
+        "max_any_frontier_path_error": null,
+        "max_near_true_path_error": null,
+        "n": 64,
+        "near_true_0p8_countermodel_rate": 0.0,
+        "nonempty_frontier_rate": 0.0,
+        "strict_exclusion_assumption_conditional_rate": 0.0,
+        "unrestricted_countermodel_survival_rate": 0.0,
+        "upstream_candidate_rate": 0.0,
+        "upstream_ineligible_countermodel_rate": 1.0,
+        "upstream_invalid_rate": 1.0
+      }
+    }
+  },
+  "epistemic_boundary": {
+    "active_control": false,
+    "architecture_promotion": false,
+    "countermodel_survival_blocks_consolidation": true,
+    "no_countermodel_in_finite_grid_proves_global_identification": false,
+    "no_countermodel_inside_assumption_bounds_proves_assumptions": false,
+    "replay_control": false,
+    "semantic_causality": false,
+    "unconditional_causal_authority": false
+  },
+  "experiment_id": "COG-COUNTERMODEL-01",
+  "min_causal_shift": 0.49,
+  "preconfirmatory_preregistration_commit": "a6e2a6841e368aec854865f65ecdf298f40c1609",
+  "rows_per_seed": 4096,
+  "scientific_pass": false,
+  "seeds_per_family_per_cohort": 64,
+  "strict_exclusion_direct_effect_l2_bound": 0.08,
+  "verdict": "AUTONOMOUS_COUNTERMODEL_GENERATOR_NOT_QUALIFIED",
+  "wall_seconds": 3.476344431999962
+}
