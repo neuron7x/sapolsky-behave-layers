@@ -272,6 +272,16 @@ def test_source_manifest_enforces_frozen_provenance_and_per_record_hashes():
     good = _source_manifest()
     validate_source_manifest(good)
 
+    permuted = copy.deepcopy(good)
+    for family in ("AVeriTeC", "HybridQA"):
+        groups = permuted["cohorts"][family]
+        permuted["cohorts"][family] = {
+            "REPLICATION": groups["REPLICATION"],
+            "CALIBRATION": groups["CALIBRATION"],
+            "PRIMARY": groups["PRIMARY"],
+        }
+    validate_source_manifest(permuted)
+
     bad_sha = copy.deepcopy(good); bad_sha["sources"][0]["sha256"] = "abc"
     with pytest.raises(ContractError):
         validate_source_manifest(bad_sha)

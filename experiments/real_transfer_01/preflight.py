@@ -181,8 +181,8 @@ def validate_source_manifest(payload: Mapping[str, Any]) -> None:
         raise ContractError("source manifest cohorts must contain AVeriTeC and HybridQA")
     for family in sorted(_SOURCE_FAMILIES):
         family_groups = cohorts[family]
-        if not isinstance(family_groups, Mapping) or tuple(family_groups.keys()) != _COHORT_NAMES:
-            raise ContractError(f"{family} cohort keys must be CALIBRATION/PRIMARY/REPLICATION in order")
+        if not isinstance(family_groups, Mapping) or set(family_groups) != set(_COHORT_NAMES):
+            raise ContractError(f"{family} cohort keys must be exactly CALIBRATION/PRIMARY/REPLICATION")
         seen_hashes: set[str] = set()
         for cohort_name in _COHORT_NAMES:
             info = family_groups[cohort_name]
