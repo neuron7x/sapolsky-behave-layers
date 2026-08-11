@@ -1,0 +1,247 @@
+{
+  "alpha": 0.01,
+  "authority": "CAUSAL_CANDIDATE_UNDER_EXPLICIT_ASSUMPTIONS_ONLY",
+  "cohort_errors": {
+    "PRIMARY": [],
+    "REPLICATION": []
+  },
+  "cohorts": {
+    "PRIMARY": {
+      "V0_VALID": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.012192456919262129,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V1_DIRECT_NONPROPORTIONAL": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.4655235692091607,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V2_R_U_CONFOUNDING": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.3928435446952474,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V3_ALEATORIC_HIGH": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.03236778122062456,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V4_SELECTION_BIAS": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.3010869304053776,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V5_WEAK_RELEVANCE": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 1.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.71319500368431,
+        "n": 128,
+        "states": {
+          "INSUFFICIENT_INFORMATION_BUDGET": 128
+        }
+      },
+      "V6_COORDINATED_EXCLUSION": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.5006404164876065,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V7_LABEL_CORRUPTION": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.0240429781526319,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      }
+    },
+    "REPLICATION": {
+      "V0_VALID": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.012021298455138218,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V1_DIRECT_NONPROPORTIONAL": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.4685586344102177,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V2_R_U_CONFOUNDING": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.3930653251281091,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V3_ALEATORIC_HIGH": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.03250954015493007,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V4_SELECTION_BIAS": {
+        "assumption_violation_rate": 1.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.3027363204663618,
+        "n": 128,
+        "states": {
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 128
+        }
+      },
+      "V5_WEAK_RELEVANCE": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 0.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 1.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.9804788096424719,
+        "n": 128,
+        "states": {
+          "INSUFFICIENT_INFORMATION_BUDGET": 128
+        }
+      },
+      "V6_COORDINATED_EXCLUSION": {
+        "assumption_violation_rate": 0.0,
+        "candidate_rate": 1.0,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.5007843313935585,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 128
+        }
+      },
+      "V7_LABEL_CORRUPTION": {
+        "assumption_violation_rate": 0.015625,
+        "candidate_rate": 0.984375,
+        "causal_authority_count": 0,
+        "exclusion_debt_rate": 1.0,
+        "insufficient_information_rate": 0.0,
+        "measurement_debt_rate": 1.0,
+        "median_abs_beta_error_vs_true_0p8": 0.02680418985468791,
+        "n": 128,
+        "states": {
+          "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS": 126,
+          "IDENTIFYING_ASSUMPTION_VIOLATED": 2
+        }
+      }
+    }
+  },
+  "coordinated_exclusion_exact_counterexample": {
+    "beta_invalid": 0.8,
+    "beta_valid_reparameterized": 1.3,
+    "direct_effect_scale": 0.5,
+    "max_w_path_error": 0.0,
+    "max_x_path_error": 0.0,
+    "max_y_path_error": 1.7763568394002505e-15
+  },
+  "epistemic_boundary": {
+    "active_control": false,
+    "exclusion_fully_testable_from_factual_channel": false,
+    "full_exogeneity_proven_from_negative_control": false,
+    "regime_measurement_reliability_proven_from_moments": false,
+    "replay_control": false,
+    "semantic_causality": false,
+    "unconditional_causal_truth": false
+  },
+  "exact_counterexample_pass": true,
+  "experiment_id": "CSCA-08A/B",
+  "rows_per_seed_before_selection": 4096,
+  "scientific_pass": true,
+  "seeds_per_family_per_cohort": 128,
+  "verdict": "OBSERVATIONAL_IDENTIFYING_CONTRACT_QUALIFIED_SYNTHETIC_NARROWED",
+  "wall_seconds": 1.3320329499999843
+}
