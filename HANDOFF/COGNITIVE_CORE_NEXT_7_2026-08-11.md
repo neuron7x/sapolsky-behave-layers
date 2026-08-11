@@ -8,10 +8,10 @@ Make identifying assumptions machine-readable objects with testability class, pr
 ## 2. COG-INFO-01 — Information Acquisition Governor [KERNEL IMPLEMENTED / QUALIFICATION PENDING]
 For the unresolved model equivalence class, choose the next admissible observation/test by maximin certified `KL-information / acquisition-cost`, not heuristic curiosity. Zero information rate must veto extra compute. Next: bind rate lower bounds to measured experiment families rather than hand-supplied test fixtures.
 
-## 3. COG-COUNTERMODEL-01 — Autonomous Countermodel Generator [P0]
+## 3. COG-COUNTERMODEL-01 — Autonomous Countermodel Generator [R1 SYNTHETIC NARROW PASS; PARENT DESIGN-NEGATIVE PRESERVED]
 Given a surviving causal candidate, automatically search for the cheapest alternative SCM/latent realization that preserves current factual constraints but changes the causal conclusion. Objective: minimize observable divergence subject to causal disagreement. A candidate cannot consolidate while a low-divergence countermodel survives.
 
-## 4. COG-EPISTEMIC-01 — Epistemic Type Lattice [P0]
+## 4. COG-EPISTEMIC-01 — Epistemic Type Lattice [NEXT P0]
 Replace string-level statuses with a runtime type/state machine for `OBSERVED`, `PREDICTIVE`, `ASSUMPTION_CONDITIONAL`, `INTERVENTION_SUPPORTED`, `FALSIFIED`, `UNIDENTIFIED`, `OOD`, `ABSTAIN`. Illegal transitions such as `UNKNOWN -> CAUSAL` must be impossible by construction and mutation-tested.
 
 ## 5. COG-MEMORY-01 — Assumption-Aware Consolidation [BLOCKED BY 3+4]
