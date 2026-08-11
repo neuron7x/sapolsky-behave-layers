@@ -1,0 +1,192 @@
+{
+  "alpha": 0.01,
+  "authority": "SYNTHETIC_SELF_FALSIFICATION_SAFETY_SELECTION_PRIMITIVE_ONLY",
+  "cohort_seed_bases": {
+    "PRIMARY": 710811,
+    "REPLICATION": 810811
+  },
+  "cohorts": {
+    "PRIMARY": {
+      "false_spend_count": 0,
+      "families": {
+        "S0": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S1": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S10": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S11": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S2": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S3": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S4": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S5": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S6": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S7": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S8": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S9": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        }
+      },
+      "irrelevant_attack_selection_count": 0,
+      "n": 1536,
+      "negative_propagation_evaluated_count": 256,
+      "negative_propagation_pass_count": 256,
+      "negative_target_violation_count": 0,
+      "permutation_disagreement_count": 0,
+      "runtime_error_count": 0,
+      "stale_or_unbound_outcome_acceptance_count": 0,
+      "stale_plan_acceptance_count": 0,
+      "survival_promotion_count": 0,
+      "uncertified_attack_selection_count": 0
+    },
+    "REPLICATION": {
+      "false_spend_count": 0,
+      "families": {
+        "S0": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S1": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S10": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S11": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S2": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S3": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S4": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S5": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S6": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S7": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S8": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        },
+        "S9": {
+          "n": 128,
+          "pass_count": 128,
+          "runtime_errors": 0
+        }
+      },
+      "irrelevant_attack_selection_count": 0,
+      "n": 1536,
+      "negative_propagation_evaluated_count": 256,
+      "negative_propagation_pass_count": 256,
+      "negative_target_violation_count": 0,
+      "permutation_disagreement_count": 0,
+      "runtime_error_count": 0,
+      "stale_or_unbound_outcome_acceptance_count": 0,
+      "stale_plan_acceptance_count": 0,
+      "survival_promotion_count": 0,
+      "uncertified_attack_selection_count": 0
+    }
+  },
+  "errors": [],
+  "experiment_id": "COG-SELF-01",
+  "implementation_commit": "a77927568c246f91c04bd0b239b7ca625f851a74",
+  "n_per_family_per_cohort": 128,
+  "non_promotion_boundary": {
+    "autonomous_scientific_discovery": false,
+    "external_independent_replication": false,
+    "flagship_result_qualified": false,
+    "matched_compute_architecture_advantage": false,
+    "natural_language_transfer": false,
+    "production_active_control": false,
+    "real_model_transfer": false,
+    "semantic_causal_truth": false
+  },
+  "novelty_status": "UNKNOWN_OVERLAP_CONCEDED",
+  "preconfirmatory_preregistration_commit": "ee99a9e732e3b4fc408f80a9a3ce71d3178717d6",
+  "regeneration_hashes": {
+    "generation": "cf6b6a2e3704350e0421dc0abd304fe14f02aea800380d81d4aa4d6607aa4863",
+    "replay": "cf6b6a2e3704350e0421dc0abd304fe14f02aea800380d81d4aa4d6607aa4863"
+  },
+  "robust_margin": 0.05,
+  "runtime_policy": {
+    "decision_relevant_spend_only": true,
+    "frozen_evidence_rewrite_api_exposed": false,
+    "negative_outcome_can_only_retract_or_invalidate_bound_target": true,
+    "survival_can_promote_authority": false
+  },
+  "scientific_pass": true,
+  "target_power": 0.95,
+  "verdict": "AUTONOMOUS_DECISION_RELEVANT_FALSIFICATION_GOVERNOR_QUALIFIED_SYNTHETIC_NARROWED"
+}
