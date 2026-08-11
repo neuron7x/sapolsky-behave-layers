@@ -3,6 +3,19 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Assumption-typed observational identifiability] — 2026-08-11
+
+### Added
+- `CSCA-08A/B`: two-regime hidden-confounding identifying contract with explicit assumption types, negative-control and over-identification falsifiers, weak-information abstention and exact coordinated-exclusion equivalence attack.
+- `cwc/epistemics/information_acquisition.py`: maximin certified KL-information-per-cost governor; zero-rate equivalence classes veto additional compute.
+
+### Evidence
+- PRIMARY and REPLICATION: V0 valid candidate 128/128; V1/V2/V4 violations 128/128; V3 aleatoric candidate 128/128; V5 weak-information abstention 128/128.
+- V6 coordinated exclusion passes observable candidate checks 128/128 while moving the inferred coefficient by about 0.5; exact alternative parameterization preserves factual paths to `1.78e-15`. Unconditional causal authority remains zero.
+
+### Boundary
+No real-trace identifying channel, semantic causal authority, replay control or active control is authorized.
+
 ## [Real-model intervention semantics and position/content attack] — 2026-08-10
 
 ### CSCA-06B

@@ -731,3 +731,16 @@ hypotheses:
     preregistration: experiments/csca07_passive_replay/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD11-CSCA07-passive-identifiability
+
+
+  - hypothesis_id: H-CSCA-08A-B
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "An observed passive regime channel either fails to identify the hidden-confounded causal coefficient or surviving moment checks are silently promoted beyond what the identifying assumptions license."
+    H1: "Within the frozen linear-IV model class, regime-conditioned moments recover the causal-effect candidate, tested assumption violations are separated from aleatoric noise/weak information, and unresolved exclusion/measurement assumptions remain explicit authority debt."
+    estimand: "epistemic-state rates by adversarial family; median absolute beta error; over-identification/negative-control falsification; coordinated-exclusion pathwise equivalence; unconditional-authority count"
+    experimental_unit: "fresh synthetic SCM seed with 4096 generated factual rows before selection"
+    decision_rule: "Both PRIMARY and independent REPLICATION must satisfy the frozen V0-V7 state/accuracy predicates; the exact coordinated-exclusion counterexample must remain pathwise equivalent; any unconditional causal authority is an automatic FAIL. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/csca08_regime_identifiability/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD12-CSCA08-assumption-typed-identifiability

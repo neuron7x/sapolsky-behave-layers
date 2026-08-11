@@ -126,3 +126,8 @@ Two explicit same-context donor-resampling soft-intervention kernels give identi
 ### CSCA-07 passive replay boundary (2026-08-10)
 
 Passive factual traces can now falsify a declared predictive replay law with an anytime-valid e-process, but cannot silently certify latent causal truth. CSCA-07 includes exact observational-equivalence counterexamples: identical observed dynamics and Jacobian spectra with different latent topology, a stable invariant hidden replay attractor with zero observational information, and zero within-model fiber entropy with unresolved model semantics. Causal/replay/active authority remains blocked without separately justified identifying assumptions.
+
+
+### CSCA-08 assumption-typed regime boundary (2026-08-11)
+
+A synthetic multi-regime IV-style identifying contract now separates some observable assumption violations from high aleatoric noise and weak information while carrying unresolved assumptions as runtime debt. Both fresh PRIMARY and REPLICATION cohorts passed the frozen gate. The decisive negative is preserved: coordinated direct regime effects can be pathwise observationally equivalent to a different causal coefficient, so the system emits only `CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS`, never unconditional causal truth. Real-trace exogeneity/exclusion, replay control and active control remain blocked.
