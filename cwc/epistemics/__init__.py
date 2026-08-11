@@ -1,13 +1,37 @@
-"""Runtime epistemic-control primitives."""
+"""CWC epistemic safety primitives."""
 
-from .information_acquisition import (
-    InformationAction,
-    InformationAcquisitionDecision,
-    select_maximin_information_action,
+from cwc.epistemics.lattice import (
+    CapabilityBindingError,
+    CapabilityType,
+    EpistemicCapability,
+    EpistemicError,
+    EpistemicMachine,
+    EpistemicRecord,
+    EpistemicState,
+    EvidenceClassError,
+    EvidenceKind,
+    EvidenceRef,
+    EvidenceSource,
+    IllegalTransition,
+    POSITIVE_CHAIN,
+    TERMINAL_STATES,
+    positive_state_dominates,
 )
 
 __all__ = [
-    "InformationAction",
-    "InformationAcquisitionDecision",
-    "select_maximin_information_action",
+    "CapabilityBindingError",
+    "CapabilityType",
+    "EpistemicCapability",
+    "EpistemicError",
+    "EpistemicMachine",
+    "EpistemicRecord",
+    "EpistemicState",
+    "EvidenceClassError",
+    "EvidenceKind",
+    "EvidenceRef",
+    "EvidenceSource",
+    "IllegalTransition",
+    "POSITIVE_CHAIN",
+    "TERMINAL_STATES",
+    "positive_state_dominates",
 ]
