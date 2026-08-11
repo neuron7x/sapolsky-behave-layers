@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "eee920d79ecb3afb8e73df02cd3125dc9ddf4ca1",
-  "generated": "2026-08-11T10:45:00Z",
+  "git_commit": "7522765aef26d9e6f3f1cdfe0bb17fd3cd1f9995",
+  "generated": "2026-08-11T12:35:00Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2496,6 +2496,58 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/COG-PLAN-01/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD18-COG-info02-decision-relevant",
+      "hypothesis_id": "H-COG-INFO-02",
+      "statement": "Within the supported CWC synthetic decision-information API, same-decision causal alternatives cannot force or veto acquisition for the immediate action; only alternatives capable of changing that action enter the certified maximin information-per-cost bottleneck, while zero decision-relevant rate, uncertified rates, capacity and budget limits remain fail-closed.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "synthetic decision-information allocation primitive",
+          "12 frozen adversarial families D0-D11",
+          "128 cases per family in fresh PRIMARY and internal REPLICATION namespaces",
+          "alpha 0.01 and target power 0.95 for the binary-KL necessary converse"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-INFO-02/verdict.json",
+        "artifacts/cog-info-02/verdict.json",
+        "artifacts/cog-info-02/SHA256SUMS",
+        "experiments/cog_info_02/PREREGISTRATION.md",
+        "research/reports/COG_INFO_02_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "all D0-D11 families passed 128/128 independently in PRIMARY and REPLICATION",
+        "D0 all-same-decision cases spent zero acquisition in 256/256 pooled cases while preserving unresolved model identity",
+        "D1 same-decision zero-rate trap blocked the legacy model-maximin governor in 256/256 pooled cases while the decision-relevant governor selected the decisive probe in 256/256",
+        "D2 cross-decision zero-rate cases produced zero false spend",
+        "D11 removed the same-decision bottleneck and yielded a strictly lower necessary-cost bound in 256/256 pooled cases; legacy/new median ratio 9.7754x",
+        "semantic gate self-test killed 6/6 authority/novelty mutations"
+      ],
+      "limitations": [
+        "synthetic decision/world/rate families only",
+        "certified information rates are supplied by the experiment; the result does not establish how to learn valid rates from arbitrary real traces",
+        "the decision partition and utility/action map are predeclared inputs and may themselves be wrong",
+        "the KL cost formula is a necessary converse, not a sufficient test or utility guarantee",
+        "same-decision countermodels remain causal epistemic debt and are not deleted or declared false",
+        "internal fresh-seed replication is not external third-party reproduction"
+      ],
+      "prohibited_extrapolations": [
+        "decision-identification proves which causal world is true",
+        "spend permission is causal authority",
+        "semantic causal truth",
+        "active causal control authorization",
+        "real-world planning superiority",
+        "large-model or production Pareto superiority"
+      ],
+      "note": "The cognitive advance is decision-relevant epistemic control: preserve causal ambiguity, but do not spend compute resolving distinctions that cannot change the declared immediate decision. Novelty remains UNKNOWN_OVERLAP_CONCEDED pending a public benchmark and deeper prior-art audit.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-INFO-02/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

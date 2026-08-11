@@ -804,3 +804,15 @@ hypotheses:
     preregistration: experiments/cog_plan_01/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD17-COG-plan01-proof-carrying
+
+  - hypothesis_id: H-COG-INFO-02
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A model-identification maximin information governor is already decision-efficient: same-decision causal alternatives cannot unnecessarily veto or inflate evidence acquisition for an immediate action."
+    H1: "Quotienting surviving causal worlds by their predeclared immediate decision permits zero acquisition when all worlds agree, preserves fail-closed behavior when action-flipping worlds are non-identifiable, and removes same-decision information bottlenecks without granting causal-model truth."
+    estimand: "state correctness across D0-D11; same-decision zero-spend rate; legacy-rescue rate in the zero-rate same-decision trap; cross-decision false-spend rate; legacy/decision necessary-cost ratio when both governors can acquire"
+    experimental_unit: "synthetic surviving-world set, decision map and certified action-by-model information-rate table under one frozen adversarial family"
+    decision_rule: "PASS requires every D0-D11 family 128/128 independently in PRIMARY and REPLICATION, D0 zero acquisition, D1 legacy block plus decision-relevant rescue, D2 zero false spend, D5/D6 distinct capacity/budget vetoes, D8/D9 fail-closed uncertified/incomplete rates, D10 permutation invariance, D11 strict necessary-cost improvement, and semantic self-test success. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/cog_info_02/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD18-COG-info02-decision-relevant

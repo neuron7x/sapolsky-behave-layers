@@ -156,3 +156,16 @@ countermodels must be represented, and memory/world mutations invalidate old pla
 certificates. PRIMARY and fresh REPLICATION passed all 12 frozen families at 128/128.
 This is a synthetic planning-safety primitive, not proof of real-world planning value
 or causal truth.
+
+
+### COG-INFO-02 decision-relevant information boundary (2026-08-11)
+
+CWC now separates causal-model identification from immediate decision identification.
+Surviving worlds are partitioned by the action they imply; same-decision worlds remain
+explicit causal uncertainty but cannot waste or veto evidence acquisition for that action.
+Across 12 frozen synthetic families, PRIMARY and fresh REPLICATION passed 128/128 per
+family. A same-decision zero-rate world blocked the legacy model-maximin governor in
+256/256 pooled cases while the decision-relevant governor still selected the decisive
+probe; when both could acquire, the D11 necessary-cost bound improved in 256/256 cases
+(median legacy/new ratio 9.7754x). This is an information-allocation primitive only,
+with novelty explicitly UNKNOWN and real-world/active-control authority blocked.

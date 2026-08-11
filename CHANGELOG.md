@@ -3,6 +3,23 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Decision-relevant epistemic control] — 2026-08-11
+
+### Added
+- `select_decision_relevant_information_action`: information acquisition over action-flipping countermodels rather than every unresolved causal alternative.
+- `COG-INFO-02`: preregistered 12-family PRIMARY/REPLICATION attack plus semantic mutation gate.
+- `docs/CWC_FLAGSHIP_KEY_2026-08-11.md`: reverse analysis of the strongest externally legible candidate thesis and its kill conditions.
+
+### Evidence
+- Every D0-D11 family passed `128/128` in both cohorts.
+- D0: zero acquisition in `256/256` pooled all-same-decision cases while causal ambiguity remains explicit.
+- D1: legacy model-maximin blocked `256/256`; decision-relevant governor selected the decisive probe `256/256`.
+- D11: necessary-cost lower bound strictly improved `256/256`; median legacy/new ratio `9.7754x`.
+- Semantic gate killed `6/6` frozen authority/novelty mutations.
+
+### Boundary
+This is synthetic decision-information allocation, not causal-model truth, a sufficient testing guarantee, real-world planning superiority, active control, production Pareto evidence, external replication, or a novelty claim.
+
 ## [Proof-carrying counterfactual planning] — 2026-08-11
 
 ### Added
