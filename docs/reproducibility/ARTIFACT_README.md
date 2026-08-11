@@ -12,13 +12,16 @@ Scale Pareto, energy efficiency, autonomous routing, independent replication,
 deployment-readiness — see README §"What CWC does NOT claim".
 
 ## Hardware / software
-Python 3.10.20, PyTorch 2.9.1+cu128, RTX 3050 4GiB (or CPU). Environment from `uv.lock`.
+Python 3.10 is selected by `.python-version`. The frozen runtime lock resolves PyTorch 2.13.0,
+with CPU (`2.13.0+cpu`) or CUDA 13.0 (`2.13.0+cu130`) selected by the uv extra.
+Verification-only tooling is separately exact-pinned in `cwc-requirements-dev.txt`.
 
 ## Install & smoke test
 ```bash
-uv sync --frozen
-make -f Makefile.cwc experiment-tests        # 69 tests, ~5 s
-make -f Makefile.cwc verify-evidence         # 11 bundles checksum-OK
+uv sync --frozen --extra cpu
+make -f Makefile.cwc install-dev
+make -f Makefile.cwc experiment-tests        # discovers experiment test directories dynamically
+make -f Makefile.cwc verify-evidence         # checks every committed SHA256SUMS bundle dynamically
 ```
 
 ## Full reproduction

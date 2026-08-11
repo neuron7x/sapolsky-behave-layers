@@ -75,7 +75,7 @@ negatives must confront (§2.3).
 > given workload can pay for adaptivity**, together with the frozen negatives that
 > instrument produced when turned on its author's own preferred hypothesis.
 
-The bibliography is machine-verified, not hand-written: all 65 references were resolved
+The bibliography is machine-verified, not hand-written: all 70 references were resolved
 against external authorities (arXiv API, DOI content negotiation, OpenAlex, Open Library),
 the resolution record is
 [`docs/publication/BIBLIOGRAPHY_VERIFICATION.json`](docs/publication/BIBLIOGRAPHY_VERIFICATION.json),
@@ -85,7 +85,8 @@ attached to a claim id that does not exist, or never argued.
 ## Reproduce
 
 ```bash
-uv sync --frozen                                     # hermetic environment from uv.lock
+uv sync --frozen --extra cpu                         # runtime environment from uv.lock
+make -f Makefile.cwc install-dev                     # exact-pinned CWC verification tooling
 make -f Makefile.cwc verify                          # lint + types + tests + coverage + mutation + experiments
 make -f Makefile.cwc verify-evidence                 # checksum every evidence bundle
 make -f Makefile.cwc reproduce-primary               # re-derive the primary result end-to-end

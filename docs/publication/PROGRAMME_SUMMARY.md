@@ -82,23 +82,26 @@ genuine interaction exists. What survived is the *decision*, on both axes and bo
 
 ## 6. Ledger
 
-43 claims / 43 hypotheses, all preregistered (or disclosed-retrospective), gated, checksummed,
-`verify-full` GREEN, on GitLab. 26 `SUPPORTED`, 5 `SUPPORTED_NARROWED`, 10 `NOT_SUPPORTED`,
-2 `NOT_TESTED` (L7 cloud, L8 replication). Preregistration integrity is machine-audited: 18
-strict-ancestor, 5 disclosed-retrospective, **0 violations**.
+The current claim/hypothesis registries contain 68 claims and 68 hypotheses. Claim status is
+26 `SUPPORTED`, 20 `SUPPORTED_NARROWED`, 20 `NOT_SUPPORTED`, and 2 `NOT_TESTED`.
+`doc-gate` and `verdict-binding` check registry/artifact coherence on the current tree.
+
+The sealed WP12 preregistration-integrity result is historical evidence for the experiment set it
+audited at that commit; it must **not** be extrapolated to later `research/preregistration/`
+protocols. Current-tree global temporal-preregistration coverage therefore remains an explicit
+verification debt until a successor gate covers both experiment-local and research-level protocols.
 
 ## 7. Reproducibility capsule
 
 ```bash
-uv sync --frozen                        # fresh env from the pinned lock
-make -f Makefile.cwc verify-full        # gates + evidence checksums + primary reproduced
+uv sync --frozen --extra cpu            # runtime environment from the pinned lock
+make -f Makefile.cwc install-dev         # exact-pinned verification tooling
+make -f Makefile.cwc verify-full         # gates + evidence checksums + primary reproduced
 ```
-`verify-full` is the single canonical command (WP16). It was executed in a **clean-room venv built
-from `uv.lock --frozen`, independent of the author's environment**: 9/9 gates pass and
-`reproduce-primary` regenerates the primary verdict from scratch. Machine-readable record with
-host/GPU/CUDA/timings and skip **reason codes**: `artifacts/wp16-cleanroom-release/`. Hardware-gated
-tests are recorded `NOT_MEASURED`, never `PASS`. Every analysis is deterministic given committed raw
-seeds; every utility is frozen and checksummed.
+`verify-full` remains the canonical current-tree command. The sealed
+`artifacts/wp16-cleanroom-release/` bundle records a clean-room PASS for the **historical WP16 tree**;
+it is not evidence that later HEADs have independently reproduced. Hardware-gated tests remain
+`NOT_MEASURED` when the required hardware is absent, never promoted to `PASS`.
 
 ## 8. The decisive next step — and why it is *not* L7 any more
 
