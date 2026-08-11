@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "d48e715283e8098fc0d852a70d82280038c9e6fe",
-  "generated": "2026-08-11T13:56:06Z",
+  "git_commit": "940f647494db4aea177ea62668ea8263d458fab6",
+  "generated": "2026-08-11T17:06:42Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2605,6 +2605,46 @@
         "pointer": "scientific_pass",
         "expected": true
       }
+    },
+    {
+      "claim_id": "CWC-RD20-REAL-transfer01-external-decision-control",
+      "hypothesis_id": "H-REAL-TRANSFER-01",
+      "statement": "Decision-relevant epistemic control transfers from the qualified synthetic CWC primitives to two externally sourced natural-language task families while satisfying frozen safety, utility, contamination, and applicable matched-cost gates.",
+      "status": "NOT_TESTED",
+      "scope": {
+        "regime": [
+          "AVeriTeC external fact-checking terminal epistemic decisions",
+          "HybridQA external multi-source necessary-information acquisition",
+          "frozen model/checkpoint and deterministic PRIMARY/REPLICATION cohorts"
+        ]
+      },
+      "required_artifacts": [
+        "experiments/real_transfer_01/PREREGISTRATION.md",
+        "experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_001.md",
+        "experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md",
+        "experiments/real_transfer_01/contract.py",
+        "experiments/real_transfer_01/evaluator.py",
+        "experiments/real_transfer_01/preflight.py",
+        "experiments/real_transfer_01/semantic_gate.py",
+        "experiments/real_transfer_01/temporal_gate.py"
+      ],
+      "supporting_metrics": [],
+      "limitations": [
+        "no REAL-TRANSFER-01 scientific model execution has occurred",
+        "source snapshots are not yet locally materialized and checksum-bound",
+        "no frozen model/checkpoint manifest or contamination audit is yet bound",
+        "external independent third-party replication remains absent"
+      ],
+      "prohibited_extrapolations": [
+        "synthetic COG-PLAN/INFO/SELF support implies real-language transfer",
+        "benchmark contract executability is scientific task success",
+        "semantic mutation-gate success is model utility evidence",
+        "NOT_TESTED is positive evidence",
+        "production or causal-truth authority"
+      ],
+      "note": "Parent preregistration, two pre-execution amendments, implementation contract, and semantic kill gate are frozen in Git. Scientific authority remains NOT_TESTED until external source snapshots, frozen model identity, comparator implementations, contamination state, and both external cohorts are executed and sealed.",
+      "independent_replication": false,
+      "verdict_binding": null
     }
   ]
 }

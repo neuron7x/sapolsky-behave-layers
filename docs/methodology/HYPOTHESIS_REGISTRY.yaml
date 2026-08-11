@@ -828,3 +828,15 @@ hypotheses:
     preregistration: research/preregistration/COG_SELF_01_AUTONOMOUS_FALSIFICATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD19-COG-self01-decision-relevant-falsification
+
+  - hypothesis_id: H-REAL-TRANSFER-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "Decision-relevant epistemic control does not transfer to two external natural-language task families under the frozen safety, utility, contamination, and matched-cost gates."
+    H1: "Across AVeriTeC terminal epistemic decisions and HybridQA necessary information acquisition, DECISION_RELEVANT satisfies every frozen safety/utility endpoint in independent PRIMARY and REPLICATION cohorts and meets every applicable direct-comparator matched-cost predicate."
+    estimand: "AVeriTeC forced-verdict safety, supported/refuted balanced accuracy, NEI/conflict non-action recall; HybridQA necessary-query recall, premature-answer rate, post-query exact match; model-call/token/query costs and contamination authority state"
+    experimental_unit: "external dataset record x frozen model/checkpoint x policy x deterministic cohort"
+    decision_rule: "Full support requires every preregistered endpoint in both external families and both PRIMARY/REPLICATION cohorts plus all applicable matched-cost predicates; missing source/model/comparator provenance is NOT_TESTED, any frozen behavioral endpoint failure is NOT_SUPPORTED, and unknown contamination forbids high-authority promotion."
+    preregistration: "experiments/real_transfer_01/PREREGISTRATION.md; experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_001.md; experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md"
+    status: NOT_TESTED
+    claim_id: CWC-RD20-REAL-transfer01-external-decision-control
