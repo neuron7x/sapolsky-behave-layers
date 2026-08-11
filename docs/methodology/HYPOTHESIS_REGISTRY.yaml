@@ -420,7 +420,7 @@ hypotheses:
     H1: "Every prereg is strict-ancestor of its results, except disclosed retrospective cases."
     estimand: "git-ancestry classification of prereg vs results commit per experiment"
     experimental_unit: "experiment"
-    decision_rule: "reject H0 iff 0 undisclosed same-commit or result-before-prereg. RESULT 14 strict-ancestor, 4 disclosed, 0 violations -> SUPPORTED."
+    decision_rule: "Historical sealed WP12 result: 19 strict-ancestor, 5 disclosed same-commit retrospective, 0 violations -> SUPPORTED for that audited experiment set. Current-tree temporal integrity is separately enforced by current-prereg-gate and must not be inferred from this historical count."
     preregistration: experiments/wp12_prereg_integrity/PREREGISTRATION.md
     status: SUPPORTED
     claim_id: CWC-RIGOR7-prereg-integrity
@@ -813,7 +813,7 @@ hypotheses:
     estimand: "state correctness across D0-D11; same-decision zero-spend rate; legacy-rescue rate in the zero-rate same-decision trap; cross-decision false-spend rate; legacy/decision necessary-cost ratio when both governors can acquire"
     experimental_unit: "synthetic surviving-world set, decision map and certified action-by-model information-rate table under one frozen adversarial family"
     decision_rule: "PASS requires every D0-D11 family 128/128 independently in PRIMARY and REPLICATION, D0 zero acquisition, D1 legacy block plus decision-relevant rescue, D2 zero false spend, D5/D6 distinct capacity/budget vetoes, D8/D9 fail-closed uncertified/incomplete rates, D10 permutation invariance, D11 strict necessary-cost improvement, and semantic self-test success. RESULT all predicates pass -> SUPPORTED_NARROWED."
-    preregistration: experiments/cog_info_02/PREREGISTRATION.md
+    preregistration: research/preregistration/COG_INFO_02_DECISION_RELEVANT.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD18-COG-info02-decision-relevant
 

@@ -86,10 +86,12 @@ The current claim/hypothesis registries contain 68 claims and 68 hypotheses. Cla
 26 `SUPPORTED`, 20 `SUPPORTED_NARROWED`, 20 `NOT_SUPPORTED`, and 2 `NOT_TESTED`.
 `doc-gate` and `verdict-binding` check registry/artifact coherence on the current tree.
 
-The sealed WP12 preregistration-integrity result is historical evidence for the experiment set it
-audited at that commit; it must **not** be extrapolated to later `research/preregistration/`
-protocols. Current-tree global temporal-preregistration coverage therefore remains an explicit
-verification debt until a successor gate covers both experiment-local and research-level protocols.
+The sealed WP12 preregistration-integrity result remains historical evidence for its original
+experiment set. Current HEAD is checked separately by `current-prereg-gate`, which follows all 68
+registry hypotheses across both experiment-local and `research/preregistration/` protocols. Its
+current classification is 56 strict-ancestor, 8 explicitly disclosed same-commit retrospective,
+1 self-audit same-commit exclusion, 1 historical negative without independent preregistration, and
+2 `NOT_TESTED`; any new undisclosed same-commit or result-before-prereg ordering fails closed.
 
 ## 7. Reproducibility capsule
 

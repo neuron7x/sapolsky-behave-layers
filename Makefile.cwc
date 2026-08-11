@@ -6,7 +6,7 @@
 PY ?= .venv/bin/python
 COVERAGE_FAIL_UNDER ?= 95
 
-.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate cog-self01-gate
+.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate cog-self01-gate current-prereg-gate
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage mutation experiment-tests validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate doc-gate cog-self01-gate
@@ -76,11 +76,17 @@ assurance-report:
 engineering-assurance: architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report
 	@echo "CWC-ENGINEERING-ASSURANCE: ALL GATES PASSED"
 
+# Current-tree temporal preregistration integrity. Unlike the sealed historical WP12
+# audit, this follows the live hypothesis registry including research/preregistration/.
+current-prereg-gate:
+	PYTHONPATH=. $(PY) scripts/current_prereg_integrity_gate.py --self-test
+	PYTHONPATH=. $(PY) scripts/current_prereg_integrity_gate.py
+
 # Documentation-methodology spine (Act CWC-LAB-DOC-2026-01): registry schema-valid,
 # commit current, 0 claim/hypothesis orphans, required artifacts exist, P0 docs present.
 # bib-gate is part of it: a bibliography is the one artefact a reader cannot check by
 # running the code, so it is checked here instead (offline, deterministic).
-doc-gate: bib-gate
+doc-gate: bib-gate current-prereg-gate
 	PYTHONPATH=. $(PY) scripts/doc_status_gate.py
 
 # Every registered status must equal the polarity of the CHECKSUMMED verdict it rests on,
