@@ -1,0 +1,60 @@
+{
+  "anti_reuse": {
+    "overlaps": 0,
+    "r2_offsets_checked": 640
+  },
+  "data_sha256": {
+    "corpus_code_eval1.txt": "5904959a4ba16dbed66d9aad4761aea52b51fd79874a59f3706c74d5794f50be",
+    "corpus_code_eval2.txt": "30b083fe083da170761564210cc7c522dada9bed947a9ac936ae8d14f55024e3",
+    "corpus_code_eval3.txt": "685749478c837bab57b1c1547d1f3efe54237c96e44aa2ec675ee5d16d3cdd5a",
+    "corpus_code_eval4.txt": "74826093a986246141fe9b2ad19770573a394991ea6a919ff12628d912d03e8d",
+    "corpus_code_eval5.txt": "1bd8b76723710d6115e9d381b9f4b01168e02212f22462efbef7f464bcfd5da0",
+    "corpus_code_train.txt": "1378a6448e492cb20ea9ec755cf7bab8cfe39bb782de83b37619c17e87898ca1",
+    "corpus_prose_eval1.txt": "bc36bae46dd0611600691c5beeda4e7b75d0af90821ff3054005c9baf7664fbb",
+    "corpus_prose_eval2.txt": "1d9839f79c24d8508d9341db8733fd459a5a75ff872a9332c4419a94efefc571",
+    "corpus_prose_eval3.txt": "bf71b8544096e317f1557a932f4b299aa019cd8f1a414b94da88c3a63a108172",
+    "corpus_prose_eval4.txt": "322caad772d06b92ec1b0af31f4f2798a4238032609c14c7378549e99d2e176f",
+    "corpus_prose_eval5.txt": "9216ab79a57cb3d49cbbe06cfee9dfe3dd14145fa964a24128f52ee9a709d99f",
+    "corpus_prose_train.txt": "c8908856e76dcaf9821388d027fb4ce4219bad01a92f9efcd4ae6a5242283d09"
+  },
+  "experiment": "CWC-FLAGSHIP-ROUTE-02",
+  "records": [
+    {
+      "checkpoint_sha256": "67eb58ab4cd3adb3056e5449359defaec0fa550936658bf31c72574f56da7151",
+      "cohort": "PRIMARY",
+      "policy_sha256": "45e68591f6a84accbdd30324be0d02fc07b7655814925a806d83c2d4b5f31010",
+      "seed": 74401
+    },
+    {
+      "checkpoint_sha256": "c72f76ae4af1ca84664532d295bc646ea1aa78b0e2e1aed19946d70b63e1feec",
+      "cohort": "PRIMARY",
+      "policy_sha256": "4b02ca954e0606ac7ac3c2db8a664846ae9cbe1daf1cfd5c99aa23c5c93df0b0",
+      "seed": 74402
+    },
+    {
+      "checkpoint_sha256": "adcfc30d6871c3b4b33e4022202510c0050e5dbb8ff7616e8d0d3e3eac49dc35",
+      "cohort": "PRIMARY",
+      "policy_sha256": "430630c94a759b79fba67967c7d2d1cb520c89f5bd3492d497c795f413ff29c6",
+      "seed": 74403
+    },
+    {
+      "checkpoint_sha256": "a4ea1633c2a8c00d364ba7cbeccd4b75fdd79fd913e50891dd0b3de214bf1db7",
+      "cohort": "REPLICATION",
+      "policy_sha256": "de19d1b206040370905c533be25019bf96206edc8dd0ed0de9786916be4f0517",
+      "seed": 74501
+    },
+    {
+      "checkpoint_sha256": "4bf5c3cf22c038e65caa48009dfe3ec68ca261260516354cc92d377af20f08ff",
+      "cohort": "REPLICATION",
+      "policy_sha256": "568302baf3bbcdc3bc002389d31d2521d69cf1203f0d3899c97d8cc3eae2e7d2",
+      "seed": 74502
+    },
+    {
+      "checkpoint_sha256": "3afef9919883cde5f3f8216c1bf288a567d47a2771e69f88307d75ee7bcd8326",
+      "cohort": "REPLICATION",
+      "policy_sha256": "eb1b25fe73327333056ab3b682d6a5a24dd62b81d1136179101c85d3d3f9ec7c",
+      "seed": 74503
+    }
+  ],
+  "status": "CALIBRATION_COMPLETE_NO_SCIENTIFIC_EVAL"
+}
