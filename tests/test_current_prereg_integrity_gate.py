@@ -7,7 +7,7 @@ def test_current_tree_temporal_integrity_is_fail_closed_clean() -> None:
     result = gate.analyze()
     assert result["verdict"] == "PASS"
     assert result["failure_count"] == 0
-    assert result["hypothesis_count"] == 68
+    assert result["hypothesis_count"] == 69
 
 
 def test_cog_info_02_uses_true_preconfirmatory_research_preregistration() -> None:
