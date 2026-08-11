@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "7522765aef26d9e6f3f1cdfe0bb17fd3cd1f9995",
-  "generated": "2026-08-11T12:35:00Z",
+  "git_commit": "d48e715283e8098fc0d852a70d82280038c9e6fe",
+  "generated": "2026-08-11T13:56:06Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2548,6 +2548,60 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/COG-INFO-02/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD19-COG-self01-decision-relevant-falsification",
+      "hypothesis_id": "H-COG-SELF-01",
+      "statement": "Through the supported CWC synthetic runtime API, autonomous self-falsification spend can be restricted to certified attacks capable of changing the live decision and bound to the current proof-carrying plan/load-bearing memory graph; negative outcomes may retract or invalidate bound authority, while test survival cannot self-promote authority.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "synthetic autonomous falsification selection/update safety primitive",
+          "12 frozen adversarial families S0-S11",
+          "128 cases per family in fresh PRIMARY and REPLICATION namespaces",
+          "alpha 0.01, target power 0.95, robust action margin 0.05"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-SELF-01/verdict.json",
+        "artifacts/cog-self-01/verdict.json",
+        "artifacts/cog-self-01/results.jsonl",
+        "artifacts/cog-self-01/SHA256SUMS",
+        "research/preregistration/COG_SELF_01_AUTONOMOUS_FALSIFICATION.md",
+        "research/reports/COG_SELF_01_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "every S0-S11 family passed 128/128 independently in PRIMARY and REPLICATION",
+        "false spend, irrelevant-memory attack selection, uncertified attack selection and stale-plan acceptance were all 0 in both cohorts",
+        "permutation disagreement, survival authority promotion, negative-target violation and stale/unbound outcome acceptance were all 0 in both cohorts",
+        "negative dependency propagation checks passed 256/256 in each cohort",
+        "deterministic generation/replay hashes matched exactly",
+        "semantic gate self-test killed 8/8 frozen authority/selection mutations"
+      ],
+      "limitations": [
+        "synthetic worlds, utilities, candidate decisions, attacks and certified information-rate lower bounds are supplied by the harness",
+        "world-set completeness and real-system validity of information-rate certificates are not established",
+        "the selected attack set is provided to the governor; this does not establish autonomous generation of scientifically useful experiments",
+        "SURVIVED is deliberately non-promoting, so positive scientific authority still requires the separate typed evidence pipeline",
+        "internal fresh-seed replication is not external third-party reproduction",
+        "no real-model, natural-language, production-control or matched-compute advantage follows"
+      ],
+      "prohibited_extrapolations": [
+        "self-falsification proves the true causal model",
+        "test survival grants stronger epistemic authority",
+        "the system is an autonomous scientist",
+        "real-world active-control authorization",
+        "production deployment authority",
+        "large-scale or matched-compute architecture superiority",
+        "flagship result established"
+      ],
+      "note": "The qualified primitive is monotone-negative epistemic control: spend only on action-flipping distinctions with certified channels, bind the attack to current proof/memory authority, and permit self-generated updates to remove authority but never create stronger authority. Novelty remains UNKNOWN_OVERLAP_CONCEDED.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-SELF-01/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

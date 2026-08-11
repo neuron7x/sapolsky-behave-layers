@@ -20,5 +20,5 @@ Memory entries carry causal support, countermodel set, context scope, assumption
 ## 6. COG-PLAN-01 — Counterfactual Planning with Proof-Carrying Branches [BLOCKED BY 4+5]
 Each simulated plan branch carries which model/assumptions generated it, uncertainty, OOD/support state and predicted intervention effect. Planning can compare branches under ambiguity but cannot silently collapse incompatible models into one world-state.
 
-## 7. COG-SELF-01 — Self-Falsification / Reconfiguration Governor [BLOCKED BY 2-6]
-The system selects which belief/module to attack next by expected reduction of the surviving model set per unit compute, runs the cheapest decisive test, updates failure memory, and only then changes routing/replay/memory policies. Promotion metric: faster elimination of wrong models than growth of architectural complexity at matched compute.
+## 7. COG-SELF-01 — Self-Falsification / Reconfiguration Governor [SYNTHETIC NARROW PASS]
+The runtime now selects certified decision-relevant attacks against action-flipping worlds, binds them to the current proof/memory dependency graph, rejects stale or irrelevant targets, and permits only monotone-negative authority updates. PRIMARY and REPLICATION passed all 12 frozen families at 128/128. Remaining debt: real-model/public matched-compute transfer, independently authored attacks/rate certificates, natural-language contamination resistance, and external reproduction.

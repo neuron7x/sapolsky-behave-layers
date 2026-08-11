@@ -816,3 +816,15 @@ hypotheses:
     preregistration: experiments/cog_info_02/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD18-COG-info02-decision-relevant
+
+  - hypothesis_id: H-COG-SELF-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A self-falsification runtime cannot restrict compute to decision-relevant load-bearing attacks without accepting stale/irrelevant/uncertified tests, spending on same-decision ambiguity, or allowing test outcomes to self-promote authority."
+    H1: "A proof/memory-bound governor selects only certified attacks against action-flipping worlds, rejects stale or irrelevant targets, preserves zero spend under same-decision ambiguity, and applies only monotone-negative bound updates with no survival-based promotion in fresh PRIMARY and REPLICATION cohorts."
+    estimand: "state/attack correctness across S0-S11; false-spend, stale-plan, irrelevant/uncertified selection, permutation disagreement, survival-promotion, target-boundary and stale-outcome acceptance counts; negative dependency-propagation success"
+    experimental_unit: "typed memory ledger plus proof-carrying plan, explicit admitted world/action map and frozen certified falsification-action set under one adversarial family"
+    decision_rule: "PASS requires every S0-S11 family 128/128 independently in PRIMARY and REPLICATION, zero false spend/stale-plan/irrelevant/uncertified selection/permutation/survival-promotion/target-boundary/stale-outcome violations, complete negative-propagation success, deterministic regeneration, and semantic self-test success. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: research/preregistration/COG_SELF_01_AUTONOMOUS_FALSIFICATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD19-COG-self01-decision-relevant-falsification

@@ -169,3 +169,17 @@ family. A same-decision zero-rate world blocked the legacy model-maximin governo
 probe; when both could acquire, the D11 necessary-cost bound improved in 256/256 cases
 (median legacy/new ratio 9.7754x). This is an information-allocation primitive only,
 with novelty explicitly UNKNOWN and real-world/active-control authority blocked.
+
+
+### COG-SELF-01 autonomous falsification boundary (2026-08-11)
+
+CWC now composes typed authority, dependency-aware memory, proof-carrying planning and
+decision-relevant information allocation into a bounded self-falsification governor. An
+attack is admissible only when it can discriminate action-flipping worlds and is bound to
+the current plan's transitive load-bearing memory/assumption graph. PRIMARY and fresh
+REPLICATION each passed all 12 frozen families at 128/128 with zero false spend, stale
+plan acceptance, irrelevant/uncertified attack selection, survival promotion or
+stale/unbound outcome acceptance. Negative outcomes may only retract/invalidate bound
+authority; survival cannot self-promote. This remains a synthetic runtime primitive. The
+next hard gate is public/real-model matched-compute external validity, not another private
+synthetic module.
