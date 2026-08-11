@@ -50,6 +50,7 @@ class RadiusResult:
     baseline_margin_positive: bool
     score_zero: bool
     reversed_action: bool
+    nullspace_valid: bool
 
     @property
     def passed(self) -> bool:
@@ -59,6 +60,7 @@ class RadiusResult:
             and self.baseline_margin_positive
             and self.score_zero
             and self.reversed_action
+            and self.nullspace_valid
         )
 
 
@@ -102,6 +104,18 @@ def evaluate_radius(radius: Fraction, *, k_multiplier: Fraction = Fraction(8),
         observe_v=observe_v,
         nullspace_basis=nullspace_basis,
     )
+    nullspace_valid = True
+    for vec in nullspace_basis:
+        if all(x == 0 for x in vec):
+            nullspace_valid = False
+            break
+        for row in cert.jacobian:
+            if sum(a * b for a, b in zip(row, vec, strict=True)) != 0:
+                nullspace_valid = False
+                break
+        if not nullspace_valid:
+            break
+
     return RadiusResult(
         radius=radius,
         k=k,
@@ -112,6 +126,7 @@ def evaluate_radius(radius: Fraction, *, k_multiplier: Fraction = Fraction(8),
         baseline_margin_positive=(margin > 0),
         score_zero=(cert.score_squared == 0),
         reversed_action=(delta_test < 0),
+        nullspace_valid=nullspace_valid,
     )
 
 
