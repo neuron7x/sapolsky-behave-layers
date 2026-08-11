@@ -18,6 +18,19 @@ from cwc.epistemics.lattice import (
     positive_state_dominates,
 )
 
+from cwc.epistemics.self_falsification import (
+    FalsificationAttack,
+    FalsificationBindingError,
+    FalsificationOutcome,
+    FalsificationUpdate,
+    SelfFalsificationDecision,
+    SelfFalsificationError,
+    SelfFalsificationState,
+    apply_self_falsification_outcome,
+    select_self_falsification_attack,
+    verify_self_falsification_decision,
+)
+
 __all__ = [
     "CapabilityBindingError",
     "CapabilityType",
@@ -34,4 +47,14 @@ __all__ = [
     "POSITIVE_CHAIN",
     "TERMINAL_STATES",
     "positive_state_dominates",
+    "FalsificationAttack",
+    "FalsificationBindingError",
+    "FalsificationOutcome",
+    "FalsificationUpdate",
+    "SelfFalsificationDecision",
+    "SelfFalsificationError",
+    "SelfFalsificationState",
+    "apply_self_falsification_outcome",
+    "select_self_falsification_attack",
+    "verify_self_falsification_decision",
 ]
