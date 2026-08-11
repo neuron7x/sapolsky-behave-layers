@@ -768,3 +768,15 @@ hypotheses:
     preregistration: experiments/cog_countermodel_01r/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD14-COG-countermodel01r-set-valued-guard
+
+  - hypothesis_id: H-COG-EPISTEMIC-01R
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A runtime epistemic state machine cannot prevent silent strengthening of causal authority across direct-construction, wrong-capability, terminal-resurrection, surrogate-evidence, token-replay, scope-escalation and legacy-adapter attack families while still allowing every legal authority transition."
+    H1: "A capability-bound typed epistemic runtime rejects every frozen illegal promotion in independent PRIMARY and REPLICATION while accepting every legal OBSERVED→PREDICTIVE→ASSUMPTION_CONDITIONAL→INTERVENTION_SUPPORTED chain and preserving the parent harness failure."
+    estimand: "forbidden-transition acceptance rate by adversarial family/cohort, legal-chain acceptance rate, digest determinism, runtime/harness error count and semantic-gate mutation kill rate"
+    experimental_unit: "independently bound synthetic claim/context lineage under one frozen transition attack"
+    decision_rule: "R1 PASS requires 0 forbidden acceptances in each of 12 families in both 128-case cohorts, legal-chain acceptance 1.0, zero runtime/harness errors, deterministic digests, and semantic self-test success. RESULT PRIMARY 0/1536 forbidden and 128/128 legal; REPLICATION 0/1536 forbidden and 128/128 legal; 6/6 gate mutations killed -> SUPPORTED_NARROWED."
+    preregistration: experiments/cog_epistemic_01r/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD15-COG-epistemic01r-typed-lattice

@@ -3,6 +3,22 @@
 All notable changes to the CWC evidence substrate. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions map to git commits.
 
+## [Typed epistemic runtime lattice] — 2026-08-11
+
+### Added
+- `cwc/epistemics/lattice.py`: immutable capability-bound epistemic records, exact claim/parent/scope binding, evidence-class separation, absorbing fail-closed states and deterministic SHA-256 record/capability digests.
+- `cwc/epistemics/legacy_adapter.py`: fail-closed mapping from frozen CSCA-08 / COG-COUNTERMODEL string states into the typed runtime layer without rewriting historical evidence.
+- `COG-EPISTEMIC-01R`: fresh preregistered harness repair after the parent F11 stochastic precondition defect.
+
+### Evidence
+- Parent `COG-EPISTEMIC-01` remains non-passing: one F11 REPLICATION case returned an upstream `IDENTIFYING_ASSUMPTION_VIOLATED`, so the intended adapter attack was never exercised; raw evidence remains checksummed.
+- R1 PRIMARY: legal chains `128/128`; forbidden promotions `0/1536` across 12 adversarial families; zero harness/runtime errors.
+- R1 REPLICATION: legal chains `128/128`; forbidden promotions `0/1536`; zero harness/runtime errors.
+- Semantic gate self-test kills `6/6` authority/repair mutations.
+
+### Boundary
+The runtime now prevents silent authority escalation through the supported API, but does not prove semantic causality, malicious-host unforgeability, real-trace identification, replay value, active control or architecture Pareto advantage. `INTERVENTION_SUPPORTED` is operator/context scoped, never a `TRUE_CAUSAL_MODEL` state.
+
 ## [Assumption-typed observational identifiability] — 2026-08-11
 
 ### Added

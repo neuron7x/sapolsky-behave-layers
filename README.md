@@ -131,3 +131,7 @@ Passive factual traces can now falsify a declared predictive replay law with an 
 ### CSCA-08 assumption-typed regime boundary (2026-08-11)
 
 A synthetic multi-regime IV-style identifying contract now separates some observable assumption violations from high aleatoric noise and weak information while carrying unresolved assumptions as runtime debt. Both fresh PRIMARY and REPLICATION cohorts passed the frozen gate. The decisive negative is preserved: coordinated direct regime effects can be pathwise observationally equivalent to a different causal coefficient, so the system emits only `CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS`, never unconditional causal truth. Real-trace exogeneity/exclusion, replay control and active control remain blocked.
+
+### COG-EPISTEMIC-01R typed authority boundary (2026-08-11)
+
+CWC now has an immutable capability-bound runtime state machine: `OBSERVED -> PREDICTIVE -> ASSUMPTION_CONDITIONAL -> INTERVENTION_SUPPORTED`, with absorbing `UNIDENTIFIED/FALSIFIED/OOD/ABSTAIN` states. A fresh repaired confirmatory run rejected every frozen illegal promotion (`0/1536` PRIMARY and `0/1536` REPLICATION) while accepting every legal chain (`128/128` each). The parent run remains preserved as non-passing because one stochastic F11 precondition was never reached. `INTERVENTION_SUPPORTED` is explicitly scoped to its operator/context and is not semantic or unconditional causal truth. Next gate: assumption-aware memory consolidation.

@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "4ab0a8357ed041cd846dfae43dd993fbdbc78181",
-  "generated": "2026-08-11T07:23:00Z",
+  "git_commit": "0de6c760d32791cb785efe4e61dbe59a3d5ce4ea",
+  "generated": "2026-08-11T10:45:00Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2344,6 +2344,58 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/COG-COUNTERMODEL-01R/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD15-COG-epistemic01r-typed-lattice",
+      "hypothesis_id": "H-COG-EPISTEMIC-01R",
+      "statement": "Through the supported CWC runtime API, stronger epistemic authority is capability-gated by exact evidence class, claim id, parent-record digest and context scope; terminal states are absorbing within a lineage and passive/surrogate evidence cannot silently become direct-intervention authority.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "runtime/software epistemic safety primitive",
+          "12 frozen adversarial transition families",
+          "128 independently bound cases per family in fresh PRIMARY and REPLICATION namespaces",
+          "legacy CSCA-08 and COG-COUNTERMODEL adapter states tested via immutable API fixtures"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-EPISTEMIC-01R/verdict.json",
+        "artifacts/cog-epistemic-01r/verdict.json",
+        "artifacts/cog-epistemic-01r/SHA256SUMS",
+        "experiments/cog_epistemic_01r/PREREGISTRATION.md",
+        "research/reports/COG_EPISTEMIC_01R_EXECUTION_REPORT.md",
+        "research/reports/COG_EPISTEMIC_01_INVALIDATION.md"
+      ],
+      "supporting_metrics": [
+        "PRIMARY legal chains 128/128; forbidden promotions 0/1536 across 12 families; zero harness/runtime errors",
+        "REPLICATION legal chains 128/128; forbidden promotions 0/1536; zero harness/runtime errors",
+        "cross-claim, stale-parent and scope token reuse all rejected 128/128 in each cohort",
+        "surrogate-as-direct-intervention and terminal-resurrection attacks rejected 128/128 in each cohort",
+        "semantic gate self-test killed 6/6 authority/repair mutations",
+        "parent COG-EPISTEMIC-01 non-pass remains preserved rather than retroactively rescued"
+      ],
+      "limitations": [
+        "qualifies the supported Python runtime transition API, not unforgeability against arbitrary malicious process-memory manipulation or interpreter modification",
+        "INTERVENTION_SUPPORTED is operator/context scoped and is not semantic or unconditional causal truth",
+        "synthetic software-transition qualification; no real-trace causal identification follows",
+        "does not establish useful memory consolidation, replay, planning, active control, large-model transfer or compute Pareto advantage",
+        "internal independent replication is not external third-party reproduction"
+      ],
+      "prohibited_extrapolations": [
+        "typed state machine proves a causal model is true",
+        "surviving supported transitions establish semantic causality",
+        "replay control authorization",
+        "active causal control",
+        "production deployment authority",
+        "large-scale architecture promotion"
+      ],
+      "note": "The parent run is a preserved harness non-pass: one F11 replication draw never reached the target adapter state. R1 changes only that precondition construction, keeps thresholds/family semantics fixed, uses fresh namespaces, and qualifies the fail-closed runtime primitive narrowly.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-EPISTEMIC-01R/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }
