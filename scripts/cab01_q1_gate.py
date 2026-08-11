@@ -18,12 +18,13 @@ def sha256(path: Path) -> str:
 
 def validate(v: dict[str, object]) -> list[str]:
     e: list[str] = []
-    if v.get("verdict") != "CAB01_Q1_BENCHMARK_QUALIFIED_SYNTHETIC": e.append("verdict")
-    if v.get("benchmark_qualified") is not True: e.append("benchmark_qualified")
+    if v.get("verdict") != "CAB01_Q1_NOT_QUALIFIED": e.append("verdict")
+    if v.get("benchmark_qualified") is not False: e.append("benchmark_qualified")
     if v.get("authority") != "SYNTHETIC_BENCHMARK_QUALIFICATION_ONLY": e.append("authority")
     if v.get("parent_design_commit") != "a849b63": e.append("parent design")
     if v.get("preconfirmatory_execution_preregistration_commit") != "f55fde0f7eee54f88f6f0443d3de48dbbb582afe": e.append("prereg commit")
-    if v.get("errors") != []: e.append("errors")
+    expected_errors = ["PRIMARY: surface leakage 0.286908>0.285714", "REPLICATION: surface leakage 0.286908>0.285714"]
+    if v.get("errors") != expected_errors: e.append("frozen failure vector")
     if v.get("novelty_status") != "UNKNOWN_OVERLAP_CONCEDED": e.append("novelty overclaim")
     for key, value in dict(v.get("non_promotion_boundary", {})).items():
         if value is not False: e.append(f"unsafe promotion {key}")
@@ -34,8 +35,8 @@ def validate(v: dict[str, object]) -> list[str]:
         if c.get("family_counts") != EXPECTED_COUNTS: e.append(f"{cohort} family counts")
         if c.get("label_path_disagreements") != 0: e.append(f"{cohort} oracle disagreement")
         if c.get("f11_triads_pass") is not True: e.append(f"{cohort} F11")
-        if c.get("surface_leakage_pass") is not True: e.append(f"{cohort} leakage")
-        if float(c.get("surface_only_accuracy", 2.0)) > float(c.get("majority_class_rate", -1.0)) + 1e-12: e.append(f"{cohort} leakage envelope")
+        if c.get("surface_leakage_pass") is not False: e.append(f"{cohort} frozen leakage failure")
+        if not (float(c.get("surface_only_accuracy", -1.0)) > float(c.get("majority_class_rate", 2.0)) + 1e-12): e.append(f"{cohort} missing leakage failure")
         dom = dict(c.get("pareto_dominators", {}))
         if not dom.get("always_act"): e.append(f"{cohort} always_act Pareto")
         if not dom.get("always_abstain"): e.append(f"{cohort} always_abstain Pareto")
@@ -63,9 +64,9 @@ def main() -> int:
 
     if "--self-test" in sys.argv:
         mutations = []
-        m = copy.deepcopy(v); m["benchmark_qualified"] = False; mutations.append(m)
+        m = copy.deepcopy(v); m["benchmark_qualified"] = True; mutations.append(m)
         m = copy.deepcopy(v); m["cohorts"]["PRIMARY"]["label_path_disagreements"] = 1; mutations.append(m)
-        m = copy.deepcopy(v); m["cohorts"]["PRIMARY"]["surface_leakage_pass"] = False; mutations.append(m)
+        m = copy.deepcopy(v); m["cohorts"]["PRIMARY"]["surface_leakage_pass"] = True; mutations.append(m)
         m = copy.deepcopy(v); m["cohorts"]["REPLICATION"]["f11_triads_pass"] = False; mutations.append(m)
         m = copy.deepcopy(v); m["cohorts"]["PRIMARY"]["pareto_dominators"]["always_act"] = []; mutations.append(m)
         m = copy.deepcopy(v); m["non_promotion_boundary"]["cwc_superiority"] = True; mutations.append(m)
@@ -77,7 +78,7 @@ def main() -> int:
     if errors:
         print("CAB01-Q1-GATE FAIL", *errors, sep="\n - ")
         return 1
-    print("CAB01-Q1-GATE PASS: benchmark generator qualified synthetically; no CWC superiority or real-model promotion licensed.")
+    print("CAB01-Q1-GATE PASS: frozen NOT_QUALIFIED result and failure vector are checksum-bound; no in-place repair permitted.")
     return 0
 
 
