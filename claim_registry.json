@@ -1,8 +1,8 @@
 {
   "schema": "cwc-claim-registry/1.1",
   "schema_file": "schemas/claim.schema.json",
-  "git_commit": "545ce3a8544aa4f41fbba11cf5193ccdeb3b63bd",
-  "generated": "2026-08-11T00:30:00Z",
+  "git_commit": "4ab0a8357ed041cd846dfae43dd993fbdbc78181",
+  "generated": "2026-08-11T07:23:00Z",
   "claims": [
     {
       "claim_id": "CWC-L0-measurement",
@@ -2253,6 +2253,97 @@
       "independent_replication": true,
       "verdict_binding": {
         "file": "research/results/CSCA-08A/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": true
+      }
+    },
+    {
+      "claim_id": "CWC-RD13-COG-countermodel01-truth-recovery-negative",
+      "hypothesis_id": "H-COG-COUNTERMODEL-01",
+      "statement": "A passive countermodel generator should not be qualified by requiring its Pareto frontier to recover the hidden generating causal coefficient inside an observational equivalence class.",
+      "status": "NOT_SUPPORTED",
+      "scope": {
+        "regime": [
+          "synthetic linear-Gaussian regime SCM",
+          "64 fresh seeds/family/cohort",
+          "4096 factual rows/seed",
+          "frozen beta grid and min causal shift 0.49"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-COUNTERMODEL-01/verdict.json",
+        "artifacts/cog-countermodel-01/verdict.json",
+        "artifacts/cog-countermodel-01/SHA256SUMS",
+        "experiments/cog_countermodel_01/PREREGISTRATION.md",
+        "research/reports/COG_COUNTERMODEL_01_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "unrestricted exact countermodel survival 64/64 for C0/C1/C2 in both cohorts",
+        "hidden beta=0.8 Pareto-frontier recovery only 32/64 PRIMARY and 41/64 REPLICATION vs frozen >=0.95 requirement",
+        "unconditional causal authority count zero"
+      ],
+      "limitations": [
+        "the failed criterion itself was epistemically mis-specified because observational equivalence contains no hidden-truth label",
+        "finite beta grid and Pareto debt axes are not global model-space enumeration"
+      ],
+      "prohibited_extrapolations": [
+        "failure implies countermodel generation is useless",
+        "Pareto pruning identifies causal truth",
+        "parent negative may be rewritten by the repair"
+      ],
+      "note": "Frozen design-negative preserved. The repair uses a new experiment ID and fresh seeds; this verdict must remain negative.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-COUNTERMODEL-01/verdict.json",
+        "pointer": "scientific_pass",
+        "expected": false
+      }
+    },
+    {
+      "claim_id": "CWC-RD14-COG-countermodel01r-set-valued-guard",
+      "hypothesis_id": "H-COG-COUNTERMODEL-01R",
+      "statement": "Within the declared linear reduced-form reparameterization class, CWC can represent causally distinct exact factual-law countermodels as a set and narrow that set only conditionally on explicit structural bounds, without granting unconditional causal authority.",
+      "status": "SUPPORTED_NARROWED",
+      "scope": {
+        "regime": [
+          "synthetic linear-Gaussian regime SCM",
+          "64 fresh PRIMARY plus 64 independent REPLICATION seeds per family",
+          "4096 factual rows/seed",
+          "material beta displacement 0.40",
+          "direct-effect L2 bound 0.15 for assumption-conditional interval"
+        ]
+      },
+      "required_artifacts": [
+        "research/results/COG-COUNTERMODEL-01R/verdict.json",
+        "artifacts/cog-countermodel-01r/verdict.json",
+        "artifacts/cog-countermodel-01r/SHA256SUMS",
+        "experiments/cog_countermodel_01r/PREREGISTRATION.md",
+        "research/reports/COG_COUNTERMODEL_01R_EXECUTION_REPORT.md"
+      ],
+      "supporting_metrics": [
+        "eligible families represented ALL_REAL_BETA unrestricted equivalence in 64/64 seeds in both cohorts",
+        "materially distinct exact finite-grid countermodels survived 64/64 with ambiguity diameter >=1.0 and path error <=3.553e-15",
+        "direct-effect-bound analytic intervals existed and were narrower than 0.40 in 64/64 VALID and COORDINATED seeds in both cohorts",
+        "upstream-invalid candidates vetoed 64/64 in both cohorts; unconditional authority count zero"
+      ],
+      "limitations": [
+        "synthetic linear-Gaussian reduced-form class only",
+        "all-real-beta equivalence relies on allowing direct regime effects and transformed latent residual dependence",
+        "the direct-effect bound is an assumption, not empirically proven truth",
+        "finite grid is diagnostic; it is not a complete search of arbitrary nonlinear SCMs",
+        "no real-trace identifying channel established"
+      ],
+      "prohibited_extrapolations": [
+        "set-valued guard proves semantic causality",
+        "assumption-conditional interval is environment truth",
+        "real-model replay control authorization",
+        "active causal control",
+        "large-scale architecture promotion"
+      ],
+      "note": "The cognitive advance is set-valued epistemics: surviving factual-law alternatives block consolidation; structural bounds may narrow the set but cannot upgrade themselves to evidence.",
+      "independent_replication": true,
+      "verdict_binding": {
+        "file": "research/results/COG-COUNTERMODEL-01R/verdict.json",
         "pointer": "scientific_pass",
         "expected": true
       }

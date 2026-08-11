@@ -744,3 +744,27 @@ hypotheses:
     preregistration: experiments/csca08_regime_identifiability/PREREGISTRATION.md
     status: SUPPORTED_NARROWED
     claim_id: CWC-RD12-CSCA08-assumption-typed-identifiability
+
+  - hypothesis_id: H-COG-COUNTERMODEL-01
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A passive countermodel generator need not recover the hidden generating beta on its Pareto frontier because observational equivalence provides no truth-selection information."
+    H1: "The Pareto frontier recovers the hidden generating beta=0.8 in >=0.95 of coordinated-exclusion seeds while preserving exact factual-law equivalence."
+    estimand: "hidden beta=0.8 Pareto-frontier recovery rate under coordinated exclusion"
+    experimental_unit: "fresh synthetic SCM seed with 4096 factual rows"
+    decision_rule: "Frozen requirement >=0.95 in both PRIMARY and REPLICATION. RESULT 0.50 and 0.640625 -> NOT_SUPPORTED; parent negative preserved."
+    preregistration: experiments/cog_countermodel_01/PREREGISTRATION.md
+    status: NOT_SUPPORTED
+    claim_id: CWC-RD13-COG-countermodel01-truth-recovery-negative
+
+  - hypothesis_id: H-COG-COUNTERMODEL-01R
+    research_question_id: RQ-deferred-causal-credit
+    type: confirmatory
+    H0: "A passive cognitive guard cannot reliably preserve a materially broad observational causal equivalence set while narrowing it only conditionally on explicit structural bounds."
+    H1: "The set-valued guard preserves exact materially distinct countermodels in unrestricted factual-law space, returns narrow analytic beta intervals only under declared direct-effect bounds, vetoes invalid upstream states, and emits zero unconditional causal authority."
+    estimand: "equivalence-set survival/diameter, analytic direct-effect-bound beta interval, path reconstruction error, upstream-veto rate and unconditional-authority count"
+    experimental_unit: "fresh synthetic SCM seed with 4096 factual rows"
+    decision_rule: "Both fresh cohorts must satisfy all preregistered set-survival, diameter, interval-width, upstream-veto and zero-authority predicates. RESULT all predicates pass -> SUPPORTED_NARROWED."
+    preregistration: experiments/cog_countermodel_01r/PREREGISTRATION.md
+    status: SUPPORTED_NARROWED
+    claim_id: CWC-RD14-COG-countermodel01r-set-valued-guard
