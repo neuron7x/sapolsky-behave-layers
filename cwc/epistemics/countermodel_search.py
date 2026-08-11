@@ -55,6 +55,27 @@ class StructuralAssumptionBounds:
 
 
 @dataclass(frozen=True, slots=True)
+class DirectEffectBetaInterval:
+    """Set of beta values satisfying a declared direct-effect L2 bound."""
+
+    lower: float | None
+    upper: float | None
+    is_empty: bool
+    bound: float
+
+    @property
+    def width(self) -> float:
+        if self.is_empty or self.lower is None or self.upper is None:
+            return 0.0
+        return float(self.upper - self.lower)
+
+    def contains(self, beta: float, *, atol: float = 1e-12) -> bool:
+        if self.is_empty or self.lower is None or self.upper is None:
+            return False
+        return self.lower - atol <= beta <= self.upper + atol
+
+
+@dataclass(frozen=True, slots=True)
 class LinearGaussianCountermodel:
     beta: float
     direct_effect: tuple[float, ...]
@@ -80,6 +101,12 @@ class CountermodelSearchDecision:
     pareto_frontier: tuple[LinearGaussianCountermodel, ...]
     nearest_constrained_countermodel: LinearGaussianCountermodel | None
     nearest_unrestricted_countermodel: LinearGaussianCountermodel | None
+    unrestricted_beta_set_kind: str
+    declared_direct_effect_beta_interval: DirectEffectBetaInterval | None
+    material_countermodel_within_declared_bounds: bool
+    finite_grid_alternative_beta_min: float | None
+    finite_grid_alternative_beta_max: float | None
+    finite_grid_alternative_beta_diameter: float
     causal_authority_granted: bool
     reason: str
 
@@ -132,6 +159,47 @@ def fit_reduced_form(
         n=len(X),
         regime_rank=rank,
     )
+
+
+def direct_effect_beta_interval(
+    *,
+    reduced_form: ReducedFormGaussian,
+    max_direct_effect_l2: float,
+) -> DirectEffectBetaInterval:
+    """Solve ||delta - beta*lambda||_2 <= epsilon exactly.
+
+    This is a set-valued *assumption-conditional* identification region.  It is
+    derived from the declared direct-effect bound; it is not evidence that the
+    bound is true.
+    """
+    if not math.isfinite(max_direct_effect_l2) or max_direct_effect_l2 < 0:
+        raise ValueError("max_direct_effect_l2 must be finite and >=0")
+    lam = np.asarray(reduced_form.lambda_x, dtype=np.float64)
+    delta = np.asarray(reduced_form.delta_y, dtype=np.float64)
+    a = float(lam @ lam)
+    if a <= 1e-15:
+        return DirectEffectBetaInterval(None, None, True, float(max_direct_effect_l2))
+    b = float(-2.0 * (delta @ lam))
+    c = float(delta @ delta - max_direct_effect_l2**2)
+    disc = b*b - 4.0*a*c
+    if disc < -1e-12:
+        return DirectEffectBetaInterval(None, None, True, float(max_direct_effect_l2))
+    disc = max(0.0, disc)
+    root = math.sqrt(disc)
+    lo = (-b - root) / (2.0*a)
+    hi = (-b + root) / (2.0*a)
+    return DirectEffectBetaInterval(float(lo), float(hi), False, float(max_direct_effect_l2))
+
+
+def _interval_has_material_alternative(
+    interval: DirectEffectBetaInterval | None,
+    *,
+    reference_beta: float,
+    min_causal_shift: float,
+) -> bool:
+    if interval is None or interval.is_empty or interval.lower is None or interval.upper is None:
+        return False
+    return (reference_beta - interval.lower >= min_causal_shift - 1e-12) or (interval.upper - reference_beta >= min_causal_shift - 1e-12)
 
 
 def _within_bounds(
@@ -285,6 +353,12 @@ def search_countermodels(
             pareto_frontier=(),
             nearest_constrained_countermodel=None,
             nearest_unrestricted_countermodel=None,
+            unrestricted_beta_set_kind="NOT_EVALUATED",
+            declared_direct_effect_beta_interval=None,
+            material_countermodel_within_declared_bounds=False,
+            finite_grid_alternative_beta_min=None,
+            finite_grid_alternative_beta_max=None,
+            finite_grid_alternative_beta_diameter=0.0,
             causal_authority_granted=False,
             reason="Countermodel search cannot upgrade an upstream state that is not an assumption-conditional causal candidate.",
         )
@@ -295,6 +369,11 @@ def search_countermodels(
         raise ValueError("beta_grid must contain finite values")
 
     rf = fit_reduced_form(regimes=regimes, treatment=treatment, outcome=outcome)
+    direct_interval = None
+    if bounds is not None and bounds.max_direct_effect_l2 is not None:
+        direct_interval = direct_effect_beta_interval(
+            reduced_form=rf, max_direct_effect_l2=bounds.max_direct_effect_l2
+        )
     models: list[LinearGaussianCountermodel] = []
     for beta in grid:
         if abs(beta - reference_beta) + 1e-12 < min_causal_shift:
@@ -321,6 +400,12 @@ def search_countermodels(
             pareto_frontier=(),
             nearest_constrained_countermodel=None,
             nearest_unrestricted_countermodel=None,
+            unrestricted_beta_set_kind="NOT_EVALUATED",
+            declared_direct_effect_beta_interval=None,
+            material_countermodel_within_declared_bounds=False,
+            finite_grid_alternative_beta_min=None,
+            finite_grid_alternative_beta_max=None,
+            finite_grid_alternative_beta_diameter=0.0,
             causal_authority_granted=False,
             reason="The frozen search grid contains no beta separated enough from the reference conclusion.",
         )
@@ -341,6 +426,14 @@ def search_countermodels(
         state = "NO_EXACT_COUNTERMODEL_FOUND_IN_FROZEN_SEARCH_CLASS"
         reason = "No exact alternative was found in the frozen finite search class; this is not proof that none exists outside it."
 
+    beta_values = [m.beta for m in exact]
+    beta_min = min(beta_values) if beta_values else None
+    beta_max = max(beta_values) if beta_values else None
+    beta_diameter = float(beta_max - beta_min) if beta_min is not None and beta_max is not None else 0.0
+    material_within = _interval_has_material_alternative(
+        direct_interval, reference_beta=reference_beta, min_causal_shift=min_causal_shift
+    ) if direct_interval is not None else bool(constrained)
+
     return CountermodelSearchDecision(
         state=state,
         reference_beta=float(reference_beta),
@@ -351,6 +444,12 @@ def search_countermodels(
         pareto_frontier=frontier,
         nearest_constrained_countermodel=nearest_constrained,
         nearest_unrestricted_countermodel=nearest_unrestricted,
+        unrestricted_beta_set_kind="ALL_REAL_BETA_UNDER_UNRESTRICTED_REPARAMETERIZATION",
+        declared_direct_effect_beta_interval=direct_interval,
+        material_countermodel_within_declared_bounds=material_within,
+        finite_grid_alternative_beta_min=beta_min,
+        finite_grid_alternative_beta_max=beta_max,
+        finite_grid_alternative_beta_diameter=beta_diameter,
         causal_authority_granted=False,
         reason=reason,
     )

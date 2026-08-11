@@ -123,3 +123,38 @@ def test_invalid_upstream_state_cannot_be_upgraded_by_countermodel_search():
     )
     assert d.state == "UPSTREAM_CANDIDATE_NOT_ELIGIBLE"
     assert d.causal_authority_granted is False
+
+
+def test_unrestricted_equivalence_is_explicitly_set_valued_not_truth_selected():
+    r, x, y, w = _sim(7, k=0.5)
+    iv = evaluate_regime_iv(regimes=r, treatment=x, outcome=y, negative_control=w)
+    d = search_countermodels(
+        regimes=r,
+        treatment=x,
+        outcome=y,
+        reference_beta=float(iv.beta_hat),
+        beta_grid=np.linspace(-0.5, 2.0, 101),
+        min_causal_shift=0.40,
+    )
+    assert d.unrestricted_beta_set_kind == "ALL_REAL_BETA_UNDER_UNRESTRICTED_REPARAMETERIZATION"
+    assert d.finite_grid_alternative_beta_diameter > 1.0
+    assert d.causal_authority_granted is False
+
+
+def test_direct_effect_bound_produces_analytic_assumption_conditional_interval():
+    r, x, y, w = _sim(8)
+    iv = evaluate_regime_iv(regimes=r, treatment=x, outcome=y, negative_control=w)
+    d = search_countermodels(
+        regimes=r,
+        treatment=x,
+        outcome=y,
+        reference_beta=float(iv.beta_hat),
+        beta_grid=np.linspace(-0.5, 2.0, 101),
+        min_causal_shift=0.40,
+        bounds=StructuralAssumptionBounds(max_direct_effect_l2=0.15),
+    )
+    interval = d.declared_direct_effect_beta_interval
+    assert interval is not None and not interval.is_empty
+    assert interval.width < 0.40
+    assert d.material_countermodel_within_declared_bounds is False
+    assert d.state == "ASSUMPTION_CONDITIONAL_IDENTIFICATION_COUNTERMODELS_OUTSIDE_BOUNDS"
