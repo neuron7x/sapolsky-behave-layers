@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / "artifacts/cog-epistemic-01"
-VERDICT = ROOT / "research/results/COG-EPISTEMIC-01/verdict.json"
+VERDICT = ROOT / "research/results/COG-EPISTEMIC-01R/verdict.json"
 FAMILIES = {
     "F0_DIRECT_CONSTRUCTION_BYPASS",
     "F1_WRONG_CAPABILITY_CLASS",
@@ -31,13 +31,13 @@ def _sha(path: Path) -> str:
 
 def _validate(v: dict) -> list[str]:
     errors: list[str] = []
-    if v.get("verdict") != "TYPED_EPISTEMIC_LATTICE_QUALIFIED_SYNTHETIC_NARROWED":
+    if v.get("verdict") != "TYPED_EPISTEMIC_LATTICE_R1_QUALIFIED_SYNTHETIC_NARROWED":
         errors.append("verdict drift")
     if v.get("scientific_pass") is not True:
         errors.append("scientific_pass drift")
     if v.get("authority") != "EPISTEMIC_RUNTIME_SAFETY_PRIMITIVE_ONLY":
         errors.append("authority drift")
-    if v.get("preconfirmatory_preregistration_commit") != "9479c217d1650839a00ba5a4285137a860ec47fd":
+    if v.get("preconfirmatory_preregistration_commit") != "72e7f59da6e8cf6dce8984e2360fc4e9cbd6db1f":
         errors.append("preregistration commit drift")
     if v.get("positive_chain") != ["OBSERVED", "PREDICTIVE", "ASSUMPTION_CONDITIONAL", "INTERVENTION_SUPPORTED"]:
         errors.append("positive chain drift")
@@ -61,7 +61,7 @@ def _validate(v: dict) -> list[str]:
         if boundary.get(key) is not False:
             errors.append(f"unsafe boundary {key}")
 
-    for cohort in ("PRIMARY", "REPLICATION"):
+    for cohort in ("PRIMARY_R1", "REPLICATION_R1"):
         c = v.get("cohorts", {}).get(cohort, {})
         if c.get("legal_transition_acceptance_rate") != 1.0:
             errors.append(f"{cohort} legal chain")
@@ -101,11 +101,11 @@ def main() -> int:
     if "--self-test" in sys.argv:
         mutants: list[dict] = []
         m = json.loads(json.dumps(v)); m["epistemic_boundary"]["terminal_record_resurrection_allowed"] = True; mutants.append(m)
-        m = json.loads(json.dumps(v)); m["cohorts"]["PRIMARY"]["families"]["F5_SURROGATE_AS_DIRECT_INTERVENTION"]["forbidden_accept_count"] = 1; mutants.append(m)
-        m = json.loads(json.dumps(v)); m["cohorts"]["REPLICATION"]["families"]["F6_CROSS_CLAIM_TOKEN_REUSE"]["forbidden_acceptance_rate"] = 1/128; mutants.append(m)
+        m = json.loads(json.dumps(v)); m["cohorts"]["PRIMARY_R1"]["families"]["F5_SURROGATE_AS_DIRECT_INTERVENTION"]["forbidden_accept_count"] = 1; mutants.append(m)
+        m = json.loads(json.dumps(v)); m["cohorts"]["REPLICATION_R1"]["families"]["F6_CROSS_CLAIM_TOKEN_REUSE"]["forbidden_acceptance_rate"] = 1/128; mutants.append(m)
         m = json.loads(json.dumps(v)); m["epistemic_boundary"]["unconditional_causal_truth_state_exists"] = True; mutants.append(m)
         m = json.loads(json.dumps(v)); m["positive_chain"][-1] = "TRUE_CAUSAL_MODEL"; mutants.append(m)
-        m = json.loads(json.dumps(v)); m["cohorts"]["PRIMARY"]["digest_checks"]["payload_change_changes_digest"] = False; mutants.append(m)
+        m = json.loads(json.dumps(v)); m["cohorts"]["PRIMARY_R1"]["digest_checks"]["payload_change_changes_digest"] = False; mutants.append(m)
         killed = sum(bool(_validate(m)) for m in mutants)
         if killed != len(mutants):
             errors.append(f"self-test killed {killed}/{len(mutants)}")

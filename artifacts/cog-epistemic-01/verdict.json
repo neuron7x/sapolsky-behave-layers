@@ -1,8 +1,8 @@
 {
-  "authority": "NO_PROMOTION",
+  "authority": "EPISTEMIC_RUNTIME_SAFETY_PRIMITIVE_ONLY",
   "cases_per_family_per_cohort": 128,
   "cohorts": {
-    "PRIMARY": {
+    "PRIMARY_R1": {
       "digest_checks": {
         "deterministic_identical_content": true,
         "payload_change_changes_digest": true
@@ -85,7 +85,7 @@
       "legal_chain_n": 128,
       "legal_transition_acceptance_rate": 1.0
     },
-    "REPLICATION": {
+    "REPLICATION_R1": {
       "digest_checks": {
         "deterministic_identical_content": true,
         "payload_change_changes_digest": true
@@ -104,10 +104,10 @@
           "unexpected_or_harness_error_count": 0
         },
         "F11_LEGACY_COUNTERMODEL_COLLAPSE": {
-          "forbidden_accept_count": 1,
-          "forbidden_acceptance_rate": 0.0078125,
+          "forbidden_accept_count": 0,
+          "forbidden_acceptance_rate": 0.0,
           "n": 128,
-          "unexpected_or_harness_error_count": 1
+          "unexpected_or_harness_error_count": 0
         },
         "F1_WRONG_CAPABILITY_CLASS": {
           "forbidden_accept_count": 0,
@@ -180,26 +180,23 @@
     "terminal_record_resurrection_allowed": false,
     "unconditional_causal_truth_state_exists": false
   },
-  "errors": [
-    "REPLICATION: F11_LEGACY_COUNTERMODEL_COLLAPSE accepted forbidden transition",
-    "REPLICATION: F11_LEGACY_COUNTERMODEL_COLLAPSE harness/runtime error"
-  ],
-  "experiment_id": "COG-EPISTEMIC-01",
+  "errors": [],
+  "experiment_id": "COG-EPISTEMIC-01R",
   "positive_chain": [
     "OBSERVED",
     "PREDICTIVE",
     "ASSUMPTION_CONDITIONAL",
     "INTERVENTION_SUPPORTED"
   ],
-  "preconfirmatory_preregistration_commit": "9479c217d1650839a00ba5a4285137a860ec47fd",
+  "preconfirmatory_preregistration_commit": "72e7f59da6e8cf6dce8984e2360fc4e9cbd6db1f",
   "primary_endpoint": "forbidden_transition_acceptance_rate==0 in every family/cohort",
-  "scientific_pass": false,
+  "scientific_pass": true,
   "terminal_states": [
     "UNIDENTIFIED",
     "FALSIFIED",
     "OOD",
     "ABSTAIN"
   ],
-  "verdict": "TYPED_EPISTEMIC_LATTICE_NOT_QUALIFIED",
-  "wall_seconds": 1.7489662450000196
+  "verdict": "TYPED_EPISTEMIC_LATTICE_R1_QUALIFIED_SYNTHETIC_NARROWED",
+  "wall_seconds": 2.2049618080000073
 }

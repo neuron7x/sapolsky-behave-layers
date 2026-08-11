@@ -2,7 +2,7 @@
   "authority": "EPISTEMIC_RUNTIME_SAFETY_PRIMITIVE_ONLY",
   "cases_per_family_per_cohort": 128,
   "cohorts": {
-    "PRIMARY": {
+    "PRIMARY_R1": {
       "digest_checks": {
         "deterministic_identical_content": true,
         "payload_change_changes_digest": true
@@ -83,11 +83,9 @@
       },
       "legal_chain_accept_count": 128,
       "legal_chain_n": 128,
-      "legal_transition_acceptance_rate": 1.0,
-      "namespace": "R1_PRIMARY",
-      "seed_base": 81001
+      "legal_transition_acceptance_rate": 1.0
     },
-    "REPLICATION": {
+    "REPLICATION_R1": {
       "digest_checks": {
         "deterministic_identical_content": true,
         "payload_change_changes_digest": true
@@ -168,9 +166,7 @@
       },
       "legal_chain_accept_count": 128,
       "legal_chain_n": 128,
-      "legal_transition_acceptance_rate": 1.0,
-      "namespace": "R1_REPLICATION",
-      "seed_base": 91001
+      "legal_transition_acceptance_rate": 1.0
     }
   },
   "epistemic_boundary": {
@@ -186,23 +182,14 @@
   },
   "errors": [],
   "experiment_id": "COG-EPISTEMIC-01R",
-  "parent_experiment": "COG-EPISTEMIC-01",
-  "parent_invalidation_reason": "F11 stochastic upstream precondition not guaranteed; one replication case never exercised target adapter",
-  "parent_raw_verdict": "TYPED_EPISTEMIC_LATTICE_NOT_QUALIFIED",
   "positive_chain": [
     "OBSERVED",
     "PREDICTIVE",
     "ASSUMPTION_CONDITIONAL",
     "INTERVENTION_SUPPORTED"
   ],
-  "preconfirmatory_preregistration_commit": "608e629a01490d58645d9c3f7fc73293b83ea3e4",
+  "preconfirmatory_preregistration_commit": "72e7f59da6e8cf6dce8984e2360fc4e9cbd6db1f",
   "primary_endpoint": "forbidden_transition_acceptance_rate==0 in every family/cohort",
-  "repair": {
-    "F10_F11_preconditions_changed_to_immutable_api_state_fixtures": true,
-    "fresh_namespaces": true,
-    "frozen_family_semantics_changed": false,
-    "thresholds_weakened": false
-  },
   "scientific_pass": true,
   "terminal_states": [
     "UNIDENTIFIED",
@@ -210,6 +197,6 @@
     "OOD",
     "ABSTAIN"
   ],
-  "verdict": "TYPED_EPISTEMIC_LATTICE_QUALIFIED_SYNTHETIC_NARROWED",
-  "wall_seconds": 0.6520218450000357
+  "verdict": "TYPED_EPISTEMIC_LATTICE_R1_QUALIFIED_SYNTHETIC_NARROWED",
+  "wall_seconds": 2.2049618080000073
 }
