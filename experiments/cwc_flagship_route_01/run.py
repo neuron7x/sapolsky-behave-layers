@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from . import core
 from .core import (
     OUT,
     SEEDS,
@@ -38,6 +39,10 @@ def ensure_model(seed: int) -> dict[str, Any]:
         m = json.loads(meta.read_text())
         if m["sha256"] != sha256_file(p):
             raise RuntimeError(f"checkpoint drift seed={seed}")
+        checkpoint_ref = p.resolve().relative_to(core.ROOT.resolve()).as_posix()
+        if m.get("checkpoint") != checkpoint_ref:
+            m = {**m, "checkpoint": checkpoint_ref}
+            dump(meta, m)
         return m
     m = train_model(seed, p)
     dump(meta, m)

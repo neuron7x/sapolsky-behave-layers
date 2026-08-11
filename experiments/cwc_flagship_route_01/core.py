@@ -287,7 +287,11 @@ def train_model(seed: int, checkpoint: Path) -> dict[str, Any]:
         "state_dict": model.state_dict(),
     }
     torch.save(payload, checkpoint)
-    return {"seed": seed, "checkpoint": str(checkpoint), "sha256": sha256_file(checkpoint), **payload["training"]}
+    try:
+        checkpoint_ref = checkpoint.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise ProtocolViolation("checkpoint must remain repository-relative") from exc
+    return {"seed": seed, "checkpoint": checkpoint_ref, "sha256": sha256_file(checkpoint), **payload["training"]}
 
 
 def load_model(checkpoint: Path) -> DualExitLM:

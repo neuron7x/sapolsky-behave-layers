@@ -78,3 +78,11 @@ def test_semantic_mutations_all_die() -> None:
     r = self_test()
     assert r["passed"] is True
     assert r["killed"] == r["total"] == 14
+
+
+def test_checkpoint_metadata_is_repository_relative(tmp_path) -> None:
+    p = core.ROOT / "artifacts" / "cwc-flagship-route-01" / "checkpoints" / "probe.pt"
+    # Contract-level assertion: generated artifact references may not encode host-absolute paths.
+    ref = p.resolve().relative_to(core.ROOT.resolve()).as_posix()
+    assert ref == "artifacts/cwc-flagship-route-01/checkpoints/probe.pt"
+    assert not ref.startswith("/")
