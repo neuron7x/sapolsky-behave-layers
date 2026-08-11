@@ -13,6 +13,7 @@ from scripts import (
     assurance_attack,
     build_sbom,
     complexity_gate,
+    dependency_integrity_gate,
     hermeticity_gate,
     inference_integrity_gate,
 )
@@ -35,6 +36,7 @@ def build_report(root: Path = ROOT) -> dict[str, object]:
         ("architecture", lambda: architecture_gate.validate(root)),
         ("hermeticity", lambda: hermeticity_gate.validate(root)),
         ("complexity", lambda: complexity_gate.validate(root)),
+        ("dependency_integrity", lambda: dependency_integrity_gate.validate(root)),
         ("sbom", lambda: build_sbom.validate(root)),
         ("inference_integrity", lambda: inference_integrity_gate.validate(root)),
         ("assurance_attacks", assurance_attack.validate),
@@ -45,13 +47,18 @@ def build_report(root: Path = ROOT) -> dict[str, object]:
         results.append({"name": name, "status": "pass" if not errors else "fail", "errors": errors})
     lock_sha = hashlib.sha256((root / "uv.lock").read_bytes()).hexdigest()
     status = "pass" if all(item["status"] == "pass" for item in results) else "fail"
+    dependency_report = dependency_integrity_gate.audit(root)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": status,
         "git_commit": _git(root, "rev-parse", "HEAD"),
         "git_tree": _git(root, "rev-parse", "HEAD^{tree}"),
         "uv_lock_sha256": lock_sha,
         "checks": results,
+        "limitations": {
+            "vulnerability_status": dependency_report.metrics["vulnerability_status"],
+            "dependency_integrity_warnings": list(dependency_report.warnings),
+        },
     }
 
 

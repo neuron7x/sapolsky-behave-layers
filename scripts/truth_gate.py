@@ -141,7 +141,7 @@ def _contract_errors(root: Path) -> list[str]:
         "pr-full: verify-full pr-security",
         "truth-gate:",
         "engineering-assurance:",
-        "pr-security: truth-gate workflow-lint secret-scan dependency-audit engineering-assurance",
+        "pr-security: truth-gate workflow-lint secret-scan dependency-integrity-gate dependency-audit engineering-assurance",
     ):
         if token not in makefile:
             errors.append(f"Makefile contract missing: {token}")
@@ -154,6 +154,8 @@ def _contract_errors(root: Path) -> list[str]:
         "scripts/hermeticity_gate.py",
         "scripts/complexity_gate.py",
         "scripts/build_sbom.py",
+        "scripts/dependency_integrity_gate.py",
+        "tests/test_dependency_integrity_gate.py",
         "scripts/assurance_attack.py",
         "scripts/assurance_report.py",
         "scripts/inference_integrity_gate.py",

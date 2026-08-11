@@ -6,7 +6,7 @@
 PY ?= .venv/bin/python
 COVERAGE_FAIL_UNDER ?= 95
 
-.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate cog-self01-gate current-prereg-gate
+.PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit dependency-integrity-gate architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate cog-self01-gate current-prereg-gate
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
 verify: lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage mutation experiment-tests validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate doc-gate cog-self01-gate
@@ -24,7 +24,7 @@ verify-full: verify verify-evidence reproduce-primary
 pr-fast: truth-gate lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate validate-evidence verdict-binding causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate doc-gate cog-self01-gate
 	@echo "CWC-PR-FAST: ALL GATES PASSED"
 
-pr-security: truth-gate workflow-lint secret-scan dependency-audit engineering-assurance
+pr-security: truth-gate workflow-lint secret-scan dependency-integrity-gate dependency-audit engineering-assurance
 	@echo "CWC-PR-SECURITY: ALL GATES PASSED"
 
 pr-full: verify-full pr-security
@@ -49,9 +49,13 @@ dependency-audit:
 	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
 	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
 
-# Seven project-level engineering capabilities: explicit architecture, hermetic
-# reproduction, algorithmic budgets, deterministic SBOM, adversarial gate attacks,
-# machine-readable assurance evidence, and mandatory CI admission.
+dependency-integrity-gate:
+	PYTHONPATH=. $(PY) scripts/dependency_integrity_gate.py --self-test
+	PYTHONPATH=. $(PY) scripts/dependency_integrity_gate.py
+
+# Eight project-level engineering capabilities: explicit architecture, hermetic
+# reproduction, algorithmic budgets, offline dependency integrity, deterministic SBOM,
+# adversarial gate attacks, machine-readable assurance evidence, and mandatory CI admission.
 architecture-gate:
 	PYTHONPATH=. $(PY) scripts/architecture_gate.py
 
@@ -73,7 +77,7 @@ inference-integrity-gate:
 assurance-report:
 	PYTHONPATH=. $(PY) scripts/assurance_report.py
 
-engineering-assurance: architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report
+engineering-assurance: architecture-gate hermeticity-gate complexity-gate dependency-integrity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report
 	@echo "CWC-ENGINEERING-ASSURANCE: ALL GATES PASSED"
 
 # Current-tree temporal preregistration integrity. Unlike the sealed historical WP12
