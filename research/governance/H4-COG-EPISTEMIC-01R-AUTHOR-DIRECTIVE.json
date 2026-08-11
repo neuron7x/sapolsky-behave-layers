@@ -1,0 +1,15 @@
+{
+  "architecture_authority": false,
+  "created_at": "2026-08-11",
+  "decision": "APPROVE_EXECUTION",
+  "decision_id": "H4-COG-EPISTEMIC-01R-AUTHOR-DIRECTIVE",
+  "evidence_refs": [
+    "experiments/cog_epistemic_01r/PREREGISTRATION.md",
+    "research/reports/COG_EPISTEMIC_01_INVALIDATION.md"
+  ],
+  "gate": "H4_EXPERIMENT_DESIGN",
+  "rationale": "The parent run is preserved as non-passing because one F11 replication case never reached the intended adapter precondition. This repair freezes fresh cohorts and replaces only the stochastic precondition construction with immutable legacy API-state fixtures; no threshold is weakened and no architecture authority is granted.",
+  "reviewer": "AUTHOR_DIRECTIVE",
+  "reviewer_role": "HUMAN_RESEARCH_OWNER",
+  "subject_id": "COG-EPISTEMIC-01R"
+}
