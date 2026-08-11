@@ -1,0 +1,304 @@
+{
+  "authority": "EPISTEMIC_MEMORY_PRIMITIVE_ONLY",
+  "cases_per_family_per_cohort": 128,
+  "cohorts": {
+    "PRIMARY": {
+      "families": {
+        "M0": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M1": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M10": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": 0.0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M11": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M2": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M3": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M4": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M5": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M6": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M7": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": 1.0,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M8": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": 1.0,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M9": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": 0.0
+        }
+      },
+      "seed_base": 82001
+    },
+    "REPLICATION": {
+      "families": {
+        "M0": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M1": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M10": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": 0.0,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M11": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M2": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M3": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M4": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M5": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M6": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M7": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": 1.0,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M8": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": 1.0,
+          "tampered_binding_acceptance_rate": null
+        },
+        "M9": {
+          "event_chain_failure_count": 0,
+          "false_causal_consolidation_count": 0,
+          "invariant_failure_count": 0,
+          "legacy_string_injection_acceptance_rate": null,
+          "n": 128,
+          "pass_count": 128,
+          "pass_rate": 1.0,
+          "required_transitive_retraction_rate": null,
+          "tampered_binding_acceptance_rate": 0.0
+        }
+      },
+      "seed_base": 92001
+    }
+  },
+  "errors": [],
+  "experiment_id": "COG-MEMORY-01",
+  "memory_policy": {
+    "assumption_conditional_causal_consolidation_allowed": false,
+    "assumption_invalidation_retraction_required": true,
+    "in_place_authority_upgrade_allowed": false,
+    "intervention_supported_requires_empty_countermodel_set": true,
+    "legacy_string_authority_allowed": false,
+    "observed_predictive_are_causal": false,
+    "terminal_states_can_create_active_causal_memory": false,
+    "transitive_dependency_retraction_required": true
+  },
+  "non_promotion_boundary": {
+    "active_control": false,
+    "architecture_promotion": false,
+    "autonomous_self_modification": false,
+    "planning_value": false,
+    "replay_control": false,
+    "semantic_causality": false
+  },
+  "preconfirmatory_preregistration_commit": "6746ab022fa8cda066ebfe66bcca4634d6881973",
+  "scientific_pass": true,
+  "verdict": "ASSUMPTION_AWARE_MEMORY_CONSOLIDATION_QUALIFIED_SYNTHETIC_NARROWED",
+  "wall_seconds": 1.1488071139999647
+}
