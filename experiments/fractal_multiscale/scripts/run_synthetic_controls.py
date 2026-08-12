@@ -10,7 +10,11 @@ SRC = PKG_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from cwc_fractal.robust_protocol import load_yaml, robust_mappings, validate_robust_protocol  # noqa: E402
+from cwc_fractal.robust_protocol import (  # noqa: E402
+    load_yaml,
+    robust_mappings,
+    validate_robust_protocol,
+)
 from cwc_fractal.synthetic_controls import evaluate_control  # noqa: E402
 
 DEFAULT_PROTOCOL = PKG_ROOT / "experiments" / "cwc_fractal_protocol_v2.yaml"
@@ -54,7 +58,9 @@ def main() -> None:
         "protocol_id": protocol["protocol_id"],
         "results": results,
         "calibration_pass": calibration_pass,
-        "verdict": "SYNTHETIC_CONTROL_CALIBRATION_PASS" if calibration_pass else "SYNTHETIC_CONTROL_CALIBRATION_FAIL",
+        "verdict": "SYNTHETIC_CONTROL_CALIBRATION_PASS"
+        if calibration_pass
+        else "SYNTHETIC_CONTROL_CALIBRATION_FAIL",
         "claim_boundary": "Synthetic controls validate the statistic/gate behavior only; they do not validate CWC runtime organization.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

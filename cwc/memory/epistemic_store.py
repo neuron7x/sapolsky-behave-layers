@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 import hashlib
 import json
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from enum import Enum
 
 from cwc.epistemics.lattice import EpistemicRecord, EpistemicState
-
 
 _MEMORY_MINT_SEAL = object()
 
@@ -65,7 +64,7 @@ class MemoryRecord:
     reason: str
     memory_digest: str
 
-    def __new__(cls, *args: object, **kwargs: object) -> "MemoryRecord":
+    def __new__(cls, *args: object, **kwargs: object) -> MemoryRecord:
         raise TypeError("MemoryRecord can only be constructed by EpistemicMemoryLedger")
 
     @classmethod
@@ -89,7 +88,7 @@ class MemoryRecord:
         causal_consolidated: bool,
         reason: str,
         _seal: object,
-    ) -> "MemoryRecord":
+    ) -> MemoryRecord:
         if _seal is not _MEMORY_MINT_SEAL:
             raise TypeError("invalid memory mint seal")
         if not memory_id.strip() or not claim_id.strip():
@@ -193,7 +192,7 @@ class MemoryEvent:
         previous_event_hash: str | None,
         record_digest: str,
         reason: str,
-    ) -> "MemoryEvent":
+    ) -> MemoryEvent:
         payload = {
             "sequence": sequence,
             "event_type": event_type.value,
@@ -368,7 +367,9 @@ class EpistemicMemoryLedger:
             changed.append(mid)
         # Record an assumption-level event even if no memory currently depends on it.
         synthetic_digest = _sha({"assumption_id": assumption_id, "reason": reason, "targets": sorted(targets)})
-        self._append_raw_event(MemoryEventType.ASSUMPTION_INVALIDATE, f"assumption:{assumption_id}", synthetic_digest, reason)
+        self._append_raw_event(
+            MemoryEventType.ASSUMPTION_INVALIDATE, f"assumption:{assumption_id}", synthetic_digest, reason
+        )
         return tuple(changed)
 
     def event_chain_valid(self) -> bool:

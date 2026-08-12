@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from cwc.causal.regime_identifiability import RegimeIVDecision
 from cwc.epistemics.countermodel_search import CountermodelSearchDecision

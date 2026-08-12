@@ -11,6 +11,7 @@
   closed, so it is a checksum over final content, not content still being
   written.
 """
+
 from __future__ import annotations
 
 import hashlib

@@ -6,8 +6,8 @@ import math
 import random
 import statistics
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 PKG_ROOT = Path(__file__).resolve().parents[1]
 SRC = PKG_ROOT / "src"
@@ -133,11 +133,17 @@ def main() -> None:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "total_simulated_series": payload["total_simulated_series"],
-        "overlap": overlap,
-        "verdict": payload["verdict"],
-    }, indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "total_simulated_series": payload["total_simulated_series"],
+                "overlap": overlap,
+                "verdict": payload["verdict"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

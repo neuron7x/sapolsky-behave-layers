@@ -84,7 +84,10 @@ def main() -> None:
     fixed_identifiable = 0
     for path in fixed_analyses:
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if payload.get("verdict") != "MULTISCALE_ORGANIZATION_NOT_IDENTIFIABLE_UNDER_CURRENT_INSTRUMENTATION":
+        if (
+            payload.get("verdict")
+            != "MULTISCALE_ORGANIZATION_NOT_IDENTIFIABLE_UNDER_CURRENT_INSTRUMENTATION"
+        ):
             fixed_identifiable += 1
 
     windows = [load_window(path) for path in variable_traces]

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
 import math
 import random
-from typing import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import asdict, dataclass
 
 from cwc.epistemics.information_acquisition import (
     InformationAction,
@@ -150,8 +150,18 @@ def _q(
     )
 
 
-def _decision(kind: str, *, action: str | None = None, scope: str | None = None, query: str | None = None, target: str | None = None, reason: str) -> CabDecision:
-    return CabDecision(kind=kind, action_id=action, authority_scope=scope, query_id=query, target_id=target, reason=reason)
+def _decision(
+    kind: str,
+    *,
+    action: str | None = None,
+    scope: str | None = None,
+    query: str | None = None,
+    target: str | None = None,
+    reason: str,
+) -> CabDecision:
+    return CabDecision(
+        kind=kind, action_id=action, authority_scope=scope, query_id=query, target_id=target, reason=reason
+    )
 
 
 def _base_task(
@@ -186,17 +196,36 @@ def generate_case(family: str, cohort: str, seed: int, *, variant: str = "S") ->
     if family not in {f"F{i}" for i in range(12)}:
         raise KeyError(family)
     rng = random.Random(seed * 37 + sum(ord(c) for c in variant))
-    jitter = lambda lo, hi: rng.uniform(lo, hi)
+
+    def jitter(lo, hi):
+        return rng.uniform(lo, hi)
+
     generic = (
-        _q("Q000", 1.0, jitter(0.03, 0.08), jitter(0.03, 0.08), model_info=jitter(0.2, 0.4), uncertainty=jitter(0.2, 0.5)),
-        _q("Q001", 1.2, jitter(0.03, 0.08), jitter(0.03, 0.08), model_info=jitter(0.2, 0.4), uncertainty=jitter(0.2, 0.5)),
+        _q(
+            "Q000",
+            1.0,
+            jitter(0.03, 0.08),
+            jitter(0.03, 0.08),
+            model_info=jitter(0.2, 0.4),
+            uncertainty=jitter(0.2, 0.5),
+        ),
+        _q(
+            "Q001",
+            1.2,
+            jitter(0.03, 0.08),
+            jitter(0.03, 0.08),
+            model_info=jitter(0.2, 0.4),
+            uncertainty=jitter(0.2, 0.5),
+        ),
     )
     group = _opaque_id(seed, "GROUP")[:12]
 
     if family == "F0":
         task = _base_task(seed, variant, decisions=("A000", "A000"), queries=generic)
         state = ROBUST_STATE
-        label = _decision("ACT", action="A000", scope=ROBUST_SCOPE, reason="all admitted worlds agree on immediate action")
+        label = _decision(
+            "ACT", action="A000", scope=ROBUST_SCOPE, reason="all admitted worlds agree on immediate action"
+        )
     elif family == "F1":
         qs = (
             _q("Q000", 1.0, 0.04, jitter(0.30, 0.40), model_info=0.25, uncertainty=0.55),
@@ -228,17 +257,27 @@ def generate_case(family: str, cohort: str, seed: int, *, variant: str = "S") ->
         )
         task = _base_task(seed, variant, decisions=("A000", "A000"), queries=qs)
         state = ROBUST_STATE
-        label = _decision("ACT", action="A000", scope=ROBUST_SCOPE, reason="aleatoric uncertainty does not alter robust decision")
+        label = _decision(
+            "ACT", action="A000", scope=ROBUST_SCOPE, reason="aleatoric uncertainty does not alter robust decision"
+        )
     elif family == "F5":
-        task = _base_task(seed, variant, decisions=("A000", "A001"), queries=generic, intervention=True, intervention_action="A001")
+        task = _base_task(
+            seed, variant, decisions=("A000", "A001"), queries=generic, intervention=True, intervention_action="A001"
+        )
         state = INTERVENTION_STATE
-        label = _decision("ACT", action="A001", scope=INTERVENTION_SCOPE, reason="direct intervention supports scoped action")
+        label = _decision(
+            "ACT", action="A001", scope=INTERVENTION_SCOPE, reason="direct intervention supports scoped action"
+        )
     elif family == "F6":
-        task = _base_task(seed, variant, decisions=("A000", "A001"), queries=generic, falsified=True, rejection_target="AASM")
+        task = _base_task(
+            seed, variant, decisions=("A000", "A001"), queries=generic, falsified=True, rejection_target="AASM"
+        )
         state = REJECT_STATE
         label = _decision("REJECT_MODEL", target="AASM", reason="negative control falsifies identifying assumption")
     elif family == "F7":
-        task = _base_task(seed, variant, decisions=("A000", "A000"), queries=generic, falsified=True, rejection_target="EVID")
+        task = _base_task(
+            seed, variant, decisions=("A000", "A000"), queries=generic, falsified=True, rejection_target="EVID"
+        )
         state = REJECT_STATE
         label = _decision("REJECT_MODEL", target="EVID", reason="provenance corruption invalidates evidence authority")
     elif family == "F8":
@@ -248,7 +287,9 @@ def generate_case(family: str, cohort: str, seed: int, *, variant: str = "S") ->
         )
         task = _base_task(seed, variant, decisions=("A000", "A001"), queries=qs, budget=50.0, decision_loss=50.0)
         state = QUERY_STATE
-        label = _decision("QUERY", query="Q001", reason="decision-relevant query beats higher model-information distractor")
+        label = _decision(
+            "QUERY", query="Q001", reason="decision-relevant query beats higher model-information distractor"
+        )
     elif family == "F9":
         rate = jitter(0.19, 0.24)
         qs = (
@@ -347,13 +388,19 @@ def analytic_oracle(task: CabTask) -> tuple[str, CabDecision]:
     if task.observed_falsification:
         return REJECT_STATE, _decision("REJECT_MODEL", target=task.rejection_target, reason="observed falsifier")
     if task.intervention_supported:
-        return INTERVENTION_STATE, _decision("ACT", action=task.intervention_action, scope=INTERVENTION_SCOPE, reason="scoped intervention support")
+        return INTERVENTION_STATE, _decision(
+            "ACT", action=task.intervention_action, scope=INTERVENTION_SCOPE, reason="scoped intervention support"
+        )
     decisions = tuple(task.alternative_decisions.values())
     if all(d == task.candidate_action for d in decisions):
-        return ROBUST_STATE, _decision("ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="decision invariant across admitted worlds")
+        return ROBUST_STATE, _decision(
+            "ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="decision invariant across admitted worlds"
+        )
     query = _analytic_best_query(task)
     if query is not None:
-        return QUERY_STATE, _decision("QUERY", query=query, reason="analytic decision-information converse permits query")
+        return QUERY_STATE, _decision(
+            "QUERY", query=query, reason="analytic decision-information converse permits query"
+        )
     return ABSTAIN_STATE, _decision("ABSTAIN", reason="action unresolved under admitted information/cost constraints")
 
 
@@ -362,7 +409,9 @@ def runtime_oracle(task: CabTask) -> tuple[str, CabDecision]:
     if task.observed_falsification:
         return REJECT_STATE, _decision("REJECT_MODEL", target=task.rejection_target, reason="observed falsifier")
     if task.intervention_supported:
-        return INTERVENTION_STATE, _decision("ACT", action=task.intervention_action, scope=INTERVENTION_SCOPE, reason="scoped intervention support")
+        return INTERVENTION_STATE, _decision(
+            "ACT", action=task.intervention_action, scope=INTERVENTION_SCOPE, reason="scoped intervention support"
+        )
     result = select_decision_relevant_information_action(
         actions=[q.as_information_action() for q in task.queries],
         candidate_decision=task.candidate_action,
@@ -372,7 +421,9 @@ def runtime_oracle(task: CabTask) -> tuple[str, CabDecision]:
         available_budget=min(task.available_budget, task.decision_loss_value),
     )
     if result.state == "DECISION_ALREADY_IDENTIFIED_NO_ACQUISITION":
-        return ROBUST_STATE, _decision("ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="runtime decision invariant")
+        return ROBUST_STATE, _decision(
+            "ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="runtime decision invariant"
+        )
     if result.state == "ACQUIRE_DECISION_RELEVANT_EVIDENCE_BUDGET_NOT_RULED_OUT_BY_CONVERSE":
         return QUERY_STATE, _decision("QUERY", query=result.action_id, reason="runtime decision-information query")
     return ABSTAIN_STATE, _decision("ABSTAIN", reason=f"runtime veto: {result.state}")
@@ -382,7 +433,12 @@ def _predecision_guard(task: CabTask) -> CabDecision | None:
     if task.observed_falsification:
         return _decision("REJECT_MODEL", target=task.rejection_target, reason="guarded observed falsifier")
     if task.intervention_supported:
-        return _decision("ACT", action=task.intervention_action, scope=INTERVENTION_SCOPE, reason="guarded scoped intervention support")
+        return _decision(
+            "ACT",
+            action=task.intervention_action,
+            scope=INTERVENTION_SCOPE,
+            reason="guarded scoped intervention support",
+        )
     return None
 
 
@@ -413,7 +469,9 @@ def policy_generic_uncertainty(task: CabTask, _: int = 0) -> CabDecision:
     q = max(task.queries, key=lambda x: (x.predictive_uncertainty, -x.unit_cost, x.query_id))
     if q.predictive_uncertainty >= 0.75 and q.unit_cost <= task.available_budget:
         return _decision("QUERY", query=q.query_id, reason="generic predictive uncertainty")
-    return _decision("ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="generic uncertainty below threshold")
+    return _decision(
+        "ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="generic uncertainty below threshold"
+    )
 
 
 def policy_full_model_maximin(task: CabTask, _: int = 0) -> CabDecision:
@@ -443,7 +501,9 @@ def policy_robust_no_query(task: CabTask, _: int = 0) -> CabDecision:
     if guard is not None:
         return guard
     if all(d == task.candidate_action for d in task.alternative_decisions.values()):
-        return _decision("ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="worst-case decision invariant")
+        return _decision(
+            "ACT", action=task.candidate_action, scope=ROBUST_SCOPE, reason="worst-case decision invariant"
+        )
     return _decision("ABSTAIN", reason="worst-case policy refuses unresolved action")
 
 
@@ -534,7 +594,7 @@ def score_policy(cases: Sequence[CabCase], outputs: Sequence[CabDecision]) -> di
     emitted_rejects = 0
     correct_rejects = 0
     terminal_correct = 0
-    for i, (case, out) in enumerate(zip(cases, outputs)):
+    for _i, (case, out) in enumerate(zip(cases, outputs, strict=False)):
         exp = case.construction_label
         exact = decisions_equal(out, exp)
         terminal_correct += int(exact)
@@ -560,7 +620,9 @@ def score_policy(cases: Sequence[CabCase], outputs: Sequence[CabDecision]) -> di
         "n": n,
         "false_causal_authority_rate": false_authority / n if n else 0.0,
         "wrong_irreversible_action_rate": wrong_act / n if n else 0.0,
-        "correct_robust_action_rate": rate(robust_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)),
+        "correct_robust_action_rate": rate(
+            robust_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)
+        ),
         "necessary_query_recall": rate(query_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)),
         "unnecessary_query_cost": unnecessary_query_cost / n if n else 0.0,
         "no_information_abstention_accuracy": rate(abstain_cases, lambda i: outputs[i].kind == "ABSTAIN"),
@@ -570,7 +632,9 @@ def score_policy(cases: Sequence[CabCase], outputs: Sequence[CabDecision]) -> di
         "coverage": 1.0 if n else 0.0,
         "terminal_accuracy": terminal_correct / n if n else 0.0,
         "rejection_recall": rate(reject_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)),
-        "intervention_scoped_action_accuracy": rate(intervention_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)),
+        "intervention_scoped_action_accuracy": rate(
+            intervention_cases, lambda i: decisions_equal(outputs[i], cases[i].construction_label)
+        ),
     }
     return metrics
 
@@ -596,7 +660,8 @@ def pareto_dominates(a: Mapping[str, float | int], b: Mapping[str, float | int],
     no_worse = True
     strict = False
     for key in PRIMARY_METRICS:
-        av = float(a[key]); bv = float(b[key])
+        av = float(a[key])
+        bv = float(b[key])
         if key in ERROR_COST_METRICS:
             if av > bv + eps:
                 no_worse = False

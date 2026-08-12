@@ -14,15 +14,16 @@ import hashlib
 import json
 import re
 import shutil
+import sys
 import tempfile
 import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
+else:  # pragma: no cover - selected by the canonical Python 3.10 runtime
     import tomli as tomllib
 
 from scripts import build_sbom

@@ -79,22 +79,16 @@ def test_flop_ledger_rejects_negative_executed_estimate():
 
 def test_flop_ledger_noncausal_attention_branch():
     ledger = FlopLedger()
-    rec = ledger.add_attention(
-        "a", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, causal=False
-    )
+    rec = ledger.add_attention("a", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, causal=False)
     # non-causal uses full T*T pairs, strictly more than causal
-    causal = ledger.add_attention(
-        "b", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, causal=True
-    )
+    causal = ledger.add_attention("b", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, causal=True)
     assert rec.logical_flops > causal.logical_flops
 
 
 def test_sliding_window_zero_raises_via_ledger():
     ledger = FlopLedger()
     with pytest.raises(ValueError, match="window must be positive"):
-        ledger.add_attention(
-            "w", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, window=0
-        )
+        ledger.add_attention("w", batch=1, seq_len=8, d_model=16, n_head=2, n_kv_head=2, head_dim=8, window=0)
 
 
 # --------------------------------------------------------------------------- #
@@ -165,25 +159,49 @@ def test_run_meter_error_scope_records_and_reraises():
 # --------------------------------------------------------------------------- #
 def test_vram_record_delta():
     rec = VRAMRecord(
-        scope_name="s", device="cuda",
-        start_allocated_bytes=100, start_reserved_bytes=200,
-        peak_allocated_bytes=500, peak_reserved_bytes=600,
-        end_allocated_bytes=300, end_reserved_bytes=400,
+        scope_name="s",
+        device="cuda",
+        start_allocated_bytes=100,
+        start_reserved_bytes=200,
+        peak_allocated_bytes=500,
+        peak_reserved_bytes=600,
+        end_allocated_bytes=300,
+        end_reserved_bytes=400,
     )
     assert rec.delta_allocated_bytes == 200
 
 
 def test_instrumentation_summary_to_dict_roundtrips_keys():
     summary = InstrumentationSummary(
-        schema_version="1.0.0", run={}, environment={}, model={}, workload={},
-        instrumentation={}, latency={}, throughput={}, vram={}, flops={},
-        energy={}, routing={}, validity={},
+        schema_version="1.0.0",
+        run={},
+        environment={},
+        model={},
+        workload={},
+        instrumentation={},
+        latency={},
+        throughput={},
+        vram={},
+        flops={},
+        energy={},
+        routing={},
+        validity={},
     )
     d = summary.to_dict()
     assert set(d) == {
-        "schema_version", "run", "environment", "model", "workload",
-        "instrumentation", "latency", "throughput", "vram", "flops",
-        "energy", "routing", "validity",
+        "schema_version",
+        "run",
+        "environment",
+        "model",
+        "workload",
+        "instrumentation",
+        "latency",
+        "throughput",
+        "vram",
+        "flops",
+        "energy",
+        "routing",
+        "validity",
     }
 
 
@@ -333,8 +351,11 @@ def test_flops_rejects_negative_shared_expert_count():
     ledger = FlopLedger()
     with pytest.raises(ValueError, match="token counts cannot be negative"):
         ledger.record_expert_assignments(
-            expert_token_counts={0: 1}, top_k=1,
-            shared_expert_token_count=-1, dropped_token_count=0, padded_token_count=0,
+            expert_token_counts={0: 1},
+            top_k=1,
+            shared_expert_token_count=-1,
+            dropped_token_count=0,
+            padded_token_count=0,
         )
 
 
@@ -419,8 +440,12 @@ def test_routing_rejects_negative_dropped_tokens():
     counters = RoutingCounters()
     with pytest.raises(ValueError, match="dropped/padded token counts cannot be negative"):
         counters.record(
-            step=0, active_tokens=1, active_blocks=1, active_experts=1,
-            active_parameters=1, dropped_tokens=-1,
+            step=0,
+            active_tokens=1,
+            active_blocks=1,
+            active_experts=1,
+            active_parameters=1,
+            dropped_tokens=-1,
         )
 
 
@@ -428,8 +453,10 @@ def test_roofline_zero_flops_is_unclassified_zero_bandwidth():
     from cwc.instrumentation.audit import roofline_report
 
     report = roofline_report(
-        total_flops=0, total_bytes_moved=1000,
-        peak_flops_per_s=1e12, peak_bandwidth_bytes_per_s=1e9,
+        total_flops=0,
+        total_bytes_moved=1000,
+        peak_flops_per_s=1e12,
+        peak_bandwidth_bytes_per_s=1e9,
         hardware_ceiling_provenance="test",
     )
     assert report["bound"] == "unclassified"

@@ -13,6 +13,7 @@ watts, or reporting 0 as if it were a real measurement of an unmeasured
 window (Act 4.9). Zero joules is only ever returned attached to
 available=False / confidence="unavailable".
 """
+
 from __future__ import annotations
 
 import itertools
@@ -25,6 +26,7 @@ from .types import EnergyRecord
 
 try:
     import pynvml
+
     _PYNVML_AVAILABLE = True
 except ImportError:
     pynvml = None

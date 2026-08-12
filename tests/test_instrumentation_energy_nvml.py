@@ -70,7 +70,7 @@ def test_total_energy_backend_unsupported_device_is_unavailable(monkeypatch):
     monkeypatch.setattr(energy_mod, "_PYNVML_AVAILABLE", True)
     sampler = NVMLTotalEnergySampler()
     assert sampler.available is False  # capability probe failed
-    assert sampler.stop() is None      # None, not a fabricated record
+    assert sampler.stop() is None  # None, not a fabricated record
 
 
 def test_total_energy_delta_never_negative(fake_nvml):

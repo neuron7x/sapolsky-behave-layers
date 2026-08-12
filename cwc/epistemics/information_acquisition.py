@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 from cwc.replay.passive_identifiability import binary_kl
 
@@ -91,7 +91,7 @@ def select_maximin_information_action(
             continue
         rates = {m: float(action.information_rate_lower_bounds[m]) for m in alternatives}
         min_rate = min(rates.values())
-        bottlenecks = tuple(sorted(m for m,v in rates.items() if abs(v-min_rate) <= 1e-15))
+        bottlenecks = tuple(sorted(m for m, v in rates.items() if abs(v - min_rate) <= 1e-15))
         q = min_rate / action.unit_cost
         max_total_cost = math.inf if action.max_units is None else action.max_units * action.unit_cost
         eligible.append((q, action, bottlenecks, max_total_cost))
@@ -105,7 +105,9 @@ def select_maximin_information_action(
             math.inf,
             available_budget,
             alternatives,
-            "No action has a complete certified lower-bound rate vector for the unresolved equivalence class." if not uncertified else "Only uncertified/partial information-rate estimates are available.",
+            "No action has a complete certified lower-bound rate vector for the unresolved equivalence class."
+            if not uncertified
+            else "Only uncertified/partial information-rate estimates are available.",
         )
 
     eligible.sort(key=lambda t: (-t[0], t[1].unit_cost, t[1].action_id))
@@ -262,8 +264,7 @@ def select_decision_relevant_information_action(
             ignored_same_decision_alternatives=same,
             bottleneck_alternatives=cross,
             reason=(
-                "No action has a complete certified lower-bound rate vector for every "
-                "cross-decision alternative."
+                "No action has a complete certified lower-bound rate vector for every cross-decision alternative."
                 if not saw_uncertified
                 else "Only uncertified or incomplete rates cover the cross-decision alternatives."
             ),

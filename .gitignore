@@ -1,16 +1,25 @@
 .venv/
+**/.venv/
 __pycache__/
+**/__pycache__/
 *.egg-info/
 assurance-build/
 *.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
 dev-ignore/
 report.md
 eval_bundle/
 
 # Secrets
 .env
+.env.*
+!.env.example
 
 # Local setup
 CLAUDE.md
 wandb/
 .coverage
+.DS_Store

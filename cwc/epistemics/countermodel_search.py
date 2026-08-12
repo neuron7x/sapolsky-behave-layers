@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 import numpy as np
-
 
 ELIGIBLE_CANDIDATE_STATE = "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS"
 
@@ -181,13 +180,13 @@ def direct_effect_beta_interval(
         return DirectEffectBetaInterval(None, None, True, float(max_direct_effect_l2))
     b = float(-2.0 * (delta @ lam))
     c = float(delta @ delta - max_direct_effect_l2**2)
-    disc = b*b - 4.0*a*c
+    disc = b * b - 4.0 * a * c
     if disc < -1e-12:
         return DirectEffectBetaInterval(None, None, True, float(max_direct_effect_l2))
     disc = max(0.0, disc)
     root = math.sqrt(disc)
-    lo = (-b - root) / (2.0*a)
-    hi = (-b + root) / (2.0*a)
+    lo = (-b - root) / (2.0 * a)
+    hi = (-b + root) / (2.0 * a)
     return DirectEffectBetaInterval(float(lo), float(hi), False, float(max_direct_effect_l2))
 
 
@@ -199,7 +198,9 @@ def _interval_has_material_alternative(
 ) -> bool:
     if interval is None or interval.is_empty or interval.lower is None or interval.upper is None:
         return False
-    return (reference_beta - interval.lower >= min_causal_shift - 1e-12) or (interval.upper - reference_beta >= min_causal_shift - 1e-12)
+    return (reference_beta - interval.lower >= min_causal_shift - 1e-12) or (
+        interval.upper - reference_beta >= min_causal_shift - 1e-12
+    )
 
 
 def _within_bounds(
@@ -212,9 +213,7 @@ def _within_bounds(
         return True
     if bounds.max_direct_effect_l2 is not None and direct_l2 > bounds.max_direct_effect_l2 + 1e-12:
         return False
-    if bounds.max_abs_latent_corr is not None and abs(latent_corr) > bounds.max_abs_latent_corr + 1e-12:
-        return False
-    return True
+    return not (bounds.max_abs_latent_corr is not None and abs(latent_corr) > bounds.max_abs_latent_corr + 1e-12)
 
 
 def construct_exact_countermodel(
@@ -278,12 +277,7 @@ def construct_exact_countermodel(
         ex = X - (reduced_form.intercept_x + R @ lam)
         ey = Y - (reduced_form.intercept_y + R @ delta)
         uy = ey - beta * ex
-        y_reconstructed = (
-            beta * X
-            + (reduced_form.intercept_y - beta * reduced_form.intercept_x)
-            + R @ eta
-            + uy
-        )
+        y_reconstructed = beta * X + (reduced_form.intercept_y - beta * reduced_form.intercept_x) + R @ eta + uy
         x_reconstructed = reduced_form.intercept_x + R @ lam + ex
         max_err = float(max(np.max(np.abs(X - x_reconstructed)), np.max(np.abs(Y - y_reconstructed))))
 
@@ -306,7 +300,9 @@ def construct_exact_countermodel(
 def _dominates(a: LinearGaussianCountermodel, b: LinearGaussianCountermodel) -> bool:
     av = (a.direct_effect_l2, abs(a.latent_corr_xy), a.causal_shift)
     bv = (b.direct_effect_l2, abs(b.latent_corr_xy), b.causal_shift)
-    return all(x <= y + 1e-12 for x, y in zip(av, bv)) and any(x < y - 1e-12 for x, y in zip(av, bv))
+    return all(x <= y + 1e-12 for x, y in zip(av, bv, strict=False)) and any(
+        x < y - 1e-12 for x, y in zip(av, bv, strict=False)
+    )
 
 
 def pareto_frontier(models: Sequence[LinearGaussianCountermodel]) -> tuple[LinearGaussianCountermodel, ...]:
@@ -371,9 +367,7 @@ def search_countermodels(
     rf = fit_reduced_form(regimes=regimes, treatment=treatment, outcome=outcome)
     direct_interval = None
     if bounds is not None and bounds.max_direct_effect_l2 is not None:
-        direct_interval = direct_effect_beta_interval(
-            reduced_form=rf, max_direct_effect_l2=bounds.max_direct_effect_l2
-        )
+        direct_interval = direct_effect_beta_interval(reduced_form=rf, max_direct_effect_l2=bounds.max_direct_effect_l2)
     models: list[LinearGaussianCountermodel] = []
     for beta in grid:
         if abs(beta - reference_beta) + 1e-12 < min_causal_shift:
@@ -413,8 +407,14 @@ def search_countermodels(
     exact = [m for m in models if m.observational_kl_nats <= 1e-15 and m.max_path_reconstruction_error <= 1e-10]
     constrained = [m for m in exact if m.within_declared_bounds]
     frontier = pareto_frontier(exact)
-    nearest_unrestricted = min(exact, key=lambda m: (m.causal_shift, m.direct_effect_l2, abs(m.latent_corr_xy), m.beta)) if exact else None
-    nearest_constrained = min(constrained, key=lambda m: (m.causal_shift, m.direct_effect_l2, abs(m.latent_corr_xy), m.beta)) if constrained else None
+    nearest_unrestricted = (
+        min(exact, key=lambda m: (m.causal_shift, m.direct_effect_l2, abs(m.latent_corr_xy), m.beta)) if exact else None
+    )
+    nearest_constrained = (
+        min(constrained, key=lambda m: (m.causal_shift, m.direct_effect_l2, abs(m.latent_corr_xy), m.beta))
+        if constrained
+        else None
+    )
 
     if constrained:
         state = "OBSERVATIONALLY_EQUIVALENT_COUNTERMODEL_SURVIVES"
@@ -430,9 +430,13 @@ def search_countermodels(
     beta_min = min(beta_values) if beta_values else None
     beta_max = max(beta_values) if beta_values else None
     beta_diameter = float(beta_max - beta_min) if beta_min is not None and beta_max is not None else 0.0
-    material_within = _interval_has_material_alternative(
-        direct_interval, reference_beta=reference_beta, min_causal_shift=min_causal_shift
-    ) if direct_interval is not None else bool(constrained)
+    material_within = (
+        _interval_has_material_alternative(
+            direct_interval, reference_beta=reference_beta, min_causal_shift=min_causal_shift
+        )
+        if direct_interval is not None
+        else bool(constrained)
+    )
 
     return CountermodelSearchDecision(
         state=state,

@@ -4,6 +4,7 @@ Events are allocated once, before warm-up, never inside the measurement loop.
 Pool exhaustion fails closed: it counts a dropped event pair and returns None
 rather than silently allocating a fresh (expensive, out-of-band) event.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

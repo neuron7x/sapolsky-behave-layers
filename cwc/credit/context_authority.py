@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,8 +19,7 @@ def decide_context_direction(
         return ContextAuthorityDecision("ABSTAIN_NO_CONTEXT_EVIDENCE", None, None, {})
     candidates = sorted(next(iter(credits_by_context.values())).keys())
     mean_abs = {
-        p: sum(abs(float(v[p])) for v in credits_by_context.values()) / len(credits_by_context)
-        for p in candidates
+        p: sum(abs(float(v[p])) for v in credits_by_context.values()) / len(credits_by_context) for p in candidates
     }
     candidate = max(candidates, key=lambda p: (mean_abs[p], p))
     signs: dict[str, int] = {}

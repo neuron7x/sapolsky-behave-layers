@@ -84,8 +84,7 @@ def test_no_tdp_fallback_exists_in_module():
             code_only_lines -= set(range(node.lineno, node.end_lineno + 1))
     lines = source.splitlines()
     executable_source = "\n".join(
-        line for i, line in enumerate(lines, start=1)
-        if i in code_only_lines and not line.strip().startswith("#")
+        line for i, line in enumerate(lines, start=1) if i in code_only_lines and not line.strip().startswith("#")
     )
     assert "tdp" not in executable_source.lower()
 
@@ -114,8 +113,9 @@ def test_energy_facade_selects_a_real_backend_on_gpu():
     if not torch.cuda.is_available():
         pytest.skip("CUDA not available on this host")
     pytest.importorskip(
-        "pynvml", reason="pynvml is not a nanochat dependency; energy graceful-degradation is "
-        "covered by test_facade_reports_unavailable_when_no_backend_works instead"
+        "pynvml",
+        reason="pynvml is not a nanochat dependency; energy graceful-degradation is "
+        "covered by test_facade_reports_unavailable_when_no_backend_works instead",
     )
     sampler = EnergySampler(sample_rate_hz=50.0)
     sampler.start()

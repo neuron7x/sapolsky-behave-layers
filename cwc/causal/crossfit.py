@@ -4,11 +4,11 @@ Splits operate on independent groups (request/document/episode), not nested toke
 rows.  This prevents a controller/outcome model from seeing another token from the
 same experimental unit during training.
 """
+
 from __future__ import annotations
 
-from collections import defaultdict
-from collections.abc import Sequence
 import random
+from collections.abc import Sequence
 
 
 def grouped_kfold(
@@ -36,7 +36,7 @@ def grouped_kfold(
         test = [i for i, group in enumerate(groups) if group in held_out]
         test_set = set(test)
         train = [i for i in all_idx if i not in test_set]
-        if set(groups[i] for i in train) & set(groups[i] for i in test):
+        if {groups[i] for i in train} & {groups[i] for i in test}:
             raise AssertionError("group leakage detected")
         result.append((train, test))
     return result

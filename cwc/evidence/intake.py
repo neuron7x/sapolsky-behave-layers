@@ -1,4 +1,5 @@
 """Content-addressed, privacy-aware intake for untrusted evidence trees."""
+
 from __future__ import annotations
 
 import hashlib
@@ -10,16 +11,38 @@ from typing import Any
 
 CHUNK_SIZE = 1024 * 1024
 RESTRICTED_MARKERS = (
-    "особист", "автобіограф", "щоден", "conversations.json", "chat.html",
-    "digital-identity", "private", "secret", "credentials",
+    "особист",
+    "автобіограф",
+    "щоден",
+    "conversations.json",
+    "chat.html",
+    "digital-identity",
+    "private",
+    "secret",
+    "credentials",
 )
 VENDOR_SEGMENTS = {
-    ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv",
-    "__pycache__", "build", "dist", "node_modules", "site-packages",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
 }
 VENDOR_PREFIXES = ("dist-",)
 ARCHIVE_SUFFIXES = {
-    ".7z", ".bz2", ".gz", ".rar", ".tar", ".tgz", ".xz", ".zip",
+    ".7z",
+    ".bz2",
+    ".gz",
+    ".rar",
+    ".tar",
+    ".tgz",
+    ".xz",
+    ".zip",
 }
 
 
@@ -29,9 +52,7 @@ def classify_path(relative_path: str) -> str:
     parts = set(Path(folded).parts)
     if any(marker in folded for marker in RESTRICTED_MARKERS):
         return "restricted"
-    if parts & VENDOR_SEGMENTS or any(
-        part.startswith(VENDOR_PREFIXES) for part in parts
-    ):
+    if parts & VENDOR_SEGMENTS or any(part.startswith(VENDOR_PREFIXES) for part in parts):
         return "vendor"
     if "archive" in folded or Path(folded).suffix in ARCHIVE_SUFFIXES:
         return "archive"

@@ -66,9 +66,7 @@ def test_gqa_projection_dimensions_differ_from_mha():
 
 def test_window_attention_uses_sliding_pairs():
     ledger = FlopLedger()
-    full = ledger.add_attention(
-        "full", batch=1, seq_len=64, d_model=32, n_head=4, n_kv_head=4, head_dim=8, causal=True
-    )
+    full = ledger.add_attention("full", batch=1, seq_len=64, d_model=32, n_head=4, n_kv_head=4, head_dim=8, causal=True)
     windowed = ledger.add_attention(
         "windowed", batch=1, seq_len=64, d_model=32, n_head=4, n_kv_head=4, head_dim=8, causal=True, window=8
     )

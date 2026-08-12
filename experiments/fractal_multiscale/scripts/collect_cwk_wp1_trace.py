@@ -81,7 +81,12 @@ def main() -> None:
     sys.path.insert(0, str(project / "src"))
     try:
         from cwk.core import CognitiveWeaveKernel
-        from cwk.instrumentation import FlopLedger, InferenceLatencyBreakdown, RoutingTrace, RunMeter
+        from cwk.instrumentation import (
+            FlopLedger,
+            InferenceLatencyBreakdown,
+            RoutingTrace,
+            RunMeter,
+        )
         from cwk.types import ActivationBudget
 
         torch.set_num_threads(1)
@@ -154,7 +159,8 @@ def main() -> None:
                         "route_entropy_mean": float(output.route.entropy.mean().item()),
                         "route_overflow_count": output.route.overflow_count,
                         "expert_utilization": [
-                            float(value) for value in output.route.utilization.detach().cpu().tolist()
+                            float(value)
+                            for value in output.route.utilization.detach().cpu().tolist()
                         ],
                         "expert_utilization_entropy": _normalized_entropy(output.route.utilization),
                         "controller_active_token_fraction": float(

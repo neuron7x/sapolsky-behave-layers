@@ -10,6 +10,7 @@ Everything is expressed at the granularity of a parameter *group* (length-G tens
 never per individual weight: the governor's unit of control is the structured group
 (see `registry`), which is what makes a decision human-interpretable.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -30,7 +31,7 @@ class AdaptationMode(IntEnum):
     UPDATE_EXISTING = 1
     UPDATE_ADAPTER_ONLY = 2
     REPLAY_PROTECTED_UPDATE = 3
-    REQUEST_NEW_CAPACITY = 4   # recorded but REJECTED in the first experiment
+    REQUEST_NEW_CAPACITY = 4  # recorded but REJECTED in the first experiment
 
 
 @dataclass(frozen=True)
@@ -77,10 +78,10 @@ class PlasticityDecision:
     violate.
     """
 
-    group_mask: torch.Tensor        # bool [G]
-    lr_multiplier: torch.Tensor     # float32 [G]
-    consolidation: torch.Tensor     # float32 [G]
-    max_update_norm: torch.Tensor   # float32 [G]
+    group_mask: torch.Tensor  # bool [G]
+    lr_multiplier: torch.Tensor  # float32 [G]
+    consolidation: torch.Tensor  # float32 [G]
+    max_update_norm: torch.Tensor  # float32 [G]
     replay_fraction: float
     mode: AdaptationMode
     selected_cost: int

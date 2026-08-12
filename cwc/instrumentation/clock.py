@@ -2,6 +2,7 @@
 (Act 4.4). No torch.cuda.synchronize() call happens on the start/end path —
 only inside resolve_windows(), once per batch.
 """
+
 from __future__ import annotations
 
 import time

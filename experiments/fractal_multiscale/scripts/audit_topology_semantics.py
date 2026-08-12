@@ -92,15 +92,17 @@ def main() -> None:
             exact = exact_edges_global1(n, w) if g == 1 else None
             match = exact is None or int(stats.directed_edges) == exact
             exact_formula_all_match = exact_formula_all_match and match
-            rows.append({
-                "sequence_length": n,
-                "directed_edges": int(stats.directed_edges),
-                "density": float(stats.density),
-                "wiring_cost": float(stats.wiring_cost),
-                "undirected_diameter": diameter,
-                "exact_global1_edges": exact,
-                "exact_formula_match": match,
-            })
+            rows.append(
+                {
+                    "sequence_length": n,
+                    "directed_edges": int(stats.directed_edges),
+                    "density": float(stats.density),
+                    "wiring_cost": float(stats.wiring_cost),
+                    "undirected_diameter": diameter,
+                    "exact_global1_edges": exact,
+                    "exact_formula_match": match,
+                }
+            )
         eligible = [row for row in rows if row["sequence_length"] > w + 1]
         edge_slope = slope(
             [math.log(row["sequence_length"]) for row in eligible],
@@ -127,7 +129,8 @@ def main() -> None:
             "undirected_diameter_le_2_for_scaling_range": all_diameter_le2,
             "verdict": (
                 "GRAPH_DISTANCE_FRACTALITY_NOT_IDENTIFIABLE_GLOBAL_HUB_COLLAPSES_SCALE"
-                if all_diameter_le2 else "TOPOLOGY_SCALE_STRUCTURE_UNRESOLVED"
+                if all_diameter_le2
+                else "TOPOLOGY_SCALE_STRUCTURE_UNRESOLVED"
             ),
             "claim_boundary": (
                 "The archived topology is a deterministic causal local/global mask. Sparse edge "
@@ -138,14 +141,22 @@ def main() -> None:
             "via_authority": False,
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(json.dumps({
-            "edge_count_loglog_slope": edge_slope,
-            "density_loglog_slope": density_slope,
-            "exact_formula_all_match": exact_formula_all_match,
-            "diameter_le_2": all_diameter_le2,
-            "verdict": payload["verdict"],
-        }, indent=2, sort_keys=True))
+        args.output.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        print(
+            json.dumps(
+                {
+                    "edge_count_loglog_slope": edge_slope,
+                    "density_loglog_slope": density_slope,
+                    "exact_formula_all_match": exact_formula_all_match,
+                    "diameter_le_2": all_diameter_le2,
+                    "verdict": payload["verdict"],
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
     finally:
         temp.cleanup()
 

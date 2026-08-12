@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 import numpy as np
 
@@ -128,7 +128,9 @@ def best_family_audit(audits: Sequence[FamilyInterventionalAudit]) -> FamilyInte
     return min(audits, key=lambda item: (item.max_cell_idr, item.idr, item.family))
 
 
-def context_effect_audits(probes: Sequence[EmpiricalInterventionProbe], *, epsilon: float = 1e-12) -> tuple[ContextEffectAudit, ...]:
+def context_effect_audits(
+    probes: Sequence[EmpiricalInterventionProbe], *, epsilon: float = 1e-12
+) -> tuple[ContextEffectAudit, ...]:
     out: list[ContextEffectAudit] = []
     for candidate in CANDIDATES:
         by_context: dict[float, list[EmpiricalInterventionProbe]] = {-1.0: [], 1.0: []}
@@ -180,9 +182,9 @@ def graph_structural_sensitivity(
     base_pred = np.mean(np.asarray([m.predict(eval_rows) for m in models], dtype=float), axis=0)
     base_mse = float(np.mean((base_pred - y) ** 2))
     empirical = np.asarray([p.effect for p in probes], dtype=float)
-    base_intervention_pred = np.asarray([
-        float(np.mean([m.intervention_effect(p.base, p.candidate) for m in models])) for p in probes
-    ])
+    base_intervention_pred = np.asarray(
+        [float(np.mean([m.intervention_effect(p.base, p.candidate) for m in models])) for p in probes]
+    )
     base_intervention_mse = float(np.mean((base_intervention_pred - empirical) ** 2))
     out = []
     for candidate in CANDIDATES:
@@ -208,9 +210,11 @@ def graph_structural_sensitivity(
             intervention_preds.append(per_probe)
         pred = np.mean(np.asarray(model_preds), axis=0)
         int_pred = np.mean(np.asarray(intervention_preds), axis=0)
-        out.append(GraphSensitivity(
-            candidate=candidate,
-            factual_delta_mse=float(np.mean((pred - y) ** 2) - base_mse),
-            intervention_delta_mse=float(np.mean((int_pred - empirical) ** 2) - base_intervention_mse),
-        ))
+        out.append(
+            GraphSensitivity(
+                candidate=candidate,
+                factual_delta_mse=float(np.mean((pred - y) ** 2) - base_mse),
+                intervention_delta_mse=float(np.mean((int_pred - empirical) ** 2) - base_intervention_mse),
+            )
+        )
     return tuple(out)

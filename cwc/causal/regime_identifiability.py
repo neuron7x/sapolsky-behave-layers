@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-import math
 from statistics import NormalDist
-from typing import Sequence
 
 import numpy as np
 
@@ -183,7 +183,9 @@ def evaluate_regime_iv(
             "The causal coefficient beta is common across regime coordinates.",
             AssumptionClass.PARTIALLY_FALSIFIABLE,
             AssumptionStatus.VIOLATED if overid_violation else AssumptionStatus.SURVIVED_AVAILABLE_TESTS,
-            "instrument-specific Wald estimands disagree" if overid_violation else "no multiplicity-controlled over-identification contradiction",
+            "instrument-specific Wald estimands disagree"
+            if overid_violation
+            else "no multiplicity-controlled over-identification contradiction",
         ),
         IdentifyingAssumption(
             "A5_REGIME_MEASUREMENT",
@@ -210,7 +212,7 @@ def evaluate_regime_iv(
                 vals.append(moments[j].beta_hat)
         if weights:
             sw = sum(weights)
-            beta_hat = float(sum(w * v for w, v in zip(weights, vals)) / sw)
+            beta_hat = float(sum(w * v for w, v in zip(weights, vals, strict=False)) / sw)
             beta_se = float(math.sqrt(1.0 / sw))
 
     if violation:

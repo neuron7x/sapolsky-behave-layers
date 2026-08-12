@@ -28,6 +28,7 @@ of them draw random numbers internally (EWC uses the *empirical* Fisher with the
 data's own labels, not model-sampled labels), so reproducibility is inherited
 entirely from the caller's seeding of model init and data iteration.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
@@ -110,9 +111,7 @@ def si_accumulate(
         resolved = {name: grads.get(name) for name, _ in named}
     elif loss is not None:
         params = [p for _, p in named]
-        computed = torch.autograd.grad(
-            loss, params, retain_graph=retain_graph, allow_unused=True
-        )
+        computed = torch.autograd.grad(loss, params, retain_graph=retain_graph, allow_unused=True)
         resolved = {name: g for (name, _), g in zip(named, computed, strict=True)}
     else:
         resolved = {name: p.grad for name, p in named}
@@ -327,17 +326,12 @@ def aggregate_to_groups(
     Returns:
         ``group_id -> float`` aggregate importance in ``[0, 1]``.
     """
-    per_param: dict[str, float] = {
-        name: float(t.detach().mean().item()) for name, t in importance_dict.items()
-    }
+    per_param: dict[str, float] = {name: float(t.detach().mean().item()) for name, t in importance_dict.items()}
     if per_param:
         lo = min(per_param.values())
         hi = max(per_param.values())
         spread = hi - lo
-        normalised = {
-            name: (v - lo) / spread if spread > 0.0 else 0.0
-            for name, v in per_param.items()
-        }
+        normalised = {name: (v - lo) / spread if spread > 0.0 else 0.0 for name, v in per_param.items()}
     else:
         normalised = {}
 

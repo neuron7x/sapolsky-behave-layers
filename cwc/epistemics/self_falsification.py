@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 import hashlib
 import json
 import math
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from enum import Enum
 
 from cwc.epistemics.information_acquisition import (
     InformationAction,
@@ -18,7 +18,6 @@ from cwc.planning.proof_carrying import (
     WorldBranch,
     verify_plan_certificate,
 )
-
 
 _DECISION_SEAL = object()
 
@@ -131,7 +130,7 @@ class SelfFalsificationDecision:
     reason: str
     decision_digest: str
 
-    def __new__(cls, *args: object, **kwargs: object) -> "SelfFalsificationDecision":
+    def __new__(cls, *args: object, **kwargs: object) -> SelfFalsificationDecision:
         raise TypeError("SelfFalsificationDecision can only be minted by select_self_falsification_attack")
 
     @classmethod
@@ -155,7 +154,7 @@ class SelfFalsificationDecision:
         world_bindings: Sequence[tuple[str, str]],
         reason: str,
         _seal: object,
-    ) -> "SelfFalsificationDecision":
+    ) -> SelfFalsificationDecision:
         if _seal is not _DECISION_SEAL:
             raise TypeError("invalid self-falsification mint seal")
         memories = tuple(sorted((str(a), str(b)) for a, b in load_bearing_memory_bindings))
@@ -332,17 +331,20 @@ def select_self_falsification_attack(
     if len(attack_ids) != len(set(attack_ids)):
         raise ValueError("attack ids must be unique")
 
-    valid_plan = verify_plan_certificate(
-        plan_certificate, ledger=ledger, context_scope=context_scope, worlds=worlds
-    )
+    valid_plan = verify_plan_certificate(plan_certificate, ledger=ledger, context_scope=context_scope, worlds=worlds)
     if not valid_plan:
         return _mint_decision(
             state=SelfFalsificationState.REJECT_INVALID_PLAN_CERTIFICATE,
             attack=None,
             candidate_world_id=candidate_world_id,
             candidate_decision=None,
-            cross=(), same=(), memory_bindings=(), assumption_ids=(),
-            necessary_cost=None, information_state=None, certificate=plan_certificate,
+            cross=(),
+            same=(),
+            memory_bindings=(),
+            assumption_ids=(),
+            necessary_cost=None,
+            information_state=None,
+            certificate=plan_certificate,
             worlds=worlds,
             reason="plan certificate is stale, malformed, context-mismatched, or bound to a different world/ledger state",
         )
@@ -352,9 +354,17 @@ def select_self_falsification_attack(
     if plan_certificate.decision_state is PlanState.BLOCKED_MEMORY_AUTHORITY:
         return _mint_decision(
             state=SelfFalsificationState.REJECT_NONACTIONABLE_PLAN_STATE,
-            attack=None, candidate_world_id=candidate_world_id, candidate_decision=None,
-            cross=(), same=(), memory_bindings=memory_bindings, assumption_ids=assumption_ids,
-            necessary_cost=None, information_state=None, certificate=plan_certificate, worlds=worlds,
+            attack=None,
+            candidate_world_id=candidate_world_id,
+            candidate_decision=None,
+            cross=(),
+            same=(),
+            memory_bindings=memory_bindings,
+            assumption_ids=assumption_ids,
+            necessary_cost=None,
+            information_state=None,
+            certificate=plan_certificate,
+            worlds=worlds,
             reason="blocked-memory plan state cannot authorize autonomous falsification spend",
         )
 
@@ -363,9 +373,17 @@ def select_self_falsification_attack(
     if candidate_world_id not in world_ids or decisions is None:
         return _mint_decision(
             state=SelfFalsificationState.NO_WELL_DEFINED_CANDIDATE_DECISION,
-            attack=None, candidate_world_id=candidate_world_id, candidate_decision=None,
-            cross=(), same=(), memory_bindings=memory_bindings, assumption_ids=assumption_ids,
-            necessary_cost=None, information_state=None, certificate=plan_certificate, worlds=worlds,
+            attack=None,
+            candidate_world_id=candidate_world_id,
+            candidate_decision=None,
+            cross=(),
+            same=(),
+            memory_bindings=memory_bindings,
+            assumption_ids=assumption_ids,
+            necessary_cost=None,
+            information_state=None,
+            certificate=plan_certificate,
+            worlds=worlds,
             reason="candidate world is absent or at least one admitted world lacks a unique margin-separated decision",
         )
 
@@ -376,10 +394,17 @@ def select_self_falsification_attack(
     if not cross:
         return _mint_decision(
             state=SelfFalsificationState.NO_DECISION_RELEVANT_ATTACK,
-            attack=None, candidate_world_id=candidate_world_id, candidate_decision=candidate_decision,
-            cross=(), same=same, memory_bindings=memory_bindings, assumption_ids=assumption_ids,
-            necessary_cost=0.0, information_state="DECISION_ALREADY_IDENTIFIED_NO_ACQUISITION",
-            certificate=plan_certificate, worlds=worlds,
+            attack=None,
+            candidate_world_id=candidate_world_id,
+            candidate_decision=candidate_decision,
+            cross=(),
+            same=same,
+            memory_bindings=memory_bindings,
+            assumption_ids=assumption_ids,
+            necessary_cost=0.0,
+            information_state="DECISION_ALREADY_IDENTIFIED_NO_ACQUISITION",
+            certificate=plan_certificate,
+            worlds=worlds,
             reason="all admitted worlds are in the same immediate decision-equivalence cell; causal ambiguity is preserved without spend",
         )
 
@@ -399,9 +424,17 @@ def select_self_falsification_attack(
     if not eligible:
         return _mint_decision(
             state=SelfFalsificationState.NO_LOAD_BEARING_CERTIFIED_ATTACK,
-            attack=None, candidate_world_id=candidate_world_id, candidate_decision=candidate_decision,
-            cross=cross, same=same, memory_bindings=memory_bindings, assumption_ids=assumption_ids,
-            necessary_cost=None, information_state=None, certificate=plan_certificate, worlds=worlds,
+            attack=None,
+            candidate_world_id=candidate_world_id,
+            candidate_decision=candidate_decision,
+            cross=cross,
+            same=same,
+            memory_bindings=memory_bindings,
+            assumption_ids=assumption_ids,
+            necessary_cost=None,
+            information_state=None,
+            certificate=plan_certificate,
+            worlds=worlds,
             reason="no admitted attack is both decision-covering and bound only to the current plan's load-bearing memory/assumption graph",
         )
 
@@ -468,9 +501,7 @@ def verify_self_falsification_decision(
     if assumptions != decision.load_bearing_assumption_ids:
         return False
     current_worlds = tuple(sorted((w.world_id, w.digest) for w in worlds))
-    if current_worlds != decision.world_bindings:
-        return False
-    return True
+    return current_worlds == decision.world_bindings
 
 
 def apply_self_falsification_outcome(
@@ -488,8 +519,11 @@ def apply_self_falsification_outcome(
     if decision.state is not SelfFalsificationState.PROPOSE_BOUNDED_FALSIFICATION:
         raise FalsificationBindingError("only a proposed bounded falsification attack can produce an update")
     if not verify_self_falsification_decision(
-        decision, ledger=ledger, plan_certificate=plan_certificate,
-        context_scope=context_scope, worlds=worlds,
+        decision,
+        ledger=ledger,
+        plan_certificate=plan_certificate,
+        context_scope=context_scope,
+        worlds=worlds,
     ):
         raise FalsificationBindingError("self-falsification decision is stale or unbound")
     if not reason.strip():
@@ -518,8 +552,12 @@ def apply_self_falsification_outcome(
         changed = ledger.retract(target_id, reason=reason)
         ledger.assert_invariants()
         return FalsificationUpdate(
-            outcome=outcome, target_id=target_id, changed_memory_ids=changed,
-            invalidated_assumption_ids=(), authority_promoted=False, reason=reason,
+            outcome=outcome,
+            target_id=target_id,
+            changed_memory_ids=changed,
+            invalidated_assumption_ids=(),
+            authority_promoted=False,
+            reason=reason,
         )
 
     if outcome is FalsificationOutcome.INVALIDATED_ASSUMPTION:
@@ -528,8 +566,12 @@ def apply_self_falsification_outcome(
         changed = ledger.invalidate_assumption(target_id, reason=reason)
         ledger.assert_invariants()
         return FalsificationUpdate(
-            outcome=outcome, target_id=target_id, changed_memory_ids=changed,
-            invalidated_assumption_ids=(target_id,), authority_promoted=False, reason=reason,
+            outcome=outcome,
+            target_id=target_id,
+            changed_memory_ids=changed,
+            invalidated_assumption_ids=(target_id,),
+            authority_promoted=False,
+            reason=reason,
         )
 
     raise SelfFalsificationError(f"unsupported falsification outcome: {outcome}")

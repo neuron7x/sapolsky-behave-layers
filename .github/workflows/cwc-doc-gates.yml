@@ -1,6 +1,5 @@
 # Act CWC-LAB-DOC-2026-01 §11 — documentation & evidence gates.
-# NOTE: the GitHub org is currently suspended; this workflow is committed so it runs
-# automatically once CI is restored. It is also runnable locally via `make -f Makefile.cwc`.
+# These gates run on GitHub and are also runnable locally via `make -f Makefile.cwc`.
 name: cwc-doc-gates
 
 permissions:

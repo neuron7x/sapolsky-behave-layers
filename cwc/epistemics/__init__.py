@@ -1,6 +1,8 @@
 """CWC epistemic safety primitives."""
 
 from cwc.epistemics.lattice import (
+    POSITIVE_CHAIN,
+    TERMINAL_STATES,
     CapabilityBindingError,
     CapabilityType,
     EpistemicCapability,
@@ -13,12 +15,12 @@ from cwc.epistemics.lattice import (
     EvidenceRef,
     EvidenceSource,
     IllegalTransition,
-    POSITIVE_CHAIN,
-    TERMINAL_STATES,
     positive_state_dominates,
 )
 
 __all__ = [
+    "POSITIVE_CHAIN",
+    "TERMINAL_STATES",
     "CapabilityBindingError",
     "CapabilityType",
     "EpistemicCapability",
@@ -31,7 +33,5 @@ __all__ = [
     "EvidenceRef",
     "EvidenceSource",
     "IllegalTransition",
-    "POSITIVE_CHAIN",
-    "TERMINAL_STATES",
     "positive_state_dominates",
 ]

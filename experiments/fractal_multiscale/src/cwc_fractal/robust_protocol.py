@@ -27,9 +27,7 @@ def validate_robust_protocol(protocol_path: Path, schema_path: Path) -> list[str
     semantic: list[str] = []
     if set(protocol["scales"]) != {"micro", "meso", "macro"}:
         semantic.append("protocol must contain exactly micro, meso and macro")
-    edges = {
-        (item["source_scale"], item["target_scale"]) for item in protocol["feature_mappings"]
-    }
+    edges = {(item["source_scale"], item["target_scale"]) for item in protocol["feature_mappings"]}
     required = {("micro", "meso"), ("meso", "macro")}
     missing = required - edges
     if missing:

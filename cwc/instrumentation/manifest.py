@@ -1,6 +1,7 @@
 """Provenance manifest (Act 4.12). Deliberately excludes secrets, API keys,
 or a full environment dump — only the explicit, named fields below.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -14,9 +15,7 @@ from typing import Any
 
 def _run_git(repo_root: Path, *args: str) -> str | None:
     try:
-        result = subprocess.run(
-            ["git", *args], cwd=repo_root, check=True, capture_output=True, text=True, timeout=5
-        )
+        result = subprocess.run(["git", *args], cwd=repo_root, check=True, capture_output=True, text=True, timeout=5)
         return result.stdout.strip()
     except Exception:
         return None
@@ -57,10 +56,17 @@ def device_manifest() -> dict[str, Any]:
         device_name = torch.cuda.get_device_name(0)
         total_vram_bytes = int(torch.cuda.get_device_properties(0).total_memory)
         try:
-            driver_version = subprocess.run(
-                ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
-                check=True, capture_output=True, text=True, timeout=5,
-            ).stdout.strip().splitlines()[0]
+            driver_version = (
+                subprocess.run(
+                    ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                .stdout.strip()
+                .splitlines()[0]
+            )
         except Exception:
             driver_version = None
     return {
@@ -75,6 +81,7 @@ def device_manifest() -> dict[str, Any]:
 def environment_manifest(*, expected_torch_version: str = "2.9.1") -> dict[str, Any]:
     try:
         import torch
+
         torch_version = torch.__version__
     except ImportError:
         torch_version = "unavailable"

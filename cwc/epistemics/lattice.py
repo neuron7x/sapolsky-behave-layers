@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 import hashlib
 import json
 import re
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
-from typing import Iterable, Sequence
-
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _MINT_SEAL = object()
@@ -151,7 +150,7 @@ class EvidenceRef:
         context_scope: Sequence[str],
         provenance: str,
         ref: str | None = None,
-    ) -> "EvidenceRef":
+    ) -> EvidenceRef:
         p = Path(path)
         return cls(
             ref=ref or str(p),
@@ -176,7 +175,7 @@ class EpistemicCapability:
     reason: str
     capability_digest: str
 
-    def __new__(cls, *args: object, **kwargs: object) -> "EpistemicCapability":
+    def __new__(cls, *args: object, **kwargs: object) -> EpistemicCapability:
         raise TypeError("EpistemicCapability tokens can only be minted by EpistemicMachine")
 
     @classmethod
@@ -193,7 +192,7 @@ class EpistemicCapability:
         operator_id: str | None = None,
         reason: str = "",
         _seal: object,
-    ) -> "EpistemicCapability":
+    ) -> EpistemicCapability:
         if _seal is not _CAPABILITY_SEAL:
             raise TypeError("invalid capability mint seal")
         scope = _normalize_strings(context_scope, field="context_scope")
@@ -240,7 +239,7 @@ class EpistemicRecord:
     reason: str
     record_digest: str
 
-    def __new__(cls, *args: object, **kwargs: object) -> "EpistemicRecord":
+    def __new__(cls, *args: object, **kwargs: object) -> EpistemicRecord:
         raise TypeError("EpistemicRecord can only be constructed by EpistemicMachine")
 
     @classmethod
@@ -258,7 +257,7 @@ class EpistemicRecord:
         lineage_depth: int,
         reason: str,
         _seal: object,
-    ) -> "EpistemicRecord":
+    ) -> EpistemicRecord:
         if _seal is not _MINT_SEAL:
             raise TypeError("invalid epistemic record mint seal")
         if not claim_id.strip():
@@ -462,7 +461,11 @@ class EpistemicMachine:
             ),
             EpistemicState.FALSIFIED: (
                 {EvidenceKind.FALSIFICATION},
-                {EvidenceSource.DIAGNOSTIC, EvidenceSource.DIRECT_SYSTEM_REEXECUTION, EvidenceSource.EXTERNAL_ENV_INTERVENTION},
+                {
+                    EvidenceSource.DIAGNOSTIC,
+                    EvidenceSource.DIRECT_SYSTEM_REEXECUTION,
+                    EvidenceSource.EXTERNAL_ENV_INTERVENTION,
+                },
             ),
             EpistemicState.OOD: (
                 {EvidenceKind.OOD_DIAGNOSTIC},
@@ -495,7 +498,10 @@ class EpistemicMachine:
         expected = {
             (EpistemicState.OBSERVED, CapabilityType.PREDICTIVE_PROMOTION): EpistemicState.PREDICTIVE,
             (EpistemicState.PREDICTIVE, CapabilityType.ASSUMPTION_PROMOTION): EpistemicState.ASSUMPTION_CONDITIONAL,
-            (EpistemicState.ASSUMPTION_CONDITIONAL, CapabilityType.INTERVENTION_PROMOTION): EpistemicState.INTERVENTION_SUPPORTED,
+            (
+                EpistemicState.ASSUMPTION_CONDITIONAL,
+                CapabilityType.INTERVENTION_PROMOTION,
+            ): EpistemicState.INTERVENTION_SUPPORTED,
         }
         if capability.capability_type is CapabilityType.TERMINAL_DEGRADE:
             if capability.target_state not in TERMINAL_STATES:
@@ -571,7 +577,9 @@ class EpistemicMachine:
     def _resolve_scope(record: EpistemicRecord, requested: Sequence[str] | None) -> tuple[str, ...]:
         scope = record.context_scope if requested is None else _normalize_strings(requested, field="context_scope")
         if tuple(scope) != tuple(record.context_scope):
-            raise CapabilityBindingError("scope escalation/narrowing requires a new record lineage; exact scope binding enforced")
+            raise CapabilityBindingError(
+                "scope escalation/narrowing requires a new record lineage; exact scope binding enforced"
+            )
         return tuple(scope)
 
     @staticmethod

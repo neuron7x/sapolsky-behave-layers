@@ -14,12 +14,13 @@ Design invariants
 * absence of counterfactual leverage reduces authority rather than being interpreted
   as evidence for a causal effect.
 """
+
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from statistics import fmean
-from typing import Iterable
 
 
 @dataclass(frozen=True, slots=True)

@@ -2,6 +2,7 @@
 (_ns, _ms, _sec, _bytes, _joules, _watts, _flops, _tokens) per Act 4.2 —
 no bare `lat`, `mem`, `energy` fields.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

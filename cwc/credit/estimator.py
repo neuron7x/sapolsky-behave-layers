@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 from cwc.counterfactual.adequacy import InterventionSupport, evaluate_intervention_adequacy
 from cwc.counterfactual.model import FittedCounterfactualModel

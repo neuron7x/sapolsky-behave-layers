@@ -3,6 +3,7 @@
 The benchmark supplies the structural model.  This module merely defines the
 result type so intervention semantics remain explicit at the evidence boundary.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

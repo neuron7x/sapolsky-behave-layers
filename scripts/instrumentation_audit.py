@@ -8,6 +8,7 @@ latency/FLOPs claim (Act 4.13, 6.3).
 
     python scripts/instrumentation_audit.py --steps 10
 """
+
 from __future__ import annotations
 
 import argparse
@@ -40,8 +41,11 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     trace_path = args.output / "profiler.chrome_trace.json"
     audit_result = run_torch_profiler(
-        workload, steps=args.steps, warmup_steps=args.warmup_steps,
-        with_flops=True, trace_export_path=trace_path,
+        workload,
+        steps=args.steps,
+        warmup_steps=args.warmup_steps,
+        with_flops=True,
+        trace_export_path=trace_path,
     )
 
     # audit_result's covered_flops sums over every timed step, so the

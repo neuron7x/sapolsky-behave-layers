@@ -3,8 +3,9 @@ from __future__ import annotations
 import math
 import random
 import statistics
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 from .robust import (
     _block_permutation,
@@ -130,13 +131,19 @@ def fisher_z(r: float) -> float:
     return math.atanh(clipped)
 
 
-def cross_seed_pair_diagnostics(pair_reports_by_seed: dict[str, Sequence[dict[str, Any]]]) -> list[dict[str, Any]]:
+def cross_seed_pair_diagnostics(
+    pair_reports_by_seed: dict[str, Sequence[dict[str, Any]]],
+) -> list[dict[str, Any]]:
     keys: set[tuple[str, str, str]] = set()
     indexed: dict[str, dict[tuple[str, str, str], dict[str, Any]]] = {}
     for seed, reports in pair_reports_by_seed.items():
         idx = {}
         for report in reports:
-            key = (str(report["edge"]), str(report["source_feature"]), str(report["target_feature"]))
+            key = (
+                str(report["edge"]),
+                str(report["source_feature"]),
+                str(report["target_feature"]),
+            )
             idx[key] = report
             keys.add(key)
         indexed[seed] = idx
@@ -154,10 +161,15 @@ def cross_seed_pair_diagnostics(pair_reports_by_seed: dict[str, Sequence[dict[st
                 values.append(float(r))
                 ns.append(int(report.get("n", 0)))
         if not values:
-            output.append({
-                "edge": key[0], "source_feature": key[1], "target_feature": key[2],
-                "by_seed": by_seed, "valid_seed_count": 0,
-            })
+            output.append(
+                {
+                    "edge": key[0],
+                    "source_feature": key[1],
+                    "target_feature": key[2],
+                    "by_seed": by_seed,
+                    "valid_seed_count": 0,
+                }
+            )
             continue
         positive = sum(v > 0 for v in values)
         negative = sum(v < 0 for v in values)
@@ -165,14 +177,16 @@ def cross_seed_pair_diagnostics(pair_reports_by_seed: dict[str, Sequence[dict[st
         # to be iid population samples.
         weights = [max(n - 3, 1) for n in ns]
         zbar = sum(w * fisher_z(v) for w, v in zip(weights, values, strict=True)) / sum(weights)
-        output.append({
-            "edge": key[0],
-            "source_feature": key[1],
-            "target_feature": key[2],
-            "by_seed": by_seed,
-            "valid_seed_count": len(values),
-            "sign_consistency_fraction": max(positive, negative) / len(values),
-            "descriptive_fisher_z_mean_r": math.tanh(zbar),
-            "range": [min(values), max(values)],
-        })
+        output.append(
+            {
+                "edge": key[0],
+                "source_feature": key[1],
+                "target_feature": key[2],
+                "by_seed": by_seed,
+                "valid_seed_count": len(values),
+                "sign_consistency_fraction": max(positive, negative) / len(values),
+                "descriptive_fisher_z_mean_r": math.tanh(zbar),
+                "range": [min(values), max(values)],
+            }
+        )
     return output

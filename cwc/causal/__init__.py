@@ -5,8 +5,8 @@ from .regime_identifiability import (
     AssumptionStatus,
     IdentifyingAssumption,
     RegimeIVDecision,
-    evaluate_regime_iv,
     coordinated_exclusion_counterexample,
+    evaluate_regime_iv,
 )
 
 __all__ = [
@@ -14,6 +14,6 @@ __all__ = [
     "AssumptionStatus",
     "IdentifyingAssumption",
     "RegimeIVDecision",
-    "evaluate_regime_iv",
     "coordinated_exclusion_counterexample",
+    "evaluate_regime_iv",
 ]

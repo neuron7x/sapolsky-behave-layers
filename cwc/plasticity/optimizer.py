@@ -17,6 +17,7 @@ is restored from the pre-step snapshot. This is what lets "freeze this group" me
 literally frozen, not "frozen up to weight-decay drift". A budget violation
 (`not decision.budget_ok()`) raises before any parameter is touched.
 """
+
 from __future__ import annotations
 
 import torch
@@ -31,8 +32,12 @@ class PlasticityOptimizer:
     byte-exact freeze invariant. `named_params` is the name->Parameter map the decision
     indices resolve against (the same names the registry grouped)."""
 
-    def __init__(self, optimizer: torch.optim.Optimizer, registry: ParameterGroupRegistry,
-                 named_params: dict[str, torch.nn.Parameter]):
+    def __init__(
+        self,
+        optimizer: torch.optim.Optimizer,
+        registry: ParameterGroupRegistry,
+        named_params: dict[str, torch.nn.Parameter],
+    ):
         self.opt = optimizer
         self.registry = registry
         self.named_params = named_params
@@ -42,17 +47,23 @@ class PlasticityOptimizer:
         gid = self.registry.param_to_group.get(name)
         return self._gid_to_idx.get(gid) if gid is not None else None
 
-    def apply_and_step(self, decision: PlasticityDecision,
-                       reference: dict[str, torch.Tensor],
-                       importance: dict[str, torch.Tensor] | None = None) -> None:
+    def apply_and_step(
+        self,
+        decision: PlasticityDecision,
+        reference: dict[str, torch.Tensor],
+        importance: dict[str, torch.Tensor] | None = None,
+    ) -> None:
         """Modify .grad per group policy, then step. importance[name] optional
         per-parameter Ω for the consolidation term (defaults to 1)."""
         with torch.no_grad():
             self._apply_and_step(decision, reference, importance)
 
-    def _apply_and_step(self, decision: PlasticityDecision,
-                        reference: dict[str, torch.Tensor],
-                        importance: dict[str, torch.Tensor] | None) -> None:
+    def _apply_and_step(
+        self,
+        decision: PlasticityDecision,
+        reference: dict[str, torch.Tensor],
+        importance: dict[str, torch.Tensor] | None,
+    ) -> None:
         if not decision.budget_ok():
             raise ValueError(f"budget violation: {int(decision.group_mask.sum())} > {decision.budget}")
         # snapshot every inactive/unregistered param so the wrapped optimizer's

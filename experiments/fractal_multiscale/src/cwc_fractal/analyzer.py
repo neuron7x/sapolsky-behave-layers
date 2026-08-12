@@ -162,10 +162,7 @@ class FractalMultiscaleAnalyzer:
             for feature, metrics in scale_report.feature_metrics.items():
                 drivers[f"{scale.value}.{feature}.roughness"] = metrics.roughness
         for cross_report in cross_scale_reports:
-            key = (
-                f"{cross_report.source_scale.value}"
-                f"->{cross_report.target_scale.value}.coherence"
-            )
+            key = f"{cross_report.source_scale.value}->{cross_report.target_scale.value}.coherence"
             drivers[key] = abs(cross_report.coherence)
         pressure = sum(drivers.values()) / max(len(drivers), 1)
         distance = max(0.0, self.boundary_threshold - pressure)

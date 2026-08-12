@@ -25,12 +25,13 @@ The resulting opportunity curve is useful for candidate-mechanism qualification.
 It is not a substitute for measured production latency/energy and carries no
 scientific ascension authority on its own.
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
-import math
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,7 +123,7 @@ def validate_quality_compute_replay(
         if set(found) != expected:
             raise ValueError(
                 f"unit {unit_id!r} is not exhaustive; "
-                f"missing={sorted(expected-set(found))}, extra={sorted(set(found)-expected)}"
+                f"missing={sorted(expected - set(found))}, extra={sorted(set(found) - expected)}"
             )
     return action_order
 
@@ -174,16 +175,12 @@ def opportunity_at_lambda(
     unit_ids = tuple(sorted(by_unit))
 
     action_means = {
-        action: _mean(_utility(by_unit[u][action], lambda_compute) for u in unit_ids)
-        for action in action_order
+        action: _mean(_utility(by_unit[u][action], lambda_compute) for u in unit_ids) for action in action_order
     }
     best_fixed_action = max(action_order, key=lambda a: (action_means[a], a))
     fixed_value = action_means[best_fixed_action]
 
-    instance_oracle_value = _mean(
-        max(_utility(by_unit[u][a], lambda_compute) for a in action_order)
-        for u in unit_ids
-    )
+    instance_oracle_value = _mean(max(_utility(by_unit[u][a], lambda_compute) for a in action_order) for u in unit_ids)
 
     units_by_regime: dict[str, list[str]] = defaultdict(list)
     for unit_id in unit_ids:
@@ -191,11 +188,8 @@ def opportunity_at_lambda(
         units_by_regime[any_row.regime].append(unit_id)
     regime_oracle_value = 0.0
     n_units = len(unit_ids)
-    for regime, regime_units in sorted(units_by_regime.items()):
-        regime_best = max(
-            _mean(_utility(by_unit[u][a], lambda_compute) for u in regime_units)
-            for a in action_order
-        )
+    for _regime, regime_units in sorted(units_by_regime.items()):
+        regime_best = max(_mean(_utility(by_unit[u][a], lambda_compute) for u in regime_units) for a in action_order)
         regime_oracle_value += (len(regime_units) / n_units) * regime_best
 
     tol = 1e-12
@@ -261,28 +255,32 @@ def critical_lambdas(
     for unit_id in sorted(by_unit):
         units_by_regime[by_unit[unit_id][action_order[0]].regime].append(unit_id)
     for regime_units in units_by_regime.values():
-        add_crossings({
-            a: (
-                _mean(by_unit[u][a].quality for u in regime_units),
-                _mean(by_unit[u][a].compute for u in regime_units),
-            )
-            for a in action_order
-        })
+        add_crossings(
+            {
+                a: (
+                    _mean(by_unit[u][a].quality for u in regime_units),
+                    _mean(by_unit[u][a].compute for u in regime_units),
+                )
+                for a in action_order
+            }
+        )
 
     all_units = tuple(sorted(by_unit))
-    add_crossings({
-        a: (
-            _mean(by_unit[u][a].quality for u in all_units),
-            _mean(by_unit[u][a].compute for u in all_units),
-        )
-        for a in action_order
-    })
+    add_crossings(
+        {
+            a: (
+                _mean(by_unit[u][a].quality for u in all_units),
+                _mean(by_unit[u][a].compute for u in all_units),
+            )
+            for a in action_order
+        }
+    )
     return tuple(sorted(points))
 
 
 def representative_lambdas(critical: Sequence[float]) -> tuple[float, ...]:
     """Choose exact-region representatives without arbitrary grid search."""
-    critical = tuple(sorted(set(float(x) for x in critical if x > 0.0 and math.isfinite(x))))
+    critical = tuple(sorted({float(x) for x in critical if x > 0.0 and math.isfinite(x)}))
     samples: list[float] = [0.0]
     if not critical:
         return tuple(samples)
@@ -320,11 +318,7 @@ def summarize_opportunity(
     max_regime_gap = max(p.regime_gap for p in points)
     max_instance_gap = max(p.instance_gap for p in points)
 
-    allowances = [
-        p.regime_gap / p.lambda_compute
-        for p in points
-        if p.lambda_compute > 0.0 and p.regime_gap > 0.0
-    ]
+    allowances = [p.regime_gap / p.lambda_compute for p in points if p.lambda_compute > 0.0 and p.regime_gap > 0.0]
     max_allowance = max(allowances, default=0.0)
     positive = any(p.regime_net_gap > 1e-12 for p in points if p.lambda_compute > 0.0)
     return OpportunitySummary(

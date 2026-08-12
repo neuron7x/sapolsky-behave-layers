@@ -152,9 +152,7 @@ def evaluate_control(
     )
     enough_edges = set(report.required_edges).issubset(report.valid_edges)
     passed = (
-        report.valid_pair_fraction >= min_valid_pair_fraction
-        and enough_edges
-        and null_eval.passed
+        report.valid_pair_fraction >= min_valid_pair_fraction and enough_edges and null_eval.passed
     )
     return SyntheticControlResult(
         name=kind,

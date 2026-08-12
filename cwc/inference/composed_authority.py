@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import Mapping
+from dataclasses import dataclass
 
 from cwc.credit.ablation_shapley import AblationShapleyEstimate, ranked_by_absolute_credit
 
@@ -25,9 +24,7 @@ class ShadowCreditDecision:
     architecture_authority: bool = False
 
 
-def magnitude_intervals(
-    estimate: AblationShapleyEstimate, *, z: float
-) -> dict[str, tuple[float, float]]:
+def magnitude_intervals(estimate: AblationShapleyEstimate, *, z: float) -> dict[str, tuple[float, float]]:
     out: dict[str, tuple[float, float]] = {}
     for name, mean in estimate.credits.items():
         variance = max(float(estimate.estimator_variance.get(name, 0.0)), 0.0)

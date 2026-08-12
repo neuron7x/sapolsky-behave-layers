@@ -92,9 +92,7 @@ class CausalWindow:
 
     def __post_init__(self) -> None:
         future = [
-            item.timestamp
-            for item in self.observations
-            if item.timestamp > self.end_timestamp
+            item.timestamp for item in self.observations if item.timestamp > self.end_timestamp
         ]
         if future:
             raise FractalValidationError(f"causal window contains future observations: {future}")

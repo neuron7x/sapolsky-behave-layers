@@ -62,7 +62,9 @@ def observations_from_cwc_record(
     gpu_kernel = latency.get("gpu_kernel_ms", {})
     inference = latency.get("inference", {})
     event = _routing_event(record)
-    event_metadata = event.get("metadata", {}) if isinstance(event.get("metadata", {}), dict) else {}
+    event_metadata = (
+        event.get("metadata", {}) if isinstance(event.get("metadata", {}), dict) else {}
+    )
     attention_entry = _flop_entry(record, "local-global-attention")
     attention_metadata = (
         attention_entry.get("metadata", {})
@@ -115,9 +117,7 @@ def observations_from_cwc_record(
                 event_metadata.get("controller_memory_read_fraction", 0.0)
             ),
             "attention_density": _float(attention_metadata.get("density", 0.0)),
-            "operational_intensity": _float(
-                flops.get("operational_intensity_flops_per_byte", 0.0)
-            ),
+            "operational_intensity": _float(flops.get("operational_intensity_flops_per_byte", 0.0)),
             "communication_bytes": _float(flops.get("communication_bytes", 0.0)),
             "memory_bytes": _float(flops.get("memory_bytes", 0.0)),
         },

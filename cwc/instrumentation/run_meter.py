@@ -2,6 +2,7 @@
 (Act 2.3) — only whole training steps, eval windows, inference requests,
 prefill/decode phases, or benchmark intervals.
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator
@@ -79,9 +80,7 @@ class RunMeter:
             if cuda_window is not None:
                 cuda_window.mark_end()
             self._pending.append(
-                _PendingScope(
-                    name=name, step=step, tokens=tokens, cpu_start_ns=start_ns, cuda_window=cuda_window
-                )
+                _PendingScope(name=name, step=step, tokens=tokens, cpu_start_ns=start_ns, cuda_window=cuda_window)
             )
 
     def measure_step(self, fn: Callable[[], Any], *, step: int, tokens: int | None = None) -> Any:

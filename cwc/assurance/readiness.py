@@ -1,4 +1,5 @@
 """Evidence-derived readiness where blockers dominate any numeric score."""
+
 from __future__ import annotations
 
 import json
@@ -62,9 +63,7 @@ def assess_readiness(facts: ReadinessFacts) -> dict[str, Any]:
     blockers = []
     if not facts.claim_artifacts_complete:
         blockers.append("one or more registered claim artifacts are missing")
-    if facts.supported_claims and (
-        facts.independently_replicated_supported_claims < facts.supported_claims
-    ):
+    if facts.supported_claims and (facts.independently_replicated_supported_claims < facts.supported_claims):
         blockers.append("supported claims are not all independently replicated")
     if facts.real_workload_supported_claims == 0:
         blockers.append("no supported real-workload claim")
@@ -117,25 +116,16 @@ def _artifact_exists(root: Path, value: str) -> bool:
 
 def collect_facts(root: Path) -> ReadinessFacts:
     registry = json.loads((root / "claim_registry.json").read_text(encoding="utf-8"))
-    data_baseline = json.loads(
-        (root / "engineering/data_corpus_baseline.json").read_text(encoding="utf-8")
-    )
+    data_baseline = json.loads((root / "engineering/data_corpus_baseline.json").read_text(encoding="utf-8"))
     claims = registry["claims"]
-    supported = [
-        claim for claim in claims
-        if str(claim.get("status", "")).startswith("SUPPORTED")
-    ]
+    supported = [claim for claim in claims if str(claim.get("status", "")).startswith("SUPPORTED")]
     artifacts_complete = all(
-        _artifact_exists(root, artifact)
-        for claim in claims
-        for artifact in claim.get("required_artifacts", [])
+        _artifact_exists(root, artifact) for claim in claims for artifact in claim.get("required_artifacts", [])
     )
     real_workload = sum(
-        1 for claim in supported
-        if any(
-            "real" in str(value).casefold()
-            for value in claim.get("scope", {}).get("tasks", [])
-        )
+        1
+        for claim in supported
+        if any("real" in str(value).casefold() for value in claim.get("scope", {}).get("tasks", []))
     )
     return ReadinessFacts(
         architecture_contract=(root / "engineering/architecture_contract.json").is_file(),

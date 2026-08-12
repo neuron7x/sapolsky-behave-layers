@@ -62,8 +62,7 @@ def main() -> None:
             scale_key = observation.scale.value
             counts_by_scale[scale_key] = counts_by_scale.get(scale_key, 0) + 1
         sufficient_length = all(
-            count >= int(protocol["minimum_series_length"])
-            for count in counts_by_scale.values()
+            count >= int(protocol["minimum_series_length"]) for count in counts_by_scale.values()
         )
         null_evaluation = None
         if sufficient_length:

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import time
-from typing import Any, Callable, Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from typing import Any
 
 from .trace import InferenceTrace
 
@@ -75,7 +76,9 @@ def run_shadow_observed_generate_batch(
                 run_id=run_id,
                 prompt_tokens=prompt_tokens,
                 generation_seed=int(generation_kwargs.get("seed", 42)),
-                sampling_parameters={k: generation_kwargs.get(k) for k in ("num_samples", "max_tokens", "temperature", "top_k")},
+                sampling_parameters={
+                    k: generation_kwargs.get(k) for k in ("num_samples", "max_tokens", "temperature", "top_k")
+                },
                 candidate_ids=candidate_ids,
                 uncertainty_state=uncertainty_state,
                 abstention_reason=abstention_reason,

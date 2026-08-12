@@ -11,6 +11,7 @@ measurement-ready interface for WP-3; F_MoE = dense_flops * active_experts is
 explicitly the wrong formula (it double-counts the shared/router paths and
 ignores per-expert capacity) and is not offered anywhere in this module.
 """
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -107,8 +108,12 @@ class FlopLedger:
 
     def add_dense_linear(self, name: str, *, tokens: int, d_in: int, d_out: int) -> FlopRecord:
         return self.add(
-            name, "dense_linear", dense_linear_flops(tokens=tokens, d_in=d_in, d_out=d_out),
-            tokens=tokens, d_in=d_in, d_out=d_out,
+            name,
+            "dense_linear",
+            dense_linear_flops(tokens=tokens, d_in=d_in, d_out=d_out),
+            tokens=tokens,
+            d_in=d_in,
+            d_out=d_out,
         )
 
     def add_attention(
@@ -153,14 +158,22 @@ class FlopLedger:
 
     def add_mlp(self, name: str, *, tokens: int, d_model: int, d_ff: int) -> FlopRecord:
         return self.add(
-            name, "mlp", mlp_flops(tokens=tokens, d_model=d_model, d_ff=d_ff),
-            tokens=tokens, d_model=d_model, d_ff=d_ff,
+            name,
+            "mlp",
+            mlp_flops(tokens=tokens, d_model=d_model, d_ff=d_ff),
+            tokens=tokens,
+            d_model=d_model,
+            d_ff=d_ff,
         )
 
     def add_lm_head(self, name: str, *, tokens: int, d_model: int, vocab_size: int) -> FlopRecord:
         return self.add(
-            name, "lm_head", lm_head_flops(tokens=tokens, d_model=d_model, vocab_size=vocab_size),
-            tokens=tokens, d_model=d_model, vocab_size=vocab_size,
+            name,
+            "lm_head",
+            lm_head_flops(tokens=tokens, d_model=d_model, vocab_size=vocab_size),
+            tokens=tokens,
+            d_model=d_model,
+            vocab_size=vocab_size,
         )
 
     def add_embedding_lookup(self, name: str, *, tokens: int, d_model: int) -> FlopRecord:

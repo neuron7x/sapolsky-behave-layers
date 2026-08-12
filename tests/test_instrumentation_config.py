@@ -34,9 +34,7 @@ def test_trace_requires_trace_every_n_steps(tmp_path: Path):
 
 
 def test_trace_with_interval_is_valid(tmp_path: Path):
-    config = InstrumentationConfig(
-        mode=InstrumentationMode.TRACE, output_dir=tmp_path, trace_every_n_steps=10
-    )
+    config = InstrumentationConfig(mode=InstrumentationMode.TRACE, output_dir=tmp_path, trace_every_n_steps=10)
     assert config.trace_every_n_steps == 10
 
 

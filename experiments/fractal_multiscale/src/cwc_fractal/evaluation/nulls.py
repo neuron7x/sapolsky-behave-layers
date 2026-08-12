@@ -43,8 +43,7 @@ def evaluate_against_nulls(
     rng = random.Random(seed)
     observed = _mean_coherence(window, mappings)
     null_values = [
-        _mean_coherence(_shuffled_window(window, rng), mappings)
-        for _ in range(iterations)
+        _mean_coherence(_shuffled_window(window, rng), mappings) for _ in range(iterations)
     ]
     null_mean = statistics.fmean(null_values)
     delta = observed - null_mean

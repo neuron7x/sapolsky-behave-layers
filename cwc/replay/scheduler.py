@@ -1,9 +1,10 @@
 """Deterministic/reproducible replay scheduling policies."""
+
 from __future__ import annotations
 
 import random
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 from cwc.memory.causal_debt import CausalDebtLedger
 
@@ -61,7 +62,7 @@ def choose_least_covered_context(
         raise ValueError("contexts must be non-empty")
     if randomize:
         return rng.choice(tuple(contexts))
-    counts = {ctx: 0 for ctx in contexts}
+    counts = dict.fromkeys(contexts, 0)
     for ev in ledger.evidence(candidate_id):
         if ev.context_id in counts:
             counts[ev.context_id] += 1

@@ -1,6 +1,7 @@
 """torch.cuda allocator peak-stats reporting (Act 4.7). Never calls
 empty_cache() — that would perturb the allocator state being measured.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

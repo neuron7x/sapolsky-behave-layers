@@ -27,7 +27,7 @@ def test_environment_manifest_flags_mismatch_against_expected_torch():
 
 
 def test_environment_manifest_tolerates_cuda_build_metadata_suffix(monkeypatch):
-    """"2.9.1+cu128" must match expected "2.9.1" — the "+cuXXX" suffix is CUDA
+    """ "2.9.1+cu128" must match expected "2.9.1" — the "+cuXXX" suffix is CUDA
     build metadata, not a different torch release.
     """
     import types
@@ -56,9 +56,17 @@ def test_build_manifest_assembles_all_required_sections():
         seed=42,
     )
     for key in (
-        "run_id", "created_at_utc", "command_line", "git", "device",
-        "environment", "instrumentation_config", "model_config", "seed",
-        "compile_state", "attention_backend",
+        "run_id",
+        "created_at_utc",
+        "command_line",
+        "git",
+        "device",
+        "environment",
+        "instrumentation_config",
+        "model_config",
+        "seed",
+        "compile_state",
+        "attention_backend",
     ):
         assert key in manifest
     assert manifest["seed"] == 42

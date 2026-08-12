@@ -1,4 +1,5 @@
 """Small dependency-free paired random-sign tests used by replay experiments."""
+
 from __future__ import annotations
 
 import itertools
@@ -39,10 +40,7 @@ def exact_max_t_fwer(comparisons: Sequence[Sequence[float]]) -> tuple[float, ...
     exceed = [0 for _ in comparisons]
     total = 0
     for signs in itertools.product((-1.0, 1.0), repeat=n):
-        perm_stats = [
-            _t_stat([x * s for x, s in zip(row, signs, strict=True)])
-            for row in comparisons
-        ]
+        perm_stats = [_t_stat([x * s for x, s in zip(row, signs, strict=True)]) for row in comparisons]
         max_stat = max(perm_stats)
         for idx, obs in enumerate(observed):
             if max_stat >= obs - 1e-15:

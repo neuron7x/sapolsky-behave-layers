@@ -6,6 +6,7 @@ control. Prints PASS/FAIL; exits non-zero on failure.
     python scripts/instrumentation_smoke.py --device cpu
     python scripts/instrumentation_smoke.py --device cuda
 """
+
 from __future__ import annotations
 
 import argparse
@@ -66,9 +67,12 @@ def smoke_counters(device: str, output_dir: Path) -> None:
     energy_record = energy_sampler.stop()
 
     manifest = build_manifest(
-        run_id="smoke", created_at_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        repo_root=Path(__file__).resolve().parents[1], command_line=sys.argv,
-        resolved_config={"mode": config.mode.value}, seed=0,
+        run_id="smoke",
+        created_at_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        repo_root=Path(__file__).resolve().parents[1],
+        command_line=sys.argv,
+        resolved_config={"mode": config.mode.value},
+        seed=0,
     )
     writer.write_manifest(manifest)
     writer.write_summary(
@@ -86,10 +90,15 @@ def smoke_counters(device: str, output_dir: Path) -> None:
             "energy": {"available": energy_record.available, "joules": energy_record.joules},
             "routing": {"step_count": routing_counters.snapshot().step_count},
             "validity": {
-                "environment_match": True, "warmup_complete": True, "overhead_gate_passed": None,
-                "energy_available": energy_record.available, "energy_confidence": energy_record.confidence,
-                "profiler_disabled_for_claim_run": True, "trace_disabled_for_claim_run": True,
-                "claimable": False, "reasons": ["smoke test, not a claim run"],
+                "environment_match": True,
+                "warmup_complete": True,
+                "overhead_gate_passed": None,
+                "energy_available": energy_record.available,
+                "energy_confidence": energy_record.confidence,
+                "profiler_disabled_for_claim_run": True,
+                "trace_disabled_for_claim_run": True,
+                "claimable": False,
+                "reasons": ["smoke test, not a claim run"],
             },
         }
     )

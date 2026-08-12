@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import itertools
 import math
-from typing import Iterable, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 import numpy as np
-
 
 SQRT_2PI = math.sqrt(2.0 * math.pi)
 
@@ -64,11 +64,7 @@ def ar1_relative_entropy_rate(true: AR1Law, candidate: AR1Law) -> float:
     s0 = true.innovation_sd
     s1 = candidate.innovation_sd
     delta_a = true.coefficient - candidate.coefficient
-    return (
-        math.log(s1 / s0)
-        + (s0 * s0 + delta_a * delta_a * var_x) / (2.0 * s1 * s1)
-        - 0.5
-    )
+    return math.log(s1 / s0) + (s0 * s0 + delta_a * delta_a * var_x) / (2.0 * s1 * s1) - 0.5
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,7 +104,9 @@ def passive_information_certificate(
         if needed <= available_transitions
         else "BUDGET_BELOW_NECESSARY_INFORMATION_BOUND"
     )
-    return PassiveInformationCertificate(required, information_rate_nats_per_transition, needed, available_transitions, state)
+    return PassiveInformationCertificate(
+        required, information_rate_nats_per_transition, needed, available_transitions, state
+    )
 
 
 class AR1MixtureEProcess:
@@ -144,7 +142,7 @@ class AR1MixtureEProcess:
     def update(self, previous: float, current: float) -> float:
         log_alt = [
             w + law.transition_logpdf(previous, current)
-            for w, law in zip(self._log_weights, self.alternatives)
+            for w, law in zip(self._log_weights, self.alternatives, strict=False)
         ]
         log_q = _logsumexp(log_alt)
         log_p = self.candidate.transition_logpdf(previous, current)
@@ -160,7 +158,7 @@ class AR1MixtureEProcess:
     def run(self, trace: Sequence[float]) -> dict[str, float | int | bool | None]:
         if len(trace) < 2:
             raise ValueError("trace needs at least two observations")
-        for x0, x1 in zip(trace[:-1], trace[1:]):
+        for x0, x1 in itertools.pairwise(trace):
             self.update(float(x0), float(x1))
         return {
             "rejected": self.rejected,

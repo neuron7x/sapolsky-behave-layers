@@ -21,7 +21,9 @@ from cwc_fractal.robust_protocol import (  # noqa: E402
 )
 from cwc_fractal.types import CausalWindow, ScaleObservation  # noqa: E402
 
-DEFAULT_PROTOCOL = Path(__file__).resolve().parents[1] / "experiments" / "cwc_fractal_protocol_v2.yaml"
+DEFAULT_PROTOCOL = (
+    Path(__file__).resolve().parents[1] / "experiments" / "cwc_fractal_protocol_v2.yaml"
+)
 DEFAULT_SCHEMA = Path(__file__).resolve().parents[1] / "schemas" / "fractal_protocol_v2.schema.json"
 
 

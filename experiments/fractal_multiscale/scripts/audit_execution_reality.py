@@ -50,7 +50,9 @@ class WorkCounter:
             self._handles.append(
                 expert.register_forward_pre_hook(self._routed_hook_factory(expert_id))
             )
-        self._handles.append(model.attention.attention.register_forward_pre_hook(self._attention_hook))
+        self._handles.append(
+            model.attention.attention.register_forward_pre_hook(self._attention_hook)
+        )
         self._handles.append(model.output.register_forward_pre_hook(self._output_hook))
 
     def close(self) -> None:
@@ -133,7 +135,8 @@ def main() -> None:
         vocab_size = int(cfg["model"]["vocab_size"])
         total_tokens = batch_size * sequence_length
         tokens = (
-            torch.arange(total_tokens, dtype=torch.long).reshape(batch_size, sequence_length) * 5 + 7
+            torch.arange(total_tokens, dtype=torch.long).reshape(batch_size, sequence_length) * 5
+            + 7
         ) % vocab_size
 
         interventions: list[dict[str, Any]] = []
@@ -141,24 +144,52 @@ def main() -> None:
         reference_counts: dict[str, Any] | None = None
 
         budget_cases = [
-            ("depth2_active_all", replace(baseline_budget, max_depth=2, max_active_tokens=None), "learned"),
-            ("depth1_active_all", replace(baseline_budget, max_depth=1, max_active_tokens=None), "learned"),
-            ("depth1_active24", replace(baseline_budget, max_depth=1, max_active_tokens=24), "learned"),
-            ("depth1_active12", replace(baseline_budget, max_depth=1, max_active_tokens=12), "learned"),
-            ("static_active12", replace(baseline_budget, max_depth=1, max_active_tokens=12), "static"),
-            ("inverted_active12", replace(baseline_budget, max_depth=1, max_active_tokens=12), "inverted"),
+            (
+                "depth2_active_all",
+                replace(baseline_budget, max_depth=2, max_active_tokens=None),
+                "learned",
+            ),
+            (
+                "depth1_active_all",
+                replace(baseline_budget, max_depth=1, max_active_tokens=None),
+                "learned",
+            ),
+            (
+                "depth1_active24",
+                replace(baseline_budget, max_depth=1, max_active_tokens=24),
+                "learned",
+            ),
+            (
+                "depth1_active12",
+                replace(baseline_budget, max_depth=1, max_active_tokens=12),
+                "learned",
+            ),
+            (
+                "static_active12",
+                replace(baseline_budget, max_depth=1, max_active_tokens=12),
+                "static",
+            ),
+            (
+                "inverted_active12",
+                replace(baseline_budget, max_depth=1, max_active_tokens=12),
+                "inverted",
+            ),
         ]
         for name, budget, mode in budget_cases:
             counter = WorkCounter(model)
             with torch.no_grad():
-                output = model(tokens, budget, read_memory=False, write_memory=False, controller_mode=mode)
+                output = model(
+                    tokens, budget, read_memory=False, write_memory=False, controller_mode=mode
+                )
             counts = counter.payload()
             counter.close()
             if reference_output is None:
                 reference_output = output
                 reference_counts = counts
             timing = _benchmark(
-                lambda: model(tokens, budget, read_memory=False, write_memory=False, controller_mode=mode)
+                lambda budget=budget, mode=mode: model(
+                    tokens, budget, read_memory=False, write_memory=False, controller_mode=mode
+                )
             )
             interventions.append(
                 {
@@ -245,7 +276,9 @@ def main() -> None:
             "attention_sparse_physical_execution": "NOT_ESTABLISHED_DENSE_MHA_REFERENCE_PATH",
             "overall": (
                 "LEGACY_CWK_CONDITIONAL_EXECUTION_NOT_PHYSICALLY_ESTABLISHED"
-                if semantic_gate_only and attention_guard_after_execution and not max_active_experts_effective
+                if semantic_gate_only
+                and attention_guard_after_execution
+                and not max_active_experts_effective
                 else "EXECUTION_REALITY_PARTIALLY_UNRESOLVED"
             ),
         }
@@ -283,7 +316,9 @@ def main() -> None:
             "via_authority": False,
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.output.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         print(json.dumps(payload, indent=2, sort_keys=True))
     finally:
         temp.cleanup()

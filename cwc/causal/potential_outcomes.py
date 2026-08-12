@@ -10,12 +10,13 @@ units as ``utility``.  Observation/controller/dispatch costs are decision-level
 costs and are therefore charged by the experiment gate, not duplicated on every
 potential-outcome row.
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,8 +143,7 @@ def context_action_matrix(
             values = by_key[(context, action)]
             if len(values) != expected_n:
                 raise ValueError(
-                    f"context {context!r}, action {action!r} has {len(values)} values; "
-                    f"expected {expected_n}"
+                    f"context {context!r}, action {action!r} has {len(values)} values; expected {expected_n}"
                 )
             row_values.append(sum(values) / len(values))
         matrix.append(row_values)

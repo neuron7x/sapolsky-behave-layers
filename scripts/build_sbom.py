@@ -5,13 +5,14 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 import uuid
 from pathlib import Path
 from typing import Any
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:  # Python < 3.11 compatibility
+else:  # pragma: no cover - selected by the canonical Python 3.10 runtime
     import tomli as tomllib
 
 ROOT = Path(__file__).resolve().parents[1]

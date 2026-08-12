@@ -12,9 +12,9 @@ from .passive_identifiability import (
     AR1MixtureEProcess,
     PassiveInformationCertificate,
     ar1_relative_entropy_rate,
-    passive_information_certificate,
-    spectral_topology_counterexample,
-    hidden_autocatalytic_fixed_point,
     fiber_ambiguity_counterexample,
+    hidden_autocatalytic_fixed_point,
+    passive_information_certificate,
     replay_authority_state,
+    spectral_topology_counterexample,
 )

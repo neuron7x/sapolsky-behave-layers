@@ -11,6 +11,7 @@ does not exercise — see docs/WP1_INSTRUMENTATION.md for the known gap).
 Confirms: OFF vs COUNTERS produce identical model outputs/loss (Gate B,
 mathematical neutrality); default OFF creates no artifacts directory.
 """
+
 from __future__ import annotations
 
 import dataclasses
@@ -99,7 +100,10 @@ def test_counters_mode_produces_valid_evidence_bundle(tmp_path: Path):
         loss = _run_micro_step(model, x, y, meter, step=step)
         flop_ledger.add_mlp(f"step{step}", tokens=x.numel(), d_model=32, d_ff=128)
         routing_counters.record(
-            step=step, active_tokens=x.numel(), active_blocks=2, active_experts=1,
+            step=step,
+            active_tokens=x.numel(),
+            active_blocks=2,
+            active_experts=1,
             active_parameters=model.num_matmul_params(),
         )
         writer.write_metric({"step": step, "loss": loss})
@@ -114,11 +118,7 @@ def test_counters_mode_produces_valid_evidence_bundle(tmp_path: Path):
             "instrumentation": {"mode": "counters"},
             "latency": {"count": len(meter.records)},
             "throughput": {},
-            "vram": (
-                dataclasses.asdict(vram_meter.snapshot())
-                if vram_meter and vram_meter.available
-                else {}
-            ),
+            "vram": (dataclasses.asdict(vram_meter.snapshot()) if vram_meter and vram_meter.available else {}),
             "flops": flop_ledger.to_dict(),
             "energy": {"available": False},
             "routing": {"step_count": routing_counters.snapshot().step_count},

@@ -1,9 +1,10 @@
 """Randomization and adversarial-control utilities for causal compute allocation."""
+
 from __future__ import annotations
 
+import random
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
-import random
 
 
 def balanced_randomized_assignments(

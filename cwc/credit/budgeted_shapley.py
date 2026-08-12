@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import itertools
 import math
 import random
-from typing import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 
 Assignment = Mapping[str, int]
 Evaluator = Callable[[Mapping[str, int]], float]
@@ -85,7 +85,7 @@ def exact_resampling_shapley(
                 s = frozenset(subset)
                 acc += weight * (values[s | {player}] - values[s])
         credits[player] = acc
-    return ShapleyEstimate(credits, {p: 0.0 for p in names}, evaluations, 0, "EXACT_TEACHER")
+    return ShapleyEstimate(credits, dict.fromkeys(names, 0.0), evaluations, 0, "EXACT_TEACHER")
 
 
 def legacy_independent_mc(
@@ -224,7 +224,7 @@ def double_antithetic_crn_mc(
             (reverse, replacements),
             (reverse, complement),
         )
-        acc = {p: 0.0 for p in names}
+        acc = dict.fromkeys(names, 0.0)
         for candidate_order, candidate_replacements in configs:
             contrib, used = _path_contributions(
                 factual, candidate_order, candidate_replacements, evaluator, factual_value

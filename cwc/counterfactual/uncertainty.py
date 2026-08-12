@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -102,7 +102,7 @@ def build_prediction_envelope(
         subset = [row for row in eval_rows if float(row.get("context", 1.0)) == context]
         if not subset:
             continue
-        scores = {name: 0.0 for name in CANDIDATES}
+        scores = dict.fromkeys(CANDIDATES, 0.0)
         for model in models:
             abs_credit, _ = model.mean_credit(subset)
             for name in CANDIDATES:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import itertools
 import math
 import random
-from typing import Callable, FrozenSet, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 
-Coalition = FrozenSet[str]
+Coalition = frozenset[str]
 CoalitionEvaluator = Callable[[Coalition], float]
 
 
@@ -76,7 +76,7 @@ def exact_ablation_shapley(players: Sequence[str], evaluator: CoalitionEvaluator
         credits[player] = float(acc)
     return AblationShapleyEstimate(
         credits=credits,
-        estimator_variance={p: 0.0 for p in names},
+        estimator_variance=dict.fromkeys(names, 0.0),
         logical_evaluations=cached.logical_calls,
         unique_forward_evaluations=cached.unique_calls,
         sampling_units=0,

@@ -8,6 +8,7 @@ per-token records. TRACE mode: bounded ring buffer of sampled records, sampled
 every `trace_every_n_steps`, with an explicit dropped-trace count when the
 buffer is full — never an unbounded list.
 """
+
 from __future__ import annotations
 
 from collections import deque
@@ -129,9 +130,7 @@ class RoutingCounters:
             )
 
     def snapshot(self) -> RoutingAggregate:
-        entropy_mean = (
-            sum(self._entropy_values) / len(self._entropy_values) if self._entropy_values else None
-        )
+        entropy_mean = sum(self._entropy_values) / len(self._entropy_values) if self._entropy_values else None
         return RoutingAggregate(
             step_count=self._step_count,
             active_tokens_sum=self._active_tokens_sum,

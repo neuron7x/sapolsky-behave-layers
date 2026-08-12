@@ -10,6 +10,7 @@ endpoints are equal it returns that endpoint verbatim, with no float mixing, so
 the deterministic reporting path stays byte-reproducible (Hypothesis found that
 the naive `lo*(1-w) + hi*w` form loses a ULP even when lo == hi).
 """
+
 from __future__ import annotations
 
 import random

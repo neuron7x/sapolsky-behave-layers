@@ -44,24 +44,32 @@ class Counter:
         self.attention_q_tokens = 0
         self.output = 0
         self.handles = [model.experts.shared.register_forward_pre_hook(self._shared)]
-        self.handles += [expert.register_forward_pre_hook(self._routed) for expert in model.experts.routed]
+        self.handles += [
+            expert.register_forward_pre_hook(self._routed) for expert in model.experts.routed
+        ]
         self.handles += [model.attention.attention.register_forward_pre_hook(self._attention)]
         self.handles += [model.output.register_forward_pre_hook(self._output)]
 
     def _shared(self, _m: Any, inputs: tuple[Any, ...]) -> None:
-        x = inputs[0]; self.shared += int(x.numel() // x.shape[-1])
+        x = inputs[0]
+        self.shared += int(x.numel() // x.shape[-1])
 
     def _routed(self, _m: Any, inputs: tuple[Any, ...]) -> None:
-        x = inputs[0]; self.routed += int(x.numel() // x.shape[-1])
+        x = inputs[0]
+        self.routed += int(x.numel() // x.shape[-1])
 
     def _attention(self, _m: Any, inputs: tuple[Any, ...]) -> None:
-        q = inputs[0]; self.attention_calls += 1; self.attention_q_tokens += int(q.shape[0] * q.shape[1])
+        q = inputs[0]
+        self.attention_calls += 1
+        self.attention_q_tokens += int(q.shape[0] * q.shape[1])
 
     def _output(self, _m: Any, inputs: tuple[Any, ...]) -> None:
-        x = inputs[0]; self.output += int(x.numel() // x.shape[-1])
+        x = inputs[0]
+        self.output += int(x.numel() // x.shape[-1])
 
     def close(self) -> None:
-        for h in self.handles: h.remove()
+        for h in self.handles:
+            h.remove()
 
     def as_dict(self) -> dict[str, int]:
         return {
@@ -119,8 +127,14 @@ def main() -> None:
                 total = batch * seq
                 budgets = (
                     ("all_depth2", replace(analysis_budget, max_active_tokens=None, max_depth=2)),
-                    ("half_depth1", replace(analysis_budget, max_active_tokens=max(1, total // 2), max_depth=1)),
-                    ("quarter_depth1", replace(analysis_budget, max_active_tokens=max(1, total // 4), max_depth=1)),
+                    (
+                        "half_depth1",
+                        replace(analysis_budget, max_active_tokens=max(1, total // 2), max_depth=1),
+                    ),
+                    (
+                        "quarter_depth1",
+                        replace(analysis_budget, max_active_tokens=max(1, total // 4), max_depth=1),
+                    ),
                 )
                 reference_counts = None
                 reference_gate = None
@@ -128,10 +142,19 @@ def main() -> None:
                     for budget_name, budget in budgets:
                         counter = Counter(model)
                         with torch.no_grad():
-                            out = model(toks, budget, read_memory=False, write_memory=False, controller_mode=mode)
-                        counts = counter.as_dict(); counter.close()
+                            out = model(
+                                toks,
+                                budget,
+                                read_memory=False,
+                                write_memory=False,
+                                controller_mode=mode,
+                            )
+                        counts = counter.as_dict()
+                        counter.close()
                         gate = {
-                            "active_fraction": float(out.telemetry["controller_active_token_fraction"]),
+                            "active_fraction": float(
+                                out.telemetry["controller_active_token_fraction"]
+                            ),
                             "depth_fraction": float(out.telemetry["controller_depth_fraction"]),
                         }
                         if mode == "learned" and budget_name == "all_depth2":
@@ -142,16 +165,25 @@ def main() -> None:
                             if gate_changed:
                                 physical_skip_trials += 1
                                 if (
-                                    counts["shared_expert_rows"] < reference_counts["shared_expert_rows"]
-                                    or counts["routed_expert_rows_total"] < reference_counts["routed_expert_rows_total"]
+                                    counts["shared_expert_rows"]
+                                    < reference_counts["shared_expert_rows"]
+                                    or counts["routed_expert_rows_total"]
+                                    < reference_counts["routed_expert_rows_total"]
                                 ):
                                     physical_skip_successes += 1
-                        rows.append({
-                            "seed": seed, "batch": batch, "sequence_length": seq, "total_tokens": total,
-                            "controller_mode": mode, "budget_case": budget_name,
-                            "active_fraction": gate["active_fraction"], "depth_fraction": gate["depth_fraction"],
-                            "counts": counts,
-                        })
+                        rows.append(
+                            {
+                                "seed": seed,
+                                "batch": batch,
+                                "sequence_length": seq,
+                                "total_tokens": total,
+                                "controller_mode": mode,
+                                "budget_case": budget_name,
+                                "active_fraction": gate["active_fraction"],
+                                "depth_fraction": gate["depth_fraction"],
+                                "counts": counts,
+                            }
+                        )
 
                 # max_active_experts above top_k should be an actual governor if its name is literal.
                 b_lo = replace(analysis_budget, max_active_experts=top_k)
@@ -165,7 +197,9 @@ def main() -> None:
 
                 # Deliberately fail below actual mask density; hook proves whether dense MHA ran first.
                 actual_density = float(out_lo.telemetry["attention_density"])
-                fail_budget = replace(analysis_budget, max_attention_density=max(1e-6, actual_density * 0.5))
+                fail_budget = replace(
+                    analysis_budget, max_attention_density=max(1e-6, actual_density * 0.5)
+                )
                 counter = Counter(model)
                 failed = False
                 try:
@@ -173,28 +207,64 @@ def main() -> None:
                         model(toks, fail_budget, read_memory=False, write_memory=False)
                 except RuntimeError:
                     failed = True
-                fail_counts = counter.as_dict(); counter.close()
+                fail_counts = counter.as_dict()
+                counter.close()
                 attention_guard_trials += 1
-                if failed and fail_counts["attention_calls"] == 1 and fail_counts["attention_q_tokens"] == total:
+                if (
+                    failed
+                    and fail_counts["attention_calls"] == 1
+                    and fail_counts["attention_q_tokens"] == total
+                ):
                     attention_guard_postexec += 1
 
                 # Wrap memory.read: controller's token-level memory gate is produced after this call.
                 calls: list[dict[str, int]] = []
                 original_read = model.memory.read
-                def wrapped_read(self: Any, queries: torch.Tensor, max_reads: int):
-                    calls.append({"query_rows": int(queries.numel() // queries.shape[-1]), "max_reads": int(max_reads)})
-                    return original_read(queries, max_reads)
+
+                def wrapped_read(
+                    self: Any,
+                    queries: torch.Tensor,
+                    max_reads: int,
+                    _calls: list[dict[str, int]] = calls,
+                    _original_read: Any = original_read,
+                ):
+                    _calls.append(
+                        {
+                            "query_rows": int(queries.numel() // queries.shape[-1]),
+                            "max_reads": int(max_reads),
+                        }
+                    )
+                    return _original_read(queries, max_reads)
+
                 model.memory.read = types.MethodType(wrapped_read, model.memory)
-                mem_budget = replace(analysis_budget, max_active_tokens=max(1, total // 4), max_depth=1, max_memory_reads=2)
+                mem_budget = replace(
+                    analysis_budget,
+                    max_active_tokens=max(1, total // 4),
+                    max_depth=1,
+                    max_memory_reads=2,
+                )
                 with torch.no_grad():
-                    mem_out = model(toks, mem_budget, read_memory=True, write_memory=False, controller_mode="learned")
+                    mem_out = model(
+                        toks,
+                        mem_budget,
+                        read_memory=True,
+                        write_memory=False,
+                        controller_mode="learned",
+                    )
                 model.memory.read = original_read
-                memory_probe_rows.append({
-                    "seed": seed, "batch": batch, "sequence_length": seq, "total_tokens": total,
-                    "memory_read_calls": calls,
-                    "controller_memory_read_fraction": float(mem_out.telemetry["controller_memory_read_fraction"]),
-                    "memory_reads_per_query": int(mem_out.telemetry["memory_reads_per_query"]),
-                })
+                memory_probe_rows.append(
+                    {
+                        "seed": seed,
+                        "batch": batch,
+                        "sequence_length": seq,
+                        "total_tokens": total,
+                        "memory_read_calls": calls,
+                        "controller_memory_read_fraction": float(
+                            mem_out.telemetry["controller_memory_read_fraction"]
+                        ),
+                        "memory_reads_per_query": int(mem_out.telemetry["memory_reads_per_query"]),
+                    }
+                )
 
         total_matrix_rows = len(rows)
         expert_expected = all(
@@ -203,13 +273,17 @@ def main() -> None:
             for row in rows
         )
         memory_all_queries = all(
-            item["memory_read_calls"] and item["memory_read_calls"][0]["query_rows"] == item["total_tokens"]
+            item["memory_read_calls"]
+            and item["memory_read_calls"][0]["query_rows"] == item["total_tokens"]
             for item in memory_probe_rows
         )
         payload = {
             "schema_version": "cwc.execution_reality_matrix.v1",
-            "archive": str(args.archive), "archive_sha256": sha256(args.archive),
-            "seeds": list(SEEDS), "shapes": [list(s) for s in SHAPES], "modes": list(MODES),
+            "archive": str(args.archive),
+            "archive_sha256": sha256(args.archive),
+            "seeds": list(SEEDS),
+            "shapes": [list(s) for s in SHAPES],
+            "modes": list(MODES),
             "matrix_row_count": total_matrix_rows,
             "matrix_rows": rows,
             "active_depth_gate_changed_trials": physical_skip_trials,
@@ -222,9 +296,15 @@ def main() -> None:
             "memory_probe_rows": memory_probe_rows,
             "memory_read_received_all_query_rows": memory_all_queries,
             "verdict": {
-                "active_depth": "SEMANTIC_GATE_ONLY" if physical_skip_trials > 0 and physical_skip_successes == 0 else "UNRESOLVED",
-                "max_active_experts": "LOWER_BOUND_CHECK_NOT_ACTIVE_EXPERT_GOVERNOR" if route_budget_effects == 0 else "HAS_ROUTE_EFFECT",
-                "attention_budget": "POST_EXECUTION_GUARD_NOT_GOVERNOR" if attention_guard_postexec == attention_guard_trials else "UNRESOLVED",
+                "active_depth": "SEMANTIC_GATE_ONLY"
+                if physical_skip_trials > 0 and physical_skip_successes == 0
+                else "UNRESOLVED",
+                "max_active_experts": "LOWER_BOUND_CHECK_NOT_ACTIVE_EXPERT_GOVERNOR"
+                if route_budget_effects == 0
+                else "HAS_ROUTE_EFFECT",
+                "attention_budget": "POST_EXECUTION_GUARD_NOT_GOVERNOR"
+                if attention_guard_postexec == attention_guard_trials
+                else "UNRESOLVED",
                 "memory_gate": "POST_RETRIEVAL_MEMORY_GATE" if memory_all_queries else "UNRESOLVED",
                 "overall": "REFERENCE_RUNTIME_CONTROL_IS_PRIMARILY_SEMANTIC_NOT_PHYSICAL_CONDITIONAL_EXECUTION",
             },
@@ -232,21 +312,30 @@ def main() -> None:
                 "This CPU hook matrix audits call/row semantics in the archived CWK reference only. "
                 "It does not establish GPU timing, current nanochat behavior, or useful adaptive compute."
             ),
-            "scientific_ascension_authority": False, "via_authority": False,
+            "scientific_ascension_authority": False,
+            "via_authority": False,
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(json.dumps({
-            "matrix_rows": total_matrix_rows,
-            "gate_changed_trials": physical_skip_trials,
-            "physical_skip_successes": physical_skip_successes,
-            "route_budget_effects": route_budget_effects,
-            "route_budget_trials": route_budget_trials,
-            "attention_postexec": attention_guard_postexec,
-            "attention_trials": attention_guard_trials,
-            "memory_all_queries": memory_all_queries,
-            "verdict": payload["verdict"],
-        }, indent=2, sort_keys=True))
+        args.output.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        print(
+            json.dumps(
+                {
+                    "matrix_rows": total_matrix_rows,
+                    "gate_changed_trials": physical_skip_trials,
+                    "physical_skip_successes": physical_skip_successes,
+                    "route_budget_effects": route_budget_effects,
+                    "route_budget_trials": route_budget_trials,
+                    "attention_postexec": attention_guard_postexec,
+                    "attention_trials": attention_guard_trials,
+                    "memory_all_queries": memory_all_queries,
+                    "verdict": payload["verdict"],
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
     finally:
         temp.cleanup()
 

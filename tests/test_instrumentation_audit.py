@@ -91,8 +91,11 @@ def test_roofline_report_classifies_compute_bound():
 def test_roofline_report_rejects_nonpositive_hardware_rates():
     with pytest.raises(ValueError):
         roofline_report(
-            total_flops=1, total_bytes_moved=1, peak_flops_per_s=0.0,
-            peak_bandwidth_bytes_per_s=1e9, hardware_ceiling_provenance="x",
+            total_flops=1,
+            total_bytes_moved=1,
+            peak_flops_per_s=0.0,
+            peak_bandwidth_bytes_per_s=1e9,
+            hardware_ceiling_provenance="x",
         )
 
 

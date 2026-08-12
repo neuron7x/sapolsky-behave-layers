@@ -6,6 +6,7 @@ neutrality). Unknown constructor fields raise TypeError for free because this
 is a slotted dataclass, satisfying the Act 4.1 "unknown fields fail closed"
 requirement without extra code.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

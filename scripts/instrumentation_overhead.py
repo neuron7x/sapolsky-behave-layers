@@ -12,6 +12,7 @@ gate:
     python scripts/instrumentation_overhead.py --mode counters --cycles 5 \
         --warmup-steps 20 --measurement-steps 100
 """
+
 from __future__ import annotations
 
 import argparse
@@ -45,8 +46,13 @@ def _build_model_and_batch(
 
     torch.manual_seed(seed)
     cfg = GPTConfig(
-        sequence_len=seq_len, vocab_size=1024, n_layer=n_layer, n_head=n_head, n_kv_head=n_head,
-        n_embd=n_embd, window_pattern="L",
+        sequence_len=seq_len,
+        vocab_size=1024,
+        n_layer=n_layer,
+        n_head=n_head,
+        n_kv_head=n_head,
+        n_embd=n_embd,
+        window_pattern="L",
     )
     model = GPT(cfg).to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.0)
@@ -166,22 +172,20 @@ def main() -> None:
             bare_model, bare_opt, bare_x, bare_y = _build_model_and_batch(device, args.seed, **model_kwargs)
             for _ in range(args.warmup_steps):
                 _bare_cuda_event_ms(bare_model, bare_opt, bare_x, bare_y, steps=1)
-            bare_gpu_ms.extend(
-                _bare_cuda_event_ms(bare_model, bare_opt, bare_x, bare_y, steps=args.measurement_steps)
-            )
+            bare_gpu_ms.extend(_bare_cuda_event_ms(bare_model, bare_opt, bare_x, bare_y, steps=args.measurement_steps))
 
     off_p50 = _percentile(off_e2e_all, 0.50)
     off_p95 = _percentile(off_e2e_all, 0.95)
     off_p99 = _percentile(off_e2e_all, 0.99)
     counters_p50, counters_p95, counters_p99 = (
-        _percentile(counters_e2e_all, 0.50), _percentile(counters_e2e_all, 0.95), _percentile(counters_e2e_all, 0.99)
+        _percentile(counters_e2e_all, 0.50),
+        _percentile(counters_e2e_all, 0.95),
+        _percentile(counters_e2e_all, 0.99),
     )
     relative_overhead = (counters_p50 - off_p50) / off_p50 if off_p50 > 0 else float("inf")
 
     n = min(len(off_e2e_all), len(counters_e2e_all))
-    paired_deltas = [
-        (counters_e2e_all[i] - off_e2e_all[i]) / off_e2e_all[i] for i in range(n) if off_e2e_all[i] > 0
-    ]
+    paired_deltas = [(counters_e2e_all[i] - off_e2e_all[i]) / off_e2e_all[i] for i in range(n) if off_e2e_all[i] > 0]
     ci_lower, ci_upper = _bootstrap_ci(paired_deltas, seed=args.seed)
 
     gpu_overhead_fraction = None
@@ -192,9 +196,7 @@ def main() -> None:
 
     max_overhead_fraction = 0.01
     max_overhead_ci_fraction = 0.02
-    e2e_gate_passed = (
-        relative_overhead <= max_overhead_fraction and ci_upper <= max_overhead_ci_fraction
-    )
+    e2e_gate_passed = relative_overhead <= max_overhead_fraction and ci_upper <= max_overhead_ci_fraction
     gpu_gate_passed = gpu_overhead_fraction is None or gpu_overhead_fraction <= max_overhead_fraction
     overall_passed = e2e_gate_passed and gpu_gate_passed
 
@@ -204,10 +206,15 @@ def main() -> None:
         "cycles": args.cycles,
         "measurement_steps_per_cycle": args.measurement_steps,
         "sample_count": n,
-        "off_p50_ms": off_p50, "off_p95_ms": off_p95, "off_p99_ms": off_p99,
-        "counters_p50_ms": counters_p50, "counters_p95_ms": counters_p95, "counters_p99_ms": counters_p99,
+        "off_p50_ms": off_p50,
+        "off_p95_ms": off_p95,
+        "off_p99_ms": off_p99,
+        "counters_p50_ms": counters_p50,
+        "counters_p95_ms": counters_p95,
+        "counters_p99_ms": counters_p99,
         "relative_overhead_fraction": relative_overhead,
-        "ci_lower_fraction": ci_lower, "ci_upper_fraction": ci_upper,
+        "ci_lower_fraction": ci_lower,
+        "ci_upper_fraction": ci_upper,
         "gpu_overhead_fraction": gpu_overhead_fraction,
         "max_overhead_fraction": max_overhead_fraction,
         "max_overhead_ci_fraction": max_overhead_ci_fraction,

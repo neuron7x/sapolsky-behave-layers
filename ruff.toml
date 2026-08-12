@@ -17,9 +17,11 @@ include = [
 
 [lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4", "PIE", "RET", "RUF"]
+# E501: Ruff's formatter intentionally leaves long strings and comments intact.
+# SIM102/SIM105: explicit control flow is retained where it improves auditability.
 # B008: FastAPI-style default-arg calls — not relevant here.
 # RUF001/RUF003: Cyrillic in strings/comments is intentional (Ukrainian docs).
-ignore = ["RUF001", "RUF002", "RUF003"]
+ignore = ["E501", "SIM102", "SIM105", "RUF001", "RUF002", "RUF003"]
 
 [lint.isort]
 known-first-party = ["cwc", "nanochat"]
@@ -29,3 +31,4 @@ known-first-party = ["cwc", "nanochat"]
 # importing cwc modules that transitively need torch, so those imports cannot
 # sit at the very top. This is the standard pytest optional-dependency pattern.
 "tests/**/*.py" = ["E402"]
+"cwc/**/__init__.py" = ["F401"]

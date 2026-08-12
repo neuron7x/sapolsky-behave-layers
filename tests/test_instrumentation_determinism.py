@@ -38,8 +38,11 @@ def test_routing_snapshot_is_byte_identical():
         c = RoutingCounters()
         for step in range(50):
             c.record(
-                step=step, active_tokens=step * 3, active_blocks=2,
-                active_experts=1, active_parameters=1000,
+                step=step,
+                active_tokens=step * 3,
+                active_blocks=2,
+                active_experts=1,
+                active_parameters=1000,
             )
         return json.dumps(dataclasses.asdict(c.snapshot()), sort_keys=True, default=str)
 

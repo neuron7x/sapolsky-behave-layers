@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import combinations
-import math
-from typing import Hashable, Mapping, Sequence
 
 import numpy as np
-
 
 ModelName = str
 ActionName = str
@@ -79,9 +78,7 @@ def _normalize_law(law: Mapping[Outcome, float], *, atol: float = 1e-12) -> dict
     return out
 
 
-def total_variation_distance(
-    law_a: Mapping[Outcome, float], law_b: Mapping[Outcome, float]
-) -> float:
+def total_variation_distance(law_a: Mapping[Outcome, float], law_b: Mapping[Outcome, float]) -> float:
     a = _normalize_law(law_a)
     b = _normalize_law(law_b)
     support = set(a) | set(b)
@@ -109,9 +106,7 @@ def _validate_family(
             raise ValueError(
                 f"all models must define the same actions; model={model!r} missing={missing} extra={extra}"
             )
-        normalized[model] = {
-            str(action): _normalize_law(raw_actions[action]) for action in raw_actions
-        }
+        normalized[model] = {str(action): _normalize_law(raw_actions[action]) for action in raw_actions}
     assert actions is not None
     return models, tuple(sorted(actions)), normalized
 
@@ -140,9 +135,7 @@ def finite_identifiability_certificate(
         action_scores = [
             (
                 action,
-                total_variation_distance(
-                    normalized[model_a][action], normalized[model_b][action]
-                ),
+                total_variation_distance(normalized[model_a][action], normalized[model_b][action]),
             )
             for action in actions
         ]
@@ -163,9 +156,7 @@ def finite_identifiability_certificate(
 
     minimum = min(row.max_total_variation for row in rows)
     state = (
-        "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL"
-        if not unresolved
-        else "NOT_IDENTIFIABLE_UNDER_DECLARED_CHANNEL"
+        "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL" if not unresolved else "NOT_IDENTIFIABLE_UNDER_DECLARED_CHANNEL"
     )
     return FiniteIdentifiabilityCertificate(
         state=state,
@@ -200,7 +191,7 @@ def minimum_cost_separating_design(
     if full.unresolved_pairs:
         return SeparatingDesign(
             state="NOT_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
-            actions=tuple(),
+            actions=(),
             total_cost=None,
             certificate=full,
         )
@@ -208,9 +199,7 @@ def minimum_cost_separating_design(
     candidates: list[tuple[float, int, tuple[str, ...], FiniteIdentifiabilityCertificate]] = []
     for size in range(1, len(all_actions) + 1):
         for subset in combinations(all_actions, size):
-            certificate = finite_identifiability_certificate(
-                family, selected_actions=subset, tolerance=tolerance
-            )
+            certificate = finite_identifiability_certificate(family, selected_actions=subset, tolerance=tolerance)
             if certificate.unresolved_pairs:
                 continue
             total_cost = sum(validated_costs[action] for action in subset)
@@ -246,10 +235,7 @@ def local_first_order_identifiability(
 
     _u, singular_values, vh = np.linalg.svd(J, full_matrices=True)
     default_tol = _svd_rank_tolerance(J, singular_values)
-    if rank_tolerance is None:
-        tolerance = default_tol
-    else:
-        tolerance = _validate_tolerance(rank_tolerance)
+    tolerance = default_tol if rank_tolerance is None else _validate_tolerance(rank_tolerance)
     rank = int(np.sum(singular_values > tolerance))
     parameter_count = int(J.shape[1])
     observable_count = int(J.shape[0])
@@ -259,13 +245,10 @@ def local_first_order_identifiability(
         null_basis_arr = vh[rank:, :]
         nullspace = tuple(tuple(float(x) for x in row) for row in null_basis_arr)
     else:
-        nullspace = tuple()
+        nullspace = ()
 
     smallest = float(singular_values[-1]) if singular_values.size else 0.0
-    if smallest <= 0:
-        condition = float("inf")
-    else:
-        condition = float(singular_values[0] / smallest)
+    condition = float("inf") if smallest <= 0 else float(singular_values[0] / smallest)
 
     info_min: float | None = None
     info_condition: float | None = None
@@ -283,16 +266,9 @@ def local_first_order_identifiability(
         eig_info = np.linalg.eigvalsh(information)
         info_min = float(eig_info[0])
         info_max = float(eig_info[-1])
-        if info_min <= 0:
-            info_condition = float("inf")
-        else:
-            info_condition = float(info_max / info_min)
+        info_condition = float("inf") if info_min <= 0 else float(info_max / info_min)
 
-    state = (
-        "LOCAL_FIRST_ORDER_IDENTIFIABLE"
-        if full_column_rank
-        else "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
-    )
+    state = "LOCAL_FIRST_ORDER_IDENTIFIABLE" if full_column_rank else "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
     return LocalIdentifiabilityCertificate(
         state=state,
         parameter_count=parameter_count,

@@ -3,10 +3,10 @@
 > **Fork notice.** This repository is a fork of
 > [github.com/karpathy/nanochat](https://github.com/karpathy/nanochat) (MIT License —
 > full credit to Andrej Karpathy and nanochat's contributors for the base
-> implementation; the `master`/`baseline` branches here are the unmodified upstream
-> history). The original contribution in this repository — Cognitive Wiring Core
-> (CWC) / Sapolsky-behavioral-layers research — is by Yaroslav Vasylenko, primarily on
-> the `wp1-instrumentation` branch (this GitLab project's default branch). See
+> implementation; the upstream baseline is preserved in this repository's history.
+> The original contribution in this repository — Cognitive Wiring Core (CWC) /
+> Sapolsky-behavioral-layers research — is by Yaroslav Vasylenko. The canonical,
+> consolidated research state is published from the `main` branch. See
 > [`CITATION.cff`](CITATION.cff) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 > for full attribution detail.
 

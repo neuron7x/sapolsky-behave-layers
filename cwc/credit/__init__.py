@@ -1,4 +1,5 @@
 """Causal-credit envelopes and estimators."""
+
 from .envelope import CreditAuthorityDecision, EpistemicState
 from .estimator import estimate_credit_envelope
 

@@ -19,6 +19,7 @@ WHY (design argument)
 INVARIANT (Gate B). Every `requires_grad` parameter lands in exactly one group; a
 duplicate assignment is an assertion error, not a last-writer-wins overwrite.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -93,8 +94,13 @@ class ParameterGroupRegistry:
         self.group_ids = [s.group_id for s in specs]
 
     @classmethod
-    def from_model(cls, model: nn.Module, mutable_prefixes: tuple[str, ...] | None = None,
-                   bytes_per_param: int = 4, optimizer_state_mult: int = 2) -> ParameterGroupRegistry:
+    def from_model(
+        cls,
+        model: nn.Module,
+        mutable_prefixes: tuple[str, ...] | None = None,
+        bytes_per_param: int = 4,
+        optimizer_state_mult: int = 2,
+    ) -> ParameterGroupRegistry:
         """Build the registry from a live model. Only `requires_grad` parameters are
         grouped. Groups are emitted in **sorted key order** (not discovery order) so the
         G-axis is deterministic. `mutable_prefixes` optionally restricts which groups
@@ -117,15 +123,24 @@ class ParameterGroupRegistry:
             gid = _stable_id(key)
             names = tuple(sorted(n for n, _ in members))
             count = sum(n for _, n in members)
-            mutable = True if mutable_prefixes is None else any(
-                any(nm.startswith(pre) for pre in mutable_prefixes) for nm in names)
-            specs.append(ParameterGroupSpec(
-                group_id=gid, name=key, module_path=module_path[key],
-                parameter_names=names, group_type=key.split("::")[1],
-                parameter_count=count,
-                estimated_update_flops=2 * count,   # 1 mul + 1 add per param
-                estimated_optimizer_bytes=count * bytes_per_param * optimizer_state_mult,
-                mutable=mutable))
+            mutable = (
+                True
+                if mutable_prefixes is None
+                else any(any(nm.startswith(pre) for pre in mutable_prefixes) for nm in names)
+            )
+            specs.append(
+                ParameterGroupSpec(
+                    group_id=gid,
+                    name=key,
+                    module_path=module_path[key],
+                    parameter_names=names,
+                    group_type=key.split("::")[1],
+                    parameter_count=count,
+                    estimated_update_flops=2 * count,  # 1 mul + 1 add per param
+                    estimated_optimizer_bytes=count * bytes_per_param * optimizer_state_mult,
+                    mutable=mutable,
+                )
+            )
             for nm in names:
                 assert nm not in param_to_group, f"duplicate assignment: {nm}"
                 param_to_group[nm] = gid

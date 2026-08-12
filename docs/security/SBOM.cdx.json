@@ -5432,6 +5432,452 @@
       "version": "0.1.0"
     },
     {
+      "bom-ref": "pkg:pypi/scipy@1.15.3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "05DC6ABCD105E1A29F95EADA46D4A3F251743CFD7D3AE8DDB4088047F24EA477"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "06EFCBA926324DF1696931A57A176C80848CCD67CE6AD020C810736BFD58EB1C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "0A769105537AA07A69468A0EEFCD121BE52006DB61CDD8CAC8A0E68980BBB723"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "0BDD905264C0C9CFA74A4772CDB2070171790381A5C4D312C973382FC6EAF730"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "0FF17C0BB1CB32952C09217D8D1EED9B53D1463E5F1DD6052C7857F83127D539"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "14ED70039D182F411FFC74789A16DF3835E05DC469B898233A245CDFD7F162CB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "185CD3D6D05CA4B44A8F1595AF87F9C372BB6ACF9C808E99AA3E9AA03BD98CF6"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "18AAACB735AB38B38DB42CB01F6B92A2D0D4B6AABEFEB07F02849E47F8FB3594"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "1C832E1BD78DEA67D5C16F786681B28DD695A8CB1FB90AF2E27580D3D0967E92"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "263961F658CE2165BBD7B99FA5135195C3A12D9BEF045345016B8B50C315CB82"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "271E3713E645149EA5EA3E97B57FDAB61CE61333F97CFAE392C28BA786F9BB49"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "2C620736BCC334782E24D173C0FDBB7590A0A436D2FDF39310A8902505008759"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "34716E281F181A02341DDEAAD584205BD2FD3C242063BD3423D61AC259CA7EBA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "39CB9C62E471B1BB3750066ECC3A3F3052B37751C7C3DFD0FD7E48900ED52982"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3AC07623267FEB3AE308487C260AC684B32EA35FD81E12845039952F558047B8"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3B0334816AFB8B91DAB859281B1B9786934392AA3D527CD847E41BB6F45BEE65"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "40E54D5C7E7EBF1AA596C374C49FA3135F04648A0CAABCB66C52884B943F02B4"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "50F9E62461C95D933D5C5EF4A1F2EBF9A2B4E83B0DB374CB3F1DE104D935922E"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "52092BC0472CFD17DF49FF17E70624345EFECE4E1A12B23783A1AC59A1B728ED"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5380741E53DF2C566F4D234B100A484B420AF85DEB39EA35A1CC1BE84FF53A5C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5E721FED53187E71D0CCF382B6BF977644C533E506C4D33C3FB24DE89F5C3ED5"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6487AA99C2A3D509A5227D9A5E889FF05830A06B2CE08EC30DF6D79DB5FCD5C5"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6AC6310FDBFB7AA6612408BD2F07295BCBD3FDA00D2D702178434751FE48E019"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6CFD56FC1A8E53F6E89BA3A7A7251F7396412D655BCA2AA5611C8EC9A6784A1E"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6DB907C7368E3092E24919B5E31C76998B0CE1684D51A90943CB0ED1B4FFD6C1"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "721D6B4EF5DC82CA8968C25B111E307083D7CA9091BC38163FB89243E85E3889"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "76AD1FB5F8752EABF0FA02E4CC0336B4E8F021E2D5F061ED37D6D264DB35E3CA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "79167BBA085C31F38603E11A267D862957CBB3CE018D8B38F79AC043BC92D825"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "795C46999BAE845966368A3C013E0E00947932D68E235702B5C3F6EA799AA8C9"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "7E11270A000969409D37ED399585EE530B9EF6AA99D50C019DE4CB01E8E54E62"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "8C9ED3BA2C8A2CE098163A9BDB26F891746D02136995DF25227A20E71C396EBB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "993439CE220D25E3696D1B23B233DD010169B62F6456488567E830654EE37A6B"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9D61E97B186A57350F6D6FD72640F9E99D5A4A2B8FBF4B9EE9A841EAB327DC13"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9DB984639887E3DFFB3928D118145FFE40EFF2FA40CB241A306EC57C219EBBBB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9E2ABC762B0811E09A0D3258ABEE2D98E0C703EEE49464CE0069590846F31D40"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A345928C86D535060C9C2B25E71E87C39AB2F22FC96E9636BD74D1DBF9DE448C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "AD3432CB0F9ED87477A8D97F03B763FD1D57709F1BBDE3C9369B1DFF5503B253"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "AE48A786A28412D744C62FD7816A4118EF97E5BE0BEE968CE8F0A2FBA7ACF3BB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "AEF683A9AE6EB00728A542B796F52A5477B78252EDEDE72B8327A886AB63293F"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "B90AB29D0C37EC9BF55424C064312930CA5F4BDE15EE8619EE44E69319AAB163"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "C05045D8B9BFD807EE1B9F38761993297B10B245F012B11B13B91BA8945F7E45"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "C9DEABD6D547AEE2C9A81DEE6CC96C6D7E9A9B1953F74850C179F91FDC729CB7"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "DDE4FC32993071AC0C7DD2D82569E544F0BDAFF66269CB475E0F369ADAD13F11"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "EAE3CF522BC7DF64B42CAD3925C876E1B0B6C35C1337C93E12C0F366F55B0EAF"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "ED7284B21A7A0C8F1B6E5977AC05396C0D008B89E05498C8B7E8F4A1423BBA0E"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "F77F853D584E72E874D87357AD70F44B437331507D1C311457BED8ED2B956126"
+        }
+      ],
+      "name": "scipy",
+      "purl": "pkg:pypi/scipy@1.15.3",
+      "type": "library",
+      "version": "1.15.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/scipy@1.17.1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "010F4333C96C9BB1A4516269E33CB5917B08EF2166D5556CA2FD9F082A9E6EA0"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "02AE3B274FDE71C5E92AC4D54BC06C42D80E399FEC704383DCD99B301DF37458"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "08B900519463543AA604A06BEC02461558A6E1CEF8FDBB8098F77A48A83C8118"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "131F5AAEA57602008F9822E2115029B55D4B5F7C070287699FE45C661D051E39"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "158DD96D2207E21C966063E1635B1063CD7787B627B6F07305315DD73D9C679E"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "1CC682CEA2AE55524432F3CDFF9E9A3BE743D52A7443D0CBA9017C23C87AE2F6"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "1F95B894F13729334FB990162E911C9E5DC1AB390C58AA6CBECB389C5B5E28EC"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "200E1050FAFFACC162BE6A486A984A0497866EC54149A01270ADC8A59B7C7D21"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "2040AD4D1795A0AE89BFC7E8429677F365D45AA9FD5E4587CF1EA737F927B4A1"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "2B64CA7D4AEE0102A97F3BA22124052B4BD2152522355073580BF4845E2550B6"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "2CEB2D3E01C5F1D83C4189737A42D9CB2FC38A6EEED225E7515EEF71AD301DCE"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "35C3A56D2EF83EFC372EAEC584314BD0EF2E2F0D2ADB21C55E6AD5B344C0DCB8"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "37425BC9175607B0268F493D79A292C39F9D001A357BEBB6B88FDFAFF13F6448"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3877AC408E14DA24A6196DE0DDCACE62092BFC12A83823E92E49E40747E52C19"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3FD1FCDAB3EA951B610DC4CEF356D416D5802991E7E32B5254828D342F7B7E0B"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "41B71F4A3A4CAB9D366CD9065B288EFC4D4F3C0B37A91A8E0947FB5BD7F31D87"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "43AF8D1F3BEA642559019EDFE64E9B11192A8978EFBD1539D7BC2AAA23D92DE4"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "45ABAD819184F07240D8A696117A7AACD39787AF9E0B719D00285549ED19A1E9"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "4B400BDC6F79FA02A4D86640310DDE87A21FBA0C979EFFF5248908C6F15FAD1B"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "4EB6C25DD62EE8D5EDF68A8E1C171DD71C292FDAE95D8AEB3DD7D7DE4C364082"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "581B2264FC0AA555F3F435A5944DA7504EA3A065D7029AD60E7C3D1AE09C5464"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5CF36E801231B6A2059BF354720274B7558746F3B1A4EFB43FCF557CCD484A87"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5E3C5C011904115F88A39308379C17F91546F77C1667CEA98739FE0FCCEA804C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6609BC224E9568F65064CFA72EDC0F24EE6655B47575954EC6339534B2798369"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6E3DCD57AB780C741FDE8DC68619DE988B966DB759A3C3152E8E9142C26295AD"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6FAC755CA3D2C3EDCB22F479FCEAA241704111414831DDD3BC6056E18516892F"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "744B2BF3640D907B79F3FD7874EFE432D1CF171EE721243E350F55234B4CEC4C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "74CBB80D93260FE2FFA334EFA24CB8F2F0F622A9B9FEBF8B483C0B865BFB3475"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "766E0DC5A616D026A3A1CFFA379AF959671729083882F50307E18175797B3DFD"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "7BDF2DA170B67FDF10BCA777614B1C7D96AE3CA5794FD9587DCE41EB2966E866"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "7FF200BF9D24F2E4D5DC6EE8C3AC64D739D3A89E2326BA68AAF6C4A2B838FD7D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "844E165636711EF41F80B4103ED234181646B98A53C8F05DA12CA5CA289134F6"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "8A604BAE87C6195D8B1045EDDECE0514D041604B14F2727BBC2B3020172045EB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "94055A11DFEBE37C656E70317E1996DC197E1A15BBCC351BCDD4610E128FE1CA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "95D8E012D8CB8816C226AEF832200B1D45109ED4464303E997C5B13122B297C0"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9CDC1A2FCFD5C52CFB3045FEB399F7B3CE822ABDDE3A193A6B9A60B3CB5854CA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9ECB4EFB1CD6E8C4AFEA0DAA91A87FBDDBCE1B99D2895D151596716C0B2E859D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A3472CFBCA0A54177D0FAA68F697D8BA4C80BBDC19908C3465556D9F7EFCE9EE"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A4328D245944D09FD639771DE275701CCADF5F781BA0FF092AD141E017ECCDA4"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A48A72C77A310327F6A3A920092FA2B8FD03D7DEAA60F093038F22D98E096717"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A720477885A9D2411F94A93D16F9D89BAD0F28CA23C3F8DAA521E2DCC3F44D49"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A77CBD07B940D326D39A1D1B37817E2EE4D79CB30E7338F3D0CDDFFAE70FCAA2"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A9956E4D4F4A301EBF6CDE39850333A6B6110799D470DBBB1E25326AC447F52A"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "ADB2642E060A6549C343603A3851BA76EF0B74CC8C079A9A58121C7EC9FE2350"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "BEEDA3D4AE615106D7094F7E7CEF6218392E4465CC95D25F900BEBABFDED0950"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "C80BE5EDE8F3F8EDED4EFF73CC99A25C388CE98E555B17D31DA05287015FFA5B"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "CC90D2E9C7E5C7F1A482C9875007C095C3194B1CFEDCA3C2F3291CDC2BC7C086"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "CD96A1898C0A47BE4520327E01F874ACFD61FB48A9420F8AA9F6483412FFA444"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "D2650C1FB97E184D12D8BA010493EE7B322864F7D3D00D3F9BB97D9C21DE4068"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "D30E57C72013C2A4FE441C2FCB8E77B14E152AD48B5464858E07E2AD9FBFCEFF"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "D59C30000A16D8EDC7E64152E30220BFBD724C9BBB08368C054E24C651314F0A"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "DBC12C9F3D185F5C737D801DA555FB74B3DCFA1A50B66A1A93E09190F41FAB50"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "E18F12C6B0BC5A592ED23D3F7B891F68FD7F8241D69B7883769EB5D5DFB52696"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "E19EBEA31758FAC5893A2AC360FEDD00116CBB7628E650842A6691BA7CA28A21"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "E30BDEAA5DEED6BC27B4CC490823CD0347D7DAE09119B8803AE576EA0CE52E4C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "EB092099205EF62CD1782B006658DB09E2FED75BFFCAE7CC0D44052D8AA0F484"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "EEE2CFDA04C00A857206A4330F0C5E3E56535494E30CA445EB19EC624AE75118"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "F4115102802DF98B2B0DB3CCE5CB9B92572633A1197C77B7553E5203F284A5B3"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "F590CD684941912D10BECC07325A3EEB77886FE981415660D9265C4C418D0BEA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "F8885DB0BC2BFFA59D5C1B72FAD7A6A92D3E80E7257F967DD81ABB553A90D293"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "FCB310DDB270A06114BB64BBE53C94926B943F5B7F0842194D585C65EB4EDD76"
+        }
+      ],
+      "name": "scipy",
+      "purl": "pkg:pypi/scipy@1.17.1",
+      "type": "library",
+      "version": "1.17.1"
+    },
+    {
       "bom-ref": "pkg:pypi/sentry-sdk@2.35.2",
       "hashes": [
         {
@@ -6338,11 +6784,11 @@
     "properties": [
       {
         "name": "cwc:uv-lock-sha256",
-        "value": "a1ca64e12d9f18ca06ac2650dfec1b6724ce7f10ebc297e354c79ed6dcb135fe"
+        "value": "8fa16613c12a5d9f40f53e22e24610c05165b90c4c38bbed0f0b7975404d0669"
       }
     ]
   },
-  "serialNumber": "urn:uuid:50e85f26-01b9-5137-a601-86a4320112a7",
+  "serialNumber": "urn:uuid:e10b74ba-3565-5ed0-843f-af3cfa431dc6",
   "specVersion": "1.5",
   "version": 1
 }

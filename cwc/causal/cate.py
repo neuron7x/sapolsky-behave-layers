@@ -5,10 +5,11 @@ frozen-action replay the context-specific potential-outcome matrix directly
 identifies the oracle-vs-static opportunity.  For randomized trials, policy value
 can additionally be estimated with inverse-propensity or doubly-robust estimators.
 """
+
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import math
+from collections.abc import Mapping, Sequence
 
 from .potential_outcomes import TrialObservation
 
@@ -36,10 +37,7 @@ def oracle_gap(matrix: Sequence[Sequence[float]], prior: Sequence[float] | None 
         if not math.isclose(sum(weights), 1.0, abs_tol=1e-9, rel_tol=0.0):
             raise ValueError("prior must sum to one")
     oracle = sum(weights[c] * max(map(float, matrix[c])) for c in range(n_contexts))
-    fixed_values = [
-        sum(weights[c] * float(matrix[c][a]) for c in range(n_contexts))
-        for a in range(n_actions)
-    ]
+    fixed_values = [sum(weights[c] * float(matrix[c][a]) for c in range(n_contexts)) for a in range(n_actions)]
     fixed = max(fixed_values)
     return {
         "oracle_value": oracle,
@@ -58,10 +56,7 @@ def treatment_effects_against(
     _, n_actions = _matrix_shape(matrix)
     if not 0 <= baseline_action < n_actions:
         raise ValueError("baseline_action out of range")
-    return [
-        [float(value) - float(row[baseline_action]) for value in row]
-        for row in matrix
-    ]
+    return [[float(value) - float(row[baseline_action]) for value in row] for row in matrix]
 
 
 def destroy_interaction(matrix: Sequence[Sequence[float]]) -> list[list[float]]:
@@ -75,10 +70,7 @@ def destroy_interaction(matrix: Sequence[Sequence[float]]) -> list[list[float]]:
     grand = sum(float(x) for row in matrix for x in row) / (n_contexts * n_actions)
     row_mean = [sum(map(float, row)) / n_actions for row in matrix]
     col_mean = [sum(float(matrix[c][a]) for c in range(n_contexts)) / n_contexts for a in range(n_actions)]
-    return [
-        [row_mean[c] + col_mean[a] - grand for a in range(n_actions)]
-        for c in range(n_contexts)
-    ]
+    return [[row_mean[c] + col_mean[a] - grand for a in range(n_actions)] for c in range(n_contexts)]
 
 
 def collapse_context(matrix: Sequence[Sequence[float]]) -> list[list[float]]:
@@ -140,8 +132,6 @@ def doubly_robust_policy_value(
             raise ValueError("utilities and outcome-model predictions must be finite")
         probs = _policy_probs(target_policy, obs.context, actions)
         direct = sum(probs[a] * obs.outcome_model[a] for a in actions)
-        correction = probs[obs.action] / obs.propensity * (
-            obs.utility - obs.outcome_model[obs.action]
-        )
+        correction = probs[obs.action] / obs.propensity * (obs.utility - obs.outcome_model[obs.action])
         total += direct + correction
     return total / len(observations)

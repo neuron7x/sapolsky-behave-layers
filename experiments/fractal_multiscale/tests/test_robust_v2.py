@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from cwc_fractal.cwc_adapter import observations_from_cwc_record
@@ -126,9 +125,33 @@ def test_cross_seed_pair_diagnostics_reports_sign_consistency() -> None:
     from cwc_fractal.replication import cross_seed_pair_diagnostics
 
     rows = {
-        "1": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": 0.2}],
-        "2": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": -0.1}],
-        "3": [{"edge": "micro->meso", "source_feature": "x", "target_feature": "y", "n": 72, "residual_spearman": 0.3}],
+        "1": [
+            {
+                "edge": "micro->meso",
+                "source_feature": "x",
+                "target_feature": "y",
+                "n": 72,
+                "residual_spearman": 0.2,
+            }
+        ],
+        "2": [
+            {
+                "edge": "micro->meso",
+                "source_feature": "x",
+                "target_feature": "y",
+                "n": 72,
+                "residual_spearman": -0.1,
+            }
+        ],
+        "3": [
+            {
+                "edge": "micro->meso",
+                "source_feature": "x",
+                "target_feature": "y",
+                "n": 72,
+                "residual_spearman": 0.3,
+            }
+        ],
     }
     out = cross_seed_pair_diagnostics(rows)
     assert len(out) == 1

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import itertools
-from typing import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -50,7 +50,7 @@ class FittedCounterfactualModel:
         zero credit. This is algebraically identical to exhaustive coalition Shapley for the
         symmetric zero-mean intervention baseline and avoids Monte-Carlo noise.
         """
-        out = {name: 0.0 for name in CANDIDATES}
+        out = dict.fromkeys(CANDIDATES, 0.0)
         for coefficient, term in zip(self.coefficients, self.terms, strict=True):
             if not term.players:
                 continue
@@ -62,7 +62,7 @@ class FittedCounterfactualModel:
 
     def mean_credit(self, rows: Sequence[Mapping[str, float]]) -> tuple[dict[str, float], dict[str, float]]:
         if not rows:
-            return ({name: 0.0 for name in CANDIDATES}, {name: 0.0 for name in CANDIDATES})
+            return (dict.fromkeys(CANDIDATES, 0.0), dict.fromkeys(CANDIDATES, 0.0))
         phi = np.zeros((len(rows), len(CANDIDATES)), dtype=float)
         for coefficient, term in zip(self.coefficients, self.terms, strict=True):
             if not term.players:
@@ -137,9 +137,7 @@ def counterfactual_terms(family: str) -> tuple[FeatureTerm, ...]:
     return _terms(family)
 
 
-def counterfactual_design_matrix(
-    rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]
-) -> np.ndarray:
+def counterfactual_design_matrix(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -> np.ndarray:
     """Public design matrix; does not fit coefficients or grant model authority."""
     return _design(rows, terms)
 

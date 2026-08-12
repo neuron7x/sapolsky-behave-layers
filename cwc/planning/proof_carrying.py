@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 import hashlib
 import json
 import math
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from enum import Enum
 
 from cwc.epistemics.information_acquisition import (
     InformationAction,
@@ -13,7 +13,6 @@ from cwc.epistemics.information_acquisition import (
 )
 from cwc.epistemics.lattice import EpistemicState
 from cwc.memory.epistemic_store import EpistemicMemoryLedger, MemoryRecord, MemoryStatus
-
 
 _PLAN_SEAL = object()
 
@@ -60,11 +59,13 @@ class WorldBranch:
 
     @property
     def digest(self) -> str:
-        return _sha({
-            "world_id": self.world_id,
-            "utilities": {k: self.utilities[k] for k in sorted(self.utilities)},
-            "provenance": self.provenance,
-        })
+        return _sha(
+            {
+                "world_id": self.world_id,
+                "utilities": {k: self.utilities[k] for k in sorted(self.utilities)},
+                "provenance": self.provenance,
+            }
+        )
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -82,7 +83,7 @@ class PlanCertificate:
     reason: str
     certificate_digest: str
 
-    def __new__(cls, *args: object, **kwargs: object) -> "PlanCertificate":
+    def __new__(cls, *args: object, **kwargs: object) -> PlanCertificate:
         raise TypeError("PlanCertificate can only be minted by plan_counterfactual")
 
     @classmethod
@@ -101,7 +102,7 @@ class PlanCertificate:
         necessary_information_cost: float | None,
         reason: str,
         _seal: object,
-    ) -> "PlanCertificate":
+    ) -> PlanCertificate:
         if _seal is not _PLAN_SEAL:
             raise TypeError("invalid plan mint seal")
         scope = _norm(tuple(context_scope))
@@ -179,7 +180,9 @@ def _validate_worlds(worlds: Sequence[WorldBranch]) -> tuple[tuple[WorldBranch, 
     return ww, action_set
 
 
-def _robust_winner(worlds: Sequence[WorldBranch], actions: Sequence[str], margin: float) -> tuple[str | None, bool, bool]:
+def _robust_winner(
+    worlds: Sequence[WorldBranch], actions: Sequence[str], margin: float
+) -> tuple[str | None, bool, bool]:
     tops: list[str] = []
     all_margin = True
     for w in worlds:
@@ -284,9 +287,16 @@ def plan_counterfactual(
 
     if invalid_memory:
         return _mint_result(
-            plan_id=plan_id, context_scope=scope, state=PlanState.BLOCKED_MEMORY_AUTHORITY,
-            selected_action=None, memories=memories, worlds=ww, robust_margin=robust_margin,
-            information_state=None, information_action_id=None, necessary_information_cost=None,
+            plan_id=plan_id,
+            context_scope=scope,
+            state=PlanState.BLOCKED_MEMORY_AUTHORITY,
+            selected_action=None,
+            memories=memories,
+            worlds=ww,
+            robust_margin=robust_margin,
+            information_state=None,
+            information_action_id=None,
+            necessary_information_cost=None,
             reason="required memory is legacy, stale, retracted, context-mismatched, or has unrepresented authority debt",
         )
 
@@ -294,25 +304,46 @@ def plan_counterfactual(
 
     if assumption_conditional:
         return _mint_result(
-            plan_id=plan_id, context_scope=scope, state=PlanState.ASSUMPTION_CONDITIONAL_PLAN,
-            selected_action=winner, memories=memories, worlds=ww, robust_margin=robust_margin,
-            information_state=None, information_action_id=None, necessary_information_cost=None,
+            plan_id=plan_id,
+            context_scope=scope,
+            state=PlanState.ASSUMPTION_CONDITIONAL_PLAN,
+            selected_action=winner,
+            memories=memories,
+            worlds=ww,
+            robust_margin=robust_margin,
+            information_state=None,
+            information_action_id=None,
+            necessary_information_cost=None,
             reason="plan depends on quarantined identifying assumptions and cannot be emitted as unconditional action authority",
         )
 
     if winner is not None:
         return _mint_result(
-            plan_id=plan_id, context_scope=scope, state=PlanState.ROBUST_ACTION,
-            selected_action=winner, memories=memories, worlds=ww, robust_margin=robust_margin,
-            information_state=None, information_action_id=None, necessary_information_cost=None,
+            plan_id=plan_id,
+            context_scope=scope,
+            state=PlanState.ROBUST_ACTION,
+            selected_action=winner,
+            memories=memories,
+            worlds=ww,
+            robust_margin=robust_margin,
+            information_state=None,
+            information_action_id=None,
+            necessary_information_cost=None,
             reason="same action uniquely dominates by the frozen margin in every admitted world; no world averaging used",
         )
 
     if same_top and not all_margin:
         return _mint_result(
-            plan_id=plan_id, context_scope=scope, state=PlanState.ABSTAIN_NO_UNIQUE_ROBUST_ACTION,
-            selected_action=None, memories=memories, worlds=ww, robust_margin=robust_margin,
-            information_state=None, information_action_id=None, necessary_information_cost=None,
+            plan_id=plan_id,
+            context_scope=scope,
+            state=PlanState.ABSTAIN_NO_UNIQUE_ROBUST_ACTION,
+            selected_action=None,
+            memories=memories,
+            worlds=ww,
+            robust_margin=robust_margin,
+            information_state=None,
+            information_action_id=None,
+            necessary_information_cost=None,
             reason="nominal top action is shared but at least one world fails the frozen robust-margin requirement",
         )
 
@@ -326,24 +357,43 @@ def plan_counterfactual(
         )
         if info.state == "ACQUIRE_EVIDENCE_BUDGET_NOT_RULED_OUT_BY_CONVERSE":
             return _mint_result(
-                plan_id=plan_id, context_scope=scope, state=PlanState.ACQUIRE_INFORMATION,
-                selected_action=None, memories=memories, worlds=ww, robust_margin=robust_margin,
-                information_state=info.state, information_action_id=info.action_id,
+                plan_id=plan_id,
+                context_scope=scope,
+                state=PlanState.ACQUIRE_INFORMATION,
+                selected_action=None,
+                memories=memories,
+                worlds=ww,
+                robust_margin=robust_margin,
+                information_state=info.state,
+                information_action_id=info.action_id,
                 necessary_information_cost=info.necessary_cost_lower_bound,
                 reason="admitted worlds disagree; certified maximin information channel is not ruled out by the necessary budget converse",
             )
         return _mint_result(
-            plan_id=plan_id, context_scope=scope, state=PlanState.ABSTAIN_WORLD_DISAGREEMENT,
-            selected_action=None, memories=memories, worlds=ww, robust_margin=robust_margin,
-            information_state=info.state, information_action_id=info.action_id,
+            plan_id=plan_id,
+            context_scope=scope,
+            state=PlanState.ABSTAIN_WORLD_DISAGREEMENT,
+            selected_action=None,
+            memories=memories,
+            worlds=ww,
+            robust_margin=robust_margin,
+            information_state=info.state,
+            information_action_id=info.action_id,
             necessary_information_cost=info.necessary_cost_lower_bound,
             reason="admitted worlds disagree and information acquisition is not licensed by the certified converse/budget gate",
         )
 
     return _mint_result(
-        plan_id=plan_id, context_scope=scope, state=PlanState.ABSTAIN_WORLD_DISAGREEMENT,
-        selected_action=None, memories=memories, worlds=ww, robust_margin=robust_margin,
-        information_state=None, information_action_id=None, necessary_information_cost=None,
+        plan_id=plan_id,
+        context_scope=scope,
+        state=PlanState.ABSTAIN_WORLD_DISAGREEMENT,
+        selected_action=None,
+        memories=memories,
+        worlds=ww,
+        robust_margin=robust_margin,
+        information_state=None,
+        information_action_id=None,
+        necessary_information_cost=None,
         reason="admitted worlds disagree and no certified identifying information action is available",
     )
 
@@ -378,6 +428,4 @@ def verify_plan_certificate(
     except Exception:
         return False
     bindings = tuple(sorted((w.world_id, w.digest) for w in ww))
-    if bindings != certificate.world_bindings:
-        return False
-    return True
+    return bindings == certificate.world_bindings

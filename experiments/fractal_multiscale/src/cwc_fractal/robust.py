@@ -4,11 +4,11 @@ import math
 import random
 import statistics
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from .types import CausalWindow, FeatureMapping, FractalValidationError, Scale, ScaleObservation
-
 
 _EPS = 1e-12
 
@@ -227,7 +227,9 @@ def residualize_within_strata(
     repeated_count = sum(len(idxs) for idxs in repeated.values())
     fraction = repeated_count / len(values) if values else 0.0
     if repeated_count < 3:
-        raise FractalValidationError("insufficient repeated confounder strata for exact residualization")
+        raise FractalValidationError(
+            "insufficient repeated confounder strata for exact residualization"
+        )
     residuals = [math.nan] * len(values)
     for idxs in repeated.values():
         mean = statistics.fmean(float(values[i]) for i in idxs)
@@ -238,7 +240,9 @@ def residualize_within_strata(
     return output, fraction
 
 
-def _paired_residuals(trajectory: PairTrajectory) -> tuple[tuple[float, ...], tuple[float, ...], float]:
+def _paired_residuals(
+    trajectory: PairTrajectory,
+) -> tuple[tuple[float, ...], tuple[float, ...], float]:
     grouped: dict[tuple[str, ...], list[int]] = defaultdict(list)
     for index, key in enumerate(trajectory.strata):
         grouped[key].append(index)
@@ -246,7 +250,9 @@ def _paired_residuals(trajectory: PairTrajectory) -> tuple[tuple[float, ...], tu
     keep = sorted(index for idxs in repeated.values() for index in idxs)
     fraction = len(keep) / len(trajectory.timestamps)
     if len(keep) < 3:
-        raise FractalValidationError("insufficient repeated confounder strata for paired residualization")
+        raise FractalValidationError(
+            "insufficient repeated confounder strata for paired residualization"
+        )
     src = [trajectory.source_values[i] for i in keep]
     tgt = [trajectory.target_values[i] for i in keep]
     keys = [trajectory.strata[i] for i in keep]
@@ -320,7 +326,9 @@ def robust_coherence_report(
 ) -> RobustCoherenceReport:
     reports: list[PairAssociation] = []
     required_edges = tuple(
-        sorted({f"{mapping.source_scale.value}->{mapping.target_scale.value}" for mapping in mappings})
+        sorted(
+            {f"{mapping.source_scale.value}->{mapping.target_scale.value}" for mapping in mappings}
+        )
     )
     for mapping in mappings:
         for pair in mapping.pairs:
@@ -347,9 +355,13 @@ def robust_coherence_report(
                         target_residual_std=None,
                     )
                 )
-    valid = [item for item in reports if item.status == "VALID" and item.residual_spearman is not None]
+    valid = [
+        item for item in reports if item.status == "VALID" and item.residual_spearman is not None
+    ]
     raw_values = [abs(item.raw_spearman) for item in reports if item.raw_spearman is not None]
-    residual_values = [abs(item.residual_spearman) for item in valid if item.residual_spearman is not None]
+    residual_values = [
+        abs(item.residual_spearman) for item in valid if item.residual_spearman is not None
+    ]
     valid_edges = tuple(sorted({item.edge for item in valid}))
     return RobustCoherenceReport(
         pair_reports=tuple(reports),
@@ -412,7 +424,9 @@ def _valid_residual_pairs(
                 grouped: dict[tuple[str, ...], list[int]] = defaultdict(list)
                 for index, key in enumerate(trajectory.strata):
                     grouped[key].append(index)
-                keep = sorted(index for idxs in grouped.values() if len(idxs) >= 2 for index in idxs)
+                keep = sorted(
+                    index for idxs in grouped.values() if len(idxs) >= 2 for index in idxs
+                )
                 if len(keep) < 3:
                     continue
                 src = [trajectory.source_values[i] for i in keep]
@@ -485,9 +499,7 @@ def evaluate_robust_nulls(
 ) -> RobustNullEvaluation:
     if iterations < 200:
         raise ValueError("iterations must be >= 200 for robust null evaluation")
-    report = robust_coherence_report(
-        window, mappings=mappings, confounder_strata=confounder_strata
-    )
+    report = robust_coherence_report(window, mappings=mappings, confounder_strata=confounder_strata)
     observed = report.residual_mean_abs_coherence
     residual_pairs = _valid_residual_pairs(
         window, mappings=mappings, confounder_strata=confounder_strata

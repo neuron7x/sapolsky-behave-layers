@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 import os
 import resource
-from dataclasses import asdict
 import subprocess
 import time
+from collections.abc import Sequence
+from dataclasses import asdict
 from pathlib import Path
-from typing import Sequence
 
 from .models import RunTelemetry
 from .provenance import sha256_file
@@ -34,8 +34,7 @@ def run_with_telemetry(
         cwd=root,
         env={**os.environ, **(env or {})},
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     wall = time.perf_counter() - started

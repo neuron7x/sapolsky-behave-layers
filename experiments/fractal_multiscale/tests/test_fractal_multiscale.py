@@ -96,8 +96,7 @@ def test_analyzer_produces_micro_meso_macro_report_without_self_coherence() -> N
     assert payload["status"] == "ok"
     assert set(payload["scale_reports"]) == {"micro", "meso", "macro"}
     edges = {
-        (item["source_scale"], item["target_scale"])
-        for item in payload["cross_scale_reports"]
+        (item["source_scale"], item["target_scale"]) for item in payload["cross_scale_reports"]
     }
     assert edges == {("micro", "meso"), ("meso", "macro")}
     assert ("macro", "macro") not in edges

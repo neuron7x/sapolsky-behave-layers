@@ -4,6 +4,7 @@ None of these classes import NVML, create torch.cuda.Event objects, open
 files, or start threads. Their overhead must be statistically indistinguishable
 from calling the wrapped code directly (Act 4.3, Gate B).
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator

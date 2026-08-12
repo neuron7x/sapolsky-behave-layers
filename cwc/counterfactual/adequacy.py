@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 import numpy as np
 
@@ -45,7 +45,9 @@ def evaluate_intervention_adequacy(
     if not models:
         raise ValueError("counterfactual model ensemble is empty")
     if not support.probes:
-        return AdequacyMetrics((), float("inf"), float("inf"), {n: 0 for n in CANDIDATES}, {n: 0.0 for n in CANDIDATES})
+        return AdequacyMetrics(
+            (), float("inf"), float("inf"), dict.fromkeys(CANDIDATES, 0), dict.fromkeys(CANDIDATES, 0.0)
+        )
     observed = np.asarray([p.observed_half_effect for p in support.probes], dtype=float)
     scale = max(float(np.sqrt(np.mean(observed**2))), 0.25)
     errors: list[float] = []

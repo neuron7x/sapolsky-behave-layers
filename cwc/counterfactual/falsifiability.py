@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import itertools
 import math
-from typing import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 
 def normal_logpdf(y: float, mean: float, sd: float) -> float:
@@ -106,12 +106,12 @@ def profile_gaussian_null(
 ) -> ProfiledNullFit:
     if len(outcomes) != len(actions) or not outcomes:
         raise ValueError("outcomes/actions must have equal nonzero length")
-    residuals = [float(y) - float(model_slope) * float(a) for y, a in zip(outcomes, actions)]
+    residuals = [float(y) - float(model_slope) * float(a) for y, a in zip(outcomes, actions, strict=False)]
     intercept = _clip(sum(residuals) / len(residuals), nuisance.intercept_min, nuisance.intercept_max)
     rss = sum((r - intercept) ** 2 for r in residuals)
     mle_sd = math.sqrt(rss / len(residuals)) if rss > 0 else nuisance.sd_min
     sd = _clip(mle_sd, nuisance.sd_min, nuisance.sd_max)
-    ll = sum(normal_logpdf(y, float(model_slope) * a + intercept, sd) for y, a in zip(outcomes, actions))
+    ll = sum(normal_logpdf(y, float(model_slope) * a + intercept, sd) for y, a in zip(outcomes, actions, strict=False))
     return ProfiledNullFit(intercept=intercept, sd=sd, log_likelihood=ll)
 
 
@@ -129,9 +129,7 @@ def profiled_kl_to_model_class(
     not a decomposition of hidden-confounder variance versus aleatoric variance.
     """
     actions = design.actions
-    target_residual_means = [
-        (true_law.slope - float(model_slope)) * a + true_law.intercept for a in actions
-    ]
+    target_residual_means = [(true_law.slope - float(model_slope)) * a + true_law.intercept for a in actions]
     h = _clip(
         sum(target_residual_means) / len(target_residual_means),
         nuisance.intercept_min,
@@ -141,13 +139,9 @@ def profiled_kl_to_model_class(
     tau_unclipped = math.sqrt(true_law.sd * true_law.sd + mean_sq)
     tau = _clip(tau_unclipped, nuisance.sd_min, nuisance.sd_max)
     kl = 0.0
-    for action, target in zip(actions, target_residual_means):
+    for _action, target in zip(actions, target_residual_means, strict=False):
         delta = target - h
-        kl += (
-            math.log(tau / true_law.sd)
-            + (true_law.sd * true_law.sd + delta * delta) / (2.0 * tau * tau)
-            - 0.5
-        )
+        kl += math.log(tau / true_law.sd) + (true_law.sd * true_law.sd + delta * delta) / (2.0 * tau * tau) - 0.5
     fit = ProfiledNullFit(intercept=h, sd=tau, log_likelihood=float("nan"))
     return float(max(kl, 0.0)), fit
 
@@ -183,23 +177,23 @@ def optimize_minimax_design(
         total = sum(counts)
         if total < 2 or total > max_samples:
             continue
-        mapping = {a: int(n) for a, n in zip(actions, counts)}
+        mapping = {a: int(n) for a, n in zip(actions, counts, strict=False)}
         design = InterventionDesign(mapping, costs)
         if design.distinct_actions < min_distinct_actions:
             continue
         rates = [
-            separation_rate_per_cost(
-                law, design, model_slope=model_slope, nuisance=nuisance
-            )
+            separation_rate_per_cost(law, design, model_slope=model_slope, nuisance=nuisance)
             for law in alternative_laws
         ]
         score = min(rates)
-        rows.append({
-            "counts": {str(a): int(mapping[a]) for a in actions},
-            "cost": design.cost,
-            "min_separation_rate_per_cost": float(score),
-            "mean_separation_rate_per_cost": float(sum(rates) / len(rates)),
-        })
+        rows.append(
+            {
+                "counts": {str(a): int(mapping[a]) for a in actions},
+                "cost": design.cost,
+                "min_separation_rate_per_cost": float(score),
+                "mean_separation_rate_per_cost": float(sum(rates) / len(rates)),
+            }
+        )
         key = (score, -design.sample_count, -design.cost)
         best_key = (best_score, -(best.sample_count if best else 10**9), -(best.cost if best else float("inf")))
         if best is None or key > best_key:
@@ -262,10 +256,12 @@ class CompositeNullEProcess:
     def _alternative_log_density(self, outcomes: Sequence[float], actions: Sequence[float]) -> float:
         terms = []
         for component in self.alternative:
-            terms.append(sum(
-                normal_logpdf(y, component.slope * a + component.intercept, component.sd)
-                for y, a in zip(outcomes, actions)
-            ))
+            terms.append(
+                sum(
+                    normal_logpdf(y, component.slope * a + component.intercept, component.sd)
+                    for y, a in zip(outcomes, actions, strict=False)
+                )
+            )
         return logsumexp(terms) - math.log(len(terms))
 
     def step(self, outcomes: Sequence[float], design: InterventionDesign) -> dict[str, float | int | bool]:
@@ -276,9 +272,7 @@ class CompositeNullEProcess:
         actions = design.actions
         if len(outcomes) != len(actions):
             raise ValueError("outcome count does not match design")
-        null_fit = profile_gaussian_null(
-            outcomes, actions, model_slope=self.model_slope, nuisance=self.nuisance
-        )
+        null_fit = profile_gaussian_null(outcomes, actions, model_slope=self.model_slope, nuisance=self.nuisance)
         log_q = self._alternative_log_density(outcomes, actions)
         increment = log_q - null_fit.log_likelihood
         self.log_e += increment
@@ -383,10 +377,12 @@ class FixedCheckpointCompositeEValue:
     def _alternative_log_density(self) -> float:
         terms = []
         for component in self.alternative:
-            terms.append(sum(
-                normal_logpdf(y, component.slope * a + component.intercept, component.sd)
-                for y, a in zip(self.outcomes, self.actions)
-            ))
+            terms.append(
+                sum(
+                    normal_logpdf(y, component.slope * a + component.intercept, component.sd)
+                    for y, a in zip(self.outcomes, self.actions, strict=False)
+                )
+            )
         return logsumexp(terms) - math.log(len(terms))
 
     def add_block(self, outcomes: Sequence[float], design: InterventionDesign) -> dict[str, float | bool | None]:
@@ -403,9 +399,7 @@ class FixedCheckpointCompositeEValue:
         is_checkpoint = any(abs(self.cost - cp) <= 1e-12 for cp in self.checkpoints_cost)
         if not is_checkpoint:
             return {"cost": self.cost, "checkpoint": False, "log_e": None, "rejected": False}
-        fit = profile_gaussian_null(
-            self.outcomes, self.actions, model_slope=self.model_slope, nuisance=self.nuisance
-        )
+        fit = profile_gaussian_null(self.outcomes, self.actions, model_slope=self.model_slope, nuisance=self.nuisance)
         log_e = self._alternative_log_density() - fit.log_likelihood
         self.rejected = log_e >= self.threshold_log_e
         record = {
@@ -418,6 +412,7 @@ class FixedCheckpointCompositeEValue:
         }
         self.checked.append(record)
         return record
+
 
 @dataclass(frozen=True, slots=True)
 class InformationBudgetCertificate:

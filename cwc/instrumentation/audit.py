@@ -5,6 +5,7 @@ and their output always carries `claimable: false` / a `claim_run: false` tag
 so a summary cannot accidentally mix profiler-run latency with production
 latency (Act 4.13: "не змішувати profiler latency з production latency").
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable

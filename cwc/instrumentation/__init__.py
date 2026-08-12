@@ -31,6 +31,7 @@ NON-CLAIM (anti-pseudo)
     are *measurement-ready contracts* exercised with synthetic values, not evidence of
     a real router.
 """
+
 from .config import InstrumentationConfig, InstrumentationMode
 from .noop import (
     NullEnergySampler,

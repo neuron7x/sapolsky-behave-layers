@@ -5,12 +5,14 @@ of a proof.
 
     python -m pytest tests/test_instrumentation_properties.py -v
 """
+
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
 import pytest
+
 pytest.importorskip("hypothesis", reason="optional property-testing dependency unavailable")
 
 from hypothesis import assume, given, settings
