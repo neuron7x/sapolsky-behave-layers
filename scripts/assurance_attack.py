@@ -12,6 +12,7 @@ from scripts import (
     complexity_gate,
     hermeticity_gate,
     inference_integrity_gate,
+    dgc_verification_gate,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +63,9 @@ def run_attacks() -> dict[str, bool]:
             encoding="utf-8",
         )
         results["inference_validation_bypass"] = bool(inference_integrity_gate.validate(root))
+
+        for name, killed in dgc_verification_gate.run_fault_injections().items():
+            results[name.lower()] = killed
     return results
 
 

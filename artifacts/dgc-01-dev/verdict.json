@@ -1,0 +1,69 @@
+{
+  "claim_promotion": "PROHIBITED",
+  "per_regime": 20000,
+  "reason": "Development execution is not the untouched preregistered confirmatory cohort.",
+  "schema": "dgc-01-development/1",
+  "seed_offset": 0,
+  "status": "DEVELOPMENT_ONLY_NOT_CONFIRMATORY",
+  "summary": {
+    "comparisons": {
+      "B0_FIXED": {
+        "anytime_cs_lower": 0.03860937849814817,
+        "anytime_cs_upper": 0.04140887488816535,
+        "development_only": true,
+        "method": "STITCHED_HOEFFDING_UNION_BOUND_V1",
+        "n": 100000,
+        "paired_mean_delta_dgc_minus_baseline": 0.04000912669315676
+      },
+      "B1_UNCERTAINTY": {
+        "anytime_cs_lower": 0.04219316146401804,
+        "anytime_cs_upper": 0.07963642568049786,
+        "development_only": true,
+        "method": "STITCHED_HOEFFDING_UNION_BOUND_V1",
+        "n": 100000,
+        "paired_mean_delta_dgc_minus_baseline": 0.06091479357225795
+      },
+      "B2_COST_QUALITY_ROUTER": {
+        "anytime_cs_lower": 0.02379508281380835,
+        "anytime_cs_upper": 0.06123834703028817,
+        "development_only": true,
+        "method": "STITCHED_HOEFFDING_UNION_BOUND_V1",
+        "n": 100000,
+        "paired_mean_delta_dgc_minus_baseline": 0.04251671492204826
+      }
+    },
+    "policies": {
+      "B0_FIXED": {
+        "compute_rate": 1.0,
+        "decision_error_rate": 0.0,
+        "mean_compute_cost": 0.07852246071375747,
+        "mean_net_decision_value": -0.07852246071375747,
+        "n": 100000
+      },
+      "B1_UNCERTAINTY": {
+        "compute_rate": 0.6,
+        "decision_error_rate": 0.08716,
+        "mean_compute_cost": 0.06000959794756045,
+        "mean_net_decision_value": -0.09942812759285866,
+        "n": 100000
+      },
+      "B2_COST_QUALITY_ROUTER": {
+        "compute_rate": 0.8,
+        "decision_error_rate": 0.00933,
+        "mean_compute_cost": 0.06702335315573503,
+        "mean_net_decision_value": -0.08103004894264897,
+        "n": 100000
+      },
+      "B3_DGC": {
+        "compute_rate": 0.6,
+        "decision_error_rate": 0.0,
+        "false_escalation_rate": 0.0,
+        "false_stop_rate": 0.0,
+        "mean_compute_cost": 0.03851333402060071,
+        "mean_net_decision_value": -0.03851333402060071,
+        "n": 100000,
+        "oracle_routing_agreement": 1.0
+      }
+    }
+  }
+}

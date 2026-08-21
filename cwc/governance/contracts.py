@@ -50,6 +50,7 @@ class Perturbation:
     plausibility_weight: float
     causal_dependencies: tuple[str, ...] = ()
     estimated_cost: float = 0.0
+    structural_model_digest: str | None = None
 
     def __post_init__(self) -> None:
         if not self.perturbation_id.strip():
@@ -63,6 +64,10 @@ class Perturbation:
         object.__setattr__(self, "plausibility_weight", _finite_nonnegative("plausibility_weight", self.plausibility_weight))
         object.__setattr__(self, "estimated_cost", _finite_nonnegative("estimated_cost", self.estimated_cost))
         object.__setattr__(self, "causal_dependencies", tuple(sorted({x.strip() for x in self.causal_dependencies if x.strip()})))
+        structural = self.structural_model_digest.strip() if self.structural_model_digest else None
+        if self.intervention_type == "CAUSAL_INTERVENTION" and (not structural or not self.causal_dependencies):
+            raise ValueError("causal intervention requires structural_model_digest and causal_dependencies")
+        object.__setattr__(self, "structural_model_digest", structural)
 
     @property
     def digest(self) -> str:
@@ -77,6 +82,7 @@ class Perturbation:
                 "plausibility_weight": self.plausibility_weight,
                 "causal_dependencies": list(self.causal_dependencies),
                 "estimated_cost": self.estimated_cost,
+                "structural_model_digest": self.structural_model_digest,
             }
         )
 

@@ -27,6 +27,10 @@ class ComputeGovernor:
             estimate = estimates.get(operation.operation_id)
             if estimate is None or estimate.operation_id != operation.operation_id:
                 continue
+            if abs(estimate.total_cost - operation.estimated_cost) > 1e-12:
+                # Scalar decision cost is part of the operation contract; a caller may not
+                # lower it only inside the VOC estimate.
+                continue
             if not budget.can_spend(
                 tokens=operation.token_cost,
                 money=operation.money_cost,
