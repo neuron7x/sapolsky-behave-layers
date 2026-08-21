@@ -1,0 +1,16 @@
+{
+  "schema": "cwc-dgc-baseline/1.0",
+  "status": "FROZEN_PARTIAL_FAIL_CLOSED",
+  "repository": "neuron7x/sapolsky-behave-layers",
+  "branch": "main",
+  "commit": "08c03b1e5a217c05c263ac1fd20bebb9365aac2a",
+  "tree": "d72c2e6ce7113236475dc699ee47207cc3b5504f",
+  "uv_lock_sha256": "8fa16613c12a5d9f40f53e22e24610c05165b90c4c38bbed0f0b7975404d0669",
+  "snapshot_sha256": {
+    "claim_registry.json": "9d49d93f06be50236895b2bd62bae8854ad47dab74cf6a7b761214a14161ee04",
+    "docs/methodology/HYPOTHESIS_REGISTRY.yaml": "7f8d12b4427bb2db626a6d2b0fc60b25330302cc9b45e8ee562a34eff6401ff8",
+    "engineering/architecture_contract.json": "0ad4f3a5e815e1f70b654541f53162fde8562921e91186b741d5ecd0e59fd09c",
+    "docs/vision/ROADMAP.md": "9d4cbf20087dc1f98741f64b33ef45172ac72dc0c0de88dcd19ffd95833908ed"
+  },
+  "acceptance": "NOT_ESTABLISHED_FULL_GATE_EXECUTION_UNAVAILABLE"
+}
