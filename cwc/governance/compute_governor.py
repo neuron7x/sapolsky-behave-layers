@@ -5,6 +5,7 @@ from collections.abc import Mapping, Sequence
 from cwc.governance.budget import BudgetLedger
 from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
 from cwc.governance.contracts import CandidateOperation, ComputeDecision, ComputeDirective, RiskClass
+from cwc.governance.statistical_authority import StatisticalInferenceCertificate
 
 
 class ComputeGovernor:
@@ -20,19 +21,24 @@ class ComputeGovernor:
         risk_class: RiskClass = RiskClass.NORMAL,
         safety_margin: float = 0.0,
         require_robust_estimate: bool = False,
+        statistical_certificates: Mapping[str, StatisticalInferenceCertificate] | None = None,
+        production_strict_math: bool = False,
     ) -> ComputeDecision:
         if safety_margin < 0:
             raise ValueError("safety_margin must be >= 0")
         candidates: list[tuple[float, str, CandidateOperation, ValueOfComputationEstimate]] = []
+        certs = statistical_certificates or {}
         for operation in operations:
             estimate = estimates.get(operation.operation_id)
             if estimate is None or estimate.operation_id != operation.operation_id:
                 continue
             if require_robust_estimate and estimate.authority is not VOCAuthority.ROBUST_AMBIGUITY_BOUND:
                 continue
+            if production_strict_math:
+                cert = certs.get(operation.operation_id)
+                if cert is None or not cert.admits(estimate):
+                    continue
             if abs(estimate.total_cost - operation.estimated_cost) > 1e-12:
-                # Scalar decision cost is part of the operation contract; a caller may not
-                # lower it only inside the VOC estimate.
                 continue
             if not budget.can_spend(
                 tokens=operation.token_cost,
@@ -44,8 +50,6 @@ class ComputeGovernor:
                 continue
             threshold = safety_margin
             if risk_class is RiskClass.CATASTROPHIC:
-                # Catastrophic-risk policy is not allowed to infer safety from mean VOC alone.
-                # A caller must provide an explicitly positive conservative margin.
                 threshold = max(threshold, 1e-12)
             if estimate.lower_bound > threshold:
                 candidates.append((estimate.lower_bound, operation.operation_id, operation, estimate))
@@ -66,7 +70,7 @@ class ComputeGovernor:
         return ComputeDecision(
             directive=operation.directive,
             operation_id=operation.operation_id,
-            reason_code="ADMIT_MAX_LOWER_BOUND_VOC",
+            reason_code="ADMIT_MAX_LOWER_BOUND_VOC_STRICT_MATH" if production_strict_math else "ADMIT_MAX_LOWER_BOUND_VOC",
             predicted_voc=estimate.voc,
             predicted_voc_lower=estimate.lower_bound,
             predicted_voc_upper=estimate.upper_bound,
