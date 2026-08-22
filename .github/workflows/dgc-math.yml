@@ -11,7 +11,11 @@ on:
       - "tests/test_dgc_mathematics*.py"
       - "scripts/dgc_math*.py"
       - "scripts/dgc_exact_meta_modelcheck.py"
+      - "scripts/dgc_robust_bound_exact_modelcheck.py"
+      - "scripts/dgc_triage_family_theorem.py"
+      - "scripts/dgc_proof_ledger_gate.py"
       - "scripts/dgc_verification_gate.py"
+      - "research/registry/dgc_math_proof_ledger_v1.json"
       - "docs/DGC_MATHEMAT*.md"
       - "docs/references/DGC_*MATH*.md"
       - ".github/workflows/dgc-math.yml"
@@ -22,7 +26,11 @@ on:
       - "tests/test_dgc_mathematics*.py"
       - "scripts/dgc_math*.py"
       - "scripts/dgc_exact_meta_modelcheck.py"
+      - "scripts/dgc_robust_bound_exact_modelcheck.py"
+      - "scripts/dgc_triage_family_theorem.py"
+      - "scripts/dgc_proof_ledger_gate.py"
       - "scripts/dgc_verification_gate.py"
+      - "research/registry/dgc_math_proof_ledger_v1.json"
       - "docs/DGC_MATHEMAT*.md"
       - "docs/references/DGC_*MATH*.md"
       - ".github/workflows/dgc-math.yml"
@@ -63,7 +71,11 @@ jobs:
           PYTHONPATH=. python scripts/dgc_math_v2d_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2e_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2f_attack.py
-      - name: Exact rational metareasoning model check
-        run: PYTHONPATH=. python scripts/dgc_exact_meta_modelcheck.py
+      - name: Exact mathematical model checks
+        run: |
+          PYTHONPATH=. python scripts/dgc_exact_meta_modelcheck.py
+          PYTHONPATH=. python scripts/dgc_robust_bound_exact_modelcheck.py
+          PYTHONPATH=. python scripts/dgc_triage_family_theorem.py
+          PYTHONPATH=. python scripts/dgc_proof_ledger_gate.py
       - name: Canonical DGC governance fault gate
         run: PYTHONPATH=. python scripts/dgc_verification_gate.py
