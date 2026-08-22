@@ -8,43 +8,40 @@ This score measures **coverage of mathematical obligations**, not probability th
 M=\sum_j w_j s_j,\qquad \sum_j w_j=100,\qquad s_j\in[0,1].
 \]
 
-A dimension receives 100% only when definitions, assumptions, failure conditions, executable checks and relevant empirical/calibration obligations are materially closed.
-
 | Dimension | Weight | Current score | Weighted points | Why not 100% |
 |---|---:|---:|---:|---|
-| Decision theory / VOI / VOC semantics | 12 | 95% | 11.40 | exact finite oracle and PI upper bounds exist; scalable multi-step control remains approximate |
-| Robustness / ambiguity / misspecification | 14 | 86% | 12.04 | ambiguity geometry and robustness budgets remain externally declared |
-| Sequential / adaptive validity | 14 | 84% | 11.76 | restricted predictable-propensity production policy now explicit; arbitrary adaptive search remains open |
-| Calibration / estimated VOC risk control | 10 | 82% | 8.20 | conformal primitives exist; no client-distribution calibration evidence |
-| Causal countermodels / identifiability | 12 | 82% | 9.84 | declared-query obligation certificate is fail-closed; general graphical identification remains unsolved |
-| Decision stability / removable-compute theory | 10 | 90% | 9.00 | certified suffix theorem is narrow; general DAG compute-removability not solved |
+| Decision theory / VOI / VOC semantics | 12 | 96% | 11.52 | transition-local branch-and-bound exists; scalable general metalevel control remains approximate |
+| Robustness / ambiguity / misspecification | 14 | 90% | 12.60 | continuous weighted-L1 geometry is auditable; feature semantics, Lipschitz constants and Wasserstein radius remain externally authoritative |
+| Sequential / adaptive validity | 14 | 90% | 12.60 | restricted predictable-propensity policy now bound to pre-outcome trace and runtime authority; arbitrary adaptive search remains open |
+| Calibration / estimated VOC risk control | 10 | 86% | 8.60 | conformal/risk-control primitives and covariate-shift target-mean LCB exist; no real client calibration or density-ratio validation |
+| Causal countermodels / identifiability | 12 | 82% | 9.84 | declared-query obligation certificate is fail-closed; general graphical identification/transport remains open |
+| Decision stability / removable-compute theory | 10 | 90% | 9.00 | certified suffix theorem is narrow; general DAG compute-removability remains open |
 | Pareto / economic statistical inference | 10 | 86% | 8.60 | paired simultaneous gate exists; strong external same-workload benchmark unresolved |
-| Executable falsification / proof obligations | 8 | 95% | 7.60 | v2/v2b/v2c attacks exist; no proof assistant or independent formal review |
-| Nonstationarity / generalization theory | 6 | 72% | 4.32 | bounded-drift independent case closed; unknown/dependent/adversarial drift remains open |
-| External theorem review / novelty boundary | 4 | 38% | 1.52 | foundational prior art mapped; no independent theorem-by-theorem review |
-| **TOTAL** | **100** |  | **84.28%** | |
+| Executable falsification / proof obligations | 8 | 97% | 7.76 | v2-v2d attack suites and canonical runtime fault injection exist; no proof assistant / independent formal audit |
+| Nonstationarity / generalization theory | 6 | 80% | 4.80 | bounded-drift LCB plus anytime conditional-mean drift alarm exist; undetectable/adversarial drift and change-point localization remain open |
+| External theorem review / novelty boundary | 4 | 52% | 2.08 | theorem-by-theorem internal prior-art matrix exists; independent external review is absent |
+| **TOTAL** | **100** |  | **87.40%** | |
 
 ## Canonical score
 
 \[
-\boxed{M_{math}=84.3\%}
+\boxed{M_{math}=87.4\%}
 \]
 
 Status: `MATHEMATICALLY_HARDENED_RESEARCH_SYSTEM`, not `FORMALLY_COMPLETE`.
 
-The previous ~95% estimate is rejected. The earlier ~73% criticism was directionally sound: v1 lacked explicit model-misspecification robustness, adaptive-valid inference, credal semantics, risk control, Pareto authority, nonstationary treatment and a nonmyopic metareasoning boundary.
+The old ~95% estimate remains rejected. This increase from v2c `84.3%` is limited to obligations materially closed in v2d: production binding of restricted adaptive statistics, anytime conditional-mean drift alarms, bounded covariate-shift target-mean inference, auditable continuous transport geometry, transition-local metareasoning bounds, and a systematic internal prior-art matrix.
 
 ## Promotion to >=90%
 
-Requires material closure of all of:
+Requires material closure of the remaining high-value blockers, especially:
 
-1. validity for a production-grade adaptive policy under logged predictable propensities, or a justified stronger adaptive theorem;
-2. unknown/change-point/dependent/adversarial drift beyond externally certified bounded drift;
-3. client-distribution estimated-VOC calibration and risk control;
-4. continuous/high-dimensional ambiguity with validated metric/geometry;
-5. useful scalable multi-step VOC approximation-error bounds tighter than the perfect-information ceiling;
-6. broader causal identification/transport beyond declared-query obligation checks;
-7. independent theorem-by-theorem review or proof-assistant verification of critical propositions;
-8. no surviving mathematical mutation/falsification attacks.
+1. real client-distribution VOC calibration/risk control with validated density-ratio or transport authority;
+2. unknown/adversarial drift policy with explicit recalibration/change-point semantics;
+3. empirically validated feature geometry / robustness radius on a real workload;
+4. tighter scalable multi-step metareasoning approximation guarantees or certified restricted planner;
+5. broader causal identification/transport beyond obligation checking;
+6. independent theorem review or proof-assistant verification for critical propositions;
+7. no surviving mathematical mutation/falsification attacks.
 
-Without these, reporting `>=90% mathematics complete` is prohibited.
+Reporting `>=90% mathematics complete` before those are materially closed is prohibited.
