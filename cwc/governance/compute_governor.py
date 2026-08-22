@@ -5,7 +5,11 @@ from collections.abc import Mapping, Sequence
 from cwc.governance.budget import BudgetLedger
 from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
 from cwc.governance.contracts import CandidateOperation, ComputeDecision, ComputeDirective, RiskClass
-from cwc.governance.statistical_authority import StatisticalInferenceCertificate
+from cwc.governance.statistical_authority import (
+    SignedStatisticalInferenceCertificate,
+    StatisticalInferenceCertificate,
+    verify_signed_statistical_inference_certificate,
+)
 
 
 class ComputeGovernor:
@@ -22,12 +26,16 @@ class ComputeGovernor:
         safety_margin: float = 0.0,
         require_robust_estimate: bool = False,
         statistical_certificates: Mapping[str, StatisticalInferenceCertificate] | None = None,
+        signed_statistical_certificates: Mapping[str, SignedStatisticalInferenceCertificate] | None = None,
+        trusted_statistical_issuer_id: str | None = None,
+        trusted_statistical_secret: bytes | None = None,
         production_strict_math: bool = False,
     ) -> ComputeDecision:
         if safety_margin < 0:
             raise ValueError("safety_margin must be >= 0")
         candidates: list[tuple[float, str, CandidateOperation, ValueOfComputationEstimate]] = []
         certs = statistical_certificates or {}
+        signed_certs = signed_statistical_certificates or {}
         for operation in operations:
             estimate = estimates.get(operation.operation_id)
             if estimate is None or estimate.operation_id != operation.operation_id:
@@ -35,8 +43,22 @@ class ComputeGovernor:
             if require_robust_estimate and estimate.authority is not VOCAuthority.ROBUST_AMBIGUITY_BOUND:
                 continue
             if production_strict_math:
+                signed = signed_certs.get(operation.operation_id)
+                if (
+                    signed is None
+                    or trusted_statistical_issuer_id is None
+                    or trusted_statistical_secret is None
+                    or not verify_signed_statistical_inference_certificate(
+                        signed,
+                        trusted_issuer_id=trusted_statistical_issuer_id,
+                        secret_key=trusted_statistical_secret,
+                        estimate=estimate,
+                    )
+                ):
+                    continue
+            elif certs:
                 cert = certs.get(operation.operation_id)
-                if cert is None or not cert.admits(estimate):
+                if cert is not None and not cert.admits(estimate):
                     continue
             if abs(estimate.total_cost - operation.estimated_cost) > 1e-12:
                 continue
