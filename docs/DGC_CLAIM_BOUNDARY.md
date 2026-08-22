@@ -24,6 +24,12 @@ R_i = U(w'_i,a_i^*) - U(w'_i,a_0) \ge 0,
 
 At matched total inference budget, DGC improves preregistered `NetDecisionValue` over the best preregistered baseline on the frozen synthetic oracle workload, or achieves non-inferior decision quality at lower total compute cost.
 
+## Financial verification target
+
+The commercial target `NetInferenceSavings >= 30%` with `DeltaQuality >= 0` is a **verification threshold**, not an established DGC property. Development/synthetic evidence may only be described with its exact scope. The phrase “DGC guarantees at least 30% inference savings” is prohibited until live, fully metered client traces satisfy the financial verification contract.
+
+The 30% target is an economic viability gate, not a novelty/frontier-superiority criterion. Public 2026 routing benchmarks already report cost savings in this range under their own workloads; DGC must be evaluated against strong matched-quality routing/adaptive-compute baselines on the same workload before any superiority claim. See `docs/DGC_FINANCIAL_VERIFICATION_CONTRACT.md`.
+
 ## Prohibited claims before confirmatory evidence
 
 - AGI architecture;
@@ -34,6 +40,8 @@ At matched total inference budget, DGC improves preregistered `NetDecisionValue`
 - novel mathematical theory;
 - universal superiority over routing, early exit, test-time scaling, MoE, active learning, Bayesian experimental design, or sequential testing;
 - production readiness;
+- guaranteed 30% (or any fixed) inference savings before client-verified full-cost accounting;
+- frontier/commercial superiority inferred from an absolute savings threshold without matched-workload routing baselines;
 - causal interpretation of text-only countermodels without a structural causal model or equivalent intervention semantics.
 
 ## Promotion ladder
