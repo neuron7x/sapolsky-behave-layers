@@ -13,6 +13,7 @@ on:
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/external_source_authority.py"
+      - "cwc/governance/external_materialization.py"
       - "cwc/governance/deployment_qualification.py"
       - "cwc/governance/independent_replication.py"
       - "cwc/governance/physical_cost_evidence.py"
@@ -26,6 +27,7 @@ on:
       - "tests/test_dgc_physical_cost_evidence.py"
       - "scripts/dgc_product_*.py"
       - "scripts/dgc_seal_external_workload.py"
+      - "scripts/dgc_materialize_external_sources.py"
       - "docs/DGC_PRODUCT_*.md"
       - "docs/DGC_COUNTERFACTUAL_COMPUTE_FRONTIER_v1.md"
       - "docs/DGC_EXTERNAL_WORKLOAD_PANEL_v1.md"
@@ -40,6 +42,7 @@ on:
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/external_source_authority.py"
+      - "cwc/governance/external_materialization.py"
       - "cwc/governance/deployment_qualification.py"
       - "cwc/governance/independent_replication.py"
       - "cwc/governance/physical_cost_evidence.py"
@@ -53,6 +56,7 @@ on:
       - "tests/test_dgc_physical_cost_evidence.py"
       - "scripts/dgc_product_*.py"
       - "scripts/dgc_seal_external_workload.py"
+      - "scripts/dgc_materialize_external_sources.py"
       - "docs/DGC_PRODUCT_*.md"
       - "docs/DGC_COUNTERFACTUAL_COMPUTE_FRONTIER_v1.md"
       - "docs/DGC_EXTERNAL_WORKLOAD_PANEL_v1.md"
@@ -84,7 +88,8 @@ jobs:
             tests/test_dgc_independent_replication.py \
             tests/test_dgc_physical_cost_evidence.py \
             tests/test_dgc_product_counterfactual_frontier.py \
-            tests/test_dgc_product_external_source_authority.py
+            tests/test_dgc_product_external_source_authority.py \
+            tests/test_dgc_product_external_materialization.py
       - name: External source authority gate
         run: PYTHONPATH=. python scripts/dgc_product_external_source_gate.py
       - name: Counterfactual compute allocation falsification gate
