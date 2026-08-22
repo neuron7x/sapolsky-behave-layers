@@ -7,7 +7,7 @@ import pytest
 from cwc.governance.budget import BudgetLedger
 from cwc.governance.certificate import DGCExecutionCertificate, StopReason
 from cwc.governance.compute_governor import ComputeGovernor
-from cwc.governance.compute_value import estimate_voc
+from cwc.governance.compute_value import ValueOfComputationEstimate, estimate_voc
 from cwc.governance.contracts import CandidateOperation, ComputeDirective, Perturbation
 from cwc.governance.loop_guard import LoopGuard
 from cwc.governance.perturbation_policy import (
@@ -23,6 +23,7 @@ from cwc.governance.sequential import (
     sequential_voc_decision,
     stitched_hoeffding_confidence_sequence,
 )
+from cwc.governance.statistical_authority import StatisticalScope, certify_statistical_inference_authority
 from cwc.governance.telemetry import TelemetryLedger
 
 
@@ -166,3 +167,58 @@ def test_loop_guard_has_hard_terminal_bound() -> None:
     assert guard.exhausted
     with pytest.raises(RuntimeError, match="DGC_MAX_STEPS_EXHAUSTED"):
         guard.advance()
+
+
+def test_production_strict_math_requires_bound_statistical_authority() -> None:
+    budget = BudgetLedger(hard_tokens=100, hard_money=100, hard_time=100)
+    op = CandidateOperation("strict", ComputeDirective.RETRIEVE, estimated_cost=0.2)
+    est = ValueOfComputationEstimate("strict", 1.0, 0.2, 0.8, 0.4, 1.0, "fixture")
+    blocked = ComputeGovernor.select(
+        operations=[op], estimates={"strict": est}, budget=budget,
+        decision_digest="d", production_strict_math=True,
+    )
+    assert blocked.directive is ComputeDirective.STOP
+    cert = certify_statistical_inference_authority(
+        estimate=est, scope=StatisticalScope.IID_FIXED,
+        sampling_policy_digest="p", sampling_trace_digest="t",
+        calibration_digest="c", drift_guard_digest="g",
+        invalidated_by_drift=False,
+    )
+    allowed = ComputeGovernor.select(
+        operations=[op], estimates={"strict": est}, budget=budget,
+        decision_digest="d", production_strict_math=True,
+        statistical_certificates={"strict": cert},
+    )
+    assert allowed.operation_id == "strict"
+    assert allowed.reason_code == "ADMIT_MAX_LOWER_BOUND_VOC_STRICT_MATH"
+
+
+def test_production_strict_math_rejects_drift_invalidated_or_swapped_estimate() -> None:
+    budget = BudgetLedger(hard_tokens=100, hard_money=100, hard_time=100)
+    op = CandidateOperation("strict", ComputeDirective.RETRIEVE, estimated_cost=0.2)
+    est = ValueOfComputationEstimate("strict", 1.0, 0.2, 0.8, 0.4, 1.0, "fixture")
+    invalid = certify_statistical_inference_authority(
+        estimate=est, scope=StatisticalScope.IID_FIXED,
+        sampling_policy_digest="p", sampling_trace_digest="t",
+        calibration_digest="c", drift_guard_digest="g",
+        invalidated_by_drift=True,
+    )
+    blocked = ComputeGovernor.select(
+        operations=[op], estimates={"strict": est}, budget=budget,
+        decision_digest="d", production_strict_math=True,
+        statistical_certificates={"strict": invalid},
+    )
+    assert blocked.directive is ComputeDirective.STOP
+    valid = certify_statistical_inference_authority(
+        estimate=est, scope=StatisticalScope.IID_FIXED,
+        sampling_policy_digest="p", sampling_trace_digest="t",
+        calibration_digest="c", drift_guard_digest="g",
+        invalidated_by_drift=False,
+    )
+    swapped = ValueOfComputationEstimate("strict", 2.0, 0.2, 1.8, 1.0, 2.0, "fixture")
+    blocked_swap = ComputeGovernor.select(
+        operations=[op], estimates={"strict": swapped}, budget=budget,
+        decision_digest="d", production_strict_math=True,
+        statistical_certificates={"strict": valid},
+    )
+    assert blocked_swap.directive is ComputeDirective.STOP
