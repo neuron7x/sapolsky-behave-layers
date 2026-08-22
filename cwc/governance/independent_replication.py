@@ -40,7 +40,17 @@ class ReplicationPackage:
 
     @property
     def digest(self) -> str:
-        return _digest(self.__dict__)
+        return _digest({
+            "repo_commit": self.repo_commit,
+            "environment_digest": self.environment_digest,
+            "preregistration_digest": self.preregistration_digest,
+            "task_manifest_digest": self.task_manifest_digest,
+            "model_manifest_digest": self.model_manifest_digest,
+            "scorer_digest": self.scorer_digest,
+            "policy_digest": self.policy_digest,
+            "baseline_panel_digest": self.baseline_panel_digest,
+            "statistical_plan_digest": self.statistical_plan_digest,
+        })
 
 
 @dataclass(frozen=True, slots=True)
