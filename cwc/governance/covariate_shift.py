@@ -15,7 +15,7 @@ class CovariateShiftMeanLowerBound:
     confidence: float
     max_density_ratio: float
     weight_authority_digest: str
-    method: str = "KNOWN_RATIO_COVARIATE_SHIFT_HOEFFDING_LCB_V1"
+    method: str = "KNOWN_RATIO_COVARIATE_SHIFT_HOEFFDING_LCB_V2"
 
 
 def target_mean_lcb_under_covariate_shift(
@@ -23,14 +23,17 @@ def target_mean_lcb_under_covariate_shift(
     lower: float, upper: float, delta: float, max_density_ratio: float,
     ratio_induced_mean_error_budget: float, weight_authority_digest: str,
 ) -> CovariateShiftMeanLowerBound:
-    """Finite-sample target-mean LCB under source-to-target covariate shift.
+    """Finite-sample target-mean LCB under bounded covariate shift.
 
     Source samples are iid P. For normalized Y in [0,1], exact density ratio
     w=dQ/dP gives E_P[wY]=E_Q[Y]. With 0<=w<=W, wY lies in [0,W], so Hoeffding
-    applies. If approximate weights are used, an EXTERNAL authority may provide
-    epsilon >= |E_P[(w_hat-w)Y]|; epsilon is subtracted. This is a target-mean
-    guarantee, not per-example conformal coverage, and it is invalid under
-    unbounded/unsupported target shift or post-hoc weight-error budgets.
+    applies. Since E_P[w]=1 for a normalized density ratio, a global upper bound
+    W<1 is mathematically impossible and is rejected.
+
+    If approximate weights are used, an EXTERNAL authority may provide epsilon
+    >= |E_P[(w_hat-w)Y]|; epsilon is subtracted. This is a target-mean guarantee,
+    not per-example conformal coverage, and it is invalid under unsupported or
+    unbounded shift, outcome-dependent weights, or post-hoc error budgets.
     """
     if not values or len(values) != len(density_ratios):
         raise ValueError("equal non-empty values and density ratios required")
@@ -40,8 +43,8 @@ def target_mean_lcb_under_covariate_shift(
         raise ValueError("weight authority digest required")
     if not math.isfinite(lower) or not math.isfinite(upper) or upper <= lower:
         raise ValueError("finite lower < upper required")
-    if not 0.0 < delta < 1.0 or not math.isfinite(wmax) or wmax <= 0.0:
-        raise ValueError("valid delta and positive finite max_density_ratio required")
+    if not 0.0 < delta < 1.0 or not math.isfinite(wmax) or wmax < 1.0:
+        raise ValueError("valid delta and finite max_density_ratio >= 1 required")
     if not math.isfinite(eps) or eps < 0.0:
         raise ValueError("ratio-induced mean error budget must be finite and >=0")
     width = upper - lower
