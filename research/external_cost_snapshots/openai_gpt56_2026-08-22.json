@@ -1,0 +1,11 @@
+{
+  "schema": "provider-rate-snapshot/1",
+  "provider": "OpenAI",
+  "retrieved_at": "2026-08-22",
+  "authority": "EXTERNAL_PRICE_SNAPSHOT_NOT_DGC_EVIDENCE",
+  "models": [
+    {"model": "gpt-5.6-sol", "input_usd_per_million": 5.0, "cached_input_usd_per_million": 0.5, "output_usd_per_million": 30.0, "source_uri": "https://developers.openai.com/api/docs/models/gpt-5.6-sol"},
+    {"model": "gpt-5.6-terra", "input_usd_per_million": 2.0, "cached_input_usd_per_million": 0.2, "output_usd_per_million": 12.0, "source_uri": "https://developers.openai.com/api/docs/models/gpt-5.6-terra"},
+    {"model": "gpt-5.6-luna", "input_usd_per_million": 0.2, "cached_input_usd_per_million": 0.02, "output_usd_per_million": 1.2, "source_uri": "https://developers.openai.com/api/docs/models/gpt-5.6-luna"}
+  ]
+}
