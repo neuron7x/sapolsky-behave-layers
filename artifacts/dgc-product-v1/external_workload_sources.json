@@ -13,7 +13,7 @@
       "dataset_revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
       "expected_task_count": 500,
       "dataset_parquet": "data/test-00000-of-00001.parquet",
-      "dataset_bytes": 2480000,
+      "dataset_size_display": "2.48 MB",
       "dataset_bytes_sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8",
       "task_manifest_sha256": null,
       "environment_manifest_sha256": null,
