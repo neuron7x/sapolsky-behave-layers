@@ -33,7 +33,7 @@ This matrix separates **implementation/protocol closure** from **empirical produ
 - `CLIENT_VERIFIED = false`.
 - `PRODUCT_QUALIFIED = false`.
 - `PRODUCTION_CONTROL_AUTHORIZED = false`.
-- live OpenAI/Anthropic execution in the current environment is blocked because provider credentials are absent.
+- `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` were absent in the current execution environment; no live provider experiment was substituted with synthetic evidence.
 - GitHub Actions execution authority remains unavailable when jobs terminate before repository steps; this is not counted as PASS.
 
 ## External workload identities
@@ -54,10 +54,16 @@ This matrix separates **implementation/protocol closure** from **empirical produ
 - expected tasks: 89;
 - manifest carries a SHA-256 digest for every task.
 
+## Verification topology limitation
+
+The evidence architecture was promoted from a staging ref using non-forced fast-forward updates. Immediately before promotion, the staging comparison was strictly ahead with `behind=0` and no deleted files. Earlier targeted mathematical and product clean-room checks retain their own local authority.
+
+A new **full current-tree local regression is not claimed**: the sandbox cannot resolve `github.com` to clone/materialize the current branch, while GitHub Actions has historically terminated before repository steps. Therefore single-tree full regression remains `UNKNOWN` until one of those execution authorities is available.
+
 ## Definition of the remaining frontier
 
 No additional internal theorem, unit test, UI feature or cognitive module can substitute for the remaining product evidence. The executable frontier is:
 
-`materialize/freeze scorer+environment+model+tool+budget manifests -> calibration-only B2 fit + trial-count freeze -> confirmatory paired runs on both external families -> simultaneous P9 gate -> G1-G5 no-retuning generalization -> independent replication -> SHA-sealed P19 bundle -> PRODUCT_QUALIFIED -> shadow -> bounded canary`.
+`freeze scorer+environment+model+tool+budget manifests -> calibration-only B2 fit + trial-count freeze -> confirmatory paired runs on both external families -> simultaneous P9 gate -> G1-G5 no-retuning generalization -> independent replication -> SHA-sealed P19 bundle -> PRODUCT_QUALIFIED -> shadow -> bounded canary`.
 
 Until that chain is observed, reporting “100% validated product” is prohibited by the system itself.
