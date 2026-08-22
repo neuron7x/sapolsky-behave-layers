@@ -7,6 +7,8 @@
       "family_id": "SWE_BENCH_VERIFIED",
       "repository": "SWE-bench/SWE-bench",
       "repository_commit": "7a21e05772954cc81471ae19d56f436cecf43c54",
+      "repository_tree_sha": "e667352e125abfd369a6129673d5289aa168e78b",
+      "repository_commit_signature_verified": false,
       "dataset_id": "SWE-bench/SWE-bench_Verified",
       "expected_task_count": 500,
       "task_manifest_sha256": null,
@@ -18,6 +20,8 @@
       "family_id": "TERMINAL_BENCH_2_1",
       "repository": "harbor-framework/terminal-bench-2-1",
       "repository_commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+      "repository_tree_sha": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+      "repository_commit_signature_verified": true,
       "dataset_id": "terminal-bench/terminal-bench-2-1",
       "expected_task_count": 89,
       "task_manifest_sha256": null,
@@ -27,5 +31,5 @@
     }
   ],
   "promotion_authorized": false,
-  "reason": "Source identities are frozen, but task bytes/scorers/environments have not yet been materialized and hashed in the DGC evidence bundle."
+  "reason": "Repository source identities are cryptographically frozen, but external task bytes/scorers/environments have not yet been materialized and sealed into the DGC evidence bundle."
 }
