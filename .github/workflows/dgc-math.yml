@@ -54,7 +54,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r cwc-requirements-dev.txt
-      - name: DGC mathematics regression v2-v2f
+      - name: DGC mathematics regression v2-v2g
         run: |
           PYTHONPATH=. python -m pytest -q \
             tests/test_dgc_mathematics_v2.py \
@@ -62,7 +62,8 @@ jobs:
             tests/test_dgc_math_v2c.py \
             tests/test_dgc_math_v2d.py \
             tests/test_dgc_math_v2e.py \
-            tests/test_dgc_math_v2f.py
+            tests/test_dgc_math_v2f.py \
+            tests/test_dgc_math_v2g.py
       - name: DGC mathematical falsification gates
         run: |
           PYTHONPATH=. python scripts/dgc_math_gate.py
@@ -71,6 +72,7 @@ jobs:
           PYTHONPATH=. python scripts/dgc_math_v2d_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2e_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2f_attack.py
+          PYTHONPATH=. python scripts/dgc_math_v2g_attack.py
       - name: Exact mathematical model checks
         run: |
           PYTHONPATH=. python scripts/dgc_exact_meta_modelcheck.py
