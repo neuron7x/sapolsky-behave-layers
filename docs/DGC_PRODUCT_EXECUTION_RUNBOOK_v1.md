@@ -1,11 +1,43 @@
 # DGC Product Qualification — Execution Runbook v1
 
-Date: 2026-08-22
+Date: 2026-08-23
 Status: `EXECUTABLE_FRONTIER / EXTERNAL_EVIDENCE_REQUIRED`
 
 This runbook starts from the current canonical research/evidence architecture. It does not authorize skipping any gate.
 
+## 0. Verify upstream source authority
+
+Run:
+
+```bash
+PYTHONPATH=. python scripts/dgc_product_external_source_gate.py
+```
+
+Required result before materialization:
+
+- `SWE_BENCH_VERIFIED = SOURCE_VERIFIED`;
+- `TERMINAL_BENCH_2_1 = SOURCE_VERIFIED`;
+- `MATERIALIZED_VERIFIED = 0` until local bytes/trees are actually checked;
+- `EXECUTED = 0` until benchmark trials actually run.
+
+`SOURCE_VERIFIED` must never be interpreted as local materialization or execution.
+
 ## 1. Materialize external workloads
+
+Install the dedicated, pinned materialization dependency set in the intended execution environment:
+
+```bash
+python -m pip install -r dgc-external-requirements.txt
+```
+
+Then materialize **both** frozen families into a fresh evidence generation:
+
+```bash
+PYTHONPATH=. python scripts/dgc_materialize_external_sources.py \
+  --output-root artifacts/dgc-materialized/gen-2026-08-23
+```
+
+The command emits `MATERIALIZATION_RECEIPT.json` only after both families pass. The receipt explicitly keeps `execution_authorized=false` and `product_promotion_authorized=false`.
 
 ### SWE-bench Verified
 
@@ -17,15 +49,19 @@ Required primary parquet SHA-256:
 
 `bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8`
 
-Expected rows: `500`.
+Expected rows: `500` unique `instance_id` values.
 
-Any hash/count mismatch => STOP and create a new preregistration generation; do not silently use current `main`.
+The materializer verifies the exact SHA-256 first, then uses pinned `pyarrow` to read only the `instance_id` column and generate a task-manifest digest. Any hash/count/uniqueness mismatch => STOP. Do not silently use another revision.
 
 ### Terminal-Bench 2.1
 
 Use frozen commit:
 
 `7131e4375048a0e408a8fb404b5f499d726b695b`
+
+Repository tree:
+
+`ddbd9031e59804a04e24019fc408d51b56a4e773`
 
 Task tree:
 
@@ -37,11 +73,13 @@ Dataset manifest blob:
 
 Expected tasks: `89` and every task must have its published SHA-256 digest.
 
+The materializer performs a detached exact-commit Git fetch and verifies all four Git identities before sealing the task tree. Any mismatch => STOP.
+
 ## 2. Freeze execution manifests
 
 For each family seal:
 
-- task manifest;
+- materialization receipt + task manifest;
 - scorer/evaluator source digest;
 - environment/container image digest(s);
 - model IDs/versions;
@@ -67,6 +105,8 @@ For B2:
 5. seal `BaselinePanelSeal`.
 
 If B2 is not executable-frozen, P3 fails.
+
+The exact Counterfactual Compute Frontier (CCF) is an **audit oracle outside B0-B3**. It must be reported in addition to the real baselines and cannot replace them.
 
 ## 4. Freeze repeated-trial count
 
@@ -120,7 +160,7 @@ Every trial must emit:
 
 Missing telemetry => trial is invalid, not zero-cost.
 
-## 7. Run P9 simultaneous gate
+## 7. Run P9 simultaneous gate + CCF audit
 
 For each family call the multi-baseline paired certificate with family alpha `0.025`.
 
@@ -133,6 +173,14 @@ Required against **all B0-B3**:
 - identical paired population digest.
 
 Any baseline failure => no primary real-workload product claim.
+
+On the same frozen counterfactual option population, also report CCF:
+
+- DGC value regret relative to the exact available option-set optimum;
+- minimum cost required to match/exceed DGC value without worse declared latency/risk;
+- avoidable DGC cost under the frozen option set.
+
+CCF is an audit upper bound over observed options, not a production policy or a claim about unobserved actions.
 
 ## 8. Evaluate commercial target separately
 
@@ -166,17 +214,21 @@ The independent result must bind to the package digest, keep methodology unchang
 
 Populate all required files in `artifacts/dgc-product-v1/` with actual results, not placeholders, then generate `SHA256SUMS` and run:
 
-`python scripts/dgc_product_bundle_gate.py`
+```bash
+PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
+```
 
 Any missing/unhashed/tampered file => FAIL.
 
 ## 12. Promote only through machine gate
 
-Set evidence-status fields from the generated certificates, never manually from an interpretation.
+Set evidence-status fields from generated certificates, never manually from an interpretation.
 
 Run:
 
-`python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED`
+```bash
+PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
+```
 
 Only after PASS may a `dgc-product-*` release tag be created.
 
@@ -189,6 +241,10 @@ After PRODUCT_QUALIFIED:
 3. bounded canary <=10% traffic with hard spend/tool/step/time/concurrency caps and automatic baseline rollback;
 4. only then consider broader production control.
 
-## Current immediate blocker
+## Current immediate blockers
 
-The current execution environment has neither `OPENAI_API_KEY` nor `ANTHROPIC_API_KEY`; therefore no valid live provider confirmatory run can be executed here. This blocker must not be replaced by synthetic provider traces.
+1. The current sandbox cannot complete binary/network materialization even though upstream SWE/T-Bench source identities are independently verified. Therefore local `MATERIALIZED_VERIFIED` receipts are absent.
+2. The current execution environment has neither `OPENAI_API_KEY` nor `ANTHROPIC_API_KEY`; therefore no valid live provider confirmatory run can be executed here.
+3. GitHub Actions has continued to terminate before repository steps; this remains `CI_EXECUTION_UNAVAILABLE`, not code PASS/FAIL.
+
+None of these blockers may be replaced by synthetic provider traces or manually promoted status fields.
