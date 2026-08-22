@@ -26,13 +26,18 @@ class ProviderRateCard:
     input_usd_per_million: float
     cached_input_usd_per_million: float
     output_usd_per_million: float
-    source_uri: str
-    retrieved_at: str
+    cache_write_usd_per_million: float = 0.0
+    long_cache_write_usd_per_million: float = 0.0
+    source_uri: str = ""
+    retrieved_at: str = ""
 
     def __post_init__(self) -> None:
         if not all(str(x).strip() for x in (self.provider, self.model, self.source_uri, self.retrieved_at)):
             raise ValueError("provider/model/source/retrieved_at are required")
-        for name in ("input_usd_per_million", "cached_input_usd_per_million", "output_usd_per_million"):
+        for name in (
+            "input_usd_per_million", "cached_input_usd_per_million", "output_usd_per_million",
+            "cache_write_usd_per_million", "long_cache_write_usd_per_million",
+        ):
             object.__setattr__(self, name, _nonnegative(name, getattr(self, name)))
 
     @property
@@ -43,19 +48,28 @@ class ProviderRateCard:
             "input_usd_per_million": self.input_usd_per_million,
             "cached_input_usd_per_million": self.cached_input_usd_per_million,
             "output_usd_per_million": self.output_usd_per_million,
+            "cache_write_usd_per_million": self.cache_write_usd_per_million,
+            "long_cache_write_usd_per_million": self.long_cache_write_usd_per_million,
             "source_uri": self.source_uri,
             "retrieved_at": self.retrieved_at,
         })
 
-    def token_cost_usd(self, *, input_tokens: int, cached_input_tokens: int, output_tokens: int) -> float:
-        if min(input_tokens, cached_input_tokens, output_tokens) < 0:
+    def token_cost_usd(
+        self, *, input_tokens: int, cached_input_tokens: int, output_tokens: int,
+        cache_write_tokens: int = 0, long_cache_write_tokens: int = 0,
+    ) -> float:
+        counts = (input_tokens, cached_input_tokens, cache_write_tokens, long_cache_write_tokens, output_tokens)
+        if min(counts) < 0:
             raise ValueError("token counts must be >= 0")
-        if cached_input_tokens > input_tokens:
-            raise ValueError("cached input cannot exceed input tokens")
-        uncached = input_tokens - cached_input_tokens
+        special = cached_input_tokens + cache_write_tokens + long_cache_write_tokens
+        if special > input_tokens:
+            raise ValueError("cached/cache-write input subsets cannot exceed input tokens")
+        uncached = input_tokens - special
         return (
             uncached * self.input_usd_per_million
             + cached_input_tokens * self.cached_input_usd_per_million
+            + cache_write_tokens * self.cache_write_usd_per_million
+            + long_cache_write_tokens * self.long_cache_write_usd_per_million
             + output_tokens * self.output_usd_per_million
         ) / 1_000_000.0
 
