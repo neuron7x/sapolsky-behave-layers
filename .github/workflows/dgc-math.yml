@@ -10,6 +10,7 @@ on:
       - "tests/test_dgc_math*.py"
       - "tests/test_dgc_mathematics*.py"
       - "scripts/dgc_math*.py"
+      - "scripts/dgc_exact_meta_modelcheck.py"
       - "scripts/dgc_verification_gate.py"
       - "docs/DGC_MATHEMAT*.md"
       - "docs/references/DGC_*MATH*.md"
@@ -20,6 +21,7 @@ on:
       - "tests/test_dgc_math*.py"
       - "tests/test_dgc_mathematics*.py"
       - "scripts/dgc_math*.py"
+      - "scripts/dgc_exact_meta_modelcheck.py"
       - "scripts/dgc_verification_gate.py"
       - "docs/DGC_MATHEMAT*.md"
       - "docs/references/DGC_*MATH*.md"
@@ -61,5 +63,7 @@ jobs:
           PYTHONPATH=. python scripts/dgc_math_v2d_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2e_attack.py
           PYTHONPATH=. python scripts/dgc_math_v2f_attack.py
+      - name: Exact rational metareasoning model check
+        run: PYTHONPATH=. python scripts/dgc_exact_meta_modelcheck.py
       - name: Canonical DGC governance fault gate
         run: PYTHONPATH=. python scripts/dgc_verification_gate.py
