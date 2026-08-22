@@ -12,6 +12,7 @@ on:
       - "cwc/governance/workload_seal.py"
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/counterfactual_frontier.py"
+      - "cwc/governance/external_source_authority.py"
       - "cwc/governance/deployment_qualification.py"
       - "cwc/governance/independent_replication.py"
       - "cwc/governance/physical_cost_evidence.py"
@@ -38,6 +39,7 @@ on:
       - "cwc/governance/workload_seal.py"
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/counterfactual_frontier.py"
+      - "cwc/governance/external_source_authority.py"
       - "cwc/governance/deployment_qualification.py"
       - "cwc/governance/independent_replication.py"
       - "cwc/governance/physical_cost_evidence.py"
@@ -81,7 +83,10 @@ jobs:
             tests/test_dgc_deployment_qualification.py \
             tests/test_dgc_independent_replication.py \
             tests/test_dgc_physical_cost_evidence.py \
-            tests/test_dgc_product_counterfactual_frontier.py
+            tests/test_dgc_product_counterfactual_frontier.py \
+            tests/test_dgc_product_external_source_authority.py
+      - name: External source authority gate
+        run: PYTHONPATH=. python scripts/dgc_product_external_source_gate.py
       - name: Counterfactual compute allocation falsification gate
         run: PYTHONPATH=. python scripts/dgc_product_counterfactual_oracle_gate.py
       - name: Validate current-truth promotion semantics
