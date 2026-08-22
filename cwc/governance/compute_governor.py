@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 from cwc.governance.budget import BudgetLedger
-from cwc.governance.compute_value import ValueOfComputationEstimate
+from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
 from cwc.governance.contracts import CandidateOperation, ComputeDecision, ComputeDirective, RiskClass
 
 
@@ -19,6 +19,7 @@ class ComputeGovernor:
         decision_digest: str,
         risk_class: RiskClass = RiskClass.NORMAL,
         safety_margin: float = 0.0,
+        require_robust_estimate: bool = False,
     ) -> ComputeDecision:
         if safety_margin < 0:
             raise ValueError("safety_margin must be >= 0")
@@ -26,6 +27,8 @@ class ComputeGovernor:
         for operation in operations:
             estimate = estimates.get(operation.operation_id)
             if estimate is None or estimate.operation_id != operation.operation_id:
+                continue
+            if require_robust_estimate and estimate.authority is not VOCAuthority.ROBUST_AMBIGUITY_BOUND:
                 continue
             if abs(estimate.total_cost - operation.estimated_cost) > 1e-12:
                 # Scalar decision cost is part of the operation contract; a caller may not

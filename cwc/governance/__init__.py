@@ -69,3 +69,16 @@ __all__ = [
     "sequential_voc_decision",
     "stitched_hoeffding_confidence_sequence",
 ]
+
+# DGC mathematical hardening v2
+from cwc.governance.adaptive_eprocess import AdaptiveImportanceSample, AdaptiveMeanEProcess, adaptive_importance_mean_eprocess
+from cwc.governance.calibration import SplitConformalLowerCalibrator, fit_split_conformal_lower
+from cwc.governance.decision_stability import DecisionStabilityCertificate, RemovableComputeCertificate, certify_action_stability, certify_decision_irrelevant_suffix
+from cwc.governance.pareto import MeanBound, ParetoCertificate, certify_paired_pareto_improvement, fixed_n_hoeffding_mean_bound
+from cwc.governance.robust_voc import RobustnessBudget, RobustVOCLowerBound, robust_voc_lower_bound
+from cwc.governance.compute_value import VOCAuthority
+from cwc.governance.robust_voc import robustify_voc_estimate
+from cwc.governance.ambiguity import CredalExpectationInterval, MinimaxRegretDecision, PerfectInformationStopCertificate, credal_expectation_interval, minimax_regret_action, certify_no_information_worth_cost
+from cwc.governance.robust_voc import WassersteinRobustnessBudget, wasserstein_robust_voc_lower_bound
+from cwc.governance.risk_control import ConformalRiskControlResult, conformal_risk_control
+from cwc.governance.metareasoning import MetaOperation, MetaTransition, MetaValue, finite_horizon_meta_values, myopic_meta_values

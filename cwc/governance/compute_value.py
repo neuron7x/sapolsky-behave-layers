@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from enum import Enum
 
 
 def _finite(name: str, value: float) -> float:
@@ -9,6 +10,11 @@ def _finite(name: str, value: float) -> float:
     if not math.isfinite(value):
         raise ValueError(f"{name} must be finite")
     return value
+
+
+class VOCAuthority(str, Enum):
+    MODEL_CONDITIONAL = "MODEL_CONDITIONAL"
+    ROBUST_AMBIGUITY_BOUND = "ROBUST_AMBIGUITY_BOUND"
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,8 +26,11 @@ class ValueOfComputationEstimate:
     lower_bound: float
     upper_bound: float
     method: str
+    authority: VOCAuthority = VOCAuthority.MODEL_CONDITIONAL
 
     def __post_init__(self) -> None:
+        if not isinstance(self.authority, VOCAuthority):
+            object.__setattr__(self, "authority", VOCAuthority(self.authority))
         if not self.operation_id.strip():
             raise ValueError("operation_id required")
         if not self.method.strip():
