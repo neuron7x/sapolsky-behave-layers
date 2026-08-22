@@ -4,9 +4,13 @@ import hashlib
 import json
 import re
 import subprocess
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 compatibility for the canonical product CI.
+    import tomli as tomllib
 
 _SHA256_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
 
