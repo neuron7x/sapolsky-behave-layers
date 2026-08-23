@@ -3,25 +3,45 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from dataclasses import dataclass
 from statistics import fmean, variance
 from typing import Sequence
 
-from cwc.governance.pareto import (
-    BaselineParetoResult,
-    EndpointNonInferiority,
-    MeanBound,
-    MultiBaselineParetoCertificate,
-    PairedBaselineEvidence,
-)
+from cwc.governance.pareto import MeanBound, PairedBaselineEvidence
 
 METHOD = "PAIRED_MULTI_BASELINE_BONFERRONI_EMPIRICAL_BERNSTEIN_LOWER_V1"
-BOUND_METHOD = "MAURER_PONTIL_EMPIRICAL_BERNSTEIN_ONE_SIDED_LOWER_V1"
+BOUND_METHOD = "MAURER_PONTIL_THEOREM_11_EMPIRICAL_BERNSTEIN_LOWER_V1"
 
 
 def _digest(payload: object) -> str:
     return hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     ).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class EmpiricalBernsteinBaselineResult:
+    baseline_id: str
+    cost_gain: MeanBound
+    quality_gain: MeanBound
+    catastrophic_regret_gain: MeanBound
+    certified_cost_reduction: bool
+    certified_quality_noninferiority: bool
+    certified_catastrophic_noninferiority: bool
+    certified_pareto_improvement: bool
+
+
+@dataclass(frozen=True, slots=True)
+class EmpiricalBernsteinMultiBaselineCertificate:
+    paired_task_digest: str
+    results: tuple[EmpiricalBernsteinBaselineResult, ...]
+    familywise_alpha: float
+    per_metric_delta: float
+    quality_noninferiority_margin: float
+    catastrophic_noninferiority_margin: float
+    all_baselines_certified: bool
+    evidence_manifest_digest: str
+    method: str = METHOD
 
 
 def empirical_bernstein_lower_bound(
@@ -31,22 +51,30 @@ def empirical_bernstein_lower_bound(
     upper: float,
     delta: float,
 ) -> MeanBound:
-    """Finite-sample one-sided lower confidence bound for independent bounded variables.
+    """One-sided finite-sample lower bound for independent bounded variables.
 
-    Uses the empirical Bernstein inequality of Maurer & Pontil (2009), Theorem 11,
-    applied to -X. `upper` in the returned MeanBound is the deterministic support
-    upper bound, not a simultaneously certified confidence upper endpoint. Product
-    gates consume only `lower`.
+    This is Maurer & Pontil (2009), Theorem 11, rescaled from [0, 1] to
+    [lower, upper] and applied to -X for a lower confidence bound. The theorem
+    permits independent variables that are not identically distributed. The
+    caller remains responsible for establishing or explicitly declaring the
+    cross-observation independence assumption.
+
+    `upper` in the returned MeanBound is the deterministic support endpoint;
+    product gates consume only the certified lower endpoint.
     """
     values = tuple(float(x) for x in observations)
     if len(values) < 2:
         raise ValueError("empirical Bernstein requires at least two observations")
+    lower = float(lower)
+    upper = float(upper)
+    delta = float(delta)
     if not (math.isfinite(lower) and math.isfinite(upper) and lower < upper):
         raise ValueError("finite ordered support required")
     if not 0.0 < delta < 1.0:
         raise ValueError("delta must be in (0,1)")
     if any((not math.isfinite(x)) or x < lower - 1e-12 or x > upper + 1e-12 for x in values):
         raise ValueError("observation outside declared support")
+
     n = len(values)
     mean = fmean(values)
     sample_variance = variance(values)
@@ -72,27 +100,35 @@ def certify_multi_baseline_empirical_bernstein(
     alpha: float,
     quality_noninferiority_margin: float,
     catastrophic_noninferiority_margin: float,
-) -> MultiBaselineParetoCertificate:
-    if not evidence:
+) -> EmpiricalBernsteinMultiBaselineCertificate:
+    rows = tuple(evidence)
+    if not rows:
         raise ValueError("at least one baseline required")
-    if len({row.baseline_id for row in evidence}) != len(evidence):
+    alpha = float(alpha)
+    qmargin = float(quality_noninferiority_margin)
+    cmargin = float(catastrophic_noninferiority_margin)
+    if len({row.baseline_id for row in rows}) != len(rows):
         raise ValueError("baseline ids must be unique")
     if not 0.0 < alpha < 1.0:
         raise ValueError("alpha must be in (0,1)")
-    if quality_noninferiority_margin < 0 or catastrophic_noninferiority_margin < 0:
-        raise ValueError("non-inferiority margins must be >= 0")
-    paired_digests = {row.paired_task_digest for row in evidence}
-    if len(paired_digests) != 1:
-        raise ValueError("all baselines must use the exact same paired task population")
-    per_metric_delta = alpha / (len(evidence) * 3)
-    results: list[BaselineParetoResult] = []
+    if any(not math.isfinite(value) or value < 0.0 for value in (qmargin, cmargin)):
+        raise ValueError("non-inferiority margins must be finite and >= 0")
+
+    paired_digests = {row.paired_task_digest for row in rows}
+    ns = {len(row.baseline_minus_dgc_cost) for row in rows}
+    if len(paired_digests) != 1 or len(ns) != 1:
+        raise ValueError("all baselines must use the same paired observation population")
+    if any(not math.isclose(float(row.coverage), 1.0, rel_tol=0.0, abs_tol=1e-12) for row in rows):
+        raise ValueError("full paired coverage is required")
+
+    per_metric_delta = alpha / (len(rows) * 3)
+    results: list[EmpiricalBernsteinBaselineResult] = []
     evidence_manifest: list[dict[str, object]] = []
-    for row in sorted(evidence, key=lambda item: item.baseline_id):
+    for row in sorted(rows, key=lambda item: item.baseline_id):
         n = len(row.baseline_minus_dgc_cost)
         if n < 2 or len(row.dgc_minus_baseline_quality) != n or len(row.baseline_minus_dgc_catastrophic_regret) != n:
             raise ValueError("paired metric vectors must have the same length >= 2")
-        if not math.isclose(row.coverage, 1.0, rel_tol=0.0, abs_tol=1e-12):
-            raise ValueError("full paired coverage is required")
+
         cost = empirical_bernstein_lower_bound(
             row.baseline_minus_dgc_cost,
             lower=row.cost_gain_support[0],
@@ -111,26 +147,19 @@ def certify_multi_baseline_empirical_bernstein(
             upper=row.catastrophic_gain_support[1],
             delta=per_metric_delta,
         )
-        quality_ni = EndpointNonInferiority(
-            point_delta=quality.mean,
-            lower_bound=quality.lower,
-            margin=quality_noninferiority_margin,
-            certified=quality.lower >= -quality_noninferiority_margin,
-        )
-        catastrophic_ni = EndpointNonInferiority(
-            point_delta=catastrophic.mean,
-            lower_bound=catastrophic.lower,
-            margin=catastrophic_noninferiority_margin,
-            certified=catastrophic.lower >= -catastrophic_noninferiority_margin,
-        )
-        result = BaselineParetoResult(
+        cheaper = cost.lower > 0.0
+        quality_ok = quality.lower >= -qmargin
+        catastrophic_ok = catastrophic.lower >= -cmargin
+        results.append(EmpiricalBernsteinBaselineResult(
             baseline_id=row.baseline_id,
             cost_gain=cost,
-            quality=quality_ni,
-            catastrophic_regret=catastrophic_ni,
-            cost_superiority_certified=cost.lower > 0.0,
-        )
-        results.append(result)
+            quality_gain=quality,
+            catastrophic_regret_gain=catastrophic,
+            certified_cost_reduction=cheaper,
+            certified_quality_noninferiority=quality_ok,
+            certified_catastrophic_noninferiority=catastrophic_ok,
+            certified_pareto_improvement=cheaper and quality_ok and catastrophic_ok,
+        ))
         evidence_manifest.append({
             "baseline_id": row.baseline_id,
             "paired_task_digest": row.paired_task_digest,
@@ -143,29 +172,15 @@ def certify_multi_baseline_empirical_bernstein(
             "quality_support": row.quality_gain_support,
             "catastrophic_support": row.catastrophic_gain_support,
         })
-    all_certified = all(
-        result.cost_superiority_certified
-        and result.quality.certified
-        and result.catastrophic_regret.certified
-        for result in results
-    )
-    payload = {
-        "alpha": alpha,
-        "per_metric_delta": per_metric_delta,
-        "quality_noninferiority_margin": quality_noninferiority_margin,
-        "catastrophic_noninferiority_margin": catastrophic_noninferiority_margin,
-        "paired_task_digest": next(iter(paired_digests)),
-        "evidence_manifest": evidence_manifest,
-        "method": METHOD,
-    }
-    return MultiBaselineParetoCertificate(
-        alpha=alpha,
-        per_metric_delta=per_metric_delta,
-        quality_noninferiority_margin=quality_noninferiority_margin,
-        catastrophic_noninferiority_margin=catastrophic_noninferiority_margin,
+
+    all_certified = all(row.certified_pareto_improvement for row in results)
+    return EmpiricalBernsteinMultiBaselineCertificate(
         paired_task_digest=next(iter(paired_digests)),
         results=tuple(results),
+        familywise_alpha=alpha,
+        per_metric_delta=per_metric_delta,
+        quality_noninferiority_margin=qmargin,
+        catastrophic_noninferiority_margin=cmargin,
         all_baselines_certified=all_certified,
-        certificate_digest=_digest(payload),
-        method=METHOD,
+        evidence_manifest_digest=_digest(evidence_manifest),
     )
