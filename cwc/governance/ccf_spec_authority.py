@@ -22,7 +22,21 @@ def _sha(name: str, value: object) -> str:
     return text
 
 
-def _spec(path: Path) -> tuple[dict[str, object], str]:
+def _repo_file(root: Path, path: Path) -> tuple[Path, str]:
+    candidate = path if path.is_absolute() else root / path
+    if candidate.is_symlink():
+        raise CCFSpecAuthorityError("CCF oracle spec symlink rejected")
+    resolved = candidate.resolve()
+    try:
+        rel = resolved.relative_to(root.resolve())
+    except ValueError as exc:
+        raise CCFSpecAuthorityError("CCF oracle spec must remain inside repository") from exc
+    if not resolved.is_file():
+        raise CCFSpecAuthorityError("CCF oracle spec must be a regular repository file")
+    return resolved, rel.as_posix()
+
+
+def load_and_verify_ccf_spec(path: Path) -> tuple[dict[str, object], str, str]:
     candidate = Path(path)
     if candidate.is_symlink() or not candidate.is_file():
         raise CCFSpecAuthorityError("CCF oracle spec must be a regular file")
@@ -39,13 +53,14 @@ def _spec(path: Path) -> tuple[dict[str, object], str]:
     normalized = {"schema": doc["schema"], **asdict(parsed)}
     if normalized != doc:
         raise CCFSpecAuthorityError("CCF oracle spec contains unrecognized or noncanonical fields")
-    return normalized, sha256_file(candidate)
+    return normalized, sha256_file(candidate), sha256_bytes(canonical_json_bytes(normalized))
 
 
 @dataclass(frozen=True, slots=True)
 class CCFSpecAuthority:
     family_id: str
     execution_manifest_freeze_digest: str
+    ccf_spec_path: str
     ccf_spec_sha256: str
     ccf_spec_digest: str
     authority_digest: str
@@ -56,6 +71,7 @@ class CCFSpecAuthority:
             "schema": SCHEMA,
             "family_id": self.family_id,
             "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
+            "ccf_spec_path": self.ccf_spec_path,
             "ccf_spec_sha256": self.ccf_spec_sha256,
             "ccf_spec_digest": self.ccf_spec_digest,
             "authority_digest": self.authority_digest,
@@ -67,15 +83,20 @@ class CCFSpecAuthority:
 
 def build_ccf_spec_authority(
     *,
+    repository_root: Path,
     execution_manifest_freeze_path: Path,
     ccf_spec_path: Path,
 ) -> CCFSpecAuthority:
+    root = Path(repository_root).resolve()
+    if not root.is_dir():
+        raise CCFSpecAuthorityError("repository root missing")
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
-    spec_doc, spec_sha = _spec(Path(ccf_spec_path))
-    spec_digest = sha256_bytes(canonical_json_bytes(spec_doc))
+    spec_file, rel = _repo_file(root, Path(ccf_spec_path))
+    _, spec_sha, spec_digest = load_and_verify_ccf_spec(spec_file)
     payload = {
         "family_id": str(execution["family_id"]),
         "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
+        "ccf_spec_path": rel,
         "ccf_spec_sha256": spec_sha,
         "ccf_spec_digest": spec_digest,
     }
@@ -99,11 +120,15 @@ def verify_ccf_spec_authority_document(path: Path) -> dict[str, object]:
         raise CCFSpecAuthorityError("CCF spec authority must state pre-outcome freeze")
     if doc.get("p9_oracle_audit_authorized") is not False or doc.get("product_promotion_authorized") is not False:
         raise CCFSpecAuthorityError("CCF spec freeze cannot grant downstream authority")
+    rel = Path(str(doc.get("ccf_spec_path", "")))
+    if not str(doc.get("ccf_spec_path", "")) or rel.is_absolute() or ".." in rel.parts:
+        raise CCFSpecAuthorityError("CCF spec authority path must be repository-relative")
     payload = {
         "family_id": doc.get("family_id"),
         "execution_manifest_freeze_digest": _sha(
             "execution_manifest_freeze_digest", doc.get("execution_manifest_freeze_digest")
         ),
+        "ccf_spec_path": rel.as_posix(),
         "ccf_spec_sha256": _sha("ccf_spec_sha256", doc.get("ccf_spec_sha256")),
         "ccf_spec_digest": _sha("ccf_spec_digest", doc.get("ccf_spec_digest")),
     }
