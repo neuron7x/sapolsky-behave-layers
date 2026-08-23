@@ -14,6 +14,7 @@ on:
       - "cwc/governance/learned_baseline.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/distributed_eval_control.py"
+      - "cwc/governance/confirmatory_generation.py"
       - "cwc/governance/continuous_assurance.py"
       - "cwc/governance/combinatorial_coverage.py"
       - "cwc/governance/external_source_authority.py"
@@ -24,6 +25,7 @@ on:
       - "tests/test_dgc_product_*.py"
       - "tests/test_dgc_learned_baseline.py"
       - "tests/test_dgc_distributed_eval_control.py"
+      - "tests/test_dgc_confirmatory_generation.py"
       - "tests/test_dgc_continuous_assurance.py"
       - "tests/test_dgc_combinatorial_coverage.py"
       - "tests/test_dgc_release_builder.py"
@@ -38,6 +40,7 @@ on:
       - "scripts/dgc_learned_baseline_attack.py"
       - "scripts/dgc_distributed_eval_attack.py"
       - "scripts/dgc_distributed_eval_modelcheck.py"
+      - "scripts/dgc_confirmatory_generation_attack.py"
       - "scripts/dgc_continuous_assurance_attack.py"
       - "scripts/dgc_combinatorial_coverage_attack.py"
       - "scripts/dgc_release_repro_gate.py"
@@ -47,6 +50,7 @@ on:
       - "docs/DGC_PRODUCT_*.md"
       - "docs/DGC_LEARNED_BASELINE_B2_v1.md"
       - "docs/DGC_DISTRIBUTED_EVAL_CONTROL_v1.md"
+      - "docs/DGC_CONFIRMATORY_GENERATION_ROOT_v1.md"
       - "docs/DGC_CONTINUOUS_ASSURANCE_v1.md"
       - "docs/DGC_COMBINATORIAL_ASSURANCE_v1.md"
       - "docs/DGC_RELEASE_ASSURANCE_v1.md"
@@ -64,6 +68,7 @@ on:
       - "cwc/governance/learned_baseline.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/distributed_eval_control.py"
+      - "cwc/governance/confirmatory_generation.py"
       - "cwc/governance/continuous_assurance.py"
       - "cwc/governance/combinatorial_coverage.py"
       - "cwc/governance/external_source_authority.py"
@@ -74,6 +79,7 @@ on:
       - "tests/test_dgc_product_*.py"
       - "tests/test_dgc_learned_baseline.py"
       - "tests/test_dgc_distributed_eval_control.py"
+      - "tests/test_dgc_confirmatory_generation.py"
       - "tests/test_dgc_continuous_assurance.py"
       - "tests/test_dgc_combinatorial_coverage.py"
       - "tests/test_dgc_release_builder.py"
@@ -88,6 +94,7 @@ on:
       - "scripts/dgc_learned_baseline_attack.py"
       - "scripts/dgc_distributed_eval_attack.py"
       - "scripts/dgc_distributed_eval_modelcheck.py"
+      - "scripts/dgc_confirmatory_generation_attack.py"
       - "scripts/dgc_continuous_assurance_attack.py"
       - "scripts/dgc_combinatorial_coverage_attack.py"
       - "scripts/dgc_release_repro_gate.py"
@@ -97,6 +104,7 @@ on:
       - "docs/DGC_PRODUCT_*.md"
       - "docs/DGC_LEARNED_BASELINE_B2_v1.md"
       - "docs/DGC_DISTRIBUTED_EVAL_CONTROL_v1.md"
+      - "docs/DGC_CONFIRMATORY_GENERATION_ROOT_v1.md"
       - "docs/DGC_CONTINUOUS_ASSURANCE_v1.md"
       - "docs/DGC_COMBINATORIAL_ASSURANCE_v1.md"
       - "docs/DGC_RELEASE_ASSURANCE_v1.md"
@@ -134,6 +142,7 @@ jobs:
             tests/test_dgc_product_external_source_authority.py \
             tests/test_dgc_product_external_materialization.py \
             tests/test_dgc_distributed_eval_control.py \
+            tests/test_dgc_confirmatory_generation.py \
             tests/test_dgc_continuous_assurance.py \
             tests/test_dgc_combinatorial_coverage.py \
             tests/test_dgc_release_builder.py
@@ -143,6 +152,8 @@ jobs:
         run: PYTHONPATH=. python scripts/dgc_distributed_eval_attack.py
       - name: Distributed evaluation finite timing modelcheck
         run: PYTHONPATH=. python scripts/dgc_distributed_eval_modelcheck.py
+      - name: Confirmatory generation cross-layer falsification gate
+        run: PYTHONPATH=. python scripts/dgc_confirmatory_generation_attack.py
       - name: Continuous assurance falsification gate
         run: PYTHONPATH=. python scripts/dgc_continuous_assurance_attack.py
       - name: Combinatorial coverage falsification gate
