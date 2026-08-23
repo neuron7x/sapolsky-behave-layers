@@ -18,6 +18,7 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 
 SCHEMA = "DGC_HARNESS_FREEZE_V1"
 BASELINE_INPUT_SCHEMA = "DGC_BASELINE_PANEL_INPUT_V1"
+DGC_ROLE = "DGC"
 
 
 class HarnessFreezeError(RuntimeError):
@@ -82,6 +83,12 @@ class FrozenPolicyHarness:
 
 
 @dataclass(frozen=True, slots=True)
+class PolicyRoleBinding:
+    role: str
+    policy_id: str
+
+
+@dataclass(frozen=True, slots=True)
 class HarnessFreezeAuthority:
     family_id: str
     execution_manifest_freeze_digest: str
@@ -93,6 +100,7 @@ class HarnessFreezeAuthority:
     baseline_specs: tuple[dict[str, object], ...]
     comparison_frame_digest: str
     policy_harnesses: tuple[FrozenPolicyHarness, ...]
+    policy_role_bindings: tuple[PolicyRoleBinding, ...]
     harness_freeze_digest: str
 
     @property
@@ -109,6 +117,7 @@ class HarnessFreezeAuthority:
             "baseline_specs": list(self.baseline_specs),
             "comparison_frame_digest": self.comparison_frame_digest,
             "policy_harnesses": [asdict(row) for row in self.policy_harnesses],
+            "policy_role_bindings": [asdict(row) for row in self.policy_role_bindings],
             "harness_freeze_digest": self.harness_freeze_digest,
             "harness_frozen": True,
             "confirmatory_execution_authorized": False,
@@ -175,7 +184,8 @@ def build_harness_freeze(
     dgc_policy_id = str(baseline_input.get("dgc_policy_id", "")).strip()
     if not dgc_policy_id or dgc_policy_id in set(mapped_ids.values()):
         raise HarnessFreezeError("distinct dgc_policy_id required")
-    required_policy_ids = set(mapped_ids.values()) | {dgc_policy_id}
+    role_map = {**mapped_ids, DGC_ROLE: dgc_policy_id}
+    required_policy_ids = set(role_map.values())
 
     component_rows = execution.get("components")
     policy_rows = execution.get("governance_policies")
@@ -235,6 +245,11 @@ def build_harness_freeze(
         "digest": spec.digest,
     } for spec in sorted(final_specs, key=lambda value: value.kind.value))
     harness_docs = [asdict(row) for row in harnesses]
+    role_bindings = tuple(
+        PolicyRoleBinding(role=role, policy_id=role_map[role])
+        for role in sorted(role_map)
+    )
+    role_docs = [asdict(row) for row in role_bindings]
     digest_payload = {
         "family_id": execution["family_id"],
         "execution_manifest_freeze_digest": execution_digest,
@@ -246,6 +261,7 @@ def build_harness_freeze(
         "baseline_specs": list(serialized_specs),
         "comparison_frame_digest": comparison_frame,
         "policy_harnesses": harness_docs,
+        "policy_role_bindings": role_docs,
     }
     return HarnessFreezeAuthority(
         family_id=str(execution["family_id"]),
@@ -258,6 +274,7 @@ def build_harness_freeze(
         baseline_specs=serialized_specs,
         comparison_frame_digest=comparison_frame,
         policy_harnesses=tuple(harnesses),
+        policy_role_bindings=role_bindings,
         harness_freeze_digest=sha256_bytes(canonical_json_bytes(digest_payload)),
     )
 
@@ -274,7 +291,7 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
             "family_id", "execution_manifest_freeze_digest", "b2_fit_authority_digest",
             "materialized_task_manifest_digest", "confirmatory_task_manifest_digest",
             "baseline_panel_input_sha256", "baseline_panel_digest", "baseline_specs",
-            "comparison_frame_digest", "policy_harnesses",
+            "comparison_frame_digest", "policy_harnesses", "policy_role_bindings",
         )
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("harness_freeze_digest", doc.get("harness_freeze_digest")):
@@ -289,8 +306,20 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
     rows = [row for row in harnesses if isinstance(row, Mapping)]
     if len(rows) != 5 or len({row.get("policy_id") for row in rows}) != 5:
         raise HarnessFreezeError("harness freeze policy ids must be unique")
+    harness_policy_ids = {str(row.get("policy_id")) for row in rows}
     if len({_sha("governance_policy_digest", row.get("governance_policy_digest")) for row in rows}) != 5:
         raise HarnessFreezeError("harness freeze governance digests must be unique")
     for row in rows:
         _sha("harness_full_digest", row.get("harness_full_digest"))
+
+    role_rows = doc.get("policy_role_bindings")
+    if not isinstance(role_rows, list) or len(role_rows) != 5 or not all(isinstance(row, Mapping) for row in role_rows):
+        raise HarnessFreezeError("harness freeze must bind exact semantic roles B0-B3 + DGC")
+    required_roles = {kind.value for kind in BaselineKind} | {DGC_ROLE}
+    roles = {str(row.get("role")) for row in role_rows}
+    role_policy_ids = [str(row.get("policy_id")) for row in role_rows]
+    if roles != required_roles or len(set(role_policy_ids)) != 5:
+        raise HarnessFreezeError("harness policy role binding is malformed")
+    if set(role_policy_ids) != harness_policy_ids:
+        raise HarnessFreezeError("policy role binding does not match frozen harness population")
     return doc
