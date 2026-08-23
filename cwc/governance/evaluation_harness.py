@@ -2,20 +2,24 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 
-
-def _req(name: str, value: str) -> str:
-    value = str(value).strip()
-    if not value:
-        raise ValueError(f"{name} required")
-    return value
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
-def _digest(payload: object) -> str:
+def canonical_manifest_digest(payload: object) -> str:
+    """Canonical content digest for structured frozen-harness manifests."""
     return hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     ).hexdigest()
+
+
+def _digest_field(name: str, value: str) -> str:
+    value = str(value).strip()
+    if _SHA256_RE.fullmatch(value) is None:
+        raise ValueError(f"{name} must be lowercase SHA-256, not a semantic label")
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,12 +43,12 @@ class FrozenEvaluationHarness:
             "pricing_snapshot_digest", "scorer_digest", "statistical_plan_digest",
             "baseline_panel_digest", "governance_policy_digest",
         ):
-            object.__setattr__(self, name, _req(name, getattr(self, name)))
+            object.__setattr__(self, name, _digest_field(name, getattr(self, name)))
 
     @property
     def comparison_frame_digest(self) -> str:
         """Digest of everything that must remain identical across policies."""
-        return _digest({
+        return canonical_manifest_digest({
             "model_manifest_digest": self.model_manifest_digest,
             "prompt_policy_digest": self.prompt_policy_digest,
             "tool_manifest_digest": self.tool_manifest_digest,
@@ -59,7 +63,7 @@ class FrozenEvaluationHarness:
 
     @property
     def full_digest(self) -> str:
-        return _digest({
+        return canonical_manifest_digest({
             "comparison_frame_digest": self.comparison_frame_digest,
             "governance_policy_digest": self.governance_policy_digest,
         })
