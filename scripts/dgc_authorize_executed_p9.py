@@ -23,7 +23,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive dual P9: unconditional exact frozen panel plus conditional expected-effect evidence."
+        description="Derive P9 exact-panel facts and conditional bounded expected-effect evidence."
     )
     parser.add_argument("--execution-authority", required=True)
     parser.add_argument("--execution-bundle-root", required=True)
@@ -51,19 +51,21 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
+    supported = authority.p9_supported_under_frozen_assumptions
     print(json.dumps({
-        "status": "PASS" if authority.exact_panel_supported else "FAIL_EXACT_PANEL_P9",
+        "status": "PASS" if supported else "FAIL_P9_SCIENTIFIC_GATE",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_panel_supported": authority.exact_panel_supported,
         "expected_effect_supported_under_independence_assumption": (
             authority.expected_effect_supported_under_independence_assumption
         ),
+        "p9_supported_under_frozen_assumptions": supported,
         "randomness_assumption_verified": authority.randomness_assumption_verified,
         "generalization_evaluation_authorized": authority.generalization_evaluation_authorized,
         "product_promotion_authorized": False,
     }, sort_keys=True))
-    return 0 if authority.exact_panel_supported else 20
+    return 0 if supported else 20
 
 
 if __name__ == "__main__":
