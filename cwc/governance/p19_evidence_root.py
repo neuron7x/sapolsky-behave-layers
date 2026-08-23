@@ -11,7 +11,7 @@ from cwc.governance.executed_p9_anytime_authority import verify_anytime_p9_autho
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.fault_tolerance_authority import verify_fault_tolerance_authority_document
 from cwc.governance.generalization_anytime_authority import verify_generalization_anytime_authority_document
-from cwc.governance.independent_replication_authority_v3 import verify_independent_replication_authority_v3_document
+from cwc.governance.independent_replication_authority_v4 import verify_independent_replication_authority_v4_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes
 from cwc.governance.p9_scientific_authority_v3 import verify_p9_scientific_authority_v3_document
 from cwc.governance.product_statistical_plan import (
@@ -55,7 +55,7 @@ METHODOLOGY_ANCHORS = (
     "cwc/governance/p9_scientific_authority_v3.py",
     "cwc/governance/generalization_anytime_authority.py",
     "cwc/governance/fault_tolerance_authority.py",
-    "cwc/governance/independent_replication_authority_v3.py",
+    "cwc/governance/independent_replication_authority_v4.py",
 )
 
 
@@ -281,7 +281,7 @@ def build_family_p19_evidence_root(
     p9 = verify_p9_scientific_authority_v3_document(p9_path)
     generalization = verify_generalization_anytime_authority_document(generalization_path)
     fault = verify_fault_tolerance_authority_document(fault_path)
-    replication = verify_independent_replication_authority_v3_document(replication_path)
+    replication = verify_independent_replication_authority_v4_document(replication_path)
     anytime = verify_anytime_p9_authority_document(Path(primary_anytime_p9_authority_path))
     ccf = verify_ccf_oracle_audit_authority_document(Path(primary_ccf_oracle_audit_authority_path))
 
@@ -328,6 +328,8 @@ def build_family_p19_evidence_root(
     theorem_digest = _theorem_identity_digest()
     if generalization.get("theorem_identity_digest") != theorem_digest:
         raise P19EvidenceError("P19 G1-G5 theorem identity differs from V5")
+    if replication.get("theorem_identity_digest") != theorem_digest:
+        raise P19EvidenceError("P19 replication theorem identity differs from V5")
     anytime_theorem = sha256_bytes(canonical_json_bytes({
         "method": anytime.get("anytime_method"),
         "boundary_method": anytime.get("anytime_boundary_method"),
