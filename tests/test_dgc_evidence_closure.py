@@ -37,6 +37,17 @@ def _ok_runner(argv, cwd, env):
     return subprocess.CompletedProcess(argv, 0, stdout="ok", stderr="")
 
 
+def test_stage_topology_places_b2_before_final_harness_freeze() -> None:
+    assert STAGES[:6] == (
+        "SOURCE_VERIFIED",
+        "MATERIALIZED_VERIFIED",
+        "EXECUTION_MANIFESTS_FROZEN",
+        "B2_FITTED",
+        "HARNESS_FROZEN",
+        "TRIAL_SIZED",
+    )
+
+
 def test_stage_skip_is_rejected(tmp_path: Path) -> None:
     evidence = tmp_path / "e.json"
     evidence.write_text("{}")
@@ -54,12 +65,29 @@ def test_stage_skip_is_rejected(tmp_path: Path) -> None:
 
 def test_unbound_or_missing_evidence_fails_closed(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
-    with pytest.raises(ClosureError, match="missing evidence artifact"):
+    with pytest.raises(ClosureError, match="missing regular evidence artifact"):
         ledger.advance(
             StageExecution(
                 stage="SOURCE_VERIFIED",
                 commands=(),
                 evidence=(EvidenceArtifact("missing.json", "0" * 64),),
+            ),
+            runner=_ok_runner,
+        )
+
+
+def test_symlink_evidence_fails_closed(tmp_path: Path) -> None:
+    target = tmp_path / "target.json"
+    target.write_text("source")
+    link = tmp_path / "source-link.json"
+    link.symlink_to(target)
+    ledger = _ledger(tmp_path)
+    with pytest.raises(ClosureError, match="missing regular evidence artifact"):
+        ledger.advance(
+            StageExecution(
+                stage="SOURCE_VERIFIED",
+                commands=(),
+                evidence=(EvidenceArtifact("source-link.json", _digest(target)),),
             ),
             runner=_ok_runner,
         )
@@ -88,7 +116,7 @@ def test_command_failure_does_not_advance(tmp_path: Path) -> None:
 
 def test_digest_bound_ordered_receipt_chain(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
-    for index, stage in enumerate(STAGES[:3]):
+    for index, stage in enumerate(STAGES[:5]):
         path = tmp_path / f"e{index}.json"
         path.write_text(json.dumps({"stage": stage}))
         receipt = ledger.advance(
@@ -101,9 +129,9 @@ def test_digest_bound_ordered_receipt_chain(tmp_path: Path) -> None:
         )
         assert receipt["stage"] == stage
     state = ledger.load()
-    assert state["completed_stages"] == list(STAGES[:3])
+    assert state["completed_stages"] == list(STAGES[:5])
     assert state["product_qualified"] is False
-    assert ledger.next_stage() == STAGES[3]
+    assert ledger.next_stage() == STAGES[5]
 
 
 def test_tampering_is_detected(tmp_path: Path) -> None:
@@ -123,3 +151,14 @@ def test_tampering_is_detected(tmp_path: Path) -> None:
     (tmp_path / "ledger.json").write_text(json.dumps(state))
     with pytest.raises(ClosureError):
         ledger.load()
+
+
+def test_generation_id_path_traversal_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ClosureError, match="safe 1-128 character slug"):
+        EvidenceClosureLedger(
+            repository_root=tmp_path,
+            ledger_path=tmp_path / "ledger.json",
+            generation_id="../escape",
+            repo_commit=COMMIT,
+            repo_tree=TREE,
+        )
