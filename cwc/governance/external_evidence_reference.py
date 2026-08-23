@@ -88,6 +88,7 @@ class ExternalEvidenceReference:
     materialization_receipt_sha256: str
     materialization_provenance_sha256: str
     source_registry_sha256: str
+    materializer_sha256: str
     repository_commit: str
     repository_tree: str
     family_source_authority_digests: tuple[tuple[str, str], ...]
@@ -103,6 +104,7 @@ class ExternalEvidenceReference:
             "materialization_receipt_sha256",
             "materialization_provenance_sha256",
             "source_registry_sha256",
+            "materializer_sha256",
         ):
             object.__setattr__(self, name, _sha(name, getattr(self, name)))
         object.__setattr__(self, "repository_commit", _git_oid("repository_commit", self.repository_commit))
@@ -128,6 +130,14 @@ class ExternalEvidenceReference:
     @property
     def digest(self) -> str:
         return sha256_bytes(canonical_json_bytes(self.payload))
+
+
+def reference_document(reference: ExternalEvidenceReference) -> dict[str, object]:
+    return {**reference.payload, "reference_digest": reference.digest}
+
+
+def reference_bytes(reference: ExternalEvidenceReference) -> bytes:
+    return json.dumps(reference_document(reference), indent=2, sort_keys=True).encode("utf-8") + b"\n"
 
 
 def verify_materialization_generation(
@@ -245,6 +255,7 @@ def verify_materialization_generation(
         materialization_receipt_sha256=sha256_file(receipt_path),
         materialization_provenance_sha256=sha256_file(provenance_path),
         source_registry_sha256=source_registry_sha,
+        materializer_sha256=materializer_sha,
         repository_commit=expected_commit,
         repository_tree=expected_tree,
         family_source_authority_digests=tuple(source_authority_rows),
