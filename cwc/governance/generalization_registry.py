@@ -13,7 +13,7 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
 from cwc.governance.task_partition import verify_task_partition_document
 
-SCHEMA = "DGC_GENERALIZATION_REGISTRY_V1"
+SCHEMA = "DGC_GENERALIZATION_REGISTRY_V2"
 AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_MANIFEST_V1"
 GENERALIZATION_FAMILYWISE_ALPHA = 0.05
 DGC_ROLE = "DGC"
@@ -71,6 +71,23 @@ def _json(path: Path, *, schema: str) -> dict[str, object]:
     if not isinstance(doc, dict) or doc.get("schema") != schema:
         raise GeneralizationRegistryError(f"unexpected schema for {candidate}")
     return doc
+
+
+def _repo_file(root: Path, value: Path) -> tuple[Path, str]:
+    rel = Path(value)
+    if rel.is_absolute() or ".." in rel.parts or not rel.parts:
+        raise GeneralizationRegistryError("generalization subject path must be repository-relative")
+    candidate = root / rel
+    if candidate.is_symlink():
+        raise GeneralizationRegistryError("generalization subject symlink rejected")
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise GeneralizationRegistryError("generalization subject escapes repository root") from exc
+    if not resolved.is_file():
+        raise GeneralizationRegistryError("generalization subject must be a regular file")
+    return resolved, rel.as_posix()
 
 
 def _component_digest(execution: Mapping[str, object], component: str) -> str:
@@ -135,6 +152,8 @@ class FrozenGeneralizationAxis:
 class GeneralizationRegistryAuthority:
     family_id: str
     execution_manifest_freeze_digest: str
+    task_partition_path: str
+    task_partition_sha256: str
     task_partition_receipt_digest: str
     primary_confirmatory_task_digest: str
     g1_holdout_task_digest: str
@@ -151,6 +170,8 @@ class GeneralizationRegistryAuthority:
             "schema": SCHEMA,
             "family_id": self.family_id,
             "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
+            "task_partition_path": self.task_partition_path,
+            "task_partition_sha256": self.task_partition_sha256,
             "task_partition_receipt_digest": self.task_partition_receipt_digest,
             "primary_confirmatory_task_digest": self.primary_confirmatory_task_digest,
             "g1_holdout_task_digest": self.g1_holdout_task_digest,
@@ -253,13 +274,18 @@ def _validate_axis_manifest(
 
 def build_generalization_registry(
     *,
+    repository_root: Path,
     execution_manifest_freeze_path: Path,
     task_partition_path: Path,
     axis_manifest_paths: Mapping[GeneralizationAxis, Path],
     policy_role_bindings: Mapping[str, str],
 ) -> GeneralizationRegistryAuthority:
+    root = Path(repository_root).resolve()
+    if not root.is_dir():
+        raise GeneralizationRegistryError("repository root missing")
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
-    partition = verify_task_partition_document(Path(task_partition_path))
+    partition_file, partition_rel = _repo_file(root, Path(task_partition_path))
+    partition = verify_task_partition_document(partition_file)
     if partition.get("family_id") != execution.get("family_id"):
         raise GeneralizationRegistryError("generalization partition/execution family mismatch")
     if partition.get("statistical_plan_digest") != execution.get("statistical_plan_digest"):
@@ -278,10 +304,8 @@ def build_generalization_registry(
     axes: list[FrozenGeneralizationAxis] = []
     seen_eval_digests: set[str] = set()
     for axis in REQUIRED_AXES:
-        path = Path(axis_manifest_paths[axis])
-        if path.is_absolute() or ".." in path.parts:
-            raise GeneralizationRegistryError("axis manifest paths must be repository-relative")
-        doc = _json(path, schema=AXIS_SCHEMA)
+        manifest_file, manifest_rel = _repo_file(root, Path(axis_manifest_paths[axis]))
+        doc = _json(manifest_file, schema=AXIS_SCHEMA)
         normalized = _validate_axis_manifest(axis=axis, doc=doc, execution=execution, partition=partition, plan=plan)
         evaluation_digest = str(normalized["evaluation_manifest_digest"])
         if evaluation_digest in seen_eval_digests:
@@ -289,8 +313,8 @@ def build_generalization_registry(
         seen_eval_digests.add(evaluation_digest)
         axes.append(FrozenGeneralizationAxis(
             axis=axis.value,
-            manifest_path=path.as_posix(),
-            manifest_sha256=sha256_file(path),
+            manifest_path=manifest_rel,
+            manifest_sha256=sha256_file(manifest_file),
             **normalized,
         ))
 
@@ -300,6 +324,8 @@ def build_generalization_registry(
     payload = {
         "family_id": str(execution["family_id"]),
         "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
+        "task_partition_path": partition_rel,
+        "task_partition_sha256": sha256_file(partition_file),
         "task_partition_receipt_digest": _sha("partition receipt_digest", partition.get("receipt_digest")),
         "primary_confirmatory_task_digest": _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest")),
         "g1_holdout_task_digest": _sha("generalization_task_digest", partition.get("generalization_task_digest")),
@@ -312,6 +338,8 @@ def build_generalization_registry(
     return GeneralizationRegistryAuthority(
         family_id=payload["family_id"],
         execution_manifest_freeze_digest=payload["execution_manifest_freeze_digest"],
+        task_partition_path=partition_rel,
+        task_partition_sha256=payload["task_partition_sha256"],
         task_partition_receipt_digest=payload["task_partition_receipt_digest"],
         primary_confirmatory_task_digest=payload["primary_confirmatory_task_digest"],
         g1_holdout_task_digest=payload["g1_holdout_task_digest"],
@@ -343,10 +371,22 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
         or tuple(sorted(str(row[0]) for row in roles)) != REQUIRED_POLICY_ROLES
     ):
         raise GeneralizationRegistryError("generalization policy role population mismatch")
+    task_partition_path = Path(str(doc.get("task_partition_path", "")))
+    if task_partition_path.is_absolute() or ".." in task_partition_path.parts or not task_partition_path.parts:
+        raise GeneralizationRegistryError("generalization task partition path must be repository-relative")
+    _sha("task_partition_sha256", doc.get("task_partition_sha256"))
+    for row in axes:
+        if not isinstance(row, Mapping):
+            raise GeneralizationRegistryError("malformed generalization axis row")
+        manifest_path = Path(str(row.get("manifest_path", "")))
+        if manifest_path.is_absolute() or ".." in manifest_path.parts or not manifest_path.parts:
+            raise GeneralizationRegistryError("generalization axis manifest path must be repository-relative")
+        _sha("axis manifest_sha256", row.get("manifest_sha256"))
     payload = {
         key: doc[key]
         for key in (
-            "family_id", "execution_manifest_freeze_digest", "task_partition_receipt_digest",
+            "family_id", "execution_manifest_freeze_digest", "task_partition_path",
+            "task_partition_sha256", "task_partition_receipt_digest",
             "primary_confirmatory_task_digest", "g1_holdout_task_digest", "policy_role_bindings",
             "frozen_dgc_policy_digest", "generalization_familywise_alpha", "per_claim_alpha", "axes",
         )
@@ -359,3 +399,31 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
     if not math.isclose(float(doc.get("per_claim_alpha", -1)), expected_alpha, rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationRegistryError("generalization multiplicity allocation mismatch")
     return doc
+
+
+def recompute_generalization_registry_from_document(
+    *,
+    repository_root: Path,
+    execution_manifest_freeze_path: Path,
+    registry_path: Path,
+) -> GeneralizationRegistryAuthority:
+    declared = verify_generalization_registry_document(Path(registry_path))
+    axes = declared.get("axes")
+    assert isinstance(axes, list)
+    axis_paths: dict[GeneralizationAxis, Path] = {}
+    for row in axes:
+        assert isinstance(row, Mapping)
+        axis_paths[GeneralizationAxis(str(row["axis"]))] = Path(str(row["manifest_path"]))
+    role_rows = declared.get("policy_role_bindings")
+    assert isinstance(role_rows, list)
+    role_map = {str(row[0]): str(row[1]) for row in role_rows}
+    rebuilt = build_generalization_registry(
+        repository_root=Path(repository_root),
+        execution_manifest_freeze_path=Path(execution_manifest_freeze_path),
+        task_partition_path=Path(str(declared["task_partition_path"])),
+        axis_manifest_paths=axis_paths,
+        policy_role_bindings=role_map,
+    )
+    if rebuilt.registry_digest != declared.get("registry_digest"):
+        raise GeneralizationRegistryError("declared G1-G5 registry differs from subject recomputation")
+    return rebuilt
