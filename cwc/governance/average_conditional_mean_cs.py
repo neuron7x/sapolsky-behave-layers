@@ -9,13 +9,13 @@ from typing import Sequence
 
 from cwc.governance.pareto import PairedBaselineEvidence
 
-METHOD = "HOWARD_RAMDas_MCAULIFFE_SEKHON_EMPIRICAL_BERNSTEIN_CS_V1"
+METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_EMPIRICAL_BERNSTEIN_CS_V1"
 CLAIM_TARGET = "AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE"
 ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_VARIANCE_CENTER_NO_IID_REQUIRED"
 SEQUENCE_ORDER_RULE = "TASK_ID_ASC_THEN_REPLICATE_ASC"
 
-# Howard et al. (Annals of Statistics 2021) empirical-Bernstein stitching
-# parameters recommended in later comparisons: eta=2, s=1.4.
+# Howard et al. (Annals of Statistics 2021) empirical-Bernstein stitching.
+# These parameters are frozen before external confirmatory outcomes.
 ETA = 2.0
 S = 1.4
 # zeta(1.4), frozen to IEEE-754 double precision for deterministic replay.
@@ -88,10 +88,10 @@ def average_conditional_mean_bound(
 ) -> AverageConditionalMeanBound:
     """Time-uniform nonparametric empirical-Bernstein CS terminal slice.
 
-    The input sequence is rescaled to [0,1].  A predictable smoothed empirical
-    center is used only for the variance process.  The returned interval targets
+    The input sequence is rescaled to [0,1]. A predictable smoothed empirical
+    center is used only for the variance process. The returned interval targets
     the average conditional mean of the precommitted adapted sequence, not an iid
-    population mean.  No independence or identical-distribution assumption is
+    population mean. No independence or identical-distribution assumption is
     encoded by this primitive.
     """
     values = tuple(float(x) for x in observations)
