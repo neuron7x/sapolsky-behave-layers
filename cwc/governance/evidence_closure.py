@@ -9,20 +9,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
-SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V2"
-RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V2"
+SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V3"
+RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V3"
 _GENERATION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
-# A final evaluation harness includes the executable-frozen B0-B3 panel. Therefore
-# B2 must be fitted before HARNESS_FROZEN. CCF oracle semantics and the complete
-# G1-G5 generalization registry are frozen before any B2 outcomes so neither
-# headroom nor generalization definitions can be selected post-hoc.
+# Ordering encodes the scientific temporal boundary. CCF, G1-G5 and the fault
+# injection matrix are frozen before B2/confirmatory outcomes. Fault-tolerance
+# support is observed only after the primary and G1-G5 scientific gates and
+# before independent replication/P19/product qualification.
 STAGES: tuple[str, ...] = (
     "SOURCE_VERIFIED",
     "MATERIALIZED_VERIFIED",
     "EXECUTION_MANIFESTS_FROZEN",
     "CCF_SPEC_FROZEN",
     "GENERALIZATION_REGISTRY_FROZEN",
+    "FAULT_INJECTION_SPEC_FROZEN",
     "B2_FITTED",
     "HARNESS_FROZEN",
     "TRIAL_SIZED",
@@ -30,6 +31,7 @@ STAGES: tuple[str, ...] = (
     "CONFIRMATORY_EXECUTED",
     "P9_SUPPORTED",
     "GENERALIZATION_SUPPORTED",
+    "FAULT_TOLERANCE_SUPPORTED",
     "INDEPENDENT_REPLICATION_SUPPORTED",
     "P19_SEALED",
     "PRODUCT_QUALIFIED",
@@ -111,9 +113,9 @@ def _default_runner(argv: Sequence[str], cwd: Path, env: Mapping[str, str]) -> s
 class EvidenceClosureLedger:
     """Fail-closed, digest-bound promotion ledger for external DGC evidence.
 
-    This object does not decide whether an experiment is scientifically valid. It only
-    prevents stage skipping, unbound evidence substitution, source-identity drift and
-    silent command failure while executing an already frozen validation protocol.
+    The ledger enforces ordering, repository identity, evidence byte binding and
+    receipt-chain integrity. Scientific semantics remain the responsibility of the
+    named stage closures that construct StageExecution objects.
     """
 
     def __init__(
