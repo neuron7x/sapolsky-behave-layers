@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - packaging/dgc-full-874052d7
+  pull_request:
+    branches:
+      - packaging/dgc-full-874052d7
 
 jobs:
   package:
