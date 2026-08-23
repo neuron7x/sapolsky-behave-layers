@@ -13,8 +13,9 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
 from cwc.governance.task_partition import verify_task_partition_document
 
-SCHEMA = "DGC_GENERALIZATION_REGISTRY_V2"
+SCHEMA = "DGC_GENERALIZATION_REGISTRY_V3"
 AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_MANIFEST_V1"
+BASELINE_INPUT_SCHEMA = "DGC_BASELINE_PANEL_INPUT_V1"
 GENERALIZATION_FAMILYWISE_ALPHA = 0.05
 DGC_ROLE = "DGC"
 
@@ -128,6 +129,23 @@ def _reconstruct_plan(execution: Mapping[str, object]) -> ProductStatisticalPlan
     return plan
 
 
+def _baseline_role_map(baseline_input: Mapping[str, object]) -> dict[str, str]:
+    raw = baseline_input.get("baseline_policy_ids")
+    if not isinstance(raw, Mapping):
+        raise GeneralizationRegistryError("baseline panel input lacks baseline_policy_ids")
+    required = {kind.value for kind in BaselineKind}
+    if set(str(key) for key in raw) != required:
+        raise GeneralizationRegistryError("baseline panel input must bind exact B0-B3 roles")
+    role_map = {str(key): _req(f"baseline policy {key}", value) for key, value in raw.items()}
+    dgc_policy_id = _req("dgc_policy_id", baseline_input.get("dgc_policy_id"))
+    if dgc_policy_id in set(role_map.values()):
+        raise GeneralizationRegistryError("DGC policy id must be distinct from B0-B3")
+    role_map[DGC_ROLE] = dgc_policy_id
+    if len(set(role_map.values())) != len(REQUIRED_POLICY_ROLES):
+        raise GeneralizationRegistryError("baseline panel semantic role mapping must be unique")
+    return role_map
+
+
 @dataclass(frozen=True, slots=True)
 class FrozenGeneralizationAxis:
     axis: str
@@ -155,6 +173,8 @@ class GeneralizationRegistryAuthority:
     task_partition_path: str
     task_partition_sha256: str
     task_partition_receipt_digest: str
+    baseline_panel_input_path: str
+    baseline_panel_input_sha256: str
     primary_confirmatory_task_digest: str
     g1_holdout_task_digest: str
     policy_role_bindings: tuple[tuple[str, str], ...]
@@ -173,6 +193,8 @@ class GeneralizationRegistryAuthority:
             "task_partition_path": self.task_partition_path,
             "task_partition_sha256": self.task_partition_sha256,
             "task_partition_receipt_digest": self.task_partition_receipt_digest,
+            "baseline_panel_input_path": self.baseline_panel_input_path,
+            "baseline_panel_input_sha256": self.baseline_panel_input_sha256,
             "primary_confirmatory_task_digest": self.primary_confirmatory_task_digest,
             "g1_holdout_task_digest": self.g1_holdout_task_digest,
             "policy_role_bindings": [list(row) for row in self.policy_role_bindings],
@@ -277,6 +299,7 @@ def build_generalization_registry(
     repository_root: Path,
     execution_manifest_freeze_path: Path,
     task_partition_path: Path,
+    baseline_panel_input_path: Path,
     axis_manifest_paths: Mapping[GeneralizationAxis, Path],
     policy_role_bindings: Mapping[str, str],
 ) -> GeneralizationRegistryAuthority:
@@ -286,6 +309,8 @@ def build_generalization_registry(
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
     partition_file, partition_rel = _repo_file(root, Path(task_partition_path))
     partition = verify_task_partition_document(partition_file)
+    baseline_file, baseline_rel = _repo_file(root, Path(baseline_panel_input_path))
+    baseline_input = _json(baseline_file, schema=BASELINE_INPUT_SCHEMA)
     if partition.get("family_id") != execution.get("family_id"):
         raise GeneralizationRegistryError("generalization partition/execution family mismatch")
     if partition.get("statistical_plan_digest") != execution.get("statistical_plan_digest"):
@@ -295,6 +320,9 @@ def build_generalization_registry(
     role_map = {str(role): str(policy_id).strip() for role, policy_id in policy_role_bindings.items()}
     if tuple(sorted(role_map)) != REQUIRED_POLICY_ROLES or len(set(role_map.values())) != len(REQUIRED_POLICY_ROLES):
         raise GeneralizationRegistryError("policy_role_bindings must map exact B0-B3 + DGC to unique policy ids")
+    expected_role_map = _baseline_role_map(baseline_input)
+    if role_map != expected_role_map:
+        raise GeneralizationRegistryError("generalization policy-role mapping differs from baseline panel SSOT")
     policy_digests = _policy_digest_map(execution)
     if set(role_map.values()) != set(policy_digests):
         raise GeneralizationRegistryError("generalization policy roles must equal the frozen five-arm governance population")
@@ -327,6 +355,8 @@ def build_generalization_registry(
         "task_partition_path": partition_rel,
         "task_partition_sha256": sha256_file(partition_file),
         "task_partition_receipt_digest": _sha("partition receipt_digest", partition.get("receipt_digest")),
+        "baseline_panel_input_path": baseline_rel,
+        "baseline_panel_input_sha256": sha256_file(baseline_file),
         "primary_confirmatory_task_digest": _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest")),
         "g1_holdout_task_digest": _sha("generalization_task_digest", partition.get("generalization_task_digest")),
         "policy_role_bindings": [list(row) for row in sorted(role_map.items())],
@@ -341,6 +371,8 @@ def build_generalization_registry(
         task_partition_path=partition_rel,
         task_partition_sha256=payload["task_partition_sha256"],
         task_partition_receipt_digest=payload["task_partition_receipt_digest"],
+        baseline_panel_input_path=baseline_rel,
+        baseline_panel_input_sha256=payload["baseline_panel_input_sha256"],
         primary_confirmatory_task_digest=payload["primary_confirmatory_task_digest"],
         g1_holdout_task_digest=payload["g1_holdout_task_digest"],
         policy_role_bindings=tuple(sorted(role_map.items())),
@@ -371,10 +403,12 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
         or tuple(sorted(str(row[0]) for row in roles)) != REQUIRED_POLICY_ROLES
     ):
         raise GeneralizationRegistryError("generalization policy role population mismatch")
-    task_partition_path = Path(str(doc.get("task_partition_path", "")))
-    if task_partition_path.is_absolute() or ".." in task_partition_path.parts or not task_partition_path.parts:
-        raise GeneralizationRegistryError("generalization task partition path must be repository-relative")
+    for field in ("task_partition_path", "baseline_panel_input_path"):
+        rel = Path(str(doc.get(field, "")))
+        if rel.is_absolute() or ".." in rel.parts or not rel.parts:
+            raise GeneralizationRegistryError(f"{field} must be repository-relative")
     _sha("task_partition_sha256", doc.get("task_partition_sha256"))
+    _sha("baseline_panel_input_sha256", doc.get("baseline_panel_input_sha256"))
     for row in axes:
         if not isinstance(row, Mapping):
             raise GeneralizationRegistryError("malformed generalization axis row")
@@ -387,6 +421,7 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
         for key in (
             "family_id", "execution_manifest_freeze_digest", "task_partition_path",
             "task_partition_sha256", "task_partition_receipt_digest",
+            "baseline_panel_input_path", "baseline_panel_input_sha256",
             "primary_confirmatory_task_digest", "g1_holdout_task_digest", "policy_role_bindings",
             "frozen_dgc_policy_digest", "generalization_familywise_alpha", "per_claim_alpha", "axes",
         )
@@ -421,6 +456,7 @@ def recompute_generalization_registry_from_document(
         repository_root=Path(repository_root),
         execution_manifest_freeze_path=Path(execution_manifest_freeze_path),
         task_partition_path=Path(str(declared["task_partition_path"])),
+        baseline_panel_input_path=Path(str(declared["baseline_panel_input_path"])),
         axis_manifest_paths=axis_paths,
         policy_role_bindings=role_map,
     )
