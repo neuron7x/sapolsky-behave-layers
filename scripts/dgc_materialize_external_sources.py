@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import urllib.request
@@ -74,7 +75,7 @@ def _source_authority(row: dict) -> ExternalSourceAuthority:
     return authority
 
 
-def _materialize_swe(row: dict, output_root: Path) -> dict:
+def _materialize_swe(row: dict, output_root: Path, *, source_parquet: Path | None = None) -> dict:
     identity = row["identity"]
     family_root = output_root / "SWE_BENCH_VERIFIED"
     parquet = family_root / "data" / "test-00000-of-00001.parquet"
@@ -82,7 +83,16 @@ def _materialize_swe(row: dict, output_root: Path) -> dict:
         "https://huggingface.co/datasets/SWE-bench/SWE-bench_Verified/resolve/"
         f"{identity['revision']}/{identity['parquet_path']}?download=true"
     )
-    _download(url, parquet)
+    if source_parquet is None:
+        _download(url, parquet)
+        acquisition_mode = "NETWORK"
+    else:
+        source_parquet = Path(source_parquet).resolve()
+        if not source_parquet.is_file():
+            raise ValueError("offline SWE parquet must be a file")
+        parquet.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_parquet, parquet)
+        acquisition_mode = "LOCAL_VERIFIED_INPUT"
     verified = verify_swe_parquet(
         parquet,
         expected_sha256=identity["parquet_sha256"],
@@ -105,6 +115,7 @@ def _materialize_swe(row: dict, output_root: Path) -> dict:
         "stage": authority.stage.name,
         "authority_digest": authority.digest,
         "source_authority_digest": row["authority_digest"],
+        "acquisition_mode": acquisition_mode,
         "parquet": {
             "bytes_size": verified.bytes_size,
             "sha256": verified.sha256,
@@ -115,38 +126,83 @@ def _materialize_swe(row: dict, output_root: Path) -> dict:
     }
 
 
-def _materialize_terminal(row: dict, output_root: Path) -> dict:
+def _copy_clean_tracked_tree(source_repo: Path, destination: Path) -> None:
+    source_repo = Path(source_repo).resolve()
+    if not source_repo.is_dir():
+        raise ValueError("offline Terminal-Bench repository must be a directory")
+    dirty = _capture("git", "-C", str(source_repo), "status", "--porcelain=v1", "--untracked-files=all")
+    if dirty:
+        raise RuntimeError("offline Terminal-Bench repository must be clean")
+    proc = subprocess.run(
+        ["git", "-C", str(source_repo), "ls-files", "-z"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    tracked = [raw.decode("utf-8") for raw in proc.stdout.split(b"\0") if raw]
+    if not tracked:
+        raise RuntimeError("offline Terminal-Bench repository has no tracked files")
+    destination.mkdir(parents=True, exist_ok=False)
+    root = destination.resolve()
+    for rel in tracked:
+        rel_path = Path(rel)
+        if rel_path.is_absolute() or ".." in rel_path.parts:
+            raise ValueError(f"unsafe tracked path: {rel}")
+        src = source_repo / rel_path
+        dst = destination / rel_path
+        resolved_parent = dst.parent.resolve()
+        if resolved_parent != root and root not in resolved_parent.parents:
+            raise ValueError(f"tracked path escapes destination: {rel}")
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_symlink():
+            os.symlink(os.readlink(src), dst)
+        elif src.is_file():
+            shutil.copy2(src, dst)
+        else:
+            raise ValueError(f"unsupported tracked object: {rel}")
+
+
+def _materialize_terminal(row: dict, output_root: Path, *, source_repo: Path | None = None) -> dict:
     identity = row["identity"]
     checkout = output_root / "TERMINAL_BENCH_2_1" / "repo"
-    checkout.mkdir(parents=True, exist_ok=False)
-    _run("git", "init", "-q", str(checkout))
-    _run(
-        "git",
-        "-C",
-        str(checkout),
-        "remote",
-        "add",
-        "origin",
-        f"https://github.com/{identity['repository']}.git",
-    )
-    _run(
-        "git",
-        "-C",
-        str(checkout),
-        "fetch",
-        "--depth",
-        "1",
-        "origin",
-        identity["commit"],
-    )
-    _run("git", "-C", str(checkout), "checkout", "-q", "--detach", "FETCH_HEAD")
+    if source_repo is None:
+        checkout.mkdir(parents=True, exist_ok=False)
+        _run("git", "init", "-q", str(checkout))
+        _run(
+            "git",
+            "-C",
+            str(checkout),
+            "remote",
+            "add",
+            "origin",
+            f"https://github.com/{identity['repository']}.git",
+        )
+        _run(
+            "git",
+            "-C",
+            str(checkout),
+            "fetch",
+            "--depth",
+            "1",
+            "origin",
+            identity["commit"],
+        )
+        _run("git", "-C", str(checkout), "checkout", "-q", "--detach", "FETCH_HEAD")
+        verification_root = checkout
+        acquisition_mode = "NETWORK"
+    else:
+        source_repo = Path(source_repo).resolve()
+        verification_root = source_repo
+        acquisition_mode = "LOCAL_VERIFIED_INPUT"
     git_identity = verify_terminal_git_checkout(
-        checkout,
+        verification_root,
         expected_commit=identity["commit"],
         expected_repository_tree=identity["tree"],
         expected_tasks_tree=identity["tasks_tree"],
         expected_dataset_manifest_blob=identity["dataset_manifest_blob"],
     )
+    if source_repo is not None:
+        _copy_clean_tracked_tree(source_repo, checkout)
     manifest = parse_terminal_dataset_manifest(
         (checkout / "tasks" / "dataset.toml").read_text(encoding="utf-8"),
         expected_count=int(identity["expected_task_count"]),
@@ -165,12 +221,17 @@ def _materialize_terminal(row: dict, output_root: Path) -> dict:
     )
     # Git metadata was used for identity verification and is not workload payload.
     # Removing it makes the published generation independent of clone-local pack/log state.
-    shutil.rmtree(checkout / ".git")
+    if (checkout / ".git").exists():
+        if (checkout / ".git").is_dir():
+            shutil.rmtree(checkout / ".git")
+        else:
+            (checkout / ".git").unlink()
     return {
         "family_id": row["family_id"],
         "stage": authority.stage.name,
         "authority_digest": authority.digest,
         "source_authority_digest": row["authority_digest"],
+        "acquisition_mode": acquisition_mode,
         "git_identity": asdict(git_identity),
         "dataset_manifest": {
             "dataset_name": manifest.dataset_name,
@@ -186,6 +247,14 @@ def main() -> int:
         description="Atomically materialize and cryptographically verify the two preregistered DGC external workloads."
     )
     parser.add_argument("--output-root", required=True)
+    parser.add_argument(
+        "--swe-parquet",
+        help="Optional predownloaded SWE-bench Verified parquet; exact frozen SHA-256 is still required.",
+    )
+    parser.add_argument(
+        "--terminal-repo",
+        help="Optional clean local Terminal-Bench 2.1 checkout at the frozen commit/tree.",
+    )
     args = parser.parse_args()
     output_root = Path(args.output_root).resolve()
     if output_root.exists():
@@ -202,8 +271,16 @@ def main() -> int:
 
     with AtomicEvidenceGeneration(output_root) as transaction:
         assert transaction.staging_root is not None
-        swe = _materialize_swe(rows["SWE_BENCH_VERIFIED"], transaction.staging_root)
-        terminal = _materialize_terminal(rows["TERMINAL_BENCH_2_1"], transaction.staging_root)
+        swe = _materialize_swe(
+            rows["SWE_BENCH_VERIFIED"],
+            transaction.staging_root,
+            source_parquet=Path(args.swe_parquet) if args.swe_parquet else None,
+        )
+        terminal = _materialize_terminal(
+            rows["TERMINAL_BENCH_2_1"],
+            transaction.staging_root,
+            source_repo=Path(args.terminal_repo) if args.terminal_repo else None,
+        )
         receipt = {
             "schema": "DGC_EXTERNAL_MATERIALIZATION_RECEIPT_V2",
             "families": [swe, terminal],
