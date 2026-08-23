@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
-from cwc.governance.independent_replication_authority_v2 import (
-    build_independent_replication_authority_v2,
-    verify_independent_replication_authority_v2_document,
+from cwc.governance.independent_replication_authority_v3 import (
+    build_independent_replication_authority_v3,
+    verify_independent_replication_authority_v3_document,
 )
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.qualification_closure import _stage_evidence_file
@@ -29,10 +29,10 @@ def close_independent_replication_supported(
     ledger: EvidenceClosureLedger,
     *,
     replication_authority_path: Path,
-    primary_dual_p9_authority_path: Path,
+    primary_anytime_p9_authority_path: Path,
     primary_ccf_oracle_audit_authority_path: Path,
     replica_p9_scientific_authority_path: Path,
-    replica_dual_p9_authority_path: Path,
+    replica_anytime_p9_authority_path: Path,
     replica_ccf_oracle_audit_authority_path: Path,
     replica_execution_authority_path: Path,
     replica_execution_bundle_root: Path,
@@ -54,12 +54,12 @@ def close_independent_replication_supported(
         raise ClosureError("INDEPENDENT_REPLICATION_SUPPORTED is not the next admissible stage")
 
     declared_path, declared_rel = _repo_file(
-        ledger, replication_authority_path, label="independent replication authority"
+        ledger, replication_authority_path, label="independent replication V3 authority"
     )
     try:
-        declared = verify_independent_replication_authority_v2_document(declared_path)
+        declared = verify_independent_replication_authority_v3_document(declared_path)
     except RuntimeError as exc:
-        raise ClosureError("independent replication authority verification failed") from exc
+        raise ClosureError("independent replication V3 authority verification failed") from exc
     if declared.get("independent_replication_supported") is not True:
         raise ClosureError("independent replication support is not established")
 
@@ -67,13 +67,13 @@ def close_independent_replication_supported(
     primary_generalization_path, _, _ = _stage_evidence_file(ledger, stage="GENERALIZATION_SUPPORTED")
 
     try:
-        recomputed = build_independent_replication_authority_v2(
+        recomputed = build_independent_replication_authority_v3(
             primary_p9_scientific_authority_path=primary_p9_path,
-            primary_dual_p9_authority_path=Path(primary_dual_p9_authority_path),
+            primary_anytime_p9_authority_path=Path(primary_anytime_p9_authority_path),
             primary_ccf_oracle_audit_authority_path=Path(primary_ccf_oracle_audit_authority_path),
-            primary_generalization_scientific_authority_path=primary_generalization_path,
+            primary_generalization_authority_path=primary_generalization_path,
             replica_p9_scientific_authority_path=Path(replica_p9_scientific_authority_path),
-            replica_dual_p9_authority_path=Path(replica_dual_p9_authority_path),
+            replica_anytime_p9_authority_path=Path(replica_anytime_p9_authority_path),
             replica_ccf_oracle_audit_authority_path=Path(replica_ccf_oracle_audit_authority_path),
             replica_execution_authority_path=Path(replica_execution_authority_path),
             replica_execution_bundle_root=Path(replica_execution_bundle_root),
@@ -91,11 +91,11 @@ def close_independent_replication_supported(
             allowed_signers_path=Path(allowed_signers_path),
         )
     except RuntimeError as exc:
-        raise ClosureError("independent replication raw-subject/signature replay failed") from exc
+        raise ClosureError("independent replication V3 raw-subject/signature replay failed") from exc
     if recomputed.authority_digest != declared.get("authority_digest"):
-        raise ClosureError("declared replication authority differs from raw/signature recomputation")
+        raise ClosureError("declared replication V3 authority differs from raw/signature recomputation")
     if not recomputed.independent_replication_supported:
-        raise ClosureError("recomputed independent replication does not satisfy the gate")
+        raise ClosureError("recomputed independent replication V3 does not satisfy the gate")
     if recomputed.social_independence_machine_proven:
         raise ClosureError("replication authority illegally claims machine proof of social independence")
 
