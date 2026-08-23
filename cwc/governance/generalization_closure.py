@@ -11,6 +11,7 @@ from cwc.governance.generalization_execution_authority import (
     verify_generalization_axis_authority_document,
 )
 from cwc.governance.generalization_registry import GeneralizationAxis, REQUIRED_AXES
+from cwc.governance.generalization_source_guard import verify_generalization_source_binding
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.qualification_closure import _stage_evidence_file
 
@@ -64,6 +65,11 @@ def close_generalization_supported(
         )
         declared_axis_paths[axis] = authority_path
         try:
+            source_binding = verify_generalization_source_binding(
+                repository_root=ledger.repository_root,
+                registry_path=registry_path,
+                axis=axis,
+            )
             declared_axis = verify_generalization_axis_authority_document(authority_path)
             recomputed_axis = build_generalization_axis_authority(
                 Path(axis_bundle_roots[axis]),
@@ -72,7 +78,9 @@ def close_generalization_supported(
                 trial_sizing_authority_path=sizing_path,
             )
         except RuntimeError as exc:
-            raise ClosureError(f"{axis.value} raw-subject replay failed") from exc
+            raise ClosureError(f"{axis.value} source/raw-subject replay failed") from exc
+        if source_binding.axis != axis.value:
+            raise ClosureError(f"{axis.value} materialized source identity mismatch")
         if declared_axis.get("axis") != axis.value:
             raise ClosureError(f"{axis.value} authority path/identity mismatch")
         if recomputed_axis.authority_digest != declared_axis.get("authority_digest"):
