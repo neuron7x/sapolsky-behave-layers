@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.executed_p9_dual_authority import build_dual_p9_authority
+from cwc.governance.executed_p9_anytime_authority import build_anytime_p9_authority
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -23,7 +23,10 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive P9 exact-panel facts and conditional bounded expected-effect evidence."
+        description=(
+            "Derive P9 exact-panel facts plus anytime-valid average-conditional-mean "
+            "evidence without an iid/provider-request-independence requirement."
+        )
     )
     parser.add_argument("--execution-authority", required=True)
     parser.add_argument("--execution-bundle-root", required=True)
@@ -36,7 +39,7 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    authority = build_dual_p9_authority(
+    authority = build_anytime_p9_authority(
         confirmatory_execution_authority_path=Path(args.execution_authority),
         execution_bundle_root=Path(args.execution_bundle_root),
         physical_cost_bundle_root=Path(args.physical_cost_bundle_root),
@@ -51,17 +54,19 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
-    supported = authority.p9_supported_under_frozen_assumptions
+    supported = authority.p9_supported_without_iid_assumption
     print(json.dumps({
-        "status": "PASS" if supported else "FAIL_P9_SCIENTIFIC_GATE",
+        "status": "PASS" if supported else "FAIL_P9_ANYTIME_VALID_GATE",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_panel_supported": authority.exact_panel_supported,
-        "expected_effect_supported_under_independence_assumption": (
-            authority.expected_effect_supported_under_independence_assumption
+        "anytime_average_conditional_mean_supported": authority.anytime_average_conditional_mean_supported,
+        "iid_assumption_required": False,
+        "provider_request_independence_required": False,
+        "legacy_micro_eb_supported_under_cross_pair_independence": (
+            authority.legacy_micro_eb_supported_under_cross_pair_independence
         ),
-        "p9_supported_under_frozen_assumptions": supported,
-        "randomness_assumption_verified": authority.randomness_assumption_verified,
+        "p9_supported_without_iid_assumption": supported,
         "generalization_evaluation_authorized": authority.generalization_evaluation_authorized,
         "product_promotion_authorized": False,
     }, sort_keys=True))
