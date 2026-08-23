@@ -15,8 +15,8 @@ def _spec() -> DistributedEvalSpec:
         lease_ttl_ticks=2,
         max_cost_per_unit_usd=1.0,
         global_budget_usd=1.0,
-        harness_digest="h" * 64,
-        statistical_plan_digest="s" * 64,
+        harness_digest="a" * 64,
+        statistical_plan_digest="b" * 64,
     )
 
 
@@ -26,10 +26,9 @@ def main() -> int:
     quarantined = 0
     stale_rejections = 0
 
-    # Exhaustive declared timing family: first/retry delays 0..3 and two
-    # retry-worker identities. TTL=2, so 0/1 are pre-expiry and 2/3 are
-    # at/after expiry, covering every timing equivalence class in this model.
-    for first_delay, retry_delay, retry_worker in itertools.product(range(4), range(4), ("w1", "w2")):
+    for first_delay, retry_delay, retry_worker in itertools.product(
+        range(4), range(4), ("w1", "w2")
+    ):
         schedules += 1
         coordinator = DistributedEvalCoordinator(_spec())
         first = coordinator.claim("w0", tick=0)
@@ -42,7 +41,7 @@ def main() -> int:
                 first,
                 tick=first_tick,
                 result_payload={"attempt": 1, "delay": first_delay},
-                evidence_digest="e" * 64,
+                evidence_digest="c" * 64,
                 actual_cost_usd=0.25,
             )
             first_committed = True
@@ -57,7 +56,7 @@ def main() -> int:
                         first,
                         tick=first_tick,
                         result_payload={"stale": True},
-                        evidence_digest="e" * 64,
+                        evidence_digest="c" * 64,
                         actual_cost_usd=0.1,
                     )
                 except ValueError:
@@ -71,7 +70,7 @@ def main() -> int:
                         retry,
                         tick=retry_tick,
                         result_payload={"attempt": 2, "delay": retry_delay},
-                        evidence_digest="f" * 64,
+                        evidence_digest="d" * 64,
                         actual_cost_usd=0.25,
                     )
                 else:
