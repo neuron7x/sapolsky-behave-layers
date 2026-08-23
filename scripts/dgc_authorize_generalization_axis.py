@@ -23,7 +23,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive one G1-G5 dual exact-panel + conditional expected-effect authority."
+        description="Derive one G1-G5 exact-panel plus conditional bounded expected-effect authority."
     )
     parser.add_argument("--bundle-root", required=True)
     parser.add_argument("--repository-root", default=".")
@@ -42,8 +42,12 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
+    supported = (
+        authority.exact_panel_supported
+        and authority.expected_effect_supported_under_independence_assumption
+    )
     print(json.dumps({
-        "status": "PASS" if authority.exact_panel_supported else "FAIL_EXACT_GENERALIZATION_AXIS",
+        "status": "PASS" if supported else "FAIL_GENERALIZATION_AXIS_SCIENTIFIC_GATE",
         "axis": authority.axis,
         "authority": str(output),
         "authority_digest": authority.authority_digest,
@@ -51,10 +55,11 @@ def main() -> int:
         "expected_effect_supported_under_independence_assumption": (
             authority.expected_effect_supported_under_independence_assumption
         ),
+        "supported_under_frozen_assumptions": supported,
         "randomness_assumption_verified": authority.randomness_assumption_verified,
         "product_promotion_authorized": False,
     }, sort_keys=True))
-    return 0 if authority.exact_panel_supported else 30
+    return 0 if supported else 30
 
 
 if __name__ == "__main__":
