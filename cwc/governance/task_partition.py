@@ -8,9 +8,9 @@ from typing import Mapping
 from cwc.governance.external_materialization import parse_terminal_dataset_manifest, verify_swe_parquet
 from cwc.governance.git_tree_reconstruction import git_blob_oid_path
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.product_statistical_plan import ProductStatisticalPlan, deterministic_task_split
+from cwc.governance.product_statistical_plan import ProductStatisticalPlan, deterministic_three_way_task_split
 
-SCHEMA = "DGC_TASK_PARTITION_RECEIPT_V1"
+SCHEMA = "DGC_TASK_PARTITION_RECEIPT_V2"
 REFERENCE_SCHEMA = "DGC_EXTERNAL_EVIDENCE_REFERENCE_V2"
 REGISTRY_SCHEMA = "DGC_EXTERNAL_SOURCE_AUTHORITY_REGISTRY_V1"
 
@@ -107,10 +107,13 @@ class TaskPartitionReceipt:
     task_count: int
     calibration_task_ids: tuple[str, ...]
     confirmatory_task_ids: tuple[str, ...]
+    generalization_task_ids: tuple[str, ...]
     calibration_task_digest: str
     confirmatory_task_digest: str
+    generalization_task_digest: str
     statistical_plan_digest: str
     calibration_fraction: float
+    generalization_holdout_fraction: float
     receipt_digest: str
 
     @property
@@ -119,7 +122,9 @@ class TaskPartitionReceipt:
             "schema": SCHEMA,
             **asdict(self),
             "outcomes_observed": False,
+            "generalization_outcomes_observed": False,
             "confirmatory_execution_authorized": False,
+            "generalization_execution_authorized": False,
             "product_promotion_authorized": False,
         }
 
@@ -147,12 +152,15 @@ def freeze_task_partition(
     observed_task_digest = _task_digest(task_ids)
     if observed_task_digest != _sha("materialized_task_manifest_sha256", binding.get("materialized_task_manifest_sha256")):
         raise TaskPartitionError("reverified task population does not match materialization reference")
-    calibration, confirmatory = deterministic_task_split(
+
+    calibration, confirmatory, generalization = deterministic_three_way_task_split(
         task_ids,
         calibration_fraction=statistical_plan.calibration_fraction,
+        generalization_holdout_fraction=statistical_plan.generalization_holdout_fraction,
     )
     calibration_digest = _task_digest(calibration)
     confirmatory_digest = _task_digest(confirmatory)
+    generalization_digest = _task_digest(generalization)
     payload = {
         "family_id": family_id,
         "materialization_reference_digest": reference_digest,
@@ -160,10 +168,13 @@ def freeze_task_partition(
         "task_count": len(task_ids),
         "calibration_task_ids": calibration,
         "confirmatory_task_ids": confirmatory,
+        "generalization_task_ids": generalization,
         "calibration_task_digest": calibration_digest,
         "confirmatory_task_digest": confirmatory_digest,
+        "generalization_task_digest": generalization_digest,
         "statistical_plan_digest": statistical_plan.digest,
         "calibration_fraction": statistical_plan.calibration_fraction,
+        "generalization_holdout_fraction": statistical_plan.generalization_holdout_fraction,
     }
     return TaskPartitionReceipt(
         **payload,
@@ -173,26 +184,39 @@ def freeze_task_partition(
 
 def verify_task_partition_document(path: Path) -> dict[str, object]:
     doc = _read_json(Path(path), SCHEMA)
-    if doc.get("outcomes_observed") is not False:
-        raise TaskPartitionError("task partition must be frozen before outcomes")
-    if doc.get("confirmatory_execution_authorized") is not False or doc.get("product_promotion_authorized") is not False:
+    if doc.get("outcomes_observed") is not False or doc.get("generalization_outcomes_observed") is not False:
+        raise TaskPartitionError("task partition must be frozen before all primary/generalization outcomes")
+    if (
+        doc.get("confirmatory_execution_authorized") is not False
+        or doc.get("generalization_execution_authorized") is not False
+        or doc.get("product_promotion_authorized") is not False
+    ):
         raise TaskPartitionError("task partition illegally grants downstream authority")
+
     calibration = tuple(str(x) for x in doc.get("calibration_task_ids", ()))
     confirmatory = tuple(str(x) for x in doc.get("confirmatory_task_ids", ()))
-    if not calibration or not confirmatory or set(calibration) & set(confirmatory):
-        raise TaskPartitionError("invalid calibration/confirmatory partition")
-    if len(calibration) + len(confirmatory) != int(doc.get("task_count", -1)):
-        raise TaskPartitionError("task partition count mismatch")
+    generalization = tuple(str(x) for x in doc.get("generalization_task_ids", ()))
+    if not calibration or not confirmatory or not generalization:
+        raise TaskPartitionError("all three frozen task populations must be non-empty")
+    sets = (set(calibration), set(confirmatory), set(generalization))
+    if any(sets[i] & sets[j] for i in range(3) for j in range(i + 1, 3)):
+        raise TaskPartitionError("calibration/confirmatory/generalization populations overlap")
+    if len(calibration) + len(confirmatory) + len(generalization) != int(doc.get("task_count", -1)):
+        raise TaskPartitionError("three-way task partition count mismatch")
     if _task_digest(calibration) != _sha("calibration_task_digest", doc.get("calibration_task_digest")):
         raise TaskPartitionError("calibration task digest mismatch")
     if _task_digest(confirmatory) != _sha("confirmatory_task_digest", doc.get("confirmatory_task_digest")):
         raise TaskPartitionError("confirmatory task digest mismatch")
+    if _task_digest(generalization) != _sha("generalization_task_digest", doc.get("generalization_task_digest")):
+        raise TaskPartitionError("generalization task digest mismatch")
+
     payload = {
         key: doc[key]
         for key in (
             "family_id", "materialization_reference_digest", "task_manifest_digest", "task_count",
-            "calibration_task_ids", "confirmatory_task_ids", "calibration_task_digest",
-            "confirmatory_task_digest", "statistical_plan_digest", "calibration_fraction",
+            "calibration_task_ids", "confirmatory_task_ids", "generalization_task_ids",
+            "calibration_task_digest", "confirmatory_task_digest", "generalization_task_digest",
+            "statistical_plan_digest", "calibration_fraction", "generalization_holdout_fraction",
         )
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("receipt_digest", doc.get("receipt_digest")):
