@@ -11,8 +11,8 @@ def main():
         lease_ttl_ticks=2,
         max_cost_per_unit_usd=1.0,
         global_budget_usd=1.0,
-        harness_digest="h" * 64,
-        statistical_plan_digest="s" * 64,
+        harness_digest="a" * 64,
+        statistical_plan_digest="b" * 64,
     )
     killed = 0
 
@@ -28,7 +28,7 @@ def main():
             stale,
             tick=3,
             result_payload={"stale": 1},
-            evidence_digest="e" * 64,
+            evidence_digest="c" * 64,
             actual_cost_usd=0.1,
         )
     except ValueError:
@@ -40,7 +40,7 @@ def main():
         lease,
         tick=1,
         result_payload={"x": 1},
-        evidence_digest="e" * 64,
+        evidence_digest="c" * 64,
         actual_cost_usd=0.1,
     )
     try:
@@ -48,7 +48,7 @@ def main():
             lease,
             tick=1,
             result_payload={"x": 2},
-            evidence_digest="e" * 64,
+            evidence_digest="c" * 64,
             actual_cost_usd=0.1,
         )
     except ValueError:
@@ -64,15 +64,31 @@ def main():
             lease_ttl_ticks=2,
             max_cost_per_unit_usd=1.0,
             global_budget_usd=1.9,
-            harness_digest="h" * 64,
-            statistical_plan_digest="s" * 64,
+            harness_digest="a" * 64,
+            statistical_plan_digest="b" * 64,
         )
     except ValueError:
         killed += 1
 
-    if killed != 4:
-        raise AssertionError(f"expected 4/4 attacks killed, got {killed}")
-    print("DGC-DISTRIBUTED-EVAL-ATTACK: PASS killed=4/4")
+    try:
+        DistributedEvalSpec(
+            experiment_id="pseudo-digest",
+            task_ids=("a",),
+            policy_ids=("dgc",),
+            replicates=1,
+            max_attempts_per_unit=1,
+            lease_ttl_ticks=2,
+            max_cost_per_unit_usd=1.0,
+            global_budget_usd=1.0,
+            harness_digest="semantic-harness",
+            statistical_plan_digest="b" * 64,
+        )
+    except ValueError:
+        killed += 1
+
+    if killed != 5:
+        raise AssertionError(f"expected 5/5 attacks killed, got {killed}")
+    print("DGC-DISTRIBUTED-EVAL-ATTACK: PASS killed=5/5")
     return 0
 
 
