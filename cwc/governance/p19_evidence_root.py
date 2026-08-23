@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
-from cwc.governance.evidence_closure import EvidenceClosureLedger, STAGES, sha256_file
+from cwc.governance.evidence_closure import EvidenceClosureLedger, RECEIPT_SCHEMA, STAGES, sha256_file
 from cwc.governance.executed_p9_anytime_authority import verify_anytime_p9_authority_document
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.fault_tolerance_authority import verify_fault_tolerance_authority_document
@@ -15,14 +15,17 @@ from cwc.governance.independent_replication_authority_v3 import verify_independe
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes
 from cwc.governance.p9_scientific_authority_v3 import verify_p9_scientific_authority_v3_document
 from cwc.governance.product_statistical_plan import (
+    CONFSEQ_REFERENCE_COMMIT,
     PLAN_METHOD,
     PRIMARY_ASSUMPTION_BOUNDARY,
+    PRIMARY_BOUNDARY_METHOD,
     PRIMARY_CLAIM_TARGET,
     PRIMARY_INFERENCE_METHOD,
+    PRIMARY_PREDICTOR_RULE,
     PRIMARY_SEQUENCE_ORDER,
 )
 
-SCHEMA = "DGC_FAMILY_P19_EVIDENCE_ROOT_V1"
+SCHEMA = "DGC_FAMILY_P19_EVIDENCE_ROOT_V2"
 
 REQUIRED_SUBJECT_ROOTS = frozenset({
     "PRIMARY_EXECUTION",
@@ -43,10 +46,16 @@ REQUIRED_SUBJECT_ROOTS = frozenset({
 METHODOLOGY_ANCHORS = (
     "artifacts/dgc-product-v1/PREREGISTRATION.md",
     "artifacts/dgc-product-v1/FAULT_INJECTION_SPEC_V1.json",
-    "docs/DGC_PRODUCT_STATISTICAL_PLAN_v4.md",
-    "docs/DGC_STATISTICAL_AUTHORITY_V4.md",
+    "docs/DGC_PRODUCT_STATISTICAL_PLAN_v5.md",
+    "docs/DGC_STATISTICAL_AUTHORITY_v5.md",
+    "docs/DGC_THEOREM_AUDIT_v5.md",
     "cwc/governance/product_statistical_plan.py",
     "cwc/governance/average_conditional_mean_cs.py",
+    "cwc/governance/executed_p9_anytime_authority.py",
+    "cwc/governance/p9_scientific_authority_v3.py",
+    "cwc/governance/generalization_anytime_authority.py",
+    "cwc/governance/fault_tolerance_authority.py",
+    "cwc/governance/independent_replication_authority_v3.py",
 )
 
 
@@ -95,6 +104,47 @@ def _receipt_for(state: Mapping[str, object], stage: str) -> Mapping[str, object
     return matches[0]
 
 
+def _verify_pre_p19_ledger_snapshot(
+    state: Mapping[str, object],
+    *,
+    generation_id: str,
+    repository_commit: str,
+    repository_tree: str,
+) -> None:
+    expected_stages = list(STAGES[: STAGES.index("P19_SEALED")])
+    if state.get("generation_id") != generation_id:
+        raise P19EvidenceError("P19 ledger snapshot generation mismatch")
+    if state.get("repo_commit") != repository_commit or state.get("repo_tree") != repository_tree:
+        raise P19EvidenceError("P19 ledger snapshot repository identity mismatch")
+    if state.get("completed_stages") != expected_stages:
+        raise P19EvidenceError("P19 ledger snapshot stage population mismatch")
+    if state.get("product_qualified") is not False:
+        raise P19EvidenceError("pre-P19 ledger snapshot cannot already be product-qualified")
+    receipts = state.get("receipts")
+    if not isinstance(receipts, list) or len(receipts) != len(expected_stages):
+        raise P19EvidenceError("P19 ledger snapshot receipt population mismatch")
+    prior = None
+    for index, receipt in enumerate(receipts):
+        if not isinstance(receipt, Mapping):
+            raise P19EvidenceError("P19 ledger snapshot receipt malformed")
+        row = dict(receipt)
+        observed = row.pop("receipt_digest", None)
+        if row.get("schema") != RECEIPT_SCHEMA:
+            raise P19EvidenceError("P19 ledger snapshot receipt schema mismatch")
+        if row.get("stage") != expected_stages[index]:
+            raise P19EvidenceError("P19 ledger snapshot receipt stage order mismatch")
+        if row.get("generation_id") != generation_id:
+            raise P19EvidenceError("P19 ledger snapshot receipt generation mismatch")
+        if row.get("repo_commit") != repository_commit or row.get("repo_tree") != repository_tree:
+            raise P19EvidenceError("P19 ledger snapshot receipt repository mismatch")
+        if row.get("prior_receipt_digest") != prior:
+            raise P19EvidenceError("P19 ledger snapshot receipt chain mismatch")
+        expected = sha256_bytes(canonical_json_bytes(row))
+        if observed != expected:
+            raise P19EvidenceError("P19 ledger snapshot receipt digest mismatch")
+        prior = observed
+
+
 def _single_stage_evidence(root: Path, state: Mapping[str, object], stage: str) -> tuple[Path, dict[str, object]]:
     receipt = _receipt_for(state, stage)
     evidence = receipt.get("evidence")
@@ -132,6 +182,18 @@ def _subject_root_manifest(root: Path, label: str, value: Path) -> dict[str, obj
     }
 
 
+def _theorem_identity_digest() -> str:
+    return sha256_bytes(canonical_json_bytes({
+        "method": PRIMARY_INFERENCE_METHOD,
+        "boundary_method": PRIMARY_BOUNDARY_METHOD,
+        "claim_target": PRIMARY_CLAIM_TARGET,
+        "assumption_boundary": PRIMARY_ASSUMPTION_BOUNDARY,
+        "sequence_order": PRIMARY_SEQUENCE_ORDER,
+        "predictor_rule": PRIMARY_PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
+    }))
+
+
 @dataclass(frozen=True, slots=True)
 class FamilyP19EvidenceRoot:
     family_id: str
@@ -140,6 +202,7 @@ class FamilyP19EvidenceRoot:
     repository_tree: str
     ledger_schema: str
     ledger_snapshot_digest: str
+    ledger_snapshot: dict[str, object]
     receipt_chain_tip_digest: str
     stage_evidence_manifest_digest: str
     stage_evidence: tuple[dict[str, object], ...]
@@ -150,6 +213,7 @@ class FamilyP19EvidenceRoot:
     fault_tolerance_authority_digest: str
     independent_replication_authority_digest: str
     statistical_plan_digest: str
+    theorem_identity_digest: str
     methodology_anchor_digest: str
     methodology_anchors: tuple[dict[str, object], ...]
     subject_root_manifest_digest: str
@@ -188,6 +252,12 @@ def build_family_p19_evidence_root(
         raise P19EvidenceError("P19 ledger does not contain exact pre-P19 stage population")
     if set(subject_roots) != REQUIRED_SUBJECT_ROOTS:
         raise P19EvidenceError("P19 requires exact raw-subject root population")
+    _verify_pre_p19_ledger_snapshot(
+        state,
+        generation_id=ledger.generation_id,
+        repository_commit=ledger.repo_commit,
+        repository_tree=ledger.repo_tree,
+    )
 
     root = ledger.repository_root
     stage_rows: list[dict[str, object]] = []
@@ -233,8 +303,9 @@ def build_family_p19_evidence_root(
         raise P19EvidenceError("P19 replication/P9 lineage mismatch")
     if replication.get("primary_generalization_authority_digest") != generalization.get("authority_digest"):
         raise P19EvidenceError("P19 replication/generalization lineage mismatch")
-    if fault.get("family_id") != p9.get("family_id"):
-        raise P19EvidenceError("P19 P9/fault family mismatch")
+    family_id = str(p9.get("family_id", ""))
+    if not family_id or fault.get("family_id") != family_id or execution.get("family_id") != family_id:
+        raise P19EvidenceError("P19 family lineage mismatch")
 
     plan = execution.get("statistical_plan")
     if not isinstance(plan, Mapping):
@@ -242,15 +313,32 @@ def build_family_p19_evidence_root(
     required_plan_identity = {
         "method": PLAN_METHOD,
         "primary_inference_method": PRIMARY_INFERENCE_METHOD,
+        "primary_boundary_method": PRIMARY_BOUNDARY_METHOD,
         "primary_claim_target": PRIMARY_CLAIM_TARGET,
         "primary_assumption_boundary": PRIMARY_ASSUMPTION_BOUNDARY,
         "primary_sequence_order": PRIMARY_SEQUENCE_ORDER,
+        "primary_predictor_rule": PRIMARY_PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
     }
     for field, expected in required_plan_identity.items():
         if plan.get(field) != expected:
-            raise P19EvidenceError(f"P19 execution freeze is not V4 for {field}")
+            raise P19EvidenceError(f"P19 execution freeze is not V5 for {field}")
     if anytime.get("statistical_plan_digest") != execution.get("statistical_plan_digest"):
         raise P19EvidenceError("P19 anytime P9 statistical plan differs from execution freeze")
+    theorem_digest = _theorem_identity_digest()
+    if generalization.get("theorem_identity_digest") != theorem_digest:
+        raise P19EvidenceError("P19 G1-G5 theorem identity differs from V5")
+    anytime_theorem = sha256_bytes(canonical_json_bytes({
+        "method": anytime.get("anytime_method"),
+        "boundary_method": anytime.get("anytime_boundary_method"),
+        "claim_target": anytime.get("anytime_claim_target"),
+        "assumption_boundary": anytime.get("anytime_assumption_boundary"),
+        "sequence_order": anytime.get("sequence_order_rule"),
+        "predictor_rule": anytime.get("predictor_rule"),
+        "confseq_reference_commit": anytime.get("confseq_reference_commit"),
+    }))
+    if anytime_theorem != theorem_digest:
+        raise P19EvidenceError("P19 primary P9 theorem identity differs from V5")
 
     anchors: list[dict[str, object]] = []
     for rel in METHODOLOGY_ANCHORS:
@@ -271,7 +359,8 @@ def build_family_p19_evidence_root(
     receipts = state["receipts"]
     assert isinstance(receipts, list) and receipts
     receipt_tip = _sha("receipt_chain_tip_digest", receipts[-1]["receipt_digest"])
-    ledger_snapshot_digest = sha256_bytes(canonical_json_bytes(state))
+    ledger_snapshot = json.loads(json.dumps(state, sort_keys=True))
+    ledger_snapshot_digest = sha256_bytes(canonical_json_bytes(ledger_snapshot))
     family_complete = all((
         p9.get("scientific_p9_supported") is True,
         generalization.get("generalization_supported_without_iid_assumption") is True,
@@ -281,12 +370,13 @@ def build_family_p19_evidence_root(
         len(root_rows) == len(REQUIRED_SUBJECT_ROOTS),
     ))
     payload = {
-        "family_id": str(p9["family_id"]),
+        "family_id": family_id,
         "generation_id": ledger.generation_id,
         "repository_commit": ledger.repo_commit,
         "repository_tree": ledger.repo_tree,
         "ledger_schema": str(state["schema"]),
         "ledger_snapshot_digest": ledger_snapshot_digest,
+        "ledger_snapshot": ledger_snapshot,
         "receipt_chain_tip_digest": receipt_tip,
         "stage_evidence_manifest_digest": stage_manifest_digest,
         "stage_evidence": stage_rows,
@@ -297,6 +387,7 @@ def build_family_p19_evidence_root(
         "fault_tolerance_authority_digest": _sha("fault tolerance authority", fault.get("authority_digest")),
         "independent_replication_authority_digest": _sha("replication authority", replication.get("authority_digest")),
         "statistical_plan_digest": _sha("statistical_plan_digest", execution.get("statistical_plan_digest")),
+        "theorem_identity_digest": theorem_digest,
         "methodology_anchor_digest": methodology_anchor_digest,
         "methodology_anchors": anchors,
         "subject_root_manifest_digest": subject_root_manifest_digest,
@@ -309,12 +400,13 @@ def build_family_p19_evidence_root(
     }
     p19_digest = sha256_bytes(canonical_json_bytes(payload))
     return FamilyP19EvidenceRoot(
-        family_id=payload["family_id"],
+        family_id=family_id,
         generation_id=ledger.generation_id,
         repository_commit=ledger.repo_commit,
         repository_tree=ledger.repo_tree,
         ledger_schema=payload["ledger_schema"],
         ledger_snapshot_digest=ledger_snapshot_digest,
+        ledger_snapshot=ledger_snapshot,
         receipt_chain_tip_digest=receipt_tip,
         stage_evidence_manifest_digest=stage_manifest_digest,
         stage_evidence=tuple(stage_rows),
@@ -325,6 +417,7 @@ def build_family_p19_evidence_root(
         fault_tolerance_authority_digest=payload["fault_tolerance_authority_digest"],
         independent_replication_authority_digest=payload["independent_replication_authority_digest"],
         statistical_plan_digest=payload["statistical_plan_digest"],
+        theorem_identity_digest=theorem_digest,
         methodology_anchor_digest=methodology_anchor_digest,
         methodology_anchors=tuple(anchors),
         subject_root_manifest_digest=subject_root_manifest_digest,
@@ -354,13 +447,13 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         raise P19EvidenceError("P19 global claim boundary malformed")
     keys = (
         "family_id", "generation_id", "repository_commit", "repository_tree", "ledger_schema",
-        "ledger_snapshot_digest", "receipt_chain_tip_digest", "stage_evidence_manifest_digest", "stage_evidence",
-        "primary_p9_scientific_authority_digest", "primary_anytime_p9_authority_digest",
-        "primary_ccf_oracle_audit_authority_digest", "generalization_authority_digest",
-        "fault_tolerance_authority_digest", "independent_replication_authority_digest",
-        "statistical_plan_digest", "methodology_anchor_digest", "methodology_anchors",
-        "subject_root_manifest_digest", "subject_roots", "family_p9_supported",
-        "family_generalization_supported", "family_fault_tolerance_supported",
+        "ledger_snapshot_digest", "ledger_snapshot", "receipt_chain_tip_digest",
+        "stage_evidence_manifest_digest", "stage_evidence", "primary_p9_scientific_authority_digest",
+        "primary_anytime_p9_authority_digest", "primary_ccf_oracle_audit_authority_digest",
+        "generalization_authority_digest", "fault_tolerance_authority_digest",
+        "independent_replication_authority_digest", "statistical_plan_digest", "theorem_identity_digest",
+        "methodology_anchor_digest", "methodology_anchors", "subject_root_manifest_digest", "subject_roots",
+        "family_p9_supported", "family_generalization_supported", "family_fault_tolerance_supported",
         "family_replication_supported", "family_evidence_complete",
     )
     try:
@@ -369,6 +462,28 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         raise P19EvidenceError("P19 payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("p19_digest", doc.get("p19_digest")):
         raise P19EvidenceError("P19 digest mismatch")
+    snapshot = doc.get("ledger_snapshot")
+    if not isinstance(snapshot, Mapping):
+        raise P19EvidenceError("P19 ledger snapshot missing")
+    if sha256_bytes(canonical_json_bytes(snapshot)) != _sha("ledger_snapshot_digest", doc.get("ledger_snapshot_digest")):
+        raise P19EvidenceError("P19 ledger snapshot digest mismatch")
+    _verify_pre_p19_ledger_snapshot(
+        snapshot,
+        generation_id=str(doc.get("generation_id", "")),
+        repository_commit=str(doc.get("repository_commit", "")),
+        repository_tree=str(doc.get("repository_tree", "")),
+    )
+    receipts = snapshot.get("receipts")
+    assert isinstance(receipts, list) and receipts
+    if doc.get("receipt_chain_tip_digest") != receipts[-1].get("receipt_digest"):
+        raise P19EvidenceError("P19 receipt-chain tip differs from embedded ledger snapshot")
+    stage_rows = doc.get("stage_evidence")
+    if not isinstance(stage_rows, list) or sha256_bytes(canonical_json_bytes(stage_rows)) != doc.get("stage_evidence_manifest_digest"):
+        raise P19EvidenceError("P19 stage evidence manifest digest mismatch")
+    if [row.get("stage") for row in stage_rows if isinstance(row, Mapping)] != snapshot.get("completed_stages"):
+        raise P19EvidenceError("P19 stage evidence order differs from embedded ledger")
+    if doc.get("theorem_identity_digest") != _theorem_identity_digest():
+        raise P19EvidenceError("P19 theorem identity is not current V5")
     if not all(doc.get(field) is True for field in (
         "family_p9_supported", "family_generalization_supported",
         "family_fault_tolerance_supported", "family_replication_supported", "family_evidence_complete",
