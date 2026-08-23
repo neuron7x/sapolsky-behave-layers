@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.executed_p9_authority import build_executed_p9_authority
+from cwc.governance.executed_p9_dual_authority import build_dual_p9_authority
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -23,7 +23,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive physically-costed executed P9 from the complete frozen confirmatory population."
+        description="Derive dual P9: unconditional exact frozen panel plus conditional expected-effect evidence."
     )
     parser.add_argument("--execution-authority", required=True)
     parser.add_argument("--execution-bundle-root", required=True)
@@ -36,7 +36,7 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    authority = build_executed_p9_authority(
+    authority = build_dual_p9_authority(
         confirmatory_execution_authority_path=Path(args.execution_authority),
         execution_bundle_root=Path(args.execution_bundle_root),
         physical_cost_bundle_root=Path(args.physical_cost_bundle_root),
@@ -52,16 +52,18 @@ def main() -> int:
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
     print(json.dumps({
-        "status": "PASS" if authority.p9_supported else "FAIL_P9",
+        "status": "PASS" if authority.exact_panel_supported else "FAIL_EXACT_PANEL_P9",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
-        "physical_cost_accounting_verified": authority.physical_cost_accounting_verified,
-        "net_cost_superiority_supported": authority.net_cost_superiority_supported,
-        "p9_supported": authority.p9_supported,
-        "generalization_authorized": authority.p9_supported,
+        "exact_panel_supported": authority.exact_panel_supported,
+        "expected_effect_supported_under_independence_assumption": (
+            authority.expected_effect_supported_under_independence_assumption
+        ),
+        "randomness_assumption_verified": authority.randomness_assumption_verified,
+        "generalization_evaluation_authorized": authority.generalization_evaluation_authorized,
         "product_promotion_authorized": False,
     }, sort_keys=True))
-    return 0 if authority.p9_supported else 20
+    return 0 if authority.exact_panel_supported else 20
 
 
 if __name__ == "__main__":
