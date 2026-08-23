@@ -23,7 +23,9 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Compose exact G1-G5 dual authorities after primary P9 scientific V2.")
+    parser = argparse.ArgumentParser(
+        description="Compose exact and conditional G1-G5 authorities after primary scientific P9."
+    )
     parser.add_argument("--registry", required=True)
     parser.add_argument("--p9-scientific-v2", required=True)
     parser.add_argument("--g1-authority", required=True)
@@ -50,18 +52,23 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
+    supported = (
+        authority.exact_g1_g5_supported
+        and authority.expected_g1_g5_supported_under_independence_assumption
+    )
     print(json.dumps({
-        "status": "PASS" if authority.exact_g1_g5_supported else "FAIL_EXACT_G1_G5",
+        "status": "PASS" if supported else "FAIL_G1_G5_SCIENTIFIC_GATE",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_g1_g5_supported": authority.exact_g1_g5_supported,
         "expected_g1_g5_supported_under_independence_assumption": (
             authority.expected_g1_g5_supported_under_independence_assumption
         ),
-        "independent_replication_authorized": authority.exact_g1_g5_supported,
+        "generalization_supported_under_frozen_assumptions": supported,
+        "independent_replication_evaluation_authorized": supported,
         "product_promotion_authorized": False,
     }, sort_keys=True))
-    return 0 if authority.exact_g1_g5_supported else 31
+    return 0 if supported else 31
 
 
 if __name__ == "__main__":
