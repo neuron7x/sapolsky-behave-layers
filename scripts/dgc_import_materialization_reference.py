@@ -10,6 +10,7 @@ from cwc.governance.external_evidence_reference import reference_bytes, verify_m
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_EVIDENCE_ROOT = ROOT / "eval_bundle"
+SOURCE_REGISTRY = ROOT / "artifacts/dgc-product-v1/external_source_authority.json"
 
 
 def _capture(*args: str) -> str:
@@ -58,6 +59,7 @@ def main() -> int:
         Path(args.generation_root),
         expected_repository_commit=commit,
         expected_repository_tree=tree,
+        source_registry_path=SOURCE_REGISTRY,
     )
     output = _runtime_output(Path(args.output))
     output.parent.mkdir(parents=True, exist_ok=True)
