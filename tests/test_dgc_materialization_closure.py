@@ -96,7 +96,7 @@ def test_materialized_closure_binds_verified_external_subject_reference(tmp_path
         identity_checker=lambda _: None,
     )
     assert receipt["stage"] == "MATERIALIZED_VERIFIED"
-    assert ledger.next_stage() == "HARNESS_FROZEN"
+    assert ledger.next_stage() == "EXECUTION_MANIFESTS_FROZEN"
     payload = json.loads((repo / "eval_bundle" / "materialization-reference.json").read_text())
     assert payload["schema"] == "DGC_EXTERNAL_EVIDENCE_REFERENCE_V2"
     assert payload["repository_commit"] == COMMIT
@@ -174,10 +174,8 @@ def test_verified_reference_with_wrong_registry_digest_is_rejected_by_closure(tm
     )
     with pytest.raises(ClosureError, match="source registry"):
         close_materialized_verified(
-            ledger,
-            generation_root=tmp_path / "external-generation",
-            reference_path=repo / "eval_bundle" / "reference.json",
-            identity_checker=lambda _: None,
+            ledger, generation_root=tmp_path / "external-generation",
+            reference_path=repo / "eval_bundle" / "reference.json", identity_checker=lambda _: None
         )
     assert ledger.next_stage() == "MATERIALIZED_VERIFIED"
 
@@ -194,9 +192,7 @@ def test_verified_reference_with_wrong_materializer_digest_is_rejected_by_closur
     )
     with pytest.raises(ClosureError, match="materializer"):
         close_materialized_verified(
-            ledger,
-            generation_root=tmp_path / "external-generation",
-            reference_path=repo / "eval_bundle" / "reference.json",
-            identity_checker=lambda _: None,
+            ledger, generation_root=tmp_path / "external-generation",
+            reference_path=repo / "eval_bundle" / "reference.json", identity_checker=lambda _: None
         )
     assert ledger.next_stage() == "MATERIALIZED_VERIFIED"
