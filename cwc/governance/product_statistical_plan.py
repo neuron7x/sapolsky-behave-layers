@@ -21,7 +21,7 @@ class ProductStatisticalPlan:
     target_power: float = 0.90
     min_trials_per_task: int = 5
     max_trials_per_task: int = 50
-    method: str = "DGC_PRODUCT_PAIRED_CALIBRATION_CONFIRMATORY_V1"
+    method: str = "DGC_PRODUCT_PAIRED_CLUSTER_AWARE_V2"
 
     def __post_init__(self) -> None:
         if min(self.family_count, self.baseline_count, self.endpoint_count) <= 0:
@@ -43,9 +43,7 @@ class ProductStatisticalPlan:
 
     @property
     def per_claim_alpha(self) -> float:
-        return self.familywise_alpha / (
-            self.family_count * self.baseline_count * self.endpoint_count
-        )
+        return self.familywise_alpha / (self.family_count * self.baseline_count * self.endpoint_count)
 
     @property
     def digest(self) -> str:
@@ -88,6 +86,89 @@ def deterministic_task_split(
     return calibration, confirmatory
 
 
+@dataclass(frozen=True, slots=True)
+class ClusterAwareTrialSizing:
+    confirmatory_task_count: int
+    between_task_std: float
+    within_task_std: float
+    effect_of_interest: float
+    target_standard_error: float
+    asymptotic_between_task_standard_error: float
+    required_trials_per_task: int
+    achieved_standard_error_at_required_trials: float
+    per_claim_alpha: float
+    target_power: float
+    method: str = "NORMAL_APPROX_CLUSTER_VARIANCE_COMPONENTS_V1"
+
+
+def cluster_aware_required_trials_per_task(
+    *,
+    between_task_std: float,
+    within_task_std: float,
+    effect_of_interest: float,
+    confirmatory_task_count: int,
+    plan: ProductStatisticalPlan,
+) -> ClusterAwareTrialSizing:
+    """Pre-execution sizing for repeated trials nested within confirmatory tasks.
+
+    Uses the declared variance decomposition
+
+        Var(mean) = sigma_between^2 / N_tasks
+                  + sigma_within^2 / (N_tasks * R).
+
+    The variance-component estimates must come from calibration-only data. Repeated
+    trials cannot overcome an excessive between-task variance floor; that case fails
+    as UNDERPOWERED_TASK_HETEROGENEITY instead of manufacturing power by treating
+    within-task repetitions as independent tasks.
+    """
+    between = float(between_task_std)
+    within = float(within_task_std)
+    effect = float(effect_of_interest)
+    if not math.isfinite(between) or between < 0:
+        raise ValueError("between_task_std must be finite and >= 0")
+    if not math.isfinite(within) or within < 0:
+        raise ValueError("within_task_std must be finite and >= 0")
+    if not math.isfinite(effect) or effect <= 0:
+        raise ValueError("effect_of_interest must be finite and > 0")
+    if confirmatory_task_count <= 1:
+        raise ValueError("confirmatory_task_count must be > 1 for clustered sizing")
+
+    z_alpha = NormalDist().inv_cdf(1.0 - plan.per_claim_alpha)
+    z_power = NormalDist().inv_cdf(plan.target_power)
+    target_se = effect / (z_alpha + z_power)
+    n_tasks = int(confirmatory_task_count)
+    between_var = between * between
+    within_var = within * within
+    asymptotic_se = math.sqrt(between_var / n_tasks)
+    available_within_variance = n_tasks * target_se * target_se - between_var
+
+    if available_within_variance <= 0:
+        raise RuntimeError(
+            "UNDERPOWERED_TASK_HETEROGENEITY: no number of within-task repeats can meet the frozen target; "
+            f"asymptotic_se={asymptotic_se:.8f} target_se={target_se:.8f}"
+        )
+
+    raw_required = 1 if within_var == 0 else math.ceil(within_var / available_within_variance)
+    required = max(plan.min_trials_per_task, int(raw_required))
+    if required > plan.max_trials_per_task:
+        raise RuntimeError(
+            f"UNDERPOWERED: required_trials_per_task={required} exceeds cap={plan.max_trials_per_task}"
+        )
+    achieved_se = math.sqrt(between_var / n_tasks + within_var / (n_tasks * required))
+    return ClusterAwareTrialSizing(
+        confirmatory_task_count=n_tasks,
+        between_task_std=between,
+        within_task_std=within,
+        effect_of_interest=effect,
+        target_standard_error=target_se,
+        asymptotic_between_task_standard_error=asymptotic_se,
+        required_trials_per_task=required,
+        achieved_standard_error_at_required_trials=achieved_se,
+        per_claim_alpha=plan.per_claim_alpha,
+        target_power=plan.target_power,
+    )
+
+
 def approximate_required_trials_per_task(
     *,
     calibration_std: float,
@@ -95,11 +176,11 @@ def approximate_required_trials_per_task(
     confirmatory_task_count: int,
     plan: ProductStatisticalPlan,
 ) -> int:
-    """Pre-execution normal-approximation power sizing from calibration-only variance.
+    """Legacy IID-only sizing helper; not authorized for product qualification V2.
 
-    This sizes repeated trials; it is not the confirmatory inference procedure.
-    If the required count exceeds the hard cap, the experiment is underpowered
-    under the frozen plan and must not silently lower its evidence standard.
+    Retained for backwards-compatible research analyses. Product qualification must
+    use `cluster_aware_required_trials_per_task` because repeated trials are nested
+    within tasks and must not be treated as independent task draws.
     """
     sigma = float(calibration_std)
     effect = float(effect_of_interest)
