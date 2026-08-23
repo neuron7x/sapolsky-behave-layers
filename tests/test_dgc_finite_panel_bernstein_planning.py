@@ -45,10 +45,21 @@ def test_required_replicates_is_minimal_integer_solution():
         assert previous > 0.02
 
 
-def test_bounded_variance_ceiling_is_enforced():
+def test_unbiased_sample_variance_can_exceed_popoviciu_population_ceiling():
+    # L=2: population ceiling L^2/4=1, but unbiased n=2 endpoint sample variance is L^2/2=2.
+    value = empirical_bernstein_proxy_half_width(
+        sample_variance_proxy=2.0,
+        support_range=2.0,
+        n=100,
+        delta=0.01,
+    )
+    assert value > 0.0
+
+
+def test_universal_unbiased_bounded_sample_variance_ceiling_is_enforced():
     with pytest.raises(ValueError, match="variance ceiling"):
         empirical_bernstein_proxy_half_width(
-            sample_variance_proxy=1.1,
+            sample_variance_proxy=2.000001,
             support_range=2.0,
             n=100,
             delta=0.01,
