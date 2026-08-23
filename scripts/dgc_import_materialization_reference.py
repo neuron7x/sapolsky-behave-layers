@@ -6,7 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from cwc.governance.external_evidence_reference import verify_materialization_generation
+from cwc.governance.external_evidence_reference import reference_bytes, verify_materialization_generation
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_EVIDENCE_ROOT = ROOT / "eval_bundle"
@@ -61,8 +61,7 @@ def main() -> int:
     )
     output = _runtime_output(Path(args.output))
     output.parent.mkdir(parents=True, exist_ok=True)
-    payload = {**reference.payload, "reference_digest": reference.digest}
-    data = json.dumps(payload, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+    data = reference_bytes(reference)
     fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     try:
         with os.fdopen(fd, "wb") as handle:
