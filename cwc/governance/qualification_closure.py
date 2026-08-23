@@ -12,6 +12,7 @@ from cwc.governance.evidence_closure import (
     sha256_file,
 )
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.harness_freeze import verify_harness_freeze_document
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 
 
@@ -27,20 +28,21 @@ def _repo_relative(root: Path, value: Path) -> tuple[Path, str]:
     return resolved, rel.as_posix()
 
 
-def _receipt_evidence_file(ledger: EvidenceClosureLedger, *, expected_stage: str) -> tuple[Path, str, dict[str, object]]:
+def _stage_evidence_file(ledger: EvidenceClosureLedger, *, stage: str) -> tuple[Path, str, dict[str, object]]:
     state = ledger.load()
     receipts = state["receipts"]
-    if not receipts or not isinstance(receipts[-1], dict) or receipts[-1].get("stage") != expected_stage:
-        raise ClosureError(f"prior receipt is not {expected_stage}")
-    evidence = receipts[-1].get("evidence")
+    matches = [receipt for receipt in receipts if isinstance(receipt, dict) and receipt.get("stage") == stage]
+    if len(matches) != 1:
+        raise ClosureError(f"closure ledger must contain exactly one {stage} receipt")
+    evidence = matches[0].get("evidence")
     if not isinstance(evidence, list) or len(evidence) != 1 or not isinstance(evidence[0], dict):
-        raise ClosureError(f"{expected_stage} receipt must bind exactly one evidence artifact")
+        raise ClosureError(f"{stage} receipt must bind exactly one evidence artifact")
     path_value = str(evidence[0].get("path", ""))
     if not path_value:
-        raise ClosureError(f"{expected_stage} evidence path missing")
+        raise ClosureError(f"{stage} evidence path missing")
     path, rel = _repo_relative(ledger.repository_root, Path(path_value))
     if sha256_file(path) != evidence[0].get("sha256"):
-        raise ClosureError(f"{expected_stage} evidence bytes changed after stage closure")
+        raise ClosureError(f"{stage} evidence bytes changed after stage closure")
     return path, rel, evidence[0]
 
 
@@ -49,7 +51,7 @@ def _prior_materialization_reference(ledger: EvidenceClosureLedger) -> tuple[str
     completed = state["completed_stages"]
     if completed != ["SOURCE_VERIFIED", "MATERIALIZED_VERIFIED"]:
         raise ClosureError("execution-manifest freeze requires exactly SOURCE_VERIFIED + MATERIALIZED_VERIFIED history")
-    reference_path, path_value, _ = _receipt_evidence_file(ledger, expected_stage="MATERIALIZED_VERIFIED")
+    reference_path, path_value, _ = _stage_evidence_file(ledger, stage="MATERIALIZED_VERIFIED")
     try:
         reference = json.loads(reference_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -106,7 +108,7 @@ def close_b2_fitted(
     except RuntimeError as exc:
         raise ClosureError("B2 fit authority verification failed") from exc
 
-    freeze_path, _, _ = _receipt_evidence_file(ledger, expected_stage="EXECUTION_MANIFESTS_FROZEN")
+    freeze_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
     try:
         freeze = verify_execution_manifest_freeze_document(freeze_path)
     except RuntimeError as exc:
@@ -119,6 +121,44 @@ def close_b2_fitted(
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
     return ledger.advance(StageExecution(
         stage="B2_FITTED",
+        commands=(),
+        evidence=(artifact,),
+    ))
+
+
+def close_harness_frozen(
+    ledger: EvidenceClosureLedger,
+    *,
+    harness_freeze_path: Path,
+    identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
+) -> dict[str, object]:
+    identity_checker(ledger)
+    if ledger.next_stage() != "HARNESS_FROZEN":
+        raise ClosureError("HARNESS_FROZEN is not the next admissible stage")
+    path, rel = _repo_relative(ledger.repository_root, harness_freeze_path)
+    try:
+        harness = verify_harness_freeze_document(path)
+    except RuntimeError as exc:
+        raise ClosureError("harness freeze verification failed") from exc
+
+    execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    b2_path, _, _ = _stage_evidence_file(ledger, stage="B2_FITTED")
+    try:
+        execution = verify_execution_manifest_freeze_document(execution_path)
+        b2 = verify_b2_fit_authority_document(b2_path)
+    except RuntimeError as exc:
+        raise ClosureError("upstream harness authorities are invalid") from exc
+
+    if harness.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
+        raise ClosureError("harness freeze is bound to a different execution manifest freeze")
+    if harness.get("b2_fit_authority_digest") != b2.get("authority_digest"):
+        raise ClosureError("harness freeze is bound to a different B2 authority")
+    if harness.get("family_id") != execution.get("family_id") or harness.get("family_id") != b2.get("family_id"):
+        raise ClosureError("harness freeze family differs from upstream authorities")
+
+    artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
+    return ledger.advance(StageExecution(
+        stage="HARNESS_FROZEN",
         commands=(),
         evidence=(artifact,),
     ))
