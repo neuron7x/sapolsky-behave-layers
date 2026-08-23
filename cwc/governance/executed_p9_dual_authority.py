@@ -12,13 +12,12 @@ from cwc.governance.exact_finite_panel_pareto import (
 from cwc.governance.executed_p9_finite_panel_authority import (
     FinitePanelP9Authority,
     build_finite_panel_p9_authority,
-    verify_finite_panel_p9_authority_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.pareto import PairedBaselineEvidence
 
-SCHEMA = "DGC_EXECUTED_P9_DUAL_AUTHORITY_V4"
-CLAIM_SCOPE = "EXACT_FROZEN_PANEL_UNCONDITIONAL_PLUS_EXPECTATION_CONDITIONAL_V1"
+SCHEMA = "DGC_EXECUTED_P9_DUAL_AUTHORITY_V5"
+CLAIM_SCOPE = "EXACT_PANEL_FACT_PLUS_CONDITIONAL_EXPECTED_EFFECT_REQUIRED_FOR_P9_V2"
 
 
 class DualP9AuthorityError(RuntimeError):
@@ -77,6 +76,7 @@ class DualP9Authority:
     randomness_independence_assumption: str
     randomness_assumption_verified: bool
     claim_scope: str
+    p9_supported_under_frozen_assumptions: bool
     generalization_evaluation_authorized: bool
     authority_digest: str
 
@@ -127,6 +127,7 @@ def build_dual_p9_authority(
     exact_digest = exact_certificate_digest(exact)
     exact_supported = bool(exact.all_baselines_observed)
     conditional_supported = bool(base.p9_supported_under_protocol_assumption)
+    scientific_supported = exact_supported and conditional_supported
     payload = {
         "family_id": base.family_id,
         "finite_panel_v3_authority_digest": base.authority_digest,
@@ -149,7 +150,8 @@ def build_dual_p9_authority(
         "randomness_independence_assumption": base.randomness_independence_assumption,
         "randomness_assumption_verified": base.randomness_assumption_verified,
         "claim_scope": CLAIM_SCOPE,
-        "generalization_evaluation_authorized": exact_supported,
+        "p9_supported_under_frozen_assumptions": scientific_supported,
+        "generalization_evaluation_authorized": scientific_supported,
     }
     return DualP9Authority(
         **payload,
@@ -181,7 +183,7 @@ def verify_dual_p9_authority_document(path: Path) -> dict[str, object]:
         "exact_panel_certificate_digest", "exact_panel_supported", "expected_effect_certificate_digest",
         "expected_effect_supported_under_independence_assumption", "randomness_protocol",
         "randomness_schedule_digest", "randomness_independence_assumption", "randomness_assumption_verified",
-        "claim_scope", "generalization_evaluation_authorized",
+        "claim_scope", "p9_supported_under_frozen_assumptions", "generalization_evaluation_authorized",
     )
     try:
         payload = {key: doc[key] for key in keys}
@@ -199,8 +201,11 @@ def verify_dual_p9_authority_document(path: Path) -> dict[str, object]:
     derived_exact = exact.get("all_baselines_observed") is True
     if doc.get("exact_panel_supported") is not derived_exact:
         raise DualP9AuthorityError("exact-panel support flag is not derived from exact certificate")
-    if doc.get("generalization_evaluation_authorized") is not derived_exact:
-        raise DualP9AuthorityError("generalization evaluation authority must derive only from exact-panel support")
+    derived_scientific = derived_exact and doc.get("expected_effect_supported_under_independence_assumption") is True
+    if doc.get("p9_supported_under_frozen_assumptions") is not derived_scientific:
+        raise DualP9AuthorityError("scientific P9 support must derive from exact + conditional certificates")
+    if doc.get("generalization_evaluation_authorized") is not derived_scientific:
+        raise DualP9AuthorityError("generalization evaluation requires scientific P9 support")
     for field in (
         "finite_panel_v3_authority_digest", "execution_authority_digest", "execution_population_digest",
         "execution_bundle_digest", "physical_cost_bundle_digest", "physical_cost_population_digest",
