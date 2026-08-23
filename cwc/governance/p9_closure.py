@@ -8,14 +8,14 @@ from cwc.governance.ccf_oracle_audit_authority import (
 )
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document
 from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
-from cwc.governance.executed_p9_dual_authority import (
-    build_dual_p9_authority,
-    verify_dual_p9_authority_document,
+from cwc.governance.executed_p9_anytime_authority import (
+    build_anytime_p9_authority,
+    verify_anytime_p9_authority_document,
 )
 from cwc.governance.materialization_closure import SOURCE_REGISTRY_REL, RepositoryIdentityChecker, _assert_repository_identity
-from cwc.governance.p9_scientific_authority_v2 import (
-    build_p9_scientific_authority_v2,
-    verify_p9_scientific_authority_v2_document,
+from cwc.governance.p9_scientific_authority_v3 import (
+    build_p9_scientific_authority_v3,
+    verify_p9_scientific_authority_v3_document,
 )
 from cwc.governance.qualification_closure import _stage_evidence_file
 
@@ -38,7 +38,7 @@ def close_p9_supported(
     ledger: EvidenceClosureLedger,
     *,
     p9_scientific_authority_path: Path,
-    dual_p9_authority_path: Path,
+    anytime_p9_authority_path: Path,
     ccf_oracle_audit_authority_path: Path,
     execution_bundle_root: Path,
     physical_cost_bundle_root: Path,
@@ -50,26 +50,30 @@ def close_p9_supported(
         raise ClosureError("P9_SUPPORTED is not the next admissible stage")
 
     scientific_path, rel = _repo_file(
-        ledger, p9_scientific_authority_path, label="P9 scientific authority"
+        ledger, p9_scientific_authority_path, label="P9 scientific V3 authority"
     )
-    dual_path, _ = _repo_file(ledger, dual_p9_authority_path, label="dual P9 authority")
+    anytime_path, _ = _repo_file(
+        ledger, anytime_p9_authority_path, label="anytime-valid P9 authority"
+    )
     ccf_path, _ = _repo_file(
         ledger, ccf_oracle_audit_authority_path, label="CCF oracle audit authority"
     )
     try:
-        declared_scientific = verify_p9_scientific_authority_v2_document(scientific_path)
-        declared_dual = verify_dual_p9_authority_document(dual_path)
+        declared_scientific = verify_p9_scientific_authority_v3_document(scientific_path)
+        declared_anytime = verify_anytime_p9_authority_document(anytime_path)
         declared_ccf = verify_ccf_oracle_audit_authority_document(ccf_path)
     except RuntimeError as exc:
-        raise ClosureError("P9 dual/scientific/CCF authority verification failed") from exc
-    if declared_dual.get("exact_panel_supported") is not True:
+        raise ClosureError("P9 anytime/scientific/CCF authority verification failed") from exc
+    if declared_anytime.get("exact_panel_supported") is not True:
         raise ClosureError("P9 exact frozen panel is not supported")
-    if declared_dual.get("expected_effect_supported_under_independence_assumption") is not True:
-        raise ClosureError("P9 lower-bound inference failed under the frozen independence assumption")
-    if declared_dual.get("p9_supported_under_frozen_assumptions") is not True:
-        raise ClosureError("P9 scientific support is not established under frozen assumptions")
+    if declared_anytime.get("anytime_average_conditional_mean_supported") is not True:
+        raise ClosureError("P9 anytime-valid average-conditional-mean gate failed")
+    if declared_anytime.get("p9_supported_without_iid_assumption") is not True:
+        raise ClosureError("P9 scientific support without iid assumption is not established")
+    if declared_scientific.get("scientific_p9_supported") is not True:
+        raise ClosureError("P9 scientific V3 composition is unsupported")
     if declared_scientific.get("generalization_evaluation_authorized") is not True:
-        raise ClosureError("P9 scientific authority does not authorize generalization evaluation")
+        raise ClosureError("P9 scientific V3 does not authorize generalization evaluation")
 
     execution_authority_path, _, _ = _stage_evidence_file(ledger, stage="CONFIRMATORY_EXECUTED")
     root_authority_path, _, _ = _stage_evidence_file(ledger, stage="GENERATION_ROOT_FROZEN")
@@ -83,7 +87,7 @@ def close_p9_supported(
 
     try:
         execution_authority = verify_confirmatory_execution_authority_document(execution_authority_path)
-        recomputed_dual = build_dual_p9_authority(
+        recomputed_anytime = build_anytime_p9_authority(
             confirmatory_execution_authority_path=execution_authority_path,
             execution_bundle_root=Path(execution_bundle_root),
             physical_cost_bundle_root=Path(physical_cost_bundle_root),
@@ -104,30 +108,30 @@ def close_p9_supported(
             harness_freeze_path=harness_path,
         )
     except RuntimeError as exc:
-        raise ClosureError("P9/CCF raw-subject recomputation failed") from exc
+        raise ClosureError("P9 anytime/CCF raw-subject recomputation failed") from exc
 
-    if recomputed_dual.authority_digest != declared_dual.get("authority_digest"):
-        raise ClosureError("declared dual P9 differs from raw-subject recomputation")
-    if not recomputed_dual.p9_supported_under_frozen_assumptions:
-        raise ClosureError("recomputed P9 fails exact or lower-bound scientific gate")
+    if recomputed_anytime.authority_digest != declared_anytime.get("authority_digest"):
+        raise ClosureError("declared anytime-valid P9 differs from raw-subject recomputation")
+    if not recomputed_anytime.p9_supported_without_iid_assumption:
+        raise ClosureError("recomputed P9 fails exact or anytime-valid scientific gate")
     if recomputed_ccf.authority_digest != declared_ccf.get("authority_digest"):
         raise ClosureError("declared CCF differs from raw-subject recomputation")
     if not recomputed_ccf.headroom_audit_complete:
         raise ClosureError("CCF oracle headroom audit is incomplete")
 
     try:
-        recomputed_scientific = build_p9_scientific_authority_v2(
-            dual_p9_authority_path=dual_path,
+        recomputed_scientific = build_p9_scientific_authority_v3(
+            anytime_p9_authority_path=anytime_path,
             ccf_oracle_audit_authority_path=ccf_path,
         )
     except RuntimeError as exc:
-        raise ClosureError("P9 scientific composition recomputation failed") from exc
+        raise ClosureError("P9 scientific V3 composition recomputation failed") from exc
     if recomputed_scientific.authority_digest != declared_scientific.get("authority_digest"):
-        raise ClosureError("declared P9 scientific authority differs from recomputed composition")
-    if not recomputed_scientific.generalization_evaluation_authorized:
-        raise ClosureError("recomputed scientific P9 + CCF does not authorize generalization evaluation")
+        raise ClosureError("declared P9 scientific V3 differs from recomputed composition")
+    if not recomputed_scientific.scientific_p9_supported:
+        raise ClosureError("recomputed P9 scientific V3 is unsupported")
     if declared_scientific.get("execution_authority_digest") != execution_authority.get("authority_digest"):
-        raise ClosureError("P9 scientific authority is bound to a different CONFIRMATORY_EXECUTED authority")
+        raise ClosureError("P9 scientific V3 is bound to a different CONFIRMATORY_EXECUTED authority")
 
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(scientific_path), minimum_bytes=2)
     return ledger.advance(StageExecution(
