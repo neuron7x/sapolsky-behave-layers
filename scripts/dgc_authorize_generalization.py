@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.generalization_dual_authority import build_generalization_dual_authority
+from cwc.governance.generalization_anytime_authority import build_generalization_anytime_authority
 from cwc.governance.generalization_registry import GeneralizationAxis
 
 
@@ -24,10 +24,10 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compose exact and conditional G1-G5 authorities after primary scientific P9."
+        description="Compose exact + anytime-valid G1-G5 authorities after primary scientific P9 V3."
     )
     parser.add_argument("--registry", required=True)
-    parser.add_argument("--p9-scientific-v2", required=True)
+    parser.add_argument("--p9-scientific-v3", required=True)
     parser.add_argument("--g1-authority", required=True)
     parser.add_argument("--g2-authority", required=True)
     parser.add_argument("--g3-authority", required=True)
@@ -42,9 +42,9 @@ def main() -> int:
         GeneralizationAxis.CHANGED_ECONOMICS: Path(args.g4_authority),
         GeneralizationAxis.PERTURBATION_SHIFT: Path(args.g5_authority),
     }
-    authority = build_generalization_dual_authority(
+    authority = build_generalization_anytime_authority(
         registry_path=Path(args.registry),
-        p9_scientific_v2_authority_path=Path(args.p9_scientific_v2),
+        p9_scientific_v3_authority_path=Path(args.p9_scientific_v3),
         axis_authority_paths=axis_paths,
     )
     output = Path(args.output)
@@ -52,20 +52,17 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
-    supported = (
-        authority.exact_g1_g5_supported
-        and authority.expected_g1_g5_supported_under_independence_assumption
-    )
+    supported = authority.generalization_supported_without_iid_assumption
     print(json.dumps({
-        "status": "PASS" if supported else "FAIL_G1_G5_SCIENTIFIC_GATE",
+        "status": "PASS" if supported else "FAIL_G1_G5_ANYTIME_GATE",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_g1_g5_supported": authority.exact_g1_g5_supported,
-        "expected_g1_g5_supported_under_independence_assumption": (
-            authority.expected_g1_g5_supported_under_independence_assumption
-        ),
-        "generalization_supported_under_frozen_assumptions": supported,
-        "independent_replication_evaluation_authorized": supported,
+        "anytime_g1_g5_supported": authority.anytime_g1_g5_supported,
+        "iid_assumption_required": False,
+        "provider_request_independence_required": False,
+        "generalization_supported_without_iid_assumption": supported,
+        "independent_replication_evaluation_authorized": authority.independent_replication_evaluation_authorized,
         "product_promotion_authorized": False,
     }, sort_keys=True))
     return 0 if supported else 31
