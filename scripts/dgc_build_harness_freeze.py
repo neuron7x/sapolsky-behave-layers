@@ -28,8 +28,10 @@ def _runtime_output(value: str) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the final post-B2 B0-B3+DGC evaluation harness freeze.")
+    parser = argparse.ArgumentParser(description="Build final post-B2 B0-B3+DGC evaluation harness freeze.")
     parser.add_argument("--execution-freeze", required=True)
+    parser.add_argument("--ccf-spec-authority", required=True)
+    parser.add_argument("--generalization-registry", required=True)
     parser.add_argument("--b2-authority", required=True)
     parser.add_argument("--baseline-panel-input", required=True)
     parser.add_argument("--output", required=True)
@@ -37,6 +39,8 @@ def main() -> int:
 
     authority = build_harness_freeze(
         execution_manifest_freeze_path=_path(args.execution_freeze),
+        ccf_spec_authority_path=_path(args.ccf_spec_authority),
+        generalization_registry_path=_path(args.generalization_registry),
         b2_fit_authority_path=_path(args.b2_authority),
         baseline_panel_input_path=_path(args.baseline_panel_input),
     )
@@ -58,9 +62,12 @@ def main() -> int:
         "family_id": authority.family_id,
         "baseline_panel_digest": authority.baseline_panel_digest,
         "comparison_frame_digest": authority.comparison_frame_digest,
+        "generalization_registry_digest": authority.generalization_registry_digest,
+        "g1_holdout_task_digest": authority.g1_holdout_task_digest,
         "harness_freeze_digest": authority.harness_freeze_digest,
         "harness_frozen": True,
         "confirmatory_execution_authorized": False,
+        "generalization_execution_authorized": False,
         "product_promotion_authorized": False,
     }, sort_keys=True))
     return 0
