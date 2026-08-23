@@ -9,7 +9,6 @@ from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
-from cwc.governance.harness_freeze import DGC_ROLE
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
 from cwc.governance.task_partition import verify_task_partition_document
@@ -17,6 +16,7 @@ from cwc.governance.task_partition import verify_task_partition_document
 SCHEMA = "DGC_GENERALIZATION_REGISTRY_V1"
 AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_MANIFEST_V1"
 GENERALIZATION_FAMILYWISE_ALPHA = 0.05
+DGC_ROLE = "DGC"
 
 
 class GeneralizationRegistryError(RuntimeError):
@@ -198,7 +198,6 @@ def _validate_axis_manifest(
     g1_digest = _sha("generalization_task_digest", partition.get("generalization_task_digest"))
 
     normalized = {
-        "axis": axis.value,
         "evaluation_manifest_digest": _sha("evaluation_manifest_digest", doc.get("evaluation_manifest_digest")),
         "source_family_id": _req("source_family_id", doc.get("source_family_id")),
         "source_authority_digest": _sha("source_authority_digest", doc.get("source_authority_digest")),
@@ -280,6 +279,8 @@ def build_generalization_registry(
     seen_eval_digests: set[str] = set()
     for axis in REQUIRED_AXES:
         path = Path(axis_manifest_paths[axis])
+        if path.is_absolute() or ".." in path.parts:
+            raise GeneralizationRegistryError("axis manifest paths must be repository-relative")
         doc = _json(path, schema=AXIS_SCHEMA)
         normalized = _validate_axis_manifest(axis=axis, doc=doc, execution=execution, partition=partition, plan=plan)
         evaluation_digest = str(normalized["evaluation_manifest_digest"])
@@ -336,7 +337,11 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
     if observed_axes != tuple(sorted(axis.value for axis in REQUIRED_AXES)):
         raise GeneralizationRegistryError("generalization axis population mismatch")
     roles = doc.get("policy_role_bindings")
-    if not isinstance(roles, list) or tuple(sorted(str(row[0]) for row in roles)) != REQUIRED_POLICY_ROLES:
+    if (
+        not isinstance(roles, list)
+        or not all(isinstance(row, list) and len(row) == 2 for row in roles)
+        or tuple(sorted(str(row[0]) for row in roles)) != REQUIRED_POLICY_ROLES
+    ):
         raise GeneralizationRegistryError("generalization policy role population mismatch")
     payload = {
         key: doc[key]
