@@ -7,17 +7,20 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.fault_injection_evidence import (
+    FaultInjectionEvidenceError,
+    verify_fault_injection_evidence,
+)
 from cwc.governance.fault_injection_spec import (
-    SPEC_SCHEMA,
     load_fault_spec,
     verify_fault_injection_spec_authority_document,
 )
 from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 
-BUNDLE_SCHEMA = "DGC_FAULT_TOLERANCE_EVIDENCE_BUNDLE_V1"
-TRACE_SCHEMA = "DGC_FAULT_TRACE_V1"
-AUTHORITY_SCHEMA = "DGC_FAULT_TOLERANCE_AUTHORITY_V1"
+BUNDLE_SCHEMA = "DGC_FAULT_TOLERANCE_EVIDENCE_BUNDLE_V2"
+TRACE_SCHEMA = "DGC_FAULT_TRACE_V2"
+AUTHORITY_SCHEMA = "DGC_FAULT_TOLERANCE_AUTHORITY_V2"
 
 
 class FaultToleranceError(RuntimeError):
@@ -91,10 +94,11 @@ def _budget_cap(repository_root: Path, execution: Mapping[str, object]) -> float
     return cap
 
 
-def _verify_event_chain(events: object) -> str:
+def _verify_event_chain(events: object, *, injection_evidence_digest: str) -> str:
     if not isinstance(events, list) or not events:
         raise FaultToleranceError("fault trace requires non-empty event chain")
     prior: str | None = None
+    injection_bindings = 0
     for index, raw in enumerate(events):
         if not isinstance(raw, Mapping):
             raise FaultToleranceError("malformed fault trace event")
@@ -107,6 +111,10 @@ def _verify_event_chain(events: object) -> str:
             raise FaultToleranceError("fault event type/action/details required")
         if raw.get("prior_event_digest") != prior:
             raise FaultToleranceError("fault event prior digest mismatch")
+        if event_type == "FAULT_INJECTION":
+            if details.get("injection_evidence_digest") != injection_evidence_digest:
+                raise FaultToleranceError("FAULT_INJECTION audit event references different evidence")
+            injection_bindings += 1
         payload = {
             "sequence": index,
             "event_type": event_type,
@@ -119,6 +127,8 @@ def _verify_event_chain(events: object) -> str:
         if observed != expected:
             raise FaultToleranceError("fault event digest mismatch")
         prior = observed
+    if injection_bindings != 1:
+        raise FaultToleranceError("fault trace must contain exactly one evidence-bound FAULT_INJECTION event")
     assert prior is not None
     return prior
 
@@ -132,6 +142,11 @@ class VerifiedFaultCase:
     trace_sha256: str
     trace_audit_root_digest: str
     injection_evidence_sha256: str
+    injection_evidence_digest: str
+    injection_evidence_kind: str
+    raw_injection_artifact_sha256: str
+    pre_state_digest: str
+    post_state_digest: str
     observed_cost_usd: float
     supported: bool
     record_digest: str
@@ -158,6 +173,7 @@ class FaultToleranceAuthority:
             "schema": AUTHORITY_SCHEMA,
             **asdict(self),
             "fault_tolerance_supported": self.all_required_cases_supported,
+            "typed_injection_evidence_verified": self.all_required_cases_supported,
             "production_fault_tolerance_claim": False,
             "product_promotion_authorized": False,
         }
@@ -230,16 +246,33 @@ def build_fault_tolerance_authority(
         injection_sha = sha256_file(injection_path)
         if row.get("trace_sha256") != trace_sha or row.get("injection_evidence_sha256") != injection_sha:
             raise FaultToleranceError("fault row evidence digest mismatch")
+        try:
+            injection = verify_fault_injection_evidence(
+                injection_path,
+                bundle_root=root,
+                expected_case_id=case_id,
+                expected_fault_class=str(frozen["fault_class"]),
+                expected_injection_point=str(frozen["injection_point"]),
+            )
+        except FaultInjectionEvidenceError as exc:
+            raise FaultToleranceError("typed fault injection evidence verification failed") from exc
+        if row.get("injection_evidence_digest") != injection.evidence_digest:
+            raise FaultToleranceError("fault row semantic injection evidence digest mismatch")
+
         trace = _json(trace_path, schema=TRACE_SCHEMA)
         if trace.get("case_id") != case_id:
             raise FaultToleranceError("fault trace case identity mismatch")
         if trace.get("fault_class") != frozen["fault_class"] or trace.get("injection_point") != frozen["injection_point"]:
             raise FaultToleranceError("fault trace semantics differ from preregistered case")
         if trace.get("policy_id") != dgc_policy or trace.get("fault_injected") is not True:
-            raise FaultToleranceError("fault trace does not prove the frozen DGC arm was injected")
+            raise FaultToleranceError("fault trace does not establish frozen DGC arm injection")
         if trace.get("injection_evidence_sha256") != injection_sha:
-            raise FaultToleranceError("fault trace injection evidence binding mismatch")
-        audit_root = _verify_event_chain(trace.get("events"))
+            raise FaultToleranceError("fault trace injection evidence byte binding mismatch")
+        if trace.get("injection_evidence_digest") != injection.evidence_digest:
+            raise FaultToleranceError("fault trace injection evidence semantic binding mismatch")
+        audit_root = _verify_event_chain(
+            trace.get("events"), injection_evidence_digest=injection.evidence_digest
+        )
         if trace.get("audit_root_digest") != audit_root:
             raise FaultToleranceError("fault trace audit root mismatch")
         terminal = str(trace.get("terminal_action", "")).strip()
@@ -267,6 +300,11 @@ def build_fault_tolerance_authority(
             "trace_audit_root_digest": audit_root,
             "injection_evidence_path": injection_rel,
             "injection_evidence_sha256": injection_sha,
+            "injection_evidence_digest": injection.evidence_digest,
+            "injection_evidence_kind": injection.evidence_kind,
+            "raw_injection_artifact_sha256": injection.raw_artifact_sha256,
+            "pre_state_digest": injection.pre_state_digest,
+            "post_state_digest": injection.post_state_digest,
             "observed_cost_usd": observed_cost,
             "supported": True,
         }
@@ -278,6 +316,11 @@ def build_fault_tolerance_authority(
             trace_sha256=trace_sha,
             trace_audit_root_digest=audit_root,
             injection_evidence_sha256=injection_sha,
+            injection_evidence_digest=injection.evidence_digest,
+            injection_evidence_kind=injection.evidence_kind,
+            raw_injection_artifact_sha256=injection.raw_artifact_sha256,
+            pre_state_digest=injection.pre_state_digest,
+            post_state_digest=injection.post_state_digest,
             observed_cost_usd=observed_cost,
             supported=True,
             record_digest=sha256_bytes(canonical_json_bytes(record_payload)),
@@ -345,6 +388,8 @@ def verify_fault_tolerance_authority_document(path: Path) -> dict[str, object]:
         raise FaultToleranceError("unexpected fault tolerance authority schema")
     if doc.get("fault_tolerance_supported") is not True or doc.get("all_required_cases_supported") is not True:
         raise FaultToleranceError("fault tolerance support is incomplete")
+    if doc.get("typed_injection_evidence_verified") is not True:
+        raise FaultToleranceError("fault tolerance authority lacks typed injection evidence")
     if doc.get("production_fault_tolerance_claim") is not False or doc.get("product_promotion_authorized") is not False:
         raise FaultToleranceError("fault tolerance claim boundary malformed")
     keys = (
@@ -362,6 +407,28 @@ def verify_fault_tolerance_authority_document(path: Path) -> dict[str, object]:
     records = doc.get("case_records")
     if not isinstance(records, list) or len(records) != 12:
         raise FaultToleranceError("fault tolerance authority must contain exact preregistered case population")
-    if any(not isinstance(row, Mapping) or row.get("supported") is not True for row in records):
-        raise FaultToleranceError("fault tolerance authority contains unsupported case")
+    required_fields = (
+        "injection_evidence_digest", "injection_evidence_kind", "raw_injection_artifact_sha256",
+        "pre_state_digest", "post_state_digest", "record_digest",
+    )
+    for row in records:
+        if not isinstance(row, Mapping) or row.get("supported") is not True:
+            raise FaultToleranceError("fault tolerance authority contains unsupported case")
+        for field in required_fields:
+            if not row.get(field):
+                raise FaultToleranceError(f"fault tolerance case missing {field}")
+        for field in (
+            "injection_evidence_digest", "raw_injection_artifact_sha256", "pre_state_digest",
+            "post_state_digest", "record_digest", "trace_sha256", "trace_audit_root_digest",
+            "injection_evidence_sha256",
+        ):
+            _sha(field, row.get(field))
+        if row.get("pre_state_digest") == row.get("post_state_digest"):
+            raise FaultToleranceError("fault tolerance case lacks observed state transition")
+    population = sha256_bytes(canonical_json_bytes([
+        (str(row["case_id"]), str(row["record_digest"]))
+        for row in sorted(records, key=lambda item: str(item["case_id"]))
+    ]))
+    if population != doc.get("case_population_digest"):
+        raise FaultToleranceError("fault tolerance case population digest mismatch")
     return doc
