@@ -32,6 +32,7 @@ def dual_doc(path: Path, *, exact: bool, conditional: bool) -> Path:
         "method": "EXACT_FROZEN_FINITE_PANEL_PARETO_V1",
     }
     exact_digest = sha256_bytes(canonical_json_bytes(exact_certificate))
+    scientific = exact and conditional
     payload = {
         "family_id": "SWE_BENCH_VERIFIED",
         "finite_panel_v3_authority_digest": h("3"),
@@ -53,11 +54,12 @@ def dual_doc(path: Path, *, exact: bool, conditional: bool) -> Path:
         "randomness_schedule_digest": h("d"),
         "randomness_independence_assumption": "CROSS_TASK_REPLICATE_PROVIDER_REQUESTS_CONDITIONALLY_INDEPENDENT",
         "randomness_assumption_verified": False,
-        "claim_scope": "EXACT_FROZEN_PANEL_UNCONDITIONAL_PLUS_EXPECTATION_CONDITIONAL_V1",
-        "generalization_evaluation_authorized": exact,
+        "claim_scope": "EXACT_PANEL_FACT_PLUS_CONDITIONAL_EXPECTED_EFFECT_REQUIRED_FOR_P9_V2",
+        "p9_supported_under_frozen_assumptions": scientific,
+        "generalization_evaluation_authorized": scientific,
     }
     return write(path, {
-        "schema": "DGC_EXECUTED_P9_DUAL_AUTHORITY_V4",
+        "schema": "DGC_EXECUTED_P9_DUAL_AUTHORITY_V5",
         **payload,
         "authority_digest": sha256_bytes(canonical_json_bytes(payload)),
         "physical_cost_accounting_verified": True,
@@ -105,7 +107,7 @@ def ccf_doc(path: Path, *, complete: bool = True) -> Path:
     })
 
 
-def test_exact_pass_conditional_fail_still_authorizes_only_generalization_evaluation(tmp_path: Path):
+def test_exact_pass_without_lower_bound_support_does_not_advance_scientific_p9(tmp_path: Path):
     dual = dual_doc(tmp_path / "dual.json", exact=True, conditional=False)
     ccf = ccf_doc(tmp_path / "ccf.json")
     authority = build_p9_scientific_authority_v2(
@@ -114,15 +116,12 @@ def test_exact_pass_conditional_fail_still_authorizes_only_generalization_evalua
     )
     assert authority.exact_panel_supported is True
     assert authority.expected_effect_supported_under_independence_assumption is False
+    assert authority.p9_supported_under_frozen_assumptions is False
     assert authority.randomness_assumption_verified is False
-    assert authority.generalization_evaluation_authorized is True
-    out = write(tmp_path / "science.json", authority.document)
-    verified = verify_p9_scientific_authority_v2_document(out)
-    assert verified["generalization_evaluation_authorized"] is True
-    assert verified["product_promotion_authorized"] is False
+    assert authority.generalization_evaluation_authorized is False
 
 
-def test_exact_fail_cannot_be_rescued_by_conditional_pass(tmp_path: Path):
+def test_conditional_pass_cannot_rescue_exact_panel_failure(tmp_path: Path):
     dual = dual_doc(tmp_path / "dual.json", exact=False, conditional=True)
     ccf = ccf_doc(tmp_path / "ccf.json")
     authority = build_p9_scientific_authority_v2(
@@ -131,7 +130,23 @@ def test_exact_fail_cannot_be_rescued_by_conditional_pass(tmp_path: Path):
     )
     assert authority.expected_effect_supported_under_independence_assumption is True
     assert authority.exact_panel_supported is False
+    assert authority.p9_supported_under_frozen_assumptions is False
     assert authority.generalization_evaluation_authorized is False
+
+
+def test_exact_and_conditional_plus_ccf_authorize_generalization_evaluation(tmp_path: Path):
+    dual = dual_doc(tmp_path / "dual.json", exact=True, conditional=True)
+    ccf = ccf_doc(tmp_path / "ccf.json")
+    authority = build_p9_scientific_authority_v2(
+        dual_p9_authority_path=dual,
+        ccf_oracle_audit_authority_path=ccf,
+    )
+    assert authority.p9_supported_under_frozen_assumptions is True
+    assert authority.generalization_evaluation_authorized is True
+    out = write(tmp_path / "science.json", authority.document)
+    verified = verify_p9_scientific_authority_v2_document(out)
+    assert verified["generalization_evaluation_authorized"] is True
+    assert verified["product_promotion_authorized"] is False
 
 
 def test_ccf_incomplete_is_rejected_before_scientific_composition(tmp_path: Path):
@@ -145,7 +160,7 @@ def test_ccf_incomplete_is_rejected_before_scientific_composition(tmp_path: Path
 
 
 def test_forged_exact_flag_breaks_dual_authority_digest(tmp_path: Path):
-    dual = dual_doc(tmp_path / "dual.json", exact=True, conditional=False)
+    dual = dual_doc(tmp_path / "dual.json", exact=True, conditional=True)
     doc = json.loads(dual.read_text())
     doc["exact_panel_supported"] = False
     write(dual, doc)
