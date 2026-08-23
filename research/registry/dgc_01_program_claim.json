@@ -1,0 +1,24 @@
+{
+  "claim_id": "CWC-DGC-H1",
+  "hypothesis_id": "H-DGC-01",
+  "statement": "At matched total inference budget, DGC improves preregistered NetDecisionValue over the best preregistered baseline on the frozen synthetic oracle workload, or achieves non-inferior decision quality at lower total compute cost.",
+  "status": "NOT_TESTED",
+  "scope": {
+    "tasks": [
+      "synthetic oracle compute-governance workload"
+    ]
+  },
+  "limitations": [
+    "No DGC-01 confirmatory experiment has been executed.",
+    "Current executable slice validates contracts and deterministic governance primitives only."
+  ],
+  "prohibited_extrapolations": [
+    "production readiness",
+    "general adaptive-compute superiority",
+    "safety guarantee",
+    "novel mathematical theory"
+  ],
+  "note": "P0 research objective. Promotion is controlled by experiments/dgc_01/PREREGISTRATION.md and docs/DGC_CLAIM_BOUNDARY.md.",
+  "independent_replication": false,
+  "verdict_binding": null
+}

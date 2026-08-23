@@ -1,0 +1,64 @@
+{
+  "schema": "DGC_EXTERNAL_SOURCE_AUTHORITY_REGISTRY_V1",
+  "generated_on": "2026-08-23",
+  "families": [
+    {
+      "family_id": "SWE_BENCH_VERIFIED",
+      "stage": "SOURCE_VERIFIED",
+      "upstream_revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
+      "identity": {
+        "family_id": "SWE_BENCH_VERIFIED",
+        "dataset_id": "SWE-bench/SWE-bench_Verified",
+        "revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
+        "parquet_path": "data/test-00000-of-00001.parquet",
+        "parquet_sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8",
+        "xet_hash": "a56a1bd760f419b97a17386af035d814d92517fbed8822cba7ea2d22a349839b",
+        "expected_task_count": 500
+      },
+      "upstream_identity_digest": "c1ec557ee4d471e21d7cc6a18152812b7ae21c34ca9b57befe51691003eba0ec",
+      "verification": {
+        "verification_method": "HUGGINGFACE_REVISION_FILE_METADATA",
+        "revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
+        "observed_sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8",
+        "observed_xet_hash": "a56a1bd760f419b97a17386af035d814d92517fbed8822cba7ea2d22a349839b",
+        "materialized": false
+      },
+      "source_verification_evidence_digest": "3fd4f00861951a4ca4ade639ca08475f666963560521cb81b9c139cc6bde1b25",
+      "authority_digest": "31b9d9f756f8e07972c641016cb93aee09326debc9864752d352e2ab293a2798",
+      "materialized_tree_sha256": null,
+      "materialized_task_manifest_sha256": null,
+      "execution_population_digest": null
+    },
+    {
+      "family_id": "TERMINAL_BENCH_2_1",
+      "stage": "SOURCE_VERIFIED",
+      "upstream_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+      "identity": {
+        "family_id": "TERMINAL_BENCH_2_1",
+        "repository": "harbor-framework/terminal-bench-2-1",
+        "commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+        "tree": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+        "tasks_tree": "2f0f5fdc68f0befd9b4745386eb8698264b00d8a",
+        "dataset_manifest_blob": "6e7e030fd37a7cefdbd597badcf8560c8748d995",
+        "expected_task_count": 89
+      },
+      "upstream_identity_digest": "123fa6ec76a8b5e756978fd018991e30f4bd5cc7e42f9f963715311fad4db306",
+      "verification": {
+        "verification_method": "GITHUB_SIGNED_COMMIT_AND_GIT_OBJECT_CHAIN",
+        "commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+        "commit_signature_verified": true,
+        "tree": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+        "tasks_tree": "2f0f5fdc68f0befd9b4745386eb8698264b00d8a",
+        "dataset_manifest_blob": "6e7e030fd37a7cefdbd597badcf8560c8748d995",
+        "materialized": false
+      },
+      "source_verification_evidence_digest": "c3559ba75379ba74dd1491d6f2ed2147c0498d934b52648e84c1f69432eda69a",
+      "authority_digest": "f69953e9fcf862fce7ecc649d34e7eb2905321ea320ec72860a7608d2fd61513",
+      "materialized_tree_sha256": null,
+      "materialized_task_manifest_sha256": null,
+      "execution_population_digest": null
+    }
+  ],
+  "product_promotion_authorized": false,
+  "interpretation": "Both external sources are upstream-verified, but neither is locally materialized or executed in this environment. SOURCE_VERIFIED is not MATERIALIZED_VERIFIED and is not EXECUTED."
+}
