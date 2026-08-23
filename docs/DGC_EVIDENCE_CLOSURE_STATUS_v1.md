@@ -2,24 +2,24 @@
 
 Date: 2026-08-23
 
-This matrix separates **implementation/protocol closure** from **empirical product evidence**. A coded gate is not evidence that the gate has passed, and upstream source verification is not local materialization or execution.
+This matrix separates **implementation/protocol closure** from **empirical product evidence**. A coded gate is not evidence that the gate has passed, upstream source verification is not local materialization or execution, and a distributed control primitive is not evidence of frontier-scale operation.
 
 | Phase | Protocol / engineering state | Empirical evidence state | Canonical interpretation |
 |---|---|---|---|
 | P0 Product claim freeze | PARTIAL | N/A | claim, metrics and statistical plan frozen; executable B0-B3 panel and full external harness not yet frozen |
-| P1 Executable control plane | IMPLEMENTED_NARROW | INTERNAL_VERIFIED | deterministic/fail-closed governance components exist; not production-qualified |
+| P1 Executable control plane | IMPLEMENTED_NARROW_PLUS_DISTRIBUTED_CONTROL | INTERNAL_VERIFIED_TARGETED | deterministic/fail-closed governance exists; distributed eval leases/retries/idempotency/budget/full-coverage/audit-chain are implemented; no large-scale operational claim |
 | P2 Physical total cost | IMPLEMENTED_SCHEMA | NOT_VERIFIED_EXTERNAL | full product cost boundary and component provenance contracts exist; no provider/client trial population |
-| P3 Strong baselines | IMPLEMENTED_FREEZE_CONTRACT_PLUS_ORACLE | NOT_FROZEN | B0-B3 required; B2 calibration/fitted-model digest is absent; exact CCF audit oracle now measures value regret and avoidable cost against the frozen option set but does not replace B0-B3 |
+| P3 Strong baselines | IMPLEMENTED_FREEZE_CONTRACT_PLUS_ORACLE | NOT_FROZEN | B0-B3 required; B2 calibration/fitted-model digest is absent; exact CCF audit oracle measures value regret and avoidable cost against the frozen option set but does not replace B0-B3 |
 | P4 Synthetic VOC oracle | IMPLEMENTED | SUPPORTED_SYNTHETIC_NARROW | useful mechanism evidence only |
 | P5 Decision-sensitive workload mechanisms | PARTIAL | MIXED | internal mechanism evidence exists; broad mechanism panel is not external product evidence |
 | P6 External workloads | SOURCE_VERIFIED | NOT_MATERIALIZED_OR_EXECUTED | SWE-bench Verified revision/file SHA and Terminal-Bench signed Git object chain are independently source-verified; neither family is locally materialized or confirmatorily executed in this environment |
 | P7 Identical evaluation harness | IMPLEMENTED_CONTRACT | NOT_FROZEN_EXTERNAL | harness equality is machine-enforced; actual materialized task/model/tool/env/scorer manifests remain incomplete |
-| P8 Repeated stochastic trials | FROZEN_PLAN | NOT_EXECUTED | deterministic calibration/confirmatory split; power-based repeated-trial rule; min 5 / cap 50 for generation v1 |
+| P8 Repeated stochastic trials | FROZEN_PLAN_PLUS_DISTRIBUTED_COORDINATION | NOT_EXECUTED | deterministic calibration/confirmatory split; power-based repeated-trial rule; min 5 / cap 50; work population can be distributed without weakening evidence identity |
 | P9 Quality NI + cost superiority | IMPLEMENTED_INFERENCE_PLUS_CCF_AUDIT | NOT_EXECUTED_EXTERNAL | simultaneous paired multi-baseline cost/quality/catastrophic-regret gate exists; CCF provides exact same-option-set oracle headroom, but no external DGC result exists |
 | P10 30% commercial target boundary | CLOSED | NOT_ACHIEVED_PRODUCT | 30% is not a universal theorem or current commercial claim |
 | P11 CPS primary economics | IMPLEMENTED | NOT_MEASURED_EXTERNAL | cost per accepted successful outcome and paired net-saving semantics exist |
 | P12 Generalization | IMPLEMENTED_GATE | NOT_EXECUTED | exact G1-G5 no-retuning policy gate exists |
-| P13 Governance robustness | IMPLEMENTED | SUPPORTED_NARROW_INTERNAL | strong internal fault injection exists; external workload/production fault evidence pending |
+| P13 Governance robustness | IMPLEMENTED_PLUS_DISTRIBUTED_FAULT_CONTROLS | SUPPORTED_NARROW_INTERNAL | fault injection plus stale-lease, retry, duplicate-result, partial-population and budget attacks are killed internally; external/production fault evidence pending |
 | P14 Proof-carrying execution | IMPLEMENTED | INTERNAL_VERIFIED | execution/statistical certificates exist; production certificate population absent |
 | P15 Shadow mode | IMPLEMENTED_GATE | NOT_EXECUTED | shadow evidence cannot contain DGC control authority |
 | P16 Bounded canary | IMPLEMENTED_GATE | PROHIBITED_CURRENTLY | canary requires PRODUCT_QUALIFIED + shadow PASS + hard rollback limits |
@@ -33,8 +33,10 @@ This matrix separates **implementation/protocol closure** from **empirical produ
 - `CLIENT_VERIFIED = false`.
 - `PRODUCT_QUALIFIED = false`.
 - `PRODUCTION_CONTROL_AUTHORIZED = false`.
-- external source authority is now explicitly staged as `IDENTIFIED -> SOURCE_VERIFIED -> MATERIALIZED_VERIFIED -> EXECUTED`; stage skipping is rejected by code/tests.
+- `LARGE_SCALE_OPERATIONAL_EVIDENCE = false`.
+- external source authority is explicitly staged as `IDENTIFIED -> SOURCE_VERIFIED -> MATERIALIZED_VERIFIED -> EXECUTED`; stage skipping is rejected by code/tests.
 - both frozen external benchmark identities currently reach only `SOURCE_VERIFIED`.
+- distributed confirmatory execution now has a deterministic evidence-preserving coordinator, but it has not been exercised on a real multi-node/cloud worker population.
 - `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` were absent in the current execution environment; no live provider experiment was substituted with synthetic evidence.
 - GitHub Actions execution authority remains unavailable when jobs terminate before repository steps; this is not counted as PASS.
 
@@ -78,9 +80,25 @@ Gate: `scripts/dgc_product_external_source_gate.py`.
 
 This closes a benchmark-strength gap but creates no external product evidence by itself. CCF is reported in addition to B0-B3, never instead of them.
 
+## Distributed evaluation control
+
+`cwc/governance/distributed_eval_control.py` freezes work as `task × policy × replicate` and enforces:
+
+- deterministic work identity and claim order;
+- bounded leases and retry counts;
+- worst-case cost reservation before dispatch;
+- preregistration-time rejection of structurally underbudgeted experiments;
+- stale/forged/expired lease rejection;
+- idempotent identical result commit;
+- quarantine on conflicting duplicate evidence;
+- full preregistered coverage before completion certification;
+- hash-chained audit transitions.
+
+Targeted local authority: `8/8` tests PASS; adversarial gate: `4/4` attacks killed. This is **engineering evidence only**. It does not count as multi-node throughput, accelerator utilization, queueing, network partition recovery, cloud reliability, load/soak or production-scale evidence.
+
 ## Verification topology limitation
 
-Earlier targeted mathematical and product clean-room checks retain their own local authority. The new external-source state machine passed 7/7 local targeted tests; its two-family registry/gate recomputation passed locally with `SOURCE_VERIFIED=2`, `MATERIALIZED_VERIFIED=0`, `EXECUTED=0`. The CCF exact allocator passed 7/7 targeted tests including 100 seeded comparisons to exhaustive enumeration, and its greedy-allocation falsifier passed.
+Earlier targeted mathematical and product clean-room checks retain their own local authority. The external-source state machine passed 7/7 local targeted tests; its two-family registry/gate recomputation passed locally with `SOURCE_VERIFIED=2`, `MATERIALIZED_VERIFIED=0`, `EXECUTED=0`. The CCF exact allocator passed 7/7 targeted tests including 100 seeded comparisons to exhaustive enumeration, and its greedy-allocation falsifier passed. The distributed evaluation coordinator passed 8/8 targeted tests and 4/4 adversarial attacks locally.
 
 A new **full current-tree local regression is not claimed**: the sandbox cannot resolve `github.com` to clone/materialize the current branch, while GitHub Actions continues to terminate before repository steps. Therefore single-tree full regression remains `UNKNOWN` until one of those execution authorities is available.
 
@@ -88,6 +106,6 @@ A new **full current-tree local regression is not claimed**: the sandbox cannot 
 
 No additional internal theorem, unit test, UI feature or cognitive module can substitute for the remaining product evidence. The executable frontier is:
 
-`materialize+seal both frozen workload families -> freeze scorer+environment+model+tool+budget manifests -> calibration-only B2 fit + trial-count freeze -> confirmatory paired runs on both external families -> simultaneous P9 gate + CCF headroom audit -> G1-G5 no-retuning generalization -> independent replication -> SHA-sealed P19 bundle -> PRODUCT_QUALIFIED -> shadow -> bounded canary`.
+`materialize+seal both frozen workload families -> freeze scorer+environment+model+tool+budget manifests -> calibration-only B2 fit + trial-count freeze -> run distributed confirmatory paired population on both external families -> simultaneous P9 gate + CCF headroom audit -> G1-G5 no-retuning generalization -> independent replication -> SHA-sealed P19 bundle -> PRODUCT_QUALIFIED -> shadow -> bounded canary -> sustained operational monitoring`.
 
 Until that chain is observed, reporting “100% validated product” is prohibited by the system itself.
