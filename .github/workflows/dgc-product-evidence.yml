@@ -12,6 +12,9 @@ on:
       - "cwc/governance/workload_seal.py"
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/learned_baseline.py"
+      - "cwc/governance/b2_fit_receipt.py"
+      - "cwc/governance/calibration_variance.py"
+      - "cwc/governance/trial_sizing_receipt.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/distributed_eval_control.py"
       - "cwc/governance/confirmatory_generation.py"
@@ -24,6 +27,9 @@ on:
       - "cwc/governance/physical_cost_evidence.py"
       - "tests/test_dgc_product_*.py"
       - "tests/test_dgc_learned_baseline.py"
+      - "tests/test_dgc_b2_fit_receipt.py"
+      - "tests/test_dgc_calibration_variance.py"
+      - "tests/test_dgc_trial_sizing_receipt.py"
       - "tests/test_dgc_distributed_eval_control.py"
       - "tests/test_dgc_confirmatory_generation.py"
       - "tests/test_dgc_continuous_assurance.py"
@@ -38,6 +44,11 @@ on:
       - "tests/test_dgc_physical_cost_evidence.py"
       - "scripts/dgc_product_*.py"
       - "scripts/dgc_learned_baseline_attack.py"
+      - "scripts/dgc_fit_b2_baseline.py"
+      - "scripts/dgc_b2_fit_receipt_attack.py"
+      - "scripts/dgc_freeze_trial_sizing.py"
+      - "scripts/dgc_calibration_variance_attack.py"
+      - "scripts/dgc_trial_sizing_receipt_attack.py"
       - "scripts/dgc_distributed_eval_attack.py"
       - "scripts/dgc_distributed_eval_modelcheck.py"
       - "scripts/dgc_confirmatory_generation_attack.py"
@@ -66,6 +77,9 @@ on:
       - "cwc/governance/workload_seal.py"
       - "cwc/governance/baseline_panel.py"
       - "cwc/governance/learned_baseline.py"
+      - "cwc/governance/b2_fit_receipt.py"
+      - "cwc/governance/calibration_variance.py"
+      - "cwc/governance/trial_sizing_receipt.py"
       - "cwc/governance/counterfactual_frontier.py"
       - "cwc/governance/distributed_eval_control.py"
       - "cwc/governance/confirmatory_generation.py"
@@ -78,6 +92,9 @@ on:
       - "cwc/governance/physical_cost_evidence.py"
       - "tests/test_dgc_product_*.py"
       - "tests/test_dgc_learned_baseline.py"
+      - "tests/test_dgc_b2_fit_receipt.py"
+      - "tests/test_dgc_calibration_variance.py"
+      - "tests/test_dgc_trial_sizing_receipt.py"
       - "tests/test_dgc_distributed_eval_control.py"
       - "tests/test_dgc_confirmatory_generation.py"
       - "tests/test_dgc_continuous_assurance.py"
@@ -92,6 +109,11 @@ on:
       - "tests/test_dgc_physical_cost_evidence.py"
       - "scripts/dgc_product_*.py"
       - "scripts/dgc_learned_baseline_attack.py"
+      - "scripts/dgc_fit_b2_baseline.py"
+      - "scripts/dgc_b2_fit_receipt_attack.py"
+      - "scripts/dgc_freeze_trial_sizing.py"
+      - "scripts/dgc_calibration_variance_attack.py"
+      - "scripts/dgc_trial_sizing_receipt_attack.py"
       - "scripts/dgc_distributed_eval_attack.py"
       - "scripts/dgc_distributed_eval_modelcheck.py"
       - "scripts/dgc_confirmatory_generation_attack.py"
@@ -135,6 +157,9 @@ jobs:
             tests/test_dgc_workload_seal.py \
             tests/test_dgc_baseline_panel.py \
             tests/test_dgc_learned_baseline.py \
+            tests/test_dgc_b2_fit_receipt.py \
+            tests/test_dgc_calibration_variance.py \
+            tests/test_dgc_trial_sizing_receipt.py \
             tests/test_dgc_deployment_qualification.py \
             tests/test_dgc_independent_replication.py \
             tests/test_dgc_physical_cost_evidence.py \
@@ -148,6 +173,12 @@ jobs:
             tests/test_dgc_release_builder.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
+      - name: B2 fit receipt falsification gate
+        run: PYTHONPATH=. python scripts/dgc_b2_fit_receipt_attack.py
+      - name: Calibration variance falsification gate
+        run: PYTHONPATH=. python scripts/dgc_calibration_variance_attack.py
+      - name: Cluster-aware trial sizing receipt falsification gate
+        run: PYTHONPATH=. python scripts/dgc_trial_sizing_receipt_attack.py
       - name: Distributed evaluation falsification gate
         run: PYTHONPATH=. python scripts/dgc_distributed_eval_attack.py
       - name: Distributed evaluation finite timing modelcheck
