@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import shutil
 import tempfile
 from dataclasses import dataclass
@@ -44,13 +45,56 @@ def _fsync_dir(path: Path) -> None:
         os.close(fd)
 
 
-def file_manifest(root: Path, *, excluded_names: frozenset[str] = frozenset()) -> tuple[tuple[str, int, str], ...]:
-    rows: list[tuple[str, int, str]] = []
-    for path in sorted(p for p in root.rglob("*") if p.is_file()):
-        rel = path.relative_to(root).as_posix()
+def _walk_leaf_entries(root: Path) -> tuple[tuple[Path, str], ...]:
+    """Return regular files and symlinks without following links.
+
+    Evidence manifests must describe objects *inside* the generation, not the
+    bytes reachable through a symlink. FIFOs/devices/sockets are rejected
+    because they cannot be represented as immutable evidence payloads.
+    """
+
+    root = root.resolve()
+    leaves: list[tuple[Path, str]] = []
+    stack: list[Path] = [root]
+    while stack:
+        directory = stack.pop()
+        with os.scandir(directory) as scan:
+            entries = sorted(scan, key=lambda item: os.fsencode(item.name))
+        child_dirs: list[Path] = []
+        for entry in entries:
+            path = Path(entry.path)
+            rel = path.relative_to(root).as_posix()
+            if entry.is_symlink():
+                leaves.append((path, rel))
+            elif entry.is_dir(follow_symlinks=False):
+                child_dirs.append(path)
+            elif entry.is_file(follow_symlinks=False):
+                leaves.append((path, rel))
+            else:
+                raise ValueError(f"unsupported evidence filesystem object: {rel}")
+        # Reverse push preserves lexical traversal after stack pop.
+        stack.extend(reversed(child_dirs))
+    return tuple(sorted(leaves, key=lambda row: row[1]))
+
+
+def file_manifest(
+    root: Path,
+    *,
+    excluded_names: frozenset[str] = frozenset(),
+) -> tuple[tuple[str, str, int, int, str], ...]:
+    rows: list[tuple[str, str, int, int, str]] = []
+    for path, rel in _walk_leaf_entries(root):
         if rel in excluded_names:
             continue
-        rows.append((rel, path.stat().st_size, sha256_file(path)))
+        metadata = path.lstat()
+        mode = stat.S_IMODE(metadata.st_mode)
+        if stat.S_ISLNK(metadata.st_mode):
+            target = os.fsencode(os.readlink(path))
+            rows.append((rel, "symlink", mode, len(target), sha256_bytes(target)))
+        elif stat.S_ISREG(metadata.st_mode):
+            rows.append((rel, "file", mode, metadata.st_size, sha256_file(path)))
+        else:  # Defensive: _walk_leaf_entries already rejects other kinds.
+            raise ValueError(f"unsupported evidence filesystem object: {rel}")
     return tuple(rows)
 
 
@@ -124,20 +168,32 @@ class AtomicEvidenceGeneration:
         publication_rows = file_manifest(root, excluded_names=frozenset({self.MANIFEST_NAME}))
         publication_digest = sha256_bytes(canonical_json_bytes(publication_rows))
         manifest_payload = {
-            "schema": "DGC_EVIDENCE_GENERATION_MANIFEST_V1",
+            "schema": "DGC_EVIDENCE_GENERATION_MANIFEST_V2",
             "payload_manifest_sha256": payload_digest,
             "publication_manifest_sha256": publication_digest,
             "files": [
-                {"path": path, "bytes": size, "sha256": digest}
-                for path, size, digest in publication_rows
+                {
+                    "path": path,
+                    "type": object_type,
+                    "mode": mode,
+                    "bytes": size,
+                    "sha256": digest,
+                }
+                for path, object_type, mode, size, digest in publication_rows
             ],
         }
         manifest_path = root / self.MANIFEST_NAME
         manifest_path.write_bytes(json.dumps(manifest_payload, indent=2, sort_keys=True).encode("utf-8") + b"\n")
 
-        for path in sorted(p for p in root.rglob("*") if p.is_file()):
-            _fsync_file(path)
-        for path in sorted((p for p in root.rglob("*") if p.is_dir()), reverse=True):
+        for path, _ in _walk_leaf_entries(root):
+            if stat.S_ISREG(path.lstat().st_mode):
+                _fsync_file(path)
+        directories = [
+            path
+            for path in root.rglob("*")
+            if not path.is_symlink() and path.is_dir()
+        ]
+        for path in sorted(directories, reverse=True):
             _fsync_dir(path)
         _fsync_dir(root)
 
