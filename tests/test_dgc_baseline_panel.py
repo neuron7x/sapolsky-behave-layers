@@ -4,6 +4,7 @@ from cwc.governance.baseline_panel import (
     BaselineKind,
     BaselinePanelSeal,
     BaselinePolicySpec,
+    bind_verified_learned_router_fit,
     freeze_learned_baseline_fit,
 )
 
@@ -49,6 +50,38 @@ def test_panel_becomes_frozen_only_after_calibration_fit_digest_exists():
     ))
     assert panel.executable_frozen
     assert len(panel.digest) == 64
+
+
+def test_verified_fit_binding_rejects_schema_or_algorithm_substitution():
+    with pytest.raises(ValueError, match="feature schema"):
+        bind_verified_learned_router_fit(
+            _learned(),
+            feature_schema_digest="different-features",
+            training_algorithm_digest="ridge-cost-quality-router-v1",
+            calibration_task_digest="cal",
+            fitted_model_digest="model",
+        )
+    with pytest.raises(ValueError, match="training algorithm"):
+        bind_verified_learned_router_fit(
+            _learned(),
+            feature_schema_digest="features",
+            training_algorithm_digest="different-algorithm",
+            calibration_task_digest="cal",
+            fitted_model_digest="model",
+        )
+
+
+def test_verified_fit_binding_accepts_exact_pre_fit_identities():
+    fitted = bind_verified_learned_router_fit(
+        _learned(),
+        feature_schema_digest="features",
+        training_algorithm_digest="ridge-cost-quality-router-v1",
+        calibration_task_digest="cal",
+        fitted_model_digest="model",
+    )
+    assert fitted.executable_frozen
+    assert fitted.calibration_task_digest == "cal"
+    assert fitted.fitted_model_digest == "model"
 
 
 def test_missing_baseline_fails_closed():
