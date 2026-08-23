@@ -14,13 +14,13 @@ RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V2"
 _GENERATION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 # A final evaluation harness includes the executable-frozen B0-B3 panel. Therefore
-# B2 must be fitted before HARNESS_FROZEN. Non-baseline execution identities are
-# frozen one stage earlier so calibration cannot mutate model/prompt/tool/scorer/
-# environment/budget/pricing/statistical-plan/governance identities.
+# B2 must be fitted before HARNESS_FROZEN. CCF oracle/quantization semantics are
+# frozen before any B2 outcomes so headroom measurement cannot be post-hoc tuned.
 STAGES: tuple[str, ...] = (
     "SOURCE_VERIFIED",
     "MATERIALIZED_VERIFIED",
     "EXECUTION_MANIFESTS_FROZEN",
+    "CCF_SPEC_FROZEN",
     "B2_FITTED",
     "HARNESS_FROZEN",
     "TRIAL_SIZED",
