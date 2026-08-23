@@ -1,0 +1,47 @@
+name: package-exact-dgc-snapshot
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - packaging/dgc-full-874052d7
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact canonical head
+        uses: actions/checkout@v4
+        with:
+          ref: 874052d7521d597ca32632fcb7c64759bf958133
+          fetch-depth: 0
+      - name: Verify exact Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "874052d7521d597ca32632fcb7c64759bf958133"
+          git rev-parse HEAD > EXACT_HEAD.txt
+          git rev-parse 'HEAD^{tree}' > EXACT_TREE.txt
+      - name: Build exact tracked-tree ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          NAME="DGC_FULL_PROJECT_874052d7521d597ca32632fcb7c64759bf958133"
+          git archive --format=zip --prefix="${NAME}/" -o "${NAME}.zip" 874052d7521d597ca32632fcb7c64759bf958133
+          sha256sum "${NAME}.zip" > "${NAME}.zip.sha256"
+          stat -c '%s' "${NAME}.zip" > "${NAME}.zip.bytes"
+      - name: Upload exact project archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: DGC_FULL_PROJECT_874052d7521d597ca32632fcb7c64759bf958133
+          path: |
+            DGC_FULL_PROJECT_874052d7521d597ca32632fcb7c64759bf958133.zip
+            DGC_FULL_PROJECT_874052d7521d597ca32632fcb7c64759bf958133.zip.sha256
+            DGC_FULL_PROJECT_874052d7521d597ca32632fcb7c64759bf958133.zip.bytes
+            EXACT_HEAD.txt
+            EXACT_TREE.txt
+          if-no-files-found: error
+          retention-days: 1
