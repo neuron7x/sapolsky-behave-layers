@@ -86,6 +86,8 @@ class HarnessFreezeAuthority:
     family_id: str
     execution_manifest_freeze_digest: str
     b2_fit_authority_digest: str
+    materialized_task_manifest_digest: str
+    confirmatory_task_manifest_digest: str
     baseline_panel_input_sha256: str
     baseline_panel_digest: str
     baseline_specs: tuple[dict[str, object], ...]
@@ -100,6 +102,8 @@ class HarnessFreezeAuthority:
             "family_id": self.family_id,
             "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
             "b2_fit_authority_digest": self.b2_fit_authority_digest,
+            "materialized_task_manifest_digest": self.materialized_task_manifest_digest,
+            "confirmatory_task_manifest_digest": self.confirmatory_task_manifest_digest,
             "baseline_panel_input_sha256": self.baseline_panel_input_sha256,
             "baseline_panel_digest": self.baseline_panel_digest,
             "baseline_specs": list(self.baseline_specs),
@@ -127,6 +131,8 @@ def build_harness_freeze(
         raise HarnessFreezeError("B2 authority is bound to a different execution manifest freeze")
     if b2.get("family_id") != execution.get("family_id"):
         raise HarnessFreezeError("B2 authority family differs from execution freeze")
+    materialized_task_digest = _sha("materialized task manifest", execution.get("task_manifest_digest"))
+    confirmatory_task_digest = _sha("confirmatory task manifest", b2.get("confirmatory_task_digest"))
 
     rows = baseline_input.get("specs")
     if not isinstance(rows, list) or len(rows) != 4 or not all(isinstance(row, Mapping) for row in rows):
@@ -203,7 +209,7 @@ def build_harness_freeze(
             model_manifest_digest=components["model_manifest"],
             prompt_policy_digest=components["prompt_policy"],
             tool_manifest_digest=components["tool_manifest"],
-            task_manifest_digest=_sha("task_manifest_digest", execution.get("task_manifest_digest")),
+            task_manifest_digest=confirmatory_task_digest,
             environment_digest=components["environment"],
             budget_digest=components["budget"],
             pricing_snapshot_digest=components["pricing_snapshot"],
@@ -215,7 +221,7 @@ def build_harness_freeze(
         comparison_frames.add(harness.comparison_frame_digest)
         harnesses.append(FrozenPolicyHarness(policy_id, governance[policy_id], harness.full_digest))
     if len(comparison_frames) != 1:
-        raise HarnessFreezeError("policy harnesses do not share one controlled-comparison frame")
+        raise HarnessFreezeError("policy harnesses do not share one frozen controlled-comparison frame")
     comparison_frame = next(iter(comparison_frames))
 
     serialized_specs = tuple({
@@ -233,6 +239,8 @@ def build_harness_freeze(
         "family_id": execution["family_id"],
         "execution_manifest_freeze_digest": execution_digest,
         "b2_fit_authority_digest": _sha("B2 authority_digest", b2.get("authority_digest")),
+        "materialized_task_manifest_digest": materialized_task_digest,
+        "confirmatory_task_manifest_digest": confirmatory_task_digest,
         "baseline_panel_input_sha256": sha256_file(Path(baseline_panel_input_path)),
         "baseline_panel_digest": panel.digest,
         "baseline_specs": list(serialized_specs),
@@ -243,6 +251,8 @@ def build_harness_freeze(
         family_id=str(execution["family_id"]),
         execution_manifest_freeze_digest=execution_digest,
         b2_fit_authority_digest=_sha("B2 authority_digest", b2.get("authority_digest")),
+        materialized_task_manifest_digest=materialized_task_digest,
+        confirmatory_task_manifest_digest=confirmatory_task_digest,
         baseline_panel_input_sha256=sha256_file(Path(baseline_panel_input_path)),
         baseline_panel_digest=panel.digest,
         baseline_specs=serialized_specs,
@@ -262,12 +272,17 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
         key: doc[key]
         for key in (
             "family_id", "execution_manifest_freeze_digest", "b2_fit_authority_digest",
+            "materialized_task_manifest_digest", "confirmatory_task_manifest_digest",
             "baseline_panel_input_sha256", "baseline_panel_digest", "baseline_specs",
             "comparison_frame_digest", "policy_harnesses",
         )
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("harness_freeze_digest", doc.get("harness_freeze_digest")):
         raise HarnessFreezeError("harness freeze digest mismatch")
+    materialized = _sha("materialized_task_manifest_digest", doc.get("materialized_task_manifest_digest"))
+    confirmatory = _sha("confirmatory_task_manifest_digest", doc.get("confirmatory_task_manifest_digest"))
+    if materialized == confirmatory:
+        raise HarnessFreezeError("confirmatory task manifest must be distinct from the full materialized workload manifest")
     harnesses = doc.get("policy_harnesses")
     if not isinstance(harnesses, list) or len(harnesses) != 5:
         raise HarnessFreezeError("harness freeze must contain exact five-arm B0-B3 + DGC population")
