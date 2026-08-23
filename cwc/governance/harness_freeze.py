@@ -97,7 +97,15 @@ class HarnessFreezeAuthority:
     def document(self) -> dict[str, object]:
         return {
             "schema": SCHEMA,
-            **asdict(self),
+            "family_id": self.family_id,
+            "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
+            "b2_fit_authority_digest": self.b2_fit_authority_digest,
+            "baseline_panel_input_sha256": self.baseline_panel_input_sha256,
+            "baseline_panel_digest": self.baseline_panel_digest,
+            "baseline_specs": list(self.baseline_specs),
+            "comparison_frame_digest": self.comparison_frame_digest,
+            "policy_harnesses": [asdict(row) for row in self.policy_harnesses],
+            "harness_freeze_digest": self.harness_freeze_digest,
             "harness_frozen": True,
             "confirmatory_execution_authorized": False,
             "product_promotion_authorized": False,
@@ -141,7 +149,10 @@ def build_harness_freeze(
         calibration_task_digest=str(b2["calibration_task_digest"]),
         fitted_model_digest=str(b2["fitted_model_digest"]),
     )
-    final_specs = tuple(fitted_b2 if spec.kind is BaselineKind.LEARNED_COST_QUALITY_ROUTER else spec for spec in specs)
+    final_specs = tuple(
+        fitted_b2 if spec.kind is BaselineKind.LEARNED_COST_QUALITY_ROUTER else spec
+        for spec in specs
+    )
     panel = BaselinePanelSeal(final_specs)
     if not panel.executable_frozen:
         raise HarnessFreezeError("B0-B3 panel is not executable-frozen")
@@ -217,20 +228,27 @@ def build_harness_freeze(
         "fitted_model_digest": spec.fitted_model_digest,
         "digest": spec.digest,
     } for spec in sorted(final_specs, key=lambda value: value.kind.value))
-    payload = {
+    harness_docs = [asdict(row) for row in harnesses]
+    digest_payload = {
         "family_id": execution["family_id"],
         "execution_manifest_freeze_digest": execution_digest,
         "b2_fit_authority_digest": _sha("B2 authority_digest", b2.get("authority_digest")),
         "baseline_panel_input_sha256": sha256_file(Path(baseline_panel_input_path)),
         "baseline_panel_digest": panel.digest,
-        "baseline_specs": serialized_specs,
+        "baseline_specs": list(serialized_specs),
         "comparison_frame_digest": comparison_frame,
-        "policy_harnesses": [asdict(row) for row in harnesses],
+        "policy_harnesses": harness_docs,
     }
     return HarnessFreezeAuthority(
-        **payload,
+        family_id=str(execution["family_id"]),
+        execution_manifest_freeze_digest=execution_digest,
+        b2_fit_authority_digest=_sha("B2 authority_digest", b2.get("authority_digest")),
+        baseline_panel_input_sha256=sha256_file(Path(baseline_panel_input_path)),
+        baseline_panel_digest=panel.digest,
+        baseline_specs=serialized_specs,
+        comparison_frame_digest=comparison_frame,
         policy_harnesses=tuple(harnesses),
-        harness_freeze_digest=sha256_bytes(canonical_json_bytes(payload)),
+        harness_freeze_digest=sha256_bytes(canonical_json_bytes(digest_payload)),
     )
 
 
@@ -253,6 +271,11 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
     harnesses = doc.get("policy_harnesses")
     if not isinstance(harnesses, list) or len(harnesses) != 5:
         raise HarnessFreezeError("harness freeze must contain exact five-arm B0-B3 + DGC population")
-    if len({row.get("policy_id") for row in harnesses if isinstance(row, Mapping)}) != 5:
+    rows = [row for row in harnesses if isinstance(row, Mapping)]
+    if len(rows) != 5 or len({row.get("policy_id") for row in rows}) != 5:
         raise HarnessFreezeError("harness freeze policy ids must be unique")
+    if len({_sha("governance_policy_digest", row.get("governance_policy_digest")) for row in rows}) != 5:
+        raise HarnessFreezeError("harness freeze governance digests must be unique")
+    for row in rows:
+        _sha("harness_full_digest", row.get("harness_full_digest"))
     return doc
