@@ -113,13 +113,18 @@ def close_materialized_verified(
     if ledger.next_stage() != "MATERIALIZED_VERIFIED":
         raise ClosureError("MATERIALIZED_VERIFIED is not the next admissible stage")
     relative_reference = _runtime_relative(ledger.repository_root, reference_path)
+    canonical_registry = ledger.repository_root / SOURCE_REGISTRY_REL
+    canonical_materializer = ledger.repository_root / MATERIALIZER_REL
+    if not canonical_registry.is_file() or canonical_registry.is_symlink():
+        raise ClosureError("canonical external source registry missing")
+    if not canonical_materializer.is_file() or canonical_materializer.is_symlink():
+        raise ClosureError("canonical materializer missing")
     reference = verify_materialization_generation(
         generation_root,
         expected_repository_commit=ledger.repo_commit,
         expected_repository_tree=ledger.repo_tree,
+        source_registry_path=canonical_registry,
     )
-    canonical_registry = ledger.repository_root / SOURCE_REGISTRY_REL
-    canonical_materializer = ledger.repository_root / MATERIALIZER_REL
     if reference.source_registry_sha256 != sha256_file(canonical_registry):
         raise ClosureError("external generation source registry does not match current repository")
     if reference.materializer_sha256 != sha256_file(canonical_materializer):
