@@ -10,7 +10,7 @@ from cwc.governance.learned_baseline import CalibrationExample, LearnedRouterCon
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.task_partition import verify_task_partition_document
 
-SCHEMA = "DGC_B2_FIT_AUTHORITY_V1"
+SCHEMA = "DGC_B2_FIT_AUTHORITY_V2"
 FIT_INPUT_SCHEMA = "DGC_B2_FIT_INPUT_V1"
 FIT_RECEIPT_SCHEMA = "DGC_B2_FIT_RECEIPT_V1"
 
@@ -50,6 +50,7 @@ class B2FitAuthority:
     training_algorithm_digest: str
     calibration_task_digest: str
     confirmatory_task_digest: str
+    generalization_task_digest: str
     fitted_model_digest: str
     calibration_task_count: int
     authority_digest: str
@@ -60,6 +61,7 @@ class B2FitAuthority:
             "schema": SCHEMA,
             **asdict(self),
             "confirmatory_execution_authorized": False,
+            "generalization_execution_authorized": False,
             "product_promotion_authorized": False,
         }
 
@@ -104,11 +106,15 @@ def authorize_b2_fit(
 
     calibration = tuple(sorted(str(x) for x in partition["calibration_task_ids"]))
     confirmatory = tuple(sorted(str(x) for x in partition["confirmatory_task_ids"]))
+    generalization = tuple(sorted(str(x) for x in partition["generalization_task_ids"]))
     observed_tasks = tuple(sorted({example.task_id for example in examples}))
     if observed_tasks != calibration:
         raise B2FitAuthorityError("B2 examples must cover the exact frozen calibration task population")
-    if forbidden != confirmatory:
-        raise B2FitAuthorityError("B2 forbidden_task_ids must equal the exact frozen confirmatory population")
+    expected_forbidden = tuple(sorted(set(confirmatory) | set(generalization)))
+    if forbidden != expected_forbidden:
+        raise B2FitAuthorityError(
+            "B2 forbidden_task_ids must equal confirmatory + G1 holdout populations"
+        )
     if _sha("expected_feature_schema_digest", fit_input.get("expected_feature_schema_digest")) != config.feature_schema_digest:
         raise B2FitAuthorityError("B2 input feature schema digest does not match config")
     if _sha("expected_training_algorithm_digest", fit_input.get("expected_training_algorithm_digest")) != config.training_algorithm_digest:
@@ -141,6 +147,7 @@ def authorize_b2_fit(
         "training_algorithm_digest": recomputed.training_algorithm_digest,
         "calibration_task_digest": recomputed.calibration_task_digest,
         "confirmatory_task_digest": _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest")),
+        "generalization_task_digest": _sha("generalization_task_digest", partition.get("generalization_task_digest")),
         "fitted_model_digest": recomputed.fitted_model_digest,
         "calibration_task_count": recomputed.calibration_task_count,
     }
@@ -152,7 +159,11 @@ def authorize_b2_fit(
 
 def verify_b2_fit_authority_document(path: Path) -> dict[str, object]:
     doc = _json(Path(path), schema=SCHEMA)
-    if doc.get("confirmatory_execution_authorized") is not False or doc.get("product_promotion_authorized") is not False:
+    if (
+        doc.get("confirmatory_execution_authorized") is not False
+        or doc.get("generalization_execution_authorized") is not False
+        or doc.get("product_promotion_authorized") is not False
+    ):
         raise B2FitAuthorityError("B2 fit authority illegally grants downstream authority")
     payload = {
         key: doc[key]
@@ -160,11 +171,13 @@ def verify_b2_fit_authority_document(path: Path) -> dict[str, object]:
             "family_id", "execution_manifest_freeze_digest", "task_partition_receipt_digest",
             "fit_input_sha256", "fit_receipt_sha256", "feature_schema_digest",
             "training_algorithm_digest", "calibration_task_digest", "confirmatory_task_digest",
-            "fitted_model_digest", "calibration_task_count",
+            "generalization_task_digest", "fitted_model_digest", "calibration_task_count",
         )
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise B2FitAuthorityError("B2 fit authority digest mismatch")
     if int(doc.get("calibration_task_count", 0)) <= 0:
         raise B2FitAuthorityError("B2 calibration_task_count must be > 0")
+    if doc.get("confirmatory_task_digest") == doc.get("generalization_task_digest"):
+        raise B2FitAuthorityError("confirmatory and G1 holdout identities must differ")
     return doc
