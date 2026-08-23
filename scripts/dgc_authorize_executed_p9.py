@@ -23,10 +23,11 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive executed P9 evidence from the complete frozen confirmatory result population."
+        description="Derive physically-costed executed P9 from the complete frozen confirmatory population."
     )
     parser.add_argument("--execution-authority", required=True)
     parser.add_argument("--execution-bundle-root", required=True)
+    parser.add_argument("--physical-cost-bundle-root", required=True)
     parser.add_argument("--confirmatory-root-authority", required=True)
     parser.add_argument("--harness-freeze", required=True)
     parser.add_argument("--execution-manifest-freeze", required=True)
@@ -38,6 +39,7 @@ def main() -> int:
     authority = build_executed_p9_authority(
         confirmatory_execution_authority_path=Path(args.execution_authority),
         execution_bundle_root=Path(args.execution_bundle_root),
+        physical_cost_bundle_root=Path(args.physical_cost_bundle_root),
         confirmatory_root_authority_path=Path(args.confirmatory_root_authority),
         harness_freeze_path=Path(args.harness_freeze),
         execution_manifest_freeze_path=Path(args.execution_manifest_freeze),
@@ -53,6 +55,8 @@ def main() -> int:
         "status": "PASS" if authority.p9_supported else "FAIL_P9",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
+        "physical_cost_accounting_verified": authority.physical_cost_accounting_verified,
+        "net_cost_superiority_supported": authority.net_cost_superiority_supported,
         "p9_supported": authority.p9_supported,
         "generalization_authorized": authority.p9_supported,
         "product_promotion_authorized": False,
