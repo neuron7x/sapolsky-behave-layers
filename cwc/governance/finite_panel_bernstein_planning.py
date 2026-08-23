@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-METHOD = "EMPIRICAL_BERNSTEIN_WIDTH_PLANNING_V1"
+METHOD = "EMPIRICAL_BERNSTEIN_WIDTH_PLANNING_V2_UNBIASED_VARIANCE_SAFE"
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,9 +28,13 @@ def empirical_bernstein_proxy_half_width(
 ) -> float:
     """Planning proxy using the Maurer-Pontil Theorem-11 bound form.
 
-    The sample variance is unknown before confirmatory execution, so this function
-    accepts a frozen calibration-derived proxy. The result is planning-only and is
-    never a substitute for the final observed-sample empirical-Bernstein bound.
+    ``sample_variance_proxy`` uses the unbiased ``n-1`` sample-variance convention,
+    matching the final empirical-Bernstein implementation. Because the calibration
+    sample size is not an argument here, the universal bounded-sample ceiling is
+    ``L^2/2`` (attained for n=2 at opposite interval endpoints), not Popoviciu's
+    population-variance ceiling ``L^2/4``.
+
+    This is planning-only and never substitutes for the final observed-sample bound.
     """
     variance_proxy = float(sample_variance_proxy)
     width = float(support_range)
@@ -44,9 +48,10 @@ def empirical_bernstein_proxy_half_width(
         raise ValueError("n must be >= 2")
     if not 0.0 < delta < 1.0:
         raise ValueError("delta must be in (0,1)")
-    # Any bounded variable on an interval of length width has variance <= width^2 / 4.
-    if variance_proxy > width * width / 4.0 + 1e-15:
-        raise ValueError("sample_variance_proxy exceeds the bounded-variance ceiling")
+    # For unbiased sample variance S^2=(1/(m-1)) sum (x_i-xbar)^2 on an interval
+    # of length L, the maximum over any m>=2 is L^2/2 (m=2, opposite endpoints).
+    if variance_proxy > width * width / 2.0 + 1e-15:
+        raise ValueError("sample_variance_proxy exceeds the universal bounded-sample variance ceiling")
     log_term = math.log(2.0 / delta)
     return math.sqrt(2.0 * variance_proxy * log_term / n) + (
         7.0 * width * log_term / (3.0 * (n - 1))
