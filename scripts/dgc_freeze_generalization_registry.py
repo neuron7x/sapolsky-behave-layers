@@ -56,6 +56,7 @@ def main() -> int:
     )
     parser.add_argument("--execution-freeze", required=True)
     parser.add_argument("--task-partition", required=True)
+    parser.add_argument("--baseline-panel-input", required=True)
     parser.add_argument("--g1-manifest", required=True)
     parser.add_argument("--g2-manifest", required=True)
     parser.add_argument("--g3-manifest", required=True)
@@ -73,6 +74,7 @@ def main() -> int:
         repository_root=ROOT,
         execution_manifest_freeze_path=_input(args.execution_freeze),
         task_partition_path=_repo_relative(args.task_partition),
+        baseline_panel_input_path=_repo_relative(args.baseline_panel_input),
         axis_manifest_paths={
             GeneralizationAxis.UNSEEN_TASKS: _repo_relative(args.g1_manifest),
             GeneralizationAxis.UNSEEN_DOMAIN: _repo_relative(args.g2_manifest),
@@ -97,6 +99,7 @@ def main() -> int:
         "status": "PASS",
         "output": str(output.relative_to(ROOT)),
         "registry_digest": authority.registry_digest,
+        "baseline_panel_input_sha256": authority.baseline_panel_input_sha256,
         "g1_holdout_task_digest": authority.g1_holdout_task_digest,
         "per_claim_alpha": authority.per_claim_alpha,
         "axes": [row.axis for row in authority.axes],
