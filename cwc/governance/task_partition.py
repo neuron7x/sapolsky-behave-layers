@@ -203,6 +203,25 @@ def verify_task_partition_document(path: Path) -> dict[str, object]:
         raise TaskPartitionError("calibration/confirmatory/generalization populations overlap")
     if len(calibration) + len(confirmatory) + len(generalization) != int(doc.get("task_count", -1)):
         raise TaskPartitionError("three-way task partition count mismatch")
+
+    all_tasks = tuple(sorted(sets[0] | sets[1] | sets[2]))
+    if _task_digest(all_tasks) != _sha("task_manifest_digest", doc.get("task_manifest_digest")):
+        raise TaskPartitionError("task partition union differs from frozen full task manifest")
+    try:
+        expected_calibration, expected_confirmatory, expected_generalization = deterministic_three_way_task_split(
+            all_tasks,
+            calibration_fraction=float(doc.get("calibration_fraction")),
+            generalization_holdout_fraction=float(doc.get("generalization_holdout_fraction")),
+        )
+    except (TypeError, ValueError, RuntimeError) as exc:
+        raise TaskPartitionError("task partition split rule cannot be replayed") from exc
+    if tuple(sorted(calibration)) != expected_calibration:
+        raise TaskPartitionError("calibration population differs from deterministic split rule")
+    if tuple(sorted(confirmatory)) != expected_confirmatory:
+        raise TaskPartitionError("confirmatory population differs from deterministic split rule")
+    if tuple(sorted(generalization)) != expected_generalization:
+        raise TaskPartitionError("G1 holdout population differs from deterministic split rule")
+
     if _task_digest(calibration) != _sha("calibration_task_digest", doc.get("calibration_task_digest")):
         raise TaskPartitionError("calibration task digest mismatch")
     if _task_digest(confirmatory) != _sha("confirmatory_task_digest", doc.get("confirmatory_task_digest")):
