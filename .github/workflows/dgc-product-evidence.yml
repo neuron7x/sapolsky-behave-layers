@@ -73,6 +73,7 @@ jobs:
             tests/test_dgc_product_statistical_plan.py \
             tests/test_dgc_evidence_closure.py \
             tests/test_dgc_fault_injection_evidence.py \
+            tests/test_dgc_independent_replication_authority_v4.py \
             tests/test_dgc_p19_evidence_root.py \
             tests/test_dgc_global_product_qualification.py
       - name: Learned B2 baseline falsification gate
