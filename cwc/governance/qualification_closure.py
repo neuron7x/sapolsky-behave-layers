@@ -14,6 +14,7 @@ from cwc.governance.evidence_closure import (
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.harness_freeze import verify_harness_freeze_document
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
+from cwc.governance.trial_sizing_authority import verify_trial_sizing_authority_document
 
 
 def _repo_relative(root: Path, value: Path) -> tuple[Path, str]:
@@ -159,6 +160,48 @@ def close_harness_frozen(
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
     return ledger.advance(StageExecution(
         stage="HARNESS_FROZEN",
+        commands=(),
+        evidence=(artifact,),
+    ))
+
+
+def close_trial_sized(
+    ledger: EvidenceClosureLedger,
+    *,
+    trial_sizing_authority_path: Path,
+    identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
+) -> dict[str, object]:
+    identity_checker(ledger)
+    if ledger.next_stage() != "TRIAL_SIZED":
+        raise ClosureError("TRIAL_SIZED is not the next admissible stage")
+    path, rel = _repo_relative(ledger.repository_root, trial_sizing_authority_path)
+    try:
+        sizing = verify_trial_sizing_authority_document(path)
+    except RuntimeError as exc:
+        raise ClosureError("trial-sizing authority verification failed") from exc
+
+    execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    b2_path, _, _ = _stage_evidence_file(ledger, stage="B2_FITTED")
+    harness_path, _, _ = _stage_evidence_file(ledger, stage="HARNESS_FROZEN")
+    try:
+        execution = verify_execution_manifest_freeze_document(execution_path)
+        b2 = verify_b2_fit_authority_document(b2_path)
+        harness = verify_harness_freeze_document(harness_path)
+    except RuntimeError as exc:
+        raise ClosureError("upstream trial-sizing authorities are invalid") from exc
+
+    if sizing.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
+        raise ClosureError("trial-sizing authority is bound to a different execution freeze")
+    if sizing.get("b2_fit_authority_digest") != b2.get("authority_digest"):
+        raise ClosureError("trial-sizing authority is bound to a different B2 fit")
+    if sizing.get("harness_freeze_digest") != harness.get("harness_freeze_digest"):
+        raise ClosureError("trial-sizing authority is bound to a different harness freeze")
+    if sizing.get("family_id") != harness.get("family_id"):
+        raise ClosureError("trial-sizing authority family differs from harness")
+
+    artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
+    return ledger.advance(StageExecution(
+        stage="TRIAL_SIZED",
         commands=(),
         evidence=(artifact,),
     ))
