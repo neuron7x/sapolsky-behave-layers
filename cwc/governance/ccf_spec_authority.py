@@ -9,6 +9,7 @@ from cwc.governance.execution_manifest_freeze import verify_execution_manifest_f
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
 SCHEMA = "DGC_CCF_SPEC_AUTHORITY_V1"
+QUANTIZER_REL = Path("cwc/governance/ccf_quantizer.py")
 
 
 class CCFSpecAuthorityError(RuntimeError):
@@ -63,6 +64,8 @@ class CCFSpecAuthority:
     ccf_spec_path: str
     ccf_spec_sha256: str
     ccf_spec_digest: str
+    quantizer_source_path: str
+    quantizer_source_sha256: str
     authority_digest: str
 
     @property
@@ -74,6 +77,8 @@ class CCFSpecAuthority:
             "ccf_spec_path": self.ccf_spec_path,
             "ccf_spec_sha256": self.ccf_spec_sha256,
             "ccf_spec_digest": self.ccf_spec_digest,
+            "quantizer_source_path": self.quantizer_source_path,
+            "quantizer_source_sha256": self.quantizer_source_sha256,
             "authority_digest": self.authority_digest,
             "frozen_pre_outcome": True,
             "p9_oracle_audit_authorized": False,
@@ -92,13 +97,19 @@ def build_ccf_spec_authority(
         raise CCFSpecAuthorityError("repository root missing")
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
     spec_file, rel = _repo_file(root, Path(ccf_spec_path))
-    _, spec_sha, spec_digest = load_and_verify_ccf_spec(spec_file)
+    spec_doc, spec_sha, spec_digest = load_and_verify_ccf_spec(spec_file)
+    quantizer_file, quantizer_rel = _repo_file(root, QUANTIZER_REL)
+    quantizer_sha = sha256_file(quantizer_file)
+    if spec_doc.get("quantizer_implementation_sha256") != quantizer_sha:
+        raise CCFSpecAuthorityError("CCF spec quantizer digest does not match canonical implementation bytes")
     payload = {
         "family_id": str(execution["family_id"]),
         "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
         "ccf_spec_path": rel,
         "ccf_spec_sha256": spec_sha,
         "ccf_spec_digest": spec_digest,
+        "quantizer_source_path": quantizer_rel,
+        "quantizer_source_sha256": quantizer_sha,
     }
     return CCFSpecAuthority(
         **payload,
@@ -120,17 +131,23 @@ def verify_ccf_spec_authority_document(path: Path) -> dict[str, object]:
         raise CCFSpecAuthorityError("CCF spec authority must state pre-outcome freeze")
     if doc.get("p9_oracle_audit_authorized") is not False or doc.get("product_promotion_authorized") is not False:
         raise CCFSpecAuthorityError("CCF spec freeze cannot grant downstream authority")
-    rel = Path(str(doc.get("ccf_spec_path", "")))
-    if not str(doc.get("ccf_spec_path", "")) or rel.is_absolute() or ".." in rel.parts:
-        raise CCFSpecAuthorityError("CCF spec authority path must be repository-relative")
+    ccf_rel = Path(str(doc.get("ccf_spec_path", "")))
+    quantizer_rel = Path(str(doc.get("quantizer_source_path", "")))
+    for name, rel in (("CCF spec", ccf_rel), ("quantizer", quantizer_rel)):
+        if not str(rel) or rel.is_absolute() or ".." in rel.parts:
+            raise CCFSpecAuthorityError(f"{name} authority path must be repository-relative")
+    if quantizer_rel.as_posix() != QUANTIZER_REL.as_posix():
+        raise CCFSpecAuthorityError("CCF quantizer authority path is not canonical")
     payload = {
         "family_id": doc.get("family_id"),
         "execution_manifest_freeze_digest": _sha(
             "execution_manifest_freeze_digest", doc.get("execution_manifest_freeze_digest")
         ),
-        "ccf_spec_path": rel.as_posix(),
+        "ccf_spec_path": ccf_rel.as_posix(),
         "ccf_spec_sha256": _sha("ccf_spec_sha256", doc.get("ccf_spec_sha256")),
         "ccf_spec_digest": _sha("ccf_spec_digest", doc.get("ccf_spec_digest")),
+        "quantizer_source_path": quantizer_rel.as_posix(),
+        "quantizer_source_sha256": _sha("quantizer_source_sha256", doc.get("quantizer_source_sha256")),
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise CCFSpecAuthorityError("CCF spec authority digest mismatch")
