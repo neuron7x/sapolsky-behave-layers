@@ -9,7 +9,7 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, fil
 from cwc.governance.p19_evidence_root import REQUIRED_SUBJECT_ROOTS, verify_family_p19_evidence_root_document
 from cwc.governance.product_evidence import ProductEvidenceRecord
 
-SCHEMA = "DGC_GLOBAL_PRODUCT_QUALIFICATION_AUTHORITY_V1"
+SCHEMA = "DGC_GLOBAL_PRODUCT_QUALIFICATION_AUTHORITY_V2"
 SOURCE_REGISTRY_SCHEMA = "DGC_EXTERNAL_SOURCE_AUTHORITY_REGISTRY_V1"
 
 
@@ -99,10 +99,11 @@ def _rehash_family_p19_subjects(doc: Mapping[str, object], *, repository_root: P
         raise GlobalProductQualificationError("P19 aggregate subject-root manifest digest mismatch")
 
 
-def _canonical_family_ids(source_registry_path: Path) -> tuple[str, ...]:
+def _canonical_family_ids(source_registry_path: Path) -> tuple[tuple[str, ...], str]:
     path = Path(source_registry_path)
     if path.is_symlink() or not path.is_file():
         raise GlobalProductQualificationError("canonical external source registry missing")
+    raw_digest = sha256_file(path)
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -115,16 +116,18 @@ def _canonical_family_ids(source_registry_path: Path) -> tuple[str, ...]:
     ids = tuple(sorted(str(row.get("family_id", "")) for row in families if isinstance(row, Mapping)))
     if len(ids) != 2 or any(not value for value in ids) or len(set(ids)) != 2:
         raise GlobalProductQualificationError("canonical source family identity population malformed")
-    return ids
+    return ids, raw_digest
 
 
 @dataclass(frozen=True, slots=True)
 class GlobalProductQualificationAuthority:
     canonical_family_ids: tuple[str, ...]
+    source_registry_sha256: str
     family_p19_digests: tuple[tuple[str, str], ...]
     repository_commit: str
     repository_tree: str
     statistical_plan_digest: str
+    theorem_identity_digest: str
     methodology_anchor_digest: str
     family_count: int
     all_family_p19_complete: bool
@@ -152,7 +155,7 @@ def build_global_product_qualification_authority(
     family_p19_paths: tuple[Path, Path],
 ) -> GlobalProductQualificationAuthority:
     root = Path(repository_root).resolve()
-    canonical_ids = _canonical_family_ids(Path(source_registry_path))
+    canonical_ids, registry_digest = _canonical_family_ids(Path(source_registry_path))
     docs = [verify_family_p19_evidence_root_document(Path(path)) for path in family_p19_paths]
     observed_ids = tuple(sorted(str(doc["family_id"]) for doc in docs))
     if observed_ids != canonical_ids:
@@ -167,11 +170,12 @@ def build_global_product_qualification_authority(
     commits = {str(doc["repository_commit"]) for doc in docs}
     trees = {str(doc["repository_tree"]) for doc in docs}
     plans = {str(doc["statistical_plan_digest"]) for doc in docs}
+    theorems = {str(doc["theorem_identity_digest"]) for doc in docs}
     methods = {str(doc["methodology_anchor_digest"]) for doc in docs}
     if len(commits) != 1 or len(trees) != 1:
         raise GlobalProductQualificationError("two family P19 roots were not produced from the same repository identity")
-    if len(plans) != 1 or len(methods) != 1:
-        raise GlobalProductQualificationError("two family P19 roots use different statistical/methodological identities")
+    if len(plans) != 1 or len(theorems) != 1 or len(methods) != 1:
+        raise GlobalProductQualificationError("two family P19 roots use different statistical/theorem/methodology identities")
 
     record = ProductEvidenceRecord(
         claim_frozen=True,
@@ -202,10 +206,12 @@ def build_global_product_qualification_authority(
     ))
     payload = {
         "canonical_family_ids": list(canonical_ids),
+        "source_registry_sha256": registry_digest,
         "family_p19_digests": [list(row) for row in family_digests],
         "repository_commit": next(iter(commits)),
         "repository_tree": next(iter(trees)),
         "statistical_plan_digest": next(iter(plans)),
+        "theorem_identity_digest": next(iter(theorems)),
         "methodology_anchor_digest": next(iter(methods)),
         "family_count": 2,
         "all_family_p19_complete": True,
@@ -215,10 +221,12 @@ def build_global_product_qualification_authority(
     }
     return GlobalProductQualificationAuthority(
         canonical_family_ids=canonical_ids,
+        source_registry_sha256=registry_digest,
         family_p19_digests=family_digests,
         repository_commit=payload["repository_commit"],
         repository_tree=payload["repository_tree"],
         statistical_plan_digest=payload["statistical_plan_digest"],
+        theorem_identity_digest=payload["theorem_identity_digest"],
         methodology_anchor_digest=payload["methodology_anchor_digest"],
         family_count=2,
         all_family_p19_complete=True,
@@ -248,10 +256,10 @@ def verify_global_product_qualification_authority_document(path: Path) -> dict[s
     )):
         raise GlobalProductQualificationError("production claims leaked into product qualification")
     keys = (
-        "canonical_family_ids", "family_p19_digests", "repository_commit", "repository_tree",
-        "statistical_plan_digest", "methodology_anchor_digest", "family_count",
-        "all_family_p19_complete", "product_evidence_record", "product_qualified",
-        "production_control_authorized",
+        "canonical_family_ids", "source_registry_sha256", "family_p19_digests", "repository_commit",
+        "repository_tree", "statistical_plan_digest", "theorem_identity_digest",
+        "methodology_anchor_digest", "family_count", "all_family_p19_complete",
+        "product_evidence_record", "product_qualified", "production_control_authorized",
     )
     try:
         payload = {key: doc[key] for key in keys}
@@ -259,9 +267,14 @@ def verify_global_product_qualification_authority_document(path: Path) -> dict[s
         raise GlobalProductQualificationError("global product authority payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise GlobalProductQualificationError("global product authority digest mismatch")
+    for field in ("source_registry_sha256", "statistical_plan_digest", "theorem_identity_digest", "methodology_anchor_digest"):
+        _sha(field, doc.get(field))
     if int(doc.get("family_count", 0)) != 2:
         raise GlobalProductQualificationError("global product authority must contain exactly two families")
     family_rows = doc.get("family_p19_digests")
     if not isinstance(family_rows, list) or len(family_rows) != 2:
         raise GlobalProductQualificationError("global product authority family P19 population malformed")
+    ids = doc.get("canonical_family_ids")
+    if not isinstance(ids, list) or len(ids) != 2 or len(set(map(str, ids))) != 2:
+        raise GlobalProductQualificationError("global product authority canonical family set malformed")
     return doc
