@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from cwc.governance.b2_fit_authority import verify_b2_fit_authority_document
+from cwc.governance.ccf_spec_authority import verify_ccf_spec_authority_document
 from cwc.governance.evidence_closure import (
     ClosureError,
     EvidenceArtifact,
@@ -94,6 +95,37 @@ def close_execution_manifests_frozen(
     ))
 
 
+def close_ccf_spec_frozen(
+    ledger: EvidenceClosureLedger,
+    *,
+    ccf_spec_authority_path: Path,
+    identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
+) -> dict[str, object]:
+    identity_checker(ledger)
+    if ledger.next_stage() != "CCF_SPEC_FROZEN":
+        raise ClosureError("CCF_SPEC_FROZEN is not the next admissible stage")
+    path, rel = _repo_relative(ledger.repository_root, ccf_spec_authority_path)
+    try:
+        authority = verify_ccf_spec_authority_document(path)
+    except RuntimeError as exc:
+        raise ClosureError("CCF spec authority verification failed") from exc
+    execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    try:
+        execution = verify_execution_manifest_freeze_document(execution_path)
+    except RuntimeError as exc:
+        raise ClosureError("prior execution manifest freeze is invalid") from exc
+    if authority.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
+        raise ClosureError("CCF spec authority is bound to a different execution freeze")
+    if authority.get("family_id") != execution.get("family_id"):
+        raise ClosureError("CCF spec authority family differs from execution freeze")
+    artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
+    return ledger.advance(StageExecution(
+        stage="CCF_SPEC_FROZEN",
+        commands=(),
+        evidence=(artifact,),
+    ))
+
+
 def close_b2_fitted(
     ledger: EvidenceClosureLedger,
     *,
@@ -110,14 +142,18 @@ def close_b2_fitted(
         raise ClosureError("B2 fit authority verification failed") from exc
 
     freeze_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    ccf_path, _, _ = _stage_evidence_file(ledger, stage="CCF_SPEC_FROZEN")
     try:
         freeze = verify_execution_manifest_freeze_document(freeze_path)
+        ccf = verify_ccf_spec_authority_document(ccf_path)
     except RuntimeError as exc:
-        raise ClosureError("prior execution manifest freeze is invalid") from exc
+        raise ClosureError("pre-outcome execution/CCF freeze is invalid") from exc
     if authority.get("execution_manifest_freeze_digest") != freeze.get("freeze_digest"):
         raise ClosureError("B2 authority is bound to a different execution manifest freeze")
-    if authority.get("family_id") != freeze.get("family_id"):
-        raise ClosureError("B2 authority family differs from execution manifest freeze")
+    if ccf.get("execution_manifest_freeze_digest") != freeze.get("freeze_digest"):
+        raise ClosureError("B2 stage lost preregistered CCF freeze lineage")
+    if authority.get("family_id") != freeze.get("family_id") or ccf.get("family_id") != freeze.get("family_id"):
+        raise ClosureError("B2/CCF family differs from execution manifest freeze")
 
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
     return ledger.advance(StageExecution(
@@ -143,18 +179,24 @@ def close_harness_frozen(
         raise ClosureError("harness freeze verification failed") from exc
 
     execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    ccf_path, _, _ = _stage_evidence_file(ledger, stage="CCF_SPEC_FROZEN")
     b2_path, _, _ = _stage_evidence_file(ledger, stage="B2_FITTED")
     try:
         execution = verify_execution_manifest_freeze_document(execution_path)
+        ccf = verify_ccf_spec_authority_document(ccf_path)
         b2 = verify_b2_fit_authority_document(b2_path)
     except RuntimeError as exc:
         raise ClosureError("upstream harness authorities are invalid") from exc
 
     if harness.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
         raise ClosureError("harness freeze is bound to a different execution manifest freeze")
+    if harness.get("ccf_spec_authority_digest") != ccf.get("authority_digest"):
+        raise ClosureError("harness freeze is bound to a different CCF preregistration")
+    if harness.get("ccf_spec_digest") != ccf.get("ccf_spec_digest"):
+        raise ClosureError("harness CCF spec identity differs from preregistered CCF spec")
     if harness.get("b2_fit_authority_digest") != b2.get("authority_digest"):
         raise ClosureError("harness freeze is bound to a different B2 authority")
-    if harness.get("family_id") != execution.get("family_id") or harness.get("family_id") != b2.get("family_id"):
+    if harness.get("family_id") != execution.get("family_id") or harness.get("family_id") != b2.get("family_id") or harness.get("family_id") != ccf.get("family_id"):
         raise ClosureError("harness freeze family differs from upstream authorities")
 
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
