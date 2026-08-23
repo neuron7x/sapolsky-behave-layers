@@ -8,6 +8,13 @@ from statistics import NormalDist
 from typing import Iterable
 
 
+PRIMARY_INFERENCE_METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_EMPIRICAL_BERNSTEIN_CS_V1"
+PRIMARY_CLAIM_TARGET = "AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE"
+PRIMARY_ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_VARIANCE_CENTER_NO_IID_REQUIRED"
+PRIMARY_SEQUENCE_ORDER = "TASK_ID_ASC_THEN_REPLICATE_ASC"
+PLAN_METHOD = "DGC_PRODUCT_ANYTIME_VALID_ACM_V4_THREE_WAY_HOLDOUT"
+
+
 @dataclass(frozen=True, slots=True)
 class ProductStatisticalPlan:
     family_count: int = 2
@@ -22,7 +29,11 @@ class ProductStatisticalPlan:
     target_power: float = 0.90
     min_trials_per_task: int = 5
     max_trials_per_task: int = 50
-    method: str = "DGC_PRODUCT_PAIRED_CLUSTER_AWARE_V3_THREE_WAY_HOLDOUT"
+    primary_inference_method: str = PRIMARY_INFERENCE_METHOD
+    primary_claim_target: str = PRIMARY_CLAIM_TARGET
+    primary_assumption_boundary: str = PRIMARY_ASSUMPTION_BOUNDARY
+    primary_sequence_order: str = PRIMARY_SEQUENCE_ORDER
+    method: str = PLAN_METHOD
 
     def __post_init__(self) -> None:
         if min(self.family_count, self.baseline_count, self.endpoint_count) <= 0:
@@ -45,6 +56,16 @@ class ProductStatisticalPlan:
             raise ValueError("target_power must be in (0.5,1)")
         if not (1 <= self.min_trials_per_task <= self.max_trials_per_task):
             raise ValueError("invalid trial bounds")
+        if self.primary_inference_method != PRIMARY_INFERENCE_METHOD:
+            raise ValueError("primary_inference_method must equal frozen V4 theorem identity")
+        if self.primary_claim_target != PRIMARY_CLAIM_TARGET:
+            raise ValueError("primary_claim_target must equal frozen V4 estimand")
+        if self.primary_assumption_boundary != PRIMARY_ASSUMPTION_BOUNDARY:
+            raise ValueError("primary_assumption_boundary must equal frozen V4 assumption boundary")
+        if self.primary_sequence_order != PRIMARY_SEQUENCE_ORDER:
+            raise ValueError("primary_sequence_order must equal frozen V4 analysis order")
+        if self.method != PLAN_METHOD:
+            raise ValueError("method must equal frozen V4 product statistical plan identity")
 
     @property
     def per_claim_alpha(self) -> float:
@@ -65,6 +86,10 @@ class ProductStatisticalPlan:
             "target_power": self.target_power,
             "min_trials_per_task": self.min_trials_per_task,
             "max_trials_per_task": self.max_trials_per_task,
+            "primary_inference_method": self.primary_inference_method,
+            "primary_claim_target": self.primary_claim_target,
+            "primary_assumption_boundary": self.primary_assumption_boundary,
+            "primary_sequence_order": self.primary_sequence_order,
             "method": self.method,
         }
         return hashlib.sha256(
@@ -83,12 +108,7 @@ def deterministic_three_way_task_split(
     calibration_fraction: float = 0.20,
     generalization_holdout_fraction: float = 0.20,
 ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
-    """Freeze calibration, confirmatory and G1-generalization populations pre-outcome.
-
-    G1 must be genuinely unseen after both B2 fitting and primary confirmatory P9.
-    Therefore the G1 population is reserved before any outcomes are observed and is
-    excluded from both calibration and the primary confirmatory population.
-    """
+    """Freeze calibration, confirmatory and G1-generalization populations pre-outcome."""
     ranked = _rank_tasks(task_ids, salt="DGC-SPLIT-V3:")
     if len(ranked) < 10:
         raise ValueError("at least ten tasks required for three-way product partition")
@@ -119,11 +139,7 @@ def deterministic_three_way_task_split(
 def deterministic_task_split(
     task_ids: Iterable[str], *, calibration_fraction: float = 0.20
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Legacy two-way research split; not product-authorized after V3.
-
-    Product qualification requires `deterministic_three_way_task_split` so G1
-    generalization is not contaminated by calibration or primary confirmatory use.
-    """
+    """Legacy two-way research split; not product-authorized after V3."""
     tasks = tuple(sorted({str(x).strip() for x in task_ids if str(x).strip()}))
     if len(tasks) < 5:
         raise ValueError("at least five tasks required for calibration/confirmatory split")
@@ -153,7 +169,7 @@ class ClusterAwareTrialSizing:
     achieved_standard_error_at_required_trials: float
     per_claim_alpha: float
     target_power: float
-    method: str = "NORMAL_APPROX_CLUSTER_VARIANCE_COMPONENTS_V1"
+    method: str = "NORMAL_APPROX_CLUSTER_VARIANCE_COMPONENTS_V1_PLANNING_ONLY"
 
 
 def cluster_aware_required_trials_per_task(
@@ -164,17 +180,10 @@ def cluster_aware_required_trials_per_task(
     confirmatory_task_count: int,
     plan: ProductStatisticalPlan,
 ) -> ClusterAwareTrialSizing:
-    """Pre-execution sizing for repeated trials nested within confirmatory tasks.
+    """Calibration-only resource planning for repeated trials nested within tasks.
 
-    Uses the declared variance decomposition
-
-        Var(mean) = sigma_between^2 / N_tasks
-                  + sigma_within^2 / (N_tasks * R).
-
-    The variance-component estimates must come from calibration-only data. Repeated
-    trials cannot overcome an excessive between-task variance floor; that case fails
-    as UNDERPOWERED_TASK_HETEROGENEITY instead of manufacturing power by treating
-    within-task repetitions as independent tasks.
+    This is not the V4 confirmatory inference theorem. It is retained as a
+    conservative planning diagnostic for task diversity and within-task noise.
     """
     between = float(between_task_std)
     within = float(within_task_std)
@@ -199,7 +208,7 @@ def cluster_aware_required_trials_per_task(
 
     if available_within_variance <= 0:
         raise RuntimeError(
-            "UNDERPOWERED_TASK_HETEROGENEITY: no number of within-task repeats can meet the frozen target; "
+            "UNDERPOWERED_TASK_HETEROGENEITY: no number of within-task repeats can meet the frozen planning target; "
             f"asymptotic_se={asymptotic_se:.8f} target_se={target_se:.8f}"
         )
 
@@ -231,12 +240,7 @@ def approximate_required_trials_per_task(
     confirmatory_task_count: int,
     plan: ProductStatisticalPlan,
 ) -> int:
-    """Legacy IID-only sizing helper; not authorized for product qualification V2.
-
-    Retained for backwards-compatible research analyses. Product qualification must
-    use `cluster_aware_required_trials_per_task` because repeated trials are nested
-    within tasks and must not be treated as independent task draws.
-    """
+    """Legacy IID-only sizing helper; research compatibility only."""
     sigma = float(calibration_std)
     effect = float(effect_of_interest)
     if not math.isfinite(sigma) or sigma < 0.0:
