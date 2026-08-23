@@ -22,9 +22,10 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Freeze final B0-B3+DGC comparison harness after B2 fit.")
+    parser = argparse.ArgumentParser(description="Freeze final B0-B3+DGC comparison harness after preregistration and B2 fit.")
     parser.add_argument("--execution-manifest-freeze", required=True)
     parser.add_argument("--ccf-spec-authority", required=True)
+    parser.add_argument("--generalization-registry", required=True)
     parser.add_argument("--b2-fit-authority", required=True)
     parser.add_argument("--baseline-panel-input", required=True)
     parser.add_argument("--output", required=True)
@@ -33,6 +34,7 @@ def main() -> int:
     authority = build_harness_freeze(
         execution_manifest_freeze_path=Path(args.execution_manifest_freeze),
         ccf_spec_authority_path=Path(args.ccf_spec_authority),
+        generalization_registry_path=Path(args.generalization_registry),
         b2_fit_authority_path=Path(args.b2_fit_authority),
         baseline_panel_input_path=Path(args.baseline_panel_input),
     )
@@ -44,8 +46,11 @@ def main() -> int:
         "harness_freeze_digest": authority.harness_freeze_digest,
         "comparison_frame_digest": authority.comparison_frame_digest,
         "ccf_spec_digest": authority.ccf_spec_digest,
+        "generalization_registry_digest": authority.generalization_registry_digest,
+        "g1_holdout_task_digest": authority.g1_holdout_task_digest,
         "policy_arms": len(authority.policy_harnesses),
         "confirmatory_execution_authorized": False,
+        "generalization_execution_authorized": False,
         "product_promotion_authorized": False,
     }, sort_keys=True))
     return 0
