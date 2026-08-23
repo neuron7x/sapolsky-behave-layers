@@ -70,6 +70,26 @@ def execution_doc(path: Path, *, policy_ids=("B0", "B1", "B2", "B3", "DGC"), col
     return write(path, doc)
 
 
+def ccf_doc(path: Path, *, execution_digest: str, spec_digest=h("7")) -> Path:
+    payload = {
+        "family_id": "SWE_BENCH_VERIFIED",
+        "execution_manifest_freeze_digest": execution_digest,
+        "ccf_spec_path": "artifacts/dgc-product-v1/ccf-spec.json",
+        "ccf_spec_sha256": h("6"),
+        "ccf_spec_digest": spec_digest,
+        "quantizer_source_path": "cwc/governance/ccf_quantizer.py",
+        "quantizer_source_sha256": h("5"),
+    }
+    return write(path, {
+        "schema": "DGC_CCF_SPEC_AUTHORITY_V1",
+        **payload,
+        "authority_digest": sha256_bytes(canonical_json_bytes(payload)),
+        "frozen_pre_outcome": True,
+        "p9_oracle_audit_authorized": False,
+        "product_promotion_authorized": False,
+    })
+
+
 def b2_doc(path: Path, *, execution_digest: str, feature=h("e"), algorithm=h("f")) -> Path:
     payload = {
         "family_id": "SWE_BENCH_VERIFIED",
@@ -122,20 +142,27 @@ def baseline_input(path: Path, *, b2_feature=h("e"), b2_algorithm=h("f")) -> Pat
 def fixture(tmp_path: Path, *, collide=False, policy_ids=("B0", "B1", "B2", "B3", "DGC")):
     execution = execution_doc(tmp_path / "execution.json", collide=collide, policy_ids=policy_ids)
     execution_payload = json.loads(execution.read_text())
+    ccf = ccf_doc(tmp_path / "ccf-authority.json", execution_digest=execution_payload["freeze_digest"])
     b2 = b2_doc(tmp_path / "b2.json", execution_digest=execution_payload["freeze_digest"])
     baselines = baseline_input(tmp_path / "baselines.json")
-    return execution, b2, baselines
+    return execution, ccf, b2, baselines
 
 
-def test_final_harness_freeze_binds_exact_fitted_b0_b3_plus_dgc(tmp_path: Path):
-    execution, b2, baselines = fixture(tmp_path)
-    authority = build_harness_freeze(
+def build(tmp_path: Path, *, collide=False, policy_ids=("B0", "B1", "B2", "B3", "DGC")):
+    execution, ccf, b2, baselines = fixture(tmp_path, collide=collide, policy_ids=policy_ids)
+    return build_harness_freeze(
         execution_manifest_freeze_path=execution,
+        ccf_spec_authority_path=ccf,
         b2_fit_authority_path=b2,
         baseline_panel_input_path=baselines,
-    )
+    ), execution, ccf, b2, baselines
+
+
+def test_final_harness_freeze_binds_exact_fitted_b0_b3_plus_dgc_and_ccf(tmp_path: Path):
+    authority, _, ccf, _, _ = build(tmp_path)
     assert authority.family_id == "SWE_BENCH_VERIFIED"
     assert len(authority.policy_harnesses) == 5
+    assert authority.ccf_spec_digest == json.loads(ccf.read_text())["ccf_spec_digest"]
     assert len({row.governance_policy_digest for row in authority.policy_harnesses}) == 5
     assert len({row.harness_full_digest for row in authority.policy_harnesses}) == 5
     role_map = {row.role: row.policy_id for row in authority.policy_role_bindings}
@@ -147,7 +174,6 @@ def test_final_harness_freeze_binds_exact_fitted_b0_b3_plus_dgc(tmp_path: Path):
     b2_spec = next(row for row in authority.baseline_specs if row["kind"] == BaselineKind.LEARNED_COST_QUALITY_ROUTER.value)
     assert b2_spec["calibration_task_digest"] == h("4")
     assert b2_spec["fitted_model_digest"] == h("6")
-
     out = write(tmp_path / "harness.json", authority.document)
     verified = verify_harness_freeze_document(out)
     assert verified["harness_frozen"] is True
@@ -155,43 +181,41 @@ def test_final_harness_freeze_binds_exact_fitted_b0_b3_plus_dgc(tmp_path: Path):
 
 
 def test_harness_freeze_rejects_b2_schema_mismatch(tmp_path: Path):
-    execution, b2, _ = fixture(tmp_path)
+    execution, ccf, b2, _ = fixture(tmp_path)
     baselines = baseline_input(tmp_path / "bad-baselines.json", b2_feature=h("9"))
     with pytest.raises(HarnessFreezeError, match="feature schema"):
         build_harness_freeze(
             execution_manifest_freeze_path=execution,
+            ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
             baseline_panel_input_path=baselines,
         )
 
 
 def test_harness_freeze_rejects_missing_policy_arm(tmp_path: Path):
-    execution, b2, baselines = fixture(tmp_path, policy_ids=("B0", "B1", "B2", "DGC"))
+    execution, ccf, b2, baselines = fixture(tmp_path, policy_ids=("B0", "B1", "B2", "DGC"))
     with pytest.raises(HarnessFreezeError, match="exact B0-B3 \+ DGC"):
         build_harness_freeze(
             execution_manifest_freeze_path=execution,
+            ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
             baseline_panel_input_path=baselines,
         )
 
 
 def test_harness_freeze_rejects_governance_digest_collision(tmp_path: Path):
-    execution, b2, baselines = fixture(tmp_path, collide=True)
+    execution, ccf, b2, baselines = fixture(tmp_path, collide=True)
     with pytest.raises(HarnessFreezeError, match="distinct content digests"):
         build_harness_freeze(
             execution_manifest_freeze_path=execution,
+            ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
             baseline_panel_input_path=baselines,
         )
 
 
 def test_harness_document_tamper_is_rejected(tmp_path: Path):
-    execution, b2, baselines = fixture(tmp_path)
-    authority = build_harness_freeze(
-        execution_manifest_freeze_path=execution,
-        b2_fit_authority_path=b2,
-        baseline_panel_input_path=baselines,
-    )
+    authority, _, _, _, _ = build(tmp_path)
     out = write(tmp_path / "harness.json", authority.document)
     doc = json.loads(out.read_text())
     doc["comparison_frame_digest"] = h("f")
@@ -201,18 +225,23 @@ def test_harness_document_tamper_is_rejected(tmp_path: Path):
 
 
 def test_policy_role_substitution_is_rejected_even_if_five_arms_remain(tmp_path: Path):
-    execution, b2, baselines = fixture(tmp_path)
-    authority = build_harness_freeze(
-        execution_manifest_freeze_path=execution,
-        b2_fit_authority_path=b2,
-        baseline_panel_input_path=baselines,
-    )
+    authority, _, _, _, _ = build(tmp_path)
     out = write(tmp_path / "harness.json", authority.document)
     doc = json.loads(out.read_text())
     rows = doc["policy_role_bindings"]
     b0 = next(row for row in rows if row["role"] == BaselineKind.FIXED_COMPUTE.value)
     dgc = next(row for row in rows if row["role"] == DGC_ROLE)
     b0["policy_id"], dgc["policy_id"] = dgc["policy_id"], b0["policy_id"]
+    write(out, doc)
+    with pytest.raises(HarnessFreezeError, match="digest mismatch"):
+        verify_harness_freeze_document(out)
+
+
+def test_ccf_spec_substitution_is_rejected_by_harness_digest(tmp_path: Path):
+    authority, _, _, _, _ = build(tmp_path)
+    out = write(tmp_path / "harness.json", authority.document)
+    doc = json.loads(out.read_text())
+    doc["ccf_spec_digest"] = h("9")
     write(out, doc)
     with pytest.raises(HarnessFreezeError, match="digest mismatch"):
         verify_harness_freeze_document(out)
