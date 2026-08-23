@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.p9_scientific_authority_v2 import build_p9_scientific_authority_v2
+from cwc.governance.p9_scientific_authority_v3 import build_p9_scientific_authority_v3
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -23,14 +23,14 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compose dual exact/conditional P9 with CCF into scientific authority V2."
+        description="Compose anytime-valid P9 with CCF into scientific authority V3."
     )
-    parser.add_argument("--dual-p9-authority", required=True)
+    parser.add_argument("--anytime-p9-authority", required=True)
     parser.add_argument("--ccf-oracle-audit-authority", required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    authority = build_p9_scientific_authority_v2(
-        dual_p9_authority_path=Path(args.dual_p9_authority),
+    authority = build_p9_scientific_authority_v3(
+        anytime_p9_authority_path=Path(args.anytime_p9_authority),
         ccf_oracle_audit_authority_path=Path(args.ccf_oracle_audit_authority),
     )
     output = Path(args.output)
@@ -39,19 +39,19 @@ def main() -> int:
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
     print(json.dumps({
-        "status": "PASS" if authority.generalization_evaluation_authorized else "FAIL_P9_SCIENTIFIC_V2",
+        "status": "PASS" if authority.scientific_p9_supported else "FAIL_P9_SCIENTIFIC_V3",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_panel_supported": authority.exact_panel_supported,
-        "expected_effect_supported_under_independence_assumption": (
-            authority.expected_effect_supported_under_independence_assumption
-        ),
-        "randomness_assumption_verified": authority.randomness_assumption_verified,
+        "anytime_average_conditional_mean_supported": authority.anytime_average_conditional_mean_supported,
         "ccf_headroom_audit_complete": authority.ccf_headroom_audit_complete,
+        "iid_assumption_required": False,
+        "provider_request_independence_required": False,
+        "scientific_p9_supported": authority.scientific_p9_supported,
         "generalization_evaluation_authorized": authority.generalization_evaluation_authorized,
         "product_promotion_authorized": False,
     }, sort_keys=True))
-    return 0 if authority.generalization_evaluation_authorized else 21
+    return 0 if authority.scientific_p9_supported else 21
 
 
 if __name__ == "__main__":
