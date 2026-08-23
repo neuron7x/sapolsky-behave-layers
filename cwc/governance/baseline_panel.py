@@ -52,11 +52,7 @@ class BaselinePolicySpec:
     def executable_frozen(self) -> bool:
         if self.kind is not BaselineKind.LEARNED_COST_QUALITY_ROUTER:
             return True
-        return bool(
-            self.training_algorithm_digest
-            and self.calibration_task_digest
-            and self.fitted_model_digest
-        )
+        return bool(self.training_algorithm_digest and self.calibration_task_digest and self.fitted_model_digest)
 
     @property
     def digest(self) -> str:
@@ -90,10 +86,7 @@ class BaselinePanelSeal:
 
     @property
     def digest(self) -> str:
-        return _digest([
-            (spec.kind.value, spec.digest)
-            for spec in sorted(self.specs, key=lambda s: s.kind.value)
-        ])
+        return _digest([(spec.kind.value, spec.digest) for spec in sorted(self.specs, key=lambda s: s.kind.value)])
 
 
 def freeze_learned_baseline_fit(
@@ -109,4 +102,34 @@ def freeze_learned_baseline_fit(
         training_algorithm_digest=spec.training_algorithm_digest,
         calibration_task_digest=_req("calibration_task_digest", calibration_task_digest),
         fitted_model_digest=_req("fitted_model_digest", fitted_model_digest),
+    )
+
+
+def bind_verified_learned_router_fit(
+    spec: BaselinePolicySpec,
+    *,
+    feature_schema_digest: str,
+    training_algorithm_digest: str,
+    calibration_task_digest: str,
+    fitted_model_digest: str,
+) -> BaselinePolicySpec:
+    """Bind an executable B2 fit only when frozen pre-fit identities match.
+
+    The function deliberately receives plain digests rather than importing the learned
+    router implementation. This keeps the baseline-panel contract independent while
+    preventing a fitted model from being attached to a different feature schema or
+    training algorithm after calibration outcomes are known.
+    """
+    if spec.kind is not BaselineKind.LEARNED_COST_QUALITY_ROUTER:
+        raise ValueError("only B2 learned baseline may bind a fitted router")
+    observed_schema = _req("feature_schema_digest", feature_schema_digest)
+    observed_algorithm = _req("training_algorithm_digest", training_algorithm_digest)
+    if spec.feature_schema_digest != observed_schema:
+        raise ValueError("B2 feature schema digest mismatch")
+    if spec.training_algorithm_digest != observed_algorithm:
+        raise ValueError("B2 training algorithm digest mismatch")
+    return freeze_learned_baseline_fit(
+        spec,
+        calibration_task_digest=calibration_task_digest,
+        fitted_model_digest=fitted_model_digest,
     )
