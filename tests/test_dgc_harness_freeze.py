@@ -7,6 +7,7 @@ import pytest
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.harness_freeze import (
+    DGC_ROLE,
     HarnessFreezeError,
     build_harness_freeze,
     verify_harness_freeze_document,
@@ -137,6 +138,12 @@ def test_final_harness_freeze_binds_exact_fitted_b0_b3_plus_dgc(tmp_path: Path):
     assert len(authority.policy_harnesses) == 5
     assert len({row.governance_policy_digest for row in authority.policy_harnesses}) == 5
     assert len({row.harness_full_digest for row in authority.policy_harnesses}) == 5
+    role_map = {row.role: row.policy_id for row in authority.policy_role_bindings}
+    assert role_map[DGC_ROLE] == "DGC"
+    assert role_map[BaselineKind.FIXED_COMPUTE.value] == "B0"
+    assert role_map[BaselineKind.UNCERTAINTY_ROUTER.value] == "B1"
+    assert role_map[BaselineKind.LEARNED_COST_QUALITY_ROUTER.value] == "B2"
+    assert role_map[BaselineKind.SEQUENTIAL_VERIFICATION.value] == "B3"
     b2_spec = next(row for row in authority.baseline_specs if row["kind"] == BaselineKind.LEARNED_COST_QUALITY_ROUTER.value)
     assert b2_spec["calibration_task_digest"] == h("4")
     assert b2_spec["fitted_model_digest"] == h("6")
@@ -188,6 +195,24 @@ def test_harness_document_tamper_is_rejected(tmp_path: Path):
     out = write(tmp_path / "harness.json", authority.document)
     doc = json.loads(out.read_text())
     doc["comparison_frame_digest"] = h("f")
+    write(out, doc)
+    with pytest.raises(HarnessFreezeError, match="digest mismatch"):
+        verify_harness_freeze_document(out)
+
+
+def test_policy_role_substitution_is_rejected_even_if_five_arms_remain(tmp_path: Path):
+    execution, b2, baselines = fixture(tmp_path)
+    authority = build_harness_freeze(
+        execution_manifest_freeze_path=execution,
+        b2_fit_authority_path=b2,
+        baseline_panel_input_path=baselines,
+    )
+    out = write(tmp_path / "harness.json", authority.document)
+    doc = json.loads(out.read_text())
+    rows = doc["policy_role_bindings"]
+    b0 = next(row for row in rows if row["role"] == BaselineKind.FIXED_COMPUTE.value)
+    dgc = next(row for row in rows if row["role"] == DGC_ROLE)
+    b0["policy_id"], dgc["policy_id"] = dgc["policy_id"], b0["policy_id"]
     write(out, doc)
     with pytest.raises(HarnessFreezeError, match="digest mismatch"):
         verify_harness_freeze_document(out)
