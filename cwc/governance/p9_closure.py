@@ -35,6 +35,7 @@ def close_p9_supported(
     *,
     p9_authority_path: Path,
     execution_bundle_root: Path,
+    physical_cost_bundle_root: Path,
     identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
 ) -> dict[str, object]:
     identity_checker(ledger)
@@ -47,6 +48,10 @@ def close_p9_supported(
         raise ClosureError("P9 authority verification failed") from exc
     if declared.get("p9_supported") is not True:
         raise ClosureError("P9 support is not established across exact B0-B3 population")
+    if declared.get("physical_cost_accounting_verified") is not True:
+        raise ClosureError("P9 cannot close without complete physical cost accounting")
+    if declared.get("net_cost_superiority_supported") is not True:
+        raise ClosureError("P9 cannot close without physically-costed net cost superiority")
 
     execution_authority_path, _, _ = _stage_evidence_file(ledger, stage="CONFIRMATORY_EXECUTED")
     root_authority_path, _, _ = _stage_evidence_file(ledger, stage="GENERATION_ROOT_FROZEN")
@@ -62,6 +67,7 @@ def close_p9_supported(
         recomputed = build_executed_p9_authority(
             confirmatory_execution_authority_path=execution_authority_path,
             execution_bundle_root=Path(execution_bundle_root),
+            physical_cost_bundle_root=Path(physical_cost_bundle_root),
             confirmatory_root_authority_path=root_authority_path,
             harness_freeze_path=harness_path,
             execution_manifest_freeze_path=execution_freeze_path,
@@ -69,11 +75,11 @@ def close_p9_supported(
             source_registry_path=source_registry_path,
         )
     except RuntimeError as exc:
-        raise ClosureError("P9 full-population recomputation failed") from exc
+        raise ClosureError("P9 full-population physical-cost recomputation failed") from exc
     if recomputed.authority_digest != declared.get("authority_digest"):
         raise ClosureError("declared P9 authority differs from recomputed executed population")
-    if not recomputed.p9_supported:
-        raise ClosureError("recomputed P9 does not certify simultaneous dominance/noninferiority")
+    if not recomputed.p9_supported or not recomputed.net_cost_superiority_supported:
+        raise ClosureError("recomputed P9 does not certify simultaneous physical-cost superiority/noninferiority")
     if declared.get("execution_authority_digest") != execution_authority.get("authority_digest"):
         raise ClosureError("P9 authority is bound to a different CONFIRMATORY_EXECUTED authority")
     if declared.get("execution_population_digest") != execution_authority.get("execution_population_digest"):
