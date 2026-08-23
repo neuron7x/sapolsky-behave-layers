@@ -86,7 +86,9 @@ def test_self_consistent_but_non_deterministic_partition_is_rejected(tmp_path: P
 
 def test_overlap_is_rejected_even_if_counts_are_preserved(tmp_path: Path):
     doc = valid_partition_doc()
-    doc["generalization_task_ids"][0] = doc["calibration_task_ids"][0]
+    generalization = list(doc["generalization_task_ids"])
+    generalization[0] = doc["calibration_task_ids"][0]
+    doc["generalization_task_ids"] = generalization
     path = write(tmp_path / "overlap.json", doc)
     with pytest.raises(TaskPartitionError, match="overlap"):
         verify_task_partition_document(path)
