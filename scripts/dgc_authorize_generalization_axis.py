@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.generalization_dual_authority import build_generalization_axis_dual_authority
+from cwc.governance.generalization_anytime_authority import build_generalization_axis_anytime_authority
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -23,7 +23,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Derive one G1-G5 exact-panel plus conditional bounded expected-effect authority."
+        description="Derive one G1-G5 exact-panel plus anytime-valid average-conditional-mean authority."
     )
     parser.add_argument("--bundle-root", required=True)
     parser.add_argument("--repository-root", default=".")
@@ -31,7 +31,7 @@ def main() -> int:
     parser.add_argument("--trial-sizing-authority", required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    authority = build_generalization_axis_dual_authority(
+    authority = build_generalization_axis_anytime_authority(
         Path(args.bundle_root),
         repository_root=Path(args.repository_root),
         registry_path=Path(args.registry),
@@ -42,21 +42,20 @@ def main() -> int:
         output,
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
-    supported = (
-        authority.exact_panel_supported
-        and authority.expected_effect_supported_under_independence_assumption
-    )
+    supported = authority.axis_supported_without_iid_assumption
     print(json.dumps({
-        "status": "PASS" if supported else "FAIL_GENERALIZATION_AXIS_SCIENTIFIC_GATE",
+        "status": "PASS" if supported else "FAIL_GENERALIZATION_AXIS_ANYTIME_GATE",
         "axis": authority.axis,
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "exact_panel_supported": authority.exact_panel_supported,
-        "expected_effect_supported_under_independence_assumption": (
-            authority.expected_effect_supported_under_independence_assumption
+        "anytime_average_conditional_mean_supported": authority.anytime_average_conditional_mean_supported,
+        "iid_assumption_required": False,
+        "provider_request_independence_required": False,
+        "legacy_micro_eb_supported_under_cross_pair_independence": (
+            authority.legacy_micro_eb_supported_under_cross_pair_independence
         ),
-        "supported_under_frozen_assumptions": supported,
-        "randomness_assumption_verified": authority.randomness_assumption_verified,
+        "axis_supported_without_iid_assumption": supported,
         "product_promotion_authorized": False,
     }, sort_keys=True))
     return 0 if supported else 30
