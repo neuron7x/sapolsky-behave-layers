@@ -13,6 +13,10 @@ from cwc.governance.evidence_closure import (
     sha256_file,
 )
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.generalization_registry import (
+    recompute_generalization_registry_from_document,
+    verify_generalization_registry_document,
+)
 from cwc.governance.harness_freeze import verify_harness_freeze_document
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.trial_sizing_authority import verify_trial_sizing_authority_document
@@ -126,6 +130,41 @@ def close_ccf_spec_frozen(
     ))
 
 
+def close_generalization_registry_frozen(
+    ledger: EvidenceClosureLedger,
+    *,
+    generalization_registry_path: Path,
+    identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
+) -> dict[str, object]:
+    identity_checker(ledger)
+    if ledger.next_stage() != "GENERALIZATION_REGISTRY_FROZEN":
+        raise ClosureError("GENERALIZATION_REGISTRY_FROZEN is not the next admissible stage")
+    path, rel = _repo_relative(ledger.repository_root, generalization_registry_path)
+    execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
+    try:
+        declared = verify_generalization_registry_document(path)
+        rebuilt = recompute_generalization_registry_from_document(
+            repository_root=ledger.repository_root,
+            execution_manifest_freeze_path=execution_path,
+            registry_path=path,
+        )
+        execution = verify_execution_manifest_freeze_document(execution_path)
+    except RuntimeError as exc:
+        raise ClosureError("G1-G5 generalization registry subject replay failed") from exc
+    if rebuilt.registry_digest != declared.get("registry_digest"):
+        raise ClosureError("declared G1-G5 registry differs from repository subjects")
+    if declared.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
+        raise ClosureError("G1-G5 registry is bound to a different execution freeze")
+    if declared.get("family_id") != execution.get("family_id"):
+        raise ClosureError("G1-G5 registry family differs from execution freeze")
+    artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
+    return ledger.advance(StageExecution(
+        stage="GENERALIZATION_REGISTRY_FROZEN",
+        commands=(),
+        evidence=(artifact,),
+    ))
+
+
 def close_b2_fitted(
     ledger: EvidenceClosureLedger,
     *,
@@ -143,17 +182,29 @@ def close_b2_fitted(
 
     freeze_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
     ccf_path, _, _ = _stage_evidence_file(ledger, stage="CCF_SPEC_FROZEN")
+    generalization_path, _, _ = _stage_evidence_file(ledger, stage="GENERALIZATION_REGISTRY_FROZEN")
     try:
         freeze = verify_execution_manifest_freeze_document(freeze_path)
         ccf = verify_ccf_spec_authority_document(ccf_path)
+        generalization = verify_generalization_registry_document(generalization_path)
     except RuntimeError as exc:
-        raise ClosureError("pre-outcome execution/CCF freeze is invalid") from exc
+        raise ClosureError("pre-outcome execution/CCF/generalization freeze is invalid") from exc
     if authority.get("execution_manifest_freeze_digest") != freeze.get("freeze_digest"):
         raise ClosureError("B2 authority is bound to a different execution manifest freeze")
     if ccf.get("execution_manifest_freeze_digest") != freeze.get("freeze_digest"):
         raise ClosureError("B2 stage lost preregistered CCF freeze lineage")
-    if authority.get("family_id") != freeze.get("family_id") or ccf.get("family_id") != freeze.get("family_id"):
-        raise ClosureError("B2/CCF family differs from execution manifest freeze")
+    if generalization.get("execution_manifest_freeze_digest") != freeze.get("freeze_digest"):
+        raise ClosureError("B2 stage lost preregistered G1-G5 registry lineage")
+    if authority.get("confirmatory_task_digest") != generalization.get("primary_confirmatory_task_digest"):
+        raise ClosureError("B2 confirmatory task population differs from preregistered generalization registry")
+    if authority.get("generalization_task_digest") != generalization.get("g1_holdout_task_digest"):
+        raise ClosureError("B2 G1 holdout population differs from preregistered generalization registry")
+    if not (
+        authority.get("family_id") == freeze.get("family_id")
+        and ccf.get("family_id") == freeze.get("family_id")
+        and generalization.get("family_id") == freeze.get("family_id")
+    ):
+        raise ClosureError("B2/CCF/generalization family differs from execution manifest freeze")
 
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
     return ledger.advance(StageExecution(
@@ -180,10 +231,12 @@ def close_harness_frozen(
 
     execution_path, _, _ = _stage_evidence_file(ledger, stage="EXECUTION_MANIFESTS_FROZEN")
     ccf_path, _, _ = _stage_evidence_file(ledger, stage="CCF_SPEC_FROZEN")
+    generalization_path, _, _ = _stage_evidence_file(ledger, stage="GENERALIZATION_REGISTRY_FROZEN")
     b2_path, _, _ = _stage_evidence_file(ledger, stage="B2_FITTED")
     try:
         execution = verify_execution_manifest_freeze_document(execution_path)
         ccf = verify_ccf_spec_authority_document(ccf_path)
+        generalization = verify_generalization_registry_document(generalization_path)
         b2 = verify_b2_fit_authority_document(b2_path)
     except RuntimeError as exc:
         raise ClosureError("upstream harness authorities are invalid") from exc
@@ -194,9 +247,18 @@ def close_harness_frozen(
         raise ClosureError("harness freeze is bound to a different CCF preregistration")
     if harness.get("ccf_spec_digest") != ccf.get("ccf_spec_digest"):
         raise ClosureError("harness CCF spec identity differs from preregistered CCF spec")
+    if harness.get("generalization_registry_digest") != generalization.get("registry_digest"):
+        raise ClosureError("harness freeze is bound to a different G1-G5 preregistration")
+    if harness.get("g1_holdout_task_digest") != generalization.get("g1_holdout_task_digest"):
+        raise ClosureError("harness G1 holdout identity differs from preregistered registry")
     if harness.get("b2_fit_authority_digest") != b2.get("authority_digest"):
         raise ClosureError("harness freeze is bound to a different B2 authority")
-    if harness.get("family_id") != execution.get("family_id") or harness.get("family_id") != b2.get("family_id") or harness.get("family_id") != ccf.get("family_id"):
+    if not (
+        harness.get("family_id") == execution.get("family_id")
+        and harness.get("family_id") == b2.get("family_id")
+        and harness.get("family_id") == ccf.get("family_id")
+        and harness.get("family_id") == generalization.get("family_id")
+    ):
         raise ClosureError("harness freeze family differs from upstream authorities")
 
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(path), minimum_bytes=2)
