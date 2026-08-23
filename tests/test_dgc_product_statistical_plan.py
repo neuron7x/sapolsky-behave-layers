@@ -1,10 +1,13 @@
 import pytest
 
 from cwc.governance.product_statistical_plan import (
+    CONFSEQ_REFERENCE_COMMIT,
     PLAN_METHOD,
     PRIMARY_ASSUMPTION_BOUNDARY,
+    PRIMARY_BOUNDARY_METHOD,
     PRIMARY_CLAIM_TARGET,
     PRIMARY_INFERENCE_METHOD,
+    PRIMARY_PREDICTOR_RULE,
     PRIMARY_SEQUENCE_ORDER,
     ProductStatisticalPlan,
     approximate_required_trials_per_task,
@@ -14,25 +17,31 @@ from cwc.governance.product_statistical_plan import (
 )
 
 
-def test_default_plan_has_global_24_claim_allocation_g1_holdout_and_v4_theorem_identity():
+def test_default_plan_has_global_24_claim_allocation_g1_holdout_and_v5_theorem_identity():
     plan = ProductStatisticalPlan()
     assert plan.family_count == 2
     assert plan.baseline_count == 4
     assert plan.endpoint_count == 3
+    assert plan.per_family_alpha == pytest.approx(0.025)
     assert plan.per_claim_alpha == pytest.approx(0.05 / 24.0)
+    assert plan.boundary_crossing_alpha_per_claim == pytest.approx(0.05 / 48.0)
     assert plan.quality_noninferiority_margin == pytest.approx(0.02)
     assert plan.catastrophic_regret_noninferiority_margin == pytest.approx(0.01)
     assert plan.minimum_cost_effect_of_interest == pytest.approx(0.05)
     assert plan.calibration_fraction == pytest.approx(0.20)
     assert plan.generalization_holdout_fraction == pytest.approx(0.20)
     assert plan.primary_inference_method == PRIMARY_INFERENCE_METHOD
+    assert plan.primary_boundary_method == PRIMARY_BOUNDARY_METHOD
     assert plan.primary_claim_target == PRIMARY_CLAIM_TARGET
     assert plan.primary_assumption_boundary == PRIMARY_ASSUMPTION_BOUNDARY
     assert plan.primary_sequence_order == PRIMARY_SEQUENCE_ORDER
+    assert plan.primary_predictor_rule == PRIMARY_PREDICTOR_RULE
+    assert plan.confseq_reference_commit == CONFSEQ_REFERENCE_COMMIT
     assert plan.method == PLAN_METHOD
+    assert "V5" in plan.method
 
 
-def test_plan_digest_is_deterministic_and_changes_with_scientific_identity_or_margin():
+def test_plan_digest_is_deterministic_and_theorem_identity_is_non_substitutable():
     a = ProductStatisticalPlan()
     b = ProductStatisticalPlan()
     c = ProductStatisticalPlan(quality_noninferiority_margin=0.03)
@@ -40,16 +49,20 @@ def test_plan_digest_is_deterministic_and_changes_with_scientific_identity_or_ma
     assert a.digest == b.digest
     assert a.digest != c.digest
     assert a.digest != d.digest
-    with pytest.raises(ValueError, match="theorem identity"):
-        ProductStatisticalPlan(primary_inference_method="LEGACY")
-    with pytest.raises(ValueError, match="estimand"):
-        ProductStatisticalPlan(primary_claim_target="UNIVERSAL_MEAN")
-    with pytest.raises(ValueError, match="assumption boundary"):
-        ProductStatisticalPlan(primary_assumption_boundary="IID")
-    with pytest.raises(ValueError, match="analysis order"):
-        ProductStatisticalPlan(primary_sequence_order="OUTCOME_SORTED")
-    with pytest.raises(ValueError, match="plan identity"):
-        ProductStatisticalPlan(method="V3")
+
+    mutations = (
+        {"primary_inference_method": "LEGACY"},
+        {"primary_boundary_method": "SHORTCUT"},
+        {"primary_claim_target": "UNIVERSAL_MEAN"},
+        {"primary_assumption_boundary": "IID"},
+        {"primary_sequence_order": "OUTCOME_SORTED"},
+        {"primary_predictor_rule": "USES_CURRENT_X"},
+        {"confseq_reference_commit": "0" * 40},
+        {"method": "V4"},
+    )
+    for mutation in mutations:
+        with pytest.raises(ValueError, match="frozen V5 identity"):
+            ProductStatisticalPlan(**mutation)
 
 
 def test_three_way_split_is_deterministic_disjoint_complete_and_reserves_g1():
