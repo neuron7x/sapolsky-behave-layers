@@ -12,11 +12,12 @@ from cwc.governance.baseline_panel import (
     BaselinePolicySpec,
     bind_verified_learned_router_fit,
 )
+from cwc.governance.ccf_spec_authority import verify_ccf_spec_authority_document
 from cwc.governance.evaluation_harness import FrozenEvaluationHarness
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
-SCHEMA = "DGC_HARNESS_FREEZE_V1"
+SCHEMA = "DGC_HARNESS_FREEZE_V2"
 BASELINE_INPUT_SCHEMA = "DGC_BASELINE_PANEL_INPUT_V1"
 DGC_ROLE = "DGC"
 
@@ -92,6 +93,8 @@ class PolicyRoleBinding:
 class HarnessFreezeAuthority:
     family_id: str
     execution_manifest_freeze_digest: str
+    ccf_spec_authority_digest: str
+    ccf_spec_digest: str
     b2_fit_authority_digest: str
     materialized_task_manifest_digest: str
     confirmatory_task_manifest_digest: str
@@ -109,6 +112,8 @@ class HarnessFreezeAuthority:
             "schema": SCHEMA,
             "family_id": self.family_id,
             "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
+            "ccf_spec_authority_digest": self.ccf_spec_authority_digest,
+            "ccf_spec_digest": self.ccf_spec_digest,
             "b2_fit_authority_digest": self.b2_fit_authority_digest,
             "materialized_task_manifest_digest": self.materialized_task_manifest_digest,
             "confirmatory_task_manifest_digest": self.confirmatory_task_manifest_digest,
@@ -128,18 +133,24 @@ class HarnessFreezeAuthority:
 def build_harness_freeze(
     *,
     execution_manifest_freeze_path: Path,
+    ccf_spec_authority_path: Path,
     b2_fit_authority_path: Path,
     baseline_panel_input_path: Path,
 ) -> HarnessFreezeAuthority:
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
+    ccf = verify_ccf_spec_authority_document(Path(ccf_spec_authority_path))
     b2 = verify_b2_fit_authority_document(Path(b2_fit_authority_path))
     baseline_input = _json(Path(baseline_panel_input_path), schema=BASELINE_INPUT_SCHEMA)
 
     execution_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
+    if ccf.get("execution_manifest_freeze_digest") != execution_digest:
+        raise HarnessFreezeError("CCF spec authority is bound to a different execution manifest freeze")
     if b2.get("execution_manifest_freeze_digest") != execution_digest:
         raise HarnessFreezeError("B2 authority is bound to a different execution manifest freeze")
-    if b2.get("family_id") != execution.get("family_id"):
-        raise HarnessFreezeError("B2 authority family differs from execution freeze")
+    if b2.get("family_id") != execution.get("family_id") or ccf.get("family_id") != execution.get("family_id"):
+        raise HarnessFreezeError("B2/CCF family differs from execution freeze")
+    ccf_authority_digest = _sha("CCF authority_digest", ccf.get("authority_digest"))
+    ccf_spec_digest = _sha("CCF spec_digest", ccf.get("ccf_spec_digest"))
     materialized_task_digest = _sha("materialized task manifest", execution.get("task_manifest_digest"))
     confirmatory_task_digest = _sha("confirmatory task manifest", b2.get("confirmatory_task_digest"))
 
@@ -224,6 +235,7 @@ def build_harness_freeze(
             budget_digest=components["budget"],
             pricing_snapshot_digest=components["pricing_snapshot"],
             scorer_digest=components["scorer"],
+            counterfactual_oracle_spec_digest=ccf_spec_digest,
             statistical_plan_digest=_sha("statistical_plan_digest", execution.get("statistical_plan_digest")),
             baseline_panel_digest=panel.digest,
             governance_policy_digest=governance[policy_id],
@@ -253,6 +265,8 @@ def build_harness_freeze(
     digest_payload = {
         "family_id": execution["family_id"],
         "execution_manifest_freeze_digest": execution_digest,
+        "ccf_spec_authority_digest": ccf_authority_digest,
+        "ccf_spec_digest": ccf_spec_digest,
         "b2_fit_authority_digest": _sha("B2 authority_digest", b2.get("authority_digest")),
         "materialized_task_manifest_digest": materialized_task_digest,
         "confirmatory_task_manifest_digest": confirmatory_task_digest,
@@ -266,6 +280,8 @@ def build_harness_freeze(
     return HarnessFreezeAuthority(
         family_id=str(execution["family_id"]),
         execution_manifest_freeze_digest=execution_digest,
+        ccf_spec_authority_digest=ccf_authority_digest,
+        ccf_spec_digest=ccf_spec_digest,
         b2_fit_authority_digest=_sha("B2 authority_digest", b2.get("authority_digest")),
         materialized_task_manifest_digest=materialized_task_digest,
         confirmatory_task_manifest_digest=confirmatory_task_digest,
@@ -288,14 +304,17 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
     payload = {
         key: doc[key]
         for key in (
-            "family_id", "execution_manifest_freeze_digest", "b2_fit_authority_digest",
-            "materialized_task_manifest_digest", "confirmatory_task_manifest_digest",
-            "baseline_panel_input_sha256", "baseline_panel_digest", "baseline_specs",
-            "comparison_frame_digest", "policy_harnesses", "policy_role_bindings",
+            "family_id", "execution_manifest_freeze_digest", "ccf_spec_authority_digest",
+            "ccf_spec_digest", "b2_fit_authority_digest", "materialized_task_manifest_digest",
+            "confirmatory_task_manifest_digest", "baseline_panel_input_sha256",
+            "baseline_panel_digest", "baseline_specs", "comparison_frame_digest",
+            "policy_harnesses", "policy_role_bindings",
         )
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("harness_freeze_digest", doc.get("harness_freeze_digest")):
         raise HarnessFreezeError("harness freeze digest mismatch")
+    _sha("ccf_spec_authority_digest", doc.get("ccf_spec_authority_digest"))
+    _sha("ccf_spec_digest", doc.get("ccf_spec_digest"))
     materialized = _sha("materialized_task_manifest_digest", doc.get("materialized_task_manifest_digest"))
     confirmatory = _sha("confirmatory_task_manifest_digest", doc.get("confirmatory_task_manifest_digest"))
     if materialized == confirmatory:
