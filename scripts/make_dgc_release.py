@@ -4,7 +4,6 @@ import argparse
 import gzip
 import hashlib
 import json
-import math
 import subprocess
 import tarfile
 from pathlib import Path
@@ -27,6 +26,16 @@ PRODUCT_FIELDS = (
     "generalization_supported", "fault_tolerance_supported",
     "independent_replication_supported", "evidence_bundle_complete",
     "production_provider_trace_supported", "shadow_mode_qualified", "bounded_canary_qualified",
+)
+
+PRODUCT_QUALIFIED_FIELDS = (
+    "claim_frozen", "metrics_frozen", "baselines_frozen", "harness_frozen",
+    "statistical_plan_frozen", "external_real_workload_supported",
+    "quality_noninferiority_supported", "catastrophic_regret_noninferiority_supported",
+    "coverage_equivalence_supported", "physical_cost_accounting_verified",
+    "net_cost_superiority_supported", "generalization_supported",
+    "fault_tolerance_supported", "independent_replication_supported",
+    "evidence_bundle_complete",
 )
 
 
@@ -85,16 +94,14 @@ def deterministic_tar_gz(root: Path, files: tuple[Path, ...], destination: Path)
 
 
 def _product_qualified(status: dict) -> bool:
-    required = (
-        "claim_frozen", "metrics_frozen", "baselines_frozen", "harness_frozen",
-        "statistical_plan_frozen", "external_real_workload_supported",
-        "quality_noninferiority_supported", "catastrophic_regret_noninferiority_supported",
-        "coverage_equivalence_supported", "physical_cost_accounting_verified",
-        "net_cost_superiority_supported", "generalization_supported",
-        "fault_tolerance_supported", "independent_replication_supported",
-        "evidence_bundle_complete", "production_provider_trace_supported",
+    return all(status.get(field) is True for field in PRODUCT_QUALIFIED_FIELDS)
+
+
+def _production_control_authorized(status: dict) -> bool:
+    return _product_qualified(status) and all(
+        status.get(field) is True
+        for field in ("production_provider_trace_supported", "shadow_mode_qualified", "bounded_canary_qualified")
     )
-    return all(status.get(field) is True for field in required)
 
 
 def build_release(
@@ -125,6 +132,7 @@ def build_release(
     if missing:
         raise RuntimeError(f"invalid DGC evidence status fields: {missing}")
     product_qualified = _product_qualified(status)
+    production_control_authorized = _production_control_authorized(status)
     if require_product_qualified and not product_qualified:
         raise RuntimeError("PRODUCT_QUALIFIED required for this release mode")
 
@@ -147,6 +155,7 @@ def build_release(
         "git_tree": tree,
         "release_authority": "PRODUCT_QUALIFIED" if product_qualified else "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED",
         "product_qualified": product_qualified,
+        "production_control_authorized": production_control_authorized,
         "source_archive": {"name": source_name, "sha256": source_sha, "tracked_files": len(source_files)},
         "evidence_archive": {"name": evidence_name, "sha256": evidence_sha, "tracked_files": len(evidence_files)},
         "critical_authority_sha256": critical,
@@ -159,6 +168,7 @@ def build_release(
         "notes": [
             "Archive contents are exactly tracked Git files split into source/non-artifacts and evidence/artifacts.",
             "gzip/tar metadata are normalized for deterministic rebuilds.",
+            "PRODUCT_QUALIFIED does not imply production control authority; provider trace, shadow and canary remain separate gates.",
             "No product or production authority is implied when product_qualified=false.",
         ],
     }
