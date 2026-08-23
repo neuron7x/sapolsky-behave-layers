@@ -13,10 +13,14 @@ from cwc.governance.average_conditional_mean_cs import (
     SEQUENCE_ORDER_RULE,
     certify_multi_baseline_anytime_valid,
 )
-from cwc.governance.generalization_dual_authority import (
-    build_generalization_axis_dual_authority,
+from cwc.governance.exact_finite_panel_pareto import (
+    certificate_digest as exact_certificate_digest,
+    certify_exact_finite_panel,
 )
-from cwc.governance.generalization_execution_authority import verify_generalization_axis_bundle
+from cwc.governance.generalization_execution_authority import (
+    build_generalization_axis_authority,
+    verify_generalization_axis_bundle,
+)
 from cwc.governance.generalization_registry import (
     DGC_ROLE,
     GeneralizationAxis,
@@ -28,9 +32,9 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 from cwc.governance.p9_scientific_authority_v3 import verify_p9_scientific_authority_v3_document
 from cwc.governance.pareto import PairedBaselineEvidence
 
-AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_ANYTIME_AUTHORITY_V3"
-FINAL_SCHEMA = "DGC_GENERALIZATION_ANYTIME_AUTHORITY_V4"
-CLAIM_SCOPE = "EXACT_G1_G5_PLUS_ANYTIME_VALID_AVERAGE_CONDITIONAL_MEAN_V1"
+AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_ANYTIME_AUTHORITY_V4"
+FINAL_SCHEMA = "DGC_GENERALIZATION_ANYTIME_AUTHORITY_V5"
+CLAIM_SCOPE = "EXACT_G1_G5_PLUS_ANYTIME_VALID_AVERAGE_CONDITIONAL_MEAN_V2"
 
 
 class GeneralizationAnytimeError(RuntimeError):
@@ -72,8 +76,10 @@ def _paired_evidence(bundle, *, roles: Mapping[str, str], axis: GeneralizationAx
     paired_digest = sha256_bytes(canonical_json_bytes({
         "axis": axis.value,
         "task_population_digest": bundle.task_population_digest,
+        "execution_bundle_digest": bundle.bundle_digest,
         "replicates": bundle.replicates,
         "sequence_order_rule": SEQUENCE_ORDER_RULE,
+        "claim_target": CLAIM_TARGET,
     }))
     cap = float(bundle.max_physical_cost_usd_per_unit)
     evidence: list[PairedBaselineEvidence] = []
@@ -115,7 +121,9 @@ class GeneralizationAxisAnytimeAuthority:
     metric_population_digest: str
     physical_cost_population_digest: str
     replicates: int
-    dual_axis_authority_digest: str
+    paired_observations_per_baseline: int
+    lineage_v1_axis_authority_digest: str
+    exact_panel_certificate: dict[str, object]
     exact_panel_certificate_digest: str
     exact_panel_supported: bool
     anytime_certificate: dict[str, object]
@@ -125,8 +133,8 @@ class GeneralizationAxisAnytimeAuthority:
     anytime_claim_target: str
     anytime_assumption_boundary: str
     sequence_order_rule: str
-    legacy_micro_eb_certificate_digest: str
-    legacy_micro_eb_supported_under_cross_pair_independence: bool
+    legacy_task_aggregated_hoeffding_certificate_digest: str | None
+    legacy_task_aggregated_hoeffding_supported: bool
     axis_supported_without_iid_assumption: bool
     authority_digest: str
 
@@ -137,6 +145,7 @@ class GeneralizationAxisAnytimeAuthority:
             **asdict(self),
             "iid_assumption_required": False,
             "provider_request_independence_required": False,
+            "legacy_statistics_promotion_authorized": False,
             "policy_retuned": False,
             "product_promotion_authorized": False,
         }
@@ -160,17 +169,26 @@ def build_generalization_axis_anytime_authority(
         axis = GeneralizationAxis(bundle.axis)
     except ValueError as exc:
         raise GeneralizationAnytimeError("unknown generalization axis") from exc
-    dual = build_generalization_axis_dual_authority(
+
+    lineage = build_generalization_axis_authority(
         Path(bundle_root),
         repository_root=Path(repository_root),
         registry_path=Path(registry_path),
         trial_sizing_authority_path=Path(trial_sizing_authority_path),
     )
+    if lineage.execution_bundle_digest != bundle.bundle_digest:
+        raise GeneralizationAnytimeError("legacy lineage verifier and V4 axis execution subject differ")
+
     row = _axis_row(registry, axis)
     roles = _role_map(registry)
     paired = _paired_evidence(bundle, roles=roles, axis=axis)
     qmargin = float(row["quality_noninferiority_margin"])
     cmargin = float(row["catastrophic_noninferiority_margin"])
+    exact = certify_exact_finite_panel(
+        paired,
+        quality_noninferiority_margin=qmargin,
+        catastrophic_noninferiority_margin=cmargin,
+    )
     alpha_axis = float(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES)
     anytime = certify_multi_baseline_anytime_valid(
         paired,
@@ -180,9 +198,11 @@ def build_generalization_axis_anytime_authority(
     )
     if not math.isclose(anytime.per_metric_alpha, float(registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationAnytimeError("G1-G5 anytime-valid multiplicity differs from preregistration")
+
+    exact_doc = asdict(exact)
     anytime_doc = asdict(anytime)
     anytime_digest = sha256_bytes(canonical_json_bytes(anytime_doc))
-    exact_supported = bool(dual.exact_panel_supported)
+    exact_supported = bool(exact.all_baselines_observed)
     anytime_supported = bool(anytime.all_baselines_certified)
     supported = exact_supported and anytime_supported
     payload = {
@@ -194,8 +214,10 @@ def build_generalization_axis_anytime_authority(
         "metric_population_digest": bundle.metric_population_digest,
         "physical_cost_population_digest": bundle.physical_cost_population_digest,
         "replicates": bundle.replicates,
-        "dual_axis_authority_digest": dual.authority_digest,
-        "exact_panel_certificate_digest": dual.exact_panel_certificate_digest,
+        "paired_observations_per_baseline": len({item.task_id for item in bundle.results}) * bundle.replicates,
+        "lineage_v1_axis_authority_digest": lineage.authority_digest,
+        "exact_panel_certificate": exact_doc,
+        "exact_panel_certificate_digest": exact_certificate_digest(exact),
         "exact_panel_supported": exact_supported,
         "anytime_certificate": anytime_doc,
         "anytime_certificate_digest": anytime_digest,
@@ -204,10 +226,8 @@ def build_generalization_axis_anytime_authority(
         "anytime_claim_target": CLAIM_TARGET,
         "anytime_assumption_boundary": ASSUMPTION_BOUNDARY,
         "sequence_order_rule": SEQUENCE_ORDER_RULE,
-        "legacy_micro_eb_certificate_digest": dual.expected_effect_certificate_digest,
-        "legacy_micro_eb_supported_under_cross_pair_independence": bool(
-            dual.expected_effect_supported_under_independence_assumption
-        ),
+        "legacy_task_aggregated_hoeffding_certificate_digest": lineage.certificate_digest,
+        "legacy_task_aggregated_hoeffding_supported": bool(lineage.supported),
         "axis_supported_without_iid_assumption": supported,
     }
     return GeneralizationAxisAnytimeAuthority(
@@ -228,16 +248,19 @@ def verify_generalization_axis_anytime_authority_document(path: Path) -> dict[st
         raise GeneralizationAnytimeError("unexpected G1-G5 anytime authority schema")
     if doc.get("iid_assumption_required") is not False or doc.get("provider_request_independence_required") is not False:
         raise GeneralizationAnytimeError("G1-G5 anytime authority incorrectly requires iid/independence")
+    if doc.get("legacy_statistics_promotion_authorized") is not False:
+        raise GeneralizationAnytimeError("legacy statistics cannot authorize V4 axis promotion")
     if doc.get("policy_retuned") is not False or doc.get("product_promotion_authorized") is not False:
         raise GeneralizationAnytimeError("G1-G5 anytime promotion boundary malformed")
     keys = (
         "axis", "registry_digest", "evaluation_manifest_digest", "task_population_digest",
         "execution_bundle_digest", "metric_population_digest", "physical_cost_population_digest",
-        "replicates", "dual_axis_authority_digest", "exact_panel_certificate_digest",
-        "exact_panel_supported", "anytime_certificate", "anytime_certificate_digest",
-        "anytime_average_conditional_mean_supported", "anytime_method", "anytime_claim_target",
-        "anytime_assumption_boundary", "sequence_order_rule", "legacy_micro_eb_certificate_digest",
-        "legacy_micro_eb_supported_under_cross_pair_independence", "axis_supported_without_iid_assumption",
+        "replicates", "paired_observations_per_baseline", "lineage_v1_axis_authority_digest",
+        "exact_panel_certificate", "exact_panel_certificate_digest", "exact_panel_supported",
+        "anytime_certificate", "anytime_certificate_digest", "anytime_average_conditional_mean_supported",
+        "anytime_method", "anytime_claim_target", "anytime_assumption_boundary", "sequence_order_rule",
+        "legacy_task_aggregated_hoeffding_certificate_digest", "legacy_task_aggregated_hoeffding_supported",
+        "axis_supported_without_iid_assumption",
     )
     try:
         payload = {key: doc[key] for key in keys}
@@ -245,27 +268,42 @@ def verify_generalization_axis_anytime_authority_document(path: Path) -> dict[st
         raise GeneralizationAnytimeError("G1-G5 anytime payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise GeneralizationAnytimeError("G1-G5 anytime authority digest mismatch")
-    cert = doc.get("anytime_certificate")
-    if not isinstance(cert, dict):
-        raise GeneralizationAnytimeError("G1-G5 anytime certificate missing")
-    if sha256_bytes(canonical_json_bytes(cert)) != _sha("anytime_certificate_digest", doc.get("anytime_certificate_digest")):
+    exact = doc.get("exact_panel_certificate")
+    anytime = doc.get("anytime_certificate")
+    if not isinstance(exact, dict) or not isinstance(anytime, dict):
+        raise GeneralizationAnytimeError("G1-G5 exact/anytime certificates missing")
+    if sha256_bytes(canonical_json_bytes(exact)) != _sha(
+        "exact_panel_certificate_digest", doc.get("exact_panel_certificate_digest")
+    ):
+        raise GeneralizationAnytimeError("G1-G5 exact certificate digest mismatch")
+    if sha256_bytes(canonical_json_bytes(anytime)) != _sha(
+        "anytime_certificate_digest", doc.get("anytime_certificate_digest")
+    ):
         raise GeneralizationAnytimeError("G1-G5 anytime certificate digest mismatch")
     if doc.get("anytime_method") != METHOD or doc.get("anytime_claim_target") != CLAIM_TARGET:
         raise GeneralizationAnytimeError("G1-G5 anytime theorem identity mismatch")
     if doc.get("anytime_assumption_boundary") != ASSUMPTION_BOUNDARY or doc.get("sequence_order_rule") != SEQUENCE_ORDER_RULE:
         raise GeneralizationAnytimeError("G1-G5 anytime assumption/order mismatch")
-    derived_anytime = cert.get("all_baselines_certified") is True
+    derived_exact = exact.get("all_baselines_observed") is True
+    derived_anytime = anytime.get("all_baselines_certified") is True
+    if doc.get("exact_panel_supported") is not derived_exact:
+        raise GeneralizationAnytimeError("G1-G5 exact support flag is not certificate-derived")
     if doc.get("anytime_average_conditional_mean_supported") is not derived_anytime:
         raise GeneralizationAnytimeError("G1-G5 anytime support flag is not certificate-derived")
-    derived = doc.get("exact_panel_supported") is True and derived_anytime
+    derived = derived_exact and derived_anytime
     if doc.get("axis_supported_without_iid_assumption") is not derived:
         raise GeneralizationAnytimeError("G1-G5 axis support must derive from exact + anytime-valid evidence")
+    if int(doc.get("paired_observations_per_baseline", 0)) <= 0:
+        raise GeneralizationAnytimeError("G1-G5 paired observation population must be non-empty")
     for field in (
         "registry_digest", "evaluation_manifest_digest", "task_population_digest", "execution_bundle_digest",
-        "metric_population_digest", "physical_cost_population_digest", "dual_axis_authority_digest",
-        "exact_panel_certificate_digest", "legacy_micro_eb_certificate_digest",
+        "metric_population_digest", "physical_cost_population_digest", "lineage_v1_axis_authority_digest",
+        "exact_panel_certificate_digest",
     ):
         _sha(field, doc.get(field))
+    legacy_digest = doc.get("legacy_task_aggregated_hoeffding_certificate_digest")
+    if legacy_digest is not None:
+        _sha("legacy_task_aggregated_hoeffding_certificate_digest", legacy_digest)
     return doc
 
 
