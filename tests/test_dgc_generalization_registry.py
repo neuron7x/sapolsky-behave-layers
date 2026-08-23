@@ -32,8 +32,20 @@ def write(path: Path, payload: dict) -> Path:
     return path
 
 
+def frozen_tasks():
+    tasks = tuple(f"task-{i:03d}" for i in range(100))
+    plan = ProductStatisticalPlan()
+    calibration, confirmatory, g1 = deterministic_three_way_task_split(
+        tasks,
+        calibration_fraction=plan.calibration_fraction,
+        generalization_holdout_fraction=plan.generalization_holdout_fraction,
+    )
+    return tasks, calibration, confirmatory, g1
+
+
 def execution_doc(path: Path) -> Path:
     plan = ProductStatisticalPlan()
+    tasks, _, _, _ = frozen_tasks()
     component_names = (
         "model_manifest", "prompt_policy", "tool_manifest", "environment",
         "budget", "pricing_snapshot", "scorer",
@@ -47,11 +59,26 @@ def execution_doc(path: Path) -> Path:
             "policy_id": policy_id,
             "path": f"p/{policy_id}.json",
             "sha256": h(char),
-            "implementation_sha256": h("a"),
-            "config_sha256": h("b"),
+            "implementation_sha256": h("d"),
+            "config_sha256": h("e"),
         }
         for policy_id, char in zip(("B0", "B1", "B2", "B3", "DGC"), "89abc", strict=True)
     ]
+    plan_payload = {
+        "family_count": plan.family_count,
+        "baseline_count": plan.baseline_count,
+        "endpoint_count": plan.endpoint_count,
+        "familywise_alpha": plan.familywise_alpha,
+        "quality_noninferiority_margin": plan.quality_noninferiority_margin,
+        "catastrophic_regret_noninferiority_margin": plan.catastrophic_regret_noninferiority_margin,
+        "minimum_cost_effect_of_interest": plan.minimum_cost_effect_of_interest,
+        "calibration_fraction": plan.calibration_fraction,
+        "generalization_holdout_fraction": plan.generalization_holdout_fraction,
+        "target_power": plan.target_power,
+        "min_trials_per_task": plan.min_trials_per_task,
+        "max_trials_per_task": plan.max_trials_per_task,
+        "method": plan.method,
+    }
     payload = {
         "family_id": "SWE_BENCH_VERIFIED",
         "repository_commit": "a" * 40,
@@ -59,23 +86,9 @@ def execution_doc(path: Path) -> Path:
         "materialization_reference_path": "eval_bundle/materialization.json",
         "materialization_reference_digest": h("d"),
         "materialized_tree_sha256": h("e"),
-        "task_manifest_digest": h("f"),
+        "task_manifest_digest": task_digest(tasks),
         "statistical_plan_digest": plan.digest,
-        "statistical_plan": {
-            "family_count": plan.family_count,
-            "baseline_count": plan.baseline_count,
-            "endpoint_count": plan.endpoint_count,
-            "familywise_alpha": plan.familywise_alpha,
-            "quality_noninferiority_margin": plan.quality_noninferiority_margin,
-            "catastrophic_regret_noninferiority_margin": plan.catastrophic_regret_noninferiority_margin,
-            "minimum_cost_effect_of_interest": plan.minimum_cost_effect_of_interest,
-            "calibration_fraction": plan.calibration_fraction,
-            "generalization_holdout_fraction": plan.generalization_holdout_fraction,
-            "target_power": plan.target_power,
-            "min_trials_per_task": plan.min_trials_per_task,
-            "max_trials_per_task": plan.max_trials_per_task,
-            "method": plan.method,
-        },
+        "statistical_plan": plan_payload,
         "components": components,
         "governance_policies": policies,
         "prebaseline_comparison_digest": h("0"),
@@ -94,12 +107,7 @@ def execution_doc(path: Path) -> Path:
 def partition_doc(path: Path, *, execution_path: Path) -> Path:
     execution = json.loads(execution_path.read_text())
     plan = ProductStatisticalPlan()
-    tasks = tuple(f"task-{i:03d}" for i in range(100))
-    calibration, confirmatory, g1 = deterministic_three_way_task_split(
-        tasks,
-        calibration_fraction=plan.calibration_fraction,
-        generalization_holdout_fraction=plan.generalization_holdout_fraction,
-    )
+    tasks, calibration, confirmatory, g1 = frozen_tasks()
     payload = {
         "family_id": execution["family_id"],
         "materialization_reference_digest": execution["materialization_reference_digest"],
@@ -124,6 +132,20 @@ def partition_doc(path: Path, *, execution_path: Path) -> Path:
         "confirmatory_execution_authorized": False,
         "generalization_execution_authorized": False,
         "product_promotion_authorized": False,
+    })
+
+
+def baseline_input(path: Path) -> Path:
+    return write(path, {
+        "schema": "DGC_BASELINE_PANEL_INPUT_V1",
+        "specs": [],
+        "baseline_policy_ids": {
+            "B0_FIXED_COMPUTE": "B0",
+            "B1_UNCERTAINTY_ROUTER": "B1",
+            "B2_LEARNED_COST_QUALITY_ROUTER": "B2",
+            "B3_SEQUENTIAL_VERIFICATION": "B3",
+        },
+        "dgc_policy_id": "DGC",
     })
 
 
@@ -209,25 +231,27 @@ def fixture(tmp_path: Path):
     execution = execution_doc(tmp_path / "execution.json")
     partition_rel = Path("eval_bundle/task-partition.json")
     partition = partition_doc(tmp_path / partition_rel, execution_path=execution)
+    baseline_rel = Path("eval_bundle/baseline-input.json")
+    baseline_input(tmp_path / baseline_rel)
     axes = axis_docs(tmp_path, partition_path=partition)
-    return execution, partition_rel, axes
+    return execution, partition_rel, baseline_rel, axes
 
 
 def build(tmp_path: Path):
-    execution, partition_rel, axes = fixture(tmp_path)
+    execution, partition_rel, baseline_rel, axes = fixture(tmp_path)
     authority = build_generalization_registry(
         repository_root=tmp_path,
         execution_manifest_freeze_path=execution,
         task_partition_path=partition_rel,
+        baseline_panel_input_path=baseline_rel,
         axis_manifest_paths=axes,
         policy_role_bindings=role_map(),
     )
-    return authority, execution, partition_rel, axes
+    return authority, execution, partition_rel, baseline_rel, axes
 
 
-def test_registry_freezes_exact_g1_g5_before_outcomes(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    authority, execution, _, _ = build(tmp_path)
+def test_registry_freezes_exact_g1_g5_before_outcomes(tmp_path: Path):
+    authority, execution, _, _, _ = build(tmp_path)
     assert len(authority.axes) == 5
     assert authority.per_claim_alpha == pytest.approx(0.05 / 60.0)
     assert authority.g1_holdout_task_digest != authority.primary_confirmatory_task_digest
@@ -242,60 +266,50 @@ def test_registry_freezes_exact_g1_g5_before_outcomes(tmp_path: Path, monkeypatc
     assert rebuilt.registry_digest == authority.registry_digest
 
 
-def test_g3_without_model_provider_shift_is_rejected(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    execution, partition_rel, axes = fixture(tmp_path)
+def test_g3_without_model_provider_shift_is_rejected(tmp_path: Path):
+    execution, partition_rel, baseline_rel, axes = fixture(tmp_path)
     g3 = tmp_path / axes[GeneralizationAxis.UNSEEN_MODEL_PROVIDER]
     doc = json.loads(g3.read_text())
     doc["model_manifest_digest"] = h("1")
     write(g3, doc)
     with pytest.raises(GeneralizationRegistryError, match="distinct frozen model/provider"):
         build_generalization_registry(
-            repository_root=tmp_path,
-            execution_manifest_freeze_path=execution,
-            task_partition_path=partition_rel,
-            axis_manifest_paths=axes,
-            policy_role_bindings=role_map(),
+            repository_root=tmp_path, execution_manifest_freeze_path=execution,
+            task_partition_path=partition_rel, baseline_panel_input_path=baseline_rel,
+            axis_manifest_paths=axes, policy_role_bindings=role_map(),
         )
 
 
-def test_g4_without_economic_shift_is_rejected(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    execution, partition_rel, axes = fixture(tmp_path)
+def test_g4_without_economic_shift_is_rejected(tmp_path: Path):
+    execution, partition_rel, baseline_rel, axes = fixture(tmp_path)
     g4 = tmp_path / axes[GeneralizationAxis.CHANGED_ECONOMICS]
     doc = json.loads(g4.read_text())
     doc["pricing_snapshot_digest"] = h("6")
     write(g4, doc)
     with pytest.raises(GeneralizationRegistryError, match="distinct frozen pricing"):
         build_generalization_registry(
-            repository_root=tmp_path,
-            execution_manifest_freeze_path=execution,
-            task_partition_path=partition_rel,
-            axis_manifest_paths=axes,
-            policy_role_bindings=role_map(),
+            repository_root=tmp_path, execution_manifest_freeze_path=execution,
+            task_partition_path=partition_rel, baseline_panel_input_path=baseline_rel,
+            axis_manifest_paths=axes, policy_role_bindings=role_map(),
         )
 
 
-def test_g5_without_perturbed_population_identity_is_rejected(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    execution, partition_rel, axes = fixture(tmp_path)
+def test_g5_without_perturbed_population_identity_is_rejected(tmp_path: Path):
+    execution, partition_rel, baseline_rel, axes = fixture(tmp_path)
     g5 = tmp_path / axes[GeneralizationAxis.PERTURBATION_SHIFT]
     doc = json.loads(g5.read_text())
     doc["task_population_digest"] = doc["base_task_population_digest"]
     write(g5, doc)
     with pytest.raises(GeneralizationRegistryError, match="perturbed population identity"):
         build_generalization_registry(
-            repository_root=tmp_path,
-            execution_manifest_freeze_path=execution,
-            task_partition_path=partition_rel,
-            axis_manifest_paths=axes,
-            policy_role_bindings=role_map(),
+            repository_root=tmp_path, execution_manifest_freeze_path=execution,
+            task_partition_path=partition_rel, baseline_panel_input_path=baseline_rel,
+            axis_manifest_paths=axes, policy_role_bindings=role_map(),
         )
 
 
-def test_post_freeze_axis_manifest_mutation_breaks_registry_replay(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    authority, execution, _, axes = build(tmp_path)
+def test_post_freeze_axis_manifest_mutation_breaks_registry_replay(tmp_path: Path):
+    authority, execution, _, _, axes = build(tmp_path)
     output = write(tmp_path / "eval_bundle/registry.json", authority.document)
     g2 = tmp_path / axes[GeneralizationAxis.UNSEEN_DOMAIN]
     doc = json.loads(g2.read_text())
@@ -309,16 +323,13 @@ def test_post_freeze_axis_manifest_mutation_breaks_registry_replay(tmp_path: Pat
         )
 
 
-def test_policy_role_drift_is_rejected(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    execution, partition_rel, axes = fixture(tmp_path)
+def test_policy_role_drift_is_rejected_against_baseline_ssot(tmp_path: Path):
+    execution, partition_rel, baseline_rel, axes = fixture(tmp_path)
     roles = role_map()
     roles["DGC"], roles["B0_FIXED_COMPUTE"] = roles["B0_FIXED_COMPUTE"], roles["DGC"]
-    authority = build_generalization_registry(
-        repository_root=tmp_path,
-        execution_manifest_freeze_path=execution,
-        task_partition_path=partition_rel,
-        axis_manifest_paths=axes,
-        policy_role_bindings=roles,
-    )
-    assert dict(authority.policy_role_bindings)["DGC"] == "B0"
+    with pytest.raises(GeneralizationRegistryError, match="baseline panel SSOT"):
+        build_generalization_registry(
+            repository_root=tmp_path, execution_manifest_freeze_path=execution,
+            task_partition_path=partition_rel, baseline_panel_input_path=baseline_rel,
+            axis_manifest_paths=axes, policy_role_bindings=roles,
+        )
