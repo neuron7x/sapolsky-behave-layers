@@ -1,6 +1,11 @@
 import pytest
 
 from cwc.governance.product_statistical_plan import (
+    PLAN_METHOD,
+    PRIMARY_ASSUMPTION_BOUNDARY,
+    PRIMARY_CLAIM_TARGET,
+    PRIMARY_INFERENCE_METHOD,
+    PRIMARY_SEQUENCE_ORDER,
     ProductStatisticalPlan,
     approximate_required_trials_per_task,
     cluster_aware_required_trials_per_task,
@@ -9,7 +14,7 @@ from cwc.governance.product_statistical_plan import (
 )
 
 
-def test_default_plan_has_global_24_claim_familywise_allocation_and_g1_holdout():
+def test_default_plan_has_global_24_claim_allocation_g1_holdout_and_v4_theorem_identity():
     plan = ProductStatisticalPlan()
     assert plan.family_count == 2
     assert plan.baseline_count == 4
@@ -20,10 +25,14 @@ def test_default_plan_has_global_24_claim_familywise_allocation_and_g1_holdout()
     assert plan.minimum_cost_effect_of_interest == pytest.approx(0.05)
     assert plan.calibration_fraction == pytest.approx(0.20)
     assert plan.generalization_holdout_fraction == pytest.approx(0.20)
-    assert plan.method == "DGC_PRODUCT_PAIRED_CLUSTER_AWARE_V3_THREE_WAY_HOLDOUT"
+    assert plan.primary_inference_method == PRIMARY_INFERENCE_METHOD
+    assert plan.primary_claim_target == PRIMARY_CLAIM_TARGET
+    assert plan.primary_assumption_boundary == PRIMARY_ASSUMPTION_BOUNDARY
+    assert plan.primary_sequence_order == PRIMARY_SEQUENCE_ORDER
+    assert plan.method == PLAN_METHOD
 
 
-def test_plan_digest_is_deterministic_and_changes_with_margin_or_holdout():
+def test_plan_digest_is_deterministic_and_changes_with_scientific_identity_or_margin():
     a = ProductStatisticalPlan()
     b = ProductStatisticalPlan()
     c = ProductStatisticalPlan(quality_noninferiority_margin=0.03)
@@ -31,6 +40,16 @@ def test_plan_digest_is_deterministic_and_changes_with_margin_or_holdout():
     assert a.digest == b.digest
     assert a.digest != c.digest
     assert a.digest != d.digest
+    with pytest.raises(ValueError, match="theorem identity"):
+        ProductStatisticalPlan(primary_inference_method="LEGACY")
+    with pytest.raises(ValueError, match="estimand"):
+        ProductStatisticalPlan(primary_claim_target="UNIVERSAL_MEAN")
+    with pytest.raises(ValueError, match="assumption boundary"):
+        ProductStatisticalPlan(primary_assumption_boundary="IID")
+    with pytest.raises(ValueError, match="analysis order"):
+        ProductStatisticalPlan(primary_sequence_order="OUTCOME_SORTED")
+    with pytest.raises(ValueError, match="plan identity"):
+        ProductStatisticalPlan(method="V3")
 
 
 def test_three_way_split_is_deterministic_disjoint_complete_and_reserves_g1():
@@ -78,6 +97,7 @@ def test_cluster_aware_sizing_respects_minimum_floor_when_variance_small():
     )
     assert sizing.required_trials_per_task == plan.min_trials_per_task
     assert sizing.achieved_standard_error_at_required_trials <= sizing.target_standard_error
+    assert sizing.method.endswith("PLANNING_ONLY")
 
 
 def test_cluster_aware_repeats_increase_with_within_task_variance():
