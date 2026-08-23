@@ -7,12 +7,17 @@ from dataclasses import dataclass
 from statistics import NormalDist
 from typing import Iterable
 
+from cwc.governance.average_conditional_mean_cs import (
+    ASSUMPTION_BOUNDARY as PRIMARY_ASSUMPTION_BOUNDARY,
+    BOUNDARY_METHOD as PRIMARY_BOUNDARY_METHOD,
+    CLAIM_TARGET as PRIMARY_CLAIM_TARGET,
+    CONFSEQ_REFERENCE_COMMIT,
+    METHOD as PRIMARY_INFERENCE_METHOD,
+    PREDICTOR_RULE as PRIMARY_PREDICTOR_RULE,
+    SEQUENCE_ORDER_RULE as PRIMARY_SEQUENCE_ORDER,
+)
 
-PRIMARY_INFERENCE_METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_EMPIRICAL_BERNSTEIN_CS_V1"
-PRIMARY_CLAIM_TARGET = "AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE"
-PRIMARY_ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_VARIANCE_CENTER_NO_IID_REQUIRED"
-PRIMARY_SEQUENCE_ORDER = "TASK_ID_ASC_THEN_REPLICATE_ASC"
-PLAN_METHOD = "DGC_PRODUCT_ANYTIME_VALID_ACM_V4_THREE_WAY_HOLDOUT"
+PLAN_METHOD = "DGC_PRODUCT_ANYTIME_VALID_ACM_V5_EXACT_STITCHING_THREE_WAY_HOLDOUT"
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,9 +35,12 @@ class ProductStatisticalPlan:
     min_trials_per_task: int = 5
     max_trials_per_task: int = 50
     primary_inference_method: str = PRIMARY_INFERENCE_METHOD
+    primary_boundary_method: str = PRIMARY_BOUNDARY_METHOD
     primary_claim_target: str = PRIMARY_CLAIM_TARGET
     primary_assumption_boundary: str = PRIMARY_ASSUMPTION_BOUNDARY
     primary_sequence_order: str = PRIMARY_SEQUENCE_ORDER
+    primary_predictor_rule: str = PRIMARY_PREDICTOR_RULE
+    confseq_reference_commit: str = CONFSEQ_REFERENCE_COMMIT
     method: str = PLAN_METHOD
 
     def __post_init__(self) -> None:
@@ -56,20 +64,32 @@ class ProductStatisticalPlan:
             raise ValueError("target_power must be in (0.5,1)")
         if not (1 <= self.min_trials_per_task <= self.max_trials_per_task):
             raise ValueError("invalid trial bounds")
-        if self.primary_inference_method != PRIMARY_INFERENCE_METHOD:
-            raise ValueError("primary_inference_method must equal frozen V4 theorem identity")
-        if self.primary_claim_target != PRIMARY_CLAIM_TARGET:
-            raise ValueError("primary_claim_target must equal frozen V4 estimand")
-        if self.primary_assumption_boundary != PRIMARY_ASSUMPTION_BOUNDARY:
-            raise ValueError("primary_assumption_boundary must equal frozen V4 assumption boundary")
-        if self.primary_sequence_order != PRIMARY_SEQUENCE_ORDER:
-            raise ValueError("primary_sequence_order must equal frozen V4 analysis order")
-        if self.method != PLAN_METHOD:
-            raise ValueError("method must equal frozen V4 product statistical plan identity")
+        frozen = {
+            "primary_inference_method": (self.primary_inference_method, PRIMARY_INFERENCE_METHOD),
+            "primary_boundary_method": (self.primary_boundary_method, PRIMARY_BOUNDARY_METHOD),
+            "primary_claim_target": (self.primary_claim_target, PRIMARY_CLAIM_TARGET),
+            "primary_assumption_boundary": (self.primary_assumption_boundary, PRIMARY_ASSUMPTION_BOUNDARY),
+            "primary_sequence_order": (self.primary_sequence_order, PRIMARY_SEQUENCE_ORDER),
+            "primary_predictor_rule": (self.primary_predictor_rule, PRIMARY_PREDICTOR_RULE),
+            "confseq_reference_commit": (self.confseq_reference_commit, CONFSEQ_REFERENCE_COMMIT),
+            "method": (self.method, PLAN_METHOD),
+        }
+        for name, (observed, expected) in frozen.items():
+            if observed != expected:
+                raise ValueError(f"{name} must equal frozen V5 identity")
 
     @property
     def per_claim_alpha(self) -> float:
         return self.familywise_alpha / (self.family_count * self.baseline_count * self.endpoint_count)
+
+    @property
+    def per_family_alpha(self) -> float:
+        return self.familywise_alpha / self.family_count
+
+    @property
+    def boundary_crossing_alpha_per_claim(self) -> float:
+        # Theorem 4 has two-sided coverage 1-2*alpha_boundary.
+        return self.per_claim_alpha / 2.0
 
     @property
     def digest(self) -> str:
@@ -87,9 +107,12 @@ class ProductStatisticalPlan:
             "min_trials_per_task": self.min_trials_per_task,
             "max_trials_per_task": self.max_trials_per_task,
             "primary_inference_method": self.primary_inference_method,
+            "primary_boundary_method": self.primary_boundary_method,
             "primary_claim_target": self.primary_claim_target,
             "primary_assumption_boundary": self.primary_assumption_boundary,
             "primary_sequence_order": self.primary_sequence_order,
+            "primary_predictor_rule": self.primary_predictor_rule,
+            "confseq_reference_commit": self.confseq_reference_commit,
             "method": self.method,
         }
         return hashlib.sha256(
@@ -182,8 +205,8 @@ def cluster_aware_required_trials_per_task(
 ) -> ClusterAwareTrialSizing:
     """Calibration-only resource planning for repeated trials nested within tasks.
 
-    This is not the V4 confirmatory inference theorem. It is retained as a
-    conservative planning diagnostic for task diversity and within-task noise.
+    This is not the V5 confirmatory inference theorem. It remains a conservative
+    resource-planning diagnostic for task diversity and within-task noise.
     """
     between = float(between_task_std)
     within = float(within_task_std)
