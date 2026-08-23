@@ -3,19 +3,26 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
-SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V1"
-RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V1"
+SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V2"
+RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V2"
+_GENERATION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
+# A final evaluation harness includes the executable-frozen B0-B3 panel. Therefore
+# B2 must be fitted before HARNESS_FROZEN. Non-baseline execution identities are
+# frozen one stage earlier so calibration cannot mutate model/prompt/tool/scorer/
+# environment/budget/pricing/statistical-plan/governance identities.
 STAGES: tuple[str, ...] = (
     "SOURCE_VERIFIED",
     "MATERIALIZED_VERIFIED",
-    "HARNESS_FROZEN",
+    "EXECUTION_MANIFESTS_FROZEN",
     "B2_FITTED",
+    "HARNESS_FROZEN",
     "TRIAL_SIZED",
     "GENERATION_ROOT_FROZEN",
     "CONFIRMATORY_EXECUTED",
@@ -121,13 +128,17 @@ class EvidenceClosureLedger:
         self.generation_id = generation_id
         self.repo_commit = repo_commit.lower()
         self.repo_tree = repo_tree.lower()
-        if not generation_id or any(ch.isspace() for ch in generation_id):
-            raise ClosureError("generation_id must be non-empty and contain no whitespace")
+        if _GENERATION_ID_RE.fullmatch(generation_id) is None:
+            raise ClosureError("generation_id must be a safe 1-128 character slug")
         for name, value in (("repo_commit", self.repo_commit), ("repo_tree", self.repo_tree)):
             if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
                 raise ClosureError(f"{name} must be a 40-character lowercase Git object id")
         if not self.repository_root.is_dir():
             raise ClosureError("repository_root must exist")
+        try:
+            self.ledger_path.relative_to(self.repository_root)
+        except ValueError as exc:
+            raise ClosureError("ledger_path must remain inside repository root") from exc
 
     def _empty_state(self) -> dict[str, object]:
         return {
@@ -195,8 +206,8 @@ class EvidenceClosureLedger:
                 path.relative_to(self.repository_root)
             except ValueError as exc:
                 raise ClosureError("evidence path escapes repository root") from exc
-            if not path.is_file():
-                raise ClosureError(f"missing evidence artifact: {artifact.path}")
+            if not path.is_file() or path.is_symlink():
+                raise ClosureError(f"missing regular evidence artifact: {artifact.path}")
             size = path.stat().st_size
             if size < artifact.minimum_bytes:
                 raise ClosureError(f"evidence artifact too small: {artifact.path}")
