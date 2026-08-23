@@ -8,8 +8,11 @@ from typing import Mapping
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
+    BOUNDARY_METHOD,
     CLAIM_TARGET,
+    CONFSEQ_REFERENCE_COMMIT,
     METHOD,
+    PREDICTOR_RULE,
     SEQUENCE_ORDER_RULE,
     certify_multi_baseline_anytime_valid,
 )
@@ -32,9 +35,9 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 from cwc.governance.p9_scientific_authority_v3 import verify_p9_scientific_authority_v3_document
 from cwc.governance.pareto import PairedBaselineEvidence
 
-AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_ANYTIME_AUTHORITY_V4"
-FINAL_SCHEMA = "DGC_GENERALIZATION_ANYTIME_AUTHORITY_V5"
-CLAIM_SCOPE = "EXACT_G1_G5_PLUS_ANYTIME_VALID_AVERAGE_CONDITIONAL_MEAN_V2"
+AXIS_SCHEMA = "DGC_GENERALIZATION_AXIS_ANYTIME_AUTHORITY_V5"
+FINAL_SCHEMA = "DGC_GENERALIZATION_ANYTIME_AUTHORITY_V6"
+CLAIM_SCOPE = "EXACT_G1_G5_PLUS_EXACT_HOWARD_STITCHING_ACM_V3"
 
 
 class GeneralizationAnytimeError(RuntimeError):
@@ -80,6 +83,10 @@ def _paired_evidence(bundle, *, roles: Mapping[str, str], axis: GeneralizationAx
         "replicates": bundle.replicates,
         "sequence_order_rule": SEQUENCE_ORDER_RULE,
         "claim_target": CLAIM_TARGET,
+        "inference_method": METHOD,
+        "boundary_method": BOUNDARY_METHOD,
+        "predictor_rule": PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
     }))
     cap = float(bundle.max_physical_cost_usd_per_unit)
     evidence: list[PairedBaselineEvidence] = []
@@ -130,9 +137,12 @@ class GeneralizationAxisAnytimeAuthority:
     anytime_certificate_digest: str
     anytime_average_conditional_mean_supported: bool
     anytime_method: str
+    anytime_boundary_method: str
     anytime_claim_target: str
     anytime_assumption_boundary: str
     sequence_order_rule: str
+    predictor_rule: str
+    confseq_reference_commit: str
     legacy_task_aggregated_hoeffding_certificate_digest: str | None
     legacy_task_aggregated_hoeffding_supported: bool
     axis_supported_without_iid_assumption: bool
@@ -177,7 +187,7 @@ def build_generalization_axis_anytime_authority(
         trial_sizing_authority_path=Path(trial_sizing_authority_path),
     )
     if lineage.execution_bundle_digest != bundle.bundle_digest:
-        raise GeneralizationAnytimeError("legacy lineage verifier and V4 axis execution subject differ")
+        raise GeneralizationAnytimeError("legacy lineage verifier and V5 axis execution subject differ")
 
     row = _axis_row(registry, axis)
     roles = _role_map(registry)
@@ -198,6 +208,16 @@ def build_generalization_axis_anytime_authority(
     )
     if not math.isclose(anytime.per_metric_alpha, float(registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationAnytimeError("G1-G5 anytime-valid multiplicity differs from preregistration")
+    if not all((
+        anytime.method == METHOD,
+        anytime.boundary_method == BOUNDARY_METHOD,
+        anytime.claim_target == CLAIM_TARGET,
+        anytime.assumption_boundary == ASSUMPTION_BOUNDARY,
+        anytime.sequence_order_rule == SEQUENCE_ORDER_RULE,
+        anytime.predictor_rule == PREDICTOR_RULE,
+        anytime.confseq_reference_commit == CONFSEQ_REFERENCE_COMMIT,
+    )):
+        raise GeneralizationAnytimeError("G1-G5 certificate theorem identity differs from V5 contract")
 
     exact_doc = asdict(exact)
     anytime_doc = asdict(anytime)
@@ -223,9 +243,12 @@ def build_generalization_axis_anytime_authority(
         "anytime_certificate_digest": anytime_digest,
         "anytime_average_conditional_mean_supported": anytime_supported,
         "anytime_method": METHOD,
+        "anytime_boundary_method": BOUNDARY_METHOD,
         "anytime_claim_target": CLAIM_TARGET,
         "anytime_assumption_boundary": ASSUMPTION_BOUNDARY,
         "sequence_order_rule": SEQUENCE_ORDER_RULE,
+        "predictor_rule": PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
         "legacy_task_aggregated_hoeffding_certificate_digest": lineage.certificate_digest,
         "legacy_task_aggregated_hoeffding_supported": bool(lineage.supported),
         "axis_supported_without_iid_assumption": supported,
@@ -249,7 +272,7 @@ def verify_generalization_axis_anytime_authority_document(path: Path) -> dict[st
     if doc.get("iid_assumption_required") is not False or doc.get("provider_request_independence_required") is not False:
         raise GeneralizationAnytimeError("G1-G5 anytime authority incorrectly requires iid/independence")
     if doc.get("legacy_statistics_promotion_authorized") is not False:
-        raise GeneralizationAnytimeError("legacy statistics cannot authorize V4 axis promotion")
+        raise GeneralizationAnytimeError("legacy statistics cannot authorize V5 axis promotion")
     if doc.get("policy_retuned") is not False or doc.get("product_promotion_authorized") is not False:
         raise GeneralizationAnytimeError("G1-G5 anytime promotion boundary malformed")
     keys = (
@@ -258,7 +281,8 @@ def verify_generalization_axis_anytime_authority_document(path: Path) -> dict[st
         "replicates", "paired_observations_per_baseline", "lineage_v1_axis_authority_digest",
         "exact_panel_certificate", "exact_panel_certificate_digest", "exact_panel_supported",
         "anytime_certificate", "anytime_certificate_digest", "anytime_average_conditional_mean_supported",
-        "anytime_method", "anytime_claim_target", "anytime_assumption_boundary", "sequence_order_rule",
+        "anytime_method", "anytime_boundary_method", "anytime_claim_target", "anytime_assumption_boundary",
+        "sequence_order_rule", "predictor_rule", "confseq_reference_commit",
         "legacy_task_aggregated_hoeffding_certificate_digest", "legacy_task_aggregated_hoeffding_supported",
         "axis_supported_without_iid_assumption",
     )
@@ -280,10 +304,26 @@ def verify_generalization_axis_anytime_authority_document(path: Path) -> dict[st
         "anytime_certificate_digest", doc.get("anytime_certificate_digest")
     ):
         raise GeneralizationAnytimeError("G1-G5 anytime certificate digest mismatch")
-    if doc.get("anytime_method") != METHOD or doc.get("anytime_claim_target") != CLAIM_TARGET:
-        raise GeneralizationAnytimeError("G1-G5 anytime theorem identity mismatch")
-    if doc.get("anytime_assumption_boundary") != ASSUMPTION_BOUNDARY or doc.get("sequence_order_rule") != SEQUENCE_ORDER_RULE:
-        raise GeneralizationAnytimeError("G1-G5 anytime assumption/order mismatch")
+    theorem_fields = {
+        "anytime_method": METHOD,
+        "anytime_boundary_method": BOUNDARY_METHOD,
+        "anytime_claim_target": CLAIM_TARGET,
+        "anytime_assumption_boundary": ASSUMPTION_BOUNDARY,
+        "sequence_order_rule": SEQUENCE_ORDER_RULE,
+        "predictor_rule": PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
+    }
+    for field, expected in theorem_fields.items():
+        if doc.get(field) != expected:
+            raise GeneralizationAnytimeError(f"G1-G5 V5 theorem identity mismatch: {field}")
+    if anytime.get("method") != METHOD or anytime.get("boundary_method") != BOUNDARY_METHOD:
+        raise GeneralizationAnytimeError("G1-G5 embedded certificate method mismatch")
+    if anytime.get("claim_target") != CLAIM_TARGET or anytime.get("assumption_boundary") != ASSUMPTION_BOUNDARY:
+        raise GeneralizationAnytimeError("G1-G5 embedded certificate claim boundary mismatch")
+    if anytime.get("sequence_order_rule") != SEQUENCE_ORDER_RULE or anytime.get("predictor_rule") != PREDICTOR_RULE:
+        raise GeneralizationAnytimeError("G1-G5 embedded certificate order/predictor mismatch")
+    if anytime.get("confseq_reference_commit") != CONFSEQ_REFERENCE_COMMIT:
+        raise GeneralizationAnytimeError("G1-G5 embedded certificate reference implementation mismatch")
     derived_exact = exact.get("all_baselines_observed") is True
     derived_anytime = anytime.get("all_baselines_certified") is True
     if doc.get("exact_panel_supported") is not derived_exact:
@@ -312,6 +352,7 @@ class GeneralizationAnytimeAuthority:
     registry_digest: str
     p9_scientific_v3_authority_digest: str
     frozen_dgc_policy_digest: str
+    theorem_identity_digest: str
     axis_authority_digests: tuple[tuple[str, str], ...]
     exact_g1_g5_supported: bool
     anytime_g1_g5_supported: bool
@@ -329,6 +370,18 @@ class GeneralizationAnytimeAuthority:
             "provider_request_independence_required": False,
             "product_promotion_authorized": False,
         }
+
+
+def _theorem_identity_digest() -> str:
+    return sha256_bytes(canonical_json_bytes({
+        "method": METHOD,
+        "boundary_method": BOUNDARY_METHOD,
+        "claim_target": CLAIM_TARGET,
+        "assumption_boundary": ASSUMPTION_BOUNDARY,
+        "sequence_order_rule": SEQUENCE_ORDER_RULE,
+        "predictor_rule": PREDICTOR_RULE,
+        "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
+    }))
 
 
 def build_generalization_anytime_authority(
@@ -360,10 +413,12 @@ def build_generalization_anytime_authority(
     axis_digests = tuple(sorted(
         (str(row["axis"]), _sha("axis authority_digest", row.get("authority_digest"))) for row in rows
     ))
+    theorem_digest = _theorem_identity_digest()
     payload = {
         "registry_digest": _sha("registry_digest", registry.get("registry_digest")),
         "p9_scientific_v3_authority_digest": _sha("P9 scientific V3 authority_digest", p9.get("authority_digest")),
         "frozen_dgc_policy_digest": _sha("frozen_dgc_policy_digest", registry.get("frozen_dgc_policy_digest")),
+        "theorem_identity_digest": theorem_digest,
         "axis_authority_digests": [list(row) for row in axis_digests],
         "exact_g1_g5_supported": exact,
         "anytime_g1_g5_supported": anytime,
@@ -374,6 +429,7 @@ def build_generalization_anytime_authority(
         registry_digest=payload["registry_digest"],
         p9_scientific_v3_authority_digest=payload["p9_scientific_v3_authority_digest"],
         frozen_dgc_policy_digest=payload["frozen_dgc_policy_digest"],
+        theorem_identity_digest=theorem_digest,
         axis_authority_digests=axis_digests,
         exact_g1_g5_supported=exact,
         anytime_g1_g5_supported=anytime,
@@ -401,8 +457,9 @@ def verify_generalization_anytime_authority_document(path: Path) -> dict[str, ob
         raise GeneralizationAnytimeError("final G1-G5 anytime authority cannot authorize product promotion")
     keys = (
         "registry_digest", "p9_scientific_v3_authority_digest", "frozen_dgc_policy_digest",
-        "axis_authority_digests", "exact_g1_g5_supported", "anytime_g1_g5_supported",
-        "generalization_supported_without_iid_assumption", "independent_replication_evaluation_authorized",
+        "theorem_identity_digest", "axis_authority_digests", "exact_g1_g5_supported",
+        "anytime_g1_g5_supported", "generalization_supported_without_iid_assumption",
+        "independent_replication_evaluation_authorized",
     )
     try:
         payload = {key: doc[key] for key in keys}
@@ -410,11 +467,15 @@ def verify_generalization_anytime_authority_document(path: Path) -> dict[str, ob
         raise GeneralizationAnytimeError("final G1-G5 anytime payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise GeneralizationAnytimeError("final G1-G5 anytime authority digest mismatch")
+    if doc.get("theorem_identity_digest") != _theorem_identity_digest():
+        raise GeneralizationAnytimeError("final G1-G5 theorem identity digest mismatch")
     derived = doc.get("exact_g1_g5_supported") is True and doc.get("anytime_g1_g5_supported") is True
     if doc.get("generalization_supported_without_iid_assumption") is not derived:
         raise GeneralizationAnytimeError("generalization support must derive from exact + anytime G1-G5")
     if doc.get("independent_replication_evaluation_authorized") is not derived:
         raise GeneralizationAnytimeError("replication evaluation requires exact + anytime G1-G5")
-    for field in ("registry_digest", "p9_scientific_v3_authority_digest", "frozen_dgc_policy_digest"):
+    for field in (
+        "registry_digest", "p9_scientific_v3_authority_digest", "frozen_dgc_policy_digest", "theorem_identity_digest"
+    ):
         _sha(field, doc.get(field))
     return doc
