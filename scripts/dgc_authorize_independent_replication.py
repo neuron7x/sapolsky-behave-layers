@@ -5,8 +5,8 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.independent_replication_authority_v3 import (
-    build_independent_replication_authority_v3,
+from cwc.governance.independent_replication_authority_v4 import (
+    build_independent_replication_authority_v4,
 )
 
 
@@ -25,7 +25,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Recompute a fresh externally signed anytime-valid replication and derive V3 authority."
+        description="Recompute fresh externally signed replication and derive V5-theorem-bound V4 authority."
     )
     parser.add_argument("--primary-p9-scientific", required=True)
     parser.add_argument("--primary-anytime-p9", required=True)
@@ -51,7 +51,7 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    authority = build_independent_replication_authority_v3(
+    authority = build_independent_replication_authority_v4(
         primary_p9_scientific_authority_path=Path(args.primary_p9_scientific),
         primary_anytime_p9_authority_path=Path(args.primary_anytime_p9),
         primary_ccf_oracle_audit_authority_path=Path(args.primary_ccf_audit),
@@ -80,15 +80,14 @@ def main() -> int:
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
     print(json.dumps({
-        "status": "PASS" if authority.independent_replication_supported else "FAIL_INDEPENDENT_REPLICATION_V3",
+        "status": "PASS" if authority.independent_replication_supported else "FAIL_INDEPENDENT_REPLICATION_V4",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "replication_package_digest": authority.replication_package_digest,
+        "theorem_identity_digest": authority.theorem_identity_digest,
         "fresh_execution_verified": authority.fresh_execution_verified,
         "replica_exact_panel_supported": authority.replica_exact_panel_supported,
-        "replica_anytime_average_conditional_mean_supported": (
-            authority.replica_anytime_average_conditional_mean_supported
-        ),
+        "replica_anytime_average_conditional_mean_supported": authority.replica_anytime_average_conditional_mean_supported,
         "replica_scientific_p9_supported": authority.replica_scientific_p9_supported,
         "signed_independence_attested": authority.signed_independence_attested,
         "social_independence_machine_proven": authority.social_independence_machine_proven,
