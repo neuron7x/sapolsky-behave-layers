@@ -188,7 +188,7 @@ def _theorem_identity_digest() -> str:
         "boundary_method": PRIMARY_BOUNDARY_METHOD,
         "claim_target": PRIMARY_CLAIM_TARGET,
         "assumption_boundary": PRIMARY_ASSUMPTION_BOUNDARY,
-        "sequence_order": PRIMARY_SEQUENCE_ORDER,
+        "sequence_order_rule": PRIMARY_SEQUENCE_ORDER,
         "predictor_rule": PRIMARY_PREDICTOR_RULE,
         "confseq_reference_commit": CONFSEQ_REFERENCE_COMMIT,
     }))
@@ -333,7 +333,7 @@ def build_family_p19_evidence_root(
         "boundary_method": anytime.get("anytime_boundary_method"),
         "claim_target": anytime.get("anytime_claim_target"),
         "assumption_boundary": anytime.get("anytime_assumption_boundary"),
-        "sequence_order": anytime.get("sequence_order_rule"),
+        "sequence_order_rule": anytime.get("sequence_order_rule"),
         "predictor_rule": anytime.get("predictor_rule"),
         "confseq_reference_commit": anytime.get("confseq_reference_commit"),
     }))
@@ -465,6 +465,8 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
     snapshot = doc.get("ledger_snapshot")
     if not isinstance(snapshot, Mapping):
         raise P19EvidenceError("P19 ledger snapshot missing")
+    if doc.get("ledger_schema") != snapshot.get("schema"):
+        raise P19EvidenceError("P19 ledger schema differs from embedded snapshot")
     if sha256_bytes(canonical_json_bytes(snapshot)) != _sha("ledger_snapshot_digest", doc.get("ledger_snapshot_digest")):
         raise P19EvidenceError("P19 ledger snapshot digest mismatch")
     _verify_pre_p19_ledger_snapshot(
@@ -480,8 +482,21 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
     stage_rows = doc.get("stage_evidence")
     if not isinstance(stage_rows, list) or sha256_bytes(canonical_json_bytes(stage_rows)) != doc.get("stage_evidence_manifest_digest"):
         raise P19EvidenceError("P19 stage evidence manifest digest mismatch")
-    if [row.get("stage") for row in stage_rows if isinstance(row, Mapping)] != snapshot.get("completed_stages"):
+    completed = snapshot.get("completed_stages")
+    if [row.get("stage") for row in stage_rows if isinstance(row, Mapping)] != completed:
         raise P19EvidenceError("P19 stage evidence order differs from embedded ledger")
+    if len(stage_rows) != len(receipts):
+        raise P19EvidenceError("P19 stage evidence/receipt population mismatch")
+    for stage_row, receipt in zip(stage_rows, receipts, strict=True):
+        if not isinstance(stage_row, Mapping) or not isinstance(receipt, Mapping):
+            raise P19EvidenceError("P19 stage/receipt row malformed")
+        if stage_row.get("receipt_digest") != receipt.get("receipt_digest"):
+            raise P19EvidenceError("P19 stage manifest references a different receipt chain")
+        evidence = receipt.get("evidence")
+        if not isinstance(evidence, list) or len(evidence) != 1 or not isinstance(evidence[0], Mapping):
+            raise P19EvidenceError("P19 embedded receipt evidence malformed")
+        if dict(stage_row.get("evidence", {})) != dict(evidence[0]):
+            raise P19EvidenceError("P19 stage evidence differs from embedded receipt evidence")
     if doc.get("theorem_identity_digest") != _theorem_identity_digest():
         raise P19EvidenceError("P19 theorem identity is not current V5")
     if not all(doc.get(field) is True for field in (
