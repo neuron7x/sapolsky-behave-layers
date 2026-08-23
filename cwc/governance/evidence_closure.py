@@ -14,13 +14,15 @@ RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V2"
 _GENERATION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 # A final evaluation harness includes the executable-frozen B0-B3 panel. Therefore
-# B2 must be fitted before HARNESS_FROZEN. CCF oracle/quantization semantics are
-# frozen before any B2 outcomes so headroom measurement cannot be post-hoc tuned.
+# B2 must be fitted before HARNESS_FROZEN. CCF oracle semantics and the complete
+# G1-G5 generalization registry are frozen before any B2 outcomes so neither
+# headroom nor generalization definitions can be selected post-hoc.
 STAGES: tuple[str, ...] = (
     "SOURCE_VERIFIED",
     "MATERIALIZED_VERIFIED",
     "EXECUTION_MANIFESTS_FROZEN",
     "CCF_SPEC_FROZEN",
+    "GENERALIZATION_REGISTRY_FROZEN",
     "B2_FITTED",
     "HARNESS_FROZEN",
     "TRIAL_SIZED",
