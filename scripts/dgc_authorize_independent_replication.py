@@ -5,8 +5,8 @@ import json
 import os
 from pathlib import Path
 
-from cwc.governance.independent_replication_authority_v2 import (
-    build_independent_replication_authority_v2,
+from cwc.governance.independent_replication_authority_v3 import (
+    build_independent_replication_authority_v3,
 )
 
 
@@ -25,14 +25,14 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Recompute a fresh externally signed replication and derive INDEPENDENT_REPLICATION authority."
+        description="Recompute a fresh externally signed anytime-valid replication and derive V3 authority."
     )
     parser.add_argument("--primary-p9-scientific", required=True)
-    parser.add_argument("--primary-dual-p9", required=True)
+    parser.add_argument("--primary-anytime-p9", required=True)
     parser.add_argument("--primary-ccf-audit", required=True)
-    parser.add_argument("--primary-generalization-scientific", required=True)
+    parser.add_argument("--primary-generalization", required=True)
     parser.add_argument("--replica-p9-scientific", required=True)
-    parser.add_argument("--replica-dual-p9", required=True)
+    parser.add_argument("--replica-anytime-p9", required=True)
     parser.add_argument("--replica-ccf-audit", required=True)
     parser.add_argument("--replica-execution-authority", required=True)
     parser.add_argument("--replica-execution-bundle-root", required=True)
@@ -51,13 +51,13 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    authority = build_independent_replication_authority_v2(
+    authority = build_independent_replication_authority_v3(
         primary_p9_scientific_authority_path=Path(args.primary_p9_scientific),
-        primary_dual_p9_authority_path=Path(args.primary_dual_p9),
+        primary_anytime_p9_authority_path=Path(args.primary_anytime_p9),
         primary_ccf_oracle_audit_authority_path=Path(args.primary_ccf_audit),
-        primary_generalization_scientific_authority_path=Path(args.primary_generalization_scientific),
+        primary_generalization_authority_path=Path(args.primary_generalization),
         replica_p9_scientific_authority_path=Path(args.replica_p9_scientific),
-        replica_dual_p9_authority_path=Path(args.replica_dual_p9),
+        replica_anytime_p9_authority_path=Path(args.replica_anytime_p9),
         replica_ccf_oracle_audit_authority_path=Path(args.replica_ccf_audit),
         replica_execution_authority_path=Path(args.replica_execution_authority),
         replica_execution_bundle_root=Path(args.replica_execution_bundle_root),
@@ -80,16 +80,20 @@ def main() -> int:
         json.dumps(authority.document, indent=2, sort_keys=True).encode("utf-8") + b"\n",
     )
     print(json.dumps({
-        "status": "PASS" if authority.independent_replication_supported else "FAIL_INDEPENDENT_REPLICATION",
+        "status": "PASS" if authority.independent_replication_supported else "FAIL_INDEPENDENT_REPLICATION_V3",
         "authority": str(output),
         "authority_digest": authority.authority_digest,
         "replication_package_digest": authority.replication_package_digest,
         "fresh_execution_verified": authority.fresh_execution_verified,
-        "replica_p9_supported_under_frozen_assumptions": (
-            authority.replica_p9_supported_under_frozen_assumptions
+        "replica_exact_panel_supported": authority.replica_exact_panel_supported,
+        "replica_anytime_average_conditional_mean_supported": (
+            authority.replica_anytime_average_conditional_mean_supported
         ),
+        "replica_scientific_p9_supported": authority.replica_scientific_p9_supported,
         "signed_independence_attested": authority.signed_independence_attested,
         "social_independence_machine_proven": authority.social_independence_machine_proven,
+        "iid_assumption_required": False,
+        "provider_request_independence_required": False,
         "independent_replication_supported": authority.independent_replication_supported,
         "product_promotion_authorized": False,
     }, sort_keys=True))
