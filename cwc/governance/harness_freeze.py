@@ -15,9 +15,10 @@ from cwc.governance.baseline_panel import (
 from cwc.governance.ccf_spec_authority import verify_ccf_spec_authority_document
 from cwc.governance.evaluation_harness import FrozenEvaluationHarness
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.generalization_registry import verify_generalization_registry_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
-SCHEMA = "DGC_HARNESS_FREEZE_V2"
+SCHEMA = "DGC_HARNESS_FREEZE_V3"
 BASELINE_INPUT_SCHEMA = "DGC_BASELINE_PANEL_INPUT_V1"
 DGC_ROLE = "DGC"
 
@@ -95,6 +96,8 @@ class HarnessFreezeAuthority:
     execution_manifest_freeze_digest: str
     ccf_spec_authority_digest: str
     ccf_spec_digest: str
+    generalization_registry_digest: str
+    g1_holdout_task_digest: str
     b2_fit_authority_digest: str
     materialized_task_manifest_digest: str
     confirmatory_task_manifest_digest: str
@@ -114,6 +117,8 @@ class HarnessFreezeAuthority:
             "execution_manifest_freeze_digest": self.execution_manifest_freeze_digest,
             "ccf_spec_authority_digest": self.ccf_spec_authority_digest,
             "ccf_spec_digest": self.ccf_spec_digest,
+            "generalization_registry_digest": self.generalization_registry_digest,
+            "g1_holdout_task_digest": self.g1_holdout_task_digest,
             "b2_fit_authority_digest": self.b2_fit_authority_digest,
             "materialized_task_manifest_digest": self.materialized_task_manifest_digest,
             "confirmatory_task_manifest_digest": self.confirmatory_task_manifest_digest,
@@ -126,6 +131,7 @@ class HarnessFreezeAuthority:
             "harness_freeze_digest": self.harness_freeze_digest,
             "harness_frozen": True,
             "confirmatory_execution_authorized": False,
+            "generalization_execution_authorized": False,
             "product_promotion_authorized": False,
         }
 
@@ -134,25 +140,42 @@ def build_harness_freeze(
     *,
     execution_manifest_freeze_path: Path,
     ccf_spec_authority_path: Path,
+    generalization_registry_path: Path,
     b2_fit_authority_path: Path,
     baseline_panel_input_path: Path,
 ) -> HarnessFreezeAuthority:
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
     ccf = verify_ccf_spec_authority_document(Path(ccf_spec_authority_path))
+    generalization = verify_generalization_registry_document(Path(generalization_registry_path))
     b2 = verify_b2_fit_authority_document(Path(b2_fit_authority_path))
     baseline_input = _json(Path(baseline_panel_input_path), schema=BASELINE_INPUT_SCHEMA)
 
     execution_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
     if ccf.get("execution_manifest_freeze_digest") != execution_digest:
         raise HarnessFreezeError("CCF spec authority is bound to a different execution manifest freeze")
+    if generalization.get("execution_manifest_freeze_digest") != execution_digest:
+        raise HarnessFreezeError("generalization registry is bound to a different execution manifest freeze")
     if b2.get("execution_manifest_freeze_digest") != execution_digest:
         raise HarnessFreezeError("B2 authority is bound to a different execution manifest freeze")
-    if b2.get("family_id") != execution.get("family_id") or ccf.get("family_id") != execution.get("family_id"):
-        raise HarnessFreezeError("B2/CCF family differs from execution freeze")
+    if not (
+        b2.get("family_id") == execution.get("family_id")
+        and ccf.get("family_id") == execution.get("family_id")
+        and generalization.get("family_id") == execution.get("family_id")
+    ):
+        raise HarnessFreezeError("B2/CCF/generalization family differs from execution freeze")
+
     ccf_authority_digest = _sha("CCF authority_digest", ccf.get("authority_digest"))
     ccf_spec_digest = _sha("CCF spec_digest", ccf.get("ccf_spec_digest"))
+    generalization_registry_digest = _sha(
+        "generalization registry_digest", generalization.get("registry_digest")
+    )
     materialized_task_digest = _sha("materialized task manifest", execution.get("task_manifest_digest"))
     confirmatory_task_digest = _sha("confirmatory task manifest", b2.get("confirmatory_task_digest"))
+    g1_holdout_task_digest = _sha("G1 holdout task manifest", b2.get("generalization_task_digest"))
+    if generalization.get("primary_confirmatory_task_digest") != confirmatory_task_digest:
+        raise HarnessFreezeError("generalization registry primary confirmatory identity differs from B2 authority")
+    if generalization.get("g1_holdout_task_digest") != g1_holdout_task_digest:
+        raise HarnessFreezeError("generalization registry G1 holdout identity differs from B2 authority")
 
     rows = baseline_input.get("specs")
     if not isinstance(rows, list) or len(rows) != 4 or not all(isinstance(row, Mapping) for row in rows):
@@ -198,6 +221,13 @@ def build_harness_freeze(
     role_map = {**mapped_ids, DGC_ROLE: dgc_policy_id}
     required_policy_ids = set(role_map.values())
 
+    registry_role_rows = generalization.get("policy_role_bindings")
+    if not isinstance(registry_role_rows, list):
+        raise HarnessFreezeError("generalization registry policy-role bindings missing")
+    registry_role_map = {str(row[0]): str(row[1]) for row in registry_role_rows if isinstance(row, list) and len(row) == 2}
+    if registry_role_map != role_map:
+        raise HarnessFreezeError("final harness policy-role mapping differs from preregistered generalization mapping")
+
     component_rows = execution.get("components")
     policy_rows = execution.get("governance_policies")
     if not isinstance(component_rows, list) or not isinstance(policy_rows, list):
@@ -222,6 +252,8 @@ def build_harness_freeze(
         raise HarnessFreezeError("execution governance policies do not equal exact B0-B3 + DGC panel")
     if len(set(governance.values())) != len(governance):
         raise HarnessFreezeError("governance policy manifests must have distinct content digests")
+    if generalization.get("frozen_dgc_policy_digest") != governance[dgc_policy_id]:
+        raise HarnessFreezeError("preregistered frozen DGC policy digest differs from final harness DGC policy")
 
     harnesses: list[FrozenPolicyHarness] = []
     comparison_frames: set[str] = set()
@@ -267,6 +299,8 @@ def build_harness_freeze(
         "execution_manifest_freeze_digest": execution_digest,
         "ccf_spec_authority_digest": ccf_authority_digest,
         "ccf_spec_digest": ccf_spec_digest,
+        "generalization_registry_digest": generalization_registry_digest,
+        "g1_holdout_task_digest": g1_holdout_task_digest,
         "b2_fit_authority_digest": _sha("B2 authority_digest", b2.get("authority_digest")),
         "materialized_task_manifest_digest": materialized_task_digest,
         "confirmatory_task_manifest_digest": confirmatory_task_digest,
@@ -282,6 +316,8 @@ def build_harness_freeze(
         execution_manifest_freeze_digest=execution_digest,
         ccf_spec_authority_digest=ccf_authority_digest,
         ccf_spec_digest=ccf_spec_digest,
+        generalization_registry_digest=generalization_registry_digest,
+        g1_holdout_task_digest=g1_holdout_task_digest,
         b2_fit_authority_digest=_sha("B2 authority_digest", b2.get("authority_digest")),
         materialized_task_manifest_digest=materialized_task_digest,
         confirmatory_task_manifest_digest=confirmatory_task_digest,
@@ -299,13 +335,18 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
     doc = _json(Path(path), schema=SCHEMA)
     if doc.get("harness_frozen") is not True:
         raise HarnessFreezeError("harness freeze must explicitly assert harness_frozen=true")
-    if doc.get("confirmatory_execution_authorized") is not False or doc.get("product_promotion_authorized") is not False:
+    if (
+        doc.get("confirmatory_execution_authorized") is not False
+        or doc.get("generalization_execution_authorized") is not False
+        or doc.get("product_promotion_authorized") is not False
+    ):
         raise HarnessFreezeError("harness freeze illegally grants downstream authority")
     payload = {
         key: doc[key]
         for key in (
             "family_id", "execution_manifest_freeze_digest", "ccf_spec_authority_digest",
-            "ccf_spec_digest", "b2_fit_authority_digest", "materialized_task_manifest_digest",
+            "ccf_spec_digest", "generalization_registry_digest", "g1_holdout_task_digest",
+            "b2_fit_authority_digest", "materialized_task_manifest_digest",
             "confirmatory_task_manifest_digest", "baseline_panel_input_sha256",
             "baseline_panel_digest", "baseline_specs", "comparison_frame_digest",
             "policy_harnesses", "policy_role_bindings",
@@ -315,10 +356,12 @@ def verify_harness_freeze_document(path: Path) -> dict[str, object]:
         raise HarnessFreezeError("harness freeze digest mismatch")
     _sha("ccf_spec_authority_digest", doc.get("ccf_spec_authority_digest"))
     _sha("ccf_spec_digest", doc.get("ccf_spec_digest"))
+    _sha("generalization_registry_digest", doc.get("generalization_registry_digest"))
+    g1 = _sha("g1_holdout_task_digest", doc.get("g1_holdout_task_digest"))
     materialized = _sha("materialized_task_manifest_digest", doc.get("materialized_task_manifest_digest"))
     confirmatory = _sha("confirmatory_task_manifest_digest", doc.get("confirmatory_task_manifest_digest"))
-    if materialized == confirmatory:
-        raise HarnessFreezeError("confirmatory task manifest must be distinct from the full materialized workload manifest")
+    if len({materialized, confirmatory, g1}) != 3:
+        raise HarnessFreezeError("materialized, primary confirmatory and G1 holdout identities must be distinct")
     harnesses = doc.get("policy_harnesses")
     if not isinstance(harnesses, list) or len(harnesses) != 5:
         raise HarnessFreezeError("harness freeze must contain exact five-arm B0-B3 + DGC population")
