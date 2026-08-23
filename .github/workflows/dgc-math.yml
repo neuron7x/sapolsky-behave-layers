@@ -13,10 +13,13 @@ on:
       - "scripts/dgc_exact_meta_modelcheck.py"
       - "scripts/dgc_robust_bound_exact_modelcheck.py"
       - "scripts/dgc_triage_family_theorem.py"
+      - "scripts/dgc_formal_core_gate.py"
       - "scripts/dgc_proof_ledger_gate.py"
       - "scripts/dgc_verification_gate.py"
+      - "dgc-formal-requirements.txt"
       - "research/registry/dgc_math_proof_ledger_v1.json"
       - "docs/DGC_MATHEMAT*.md"
+      - "docs/DGC_FORMAL*.md"
       - "docs/references/DGC_*MATH*.md"
       - ".github/workflows/dgc-math.yml"
   pull_request:
@@ -28,10 +31,13 @@ on:
       - "scripts/dgc_exact_meta_modelcheck.py"
       - "scripts/dgc_robust_bound_exact_modelcheck.py"
       - "scripts/dgc_triage_family_theorem.py"
+      - "scripts/dgc_formal_core_gate.py"
       - "scripts/dgc_proof_ledger_gate.py"
       - "scripts/dgc_verification_gate.py"
+      - "dgc-formal-requirements.txt"
       - "research/registry/dgc_math_proof_ledger_v1.json"
       - "docs/DGC_MATHEMAT*.md"
+      - "docs/DGC_FORMAL*.md"
       - "docs/references/DGC_*MATH*.md"
       - ".github/workflows/dgc-math.yml"
 
@@ -49,11 +55,14 @@ jobs:
         with:
           python-version: "3.10"
           cache: pip
-          cache-dependency-path: cwc-requirements-dev.txt
-      - name: Install pure-logic test tooling
+          cache-dependency-path: |
+            cwc-requirements-dev.txt
+            dgc-formal-requirements.txt
+      - name: Install pure-logic and formal tooling
         run: |
           python -m pip install --upgrade pip
           pip install -r cwc-requirements-dev.txt
+          pip install -r dgc-formal-requirements.txt
       - name: DGC mathematics regression v2-v2j
         run: |
           PYTHONPATH=. python -m pytest -q \
@@ -85,5 +94,7 @@ jobs:
           PYTHONPATH=. python scripts/dgc_robust_bound_exact_modelcheck.py
           PYTHONPATH=. python scripts/dgc_triage_family_theorem.py
           PYTHONPATH=. python scripts/dgc_proof_ledger_gate.py
+      - name: SMT formal core safety obligations
+        run: PYTHONPATH=. python scripts/dgc_formal_core_gate.py
       - name: Canonical DGC governance fault gate
         run: PYTHONPATH=. python scripts/dgc_verification_gate.py
