@@ -37,14 +37,25 @@ def _ok_runner(argv, cwd, env):
     return subprocess.CompletedProcess(argv, 0, stdout="ok", stderr="")
 
 
-def test_stage_topology_places_b2_before_final_harness_freeze() -> None:
-    assert STAGES[:6] == (
+def test_stage_topology_freezes_fault_matrix_pre_b2_and_requires_fault_support_pre_replication() -> None:
+    assert STAGES == (
         "SOURCE_VERIFIED",
         "MATERIALIZED_VERIFIED",
         "EXECUTION_MANIFESTS_FROZEN",
+        "CCF_SPEC_FROZEN",
+        "GENERALIZATION_REGISTRY_FROZEN",
+        "FAULT_INJECTION_SPEC_FROZEN",
         "B2_FITTED",
         "HARNESS_FROZEN",
         "TRIAL_SIZED",
+        "GENERATION_ROOT_FROZEN",
+        "CONFIRMATORY_EXECUTED",
+        "P9_SUPPORTED",
+        "GENERALIZATION_SUPPORTED",
+        "FAULT_TOLERANCE_SUPPORTED",
+        "INDEPENDENT_REPLICATION_SUPPORTED",
+        "P19_SEALED",
+        "PRODUCT_QUALIFIED",
     )
 
 
@@ -116,7 +127,7 @@ def test_command_failure_does_not_advance(tmp_path: Path) -> None:
 
 def test_digest_bound_ordered_receipt_chain(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
-    for index, stage in enumerate(STAGES[:5]):
+    for index, stage in enumerate(STAGES[:7]):
         path = tmp_path / f"e{index}.json"
         path.write_text(json.dumps({"stage": stage}))
         receipt = ledger.advance(
@@ -129,9 +140,9 @@ def test_digest_bound_ordered_receipt_chain(tmp_path: Path) -> None:
         )
         assert receipt["stage"] == stage
     state = ledger.load()
-    assert state["completed_stages"] == list(STAGES[:5])
+    assert state["completed_stages"] == list(STAGES[:7])
     assert state["product_qualified"] is False
-    assert ledger.next_stage() == STAGES[5]
+    assert ledger.next_stage() == STAGES[7]
 
 
 def test_tampering_is_detected(tmp_path: Path) -> None:
