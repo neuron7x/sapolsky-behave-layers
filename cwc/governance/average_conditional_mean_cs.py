@@ -9,15 +9,21 @@ from typing import Sequence
 
 from cwc.governance.pareto import PairedBaselineEvidence
 
-METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_EMPIRICAL_BERNSTEIN_CS_V1"
+METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V2"
+BOUNDARY_METHOD = "HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V1"
 CLAIM_TARGET = "AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE"
-ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_VARIANCE_CENTER_NO_IID_REQUIRED"
+ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_CENTER_NO_IID_REQUIRED"
 SEQUENCE_ORDER_RULE = "TASK_ID_ASC_THEN_REPLICATE_ASC"
+PREDICTOR_RULE = "BETA_HALF_SMOOTHED_PREVISIBLE_MEAN_V1"
+CONFSEQ_REFERENCE_COMMIT = "5ffe733ca2447a2e28c2c91f3b00086173f2ab2c"
 
-# Howard et al. (Annals of Statistics 2021) empirical-Bernstein stitching.
-# These parameters are frozen before external confirmatory outcomes.
+# Howard, Ramdas, McAuliffe & Sekhon (Annals of Statistics, 2021):
+# Theorem 4 composes a sub-exponential uniform boundary with the predictable
+# squared-error process; Eq. (10) supplies the polynomial-stitching boundary.
+# eta=2 and s=1.4 are frozen pre-outcome protocol parameters.
 ETA = 2.0
 S = 1.4
+V_MIN = 1.0
 # zeta(1.4), frozen to IEEE-754 double precision for deterministic replay.
 ZETA_S = 3.1055472779775815
 
@@ -28,6 +34,46 @@ def _digest(payload: object) -> str:
     ).hexdigest()
 
 
+def polynomial_stitching_boundary(
+    variance_process: float,
+    *,
+    crossing_alpha: float,
+    v_min: float = V_MIN,
+    c: float = 1.0,
+) -> float:
+    """Exact Howard et al. Eq. (10) polynomial-stitching boundary.
+
+    This mirrors the authors' ``PolyStitchingBound`` implementation at
+    ``CONFSEQ_REFERENCE_COMMIT``. ``crossing_alpha`` is the *one-boundary*
+    crossing probability. Theorem 4 is two-sided, so callers targeting total
+    interval error ``delta`` must pass ``crossing_alpha=delta/2``.
+    """
+    v = float(variance_process)
+    crossing = float(crossing_alpha)
+    v_floor = float(v_min)
+    scale = float(c)
+    if not math.isfinite(v) or v < 0.0:
+        raise ValueError("variance_process must be finite and >= 0")
+    if not 0.0 < crossing < 1.0:
+        raise ValueError("crossing_alpha must be in (0,1)")
+    if not math.isfinite(v_floor) or v_floor <= 0.0:
+        raise ValueError("v_min must be finite and > 0")
+    if not math.isfinite(scale):
+        raise ValueError("c must be finite")
+
+    use_v = max(v, v_floor)
+    log_eta = math.log(ETA)
+    ell = S * math.log(math.log(ETA * use_v / v_floor)) + math.log(
+        ZETA_S / (crossing * (log_eta ** S))
+    )
+    if not math.isfinite(ell) or ell <= 0.0:
+        raise ValueError("invalid polynomial-stitching boundary state")
+    k1 = (ETA ** 0.25 + ETA ** -0.25) / math.sqrt(2.0)
+    k2 = (math.sqrt(ETA) + 1.0) / 2.0
+    term2 = k2 * scale * ell
+    return math.sqrt(k1 * k1 * use_v * ell + term2 * term2) + term2
+
+
 @dataclass(frozen=True, slots=True)
 class AverageConditionalMeanBound:
     n: int
@@ -35,13 +81,16 @@ class AverageConditionalMeanBound:
     lower: float
     upper: float
     alpha: float
+    boundary_crossing_alpha: float
     support_lower: float
     support_upper: float
     empirical_variance_process: float
     half_width: float
     method: str = METHOD
+    boundary_method: str = BOUNDARY_METHOD
     claim_target: str = CLAIM_TARGET
     assumption_boundary: str = ASSUMPTION_BOUNDARY
+    predictor_rule: str = PREDICTOR_RULE
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,8 +117,11 @@ class AnytimeMultiBaselineCertificate:
     evidence_manifest_digest: str
     sequence_order_rule: str = SEQUENCE_ORDER_RULE
     method: str = METHOD
+    boundary_method: str = BOUNDARY_METHOD
     claim_target: str = CLAIM_TARGET
     assumption_boundary: str = ASSUMPTION_BOUNDARY
+    predictor_rule: str = PREDICTOR_RULE
+    confseq_reference_commit: str = CONFSEQ_REFERENCE_COMMIT
 
 
 def _validate_support(values: tuple[float, ...], lower: float, upper: float) -> None:
@@ -86,13 +138,16 @@ def average_conditional_mean_bound(
     upper: float,
     alpha: float,
 ) -> AverageConditionalMeanBound:
-    """Time-uniform nonparametric empirical-Bernstein CS terminal slice.
+    """Terminal slice of a time-uniform confidence sequence for an ACM.
 
-    The input sequence is rescaled to [0,1]. A predictable smoothed empirical
-    center is used only for the variance process. The returned interval targets
-    the average conditional mean of the precommitted adapted sequence, not an iid
-    population mean. No independence or identical-distribution assumption is
-    encoded by this primitive.
+    Observations are rescaled to [0,1]. The predictor is previsible: at time t it
+    depends only on observations strictly before t. Theorem 4 then targets the
+    average conditional mean of the bounded adapted sequence; it does not require
+    a common iid population mean or independence across provider requests.
+
+    ``alpha`` is the desired two-sided interval error. The underlying one-boundary
+    crossing probability is therefore ``alpha/2`` exactly as required by the
+    Theorem-4 ``1-2*crossing_alpha`` coverage statement.
     """
     values = tuple(float(x) for x in observations)
     if not values:
@@ -109,35 +164,32 @@ def average_conditional_mean_bound(
     prefix_sum = 0.0
     variance_process = 0.0
     for index, value in enumerate(scaled, start=1):
-        # Predictable because it depends only on observations before `index`.
+        # (1/2 + sum_{j<t} X_j) / t is F_{t-1}-measurable and lies in [0,1].
         predictor = (0.5 + prefix_sum) / index
         variance_process += (value - predictor) ** 2
         prefix_sum += value
 
-    v_hat = max(1.0, variance_process)
-    log_eta = math.log(ETA)
-    h = S * math.log(math.log(ETA * v_hat)) + math.log(
-        (2.0 * ZETA_S) / (alpha * (log_eta ** S))
-    )
-    if not math.isfinite(h) or h <= 0.0:
-        raise ValueError("invalid stitched empirical-Bernstein boundary state")
-    k1 = (ETA ** 0.25 + ETA ** -0.25) / math.sqrt(2.0)
-    k2 = (math.sqrt(ETA) + 1.0) / 2.0
-    n = len(values)
-    half_width_scaled = (k1 * math.sqrt(v_hat * h) + k2 * h) / n
+    crossing_alpha = alpha / 2.0
+    radius_scaled = polynomial_stitching_boundary(
+        variance_process,
+        crossing_alpha=crossing_alpha,
+        v_min=V_MIN,
+        c=1.0,
+    ) / len(values)
     center_scaled = fmean(scaled)
-    lower_scaled = max(0.0, center_scaled - half_width_scaled)
-    upper_scaled = min(1.0, center_scaled + half_width_scaled)
+    lower_scaled = max(0.0, center_scaled - radius_scaled)
+    upper_scaled = min(1.0, center_scaled + radius_scaled)
     return AverageConditionalMeanBound(
-        n=n,
+        n=len(values),
         sample_mean=fmean(values),
         lower=lower + span * lower_scaled,
         upper=lower + span * upper_scaled,
         alpha=alpha,
+        boundary_crossing_alpha=crossing_alpha,
         support_lower=lower,
         support_upper=upper,
-        empirical_variance_process=v_hat,
-        half_width=span * half_width_scaled,
+        empirical_variance_process=variance_process,
+        half_width=span * radius_scaled,
     )
 
 
@@ -167,6 +219,7 @@ def certify_multi_baseline_anytime_valid(
     if any(not math.isclose(float(row.coverage), 1.0, rel_tol=0.0, abs_tol=1e-12) for row in rows):
         raise ValueError("full paired coverage is required")
 
+    # Bonferroni over four baseline arms x three endpoints within this workload family.
     per_metric_alpha = alpha / (len(rows) * 3)
     results: list[AnytimeBaselineResult] = []
     manifest: list[dict[str, object]] = []
@@ -217,6 +270,7 @@ def certify_multi_baseline_anytime_valid(
             "quality_support": row.quality_gain_support,
             "catastrophic_support": row.catastrophic_gain_support,
             "sequence_order_rule": SEQUENCE_ORDER_RULE,
+            "predictor_rule": PREDICTOR_RULE,
         })
     return AnytimeMultiBaselineCertificate(
         paired_task_digest=next(iter(paired_digests)),
