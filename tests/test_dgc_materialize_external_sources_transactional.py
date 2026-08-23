@@ -39,12 +39,12 @@ def test_materializer_failure_never_publishes_partial_generation(tmp_path: Path,
     monkeypatch.setattr(module, "SOURCE_REGISTRY", registry)
     monkeypatch.setattr(module, "_repo_identity", lambda root: ("c" * 40, "d" * 40))
 
-    def swe(row, root):
+    def swe(row, root, **kwargs):
         (root / "SWE_BENCH_VERIFIED").mkdir()
         (root / "SWE_BENCH_VERIFIED" / "payload").write_bytes(b"swe")
         return {"family_id": row["family_id"], "stage": "MATERIALIZED_VERIFIED"}
 
-    def terminal(row, root):
+    def terminal(row, root, **kwargs):
         (root / "TERMINAL_BENCH_2_1").mkdir()
         (root / "TERMINAL_BENCH_2_1" / "partial").write_bytes(b"partial")
         raise RuntimeError("terminal materialization failed")
@@ -67,7 +67,7 @@ def test_success_publishes_only_after_both_families_complete(tmp_path: Path, mon
     monkeypatch.setattr(module, "SOURCE_REGISTRY", registry)
     monkeypatch.setattr(module, "_repo_identity", lambda root: ("c" * 40, "d" * 40))
 
-    def materialize(row, root):
+    def materialize(row, root, **kwargs):
         family = root / row["family_id"]
         family.mkdir()
         (family / "payload").write_text(row["family_id"])
