@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_external_verification_plan import SCHEMA as PLAN_SCHEMA
+from cwc.governance.p19_external_verification_plan import (
+    REQUIRED_IMPLEMENTATION_DEPENDENCIES,
+    SCHEMA as PLAN_SCHEMA,
+)
 from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS, load_p19_verification_report
 from cwc.governance.p19_verification_report import (
     CHECK_RECEIPT_SCHEMA,
@@ -38,6 +41,12 @@ def _active_plan(root: Path) -> Path:
     entry = root / "scripts/dgc_external_p19_verifier.py"
     entry.parent.mkdir(parents=True, exist_ok=True)
     entry.write_text("print('test verifier')\n", encoding="utf-8")
+    dependencies = []
+    for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# test replay engine\n", encoding="utf-8")
+        dependencies.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
     rows = []
     for check_id in sorted(REQUIRED_CHECKS):
         rows.append({
@@ -55,12 +64,14 @@ def _active_plan(root: Path) -> Path:
         "activation_authorized": True,
         "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
         "verifier_entrypoint_sha256": sha256_file(entry),
+        "verifier_dependency_manifest_digest": sha256_bytes(canonical_json_bytes(dependencies)),
+        "verifier_dependencies": dependencies,
         "check_contracts": rows,
         "all_check_implementations_complete": True,
         "product_qualification_authorized": False,
     }
     doc = {"schema": PLAN_SCHEMA, **payload, "plan_digest": sha256_bytes(canonical_json_bytes(payload))}
-    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"
+    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
     return path
@@ -171,8 +182,8 @@ def test_inactive_plan_prevents_report_authority(tmp_path: Path):
     doc["activation_authorized"] = False
     keys = (
         "plan_generation", "frozen_pre_outcome", "activation_authorized", "verifier_entrypoint_path",
-        "verifier_entrypoint_sha256", "check_contracts", "all_check_implementations_complete",
-        "product_qualification_authorized",
+        "verifier_entrypoint_sha256", "verifier_dependency_manifest_digest", "verifier_dependencies",
+        "check_contracts", "all_check_implementations_complete", "product_qualification_authorized",
     )
     doc["plan_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in keys}))
     plan.write_bytes(canonical_json_bytes(doc) + b"\n")
@@ -196,6 +207,16 @@ def test_raw_transcript_mutation_fails_report_rehash(tmp_path: Path):
     evidence_rel = str(report["checks"][0]["evidence_path"])
     (tmp_path / evidence_rel).write_bytes(b"mutated\n")
     with pytest.raises(Exception, match="bytes differ"):
+        load_p19_verification_report(path, repository_root=tmp_path)
+
+
+def test_verifier_engine_mutation_fails_report_replay(tmp_path: Path):
+    report = _build(tmp_path)
+    path = tmp_path / "report.json"
+    path.write_bytes(report_bytes(report))
+    dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
+    dependency.write_text("# mutated engine\n", encoding="utf-8")
+    with pytest.raises(Exception, match="dependency bytes differ"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
