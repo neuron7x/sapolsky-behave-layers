@@ -5,6 +5,7 @@ from typing import Mapping
 
 from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
 from cwc.governance.global_product_qualification import (
+    FamilyP19VerificationInput,
     build_global_product_qualification_authority,
     verify_global_product_qualification_authority_document,
 )
@@ -73,6 +74,8 @@ def close_product_qualified(
     global_product_authority_path: Path,
     peer_family_p19_path: Path,
     source_registry_path: Path,
+    own_p19_verification_input: FamilyP19VerificationInput,
+    peer_p19_verification_input: FamilyP19VerificationInput,
     identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
 ) -> dict[str, object]:
     identity_checker(ledger)
@@ -92,15 +95,19 @@ def close_product_qualified(
             repository_root=ledger.repository_root,
             source_registry_path=registry_path,
             family_p19_paths=(own_p19_path, peer_path),
+            family_p19_verification_inputs=(
+                own_p19_verification_input,
+                peer_p19_verification_input,
+            ),
         )
     except RuntimeError as exc:
-        raise ClosureError("global two-family product qualification replay failed") from exc
+        raise ClosureError("global two-family product qualification replay/attestation failed") from exc
     if own.get("family_id") == peer.get("family_id"):
         raise ClosureError("PRODUCT_QUALIFIED requires two distinct canonical workload families")
     if rebuilt.authority_digest != declared.get("authority_digest"):
         raise ClosureError("declared global product authority differs from two-family P19 recomputation")
-    if not rebuilt.product_qualified:
-        raise ClosureError("global product qualification evidence record is not complete")
+    if not rebuilt.product_qualified or not rebuilt.all_family_p19_externally_verified:
+        raise ClosureError("global product qualification evidence/verification record is incomplete")
     if rebuilt.production_control_authorized:
         raise ClosureError("PRODUCT_QUALIFIED cannot imply production control authorization")
     if rebuilt.repository_commit != ledger.repo_commit or rebuilt.repository_tree != ledger.repo_tree:
