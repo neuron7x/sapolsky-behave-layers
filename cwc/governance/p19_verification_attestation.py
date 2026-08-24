@@ -11,13 +11,24 @@ from typing import Callable, Mapping, Sequence
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
 ATTESTATION_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_ATTESTATION_V1"
+REPORT_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_REPORT_V1"
 NAMESPACE = "dgc-p19-external-verification-v1"
-VERIFICATION_PROTOCOL = "DGC_P19_CANONICAL_SEMANTIC_REPLAY_V1"
+VERIFICATION_PROTOCOL = "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V1"
+REQUIRED_CHECKS = frozenset({
+    "REPOSITORY_IDENTITY",
+    "THEOREM_AND_PLAN_IDENTITY",
+    "SUBJECT_ROOT_REHASH",
+    "P19_SEAL_REBUILD",
+    "PRIMARY_P9_RAW_REPLAY",
+    "GENERALIZATION_G1_G5_RAW_REPLAY",
+    "FAULT_TOLERANCE_RAW_REPLAY",
+    "INDEPENDENT_REPLICATION_RAW_REPLAY",
+})
 DECLARATION = (
-    "I independently executed the canonical DGC family P19 semantic verification/replay "
-    "against the disclosed evidence subjects and obtained PASS. This signature attests "
-    "that verification execution; it does not replace the raw evidence or prove the social "
-    "fact of verifier independence by itself."
+    "I independently executed every required check in the disclosed canonical DGC P19 "
+    "verification report and obtained PASS. This signature attests that verification "
+    "execution; it does not replace the raw evidence or machine-prove the social fact of "
+    "verifier independence."
 )
 
 
@@ -46,6 +57,10 @@ def canonical_attestation_bytes(doc: Mapping[str, object]) -> bytes:
     return canonical_json_bytes(dict(doc)) + b"\n"
 
 
+def canonical_report_bytes(doc: Mapping[str, object]) -> bytes:
+    return canonical_json_bytes(dict(doc)) + b"\n"
+
+
 @dataclass(frozen=True, slots=True)
 class P19VerificationSignatureReceipt:
     attestation_sha256: str
@@ -63,6 +78,81 @@ class P19VerificationSignatureReceipt:
     @property
     def digest(self) -> str:
         return sha256_bytes(canonical_json_bytes(asdict(self)))
+
+
+def load_p19_verification_report(path: Path) -> dict[str, object]:
+    candidate = Path(path)
+    if candidate.is_symlink() or not candidate.is_file():
+        raise P19VerificationAttestationError("P19 verification report must be a regular file")
+    try:
+        raw = candidate.read_bytes()
+        doc = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise P19VerificationAttestationError("invalid P19 verification report JSON") from exc
+    if not isinstance(doc, dict) or doc.get("schema") != REPORT_SCHEMA:
+        raise P19VerificationAttestationError("unexpected P19 verification report schema")
+    if raw != canonical_report_bytes(doc):
+        raise P19VerificationAttestationError("P19 verification report must use canonical JSON bytes")
+    if doc.get("verification_protocol") != VERIFICATION_PROTOCOL:
+        raise P19VerificationAttestationError("P19 verification report protocol mismatch")
+    if doc.get("all_required_checks_passed") is not True:
+        raise P19VerificationAttestationError("P19 verification report does not attest all required checks PASS")
+    family = str(doc.get("family_id", "")).strip()
+    if not family:
+        raise P19VerificationAttestationError("P19 verification report family_id required")
+    for field in (
+        "p19_digest", "statistical_plan_digest", "theorem_identity_digest", "methodology_anchor_digest",
+        "stage_evidence_manifest_digest", "subject_root_manifest_digest",
+    ):
+        _sha(field, doc.get(field))
+    _oid("repository_commit", doc.get("repository_commit"))
+    _oid("repository_tree", doc.get("repository_tree"))
+    checks = doc.get("checks")
+    if not isinstance(checks, list) or len(checks) != len(REQUIRED_CHECKS):
+        raise P19VerificationAttestationError("P19 verification report check population incomplete")
+    seen: set[str] = set()
+    normalized: list[dict[str, object]] = []
+    for raw_row in checks:
+        if not isinstance(raw_row, Mapping):
+            raise P19VerificationAttestationError("P19 verification report check row malformed")
+        check_id = str(raw_row.get("check_id", "")).strip()
+        if check_id not in REQUIRED_CHECKS or check_id in seen:
+            raise P19VerificationAttestationError("P19 verification report has unknown/duplicate check")
+        seen.add(check_id)
+        if raw_row.get("status") != "PASS":
+            raise P19VerificationAttestationError(f"P19 external verification check did not PASS: {check_id}")
+        row = {
+            "check_id": check_id,
+            "status": "PASS",
+            "command_sha256": _sha(f"{check_id}.command_sha256", raw_row.get("command_sha256")),
+            "stdout_sha256": _sha(f"{check_id}.stdout_sha256", raw_row.get("stdout_sha256")),
+            "stderr_sha256": _sha(f"{check_id}.stderr_sha256", raw_row.get("stderr_sha256")),
+            "evidence_digest": _sha(f"{check_id}.evidence_digest", raw_row.get("evidence_digest")),
+        }
+        normalized.append(row)
+    if seen != REQUIRED_CHECKS:
+        raise P19VerificationAttestationError("P19 verification report missing required check")
+    expected_checks_digest = sha256_bytes(canonical_json_bytes(sorted(normalized, key=lambda row: str(row["check_id"]))))
+    if doc.get("checks_digest") != expected_checks_digest:
+        raise P19VerificationAttestationError("P19 verification report checks_digest mismatch")
+    return doc
+
+
+def bind_report_to_p19(report: Mapping[str, object], p19: Mapping[str, object]) -> None:
+    pairs = {
+        "family_id": str(p19.get("family_id", "")),
+        "p19_digest": str(p19.get("p19_digest", "")),
+        "repository_commit": str(p19.get("repository_commit", "")),
+        "repository_tree": str(p19.get("repository_tree", "")),
+        "statistical_plan_digest": str(p19.get("statistical_plan_digest", "")),
+        "theorem_identity_digest": str(p19.get("theorem_identity_digest", "")),
+        "methodology_anchor_digest": str(p19.get("methodology_anchor_digest", "")),
+        "stage_evidence_manifest_digest": str(p19.get("stage_evidence_manifest_digest", "")),
+        "subject_root_manifest_digest": str(p19.get("subject_root_manifest_digest", "")),
+    }
+    for field, expected in pairs.items():
+        if str(report.get(field, "")) != expected:
+            raise P19VerificationAttestationError(f"P19 verification report mismatch: {field}")
 
 
 def make_p19_verification_attestation(
@@ -137,6 +227,16 @@ def load_p19_verification_attestation(path: Path) -> dict[str, object]:
     return doc
 
 
+def _bind_report_to_attestation(report: Mapping[str, object], attestation: Mapping[str, object]) -> None:
+    for field in (
+        "family_id", "p19_digest", "repository_commit", "repository_tree", "statistical_plan_digest",
+        "theorem_identity_digest", "methodology_anchor_digest", "stage_evidence_manifest_digest",
+        "subject_root_manifest_digest", "verification_protocol",
+    ):
+        if str(report.get(field, "")) != str(attestation.get(field, "")):
+            raise P19VerificationAttestationError(f"verification report/attestation mismatch: {field}")
+
+
 def verify_ssh_signed_p19_verification_attestation(
     *,
     attestation_path: Path,
@@ -147,6 +247,8 @@ def verify_ssh_signed_p19_verification_attestation(
     executable: str | None = None,
 ) -> tuple[dict[str, object], P19VerificationSignatureReceipt]:
     doc = load_p19_verification_attestation(Path(attestation_path))
+    report_doc = load_p19_verification_report(Path(verification_report_path))
+    _bind_report_to_attestation(report_doc, doc)
     report = Path(verification_report_path)
     signature = Path(signature_path)
     allowed = Path(allowed_signers_path)
