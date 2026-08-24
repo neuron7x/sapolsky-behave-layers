@@ -1,4 +1,4 @@
-# DGC Statistical Authority v5
+# DGC Statistical Authority v5.1
 
 Status: **pre-execution mathematical contract**. This document does not assert that DGC passes the contract.
 
@@ -36,7 +36,7 @@ All four baselines must pass. This is deterministic arithmetic and carries no st
 
 ## 3. Time-uniform average-conditional-mean inference
 
-V5 uses Howard–Ramdas–McAuliffe–Sekhon Theorem 4 composed with the exact polynomial-stitching boundary of Eq. (10).
+V5.1 uses Howard–Ramdas–McAuliffe–Sekhon Theorem 4 composed with the exact polynomial-stitching boundary of Eq. (10).
 
 The estimand at time `t` is
 
@@ -54,7 +54,15 @@ The variance process is
 
 `V_t = sum_i (X_i - Xhat_i)^2`.
 
-For desired two-sided claim error `delta`, the one-boundary crossing probability is `delta/2`. The exact polynomial boundary is documented and independently reference-checked in `DGC_THEOREM_AUDIT_v5.md`.
+The executable theorem identity is:
+
+- inference: `HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V3`;
+- boundary: `HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V2_4deabb17370edfc7`;
+- boundary-parameter SHA-256: `4deabb17370edfc770b7612235ee9dfddf932dfc21e894161fb2757ea45a1329`;
+- `zeta(1.4)` binary64: `0x1.8d8292bd8c3a6p+1`;
+- author reference: `gostevehoward/confseq@5ffe733ca2447a2e28c2c91f3b00086173f2ab2c`.
+
+For desired two-sided claim error `delta`, the one-boundary crossing probability is `delta/2`. The exact polynomial boundary and binary64 parameter audit are documented in `DGC_THEOREM_AUDIT_v5.md`.
 
 ## 4. Primary multiplicity
 
@@ -80,18 +88,22 @@ Each two-sided confidence sequence uses one-boundary crossing probability `0.05/
 
 Cluster-aware variance sizing and any legacy empirical-Bernstein/Hoeffding calculations are planning or sensitivity artifacts only. They cannot authorize P9, G1-G5 or product promotion.
 
-The V5 confirmatory gate is determined from exact observed raw subjects under the V5 theorem identity. Insufficient evidence causes failure; it cannot be repaired by post-outcome retuning.
+The V5.1 confirmatory gate is determined from exact observed raw subjects under the content-identified theorem runtime. Insufficient evidence causes failure; it cannot be repaired by post-outcome retuning.
 
 ## 7. Physical cost
 
 Cost comparisons use verified ten-component all-in operational cost subjects, not the coordinator's budget meter. Missing or substituted physical-cost evidence prevents the cost endpoint from being evaluated.
 
-## 8. Fault tolerance and replication
+## 8. Coverage
+
+Primary P9 construction requires exact `task × policy × replicate` completeness and every paired baseline row has `coverage=1.0`; the exact finite-panel certificate rejects any incomplete matched population. Therefore coverage equivalence is a derived prerequisite of P9 rather than an independently asserted boolean.
+
+## 9. Fault tolerance and replication
 
 Fault tolerance is an independent preregistered/replayed proof obligation. Independent replication requires fresh execution, physical-cost and CCF evidence under the same frozen methodology plus a cryptographically verified external attestation. The signature proves possession/attestation, not the social fact of independence by itself.
 
-## 9. Global product qualification
+## 10. Global product qualification
 
-A family-level P19 root is not a global product verdict. The global authority must replay distinct P19 roots for exactly `SWE_BENCH_VERIFIED` and `TERMINAL_BENCH_2_1`, with identical repository and V5 methodology identities.
+A family-level P19 root is not a global product verdict. The global authority must replay distinct P19 roots for exactly `SWE_BENCH_VERIFIED` and `TERMINAL_BENCH_2_1`, with identical repository and V5.1 methodology identities.
 
 `PRODUCT_QUALIFIED` remains false until that complete chain exists.
