@@ -6,12 +6,14 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
 
 SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2"
 CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
 ENTRYPOINT = "scripts/dgc_external_p19_verifier.py"
 REQUIRED_IMPLEMENTATION_DEPENDENCIES = (
+    "cwc/governance/p19_external_verification_contract.py",
     "cwc/governance/p19_external_replay.py",
 )
 
@@ -150,7 +152,9 @@ def load_p19_external_verification_plan(
             "python", ENTRYPOINT, "--check-id", check_id,
             "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
         ]
-        if not method_id or template != expected_template:
+        if method_id != CHECK_METHOD_IDS[check_id]:
+            raise P19ExternalVerificationPlanError(f"external verification method identity mismatch: {check_id}")
+        if template != expected_template:
             raise P19ExternalVerificationPlanError(f"external verification command template mismatch: {check_id}")
         if status not in {"IMPLEMENTED", "NOT_IMPLEMENTED"}:
             raise P19ExternalVerificationPlanError(f"external verification implementation status invalid: {check_id}")
