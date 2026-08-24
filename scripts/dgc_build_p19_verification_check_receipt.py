@@ -3,37 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
-from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS
-from cwc.governance.p19_verification_report import CHECK_RECEIPT_SCHEMA
-
-
-def _safe_subject(root: Path, value: str, *, label: str, allow_empty: bool) -> tuple[str, Path]:
-    raw = str(value)
-    if not raw or raw != raw.strip() or any(ch in raw for ch in ("\x00", "\n", "\r", "\t", "\\")) or "//" in raw:
-        raise ValueError(f"{label} must be a canonical repository-relative POSIX path")
-    rel = PurePosixPath(raw)
-    if rel.is_absolute() or any(part in ("", ".", "..") for part in rel.parts):
-        raise ValueError(f"{label} must be a canonical repository-relative POSIX path")
-    path = (root / rel.as_posix()).resolve()
-    try:
-        path.relative_to(root)
-    except ValueError as exc:
-        raise ValueError(f"{label} escapes repository") from exc
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"{label} must be a regular file")
-    if not allow_empty and path.stat().st_size <= 0:
-        raise ValueError(f"{label} must be non-empty")
-    return rel.as_posix(), path
-
-
-def _sha(value: str) -> str:
-    text = str(value).strip().lower()
-    if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
-        raise ValueError("evidence-digest must be lowercase SHA-256")
-    return text
+from cwc.governance.p19_verification_check_receipt import (
+    REQUIRED_CHECKS,
+    build_check_receipt_document,
+    canonical_receipt_bytes,
+)
 
 
 def _write_immutable(path: Path, payload: bytes) -> None:
@@ -61,38 +37,20 @@ def main() -> int:
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    root = args.root.resolve()
     command = list(args.command)
     if command and command[0] == "--":
         command = command[1:]
-    if not command or any(not item for item in command):
-        raise ValueError("verification command argv is required after --")
-
-    stdout_rel, stdout = _safe_subject(root, args.stdout_path, label="stdout-path", allow_empty=True)
-    stderr_rel, stderr = _safe_subject(root, args.stderr_path, label="stderr-path", allow_empty=True)
-    evidence_rel, evidence = _safe_subject(root, args.evidence_path, label="evidence-path", allow_empty=False)
-    payload = {
-        "check_id": args.check_id,
-        "status": "PASS",
-        "command_argv": command,
-        "stdout_path": stdout_rel,
-        "stdout_sha256": sha256_file(stdout),
-        "stdout_bytes": stdout.stat().st_size,
-        "stderr_path": stderr_rel,
-        "stderr_sha256": sha256_file(stderr),
-        "stderr_bytes": stderr.stat().st_size,
-        "evidence_path": evidence_rel,
-        "evidence_sha256": sha256_file(evidence),
-        "evidence_bytes": evidence.stat().st_size,
-        "evidence_digest": _sha(args.evidence_digest),
-    }
-    doc = {
-        "schema": CHECK_RECEIPT_SCHEMA,
-        **payload,
-        "receipt_digest": sha256_bytes(canonical_json_bytes(payload)),
-    }
+    doc = build_check_receipt_document(
+        repository_root=args.root.resolve(),
+        check_id=args.check_id,
+        command_argv=command,
+        stdout_path=args.stdout_path,
+        stderr_path=args.stderr_path,
+        evidence_path=args.evidence_path,
+        evidence_digest=args.evidence_digest,
+    )
     output = Path(args.output)
-    _write_immutable(output, canonical_json_bytes(doc) + b"\n")
+    _write_immutable(output, canonical_receipt_bytes(doc))
     print(json.dumps({
         "status": "PASS_RECEIPT_V2_BUILT",
         "check_id": args.check_id,
