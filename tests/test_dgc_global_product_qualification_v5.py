@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import json
+from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 import cwc.governance.global_product_qualification_v5 as v5
 from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
+from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 
 
 def _validated():
@@ -51,7 +56,6 @@ def _attestation(family: str, digest: str, principal: str):
 
 
 def _receipt(principal: str, *, tool_salt: str):
-    # Tool/environment fields deliberately vary but are not part of V5 stable semantics.
     return SimpleNamespace(
         attestation_sha256=("8" if principal == "verifier-a" else "9") * 64,
         verification_report_sha256=("a" if principal == "verifier-a" else "b") * 64,
@@ -84,6 +88,7 @@ def _build(monkeypatch, tmp_path: Path, *, tool_salt: str):
     monkeypatch.setattr(v5, "verify_family_p19_evidence_root_document", lambda path: next(iterator))
 
     calls = {"n": 0}
+
     def verifier(**kwargs):
         index = calls["n"]
         calls["n"] += 1
@@ -105,6 +110,23 @@ def _build(monkeypatch, tmp_path: Path, *, tool_salt: str):
     )
 
 
+def _write_doc(path: Path, doc: dict[str, object]) -> None:
+    path.write_bytes(canonical_json_bytes(doc) + b"\n")
+
+
+def _rehash_authority(doc: dict[str, object]) -> None:
+    keys = (
+        "canonical_family_ids", "family_p19_digests", "stable_family_verification_records",
+        "verifier_trust_policy_digest", "allowed_signers_sha256", "verifier_principals",
+        "distinct_verifier_count", "minimum_distinct_verifiers", "repository_commit", "repository_tree",
+        "statistical_plan_digest", "theorem_identity_digest", "methodology_anchor_digest",
+        "global_statistical_composition_rule", "signature_semantics",
+        "signature_tool_execution_provenance_authoritative", "all_family_p19_complete",
+        "all_family_p19_externally_verified", "product_qualified", "production_control_authorized",
+    )
+    doc["authority_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in keys}))
+
+
 def test_global_v5_authority_identity_is_independent_of_signature_verifier_binary(monkeypatch, tmp_path: Path):
     first = _build(monkeypatch, tmp_path, tool_salt="one")
     second = _build(monkeypatch, tmp_path, tool_salt="two")
@@ -112,3 +134,43 @@ def test_global_v5_authority_identity_is_independent_of_signature_verifier_binar
     assert first.stable_family_verification_records == second.stable_family_verification_records
     assert first.signature_tool_execution_provenance_authoritative is False
     assert first.signature_semantics == v5.SIGNATURE_SEMANTICS
+
+
+def test_v5_structural_verifier_rejects_cross_population_p19_substitution_even_if_authority_is_rehashed(monkeypatch, tmp_path: Path):
+    authority = _build(monkeypatch, tmp_path, tool_salt="one")
+    doc = authority.document
+    doc["family_p19_digests"][0][1] = "f" * 64
+    _rehash_authority(doc)
+    path = tmp_path / "forged-p19.json"
+    _write_doc(path, doc)
+    with pytest.raises(v5.GlobalProductQualificationV5Error, match="different family P19 root"):
+        v5.verify_global_product_qualification_authority_v5_document(path)
+
+
+def test_v5_structural_verifier_rejects_top_level_principal_substitution_even_if_authority_is_rehashed(monkeypatch, tmp_path: Path):
+    authority = _build(monkeypatch, tmp_path, tool_salt="one")
+    doc = authority.document
+    doc["verifier_principals"] = ["verifier-a", "attacker"]
+    _rehash_authority(doc)
+    path = tmp_path / "forged-principal.json"
+    _write_doc(path, doc)
+    with pytest.raises(v5.GlobalProductQualificationV5Error, match="top-level verifier principals differ"):
+        v5.verify_global_product_qualification_authority_v5_document(path)
+
+
+def test_v5_structural_verifier_rejects_row_trust_store_substitution_with_valid_row_and_authority_digests(monkeypatch, tmp_path: Path):
+    authority = _build(monkeypatch, tmp_path, tool_salt="one")
+    doc = authority.document
+    row = doc["stable_family_verification_records"][0]
+    row["allowed_signers_sha256"] = "0" * 64
+    row_keys = (
+        "family_id", "p19_digest", "verifier_principal", "attestation_sha256",
+        "verification_report_sha256", "signature_sha256", "allowed_signers_sha256", "namespace",
+        "signature_verified", "semantic_replay_attested", "social_independence_machine_proven",
+    )
+    row["record_digest"] = sha256_bytes(canonical_json_bytes({key: row[key] for key in row_keys}))
+    _rehash_authority(doc)
+    path = tmp_path / "forged-trust-store.json"
+    _write_doc(path, doc)
+    with pytest.raises(v5.GlobalProductQualificationV5Error, match="different trust store"):
+        v5.verify_global_product_qualification_authority_v5_document(path)
