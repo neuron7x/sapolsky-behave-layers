@@ -9,22 +9,27 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_verification_plan import (
+    P19ExternalVerificationPlanError,
+    load_p19_external_verification_plan,
+    verify_command_against_plan,
+)
 from cwc.governance.p19_verification_check_receipt import (
     REQUIRED_CHECKS,
     P19VerificationCheckReceiptError,
     load_check_receipt,
 )
 
-ATTESTATION_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_ATTESTATION_V2"
-REPORT_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_REPORT_V2"
-NAMESPACE = "dgc-p19-external-verification-v2"
-VERIFICATION_PROTOCOL = "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V2_SELF_CONTAINED_TRANSCRIPT"
+ATTESTATION_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_ATTESTATION_V3"
+REPORT_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_REPORT_V3"
+NAMESPACE = "dgc-p19-external-verification-v3"
+VERIFICATION_PROTOCOL = "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V3_FROZEN_CHECK_PLAN"
 DECLARATION = (
     "I independently executed every required check in the disclosed canonical DGC P19 "
-    "verification report and obtained PASS. The report identifies the raw receipt, stdout, "
-    "stderr and evidence subjects for every check. This signature attests that verification "
-    "execution; it does not replace the raw evidence or machine-prove the social fact of "
-    "verifier independence."
+    "verification report using the frozen pre-outcome verification plan and obtained PASS. "
+    "The report identifies the plan, verifier entrypoint, raw receipt, stdout, stderr and "
+    "evidence subjects for every check. This signature attests that verification execution; "
+    "it does not replace raw evidence or machine-prove the social fact of verifier independence."
 )
 
 
@@ -106,7 +111,6 @@ def _structural_report_row(raw_row: Mapping[str, object]) -> tuple[dict[str, obj
     command_sha = _sha(f"{check_id}.command_sha256", raw_row.get("command_sha256"))
     if command_sha != sha256_bytes(canonical_json_bytes(argv)):
         raise P19VerificationAttestationError(f"{check_id}.command digest mismatch")
-
     row: dict[str, object] = {
         "check_id": check_id,
         "status": "PASS",
@@ -147,13 +151,19 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
         raise P19VerificationAttestationError("P19 verification report protocol mismatch")
     if doc.get("all_required_checks_passed") is not True:
         raise P19VerificationAttestationError("P19 verification report does not attest all required checks PASS")
-    if doc.get("raw_verification_transcript_disclosed") is not True:
-        raise P19VerificationAttestationError("P19 verification report omitted raw transcript disclosure")
-    if doc.get("receipt_semantics_replayed") is not True:
-        raise P19VerificationAttestationError("P19 verification report omitted receipt semantic replay")
+    if doc.get("raw_verification_transcript_disclosed") is not True or doc.get("receipt_semantics_replayed") is not True:
+        raise P19VerificationAttestationError("P19 verification report omitted raw/receipt semantic replay")
+    if doc.get("frozen_verification_plan_replayed") is not True:
+        raise P19VerificationAttestationError("P19 verification report omitted frozen verification plan replay")
+
     family = str(doc.get("family_id", "")).strip()
     if not family:
         raise P19VerificationAttestationError("P19 verification report family_id required")
+    p19_rel = _safe_rel(doc.get("p19_path"), label="P19 report p19_path")
+    plan_rel = _safe_rel(doc.get("verification_plan_path"), label="P19 report verification_plan_path")
+    plan_digest = _sha("verification_plan_digest", doc.get("verification_plan_digest"))
+    entry_sha = _sha("verifier_entrypoint_sha256", doc.get("verifier_entrypoint_sha256"))
+    entry_rel = _safe_rel(doc.get("verifier_entrypoint_path"), label="P19 report verifier_entrypoint_path")
     for field in (
         "p19_digest", "statistical_plan_digest", "theorem_identity_digest", "methodology_anchor_digest",
         "stage_evidence_manifest_digest", "subject_root_manifest_digest", "checks_digest",
@@ -167,6 +177,20 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
     if not isinstance(checks, list) or len(checks) != len(REQUIRED_CHECKS):
         raise P19VerificationAttestationError("P19 verification report check population incomplete")
     root = Path(repository_root).resolve() if repository_root is not None else None
+    plan = None
+    if root is not None:
+        p19_subject = root / p19_rel
+        if p19_subject.is_symlink() or not p19_subject.is_file() or p19_subject.stat().st_size <= 0:
+            raise P19VerificationAttestationError("P19 verification report references missing/invalid P19 subject")
+        try:
+            plan = load_p19_external_verification_plan(root / plan_rel, repository_root=root, require_active=True)
+        except P19ExternalVerificationPlanError as exc:
+            raise P19VerificationAttestationError("P19 frozen verification plan replay failed") from exc
+        if plan.plan_digest != plan_digest:
+            raise P19VerificationAttestationError("P19 report verification plan digest mismatch")
+        if plan.verifier_entrypoint_path != entry_rel or plan.verifier_entrypoint_sha256 != entry_sha:
+            raise P19VerificationAttestationError("P19 report verifier entrypoint identity mismatch")
+
     seen: set[str] = set()
     normalized: list[dict[str, object]] = []
     transcript_rows: list[dict[str, object]] = []
@@ -178,20 +202,28 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
         if check_id in seen:
             raise P19VerificationAttestationError("P19 verification report has duplicate check")
         seen.add(check_id)
-
-        if root is not None:
-            receipt_rel = str(row["receipt_path"])
+        if root is not None and plan is not None:
             try:
-                verified_receipt = load_check_receipt(root / receipt_rel, repository_root=root)
+                verified_receipt = load_check_receipt(root / str(row["receipt_path"]), repository_root=root)
+                if verified_receipt.report_row != row:
+                    raise P19VerificationAttestationError(
+                        f"P19 verification report/receipt semantic mismatch: {check_id}"
+                    )
+                verify_command_against_plan(
+                    plan,
+                    check_id=check_id,
+                    command_argv=row["command_argv"],
+                    p19_path=p19_rel,
+                    evidence_path=str(row["evidence_path"]),
+                )
             except P19VerificationCheckReceiptError as exc:
                 raise P19VerificationAttestationError(
                     f"P19 verification receipt semantic replay failed: {check_id}: {exc}"
                 ) from exc
-            if verified_receipt.report_row != row:
+            except P19ExternalVerificationPlanError as exc:
                 raise P19VerificationAttestationError(
-                    f"P19 verification report/receipt semantic mismatch: {check_id}"
-                )
-
+                    f"P19 verification command-plan mismatch: {check_id}: {exc}"
+                ) from exc
         normalized.append(row)
         transcript_rows.append(transcript)
     if seen != REQUIRED_CHECKS:
@@ -259,6 +291,7 @@ def make_p19_verification_attestation(
         "raw_evidence_disclosed": True,
         "raw_verification_transcript_disclosed": True,
         "receipt_semantics_replayed": True,
+        "frozen_verification_plan_executed": True,
         "author_control_over_verification": False,
         "social_independence_machine_proven": False,
         "verifier_principal": principal,
@@ -286,8 +319,9 @@ def load_p19_verification_attestation(path: Path) -> dict[str, object]:
         or doc.get("raw_evidence_disclosed") is not True
         or doc.get("raw_verification_transcript_disclosed") is not True
         or doc.get("receipt_semantics_replayed") is not True
+        or doc.get("frozen_verification_plan_executed") is not True
     ):
-        raise P19VerificationAttestationError("P19 verifier did not attest full semantic replay/raw transcript disclosure")
+        raise P19VerificationAttestationError("P19 verifier did not attest full planned semantic replay")
     if doc.get("author_control_over_verification") is not False:
         raise P19VerificationAttestationError("P19 verifier did not attest execution independence")
     if doc.get("social_independence_machine_proven") is not False:
@@ -314,6 +348,8 @@ def _bind_report_to_attestation(report: Mapping[str, object], attestation: Mappi
     ):
         if str(report.get(field, "")) != str(attestation.get(field, "")):
             raise P19VerificationAttestationError(f"verification report/attestation mismatch: {field}")
+    if report.get("frozen_verification_plan_replayed") is not True or attestation.get("frozen_verification_plan_executed") is not True:
+        raise P19VerificationAttestationError("verification report/attestation omitted frozen check plan")
 
 
 def verify_ssh_signed_p19_verification_attestation(
@@ -333,8 +369,8 @@ def verify_ssh_signed_p19_verification_attestation(
     report = Path(verification_report_path)
     signature = Path(signature_path)
     allowed = Path(allowed_signers_path)
-    for name, path in (("verification report", report), ("signature", signature), ("allowed signers", allowed)):
-        if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
+    for name, subject in (("verification report", report), ("signature", signature), ("allowed signers", allowed)):
+        if subject.is_symlink() or not subject.is_file() or subject.stat().st_size <= 0:
             raise P19VerificationAttestationError(f"{name} must be a non-empty regular file")
     report_sha = sha256_file(report)
     if report_sha != doc.get("verification_report_sha256"):
