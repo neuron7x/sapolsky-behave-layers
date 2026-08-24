@@ -90,6 +90,13 @@ def _sha(name: str, value: object) -> str:
     return text
 
 
+def _oid(name: str, value: object) -> str:
+    text = str(value).strip().lower()
+    if len(text) != 40 or any(ch not in "0123456789abcdef" for ch in text):
+        raise GlobalProductQualificationV5Error(f"{name} must be lowercase 40-hex Git object id")
+    return text
+
+
 def _stable_record(*, p19: dict[str, object], attestation: dict[str, object], receipt) -> StableFamilyVerificationRecord:
     bind_attestation_to_p19(attestation, p19)
     if not receipt.signature_verified:
@@ -128,8 +135,6 @@ def build_global_product_qualification_authority_v5(
     try:
         policy = load_p19_verifier_trust_policy(policy_path)
         allowed_signers = resolve_allowed_signers(policy, repository_root=root)
-        # V4 remains a validation component only. Its environment-specific execution receipt
-        # is deliberately excluded from the V5 serialized authority identity.
         validated = build_global_product_qualification_authority_v4(
             repository_root=root,
             source_registry_path=source_registry_path,
@@ -214,13 +219,22 @@ def verify_global_product_qualification_authority_v5_document(path: Path) -> dic
     if candidate.is_symlink() or not candidate.is_file():
         raise GlobalProductQualificationV5Error("global product V5 authority must be a regular file")
     try:
-        doc = json.loads(candidate.read_text(encoding="utf-8"))
+        raw = candidate.read_bytes()
+        doc = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise GlobalProductQualificationV5Error("invalid global product V5 JSON") from exc
     if not isinstance(doc, dict) or doc.get("schema") != SCHEMA:
         raise GlobalProductQualificationV5Error("unexpected global product V5 schema")
+    if raw != canonical_json_bytes(doc) + b"\n":
+        raise GlobalProductQualificationV5Error("global product V5 must use canonical JSON bytes")
     if doc.get("product_qualified") is not True or doc.get("global_product_qualification_authorized") is not True:
         raise GlobalProductQualificationV5Error("global product V5 qualification is not established")
+    if doc.get("frozen_verifier_trust_policy_required") is not True:
+        raise GlobalProductQualificationV5Error("global product V5 omitted frozen verifier trust policy requirement")
+    if doc.get("external_p19_semantic_replay_attestation_required") is not True:
+        raise GlobalProductQualificationV5Error("global product V5 omitted P19 replay attestation requirement")
+    if doc.get("self_contained_p19_verification_transcript_required") is not True:
+        raise GlobalProductQualificationV5Error("global product V5 omitted self-contained transcript requirement")
     if doc.get("signature_semantics") != SIGNATURE_SEMANTICS:
         raise GlobalProductQualificationV5Error("global product V5 signature semantics mismatch")
     if doc.get("signature_tool_execution_provenance_authoritative") is not False:
@@ -249,35 +263,85 @@ def verify_global_product_qualification_authority_v5_document(path: Path) -> dic
         raise GlobalProductQualificationV5Error("global product V5 payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise GlobalProductQualificationV5Error("global product V5 authority digest mismatch")
+
+    top_allowed = _sha("allowed_signers_sha256", doc.get("allowed_signers_sha256"))
+    _sha("verifier_trust_policy_digest", doc.get("verifier_trust_policy_digest"))
+    _sha("statistical_plan_digest", doc.get("statistical_plan_digest"))
+    _sha("theorem_identity_digest", doc.get("theorem_identity_digest"))
+    _sha("methodology_anchor_digest", doc.get("methodology_anchor_digest"))
+    _oid("repository_commit", doc.get("repository_commit"))
+    _oid("repository_tree", doc.get("repository_tree"))
+
     ids = doc.get("canonical_family_ids")
+    family_rows = doc.get("family_p19_digests")
     records = doc.get("stable_family_verification_records")
+    top_principals = doc.get("verifier_principals")
     if not isinstance(ids, list) or len(ids) != 2 or len(set(map(str, ids))) != 2:
         raise GlobalProductQualificationV5Error("V5 canonical family population malformed")
+    canonical_ids = tuple(sorted(map(str, ids)))
+    if tuple(map(str, ids)) != canonical_ids:
+        raise GlobalProductQualificationV5Error("V5 canonical family population must use deterministic sorted order")
+    if not isinstance(family_rows, list) or len(family_rows) != 2:
+        raise GlobalProductQualificationV5Error("V5 family P19 digest population malformed")
+    p19_map: dict[str, str] = {}
+    for row in family_rows:
+        if not isinstance(row, list) or len(row) != 2:
+            raise GlobalProductQualificationV5Error("V5 family P19 digest row malformed")
+        family_id = str(row[0])
+        if family_id in p19_map:
+            raise GlobalProductQualificationV5Error("V5 duplicate family P19 digest row")
+        p19_map[family_id] = _sha("family p19 digest", row[1])
+    if set(p19_map) != set(canonical_ids):
+        raise GlobalProductQualificationV5Error("V5 family P19 digest set differs from canonical family set")
+    if [row[0] for row in family_rows] != list(canonical_ids):
+        raise GlobalProductQualificationV5Error("V5 family P19 digest population must use canonical order")
     if not isinstance(records, list) or len(records) != 2:
         raise GlobalProductQualificationV5Error("V5 stable verification population malformed")
-    principals: set[str] = set()
-    families: set[str] = set()
+    if not isinstance(top_principals, list) or len(top_principals) != 2:
+        raise GlobalProductQualificationV5Error("V5 top-level verifier principal population malformed")
+
+    principals: list[str] = []
+    families: list[str] = []
     for row in records:
         if not isinstance(row, dict):
             raise GlobalProductQualificationV5Error("V5 stable verification row malformed")
-        row_payload = {key: row[key] for key in (
-            "family_id", "p19_digest", "verifier_principal", "attestation_sha256",
-            "verification_report_sha256", "signature_sha256", "allowed_signers_sha256", "namespace",
-            "signature_verified", "semantic_replay_attested", "social_independence_machine_proven",
-        )}
+        try:
+            row_payload = {key: row[key] for key in (
+                "family_id", "p19_digest", "verifier_principal", "attestation_sha256",
+                "verification_report_sha256", "signature_sha256", "allowed_signers_sha256", "namespace",
+                "signature_verified", "semantic_replay_attested", "social_independence_machine_proven",
+            )}
+        except KeyError as exc:
+            raise GlobalProductQualificationV5Error("V5 stable verification row incomplete") from exc
         if sha256_bytes(canonical_json_bytes(row_payload)) != _sha("stable verification record digest", row.get("record_digest")):
             raise GlobalProductQualificationV5Error("V5 stable verification record digest mismatch")
         if row.get("namespace") != NAMESPACE or row.get("signature_verified") is not True:
             raise GlobalProductQualificationV5Error("V5 stable signature semantics malformed")
         if row.get("semantic_replay_attested") is not True or row.get("social_independence_machine_proven") is not False:
             raise GlobalProductQualificationV5Error("V5 stable verification claim boundary malformed")
-        families.add(str(row.get("family_id", "")))
-        principals.add(str(row.get("verifier_principal", "")))
-    if families != set(map(str, ids)):
-        raise GlobalProductQualificationV5Error("V5 verification family set mismatch")
+        family_id = str(row.get("family_id", ""))
+        principal = str(row.get("verifier_principal", "")).strip()
+        if not family_id or not principal:
+            raise GlobalProductQualificationV5Error("V5 stable verification identity empty")
+        if _sha("row allowed_signers_sha256", row.get("allowed_signers_sha256")) != top_allowed:
+            raise GlobalProductQualificationV5Error("V5 stable verification row used a different trust store")
+        if _sha("row p19_digest", row.get("p19_digest")) != p19_map.get(family_id):
+            raise GlobalProductQualificationV5Error("V5 stable verification row references a different family P19 root")
+        for field in ("attestation_sha256", "verification_report_sha256", "signature_sha256"):
+            _sha(field, row.get(field))
+        families.append(family_id)
+        principals.append(principal)
+
+    if tuple(families) != canonical_ids:
+        raise GlobalProductQualificationV5Error("V5 stable verification records must use canonical family order")
+    if list(top_principals) != principals:
+        raise GlobalProductQualificationV5Error("V5 top-level verifier principals differ from stable records")
     minimum = int(doc.get("minimum_distinct_verifiers", 0))
-    if len(principals) < minimum or minimum < 2 or int(doc.get("distinct_verifier_count", 0)) != len(principals):
+    distinct = len(set(principals))
+    if distinct < minimum or minimum < 2 or int(doc.get("distinct_verifier_count", 0)) != distinct:
         raise GlobalProductQualificationV5Error("V5 verifier threshold not satisfied")
+    if doc.get("all_family_p19_complete") is not True or doc.get("all_family_p19_externally_verified") is not True:
+        raise GlobalProductQualificationV5Error("V5 family evidence/verification population incomplete")
     if doc.get("global_statistical_composition_rule") != GLOBAL_STATISTICAL_COMPOSITION_RULE:
         raise GlobalProductQualificationV5Error("V5 statistical composition rule mismatch")
     return doc
