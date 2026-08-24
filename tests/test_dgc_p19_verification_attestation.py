@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_verification_plan import SCHEMA as PLAN_SCHEMA
 from cwc.governance.p19_verification_attestation import (
     ATTESTATION_SCHEMA,
     DECLARATION,
@@ -40,7 +41,46 @@ def _p19() -> dict[str, object]:
     }
 
 
-def _receipt(root: Path, check_id: str) -> Path:
+def _active_plan(root: Path) -> Path:
+    entry = root / "scripts/dgc_external_p19_verifier.py"
+    entry.parent.mkdir(parents=True, exist_ok=True)
+    entry.write_text("print('test verifier')\n", encoding="utf-8")
+    rows = []
+    for check_id in sorted(REQUIRED_CHECKS):
+        rows.append({
+            "check_id": check_id,
+            "method_id": f"DGC_P19_EXTERNAL_{check_id}_V1",
+            "command_template": [
+                "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
+                "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
+            ],
+            "implementation_status": "IMPLEMENTED",
+        })
+    payload = {
+        "plan_generation": "TEST_ACTIVE_PLAN",
+        "frozen_pre_outcome": True,
+        "activation_authorized": True,
+        "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
+        "verifier_entrypoint_sha256": sha256_file(entry),
+        "check_contracts": rows,
+        "all_check_implementations_complete": True,
+        "product_qualification_authorized": False,
+    }
+    doc = {"schema": PLAN_SCHEMA, **payload, "plan_digest": sha256_bytes(canonical_json_bytes(payload))}
+    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(canonical_json_bytes(doc) + b"\n")
+    return path
+
+
+def _p19_file(root: Path) -> Path:
+    path = root / "artifacts/dgc-product-v1/generated/swe/p19.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(canonical_json_bytes(_p19()) + b"\n")
+    return path
+
+
+def _receipt(root: Path, p19_rel: str, check_id: str) -> Path:
     base = root / "artifacts/dgc-product-v1/generated/verify" / check_id.lower()
     base.mkdir(parents=True, exist_ok=True)
     stdout = base / "stdout.bin"
@@ -49,17 +89,21 @@ def _receipt(root: Path, check_id: str) -> Path:
     stdout.write_bytes((check_id + " ok\n").encode())
     stderr.write_bytes(b"")
     evidence.write_bytes(("{\"check\":\"" + check_id + "\"}\n").encode())
+    evidence_rel = evidence.relative_to(root).as_posix()
     payload = {
         "check_id": check_id,
         "status": "PASS",
-        "command_argv": ["python", "verify.py", check_id],
+        "command_argv": [
+            "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
+            "--p19", p19_rel, "--evidence-output", evidence_rel,
+        ],
         "stdout_path": stdout.relative_to(root).as_posix(),
         "stdout_sha256": sha256_file(stdout),
         "stdout_bytes": stdout.stat().st_size,
         "stderr_path": stderr.relative_to(root).as_posix(),
         "stderr_sha256": sha256_file(stderr),
         "stderr_bytes": stderr.stat().st_size,
-        "evidence_path": evidence.relative_to(root).as_posix(),
+        "evidence_path": evidence_rel,
         "evidence_sha256": sha256_file(evidence),
         "evidence_bytes": evidence.stat().st_size,
         "evidence_digest": sha256_bytes((check_id + ":semantic").encode()),
@@ -76,16 +120,21 @@ def _receipt(root: Path, check_id: str) -> Path:
 
 def _write_report(root: Path, path: Path, *, p19: dict[str, object] | None = None) -> dict[str, object]:
     family = dict(p19 or _p19())
+    plan = _active_plan(root)
+    p19_path = _p19_file(root)
+    p19_rel = p19_path.relative_to(root).as_posix()
     report = build_p19_verification_report(
         repository_root=root,
         family_p19=family,
-        check_receipt_paths=tuple(_receipt(root, check) for check in sorted(REQUIRED_CHECKS)),
+        family_p19_path=p19_path,
+        verification_plan_path=plan,
+        check_receipt_paths=tuple(_receipt(root, p19_rel, check) for check in sorted(REQUIRED_CHECKS)),
     )
     path.write_bytes(report_bytes(report))
     return report
 
 
-def test_report_is_canonical_complete_and_bound_to_exact_p19(tmp_path: Path):
+def test_report_is_canonical_complete_planned_and_bound_to_exact_p19(tmp_path: Path):
     path = tmp_path / "report.json"
     expected = _write_report(tmp_path, path)
     loaded = load_p19_verification_report(path, repository_root=tmp_path)
@@ -93,6 +142,10 @@ def test_report_is_canonical_complete_and_bound_to_exact_p19(tmp_path: Path):
     bind_report_to_p19(loaded, _p19())
     assert {row["check_id"] for row in loaded["checks"]} == REQUIRED_CHECKS
     assert loaded["raw_verification_transcript_disclosed"] is True
+    assert loaded["receipt_semantics_replayed"] is True
+    assert loaded["frozen_verification_plan_replayed"] is True
+    assert loaded["verification_plan_digest"]
+    assert loaded["verifier_entrypoint_sha256"]
 
 
 def test_report_wrong_p19_binding_fails_closed(tmp_path: Path):
@@ -104,7 +157,7 @@ def test_report_wrong_p19_binding_fails_closed(tmp_path: Path):
         bind_report_to_p19(loaded, other)
 
 
-def test_attestation_builder_is_canonical_and_bound_to_exact_p19(tmp_path: Path):
+def test_attestation_builder_is_v3_and_bound_to_exact_p19(tmp_path: Path):
     report = tmp_path / "report.json"
     _write_report(tmp_path, report)
     doc = make_p19_verification_attestation(
@@ -115,6 +168,8 @@ def test_attestation_builder_is_canonical_and_bound_to_exact_p19(tmp_path: Path)
     assert doc["schema"] == ATTESTATION_SCHEMA
     assert doc["declaration"] == DECLARATION
     assert doc["raw_verification_transcript_disclosed"] is True
+    assert doc["receipt_semantics_replayed"] is True
+    assert doc["frozen_verification_plan_executed"] is True
     assert doc["author_control_over_verification"] is False
     assert doc["social_independence_machine_proven"] is False
     path = tmp_path / "attestation.json"
@@ -152,7 +207,7 @@ def _signature_fixture(tmp_path: Path):
     return report, report_doc, doc, attestation, signature, allowed, fake_keygen
 
 
-def test_signed_verifier_binds_report_transcript_and_namespace(tmp_path: Path):
+def test_signed_verifier_binds_frozen_plan_report_transcript_and_namespace(tmp_path: Path):
     report, _, doc, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
     observed: dict[str, object] = {}
 
@@ -176,14 +231,13 @@ def test_signed_verifier_binds_report_transcript_and_namespace(tmp_path: Path):
     assert receipt.verification_report_sha256 == sha256_file(report)
     assert observed["input"] == canonical_attestation_bytes(doc)
     assert NAMESPACE in observed["argv"]
-    assert VERIFICATION_PROTOCOL.startswith("DGC_P19_CANONICAL_EXTERNAL_REPLAY_V2")
+    assert VERIFICATION_PROTOCOL == "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V3_FROZEN_CHECK_PLAN"
 
 
 def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path: Path):
     report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
     evidence_path = tmp_path / str(report_doc["checks"][0]["evidence_path"])
     evidence_path.write_bytes(b"tampered-after-report-signing\n")
-
     called = False
 
     def runner(*args, **kwargs):
@@ -192,6 +246,30 @@ def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path:
         raise AssertionError("SSH verifier must not run after transcript tamper")
 
     with pytest.raises(P19VerificationAttestationError, match="bytes differ"):
+        verify_ssh_signed_p19_verification_attestation(
+            attestation_path=attestation,
+            verification_report_path=report,
+            signature_path=signature,
+            allowed_signers_path=allowed,
+            repository_root=tmp_path,
+            runner=runner,
+            executable=str(fake_keygen),
+        )
+    assert called is False
+
+
+def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path):
+    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+    plan_path = tmp_path / str(report_doc["verification_plan_path"])
+    plan_path.write_bytes(plan_path.read_bytes() + b" ")
+    called = False
+
+    def runner(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("SSH verifier must not run after verification-plan tamper")
+
+    with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
         verify_ssh_signed_p19_verification_attestation(
             attestation_path=attestation,
             verification_report_path=report,
