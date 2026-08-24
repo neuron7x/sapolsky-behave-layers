@@ -65,7 +65,7 @@ jobs:
             tests/test_dgc_continuous_assurance.py \
             tests/test_dgc_combinatorial_coverage.py \
             tests/test_dgc_release_builder.py
-      - name: V5 theorem and evidence-closure regression
+      - name: V5.1 theorem and evidence-closure regression
         run: |
           PYTHONPATH=. python -m pytest -q \
             tests/test_dgc_average_conditional_mean_cs.py \
@@ -74,6 +74,7 @@ jobs:
             tests/test_dgc_evidence_closure.py \
             tests/test_dgc_fault_injection_evidence.py \
             tests/test_dgc_independent_replication_authority_v4.py \
+            tests/test_dgc_p19_verification_attestation.py \
             tests/test_dgc_p19_evidence_root.py \
             tests/test_dgc_global_product_qualification.py
       - name: Learned B2 baseline falsification gate
