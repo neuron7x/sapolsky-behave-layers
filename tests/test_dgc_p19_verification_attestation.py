@@ -9,6 +9,7 @@ import pytest
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_external_verification_plan import (
+    PLAN_GENERATION,
     REQUIRED_IMPLEMENTATION_DEPENDENCIES,
     SCHEMA as PLAN_SCHEMA,
 )
@@ -67,7 +68,7 @@ def _active_plan(root: Path) -> Path:
             "implementation_status": "IMPLEMENTED",
         })
     payload = {
-        "plan_generation": "TEST_ACTIVE_PLAN",
+        "plan_generation": PLAN_GENERATION,
         "frozen_pre_outcome": True,
         "activation_authorized": True,
         "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
