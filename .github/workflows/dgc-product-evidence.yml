@@ -80,7 +80,9 @@ jobs:
             tests/test_dgc_p19_evidence_root.py \
             tests/test_dgc_global_product_qualification.py \
             tests/test_dgc_global_product_qualification_v4.py \
-            tests/test_dgc_product_qualification_pointer.py
+            tests/test_dgc_product_qualification_pointer.py \
+            tests/test_dgc_evidence_packaging_authority.py \
+            tests/test_dgc_qualified_evidence_bundle.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
       - name: B2 fit receipt falsification gate
@@ -119,7 +121,7 @@ jobs:
           python-version: "3.10"
       - name: Require PRODUCT_QUALIFIED terminal replay
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
-      - name: Require complete SHA-sealed evidence bundle
+      - name: Require graph-derived qualified evidence bundle
         run: PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
       - name: Require deterministic double-build release
         run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
