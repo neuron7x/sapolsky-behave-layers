@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_external_verification_plan import (
     REQUIRED_IMPLEMENTATION_DEPENDENCIES,
     SCHEMA as PLAN_SCHEMA,
@@ -45,13 +46,13 @@ def _active_plan(root: Path) -> Path:
     for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("# test replay engine\n", encoding="utf-8")
+        path.write_text(f"# frozen verifier dependency: {rel}\n", encoding="utf-8")
         dependencies.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
     rows = []
     for check_id in sorted(REQUIRED_CHECKS):
         rows.append({
             "check_id": check_id,
-            "method_id": f"DGC_P19_EXTERNAL_{check_id}_V1",
+            "method_id": CHECK_METHOD_IDS[check_id],
             "command_template": [
                 "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
                 "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
@@ -210,12 +211,12 @@ def test_raw_transcript_mutation_fails_report_rehash(tmp_path: Path):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
-def test_verifier_engine_mutation_fails_report_replay(tmp_path: Path):
+def test_verifier_dependency_mutation_fails_report_replay(tmp_path: Path):
     report = _build(tmp_path)
     path = tmp_path / "report.json"
     path.write_bytes(report_bytes(report))
     dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
-    dependency.write_text("# mutated engine\n", encoding="utf-8")
+    dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
     with pytest.raises(Exception, match="dependency bytes differ"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
