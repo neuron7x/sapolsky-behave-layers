@@ -7,9 +7,11 @@ import pytest
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_external_verification_plan import (
+    PLAN_GENERATION,
     REQUIRED_IMPLEMENTATION_DEPENDENCIES,
     SCHEMA,
     P19ExternalVerificationPlanError,
+    build_inactive_p19_external_verification_plan_document,
     load_p19_external_verification_plan,
 )
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
@@ -46,7 +48,7 @@ def _doc(root: Path, *, active: bool, implemented: bool = True) -> dict[str, obj
             "implementation_status": status,
         })
     payload = {
-        "plan_generation": "TEST_PRE_OUTCOME_PLAN",
+        "plan_generation": PLAN_GENERATION,
         "frozen_pre_outcome": True,
         "activation_authorized": active,
         "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
@@ -67,6 +69,42 @@ def _write(path: Path, doc: dict[str, object]) -> None:
 
 def _redigest(doc: dict[str, object]) -> None:
     doc["plan_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in PAYLOAD_KEYS}))
+
+
+def test_inactive_builder_content_addresses_exact_implemented_surface(tmp_path: Path):
+    _doc(tmp_path, active=False, implemented=True)
+    document = build_inactive_p19_external_verification_plan_document(
+        repository_root=tmp_path,
+        implemented_check_ids=tuple(sorted(REQUIRED_CHECKS)),
+    )
+    assert document["plan_generation"] == PLAN_GENERATION
+    assert document["activation_authorized"] is False
+    assert document["all_check_implementations_complete"] is True
+    assert document["product_qualification_authorized"] is False
+    assert {row["method_id"] for row in document["check_contracts"]} == set(CHECK_METHOD_IDS.values())
+    path = tmp_path / "plan.json"
+    _write(path, document)
+    loaded = load_p19_external_verification_plan(path, repository_root=tmp_path, require_active=False)
+    assert loaded.plan_digest == document["plan_digest"]
+    assert loaded.activation_authorized is False
+    with pytest.raises(P19ExternalVerificationPlanError, match="not activated"):
+        load_p19_external_verification_plan(path, repository_root=tmp_path, require_active=True)
+
+
+def test_inactive_builder_rejects_incomplete_or_duplicate_handler_population(tmp_path: Path):
+    _doc(tmp_path, active=False, implemented=True)
+    missing = tuple(sorted(REQUIRED_CHECKS - {"P19_SEAL_REBUILD"}))
+    with pytest.raises(P19ExternalVerificationPlanError, match="exact unique implemented check population"):
+        build_inactive_p19_external_verification_plan_document(
+            repository_root=tmp_path,
+            implemented_check_ids=missing,
+        )
+    duplicate = tuple(sorted(REQUIRED_CHECKS)) + ("REPOSITORY_IDENTITY",)
+    with pytest.raises(P19ExternalVerificationPlanError, match="exact unique implemented check population"):
+        build_inactive_p19_external_verification_plan_document(
+            repository_root=tmp_path,
+            implemented_check_ids=duplicate,
+        )
 
 
 def test_active_complete_plan_loads_and_is_content_addressed(tmp_path: Path):
@@ -95,6 +133,16 @@ def test_activation_with_unimplemented_checks_fails_closed(tmp_path: Path):
     _write(path, _doc(tmp_path, active=True, implemented=False))
     with pytest.raises(P19ExternalVerificationPlanError, match="cannot activate"):
         load_p19_external_verification_plan(path, repository_root=tmp_path)
+
+
+def test_plan_generation_substitution_fails_even_with_rehashed_plan(tmp_path: Path):
+    path = tmp_path / "plan.json"
+    doc = _doc(tmp_path, active=False, implemented=True)
+    doc["plan_generation"] = "POST_OUTCOME_RELABELED_PLAN"
+    _redigest(doc)
+    _write(path, doc)
+    with pytest.raises(P19ExternalVerificationPlanError, match="generation mismatch"):
+        load_p19_external_verification_plan(path, repository_root=tmp_path, require_active=False)
 
 
 def test_verifier_entrypoint_mutation_breaks_frozen_plan(tmp_path: Path):
