@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -21,16 +22,28 @@ def _pointer_doc(
     ledger_sha: str,
     global_sha: str,
     global_digest: str,
+    source_registry_path: str = "artifacts/source-registry.json",
+    p19_paths: tuple[str, str] = ("artifacts/swe-p19.json", "artifacts/terminal-p19.json"),
+    attestation_paths: tuple[str, str] = ("artifacts/swe.attestation.json", "artifacts/terminal.attestation.json"),
+    report_paths: tuple[str, str] = ("artifacts/swe.report.json", "artifacts/terminal.report.json"),
+    signature_paths: tuple[str, str] = ("artifacts/swe.sig", "artifacts/terminal.sig"),
+    policy_path: str = "artifacts/policy.json",
     active: bool = True,
     claimed: bool = True,
     commit: str = "a" * 40,
     tree: str = "b" * 40,
 ) -> dict[str, object]:
     payload = {
-        "pointer_generation": "TEST_POINTER_V1",
+        "pointer_generation": "TEST_POINTER_V2",
         "activation_authorized": active,
         "ledger_path": ledger_path,
         "global_v4_authority_path": global_path,
+        "source_registry_path": source_registry_path,
+        "family_p19_paths": list(p19_paths),
+        "family_attestation_paths": list(attestation_paths),
+        "family_verification_report_paths": list(report_paths),
+        "family_signature_paths": list(signature_paths),
+        "p19_verifier_policy_path": policy_path,
         "generation_id": "generation-1" if active else "UNCONFIGURED",
         "repo_commit": commit,
         "repo_tree": tree,
@@ -90,12 +103,30 @@ class _FakeLedger:
         return self.state
 
 
-def _fixture(tmp_path: Path, monkeypatch):
+def _write_subject(path: Path, data: bytes = b"subject\n") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def _fixture(tmp_path: Path, monkeypatch, *, rebuilt_digest: str = "c" * 64):
     ledger = tmp_path / "artifacts/ledger.json"
-    ledger.parent.mkdir(parents=True)
-    ledger.write_text("ledger-bytes\n", encoding="utf-8")
+    _write_subject(ledger, b"ledger-bytes\n")
     global_v4 = tmp_path / "artifacts/global-v4.json"
-    global_v4.write_text("global-v4-bytes\n", encoding="utf-8")
+    _write_subject(global_v4, b"global-v4-bytes\n")
+    for rel in (
+        "artifacts/source-registry.json",
+        "artifacts/swe-p19.json",
+        "artifacts/terminal-p19.json",
+        "artifacts/swe.attestation.json",
+        "artifacts/terminal.attestation.json",
+        "artifacts/swe.report.json",
+        "artifacts/terminal.report.json",
+        "artifacts/swe.sig",
+        "artifacts/terminal.sig",
+        "artifacts/policy.json",
+    ):
+        _write_subject(tmp_path / rel)
+
     global_sha = sha256_file(global_v4)
     global_digest = "c" * 64
     _FakeLedger.state = _terminal_state("artifacts/global-v4.json", global_sha, global_v4.stat().st_size)
@@ -108,7 +139,19 @@ def _fixture(tmp_path: Path, monkeypatch):
             "repository_commit": "a" * 40,
             "repository_tree": "b" * 40,
             "product_qualified": True,
+            "production_control_authorized": False,
         },
+    )
+    monkeypatch.setattr(
+        pqp,
+        "build_global_product_qualification_authority_v4",
+        lambda **kwargs: SimpleNamespace(
+            authority_digest=rebuilt_digest,
+            product_qualified=True,
+            production_control_authorized=False,
+            repository_commit="a" * 40,
+            repository_tree="b" * 40,
+        ),
     )
     pointer = tmp_path / "pointer.json"
     _write_pointer(
@@ -124,7 +167,7 @@ def _fixture(tmp_path: Path, monkeypatch):
     return ledger, global_v4, pointer
 
 
-def test_pointer_replays_terminal_ledger_and_global_v4_binding(tmp_path: Path, monkeypatch):
+def test_pointer_v2_rebuilds_global_v4_then_replays_terminal_ledger(tmp_path: Path, monkeypatch):
     _, _, pointer = _fixture(tmp_path, monkeypatch)
     verified = verify_product_qualification_pointer(
         repository_root=tmp_path,
@@ -133,7 +176,15 @@ def test_pointer_replays_terminal_ledger_and_global_v4_binding(tmp_path: Path, m
         expected_repo_tree="b" * 40,
     )
     assert verified.global_v4_authority_digest == "c" * 64
+    assert verified.source_registry_path == "artifacts/source-registry.json"
+    assert verified.family_p19_paths == ("artifacts/swe-p19.json", "artifacts/terminal-p19.json")
     assert verified.ledger_tip_receipt_digest == _FakeLedger.state["receipts"][-1]["receipt_digest"]
+
+
+def test_self_consistent_declared_global_v4_cannot_substitute_for_failed_semantic_rebuild(tmp_path: Path, monkeypatch):
+    _, _, pointer = _fixture(tmp_path, monkeypatch, rebuilt_digest="d" * 64)
+    with pytest.raises(ProductQualificationPointerError, match="differs from semantic replay"):
+        verify_product_qualification_pointer(repository_root=tmp_path, pointer_path=pointer)
 
 
 def test_unconfigured_pointer_cannot_authorize_product_claim(tmp_path: Path):
@@ -143,6 +194,12 @@ def test_unconfigured_pointer_cannot_authorize_product_claim(tmp_path: Path):
         _pointer_doc(
             ledger_path="UNCONFIGURED",
             global_path="UNCONFIGURED",
+            source_registry_path="UNCONFIGURED",
+            p19_paths=("UNCONFIGURED", "UNCONFIGURED"),
+            attestation_paths=("UNCONFIGURED", "UNCONFIGURED"),
+            report_paths=("UNCONFIGURED", "UNCONFIGURED"),
+            signature_paths=("UNCONFIGURED", "UNCONFIGURED"),
+            policy_path="artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
             ledger_sha="0" * 64,
             global_sha="0" * 64,
             global_digest="0" * 64,
@@ -180,6 +237,29 @@ def test_terminal_receipt_cannot_reference_different_global_authority(tmp_path: 
     _FakeLedger.state = _terminal_state("artifacts/other-global.json", global_sha, global_v4.stat().st_size)
     with pytest.raises(ProductQualificationPointerError, match="different global authority"):
         verify_product_qualification_pointer(repository_root=tmp_path, pointer_path=pointer)
+
+
+def test_malformed_two_family_replay_population_is_rejected_at_pointer_parse(tmp_path: Path):
+    path = tmp_path / "pointer.json"
+    doc = _pointer_doc(
+        ledger_path="x",
+        global_path="y",
+        ledger_sha="1" * 64,
+        global_sha="2" * 64,
+        global_digest="3" * 64,
+    )
+    doc["family_p19_paths"] = ["only-one"]
+    payload_keys = (
+        "pointer_generation", "activation_authorized", "ledger_path", "global_v4_authority_path",
+        "source_registry_path", "family_p19_paths", "family_attestation_paths",
+        "family_verification_report_paths", "family_signature_paths", "p19_verifier_policy_path",
+        "generation_id", "repo_commit", "repo_tree", "ledger_sha256", "global_v4_authority_sha256",
+        "global_v4_authority_digest", "product_qualified_claimed", "production_control_authorized",
+    )
+    doc["pointer_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in payload_keys}))
+    _write_pointer(path, doc)
+    with pytest.raises(ProductQualificationPointerError, match="exactly two"):
+        pqp.load_product_qualification_pointer(path)
 
 
 def test_pointer_digest_tamper_fails_closed(tmp_path: Path):
