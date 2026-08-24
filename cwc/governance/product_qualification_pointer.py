@@ -6,16 +6,15 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from cwc.governance.evidence_closure import EvidenceClosureLedger, STAGES, sha256_file
-from cwc.governance.global_product_qualification_v4 import (
-    FamilyP19VerificationInputV4,
-    build_global_product_qualification_authority_v4,
-    verify_global_product_qualification_authority_v4_document,
+from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
+from cwc.governance.global_product_qualification_v5 import (
+    build_global_product_qualification_authority_v5,
+    verify_global_product_qualification_authority_v5_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
-from cwc.governance.p19_verifier_policy import CANONICAL_POLICY_PATH
 
-SCHEMA = "DGC_PRODUCT_QUALIFICATION_POINTER_V2"
-CANONICAL_POINTER_PATH = "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json"
+SCHEMA = "DGC_PRODUCT_QUALIFICATION_POINTER_V3"
+CANONICAL_POINTER_PATH = "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
 
 
 class ProductQualificationPointerError(RuntimeError):
@@ -78,9 +77,9 @@ class VerifiedProductQualificationPointer:
     repo_tree: str
     ledger_path: str
     ledger_sha256: str
-    global_v4_authority_path: str
-    global_v4_authority_sha256: str
-    global_v4_authority_digest: str
+    global_v5_authority_path: str
+    global_v5_authority_sha256: str
+    global_v5_authority_digest: str
     source_registry_path: str
     family_p19_paths: tuple[str, str]
     p19_verifier_policy_path: str
@@ -102,11 +101,11 @@ def load_product_qualification_pointer(path: Path) -> dict[str, object]:
     if raw != canonical_json_bytes(doc) + b"\n":
         raise ProductQualificationPointerError("product qualification pointer must use canonical JSON bytes")
     payload_keys = (
-        "pointer_generation", "activation_authorized", "ledger_path", "global_v4_authority_path",
+        "pointer_generation", "activation_authorized", "ledger_path", "global_v5_authority_path",
         "source_registry_path", "family_p19_paths", "family_attestation_paths",
         "family_verification_report_paths", "family_signature_paths", "p19_verifier_policy_path",
-        "generation_id", "repo_commit", "repo_tree", "ledger_sha256", "global_v4_authority_sha256",
-        "global_v4_authority_digest", "product_qualified_claimed", "production_control_authorized",
+        "generation_id", "repo_commit", "repo_tree", "ledger_sha256", "global_v5_authority_sha256",
+        "global_v5_authority_digest", "product_qualified_claimed", "production_control_authorized",
     )
     try:
         payload = {key: doc[key] for key in payload_keys}
@@ -143,12 +142,12 @@ def verify_product_qualification_pointer(
     repo_commit = _oid("repo_commit", doc.get("repo_commit"))
     repo_tree = _oid("repo_tree", doc.get("repo_tree"))
     if expected_repo_commit is not None and repo_commit != str(expected_repo_commit).lower():
-        raise ProductQualificationPointerError("qualification pointer commit differs from release HEAD")
+        raise ProductQualificationPointerError("qualification pointer commit differs from expected execution commit")
     if expected_repo_tree is not None and repo_tree != str(expected_repo_tree).lower():
-        raise ProductQualificationPointerError("qualification pointer tree differs from release HEAD")
+        raise ProductQualificationPointerError("qualification pointer tree differs from expected execution tree")
 
     ledger_path = _safe_repo_file(root, doc.get("ledger_path"), label="qualification ledger")
-    global_path = _safe_repo_file(root, doc.get("global_v4_authority_path"), label="global V4 authority")
+    global_path = _safe_repo_file(root, doc.get("global_v5_authority_path"), label="global V5 authority")
     source_registry_path = _safe_repo_file(root, doc.get("source_registry_path"), label="canonical source registry")
     policy_path = _safe_repo_file(root, doc.get("p19_verifier_policy_path"), label="P19 verifier trust policy")
     p19_paths = _resolve_pair(root, _path_pair("family_p19_paths", doc.get("family_p19_paths")), label="family P19")
@@ -168,46 +167,47 @@ def verify_product_qualification_pointer(
     global_sha = sha256_file(global_path)
     if ledger_sha != _sha("ledger_sha256", doc.get("ledger_sha256")):
         raise ProductQualificationPointerError("qualification ledger bytes differ from pointer")
-    if global_sha != _sha("global_v4_authority_sha256", doc.get("global_v4_authority_sha256")):
-        raise ProductQualificationPointerError("global V4 authority bytes differ from pointer")
+    if global_sha != _sha("global_v5_authority_sha256", doc.get("global_v5_authority_sha256")):
+        raise ProductQualificationPointerError("global V5 authority bytes differ from pointer")
 
     try:
-        global_doc = verify_global_product_qualification_authority_v4_document(global_path)
+        global_doc = verify_global_product_qualification_authority_v5_document(global_path)
     except RuntimeError as exc:
-        raise ProductQualificationPointerError("declared global V4 authority failed structural verification") from exc
-    global_digest = _sha("global_v4_authority_digest", global_doc.get("authority_digest"))
-    if global_digest != _sha("pointer.global_v4_authority_digest", doc.get("global_v4_authority_digest")):
-        raise ProductQualificationPointerError("global V4 authority digest differs from pointer")
+        raise ProductQualificationPointerError("declared global V5 authority failed structural verification") from exc
+    global_digest = _sha("global_v5_authority_digest", global_doc.get("authority_digest"))
+    if global_digest != _sha("pointer.global_v5_authority_digest", doc.get("global_v5_authority_digest")):
+        raise ProductQualificationPointerError("global V5 authority digest differs from pointer")
 
+    verification_inputs = (
+        FamilyP19VerificationInputV4(
+            attestation_path=attestation_paths[0],
+            verification_report_path=report_paths[0],
+            signature_path=signature_paths[0],
+        ),
+        FamilyP19VerificationInputV4(
+            attestation_path=attestation_paths[1],
+            verification_report_path=report_paths[1],
+            signature_path=signature_paths[1],
+        ),
+    )
     try:
-        rebuilt = build_global_product_qualification_authority_v4(
+        rebuilt = build_global_product_qualification_authority_v5(
             repository_root=root,
             source_registry_path=source_registry_path,
             family_p19_paths=p19_paths,
-            family_p19_verification_inputs=(
-                FamilyP19VerificationInputV4(
-                    attestation_path=attestation_paths[0],
-                    verification_report_path=report_paths[0],
-                    signature_path=signature_paths[0],
-                ),
-                FamilyP19VerificationInputV4(
-                    attestation_path=attestation_paths[1],
-                    verification_report_path=report_paths[1],
-                    signature_path=signature_paths[1],
-                ),
-            ),
+            family_p19_verification_inputs=verification_inputs,
             p19_verifier_policy_path=policy_path,
         )
     except RuntimeError as exc:
-        raise ProductQualificationPointerError("terminal Global V4 semantic replay failed") from exc
+        raise ProductQualificationPointerError("terminal Global V5 semantic replay failed") from exc
     if rebuilt.authority_digest != global_digest:
-        raise ProductQualificationPointerError("declared Global V4 differs from semantic replay")
+        raise ProductQualificationPointerError("declared Global V5 differs from semantic replay")
     if not rebuilt.product_qualified or rebuilt.production_control_authorized:
         raise ProductQualificationPointerError("semantic replay did not derive product-only qualification")
     if rebuilt.repository_commit != repo_commit or rebuilt.repository_tree != repo_tree:
-        raise ProductQualificationPointerError("rebuilt Global V4 repository identity differs from pointer")
+        raise ProductQualificationPointerError("rebuilt Global V5 repository identity differs from pointer")
     if global_doc.get("repository_commit") != repo_commit or global_doc.get("repository_tree") != repo_tree:
-        raise ProductQualificationPointerError("declared Global V4 repository identity differs from pointer")
+        raise ProductQualificationPointerError("declared Global V5 repository identity differs from pointer")
 
     ledger = EvidenceClosureLedger(
         repository_root=root,
@@ -227,7 +227,7 @@ def verify_product_qualification_pointer(
         raise ProductQualificationPointerError("qualification ledger terminal receipt malformed")
     evidence = final.get("evidence")
     if not isinstance(evidence, list) or len(evidence) != 1 or not isinstance(evidence[0], Mapping):
-        raise ProductQualificationPointerError("PRODUCT_QUALIFIED receipt must bind one global V4 artifact")
+        raise ProductQualificationPointerError("PRODUCT_QUALIFIED receipt must bind one global V5 artifact")
     row = evidence[0]
     try:
         receipt_evidence_path = (root / str(row.get("path", ""))).resolve().relative_to(root).as_posix()
@@ -245,9 +245,9 @@ def verify_product_qualification_pointer(
         repo_tree=repo_tree,
         ledger_path=ledger_path.relative_to(root).as_posix(),
         ledger_sha256=ledger_sha,
-        global_v4_authority_path=pointer_global_path,
-        global_v4_authority_sha256=global_sha,
-        global_v4_authority_digest=global_digest,
+        global_v5_authority_path=pointer_global_path,
+        global_v5_authority_sha256=global_sha,
+        global_v5_authority_digest=global_digest,
         source_registry_path=source_registry_path.relative_to(root).as_posix(),
         family_p19_paths=(
             p19_paths[0].relative_to(root).as_posix(),
