@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
@@ -60,7 +59,7 @@ def _safe_rel(value: object, *, label: str) -> str:
     return rel.as_posix()
 
 
-def _safe_file(root: Path, rel: str) -> Path:
+def _safe_file(root: Path, rel: str, *, allow_empty: bool = False) -> Path:
     path = root / rel
     if path.is_symlink():
         raise QualifiedEvidenceBundleError(f"qualified bundle symlink rejected: {rel}")
@@ -69,8 +68,10 @@ def _safe_file(root: Path, rel: str) -> Path:
         resolved.relative_to(root)
     except ValueError as exc:
         raise QualifiedEvidenceBundleError(f"qualified bundle path escapes repository: {rel}") from exc
-    if not resolved.is_file() or resolved.stat().st_size <= 0:
-        raise QualifiedEvidenceBundleError(f"qualified bundle file missing/empty: {rel}")
+    if not resolved.is_file():
+        raise QualifiedEvidenceBundleError(f"qualified bundle file missing: {rel}")
+    if not allow_empty and resolved.stat().st_size <= 0:
+        raise QualifiedEvidenceBundleError(f"qualified bundle file empty: {rel}")
     return resolved
 
 
@@ -110,7 +111,6 @@ def _pair(doc: Mapping[str, object], field: str) -> tuple[str, str]:
 def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
     doc = verify_family_p19_evidence_root_document(_safe_file(root, p19_rel))
     collected = {p19_rel}
-
     stage_rows = doc.get("stage_evidence")
     if not isinstance(stage_rows, list):
         raise QualifiedEvidenceBundleError("P19 stage evidence population missing")
@@ -118,7 +118,6 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
         if not isinstance(row, Mapping) or not isinstance(row.get("evidence"), Mapping):
             raise QualifiedEvidenceBundleError("P19 stage evidence row malformed")
         collected.add(_safe_rel(row["evidence"].get("path"), label="P19 stage evidence path"))
-
     anchors = doc.get("methodology_anchors")
     if not isinstance(anchors, list):
         raise QualifiedEvidenceBundleError("P19 methodology anchor population missing")
@@ -126,7 +125,6 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
         if not isinstance(row, Mapping):
             raise QualifiedEvidenceBundleError("P19 methodology anchor row malformed")
         collected.add(_safe_rel(row.get("path"), label="P19 methodology anchor path"))
-
     roots = doc.get("subject_roots")
     if not isinstance(roots, list):
         raise QualifiedEvidenceBundleError("P19 subject-root population missing")
@@ -145,9 +143,10 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
     return collected
 
 
-def _collect_verification_transcript_paths(root: Path, report_rel: str) -> set[str]:
+def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple[set[str], set[str]]:
     report = load_p19_verification_report(_safe_file(root, report_rel), repository_root=root)
     collected = {report_rel}
+    empty_allowed: set[str] = set()
     checks = report.get("checks")
     if not isinstance(checks, list) or not checks:
         raise QualifiedEvidenceBundleError("P19 verification report transcript population missing")
@@ -155,8 +154,11 @@ def _collect_verification_transcript_paths(root: Path, report_rel: str) -> set[s
         if not isinstance(row, Mapping):
             raise QualifiedEvidenceBundleError("P19 verification report transcript row malformed")
         for role in ("receipt", "stdout", "stderr", "evidence"):
-            collected.add(_safe_rel(row.get(f"{role}_path"), label=f"P19 verifier {role} path"))
-    return collected
+            rel = _safe_rel(row.get(f"{role}_path"), label=f"P19 verifier {role} path")
+            collected.add(rel)
+            if role in {"stdout", "stderr"}:
+                empty_allowed.add(rel)
+    return collected, empty_allowed
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,22 +204,12 @@ def build_qualified_evidence_bundle_authority(
     *,
     repository_root: Path,
     pointer_path: Path = Path(CANONICAL_POINTER_PATH),
-) -> tuple[
-    VerifiedProductQualificationPointer,
-    EvidencePackagingAuthority,
-    QualifiedEvidenceBundleAuthority,
-]:
+) -> tuple[VerifiedProductQualificationPointer, EvidencePackagingAuthority, QualifiedEvidenceBundleAuthority]:
     root = Path(repository_root).resolve()
     pointer_file = pointer_path if pointer_path.is_absolute() else root / pointer_path
     pointer_doc = load_product_qualification_pointer(pointer_file)
-    qualification = verify_product_qualification_pointer(
-        repository_root=root,
-        pointer_path=pointer_file,
-    )
-    packaging = build_evidence_packaging_authority(
-        repository_root=root,
-        qualification=qualification,
-    )
+    qualification = verify_product_qualification_pointer(repository_root=root, pointer_path=pointer_file)
+    packaging = build_evidence_packaging_authority(repository_root=root, qualification=qualification)
 
     required: set[str] = {
         _safe_rel(pointer_file.resolve().relative_to(root).as_posix(), label="qualification pointer"),
@@ -226,6 +218,7 @@ def build_qualified_evidence_bundle_authority(
         _safe_rel(qualification.source_registry_path, label="source registry"),
         _safe_rel(qualification.p19_verifier_policy_path, label="P19 verifier policy"),
     }
+    empty_allowed: set[str] = set()
     p19_paths = _pair(pointer_doc, "family_p19_paths")
     attestation_paths = _pair(pointer_doc, "family_attestation_paths")
     report_paths = _pair(pointer_doc, "family_verification_report_paths")
@@ -239,20 +232,20 @@ def build_qualified_evidence_bundle_authority(
     )
     allowed_signers = resolve_allowed_signers(policy, repository_root=root)
     required.add(allowed_signers.relative_to(root).as_posix())
-
     for p19_rel in p19_paths:
         required.update(_collect_p19_paths(root, p19_rel))
     for report_rel in report_paths:
-        required.update(_collect_verification_transcript_paths(root, report_rel))
+        paths, zero_ok = _collect_verification_transcript_paths(root, report_rel)
+        required.update(paths)
+        empty_allowed.update(zero_ok)
 
     records: list[QualifiedBundleFile] = []
     for rel in sorted(required):
-        path = _safe_file(root, rel)
+        path = _safe_file(root, rel, allow_empty=rel in empty_allowed)
         exec_entry = _tree_entry(root, qualification.repo_commit, rel)
         pkg_entry = _tree_entry(root, packaging.packaging_commit, rel)
         if pkg_entry is None:
             raise QualifiedEvidenceBundleError(f"required qualification subject is not tracked in T_pkg: {rel}")
-
         if rel in ALLOWED_MUTABLE_EXACT:
             role = ROLE_PACKAGING_EVIDENCE
         elif exec_entry is not None:
@@ -265,7 +258,6 @@ def build_qualified_evidence_bundle_authority(
                     f"post-outcome required subject is outside evidence-only packaging namespaces: {rel}"
                 )
             role = ROLE_PACKAGING_EVIDENCE
-
         mode, blob_oid = pkg_entry
         payload = {
             "path": rel,
@@ -275,10 +267,7 @@ def build_qualified_evidence_bundle_authority(
             "git_mode": mode,
             "git_blob_oid": blob_oid,
         }
-        records.append(QualifiedBundleFile(
-            **payload,
-            record_digest=sha256_bytes(canonical_json_bytes(payload)),
-        ))
+        records.append(QualifiedBundleFile(**payload, record_digest=sha256_bytes(canonical_json_bytes(payload))))
 
     ordered = tuple(records)
     manifest_rows = [asdict(row) for row in ordered]
