@@ -1,8 +1,8 @@
-# DGC Theorem Audit v5
+# DGC Theorem Audit v5.1
 
-Status: `PRE_EXECUTION_THEOREM_TRANSCRIPTION_AUDIT`.
+Status: `PRE_EXECUTION_THEOREM_TRANSCRIPTION_AND_BINARY64_RUNTIME_AUDIT`.
 
-This document audits the mathematical mapping used by DGC product-evidence protocol V5. It is not empirical evidence that DGC passes the protocol.
+This document audits the mathematical mapping used by the current DGC product-evidence protocol V5.1. It is not empirical evidence that DGC passes the protocol.
 
 ## Primary source
 
@@ -15,6 +15,7 @@ Author reference implementation used for independent transcription checking:
 - repository: `gostevehoward/confseq`;
 - commit: `5ffe733ca2447a2e28c2c91f3b00086173f2ab2c`;
 - implementation: `PolyStitchingBound::operator()`;
+- constructor dependency: `A_ = log(boost::math::zeta(s) / pow(log(eta), s))`;
 - author test vector: `poly_stitching_bound(100, 0.05, 10, 3) = 64.48755 ± 1e-5`.
 
 ## DGC estimand
@@ -55,13 +56,34 @@ and
 
 `u(v) = sqrt(k1^2*use_v*ell + term2^2) + term2`.
 
-This is the formula implemented by the authors' `PolyStitchingBound` and used by V5.
+This is the formula implemented by the authors' `PolyStitchingBound` and used by DGC.
+
+## Frozen binary64 runtime parameters
+
+V5.1 freezes the default rescaled-boundary runtime numerically, not only by prose:
+
+- `eta = 2.0`;
+- `s = 1.4`;
+- `v_min = 1.0`;
+- `c = 1.0` after affine rescaling to `[0,1]`;
+- `zeta(1.4)` binary64 hex = `0x1.8d8292bd8c3a6p+1`;
+- canonical parameter payload SHA-256 = `4deabb17370edfc770b7612235ee9dfddf932dfc21e894161fb2757ea45a1329`.
+
+The parameter payload is canonical JSON over `c`, `eta`, `s`, `v_min` and the binary64 zeta hex. The first 16 hex characters of this digest are embedded in the boundary method identity:
+
+`HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V2_4deabb17370edfc7`.
+
+The corresponding inference identity is
+
+`HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V3`.
+
+This means a silent change to any frozen boundary parameter must change the boundary identity and therefore the executable statistical-plan digest.
 
 ## Two-sided error allocation
 
 Theorem 4 gives a two-sided confidence sequence with coverage at least `1 - 2*alpha_boundary` when `u` has one-boundary crossing probability `alpha_boundary`.
 
-Therefore, if the DGC per-claim two-sided error budget is `delta`, V5 freezes
+Therefore, if the DGC per-claim two-sided error budget is `delta`, V5.1 freezes
 
 `alpha_boundary = delta / 2`.
 
@@ -75,7 +97,7 @@ Hence the polynomial-boundary crossing probability for one primary endpoint comp
 
 For G1-G5, the generalization family remains separately Bonferroni-controlled across `5*4*3 = 60` claims before applying the same two-sided halving inside Theorem 4.
 
-## V4 defect and V5 correction
+## Protocol correction history
 
 V4 used
 
@@ -83,21 +105,24 @@ V4 used
 
 That expression omits `term2^2` inside the canonical square root. It can be narrower than the authors' polynomial-stitching boundary and therefore is not accepted as a theorem-valid substitute.
 
-V5 replaces the shortcut with the exact author formula. V4 was frozen before external confirmatory outcomes, archived, and superseded before any product-evidence execution.
+V5 replaced that shortcut with the exact author formula before external confirmatory outcomes.
+
+The subsequent V5.1 runtime audit found that V5's decimal `zeta(1.4)` hardcode was one binary64 ULP above the value produced by the pinned Boost reference path. The old value was slightly more conservative, so this was not an anti-conservative validity failure; however it violated the stronger claim of exact binary64 replay. V5.1 fixes the value by its hexadecimal binary64 identity and content-addresses the full numeric parameter set. The pre-correction V5 preregistration is archived.
 
 ## Machine falsifiers
 
-The V5 test surface must kill at least these mutations:
+The V5.1 test surface must kill at least these mutations:
 
 1. remove `term2^2` from the canonical square root;
 2. omit the final `+term2`;
 3. use `delta` instead of `delta/2` for the Theorem-4 crossing probability;
-4. change `eta`, `s` or frozen `zeta(1.4)` silently;
-5. allow a non-predictable center that consumes `X_t` before predicting `X_t`;
-6. violate observation support;
-7. change analysis order after outcomes;
-8. substitute an iid/population-mean claim for the average-conditional-mean estimand.
+4. change `eta`, `s`, `v_min`, `c` or frozen `zeta(1.4)` without changing the parameter digest/method identity;
+5. change the binary64 zeta hex away from `0x1.8d8292bd8c3a6p+1`;
+6. allow a non-predictable center that consumes `X_t` before predicting `X_t`;
+7. violate observation support;
+8. change analysis order after outcomes;
+9. substitute an iid/population-mean claim for the average-conditional-mean estimand.
 
 ## Limits
 
-This theorem audit establishes only the intended mathematical transcription and claim boundary. It does not establish that the current branch executes successfully, that external benchmark observations satisfy the inequalities, that workload scorers are causally sufficient, or that the observed effect generalizes beyond the explicitly tested shift panels.
+This theorem audit establishes only the intended mathematical transcription, binary64 runtime identity and claim boundary. It does not establish that the current branch executes successfully, that external benchmark observations satisfy the inequalities, that workload scorers are causally sufficient, or that the observed effect generalizes beyond the explicitly tested shift panels.
