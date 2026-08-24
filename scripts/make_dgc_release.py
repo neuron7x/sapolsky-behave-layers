@@ -16,8 +16,8 @@ from cwc.governance.product_qualification_pointer import (
 
 CRITICAL_PATHS = (
     "artifacts/dgc-product-v1/evidence_status.json",
-    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V1.json",
-    "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V1.json",
+    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json",
+    "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
     "research/registry/dgc_math_proof_ledger_v1.json",
     ".github/workflows/dgc-math.yml",
     ".github/workflows/dgc-product-evidence.yml",
@@ -138,8 +138,6 @@ def build_release(
     if require_product_qualified and not product_qualified:
         raise RuntimeError(f"PRODUCT_QUALIFIED requires terminal ledger/Global-V4 replay: {qualification_error}")
 
-    # Production control is intentionally not inferred from evidence_status.json.
-    # It requires a separate future operational authority and remains false here.
     production_control_authorized = False
 
     out.mkdir(parents=True, exist_ok=True)
