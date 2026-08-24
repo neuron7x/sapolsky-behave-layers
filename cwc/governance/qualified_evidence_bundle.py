@@ -13,6 +13,7 @@ from cwc.governance.evidence_packaging_authority import (
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
+from cwc.governance.p19_external_verification_plan import load_p19_external_verification_plan
 from cwc.governance.p19_verification_attestation import load_p19_verification_report
 from cwc.governance.p19_verifier_policy import load_p19_verifier_trust_policy, resolve_allowed_signers
 from cwc.governance.product_qualification_pointer import (
@@ -22,7 +23,7 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V4"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V5"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
 
@@ -125,6 +126,13 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
         if not isinstance(row, Mapping):
             raise QualifiedEvidenceBundleError("P19 methodology anchor row malformed")
         collected.add(_safe_rel(row.get("path"), label="P19 methodology anchor path"))
+    replay_inputs = doc.get("external_replay_inputs")
+    if not isinstance(replay_inputs, list) or not replay_inputs:
+        raise QualifiedEvidenceBundleError("P19 portable replay-input population missing")
+    for row in replay_inputs:
+        if not isinstance(row, Mapping):
+            raise QualifiedEvidenceBundleError("P19 replay-input row malformed")
+        collected.add(_safe_rel(row.get("path"), label="P19 external replay input path"))
     roots = doc.get("subject_roots")
     if not isinstance(roots, list):
         raise QualifiedEvidenceBundleError("P19 subject-root population missing")
@@ -145,11 +153,15 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
 
 def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple[set[str], set[str]]:
     report = load_p19_verification_report(_safe_file(root, report_rel), repository_root=root)
-    collected = {
-        report_rel,
-        _safe_rel(report.get("verification_plan_path"), label="P19 verification plan path"),
-        _safe_rel(report.get("verifier_entrypoint_path"), label="P19 verifier entrypoint path"),
-    }
+    plan_rel = _safe_rel(report.get("verification_plan_path"), label="P19 verification plan path")
+    entry_rel = _safe_rel(report.get("verifier_entrypoint_path"), label="P19 verifier entrypoint path")
+    try:
+        plan = load_p19_external_verification_plan(root / plan_rel, repository_root=root, require_active=True)
+    except RuntimeError as exc:
+        raise QualifiedEvidenceBundleError("P19 verifier plan dependency replay failed") from exc
+    collected = {report_rel, plan_rel, entry_rel}
+    for row in plan.verifier_dependencies:
+        collected.add(_safe_rel(row.get("path"), label="P19 verifier dependency path"))
     empty_allowed: set[str] = set()
     checks = report.get("checks")
     if not isinstance(checks, list) or not checks:
@@ -191,6 +203,8 @@ class QualifiedEvidenceBundleAuthority:
     packaging_evidence_file_count: int
     raw_p19_verification_transcripts_included: bool
     frozen_verification_plan_and_entrypoint_included: bool
+    frozen_verifier_dependency_closure_included: bool
+    portable_p19_replay_inputs_included: bool
     portable_global_v5_authority_included: bool
     all_required_subjects_git_bound: bool
     evidence_graph_complete: bool
@@ -297,6 +311,8 @@ def build_qualified_evidence_bundle_authority(
         "packaging_evidence_file_count": evidence_count,
         "raw_p19_verification_transcripts_included": True,
         "frozen_verification_plan_and_entrypoint_included": True,
+        "frozen_verifier_dependency_closure_included": True,
+        "portable_p19_replay_inputs_included": True,
         "portable_global_v5_authority_included": True,
         "all_required_subjects_git_bound": True,
         "evidence_graph_complete": True,
@@ -315,6 +331,8 @@ def build_qualified_evidence_bundle_authority(
         packaging_evidence_file_count=evidence_count,
         raw_p19_verification_transcripts_included=True,
         frozen_verification_plan_and_entrypoint_included=True,
+        frozen_verifier_dependency_closure_included=True,
+        portable_p19_replay_inputs_included=True,
         portable_global_v5_authority_included=True,
         all_required_subjects_git_bound=True,
         evidence_graph_complete=True,
