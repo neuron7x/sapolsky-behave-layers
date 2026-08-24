@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_external_verification_plan import (
     REQUIRED_IMPLEMENTATION_DEPENDENCIES,
     SCHEMA,
@@ -12,6 +13,14 @@ from cwc.governance.p19_external_verification_plan import (
     load_p19_external_verification_plan,
 )
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
+
+
+PAYLOAD_KEYS = (
+    "plan_generation", "frozen_pre_outcome", "activation_authorized",
+    "verifier_entrypoint_path", "verifier_entrypoint_sha256",
+    "verifier_dependency_manifest_digest", "verifier_dependencies", "check_contracts",
+    "all_check_implementations_complete", "product_qualification_authorized",
+)
 
 
 def _doc(root: Path, *, active: bool, implemented: bool = True) -> dict[str, object]:
@@ -22,14 +31,14 @@ def _doc(root: Path, *, active: bool, implemented: bool = True) -> dict[str, obj
     for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("# replay engine\n", encoding="utf-8")
+        path.write_text(f"# frozen dependency: {rel}\n", encoding="utf-8")
         dependency_rows.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
     status = "IMPLEMENTED" if implemented else "NOT_IMPLEMENTED"
     rows = []
     for check_id in sorted(REQUIRED_CHECKS):
         rows.append({
             "check_id": check_id,
-            "method_id": f"DGC_P19_EXTERNAL_{check_id}_V1",
+            "method_id": CHECK_METHOD_IDS[check_id],
             "command_template": [
                 "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
                 "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
@@ -56,6 +65,10 @@ def _write(path: Path, doc: dict[str, object]) -> None:
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
 
 
+def _redigest(doc: dict[str, object]) -> None:
+    doc["plan_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in PAYLOAD_KEYS}))
+
+
 def test_active_complete_plan_loads_and_is_content_addressed(tmp_path: Path):
     path = tmp_path / "plan.json"
     doc = _doc(tmp_path, active=True, implemented=True)
@@ -65,6 +78,7 @@ def test_active_complete_plan_loads_and_is_content_addressed(tmp_path: Path):
     assert plan.all_check_implementations_complete is True
     assert plan.plan_digest == doc["plan_digest"]
     assert len(plan.verifier_dependencies) == len(REQUIRED_IMPLEMENTATION_DEPENDENCIES)
+    assert {row["method_id"] for row in plan.check_contracts} == set(CHECK_METHOD_IDS.values())
 
 
 def test_inactive_plan_is_valid_preregistration_but_not_executable(tmp_path: Path):
@@ -95,8 +109,19 @@ def test_verifier_dependency_mutation_breaks_frozen_plan(tmp_path: Path):
     path = tmp_path / "plan.json"
     _write(path, _doc(tmp_path, active=True, implemented=True))
     dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
-    dependency.write_text("# mutated replay engine\n", encoding="utf-8")
+    dependency.write_text("# mutated verifier contract\n", encoding="utf-8")
     with pytest.raises(P19ExternalVerificationPlanError, match="dependency bytes differ"):
+        load_p19_external_verification_plan(path, repository_root=tmp_path)
+
+
+def test_method_identity_substitution_fails_even_with_rehashed_plan(tmp_path: Path):
+    path = tmp_path / "plan.json"
+    doc = _doc(tmp_path, active=True, implemented=True)
+    seal = next(row for row in doc["check_contracts"] if row["check_id"] == "P19_SEAL_REBUILD")
+    seal["method_id"] = "DGC_P19_EXTERNAL_SEAL_REBUILD_V1"
+    _redigest(doc)
+    _write(path, doc)
+    with pytest.raises(P19ExternalVerificationPlanError, match="method identity mismatch: P19_SEAL_REBUILD"):
         load_p19_external_verification_plan(path, repository_root=tmp_path)
 
 
@@ -104,13 +129,7 @@ def test_command_template_substitution_fails_even_with_rehashed_plan(tmp_path: P
     path = tmp_path / "plan.json"
     doc = _doc(tmp_path, active=True, implemented=True)
     doc["check_contracts"][0]["command_template"] = ["echo", "PASS"]
-    payload_keys = (
-        "plan_generation", "frozen_pre_outcome", "activation_authorized",
-        "verifier_entrypoint_path", "verifier_entrypoint_sha256",
-        "verifier_dependency_manifest_digest", "verifier_dependencies", "check_contracts",
-        "all_check_implementations_complete", "product_qualification_authorized",
-    )
-    doc["plan_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in payload_keys}))
+    _redigest(doc)
     _write(path, doc)
     with pytest.raises(P19ExternalVerificationPlanError, match="command template mismatch"):
         load_p19_external_verification_plan(path, repository_root=tmp_path)
