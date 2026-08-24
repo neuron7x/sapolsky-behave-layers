@@ -4,7 +4,7 @@ import json
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
+from typing import Mapping
 
 from cwc.governance.evidence_packaging_authority import (
     ALLOWED_ADDED_PREFIXES,
@@ -25,6 +25,7 @@ from cwc.governance.product_qualification_pointer import (
 SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V1"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
+REGULAR_GIT_MODES = frozenset({"100644", "100755"})
 
 
 class QualifiedEvidenceBundleError(RuntimeError):
@@ -45,14 +46,28 @@ def _git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
 
 
 def _safe_rel(value: object, *, label: str) -> str:
-    text = str(value).strip()
-    rel = PurePosixPath(text)
-    if not text or rel.is_absolute() or ".." in rel.parts or "." in rel.parts:
-        raise QualifiedEvidenceBundleError(f"{label} must be a normalized repository-relative path")
-    return rel.as_posix()
+    raw = str(value)
+    if not raw or raw != raw.strip():
+        raise QualifiedEvidenceBundleError(f"{label} must not contain surrounding whitespace")
+    if any(ch in raw for ch in ("\x00", "\n", "\r", "\t", "\\")):
+        raise QualifiedEvidenceBundleError(f"{label} contains forbidden control/ambiguous character")
+    rel = PurePosixPath(raw)
+    canonical = rel.as_posix()
+    if (
+        rel.is_absolute()
+        or ".." in rel.parts
+        or "." in rel.parts
+        or canonical != raw
+        or raw.startswith("/")
+        or raw.endswith("/")
+        or "//" in raw
+    ):
+        raise QualifiedEvidenceBundleError(f"{label} must be a canonical repository-relative POSIX path")
+    return canonical
 
 
 def _safe_file(root: Path, rel: str) -> Path:
+    rel = _safe_rel(rel, label="qualified bundle path")
     path = root / rel
     if path.is_symlink():
         raise QualifiedEvidenceBundleError(f"qualified bundle symlink rejected: {rel}")
@@ -67,6 +82,7 @@ def _safe_file(root: Path, rel: str) -> Path:
 
 
 def _tree_entry(root: Path, commit: str, rel: str) -> tuple[str, str] | None:
+    rel = _safe_rel(rel, label="Git tree lookup path")
     proc = _git(root, "ls-tree", commit, "--", rel)
     line = proc.stdout.rstrip("\n")
     if not line:
@@ -78,8 +94,8 @@ def _tree_entry(root: Path, commit: str, rel: str) -> tuple[str, str] | None:
     if len(fields) != 3 or fields[1] != "blob" or observed != rel:
         raise QualifiedEvidenceBundleError(f"qualified bundle path is not a regular Git blob: {rel}")
     mode, _, oid = fields
-    if mode == "120000":
-        raise QualifiedEvidenceBundleError(f"qualified bundle Git symlink rejected: {rel}")
+    if mode not in REGULAR_GIT_MODES:
+        raise QualifiedEvidenceBundleError(f"qualified bundle requires regular Git file mode: {mode} {rel}")
     if len(oid) != 40 or any(ch not in "0123456789abcdef" for ch in oid.lower()):
         raise QualifiedEvidenceBundleError(f"qualified bundle Git blob OID malformed: {rel}")
     return mode, oid.lower()
@@ -100,6 +116,7 @@ def _pair(doc: Mapping[str, object], field: str) -> tuple[str, str]:
 
 
 def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
+    p19_rel = _safe_rel(p19_rel, label="family P19 path")
     doc = verify_family_p19_evidence_root_document(_safe_file(root, p19_rel))
     collected = {p19_rel}
 
@@ -133,7 +150,8 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
             if not isinstance(file_row, Mapping):
                 raise QualifiedEvidenceBundleError("P19 subject-root file row malformed")
             child = _safe_rel(file_row.get("path"), label="P19 subject-root child")
-            collected.add((PurePosixPath(root_rel) / child).as_posix())
+            combined = (PurePosixPath(root_rel) / child).as_posix()
+            collected.add(_safe_rel(combined, label="P19 subject-root resolved child"))
     return collected
 
 
@@ -196,8 +214,13 @@ def build_qualified_evidence_bundle_authority(
         qualification=qualification,
     )
 
+    try:
+        pointer_rel = pointer_file.resolve().relative_to(root).as_posix()
+    except ValueError as exc:
+        raise QualifiedEvidenceBundleError("qualification pointer escapes repository") from exc
+
     required: set[str] = {
-        _safe_rel(pointer_file.resolve().relative_to(root).as_posix(), label="qualification pointer"),
+        _safe_rel(pointer_rel, label="qualification pointer"),
         _safe_rel(qualification.ledger_path, label="qualification ledger"),
         _safe_rel(qualification.global_v4_authority_path, label="global V4 authority"),
         _safe_rel(qualification.source_registry_path, label="source registry"),
@@ -216,7 +239,11 @@ def build_qualified_evidence_bundle_authority(
         _safe_file(root, _safe_rel(qualification.p19_verifier_policy_path, label="P19 verifier policy"))
     )
     allowed_signers = resolve_allowed_signers(policy, repository_root=root)
-    required.add(allowed_signers.relative_to(root).as_posix())
+    try:
+        allowed_rel = allowed_signers.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise QualifiedEvidenceBundleError("allowed-signers trust store escapes repository") from exc
+    required.add(_safe_rel(allowed_rel, label="allowed-signers trust store"))
 
     for p19_rel in p19_paths:
         required.update(_collect_p19_paths(root, p19_rel))
