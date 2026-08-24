@@ -14,6 +14,7 @@ from cwc.governance.evidence_packaging_authority import (
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
+from cwc.governance.p19_verification_attestation import load_p19_verification_report
 from cwc.governance.p19_verifier_policy import load_p19_verifier_trust_policy, resolve_allowed_signers
 from cwc.governance.product_qualification_pointer import (
     CANONICAL_POINTER_PATH,
@@ -22,10 +23,9 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V1"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V2"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
-REGULAR_GIT_MODES = frozenset({"100644", "100755"})
 
 
 class QualifiedEvidenceBundleError(RuntimeError):
@@ -46,28 +46,21 @@ def _git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
 
 
 def _safe_rel(value: object, *, label: str) -> str:
-    raw = str(value)
-    if not raw or raw != raw.strip():
-        raise QualifiedEvidenceBundleError(f"{label} must not contain surrounding whitespace")
-    if any(ch in raw for ch in ("\x00", "\n", "\r", "\t", "\\")):
-        raise QualifiedEvidenceBundleError(f"{label} contains forbidden control/ambiguous character")
-    rel = PurePosixPath(raw)
-    canonical = rel.as_posix()
+    text = str(value)
     if (
-        rel.is_absolute()
-        or ".." in rel.parts
-        or "." in rel.parts
-        or canonical != raw
-        or raw.startswith("/")
-        or raw.endswith("/")
-        or "//" in raw
+        not text
+        or text != text.strip()
+        or any(ch in text for ch in ("\x00", "\n", "\r", "\t", "\\"))
+        or "//" in text
     ):
         raise QualifiedEvidenceBundleError(f"{label} must be a canonical repository-relative POSIX path")
-    return canonical
+    rel = PurePosixPath(text)
+    if rel.is_absolute() or any(part in ("", ".", "..") for part in rel.parts):
+        raise QualifiedEvidenceBundleError(f"{label} must be a canonical repository-relative POSIX path")
+    return rel.as_posix()
 
 
 def _safe_file(root: Path, rel: str) -> Path:
-    rel = _safe_rel(rel, label="qualified bundle path")
     path = root / rel
     if path.is_symlink():
         raise QualifiedEvidenceBundleError(f"qualified bundle symlink rejected: {rel}")
@@ -82,7 +75,6 @@ def _safe_file(root: Path, rel: str) -> Path:
 
 
 def _tree_entry(root: Path, commit: str, rel: str) -> tuple[str, str] | None:
-    rel = _safe_rel(rel, label="Git tree lookup path")
     proc = _git(root, "ls-tree", commit, "--", rel)
     line = proc.stdout.rstrip("\n")
     if not line:
@@ -94,8 +86,8 @@ def _tree_entry(root: Path, commit: str, rel: str) -> tuple[str, str] | None:
     if len(fields) != 3 or fields[1] != "blob" or observed != rel:
         raise QualifiedEvidenceBundleError(f"qualified bundle path is not a regular Git blob: {rel}")
     mode, _, oid = fields
-    if mode not in REGULAR_GIT_MODES:
-        raise QualifiedEvidenceBundleError(f"qualified bundle requires regular Git file mode: {mode} {rel}")
+    if mode not in {"100644", "100755"}:
+        raise QualifiedEvidenceBundleError(f"qualified bundle Git object mode rejected: {rel}")
     if len(oid) != 40 or any(ch not in "0123456789abcdef" for ch in oid.lower()):
         raise QualifiedEvidenceBundleError(f"qualified bundle Git blob OID malformed: {rel}")
     return mode, oid.lower()
@@ -116,7 +108,6 @@ def _pair(doc: Mapping[str, object], field: str) -> tuple[str, str]:
 
 
 def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
-    p19_rel = _safe_rel(p19_rel, label="family P19 path")
     doc = verify_family_p19_evidence_root_document(_safe_file(root, p19_rel))
     collected = {p19_rel}
 
@@ -150,8 +141,21 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
             if not isinstance(file_row, Mapping):
                 raise QualifiedEvidenceBundleError("P19 subject-root file row malformed")
             child = _safe_rel(file_row.get("path"), label="P19 subject-root child")
-            combined = (PurePosixPath(root_rel) / child).as_posix()
-            collected.add(_safe_rel(combined, label="P19 subject-root resolved child"))
+            collected.add((PurePosixPath(root_rel) / child).as_posix())
+    return collected
+
+
+def _collect_verification_transcript_paths(root: Path, report_rel: str) -> set[str]:
+    report = load_p19_verification_report(_safe_file(root, report_rel), repository_root=root)
+    collected = {report_rel}
+    checks = report.get("checks")
+    if not isinstance(checks, list) or not checks:
+        raise QualifiedEvidenceBundleError("P19 verification report transcript population missing")
+    for row in checks:
+        if not isinstance(row, Mapping):
+            raise QualifiedEvidenceBundleError("P19 verification report transcript row malformed")
+        for role in ("receipt", "stdout", "stderr", "evidence"):
+            collected.add(_safe_rel(row.get(f"{role}_path"), label=f"P19 verifier {role} path"))
     return collected
 
 
@@ -179,6 +183,7 @@ class QualifiedEvidenceBundleAuthority:
     required_file_manifest_digest: str
     execution_source_file_count: int
     packaging_evidence_file_count: int
+    raw_p19_verification_transcripts_included: bool
     all_required_subjects_git_bound: bool
     evidence_graph_complete: bool
     authority_digest: str
@@ -214,13 +219,8 @@ def build_qualified_evidence_bundle_authority(
         qualification=qualification,
     )
 
-    try:
-        pointer_rel = pointer_file.resolve().relative_to(root).as_posix()
-    except ValueError as exc:
-        raise QualifiedEvidenceBundleError("qualification pointer escapes repository") from exc
-
     required: set[str] = {
-        _safe_rel(pointer_rel, label="qualification pointer"),
+        _safe_rel(pointer_file.resolve().relative_to(root).as_posix(), label="qualification pointer"),
         _safe_rel(qualification.ledger_path, label="qualification ledger"),
         _safe_rel(qualification.global_v4_authority_path, label="global V4 authority"),
         _safe_rel(qualification.source_registry_path, label="source registry"),
@@ -232,21 +232,18 @@ def build_qualified_evidence_bundle_authority(
     signature_paths = _pair(pointer_doc, "family_signature_paths")
     required.update(p19_paths)
     required.update(attestation_paths)
-    required.update(report_paths)
     required.update(signature_paths)
 
     policy = load_p19_verifier_trust_policy(
         _safe_file(root, _safe_rel(qualification.p19_verifier_policy_path, label="P19 verifier policy"))
     )
     allowed_signers = resolve_allowed_signers(policy, repository_root=root)
-    try:
-        allowed_rel = allowed_signers.relative_to(root).as_posix()
-    except ValueError as exc:
-        raise QualifiedEvidenceBundleError("allowed-signers trust store escapes repository") from exc
-    required.add(_safe_rel(allowed_rel, label="allowed-signers trust store"))
+    required.add(allowed_signers.relative_to(root).as_posix())
 
     for p19_rel in p19_paths:
         required.update(_collect_p19_paths(root, p19_rel))
+    for report_rel in report_paths:
+        required.update(_collect_verification_transcript_paths(root, report_rel))
 
     records: list[QualifiedBundleFile] = []
     for rel in sorted(required):
@@ -303,6 +300,7 @@ def build_qualified_evidence_bundle_authority(
         "required_file_manifest_digest": manifest_digest,
         "execution_source_file_count": source_count,
         "packaging_evidence_file_count": evidence_count,
+        "raw_p19_verification_transcripts_included": True,
         "all_required_subjects_git_bound": True,
         "evidence_graph_complete": True,
     }
@@ -318,6 +316,7 @@ def build_qualified_evidence_bundle_authority(
         required_file_manifest_digest=manifest_digest,
         execution_source_file_count=source_count,
         packaging_evidence_file_count=evidence_count,
+        raw_p19_verification_transcripts_included=True,
         all_required_subjects_git_bound=True,
         evidence_graph_complete=True,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
