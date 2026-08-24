@@ -2,25 +2,41 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cwc.governance.evidence_bundle import verify_evidence_bundle
+from cwc.governance.qualified_evidence_bundle import (
+    QualifiedEvidenceBundleError,
+    build_qualified_evidence_bundle_authority,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE = ROOT / "artifacts/dgc-product-v1"
 
 
 def main() -> int:
-    result = verify_evidence_bundle(BUNDLE)
-    print(f"DGC-PRODUCT-BUNDLE-COMPLETE: {str(result.complete).lower()}")
-    if result.missing_files:
-        print("DGC-PRODUCT-BUNDLE-MISSING: " + ",".join(result.missing_files))
-    if result.unhashed_files:
-        print("DGC-PRODUCT-BUNDLE-UNHASHED: " + ",".join(result.unhashed_files))
-    if result.hash_mismatches:
-        print("DGC-PRODUCT-BUNDLE-HASH-MISMATCH: " + ",".join(result.hash_mismatches))
-    if not result.complete:
-        print("DGC-PRODUCT-BUNDLE-GATE: FAIL")
+    try:
+        qualification, packaging, bundle = build_qualified_evidence_bundle_authority(
+            repository_root=ROOT,
+        )
+    except RuntimeError as exc:
+        print(f"DGC-PRODUCT-BUNDLE-GATE: FAIL qualified-evidence-graph: {exc}")
         return 1
-    print("DGC-PRODUCT-BUNDLE-GATE: PASS")
+
+    if not bundle.evidence_graph_complete or not bundle.all_required_subjects_git_bound:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL incomplete-qualified-evidence-graph")
+        return 1
+    if bundle.qualified_execution_commit != qualification.repo_commit:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL execution-source-lineage-mismatch")
+        return 1
+    if bundle.packaging_commit != packaging.packaging_commit:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL packaging-lineage-mismatch")
+        return 1
+
+    print("DGC-PRODUCT-BUNDLE-COMPLETE: true")
+    print(f"DGC-PRODUCT-BUNDLE-AUTHORITY: {bundle.authority_digest}")
+    print(f"DGC-PRODUCT-BUNDLE-MANIFEST: {bundle.required_file_manifest_digest}")
+    print(f"DGC-PRODUCT-BUNDLE-EXECUTION-SOURCE-FILES: {bundle.execution_source_file_count}")
+    print(f"DGC-PRODUCT-BUNDLE-PACKAGING-EVIDENCE-FILES: {bundle.packaging_evidence_file_count}")
+    print(f"DGC-QUALIFIED-EXECUTION-COMMIT: {bundle.qualified_execution_commit}")
+    print(f"DGC-EVIDENCE-PACKAGING-COMMIT: {bundle.packaging_commit}")
+    print("DGC-PRODUCT-BUNDLE-GATE: PASS graph-derived qualified evidence bundle")
     return 0
 
 
