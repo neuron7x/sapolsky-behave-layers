@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
-from cwc.governance.global_product_qualification_v4 import (
-    FamilyP19VerificationInputV4,
-    build_global_product_qualification_authority_v4,
-    verify_global_product_qualification_authority_v4_document,
+from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
+from cwc.governance.global_product_qualification_v5 import (
+    build_global_product_qualification_authority_v5,
+    verify_global_product_qualification_authority_v5_document,
 )
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.p19_evidence_root import (
@@ -84,17 +84,17 @@ def close_product_qualified(
     if ledger.next_stage() != "PRODUCT_QUALIFIED":
         raise ClosureError("PRODUCT_QUALIFIED is not the next admissible stage")
     declared_path, rel = _repo_file(
-        ledger, global_product_authority_path, label="global product qualification V4 authority"
+        ledger, global_product_authority_path, label="global product qualification V5 authority"
     )
     peer_path, _ = _repo_file(ledger, peer_family_p19_path, label="peer family P19 evidence root")
     own_p19_path, _, _ = _stage_evidence_file(ledger, stage="P19_SEALED")
     registry_path, _ = _repo_file(ledger, source_registry_path, label="canonical source authority registry")
     policy_path, _ = _repo_file(ledger, p19_verifier_policy_path, label="P19 verifier trust policy")
     try:
-        declared = verify_global_product_qualification_authority_v4_document(declared_path)
+        declared = verify_global_product_qualification_authority_v5_document(declared_path)
         own = verify_family_p19_evidence_root_document(own_p19_path)
         peer = verify_family_p19_evidence_root_document(peer_path)
-        rebuilt = build_global_product_qualification_authority_v4(
+        rebuilt = build_global_product_qualification_authority_v5(
             repository_root=ledger.repository_root,
             source_registry_path=registry_path,
             family_p19_paths=(own_p19_path, peer_path),
@@ -105,17 +105,17 @@ def close_product_qualified(
             p19_verifier_policy_path=policy_path,
         )
     except RuntimeError as exc:
-        raise ClosureError("global two-family product qualification V4 replay failed") from exc
+        raise ClosureError("global two-family product qualification V5 replay failed") from exc
     if own.get("family_id") == peer.get("family_id"):
         raise ClosureError("PRODUCT_QUALIFIED requires two distinct canonical workload families")
     if rebuilt.authority_digest != declared.get("authority_digest"):
-        raise ClosureError("declared global V4 authority differs from frozen-trust two-family recomputation")
+        raise ClosureError("declared global V5 authority differs from portable two-family recomputation")
     if not rebuilt.product_qualified or not rebuilt.all_family_p19_externally_verified:
-        raise ClosureError("global V4 product qualification evidence/verification record is incomplete")
+        raise ClosureError("global V5 product qualification evidence/verification record is incomplete")
     if rebuilt.production_control_authorized:
         raise ClosureError("PRODUCT_QUALIFIED cannot imply production control authorization")
     if rebuilt.repository_commit != ledger.repo_commit or rebuilt.repository_tree != ledger.repo_tree:
-        raise ClosureError("global V4 authority repository identity differs from promotion ledger")
+        raise ClosureError("global V5 authority repository identity differs from promotion ledger")
     artifact = EvidenceArtifact(path=rel, sha256=sha256_file(declared_path), minimum_bytes=2)
     return ledger.advance(StageExecution(
         stage="PRODUCT_QUALIFIED",
