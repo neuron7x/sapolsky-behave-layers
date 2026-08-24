@@ -22,7 +22,7 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V2"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V3"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
 
@@ -145,7 +145,11 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
 
 def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple[set[str], set[str]]:
     report = load_p19_verification_report(_safe_file(root, report_rel), repository_root=root)
-    collected = {report_rel}
+    collected = {
+        report_rel,
+        _safe_rel(report.get("verification_plan_path"), label="P19 verification plan path"),
+        _safe_rel(report.get("verifier_entrypoint_path"), label="P19 verifier entrypoint path"),
+    }
     empty_allowed: set[str] = set()
     checks = report.get("checks")
     if not isinstance(checks, list) or not checks:
@@ -186,6 +190,7 @@ class QualifiedEvidenceBundleAuthority:
     execution_source_file_count: int
     packaging_evidence_file_count: int
     raw_p19_verification_transcripts_included: bool
+    frozen_verification_plan_and_entrypoint_included: bool
     all_required_subjects_git_bound: bool
     evidence_graph_complete: bool
     authority_digest: str
@@ -290,6 +295,7 @@ def build_qualified_evidence_bundle_authority(
         "execution_source_file_count": source_count,
         "packaging_evidence_file_count": evidence_count,
         "raw_p19_verification_transcripts_included": True,
+        "frozen_verification_plan_and_entrypoint_included": True,
         "all_required_subjects_git_bound": True,
         "evidence_graph_complete": True,
     }
@@ -306,6 +312,7 @@ def build_qualified_evidence_bundle_authority(
         execution_source_file_count=source_count,
         packaging_evidence_file_count=evidence_count,
         raw_p19_verification_transcripts_included=True,
+        frozen_verification_plan_and_entrypoint_included=True,
         all_required_subjects_git_bound=True,
         evidence_graph_complete=True,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
