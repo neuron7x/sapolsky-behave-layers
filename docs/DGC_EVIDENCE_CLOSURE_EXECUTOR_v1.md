@@ -1,55 +1,75 @@
-# DGC Evidence Closure Executor v3
+# DGC Evidence Closure Executor v4
 
-Status: engineering/research control; **not empirical product evidence**.
+Status: **engineering/research control; not empirical product evidence**.
 
-## Purpose
+This document is the current operational map for the DGC evidence-closure branch. A coded transition proves only that the declared validator accepted exact bound subjects under its explicit theorem/engineering assumptions. It never substitutes for the external observation required by that stage.
 
-Turn the external-evidence runbook into a fail-closed, source-bound stage ledger and eliminate stale-source, post-hoc-selection, leakage, self-replay and self-consistent-forgery failure modes. A coded transition proves only that the declared validator accepted the bound bytes under its explicit assumptions; it never substitutes for the external observation required by that stage.
+## 1. Scientific stage chain
 
-## Canonical stage chain
+```text
+SOURCE_VERIFIED
+→ MATERIALIZED_VERIFIED
+→ EXECUTION_MANIFESTS_FROZEN
+→ CCF_SPEC_FROZEN
+→ GENERALIZATION_REGISTRY_FROZEN
+→ FAULT_INJECTION_SPEC_FROZEN
+→ B2_FITTED
+→ HARNESS_FROZEN
+→ TRIAL_SIZED
+→ GENERATION_ROOT_FROZEN
+→ CONFIRMATORY_EXECUTED
+→ P9_SUPPORTED
+→ GENERALIZATION_SUPPORTED
+→ FAULT_TOLERANCE_SUPPORTED
+→ INDEPENDENT_REPLICATION_SUPPORTED
+→ P19_SEALED
+→ PRODUCT_QUALIFIED
+```
 
-`SOURCE_VERIFIED -> MATERIALIZED_VERIFIED -> EXECUTION_MANIFESTS_FROZEN -> CCF_SPEC_FROZEN -> GENERALIZATION_REGISTRY_FROZEN -> B2_FITTED -> HARNESS_FROZEN -> TRIAL_SIZED -> GENERATION_ROOT_FROZEN -> CONFIRMATORY_EXECUTED -> P9_SUPPORTED -> GENERALIZATION_SUPPORTED -> INDEPENDENT_REPLICATION_SUPPORTED -> P19_SEALED -> PRODUCT_QUALIFIED`.
+The order is part of the evidence contract. CCF, G1–G5, fault-injection semantics, statistical method and external-verifier trust policy must be frozen before outcome-bearing execution. B2 is calibration-only. Final scientific authorities cannot redefine the method after confirmatory observations exist.
 
-The ordering is intentional:
+## 2. Immutable execution identity: `T_exec`
 
-- non-baseline execution identities are frozen before outcome-bearing calibration;
-- CCF quantization/oracle semantics are frozen before outcomes;
-- G1-G5 evaluation identities are frozen before B2/confirmatory outcomes;
-- B2 is fitted only on calibration tasks;
-- the final B0-B3+DGC harness is frozen only after the fitted B2 identity exists;
-- replication occurs only after primary P9 and preregistered G1-G5 scientific gates pass.
+Every scientific stage in one generation is bound to one clean Git commit/tree:
 
-## Materialization authority
+```text
+T_exec = (repo_commit, repo_tree)
+```
 
-`MATERIALIZED_VERIFIED` is not granted by a receipt declaration. Import re-verifies the published generation:
+`_assert_repository_identity()` requires the checkout HEAD/tree to equal the ledger identity and requires a clean working tree. This is intentional: outcome-bearing execution must not occur while method source is moving.
 
-- SWE-bench parquet bytes are checked against the frozen SHA-256 and task population, then the workload seal and materialized authority are recomputed;
-- Terminal-Bench repository/task/dataset Git SHA-1 object identities are reconstructed directly from published bytes and POSIX executable/symlink modes after `.git` metadata has been removed;
-- canonical `SOURCE_VERIFIED` authority is reconstructed from the repository source registry;
-- `MATERIALIZED_VERIFIED` authority must equal `promote_materialized_verified(canonical_source_authority, recomputed_seal)`;
-- generation registry/materializer digests must match the exact DGC repository tree.
+The post-outcome release/package revision is a different subject and is described in §14.
 
-A self-consistent forged generation is therefore insufficient for promotion.
+## 3. Materialization authority
 
-## Three-way task partition
+`MATERIALIZED_VERIFIED` is not granted by a receipt declaration.
 
-The primary workload is partitioned deterministically before outcomes into three disjoint populations:
+Import re-verifies the published generation:
 
-1. calibration tasks;
-2. primary confirmatory tasks;
+- SWE-bench parquet bytes against frozen source SHA/task population, then recomputes workload seal/materialized authority;
+- Terminal-Bench Git repository/task/dataset identities from published bytes and Git object semantics;
+- canonical `SOURCE_VERIFIED` authority from the repository source registry;
+- materialized authority as `promote_materialized_verified(canonical_source_authority, recomputed_seal)`.
+
+A self-consistent forged generation is insufficient.
+
+## 4. Three-way task partition
+
+Before outcomes, the primary workload is deterministically partitioned into three pairwise-disjoint populations:
+
+1. calibration;
+2. primary confirmatory;
 3. G1 unseen-task holdout.
 
-The verifier reconstructs the split from the union task population and frozen fractions. A self-consistent but differently allocated partition is rejected.
+The verifier re-derives the split from the full task population and frozen fractions. B2 V2 may use only calibration examples and must explicitly forbid both downstream populations.
 
-B2 V2 requires examples to cover the exact calibration population and forbids both primary-confirmatory and G1 populations.
+## 5. Pre-outcome execution/CCF/generalization/fault freeze
 
-## Execution, CCF and G1-G5 preregistration
+`EXECUTION_MANIFESTS_FROZEN` content-addresses and semantically validates model, prompt, tools, environment/container digest, budget, pricing snapshot, scorer, statistical plan and all five governance arms.
 
-`EXECUTION_MANIFESTS_FROZEN` content-addresses and semantically validates model, prompt, tools, environment/container digest, hard budget, pricing snapshot, scorer, statistical plan and the five governance-policy arms. Mutable aliases and non-digest container tags are rejected.
+`CCF_SPEC_FROZEN` binds the exact quantizer implementation and oracle semantics before outcomes.
 
-`CCF_SPEC_FROZEN` binds the exact quantizer implementation and counterfactual-oracle semantics before outcomes.
-
-`GENERALIZATION_REGISTRY_FROZEN` binds exact G1-G5 definitions before B2:
+`GENERALIZATION_REGISTRY_FROZEN` binds the five no-retuning axes:
 
 - G1 unseen tasks;
 - G2 unseen domain;
@@ -57,104 +77,234 @@ B2 V2 requires examples to cover the exact calibration population and forbids bo
 - G4 changed economics/pricing;
 - G5 perturbation shift.
 
-The registry binds B0/B1/B2/B3/DGC semantic roles to the baseline-panel SSOT, the source/materialization identities for each axis, the paired-randomness semantics and no-retuning rule.
+`FAULT_INJECTION_SPEC_FROZEN` binds the required failure matrix before outcomes. Fault tolerance is therefore not allowed to become a post-hoc set of convenient chaos cases.
 
-## B2 and final harness
+## 6. B2 and final harness
 
 `B2_FITTED` requires exact calibration-only coverage, exact forbidden downstream populations and deterministic fit-receipt recomputation.
 
-`HARNESS_FROZEN` binds an executable-frozen B0-B3 panel containing the authorized fitted B2 model and exactly five policy arms. All arms share one controlled-comparison frame and differ only in governance policy identity.
+`HARNESS_FROZEN` binds B0/B1/B2/B3/DGC semantic role identities, the authorized fitted B2 model, final confirmatory task identity, scorer/execution manifests and CCF/generalization lineage.
 
-## Trial sizing boundary
+No operator-supplied post-hoc arm relabeling is accepted.
 
-Cluster-aware sizing remains a conservative **planning authority**, not the final inference theorem. It is useful for task-superpopulation/resource reasoning and prevents within-task repeats from being represented as new task diversity.
+## 7. Trial sizing is planning, not the theorem
 
-A separate empirical-Bernstein planning solver estimates the repetition count needed for a target confidence width using a calibration variance proxy. Its unbiased sample-variance ceiling is `L^2/2` when calibration sample size is not supplied; Popoviciu's `L^2/4` population ceiling is not incorrectly applied to an `n-1` sample variance.
+Cluster-aware sizing and empirical-Bernstein width planning remain **planning authorities only**.
 
-Both sizing systems remain planning-only. Final statistical promotion is recomputed from observed confirmatory data.
+They may estimate required resources from calibration variance proxies. They do not constitute final scientific evidence and cannot authorize P9.
 
-## Confirmatory execution authority
+The final primary statistical gate is V5.1 anytime-valid average-conditional-mean inference plus exact frozen-panel facts.
 
-The confirmatory subject must contain the complete frozen `task × policy × replicate` population, replayable result/evidence bytes, physical-cost evidence and coordinator audit chain. Missing, duplicate, quarantined, substituted or extra work units prevent `CONFIRMATORY_EXECUTED`.
+## 8. Confirmatory execution authority
 
-## P9 statistical authority
+The confirmatory subject must expose the complete frozen `task × policy × replicate` population plus replayable result/evidence bytes, audit chain and physical-cost subjects.
 
-P9 deliberately keeps two evidence statements separate.
+Missing, duplicate, extra, quarantined or substituted units prevent `CONFIRMATORY_EXECUTED`.
 
-### Exact frozen-panel fact
+Physical cost is a separate authority domain. Coordinator budget-meter values do not substitute for the ten-component all-in cost certificate used in product economics.
 
-`EXACT_FROZEN_FINITE_PANEL_PARETO_V1` deterministically checks the complete executed paired panel against every B0-B3 baseline:
+## 9. P9 V5.1 statistical authority
 
-- mean physical cost gain `baseline - DGC > 0`;
-- mean quality gain `DGC - baseline >= -quality_margin`;
-- mean catastrophic-regret gain `baseline - DGC >= -catastrophic_margin`.
+P9 keeps two different propositions separate.
 
-This statement contains no probability or generalization semantics.
+### 9.1 Exact frozen-panel fact
 
-### Conditional bounded expected-effect support
+For each B0–B3 baseline and the complete executed panel:
 
-`MAURER_PONTIL_THEOREM_11_EMPIRICAL_BERNSTEIN_LOWER_V1` uses the full paired `task × replicate` population and variance-sensitive one-sided empirical-Bernstein lower bounds. The confidence statement is explicitly conditional on the frozen cross-pair provider stochastic-independence assumption.
+```text
+mean(cost_baseline - cost_DGC) > 0
+mean(quality_DGC - quality_baseline) >= -quality_margin
+mean(regret_baseline - regret_DGC) >= -catastrophic_margin
+```
 
-The machine verifies paired seed schedules, unique provider request IDs and complete paired coverage. It does not claim to prove provider-internal stochastic independence; `randomness_assumption_verified=false` remains explicit unless external evidence establishes more.
+This is deterministic arithmetic about the exact executed panel. It contains no population/generalization probability claim.
 
-### P9 stage semantics
+### 9.2 Anytime-valid average-conditional-mean evidence
 
-`P9_SUPPORTED` requires **all** of:
+Primary inference uses Howard–Ramdas–McAuliffe–Sekhon Theorem 4 composed with the exact polynomial-stitching Eq. (10) boundary for a bounded adapted sequence.
+
+Target:
+
+```text
+(1/t) Σ E[X_i | F_{i-1}]
+```
+
+The precommitted order is deterministic. The primary claim does not require iid observations or provider-request independence.
+
+V5.1 pins the exact theorem/runtime identity, including the reference binary64 `zeta(1.4)` value and boundary-parameter digest. Historical V4/V5 generations are retained as archives and cannot authorize current promotion.
+
+Primary multiplicity is frozen across:
+
+```text
+2 workload families × 4 baselines × 3 endpoints = 24 claims
+```
+
+### 9.3 P9 stage semantics
+
+`P9_SUPPORTED` requires all of:
 
 - exact-panel success;
-- empirical-Bernstein lower-bound success under the frozen assumption;
-- complete ten-component physical-cost accounting;
-- exact multiplicity allocation;
-- complete CCF headroom audit;
-- raw-subject replay and lineage equality.
+- V5.1 anytime lower-bound support;
+- full paired coverage;
+- ten-component physical-cost verification;
+- frozen multiplicity allocation;
+- CCF audit completeness;
+- exact raw-subject/lineage replay.
 
-Neither component can rescue the other. A favorable exact point estimate with a failed confidence bound is not `P9_SUPPORTED`, and a confidence procedure cannot rescue an unfavorable exact panel.
+A favorable point estimate cannot rescue a failed confidence gate and vice versa.
 
-See `docs/DGC_PRODUCT_STATISTICAL_PLAN_v3.md` and `docs/DGC_STATISTICAL_AUTHORITY_V3.md`.
+Current math SSOT:
 
-## G1-G5 scientific authority
+- `artifacts/dgc-product-v1/PREREGISTRATION.md`
+- `docs/DGC_PRODUCT_STATISTICAL_PLAN_v5.md`
+- `docs/DGC_STATISTICAL_AUTHORITY_v5.md`
+- `docs/DGC_THEOREM_AUDIT_v5.md`
 
-Each G1-G5 axis uses the same exact + bounded-inference conjunction:
+## 10. G1–G5 scientific authority
 
-- exact frozen-axis panel result;
-- empirical-Bernstein lower-bound result under frozen randomness assumptions;
-- materialized source authority replay;
-- exact five policy arms, tasks and repetitions;
-- full physical-cost evidence;
-- no policy retuning.
+Each axis uses the same claim separation:
 
-`GENERALIZATION_SUPPORTED` requires both evidence components on **every** preregistered G1-G5 axis. This supports only those five frozen shift panels and is not a universal-generalization statement.
+- exact frozen shift-panel fact;
+- V5.1 anytime average-conditional-mean support;
+- exact materialized source/model/pricing/perturbation identity required by that axis;
+- exact five-arm population and repetitions;
+- physical-cost evidence;
+- no retuning.
 
-## Independent replication authority
+Per workload family the preregistered G family contains:
 
-The old replication boolean contract is not used for stage promotion.
+```text
+5 axes × 4 baselines × 3 endpoints = 60 claims
+family FWER = 0.05
+```
 
-`INDEPENDENT_REPLICATION_SUPPORTED` requires a fresh external replay of the primary P9 core package after primary P9 + G1-G5 support:
+`GENERALIZATION_SUPPORTED` requires support on every frozen axis. It is evidence for those five defined shifts, not universal generalization.
 
-1. the same frozen harness, confirmatory task identity, statistical plan and CCF spec;
-2. a newly recomputed raw execution/physical-cost/CCF subject;
-3. a replica P9 scientific PASS under the same frozen assumptions;
-4. fresh execution population, execution bundle, physical-cost population and CCF-evidence population digests distinct from the primary run;
-5. a canonical external attestation signed through `ssh-keygen -Y` under namespace `dgc-independent-replication-v1`;
-6. the signature receipt binds the attestation, signature, allowed-signers file and exact `ssh-keygen` executable bytes.
+At the final two-family AND claim, the composition rule is explicitly intersection–union; the per-family G error budget is verified by the Global authority.
 
-The signed attestation states unchanged methodology, no author control over execution/result selection and raw-result disclosure.
+## 11. Fault-tolerance authority
 
-Important claim boundary:
+`FAULT_TOLERANCE_SUPPORTED` is not a boolean chaos-test declaration.
 
-- cryptographic signature possession is machine-verifiable;
-- fresh execution provenance is machine-verifiable;
-- methodology identity is machine-verifiable;
-- the social truth of the signer's independence is **externally attested, not machine-proven**.
+Each frozen case requires typed injection evidence, raw artifact binding, a state-transition witness and an evidence-bound audit event. Required fault classes include provider/tool/scorer/budget/distributed-control/evidence-corruption failures.
 
-Therefore every replication authority must keep `social_independence_machine_proven=false`. The system refuses to convert a social assertion into a fake technical proof.
+The verifier requires complete case coverage, no unauthorized promotion, no budget bypass, no duplicate side-effect commit and only preregistered safe terminal/recovery outcomes.
 
-## Research handoff transport
+## 12. Independent replication
 
-`scripts/make_dgc_research_handoff.py` exports blobs directly from a Git commit rather than from the mutable working tree. This prevents a handoff from advertising a new HEAD while packaging stale source bytes.
+Promotion does not use the legacy boolean replication contract.
 
-## Claim boundary
+Independent replication requires:
 
-None of these controls establish a real external effect until the frozen workloads are actually materialized and executed. They do not establish universal superiority, customer economics, production safety or production control authority.
+- same frozen methodology;
+- fresh execution/result population;
+- fresh physical-cost population;
+- fresh CCF evidence population;
+- reproduced scientific P9;
+- signed external replication attestation.
 
-`PRODUCT_QUALIFIED=false` remains mandatory until the real external chain, signed fresh replication, P19 sealing and downstream operational gates are actually satisfied.
+Machine-verifiable properties include cryptographic signature possession, fresh subject identities and methodology equality.
+
+The social fact of replicator independence remains externally attested:
+
+```text
+social_independence_machine_proven = false
+```
+
+The system refuses to convert a social assertion into a fake technical theorem.
+
+## 13. Family P19 and Global V4
+
+Each canonical workload family receives its own P19 evidence root. One family cannot authorize a global product claim.
+
+Global qualification requires exactly:
+
+```text
+P19(SWE_BENCH_VERIFIED)
+AND
+P19(TERMINAL_BENCH_2_1)
+```
+
+Both family roots must use the same repository/methodology/statistical theorem identity and must have external semantic-replay attestations.
+
+The external verifier trust store is **not caller-supplied**. `P19_VERIFIER_TRUST_POLICY_V2` is frozen before outcomes and requires at least two distinct verifier principals and at least two distinct signer key materials; one key aliased under two names cannot satisfy the separation rule.
+
+`GLOBAL_PRODUCT_QUALIFICATION_AUTHORITY_V4` binds the Global V3 evidence composition to the frozen trust policy.
+
+`PRODUCT_QUALIFICATION_POINTER_V2` is the terminal replay index. It does not trust a standalone green Global V4 JSON: it rebuilds Global V4 from the disclosed P19/reports/attestations/signatures/policy and checks the terminal ledger receipt.
+
+Current canonical policy/pointer are unconfigured and `activation=false`; therefore product qualification remains unreachable until real external evidence and signer identities exist.
+
+## 14. Post-outcome packaging identity: `T_pkg`
+
+Scientific closure ends under `T_exec`. Evidence packaging happens later under a descendant Git revision `T_pkg`.
+
+Canonical lifecycle:
+
+```text
+freeze method/trust policy
+→ commit T_exec
+→ execute/close all scientific stages while HEAD stays T_exec
+→ ledger reaches PRODUCT_QUALIFIED under T_exec
+→ create T_pkg
+→ add disclosed evidence + activate Pointer V2
+→ verify append-only T_exec→T_pkg delta
+→ derive graph-complete qualified bundle
+→ deterministic double-build release
+```
+
+`DGC_EVIDENCE_PACKAGING_AUTHORITY_V1` permits only approved evidence-only additions and exact non-method terminal metadata modifications. It rejects source/methodology mutation, deletion, type/mode changes, symlinks/special objects and ambiguous paths.
+
+`DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V1` derives required release files from the actual Pointer/P19/Global-V4 evidence graph. Every required file must be either:
+
+1. `EXECUTION_SOURCE_T0` — identical Git blob in `T_exec` and `T_pkg`; or
+2. `PACKAGING_EVIDENCE_T1` — approved tracked append-only evidence in `T_pkg`.
+
+Untracked raw evidence, mutated source anchors and post-hoc files outside evidence namespaces fail closed.
+
+See `docs/DGC_RELEASE_PROVENANCE_v1.md`.
+
+## 15. Deterministic release
+
+A qualified release has two distinct archive roles:
+
+- `dgc-execution-source-<T_exec>.tar.gz` — generated directly from immutable Git objects with normalized UID/GID/mtime/modes; gitlinks and escaping/absolute symlinks are rejected;
+- `dgc-packaging-evidence-<T_pkg>.tar.gz` — tracked evidence/metadata from the packaging revision; symlinks/non-regular files are rejected.
+
+The release also emits:
+
+- `DGC_EVIDENCE_PACKAGING_AUTHORITY.json`;
+- `DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY.json`;
+- `DGC_RELEASE_MANIFEST.json`;
+- `SHA256SUMS`.
+
+Product-tag release executes the **product-qualified build twice** and requires byte-identical outputs before producing the final artifact.
+
+No SLSA conformance level is claimed:
+
+```text
+slsa_conformance_claim = false
+```
+
+## 16. Product is not production
+
+Even a valid two-family product-qualified package does not establish production control authority.
+
+Separate downstream obligations remain for production-provider traces, shadow mode, bounded canary, sustained operational monitoring and applicable client/operational evidence.
+
+```text
+PRODUCT_QUALIFIED != PRODUCTION_CONTROL_AUTHORIZED
+```
+
+## 17. Current claim boundary
+
+None of this control machinery establishes a real effect until the frozen external workloads are actually materialized and executed.
+
+Current mandatory truth remains:
+
+```text
+PRODUCT_QUALIFIED = false
+PRODUCTION_CONTROL_AUTHORIZED = false
+```
+
+Real external P9, G1–G5, fault campaign, independent replication, two P19 roots and external P19 verification remain empirical obligations, not implementation claims.
