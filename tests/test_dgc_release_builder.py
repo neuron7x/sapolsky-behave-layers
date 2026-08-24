@@ -76,7 +76,7 @@ def _patch_git_and_tracking(monkeypatch, root, files):
     monkeypatch.setattr(mod, "deterministic_git_archive_gz", fake_git_archive)
 
 
-def _qualified_tuple(*, raw_transcripts: bool = True):
+def _qualified_tuple(*, raw_transcripts: bool = True, plan_entrypoint: bool = True, portable_v5: bool = True):
     qualification = SimpleNamespace(
         pointer_digest="1" * 64,
         generation_id="generation-1",
@@ -85,21 +85,22 @@ def _qualified_tuple(*, raw_transcripts: bool = True):
         ledger_path="artifacts/ledger.json",
         ledger_sha256="2" * 64,
         ledger_tip_receipt_digest="3" * 64,
-        global_v4_authority_path="artifacts/global-v4.json",
-        global_v4_authority_sha256="4" * 64,
-        global_v4_authority_digest="5" * 64,
+        global_v5_authority_path="artifacts/global-v5.json",
+        global_v5_authority_sha256="4" * 64,
+        global_v5_authority_digest="5" * 64,
     )
     packaging = SimpleNamespace(document={
-        "schema": "DGC_EVIDENCE_PACKAGING_AUTHORITY_V1",
+        "schema": "DGC_EVIDENCE_PACKAGING_AUTHORITY_V2",
         "qualified_execution_commit": "c" * 40,
         "qualified_execution_tree": "d" * 40,
         "packaging_commit": "a" * 40,
         "packaging_tree": "b" * 40,
+        "global_v5_authority_digest": "5" * 64,
         "protected_execution_source_unchanged": True,
         "authority_digest": "6" * 64,
     })
     bundle_doc = {
-        "schema": "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V2",
+        "schema": "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V4",
         "qualified_execution_commit": "c" * 40,
         "qualified_execution_tree": "d" * 40,
         "packaging_commit": "a" * 40,
@@ -107,6 +108,9 @@ def _qualified_tuple(*, raw_transcripts: bool = True):
         "evidence_graph_complete": True,
         "all_required_subjects_git_bound": True,
         "raw_p19_verification_transcripts_included": raw_transcripts,
+        "frozen_verification_plan_and_entrypoint_included": plan_entrypoint,
+        "portable_global_v5_authority_included": portable_v5,
+        "global_v5_authority_digest": "5" * 64,
         "authority_digest": "7" * 64,
     }
     bundle = SimpleNamespace(
@@ -114,6 +118,8 @@ def _qualified_tuple(*, raw_transcripts: bool = True):
         evidence_graph_complete=True,
         all_required_subjects_git_bound=True,
         raw_p19_verification_transcripts_included=raw_transcripts,
+        frozen_verification_plan_and_entrypoint_included=plan_entrypoint,
+        portable_global_v5_authority_included=portable_v5,
     )
     return qualification, packaging, bundle
 
@@ -134,7 +140,7 @@ def test_all_green_legacy_booleans_cannot_authorize_product_release_without_grap
     assert manifest["production_control_authorized"] is False
 
 
-def test_require_product_qualified_fails_when_graph_replay_is_unavailable(tmp_path, monkeypatch):
+def test_require_product_qualified_fails_when_portable_graph_replay_is_unavailable(tmp_path, monkeypatch):
     root, files = _release_root(tmp_path)
     _patch_git_and_tracking(monkeypatch, root, files)
     monkeypatch.setattr(
@@ -142,30 +148,48 @@ def test_require_product_qualified_fails_when_graph_replay_is_unavailable(tmp_pa
         "build_qualified_evidence_bundle_authority",
         lambda **kwargs: (_ for _ in ()).throw(RuntimeError("unconfigured")),
     )
-    with pytest.raises(RuntimeError, match="self-contained raw P19 verifier transcripts"):
+    with pytest.raises(RuntimeError, match="portable Global-V5 replay"):
         mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
 
 
-def test_product_release_requires_terminal_packaging_graph_and_raw_transcript_authorities(tmp_path, monkeypatch):
+def test_product_release_requires_portable_v5_packaging_graph_transcript_and_plan(tmp_path, monkeypatch):
     root, files = _release_root(tmp_path)
     _patch_git_and_tracking(monkeypatch, root, files)
     qualification, packaging, bundle = _qualified_tuple()
     monkeypatch.setattr(mod, "build_qualified_evidence_bundle_authority", lambda **kwargs: (qualification, packaging, bundle))
     manifest = mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
-    assert manifest["schema"] == "DGC_DETERMINISTIC_RESEARCH_RELEASE_V5"
+    assert manifest["schema"] == "DGC_DETERMINISTIC_RESEARCH_RELEASE_V6"
     assert manifest["product_qualified"] is True
-    assert manifest["release_authority"] == "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_RAW_VERIFIER_TRANSCRIPT_V2"
+    assert manifest["release_authority"] == "PRODUCT_QUALIFIED_PORTABLE_GLOBAL_V5_T0_T1_GRAPH_COMPLETE_V1"
+    assert manifest["portable_global_v5_required_for_product_claim"] is True
     assert manifest["self_contained_raw_p19_verification_transcript_required_for_product_claim"] is True
-    assert manifest["qualified_evidence_bundle_authority"]["raw_p19_verification_transcripts_included"] is True
+    assert manifest["frozen_verification_plan_and_entrypoint_required_for_product_claim"] is True
+    assert manifest["environment_specific_signature_tool_receipt_is_product_authority"] is False
+    assert manifest["qualification_authority"]["global_v5_authority_digest"] == "5" * 64
+    assert manifest["qualified_evidence_bundle_authority"]["portable_global_v5_authority_included"] is True
     assert manifest["production_control_authorized"] is False
 
 
-def test_graph_complete_without_raw_verifier_transcript_cannot_authorize_release(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("raw_transcripts", "plan_entrypoint", "portable_v5"),
+    [
+        (False, True, True),
+        (True, False, True),
+        (True, True, False),
+    ],
+)
+def test_missing_any_portable_terminal_bundle_invariant_blocks_product_release(
+    tmp_path, monkeypatch, raw_transcripts, plan_entrypoint, portable_v5
+):
     root, files = _release_root(tmp_path)
     _patch_git_and_tracking(monkeypatch, root, files)
-    qualification, packaging, bundle = _qualified_tuple(raw_transcripts=False)
+    qualification, packaging, bundle = _qualified_tuple(
+        raw_transcripts=raw_transcripts,
+        plan_entrypoint=plan_entrypoint,
+        portable_v5=portable_v5,
+    )
     monkeypatch.setattr(mod, "build_qualified_evidence_bundle_authority", lambda **kwargs: (qualification, packaging, bundle))
-    with pytest.raises(RuntimeError, match="self-contained raw P19 verifier transcripts"):
+    with pytest.raises(RuntimeError, match="portable graph/transcript/verification-plan invariants"):
         mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
 
 
