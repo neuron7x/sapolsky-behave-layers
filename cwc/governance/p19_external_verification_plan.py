@@ -10,6 +10,7 @@ from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
 
 SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2"
+PLAN_GENERATION = "PRE_OUTCOME_EXTERNAL_VERIFICATION_PLAN_V2"
 CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
 ENTRYPOINT = "scripts/dgc_external_p19_verifier.py"
 REQUIRED_IMPLEMENTATION_DEPENDENCIES = (
@@ -34,6 +35,77 @@ def _safe_rel(value: object, *, label: str) -> str:
     if not text or text != text.strip() or text.startswith("/") or ".." in Path(text).parts or "\\" in text:
         raise P19ExternalVerificationPlanError(f"{label} must be canonical repository-relative path")
     return text
+
+
+def _required_regular_file(root: Path, rel: str, *, label: str) -> Path:
+    path = root / rel
+    if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
+        raise P19ExternalVerificationPlanError(f"{label} missing/invalid")
+    resolved = path.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise P19ExternalVerificationPlanError(f"{label} escapes repository") from exc
+    return resolved
+
+
+def build_inactive_p19_external_verification_plan_document(
+    *,
+    repository_root: Path,
+    implemented_check_ids: Sequence[str],
+) -> dict[str, object]:
+    """Build canonical Plan V2 bytes from the current verifier implementation.
+
+    This builder is intentionally incapable of authorizing activation. A future
+    activation path must consume separate executable-regression evidence rather
+    than converting source-code presence into a verification claim.
+    """
+    root = Path(repository_root).resolve()
+    declared = tuple(str(value) for value in implemented_check_ids)
+    if len(declared) != len(set(declared)) or set(declared) != REQUIRED_CHECKS:
+        raise P19ExternalVerificationPlanError(
+            "inactive Plan V2 builder requires exact unique implemented check population"
+        )
+
+    entry = _required_regular_file(root, ENTRYPOINT, label="external verification entrypoint")
+    dependencies: list[dict[str, object]] = []
+    for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
+        path = _required_regular_file(root, rel, label=f"external verifier dependency {rel}")
+        dependencies.append({
+            "path": rel,
+            "sha256": sha256_file(path),
+            "bytes": path.stat().st_size,
+        })
+
+    contracts = [
+        {
+            "check_id": check_id,
+            "method_id": CHECK_METHOD_IDS[check_id],
+            "command_template": [
+                "python", ENTRYPOINT, "--check-id", check_id,
+                "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
+            ],
+            "implementation_status": "IMPLEMENTED",
+        }
+        for check_id in sorted(REQUIRED_CHECKS)
+    ]
+    payload = {
+        "plan_generation": PLAN_GENERATION,
+        "frozen_pre_outcome": True,
+        "activation_authorized": False,
+        "verifier_entrypoint_path": ENTRYPOINT,
+        "verifier_entrypoint_sha256": sha256_file(entry),
+        "verifier_dependency_manifest_digest": sha256_bytes(canonical_json_bytes(dependencies)),
+        "verifier_dependencies": dependencies,
+        "check_contracts": contracts,
+        "all_check_implementations_complete": True,
+        "product_qualification_authorized": False,
+    }
+    return {
+        "schema": SCHEMA,
+        **payload,
+        "plan_digest": sha256_bytes(canonical_json_bytes(payload)),
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,9 +139,7 @@ def _verify_dependencies(root: Path, rows: object) -> tuple[dict[str, object], .
         rel = _safe_rel(row.get("path"), label="verifier dependency")
         if rel != expected:
             raise P19ExternalVerificationPlanError("external verifier dependency path differs from canonical manifest")
-        path = root / rel
-        if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
-            raise P19ExternalVerificationPlanError("external verifier dependency missing/invalid")
+        path = _required_regular_file(root, rel, label="external verifier dependency")
         digest = _sha("verifier dependency sha256", row.get("sha256"))
         size = int(row.get("bytes", -1))
         if size <= 0 or path.stat().st_size != size or sha256_file(path) != digest:
@@ -113,6 +183,8 @@ def load_p19_external_verification_plan(
     digest = _sha("plan_digest", doc.get("plan_digest"))
     if sha256_bytes(canonical_json_bytes(payload)) != digest:
         raise P19ExternalVerificationPlanError("external verification plan digest mismatch")
+    if doc.get("plan_generation") != PLAN_GENERATION:
+        raise P19ExternalVerificationPlanError("external verification plan generation mismatch")
     if doc.get("frozen_pre_outcome") is not True:
         raise P19ExternalVerificationPlanError("external verification plan must be frozen pre-outcome")
     if doc.get("product_qualification_authorized") is not False:
@@ -121,9 +193,7 @@ def load_p19_external_verification_plan(
     entry_rel = _safe_rel(doc.get("verifier_entrypoint_path"), label="verifier entrypoint")
     if entry_rel != ENTRYPOINT:
         raise P19ExternalVerificationPlanError("external verification entrypoint differs from canonical path")
-    entry = root / entry_rel
-    if entry.is_symlink() or not entry.is_file() or entry.stat().st_size <= 0:
-        raise P19ExternalVerificationPlanError("external verification entrypoint missing/invalid")
+    entry = _required_regular_file(root, entry_rel, label="external verification entrypoint")
     entry_sha = _sha("verifier_entrypoint_sha256", doc.get("verifier_entrypoint_sha256"))
     if sha256_file(entry) != entry_sha:
         raise P19ExternalVerificationPlanError("external verification entrypoint bytes differ from frozen plan")
@@ -180,7 +250,7 @@ def load_p19_external_verification_plan(
         raise P19ExternalVerificationPlanError("external verification plan is not activated")
 
     return P19ExternalVerificationPlan(
-        plan_generation=str(doc.get("plan_generation", "")),
+        plan_generation=PLAN_GENERATION,
         frozen_pre_outcome=True,
         activation_authorized=active,
         verifier_entrypoint_path=entry_rel,
