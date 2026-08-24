@@ -14,6 +14,11 @@ from cwc.governance.p19_evidence_root import (
     build_family_p19_evidence_root,
     verify_family_p19_evidence_root_document,
 )
+from cwc.governance.p19_verifier_policy import (
+    CANONICAL_POLICY_PATH,
+    load_p19_verifier_trust_policy,
+    resolve_allowed_signers,
+)
 from cwc.governance.qualification_closure import _stage_evidence_file
 
 
@@ -29,6 +34,19 @@ def _repo_file(ledger: EvidenceClosureLedger, value: Path, *, label: str) -> tup
     if not resolved.is_file():
         raise ClosureError(f"{label} must be a regular file")
     return resolved, rel.as_posix()
+
+
+def _with_frozen_trust_store(
+    source: FamilyP19VerificationInput,
+    *,
+    allowed_signers_path: Path,
+) -> FamilyP19VerificationInput:
+    return FamilyP19VerificationInput(
+        attestation_path=Path(source.attestation_path),
+        verification_report_path=Path(source.verification_report_path),
+        signature_path=Path(source.signature_path),
+        allowed_signers_path=Path(allowed_signers_path),
+    )
 
 
 def close_p19_sealed(
@@ -76,6 +94,7 @@ def close_product_qualified(
     source_registry_path: Path,
     own_p19_verification_input: FamilyP19VerificationInput,
     peer_p19_verification_input: FamilyP19VerificationInput,
+    p19_verifier_policy_path: Path = Path(CANONICAL_POLICY_PATH),
     identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
 ) -> dict[str, object]:
     identity_checker(ledger)
@@ -87,7 +106,16 @@ def close_product_qualified(
     peer_path, _ = _repo_file(ledger, peer_family_p19_path, label="peer family P19 evidence root")
     own_p19_path, _, _ = _stage_evidence_file(ledger, stage="P19_SEALED")
     registry_path, _ = _repo_file(ledger, source_registry_path, label="canonical source authority registry")
+    policy_path, _ = _repo_file(ledger, p19_verifier_policy_path, label="P19 verifier trust policy")
     try:
+        policy = load_p19_verifier_trust_policy(policy_path)
+        allowed_signers = resolve_allowed_signers(policy, repository_root=ledger.repository_root)
+        own_input = _with_frozen_trust_store(
+            own_p19_verification_input, allowed_signers_path=allowed_signers
+        )
+        peer_input = _with_frozen_trust_store(
+            peer_p19_verification_input, allowed_signers_path=allowed_signers
+        )
         declared = verify_global_product_qualification_authority_document(declared_path)
         own = verify_family_p19_evidence_root_document(own_p19_path)
         peer = verify_family_p19_evidence_root_document(peer_path)
@@ -95,15 +123,22 @@ def close_product_qualified(
             repository_root=ledger.repository_root,
             source_registry_path=registry_path,
             family_p19_paths=(own_p19_path, peer_path),
-            family_p19_verification_inputs=(
-                own_p19_verification_input,
-                peer_p19_verification_input,
-            ),
+            family_p19_verification_inputs=(own_input, peer_input),
         )
     except RuntimeError as exc:
         raise ClosureError("global two-family product qualification replay/attestation failed") from exc
     if own.get("family_id") == peer.get("family_id"):
         raise ClosureError("PRODUCT_QUALIFIED requires two distinct canonical workload families")
+    principals = {row.verifier_principal for row in rebuilt.family_p19_verification_records}
+    if len(principals) < policy.minimum_distinct_verifiers:
+        raise ClosureError("PRODUCT_QUALIFIED requires distinct frozen-trust verifier principals for both families")
+    if policy.same_verifier_across_families_allowed:
+        raise ClosureError("P19 verifier trust policy illegally permits one verifier across both families")
+    if any(
+        row.allowed_signers_sha256 != policy.allowed_signers_sha256
+        for row in rebuilt.family_p19_verification_records
+    ):
+        raise ClosureError("P19 verification used a trust store different from the frozen verifier policy")
     if rebuilt.authority_digest != declared.get("authority_digest"):
         raise ClosureError("declared global product authority differs from two-family P19 recomputation")
     if not rebuilt.product_qualified or not rebuilt.all_family_p19_externally_verified:
