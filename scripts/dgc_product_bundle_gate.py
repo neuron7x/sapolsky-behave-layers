@@ -20,6 +20,15 @@ def main() -> int:
     if not bundle.raw_p19_verification_transcripts_included:
         print("DGC-PRODUCT-BUNDLE-GATE: FAIL raw-p19-verification-transcripts-missing")
         return 1
+    if not bundle.frozen_verification_plan_and_entrypoint_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL frozen-verification-plan-or-entrypoint-missing")
+        return 1
+    if not bundle.portable_global_v5_authority_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL portable-global-v5-authority-missing")
+        return 1
+    if bundle.global_v5_authority_digest != qualification.global_v5_authority_digest:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL global-v5-lineage-mismatch")
+        return 1
     if bundle.qualified_execution_commit != qualification.repo_commit:
         print("DGC-PRODUCT-BUNDLE-GATE: FAIL execution-source-lineage-mismatch")
         return 1
@@ -29,13 +38,15 @@ def main() -> int:
 
     print("DGC-PRODUCT-BUNDLE-COMPLETE: true")
     print("DGC-PRODUCT-BUNDLE-RAW-P19-VERIFICATION-TRANSCRIPTS: true")
+    print("DGC-PRODUCT-BUNDLE-FROZEN-VERIFICATION-PLAN-ENTRYPOINT: true")
+    print("DGC-PRODUCT-BUNDLE-PORTABLE-GLOBAL-V5: true")
     print(f"DGC-PRODUCT-BUNDLE-AUTHORITY: {bundle.authority_digest}")
     print(f"DGC-PRODUCT-BUNDLE-MANIFEST: {bundle.required_file_manifest_digest}")
     print(f"DGC-PRODUCT-BUNDLE-EXECUTION-SOURCE-FILES: {bundle.execution_source_file_count}")
     print(f"DGC-PRODUCT-BUNDLE-PACKAGING-EVIDENCE-FILES: {bundle.packaging_evidence_file_count}")
     print(f"DGC-QUALIFIED-EXECUTION-COMMIT: {bundle.qualified_execution_commit}")
     print(f"DGC-EVIDENCE-PACKAGING-COMMIT: {bundle.packaging_commit}")
-    print("DGC-PRODUCT-BUNDLE-GATE: PASS graph-derived qualified evidence bundle")
+    print("DGC-PRODUCT-BUNDLE-GATE: PASS portable graph-derived qualified evidence bundle")
     return 0
 
 
