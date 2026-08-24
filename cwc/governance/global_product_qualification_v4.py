@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 from cwc.governance.global_product_qualification import (
     GLOBAL_STATISTICAL_COMPOSITION_RULE,
@@ -12,10 +11,7 @@ from cwc.governance.global_product_qualification import (
     build_global_product_qualification_authority as build_v3_global_authority,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
-from cwc.governance.p19_verification_attestation import (
-    P19VerificationSignatureReceipt,
-    verify_ssh_signed_p19_verification_attestation,
-)
+from cwc.governance.p19_verification_attestation import verify_ssh_signed_p19_verification_attestation
 from cwc.governance.p19_verifier_policy import (
     CANONICAL_POLICY_PATH,
     load_p19_verifier_trust_policy,
@@ -67,6 +63,7 @@ class GlobalProductQualificationAuthorityV4:
             "global_product_qualification_authorized": self.product_qualified,
             "frozen_verifier_trust_policy_required": True,
             "external_p19_semantic_replay_attestation_required": True,
+            "self_contained_p19_verification_transcript_required": True,
             "social_independence_machine_proven": False,
             "production_provider_trace_supported": False,
             "shadow_mode_qualified": False,
@@ -100,6 +97,14 @@ def build_global_product_qualification_authority_v4(
     except RuntimeError as exc:
         raise GlobalProductQualificationV4Error("frozen P19 verifier trust policy is not execution-ready") from exc
 
+    # Canonical V2 verification must re-hash raw transcript subjects against the explicit
+    # repository root. Custom injected verifiers retain the narrower V3 callable contract.
+    if p19_attestation_verifier is verify_ssh_signed_p19_verification_attestation:
+        def effective_verifier(**kwargs):
+            return verify_ssh_signed_p19_verification_attestation(repository_root=root, **kwargs)
+    else:
+        effective_verifier = p19_attestation_verifier
+
     v3_inputs = tuple(
         V3FamilyP19VerificationInput(
             attestation_path=Path(item.attestation_path),
@@ -115,7 +120,7 @@ def build_global_product_qualification_authority_v4(
             source_registry_path=Path(source_registry_path),
             family_p19_paths=family_p19_paths,
             family_p19_verification_inputs=v3_inputs,
-            p19_attestation_verifier=p19_attestation_verifier,
+            p19_attestation_verifier=effective_verifier,
         )
     except RuntimeError as exc:
         raise GlobalProductQualificationV4Error("V3 evidence aggregation/P19 verification failed") from exc
@@ -201,6 +206,8 @@ def verify_global_product_qualification_authority_v4_document(path: Path) -> dic
         raise GlobalProductQualificationV4Error("global product V4 omitted frozen verifier trust policy")
     if doc.get("external_p19_semantic_replay_attestation_required") is not True:
         raise GlobalProductQualificationV4Error("global product V4 omitted external P19 replay attestation")
+    if doc.get("self_contained_p19_verification_transcript_required") is not True:
+        raise GlobalProductQualificationV4Error("global product V4 omitted self-contained verifier transcript requirement")
     if doc.get("social_independence_machine_proven") is not False:
         raise GlobalProductQualificationV4Error("global product V4 cannot claim machine-proven social independence")
     if doc.get("production_control_authorized") is not False:
