@@ -6,11 +6,19 @@ import pytest
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
+    BOUNDARY_C,
     BOUNDARY_METHOD,
+    BOUNDARY_PARAMETER_DIGEST,
     CONFSEQ_REFERENCE_COMMIT,
+    ETA,
     METHOD,
     PREDICTOR_RULE,
+    S,
+    V_MIN,
+    ZETA_S,
+    ZETA_S_HEX,
     average_conditional_mean_bound,
+    boundary_parameter_payload,
     certify_multi_baseline_anytime_valid,
     polynomial_stitching_boundary,
 )
@@ -44,6 +52,27 @@ def test_polynomial_stitching_matches_authors_confseq_reference_vector():
     assert observed == pytest.approx(64.48755, abs=1e-5)
 
 
+def test_boundary_parameter_identity_matches_author_reference_binary64():
+    # boost::math::zeta(1.4) on the pinned confseq implementation path is
+    # frozen by its binary64 hex representation, not by a rounded decimal string.
+    assert ZETA_S_HEX == "0x1.8d8292bd8c3a6p+1"
+    assert ZETA_S.hex() == ZETA_S_HEX
+    assert ZETA_S == 3.105547277977581
+    assert ETA == 2.0
+    assert S == 1.4
+    assert V_MIN == 1.0
+    assert BOUNDARY_C == 1.0
+    assert BOUNDARY_PARAMETER_DIGEST == "4deabb17370edfc770b7612235ee9dfddf932dfc21e894161fb2757ea45a1329"
+    assert boundary_parameter_payload() == {
+        "eta": 2.0,
+        "s": 1.4,
+        "v_min": 1.0,
+        "c": 1.0,
+        "zeta_s_binary64_hex": "0x1.8d8292bd8c3a6p+1",
+    }
+    assert BOUNDARY_PARAMETER_DIGEST[:16] in BOUNDARY_METHOD
+
+
 def test_terminal_slice_matches_exact_polynomial_stitching_formula():
     result = average_conditional_mean_bound(
         (0.1,) * 1000,
@@ -66,12 +95,10 @@ def test_removed_v1_shortcut_was_anti_conservative_and_cannot_return():
     # the canonical square root. This regression test makes that mutation visible.
     v = 1.0
     crossing_alpha = 0.01
-    log_eta = math.log(2.0)
-    s = 1.4
-    zeta_s = 3.1055472779775815
-    ell = s * math.log(math.log(2.0 * v)) + math.log(zeta_s / (crossing_alpha * (log_eta ** s)))
-    k1 = (2.0 ** 0.25 + 2.0 ** -0.25) / math.sqrt(2.0)
-    k2 = (math.sqrt(2.0) + 1.0) / 2.0
+    log_eta = math.log(ETA)
+    ell = S * math.log(math.log(ETA * v)) + math.log(ZETA_S / (crossing_alpha * (log_eta ** S)))
+    k1 = (ETA ** 0.25 + ETA ** -0.25) / math.sqrt(2.0)
+    k2 = (math.sqrt(ETA) + 1.0) / 2.0
     invalid_shortcut = k1 * math.sqrt(v * ell) + k2 * ell
     canonical = polynomial_stitching_boundary(v, crossing_alpha=crossing_alpha)
     assert canonical > invalid_shortcut
