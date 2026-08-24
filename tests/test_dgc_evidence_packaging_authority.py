@@ -31,7 +31,7 @@ def _repo(tmp_path: Path) -> tuple[Path, str, str]:
     (root / "cwc/governance").mkdir(parents=True)
     (root / "artifacts/dgc-product-v1").mkdir(parents=True)
     (root / "cwc/governance/kernel.py").write_text("VALUE = 1\n", encoding="utf-8")
-    (root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json").write_text(
+    (root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json").write_text(
         '{"activation_authorized":false}\n', encoding="utf-8"
     )
     (root / "artifacts/dgc-product-v1/evidence_status.json").write_text(
@@ -49,9 +49,9 @@ def _qualification(commit: str, tree: str) -> VerifiedProductQualificationPointe
         repo_tree=tree,
         ledger_path="eval_bundle/ledger.json",
         ledger_sha256="1" * 64,
-        global_v4_authority_path="eval_bundle/global-v4.json",
-        global_v4_authority_sha256="2" * 64,
-        global_v4_authority_digest="3" * 64,
+        global_v5_authority_path="eval_bundle/global-v5.json",
+        global_v5_authority_sha256="2" * 64,
+        global_v5_authority_digest="3" * 64,
         source_registry_path="artifacts/dgc-product-v1/external_source_authority.json",
         family_p19_paths=("eval_bundle/swe-p19.json", "eval_bundle/terminal-p19.json"),
         p19_verifier_policy_path="artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
@@ -62,7 +62,7 @@ def _qualification(commit: str, tree: str) -> VerifiedProductQualificationPointe
 
 def test_append_only_evidence_packaging_can_follow_frozen_execution_revision(tmp_path: Path):
     root, execution_commit, execution_tree = _repo(tmp_path)
-    pointer = root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json"
+    pointer = root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
     pointer.write_text('{"activation_authorized":true}\n', encoding="utf-8")
     evidence = root / "artifacts/dgc-product-v1/generated/final.json"
     evidence.parent.mkdir(parents=True)
@@ -77,6 +77,7 @@ def test_append_only_evidence_packaging_can_follow_frozen_execution_revision(tmp
     assert authority.packaging_commit == packaging_commit
     assert authority.qualified_execution_tree != authority.packaging_tree
     assert authority.protected_execution_source_unchanged is True
+    assert authority.global_v5_authority_digest == "3" * 64
     assert {row.status for row in authority.delta_rows} == {"A", "M"}
     assert authority.slsa_conformance_claim is False
 
@@ -144,7 +145,7 @@ def test_post_outcome_ambiguous_control_character_path_is_rejected(tmp_path: Pat
 
 def test_approved_pointer_cannot_change_git_mode(tmp_path: Path):
     root, execution_commit, execution_tree = _repo(tmp_path)
-    pointer = root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json"
+    pointer = root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
     pointer.write_text('{"activation_authorized":true}\n', encoding="utf-8")
     pointer.chmod(0o755)
     _commit(root, "illegal pointer mode change")
