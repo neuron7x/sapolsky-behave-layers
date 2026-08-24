@@ -115,6 +115,33 @@ def test_added_file_outside_evidence_namespaces_fails_closed(tmp_path: Path):
         )
 
 
+def test_post_outcome_evidence_symlink_is_rejected_even_inside_allowed_namespace(tmp_path: Path):
+    root, execution_commit, execution_tree = _repo(tmp_path)
+    generated = root / "artifacts/dgc-product-v1/generated"
+    generated.mkdir(parents=True)
+    (generated / "target.json").write_text("{}\n", encoding="utf-8")
+    (generated / "alias.json").symlink_to("target.json")
+    _commit(root, "symlink evidence")
+    with pytest.raises(EvidencePackagingAuthorityError, match="symlink/special mode rejected"):
+        build_evidence_packaging_authority(
+            repository_root=root,
+            qualification=_qualification(execution_commit, execution_tree),
+        )
+
+
+def test_post_outcome_ambiguous_control_character_path_is_rejected(tmp_path: Path):
+    root, execution_commit, execution_tree = _repo(tmp_path)
+    generated = root / "artifacts/dgc-product-v1/generated"
+    generated.mkdir(parents=True)
+    (generated / "bad\tname.json").write_text("{}\n", encoding="utf-8")
+    _commit(root, "ambiguous evidence path")
+    with pytest.raises(EvidencePackagingAuthorityError, match="forbidden control/ambiguous character"):
+        build_evidence_packaging_authority(
+            repository_root=root,
+            qualification=_qualification(execution_commit, execution_tree),
+        )
+
+
 def test_approved_pointer_cannot_change_git_mode(tmp_path: Path):
     root, execution_commit, execution_tree = _repo(tmp_path)
     pointer = root / "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json"
