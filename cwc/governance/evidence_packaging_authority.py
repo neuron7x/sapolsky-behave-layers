@@ -10,6 +10,7 @@ from cwc.governance.product_qualification_pointer import VerifiedProductQualific
 
 SCHEMA = "DGC_EVIDENCE_PACKAGING_AUTHORITY_V1"
 DELTA_POLICY = "DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V1"
+REGULAR_BLOB_MODES = frozenset({"100644", "100755"})
 
 # These files are mirrors/terminal packaging metadata, never scientific-method authority.
 ALLOWED_MUTABLE_EXACT = frozenset({
@@ -68,6 +69,19 @@ def _git(
         raise EvidencePackagingAuthorityError(f"git command failed: {' '.join(args)}") from exc
 
 
+def _canonical_delta_path(path: str) -> str:
+    if not path or path != path.strip():
+        raise EvidencePackagingAuthorityError("packaging delta path must not contain surrounding whitespace")
+    if any(ch in path for ch in ("\x00", "\n", "\r", "\t", "\\")):
+        raise EvidencePackagingAuthorityError("packaging delta path contains forbidden control/ambiguous character")
+    if path.startswith("/") or "//" in path or path.endswith("/"):
+        raise EvidencePackagingAuthorityError("packaging delta path is not canonical repository-relative form")
+    parts = path.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        raise EvidencePackagingAuthorityError("packaging delta path contains non-canonical component")
+    return path
+
+
 def _allowed_add(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in ALLOWED_ADDED_PREFIXES)
 
@@ -82,14 +96,15 @@ def _parse_name_status_z(raw: str) -> tuple[tuple[str, str], ...]:
     rows: list[tuple[str, str]] = []
     for index in range(0, len(parts), 2):
         status = parts[index].strip()
-        path = parts[index + 1]
-        if not status or not path or "\n" in path or "\r" in path:
+        path = _canonical_delta_path(parts[index + 1])
+        if not status:
             raise EvidencePackagingAuthorityError("malformed packaging delta row")
         rows.append((status, path))
     return tuple(rows)
 
 
 def _tree_entry(root: Path, commit: str, path: str, *, runner: Runner) -> tuple[str, str]:
+    path = _canonical_delta_path(path)
     proc = _git(root, ("ls-tree", commit, "--", path), runner=runner)
     line = proc.stdout.rstrip("\n")
     if not line or "\t" not in line:
@@ -99,6 +114,10 @@ def _tree_entry(root: Path, commit: str, path: str, *, runner: Runner) -> tuple[
     if len(fields) != 3 or fields[1] != "blob" or observed_path != path:
         raise EvidencePackagingAuthorityError(f"unsupported/non-blob packaging tree entry: {path}")
     mode, _, oid = fields
+    if mode not in REGULAR_BLOB_MODES:
+        raise EvidencePackagingAuthorityError(
+            f"post-outcome packaging requires regular Git files; symlink/special mode rejected: {mode} {path}"
+        )
     _oid("blob oid", oid)
     return mode, oid
 
