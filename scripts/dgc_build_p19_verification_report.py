@@ -24,25 +24,29 @@ def _write_immutable(path: Path, payload: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build one canonical external P19 verification report from exactly eight canonical check receipts."
+        description="Build one canonical self-contained external P19 verification report from exactly eight V2 check receipts."
     )
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--p19", required=True)
     parser.add_argument("--check-receipt", action="append", default=[], required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
+    root = args.root.resolve()
     p19 = verify_family_p19_evidence_root_document(Path(args.p19))
     report = build_p19_verification_report(
+        repository_root=root,
         family_p19=p19,
         check_receipt_paths=tuple(Path(value) for value in args.check_receipt),
     )
     output = Path(args.output)
     _write_immutable(output, report_bytes(report))
     print(json.dumps({
-        "status": "PASS_REPORT_BUILT_NOT_ATTESTED",
+        "status": "PASS_REPORT_V2_BUILT_NOT_ATTESTED",
         "family_id": p19["family_id"],
         "p19_digest": p19["p19_digest"],
         "checks_digest": report["checks_digest"],
+        "raw_transcript_manifest_digest": report["raw_transcript_manifest_digest"],
         "required_check_count": len(report["checks"]),
         "verification_report": str(output),
         "external_signature_verified": False,
