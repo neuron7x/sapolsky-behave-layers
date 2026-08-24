@@ -115,17 +115,17 @@ def main() -> int:
         ) as exc:
             print(f"DGC-PRODUCT-GATE: FAIL terminal-qualification-or-packaging-replay: {exc}")
             return 1
-        print("DGC-PRODUCT-AUTHORITY: GLOBAL_V4_POINTER_V2_PLUS_APPEND_ONLY_PACKAGING_V1")
+        print("DGC-PRODUCT-AUTHORITY: GLOBAL_V5_POINTER_V3_PLUS_APPEND_ONLY_PACKAGING_V2")
         print("DGC-PRODUCT-QUALIFIED: true")
         print(f"DGC-PRODUCT-QUALIFICATION-POINTER: {verified.pointer_digest}")
-        print(f"DGC-PRODUCT-GLOBAL-V4: {verified.global_v4_authority_digest}")
+        print(f"DGC-PRODUCT-GLOBAL-V5: {verified.global_v5_authority_digest}")
         print(f"DGC-PRODUCT-LEDGER-TIP: {verified.ledger_tip_receipt_digest}")
         print(f"DGC-QUALIFIED-EXECUTION-COMMIT: {verified.repo_commit}")
         print(f"DGC-QUALIFIED-EXECUTION-TREE: {verified.repo_tree}")
         print(f"DGC-EVIDENCE-PACKAGING-COMMIT: {packaging_commit}")
         print(f"DGC-EVIDENCE-PACKAGING-TREE: {packaging_tree}")
         print(f"DGC-EVIDENCE-PACKAGING-AUTHORITY: {packaging.authority_digest}")
-        print("DGC-PRODUCT-GATE: PASS terminal qualification and append-only packaging replayed")
+        print("DGC-PRODUCT-GATE: PASS portable terminal qualification and append-only packaging replayed")
         return 0
 
     if args.require_stage is not None:
