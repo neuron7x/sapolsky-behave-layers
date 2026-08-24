@@ -75,8 +75,11 @@ jobs:
             tests/test_dgc_fault_injection_evidence.py \
             tests/test_dgc_independent_replication_authority_v4.py \
             tests/test_dgc_p19_verification_attestation.py \
+            tests/test_dgc_p19_verification_report.py \
+            tests/test_dgc_p19_verifier_policy.py \
             tests/test_dgc_p19_evidence_root.py \
-            tests/test_dgc_global_product_qualification.py
+            tests/test_dgc_global_product_qualification.py \
+            tests/test_dgc_global_product_qualification_v4.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
       - name: B2 fit receipt falsification gate
