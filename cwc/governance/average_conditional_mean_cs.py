@@ -9,23 +9,24 @@ from typing import Sequence
 
 from cwc.governance.pareto import PairedBaselineEvidence
 
-METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V2"
-BOUNDARY_METHOD = "HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V1"
+# Exact author-reference runtime identity for Howard et al. polynomial stitching.
+# The parameter digest binds every numeric constant that affects the boundary.
+ETA = 2.0
+S = 1.4
+V_MIN = 1.0
+BOUNDARY_C = 1.0
+# boost::math::zeta(1.4) at the pinned confseq reference path, frozen by binary64 hex.
+ZETA_S_HEX = "0x1.8d8292bd8c3a6p+1"
+ZETA_S = float.fromhex(ZETA_S_HEX)
+BOUNDARY_PARAMETER_DIGEST = "4deabb17370edfc770b7612235ee9dfddf932dfc21e894161fb2757ea45a1329"
+
+METHOD = "HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V3"
+BOUNDARY_METHOD = f"HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V2_{BOUNDARY_PARAMETER_DIGEST[:16]}"
 CLAIM_TARGET = "AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE"
 ASSUMPTION_BOUNDARY = "BOUNDED_ADAPTED_PROCESS_PREDICTABLE_CENTER_NO_IID_REQUIRED"
 SEQUENCE_ORDER_RULE = "TASK_ID_ASC_THEN_REPLICATE_ASC"
 PREDICTOR_RULE = "BETA_HALF_SMOOTHED_PREVISIBLE_MEAN_V1"
 CONFSEQ_REFERENCE_COMMIT = "5ffe733ca2447a2e28c2c91f3b00086173f2ab2c"
-
-# Howard, Ramdas, McAuliffe & Sekhon (Annals of Statistics, 2021):
-# Theorem 4 composes a sub-exponential uniform boundary with the predictable
-# squared-error process; Eq. (10) supplies the polynomial-stitching boundary.
-# eta=2 and s=1.4 are frozen pre-outcome protocol parameters.
-ETA = 2.0
-S = 1.4
-V_MIN = 1.0
-# zeta(1.4), frozen to IEEE-754 double precision for deterministic replay.
-ZETA_S = 3.1055472779775815
 
 
 def _digest(payload: object) -> str:
@@ -34,12 +35,26 @@ def _digest(payload: object) -> str:
     ).hexdigest()
 
 
+def boundary_parameter_payload() -> dict[str, object]:
+    """Canonical numeric identity for the frozen polynomial-stitching runtime."""
+    payload = {
+        "eta": ETA,
+        "s": S,
+        "v_min": V_MIN,
+        "c": BOUNDARY_C,
+        "zeta_s_binary64_hex": ZETA_S_HEX,
+    }
+    if _digest(payload) != BOUNDARY_PARAMETER_DIGEST:
+        raise RuntimeError("boundary parameter identity drift")
+    return payload
+
+
 def polynomial_stitching_boundary(
     variance_process: float,
     *,
     crossing_alpha: float,
     v_min: float = V_MIN,
-    c: float = 1.0,
+    c: float = BOUNDARY_C,
 ) -> float:
     """Exact Howard et al. Eq. (10) polynomial-stitching boundary.
 
@@ -47,6 +62,10 @@ def polynomial_stitching_boundary(
     ``CONFSEQ_REFERENCE_COMMIT``. ``crossing_alpha`` is the *one-boundary*
     crossing probability. Theorem 4 is two-sided, so callers targeting total
     interval error ``delta`` must pass ``crossing_alpha=delta/2``.
+
+    The default protocol parameters are content-identified by
+    ``BOUNDARY_PARAMETER_DIGEST``. Any parameter change must therefore change
+    the boundary method identity before outcome-bearing execution.
     """
     v = float(variance_process)
     crossing = float(crossing_alpha)
@@ -174,7 +193,7 @@ def average_conditional_mean_bound(
         variance_process,
         crossing_alpha=crossing_alpha,
         v_min=V_MIN,
-        c=1.0,
+        c=BOUNDARY_C,
     ) / len(values)
     center_scaled = fmean(scaled)
     lower_scaled = max(0.0, center_scaled - radius_scaled)
@@ -271,6 +290,7 @@ def certify_multi_baseline_anytime_valid(
             "catastrophic_support": row.catastrophic_gain_support,
             "sequence_order_rule": SEQUENCE_ORDER_RULE,
             "predictor_rule": PREDICTOR_RULE,
+            "boundary_parameter_digest": BOUNDARY_PARAMETER_DIGEST,
         })
     return AnytimeMultiBaselineCertificate(
         paired_task_digest=next(iter(paired_digests)),
