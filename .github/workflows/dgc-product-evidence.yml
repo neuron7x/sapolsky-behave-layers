@@ -65,7 +65,7 @@ jobs:
             tests/test_dgc_continuous_assurance.py \
             tests/test_dgc_combinatorial_coverage.py \
             tests/test_dgc_release_builder.py
-      - name: V5.1 theorem and evidence-closure regression
+      - name: V5.1 theorem and portable evidence-closure regression
         run: |
           PYTHONPATH=. python -m pytest -q \
             tests/test_dgc_average_conditional_mean_cs.py \
@@ -81,9 +81,11 @@ jobs:
             tests/test_dgc_p19_evidence_root.py \
             tests/test_dgc_global_product_qualification.py \
             tests/test_dgc_global_product_qualification_v4.py \
+            tests/test_dgc_global_product_qualification_v5.py \
             tests/test_dgc_product_qualification_pointer.py \
             tests/test_dgc_evidence_packaging_authority.py \
             tests/test_dgc_qualified_evidence_bundle.py \
+            tests/test_dgc_qualified_evidence_bundle_v3.py \
             tests/test_dgc_deterministic_git_snapshot.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
@@ -121,11 +123,11 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
-      - name: Require PRODUCT_QUALIFIED terminal replay
+      - name: Require PRODUCT_QUALIFIED portable terminal replay
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
-      - name: Require graph-derived qualified evidence bundle and raw P19 verifier transcripts
+      - name: Require graph-derived qualified evidence bundle, verifier transcript and frozen plan
         run: PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
       - name: Require deterministic product-qualified double-build
         run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py --require-product-qualified
-      - name: Build exact product-qualified DGC release
+      - name: Build exact portable product-qualified DGC release
         run: PYTHONPATH=. python scripts/make_dgc_release.py --out dist/dgc-release --require-product-qualified
