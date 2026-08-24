@@ -40,6 +40,8 @@ def _fixture(tmp_path: Path, monkeypatch):
     subprocess.run(["git", "-C", str(root), "config", "user.name", "DGC Test"], check=True)
 
     _write(root, "cwc/governance/method.py", "METHOD = 'frozen'\n")
+    _write(root, "scripts/dgc_external_p19_verifier.py", "print('verify')\n")
+    _write(root, "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/external_source_authority.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json", "{}\n")
     allowed = _write(
@@ -47,11 +49,11 @@ def _fixture(tmp_path: Path, monkeypatch):
         "artifacts/dgc-product-v1/trust/allowed_signers",
         "verifier-a ssh-ed25519 AAAAKEYA\nverifier-b ssh-ed25519 AAAAKEYB\n",
     )
-    _write(root, "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json", "{}\n")
+    _write(root, "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json", "{}\n")
     execution_commit = _commit(root, "execution source")
     execution_tree = _git(root, "rev-parse", "HEAD^{tree}")
 
-    _write(root, "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json", '{"active":true}\n')
+    _write(root, "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json", '{"active":true}\n')
     for family in ("swe", "terminal"):
         _write(root, f"artifacts/dgc-product-v1/generated/{family}/p19.json", "{}\n")
         _write(root, f"artifacts/dgc-product-v1/generated/{family}/attestation.json", "{}\n")
@@ -65,7 +67,7 @@ def _fixture(tmp_path: Path, monkeypatch):
         stderr.write_bytes(b"")
         _write(root, f"artifacts/dgc-product-v1/generated/{family}/verify/evidence.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/generated/ledger.json", "{}\n")
-    _write(root, "artifacts/dgc-product-v1/generated/global-v4.json", "{}\n")
+    _write(root, "artifacts/dgc-product-v1/generated/global-v5.json", "{}\n")
     packaging_commit = _commit(root, "package evidence")
     packaging_tree = _git(root, "rev-parse", "HEAD^{tree}")
 
@@ -94,9 +96,9 @@ def _fixture(tmp_path: Path, monkeypatch):
         pointer_digest="1" * 64,
         ledger_path="artifacts/dgc-product-v1/generated/ledger.json",
         ledger_sha256="2" * 64,
-        global_v4_authority_path="artifacts/dgc-product-v1/generated/global-v4.json",
-        global_v4_authority_sha256="3" * 64,
-        global_v4_authority_digest="4" * 64,
+        global_v5_authority_path="artifacts/dgc-product-v1/generated/global-v5.json",
+        global_v5_authority_sha256="3" * 64,
+        global_v5_authority_digest="4" * 64,
         source_registry_path="artifacts/dgc-product-v1/external_source_authority.json",
         family_p19_paths=tuple(pointer_doc["family_p19_paths"]),
         p19_verifier_policy_path="artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
@@ -122,13 +124,15 @@ def _fixture(tmp_path: Path, monkeypatch):
         family = "swe" if "swe" in path.as_posix() else "terminal"
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         return {
+            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json",
+            "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
             "checks": [{
                 "check_id": "REPOSITORY_IDENTITY",
                 "receipt_path": f"{base}/receipt.json",
                 "stdout_path": f"{base}/stdout.bin",
                 "stderr_path": f"{base}/stderr.bin",
                 "evidence_path": f"{base}/evidence.json",
-            }]
+            }],
         }
 
     monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
@@ -141,11 +145,15 @@ def test_qualified_bundle_derives_source_packaging_and_verifier_transcript_roles
     qualification, packaging, authority = build_qualified_evidence_bundle_authority(repository_root=root)
     assert authority.evidence_graph_complete is True
     assert authority.raw_p19_verification_transcripts_included is True
+    assert authority.frozen_verification_plan_and_entrypoint_included is True
+    assert authority.portable_global_v5_authority_included is True
     assert authority.all_required_subjects_git_bound is True
     assert authority.qualified_execution_commit == qualification.repo_commit
     assert authority.packaging_commit == packaging.packaging_commit
     roles = {row.path: row for row in authority.required_files}
     assert roles["cwc/governance/method.py"].role == ROLE_EXECUTION_SOURCE
+    assert roles["scripts/dgc_external_p19_verifier.py"].role == ROLE_EXECUTION_SOURCE
+    assert roles["artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"].role == ROLE_EXECUTION_SOURCE
     assert roles["artifacts/dgc-product-v1/generated/swe/p19.json"].role == ROLE_PACKAGING_EVIDENCE
     assert roles["artifacts/dgc-product-v1/generated/swe/verify/stderr.bin"].bytes == 0
 
@@ -177,13 +185,17 @@ def test_untracked_verifier_transcript_cannot_be_hidden_behind_signed_report(tmp
         family = "swe" if "swe" in path.as_posix() else "terminal"
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         evidence = f"{base}/untracked-evidence.json" if family == "swe" else f"{base}/evidence.json"
-        return {"checks": [{
-            "check_id": "REPOSITORY_IDENTITY",
-            "receipt_path": f"{base}/receipt.json",
-            "stdout_path": f"{base}/stdout.bin",
-            "stderr_path": f"{base}/stderr.bin",
-            "evidence_path": evidence,
-        }]}
+        return {
+            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json",
+            "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
+            "checks": [{
+                "check_id": "REPOSITORY_IDENTITY",
+                "receipt_path": f"{base}/receipt.json",
+                "stdout_path": f"{base}/stdout.bin",
+                "stderr_path": f"{base}/stderr.bin",
+                "evidence_path": evidence,
+            }],
+        }
 
     monkeypatch.setattr(qeb, "load_p19_verification_report", fake_report)
     assert untracked.is_file()
