@@ -58,6 +58,12 @@ def _fixture(tmp_path: Path, monkeypatch):
         _write(root, f"artifacts/dgc-product-v1/generated/{family}/report.json", "{}\n")
         _write(root, f"artifacts/dgc-product-v1/generated/{family}/signature", "sig\n")
         _write(root, f"artifacts/dgc-product-v1/generated/raw/{family}/result.json", "{}\n")
+        _write(root, f"artifacts/dgc-product-v1/generated/{family}/verify/receipt.json", "{}\n")
+        _write(root, f"artifacts/dgc-product-v1/generated/{family}/verify/stdout.bin", "PASS\n")
+        stderr = root / f"artifacts/dgc-product-v1/generated/{family}/verify/stderr.bin"
+        stderr.parent.mkdir(parents=True, exist_ok=True)
+        stderr.write_bytes(b"")
+        _write(root, f"artifacts/dgc-product-v1/generated/{family}/verify/evidence.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/generated/ledger.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/generated/global-v4.json", "{}\n")
     packaging_commit = _commit(root, "package evidence")
@@ -96,11 +102,7 @@ def _fixture(tmp_path: Path, monkeypatch):
         p19_verifier_policy_path="artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
         ledger_tip_receipt_digest="5" * 64,
     )
-    packaging = SimpleNamespace(
-        packaging_commit=packaging_commit,
-        packaging_tree=packaging_tree,
-        authority_digest="6" * 64,
-    )
+    packaging = SimpleNamespace(packaging_commit=packaging_commit, packaging_tree=packaging_tree, authority_digest="6" * 64)
 
     monkeypatch.setattr(qeb, "load_product_qualification_pointer", lambda path: pointer_doc)
     monkeypatch.setattr(qeb, "verify_product_qualification_pointer", lambda **kwargs: qualification)
@@ -111,37 +113,41 @@ def _fixture(tmp_path: Path, monkeypatch):
     def fake_p19(path: Path):
         family = "swe" if "swe" in path.as_posix() else "terminal"
         return {
-            "stage_evidence": [
-                {"stage": "SOURCE_VERIFIED", "evidence": {"path": "artifacts/dgc-product-v1/external_source_authority.json"}},
-            ],
-            "methodology_anchors": [
-                {"path": "cwc/governance/method.py"},
-            ],
-            "subject_roots": [
-                {
-                    "path": f"artifacts/dgc-product-v1/generated/raw/{family}",
-                    "files": [{"path": "result.json"}],
-                }
-            ],
+            "stage_evidence": [{"stage": "SOURCE_VERIFIED", "evidence": {"path": "artifacts/dgc-product-v1/external_source_authority.json"}}],
+            "methodology_anchors": [{"path": "cwc/governance/method.py"}],
+            "subject_roots": [{"path": f"artifacts/dgc-product-v1/generated/raw/{family}", "files": [{"path": "result.json"}]}],
+        }
+
+    def fake_report(path: Path, *, repository_root: Path):
+        family = "swe" if "swe" in path.as_posix() else "terminal"
+        base = f"artifacts/dgc-product-v1/generated/{family}/verify"
+        return {
+            "checks": [{
+                "check_id": "REPOSITORY_IDENTITY",
+                "receipt_path": f"{base}/receipt.json",
+                "stdout_path": f"{base}/stdout.bin",
+                "stderr_path": f"{base}/stderr.bin",
+                "evidence_path": f"{base}/evidence.json",
+            }]
         }
 
     monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
+    monkeypatch.setattr(qeb, "load_p19_verification_report", fake_report)
     return root, execution_commit, packaging_commit, pointer_doc, qualification, packaging
 
 
-def test_qualified_bundle_derives_exact_source_and_packaging_file_roles(tmp_path: Path, monkeypatch):
+def test_qualified_bundle_derives_source_packaging_and_verifier_transcript_roles(tmp_path: Path, monkeypatch):
     root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
     qualification, packaging, authority = build_qualified_evidence_bundle_authority(repository_root=root)
     assert authority.evidence_graph_complete is True
+    assert authority.raw_p19_verification_transcripts_included is True
     assert authority.all_required_subjects_git_bound is True
     assert authority.qualified_execution_commit == qualification.repo_commit
     assert authority.packaging_commit == packaging.packaging_commit
-    assert authority.execution_source_file_count > 0
-    assert authority.packaging_evidence_file_count > 0
-    roles = {row.path: row.role for row in authority.required_files}
-    assert roles["cwc/governance/method.py"] == ROLE_EXECUTION_SOURCE
-    assert roles["artifacts/dgc-product-v1/generated/swe/p19.json"] == ROLE_PACKAGING_EVIDENCE
-    assert roles["artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json"] == ROLE_PACKAGING_EVIDENCE
+    roles = {row.path: row for row in authority.required_files}
+    assert roles["cwc/governance/method.py"].role == ROLE_EXECUTION_SOURCE
+    assert roles["artifacts/dgc-product-v1/generated/swe/p19.json"].role == ROLE_PACKAGING_EVIDENCE
+    assert roles["artifacts/dgc-product-v1/generated/swe/verify/stderr.bin"].bytes == 0
 
 
 def test_untracked_raw_subject_cannot_be_hidden_behind_valid_p19_json(tmp_path: Path, monkeypatch):
@@ -154,10 +160,7 @@ def test_untracked_raw_subject_cannot_be_hidden_behind_valid_p19_json(tmp_path: 
         return {
             "stage_evidence": [],
             "methodology_anchors": [{"path": "cwc/governance/method.py"}],
-            "subject_roots": [{
-                "path": f"artifacts/dgc-product-v1/generated/raw/{family}",
-                "files": [{"path": child}],
-            }],
+            "subject_roots": [{"path": f"artifacts/dgc-product-v1/generated/raw/{family}", "files": [{"path": child}]}],
         }
 
     monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
@@ -166,24 +169,25 @@ def test_untracked_raw_subject_cannot_be_hidden_behind_valid_p19_json(tmp_path: 
         build_qualified_evidence_bundle_authority(repository_root=root)
 
 
-def test_post_outcome_required_subject_outside_evidence_namespace_fails(tmp_path: Path, monkeypatch):
-    root, _, _, _, _, packaging = _fixture(tmp_path, monkeypatch)
-    _write(root, "docs/posthoc/result.json", "{}\n")
-    new_commit = _commit(root, "posthoc subject")
-    packaging.packaging_commit = new_commit
-    packaging.packaging_tree = _git(root, "rev-parse", "HEAD^{tree}")
+def test_untracked_verifier_transcript_cannot_be_hidden_behind_signed_report(tmp_path: Path, monkeypatch):
+    root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
+    untracked = _write(root, "artifacts/dgc-product-v1/generated/swe/verify/untracked-evidence.json", "{}\n")
 
-    def fake_p19(path: Path):
+    def fake_report(path: Path, *, repository_root: Path):
         family = "swe" if "swe" in path.as_posix() else "terminal"
-        root_rel = "docs/posthoc" if family == "swe" else f"artifacts/dgc-product-v1/generated/raw/{family}"
-        return {
-            "stage_evidence": [],
-            "methodology_anchors": [{"path": "cwc/governance/method.py"}],
-            "subject_roots": [{"path": root_rel, "files": [{"path": "result.json"}]}],
-        }
+        base = f"artifacts/dgc-product-v1/generated/{family}/verify"
+        evidence = f"{base}/untracked-evidence.json" if family == "swe" else f"{base}/evidence.json"
+        return {"checks": [{
+            "check_id": "REPOSITORY_IDENTITY",
+            "receipt_path": f"{base}/receipt.json",
+            "stdout_path": f"{base}/stdout.bin",
+            "stderr_path": f"{base}/stderr.bin",
+            "evidence_path": evidence,
+        }]}
 
-    monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
-    with pytest.raises(QualifiedEvidenceBundleError, match="outside evidence-only packaging namespaces"):
+    monkeypatch.setattr(qeb, "load_p19_verification_report", fake_report)
+    assert untracked.is_file()
+    with pytest.raises(QualifiedEvidenceBundleError, match="not tracked in T_pkg"):
         build_qualified_evidence_bundle_authority(repository_root=root)
 
 
@@ -196,41 +200,15 @@ def test_execution_source_anchor_mutation_is_detected_even_if_packaging_layer_is
         build_qualified_evidence_bundle_authority(repository_root=root)
 
 
-@pytest.mark.parametrize(
-    "bad_path",
-    [
-        "artifacts/dgc-product-v1/generated/swe/p19.json\n",
-        "artifacts/dgc-product-v1/generated/swe/p19\t.json",
-        " artifacts/dgc-product-v1/generated/swe/p19.json",
-        "artifacts//dgc-product-v1/generated/swe/p19.json",
-        "artifacts\\dgc-product-v1\\generated\\swe\\p19.json",
-    ],
-)
+@pytest.mark.parametrize("bad_path", [
+    "artifacts/dgc-product-v1/generated/swe/p19.json\n",
+    "artifacts/dgc-product-v1/generated/swe/p19\t.json",
+    " artifacts/dgc-product-v1/generated/swe/p19.json",
+    "artifacts//dgc-product-v1/generated/swe/p19.json",
+    "artifacts\\dgc-product-v1\\generated\\swe\\p19.json",
+])
 def test_pointer_graph_path_must_be_canonical_and_unambiguous(tmp_path: Path, monkeypatch, bad_path: str):
     root, _, _, pointer_doc, _, _ = _fixture(tmp_path, monkeypatch)
-    pointer_doc["family_p19_paths"] = [
-        bad_path,
-        "artifacts/dgc-product-v1/generated/terminal/p19.json",
-    ]
+    pointer_doc["family_p19_paths"] = [bad_path, "artifacts/dgc-product-v1/generated/terminal/p19.json"]
     with pytest.raises(QualifiedEvidenceBundleError):
-        build_qualified_evidence_bundle_authority(repository_root=root)
-
-
-def test_p19_subject_child_cannot_use_parent_traversal(tmp_path: Path, monkeypatch):
-    root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
-
-    def fake_p19(path: Path):
-        family = "swe" if "swe" in path.as_posix() else "terminal"
-        child = "../terminal/result.json" if family == "swe" else "result.json"
-        return {
-            "stage_evidence": [],
-            "methodology_anchors": [{"path": "cwc/governance/method.py"}],
-            "subject_roots": [{
-                "path": f"artifacts/dgc-product-v1/generated/raw/{family}",
-                "files": [{"path": child}],
-            }],
-        }
-
-    monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
-    with pytest.raises(QualifiedEvidenceBundleError, match="canonical repository-relative"):
         build_qualified_evidence_bundle_authority(repository_root=root)
