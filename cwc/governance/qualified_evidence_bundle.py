@@ -22,7 +22,7 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V3"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V4"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
 
@@ -183,7 +183,7 @@ class QualifiedEvidenceBundleAuthority:
     packaging_commit: str
     packaging_tree: str
     qualification_pointer_digest: str
-    global_v4_authority_digest: str
+    global_v5_authority_digest: str
     packaging_authority_digest: str
     required_files: tuple[QualifiedBundleFile, ...]
     required_file_manifest_digest: str
@@ -191,6 +191,7 @@ class QualifiedEvidenceBundleAuthority:
     packaging_evidence_file_count: int
     raw_p19_verification_transcripts_included: bool
     frozen_verification_plan_and_entrypoint_included: bool
+    portable_global_v5_authority_included: bool
     all_required_subjects_git_bound: bool
     evidence_graph_complete: bool
     authority_digest: str
@@ -219,7 +220,7 @@ def build_qualified_evidence_bundle_authority(
     required: set[str] = {
         _safe_rel(pointer_file.resolve().relative_to(root).as_posix(), label="qualification pointer"),
         _safe_rel(qualification.ledger_path, label="qualification ledger"),
-        _safe_rel(qualification.global_v4_authority_path, label="global V4 authority"),
+        _safe_rel(qualification.global_v5_authority_path, label="global V5 authority"),
         _safe_rel(qualification.source_registry_path, label="source registry"),
         _safe_rel(qualification.p19_verifier_policy_path, label="P19 verifier policy"),
     }
@@ -288,7 +289,7 @@ def build_qualified_evidence_bundle_authority(
         "packaging_commit": packaging.packaging_commit,
         "packaging_tree": packaging.packaging_tree,
         "qualification_pointer_digest": qualification.pointer_digest,
-        "global_v4_authority_digest": qualification.global_v4_authority_digest,
+        "global_v5_authority_digest": qualification.global_v5_authority_digest,
         "packaging_authority_digest": packaging.authority_digest,
         "required_files": manifest_rows,
         "required_file_manifest_digest": manifest_digest,
@@ -296,6 +297,7 @@ def build_qualified_evidence_bundle_authority(
         "packaging_evidence_file_count": evidence_count,
         "raw_p19_verification_transcripts_included": True,
         "frozen_verification_plan_and_entrypoint_included": True,
+        "portable_global_v5_authority_included": True,
         "all_required_subjects_git_bound": True,
         "evidence_graph_complete": True,
     }
@@ -305,7 +307,7 @@ def build_qualified_evidence_bundle_authority(
         packaging_commit=packaging.packaging_commit,
         packaging_tree=packaging.packaging_tree,
         qualification_pointer_digest=qualification.pointer_digest,
-        global_v4_authority_digest=qualification.global_v4_authority_digest,
+        global_v5_authority_digest=qualification.global_v5_authority_digest,
         packaging_authority_digest=packaging.authority_digest,
         required_files=ordered,
         required_file_manifest_digest=manifest_digest,
@@ -313,6 +315,7 @@ def build_qualified_evidence_bundle_authority(
         packaging_evidence_file_count=evidence_count,
         raw_p19_verification_transcripts_included=True,
         frozen_verification_plan_and_entrypoint_included=True,
+        portable_global_v5_authority_included=True,
         all_required_subjects_git_bound=True,
         evidence_graph_complete=True,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
