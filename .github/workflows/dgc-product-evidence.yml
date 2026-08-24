@@ -85,6 +85,7 @@ jobs:
             tests/test_dgc_global_product_qualification_v5.py \
             tests/test_dgc_product_qualification_pointer.py \
             tests/test_dgc_product_qualification_pointer_canonical.py \
+            tests/test_dgc_canonical_pointer_v3_state.py \
             tests/test_dgc_evidence_packaging_authority.py \
             tests/test_dgc_qualified_evidence_bundle.py \
             tests/test_dgc_qualified_evidence_bundle_v3.py \
