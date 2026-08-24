@@ -45,8 +45,9 @@ def test_verification_transcript_graph_includes_plan_entrypoint_and_raw_subjects
     }
 
 
-def test_bundle_v3_declares_plan_and_entrypoint_as_mandatory_graph_vertices():
-    assert qeb.SCHEMA == "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V3"
+def test_bundle_v4_declares_portable_global_v5_and_full_transcript_vertices():
+    assert qeb.SCHEMA == "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V4"
     fields = qeb.QualifiedEvidenceBundleAuthority.__dataclass_fields__
     assert "raw_p19_verification_transcripts_included" in fields
     assert "frozen_verification_plan_and_entrypoint_included" in fields
+    assert "portable_global_v5_authority_included" in fields
