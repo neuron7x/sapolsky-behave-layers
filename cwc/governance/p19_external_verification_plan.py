@@ -8,9 +8,12 @@ from typing import Mapping, Sequence
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
 
-SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V1"
-CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"
+SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2"
+CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
 ENTRYPOINT = "scripts/dgc_external_p19_verifier.py"
+REQUIRED_IMPLEMENTATION_DEPENDENCIES = (
+    "cwc/governance/p19_external_replay.py",
+)
 
 
 class P19ExternalVerificationPlanError(RuntimeError):
@@ -38,6 +41,8 @@ class P19ExternalVerificationPlan:
     activation_authorized: bool
     verifier_entrypoint_path: str
     verifier_entrypoint_sha256: str
+    verifier_dependency_manifest_digest: str
+    verifier_dependencies: tuple[dict[str, object], ...]
     check_contracts: tuple[dict[str, object], ...]
     all_check_implementations_complete: bool
     product_qualification_authorized: bool
@@ -48,6 +53,27 @@ class P19ExternalVerificationPlan:
         if len(matches) != 1:
             raise P19ExternalVerificationPlanError(f"missing/duplicate verification contract: {check_id}")
         return matches[0]
+
+
+def _verify_dependencies(root: Path, rows: object) -> tuple[dict[str, object], ...]:
+    if not isinstance(rows, list) or len(rows) != len(REQUIRED_IMPLEMENTATION_DEPENDENCIES):
+        raise P19ExternalVerificationPlanError("external verifier dependency population incomplete")
+    normalized: list[dict[str, object]] = []
+    for expected, row in zip(REQUIRED_IMPLEMENTATION_DEPENDENCIES, rows, strict=True):
+        if not isinstance(row, Mapping):
+            raise P19ExternalVerificationPlanError("external verifier dependency row malformed")
+        rel = _safe_rel(row.get("path"), label="verifier dependency")
+        if rel != expected:
+            raise P19ExternalVerificationPlanError("external verifier dependency path differs from canonical manifest")
+        path = root / rel
+        if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
+            raise P19ExternalVerificationPlanError("external verifier dependency missing/invalid")
+        digest = _sha("verifier dependency sha256", row.get("sha256"))
+        size = int(row.get("bytes", -1))
+        if size <= 0 or path.stat().st_size != size or sha256_file(path) != digest:
+            raise P19ExternalVerificationPlanError("external verifier dependency bytes differ from frozen plan")
+        normalized.append({"path": rel, "sha256": digest, "bytes": size})
+    return tuple(normalized)
 
 
 def load_p19_external_verification_plan(
@@ -74,7 +100,8 @@ def load_p19_external_verification_plan(
 
     payload_keys = (
         "plan_generation", "frozen_pre_outcome", "activation_authorized",
-        "verifier_entrypoint_path", "verifier_entrypoint_sha256", "check_contracts",
+        "verifier_entrypoint_path", "verifier_entrypoint_sha256",
+        "verifier_dependency_manifest_digest", "verifier_dependencies", "check_contracts",
         "all_check_implementations_complete", "product_qualification_authorized",
     )
     try:
@@ -98,6 +125,11 @@ def load_p19_external_verification_plan(
     entry_sha = _sha("verifier_entrypoint_sha256", doc.get("verifier_entrypoint_sha256"))
     if sha256_file(entry) != entry_sha:
         raise P19ExternalVerificationPlanError("external verification entrypoint bytes differ from frozen plan")
+
+    dependencies = _verify_dependencies(root, doc.get("verifier_dependencies"))
+    dependency_digest = _sha("verifier_dependency_manifest_digest", doc.get("verifier_dependency_manifest_digest"))
+    if sha256_bytes(canonical_json_bytes(list(dependencies))) != dependency_digest:
+        raise P19ExternalVerificationPlanError("external verifier dependency manifest digest mismatch")
 
     rows = doc.get("check_contracts")
     if not isinstance(rows, list) or len(rows) != len(REQUIRED_CHECKS):
@@ -149,6 +181,8 @@ def load_p19_external_verification_plan(
         activation_authorized=active,
         verifier_entrypoint_path=entry_rel,
         verifier_entrypoint_sha256=entry_sha,
+        verifier_dependency_manifest_digest=dependency_digest,
+        verifier_dependencies=dependencies,
         check_contracts=tuple(normalized),
         all_check_implementations_complete=complete,
         product_qualification_authorized=False,
