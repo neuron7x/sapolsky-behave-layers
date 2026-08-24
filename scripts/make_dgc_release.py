@@ -13,8 +13,9 @@ from cwc.governance.qualified_evidence_bundle import build_qualified_evidence_bu
 
 CRITICAL_PATHS = (
     "artifacts/dgc-product-v1/evidence_status.json",
-    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json",
+    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json",
     "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
+    "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json",
     "research/registry/dgc_math_proof_ledger_v1.json",
     ".github/workflows/dgc-math.yml",
     ".github/workflows/dgc-product-evidence.yml",
@@ -131,6 +132,8 @@ def _qualified_bundle_semantics_ok(bundle: object) -> bool:
         getattr(bundle, "evidence_graph_complete", False)
         and getattr(bundle, "all_required_subjects_git_bound", False)
         and getattr(bundle, "raw_p19_verification_transcripts_included", False)
+        and getattr(bundle, "frozen_verification_plan_and_entrypoint_included", False)
+        and getattr(bundle, "portable_global_v5_authority_included", False)
     )
 
 
@@ -165,7 +168,7 @@ def build_release(
             repository_root=root,
         )
         if not _qualified_bundle_semantics_ok(qualified_bundle):
-            raise RuntimeError("qualified bundle omitted graph/Git/raw-verifier-transcript invariants")
+            raise RuntimeError("qualified bundle omitted portable graph/transcript/verification-plan invariants")
     except RuntimeError as exc:
         qualification = None
         packaging_authority = None
@@ -175,8 +178,8 @@ def build_release(
     product_qualified = all(item is not None for item in (qualification, packaging_authority, qualified_bundle))
     if require_product_qualified and not product_qualified:
         raise RuntimeError(
-            "PRODUCT_QUALIFIED requires terminal Global-V4 replay, append-only T_exec→T_pkg authority, "
-            f"graph-derived bundle and self-contained raw P19 verifier transcripts: {qualification_error}"
+            "PRODUCT_QUALIFIED requires portable Global-V5 replay, append-only T_exec→T_pkg authority, "
+            f"graph-derived bundle and self-contained verifier transcript/plan: {qualification_error}"
         )
 
     production_control_authorized = False
@@ -209,16 +212,16 @@ def build_release(
             "ledger_path": qualification.ledger_path,
             "ledger_sha256": qualification.ledger_sha256,
             "ledger_tip_receipt_digest": qualification.ledger_tip_receipt_digest,
-            "global_v4_authority_path": qualification.global_v4_authority_path,
-            "global_v4_authority_sha256": qualification.global_v4_authority_sha256,
-            "global_v4_authority_digest": qualification.global_v4_authority_digest,
+            "global_v5_authority_path": qualification.global_v5_authority_path,
+            "global_v5_authority_sha256": qualification.global_v5_authority_sha256,
+            "global_v5_authority_digest": qualification.global_v5_authority_digest,
         }
 
     packaging_record = packaging_authority.document if packaging_authority is not None else None
     bundle_record = qualified_bundle.document if qualified_bundle is not None else None
 
     manifest = {
-        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V5",
+        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V6",
         "qualified_execution_source_commit": execution_commit,
         "qualified_execution_source_tree": execution_tree,
         "evidence_packaging_commit": packaging_commit,
@@ -227,7 +230,7 @@ def build_release(
             execution_commit == packaging_commit and execution_tree == packaging_tree
         ),
         "release_authority": (
-            "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_RAW_VERIFIER_TRANSCRIPT_V2"
+            "PRODUCT_QUALIFIED_PORTABLE_GLOBAL_V5_T0_T1_GRAPH_COMPLETE_V1"
             if product_qualified
             else "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED"
         ),
@@ -236,10 +239,13 @@ def build_release(
         "qualification_authority": qualification_record,
         "evidence_packaging_authority": packaging_record,
         "qualified_evidence_bundle_authority": bundle_record,
-        "qualification_pointer_required_for_product_claim": True,
+        "qualification_pointer_v3_required_for_product_claim": True,
+        "portable_global_v5_required_for_product_claim": True,
         "append_only_packaging_authority_required_for_product_claim": True,
         "graph_derived_bundle_authority_required_for_product_claim": True,
         "self_contained_raw_p19_verification_transcript_required_for_product_claim": True,
+        "frozen_verification_plan_and_entrypoint_required_for_product_claim": True,
+        "environment_specific_signature_tool_receipt_is_product_authority": False,
         "evidence_status_is_authority": False,
         "execution_source_archive": {
             "name": source_name,
@@ -276,10 +282,11 @@ def build_release(
         "historical_root_release_manifest_is_current_dgc_authority": False,
         "notes": [
             "The execution-source archive is generated from immutable qualified revision T_exec, not packaging HEAD.",
-            "T_pkg may differ from T_exec only under DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V1.",
-            "The qualified bundle manifest is derived from the actual Pointer/P19/Global-V4 evidence graph, not a fixed filename checklist.",
+            "T_pkg may differ from T_exec only under DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V2_GLOBAL_V5.",
+            "The qualified bundle manifest is derived from the actual Pointer-V3/P19/Global-V5 evidence graph.",
             "Every required graph subject must be Git-bound either to T_exec or append-only evidence in T_pkg.",
-            "Each external P19 verification check discloses and binds its canonical receipt, stdout, stderr and evidence bytes; terminal verification re-hashes these subjects before accepting the SSH signature.",
+            "External P19 verification receipts, stdout, stderr, evidence, frozen verification plan and verifier entrypoint are graph-bound release subjects.",
+            "Global V5 excludes environment-specific ssh-keygen path/binary/stdout from portable product authority identity while still executing signature verification fail-closed.",
             "Executable/statistical/scorer/policy mutation after T_exec makes product-qualified packaging fail closed.",
             "Source tar metadata are generated directly from Git objects with normalized UID/GID/mtime/modes; gitlinks and escaping symlinks are rejected.",
             "Packaging evidence archives reject symlinks and non-regular files.",
