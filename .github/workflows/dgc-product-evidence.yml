@@ -75,6 +75,7 @@ jobs:
             tests/test_dgc_fault_injection_evidence.py \
             tests/test_dgc_independent_replication_authority_v4.py \
             tests/test_dgc_p19_verification_check_receipt.py \
+            tests/test_dgc_p19_external_verification_plan.py \
             tests/test_dgc_p19_verification_report.py \
             tests/test_dgc_p19_verification_attestation.py \
             tests/test_dgc_p19_verifier_policy.py \
