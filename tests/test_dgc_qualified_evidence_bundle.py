@@ -40,6 +40,7 @@ def _fixture(tmp_path: Path, monkeypatch):
     subprocess.run(["git", "-C", str(root), "config", "user.name", "DGC Test"], check=True)
 
     _write(root, "cwc/governance/method.py", "METHOD = 'frozen'\n")
+    _write(root, "cwc/governance/p19_external_verification_contract.py", "CONTRACT = 'frozen'\n")
     _write(root, "cwc/governance/p19_external_replay.py", "ENGINE = 'frozen'\n")
     _write(root, "scripts/dgc_external_p19_verifier.py", "print('verify')\n")
     _write(root, "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json", "{}\n")
@@ -117,7 +118,10 @@ def _fixture(tmp_path: Path, monkeypatch):
         qeb,
         "load_p19_external_verification_plan",
         lambda *args, **kwargs: SimpleNamespace(
-            verifier_dependencies=({"path": "cwc/governance/p19_external_replay.py"},)
+            verifier_dependencies=(
+                {"path": "cwc/governance/p19_external_verification_contract.py"},
+                {"path": "cwc/governance/p19_external_replay.py"},
+            )
         ),
     )
 
@@ -164,6 +168,7 @@ def test_qualified_bundle_derives_source_packaging_portable_replay_and_verifier_
     assert authority.packaging_commit == packaging.packaging_commit
     roles = {row.path: row for row in authority.required_files}
     assert roles["cwc/governance/method.py"].role == ROLE_EXECUTION_SOURCE
+    assert roles["cwc/governance/p19_external_verification_contract.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["cwc/governance/p19_external_replay.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["scripts/dgc_external_p19_verifier.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"].role == ROLE_EXECUTION_SOURCE
