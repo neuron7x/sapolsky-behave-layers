@@ -7,7 +7,10 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_external_verification_plan import SCHEMA as PLAN_SCHEMA
+from cwc.governance.p19_external_verification_plan import (
+    REQUIRED_IMPLEMENTATION_DEPENDENCIES,
+    SCHEMA as PLAN_SCHEMA,
+)
 from cwc.governance.p19_verification_attestation import (
     ATTESTATION_SCHEMA,
     DECLARATION,
@@ -45,6 +48,12 @@ def _active_plan(root: Path) -> Path:
     entry = root / "scripts/dgc_external_p19_verifier.py"
     entry.parent.mkdir(parents=True, exist_ok=True)
     entry.write_text("print('test verifier')\n", encoding="utf-8")
+    dependencies = []
+    for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# test replay engine\n", encoding="utf-8")
+        dependencies.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
     rows = []
     for check_id in sorted(REQUIRED_CHECKS):
         rows.append({
@@ -62,12 +71,14 @@ def _active_plan(root: Path) -> Path:
         "activation_authorized": True,
         "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
         "verifier_entrypoint_sha256": sha256_file(entry),
+        "verifier_dependency_manifest_digest": sha256_bytes(canonical_json_bytes(dependencies)),
+        "verifier_dependencies": dependencies,
         "check_contracts": rows,
         "all_check_implementations_complete": True,
         "product_qualification_authorized": False,
     }
     doc = {"schema": PLAN_SCHEMA, **payload, "plan_digest": sha256_bytes(canonical_json_bytes(payload))}
-    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"
+    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
     return path
@@ -268,6 +279,30 @@ def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path):
         nonlocal called
         called = True
         raise AssertionError("SSH verifier must not run after verification-plan tamper")
+
+    with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
+        verify_ssh_signed_p19_verification_attestation(
+            attestation_path=attestation,
+            verification_report_path=report,
+            signature_path=signature,
+            allowed_signers_path=allowed,
+            repository_root=tmp_path,
+            runner=runner,
+            executable=str(fake_keygen),
+        )
+    assert called is False
+
+
+def test_verifier_engine_mutation_fails_before_signature_acceptance(tmp_path: Path):
+    report, _, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+    dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
+    dependency.write_text("# mutated engine\n", encoding="utf-8")
+    called = False
+
+    def runner(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("SSH verifier must not run after verifier-engine tamper")
 
     with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
         verify_ssh_signed_p19_verification_attestation(
