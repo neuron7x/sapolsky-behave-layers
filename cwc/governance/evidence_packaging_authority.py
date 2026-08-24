@@ -8,19 +8,15 @@ from typing import Callable, Sequence
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.product_qualification_pointer import VerifiedProductQualificationPointer
 
-SCHEMA = "DGC_EVIDENCE_PACKAGING_AUTHORITY_V1"
-DELTA_POLICY = "DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V1"
+SCHEMA = "DGC_EVIDENCE_PACKAGING_AUTHORITY_V2"
+DELTA_POLICY = "DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V2_GLOBAL_V5"
 REGULAR_BLOB_MODES = frozenset({"100644", "100755"})
 
-# These files are mirrors/terminal packaging metadata, never scientific-method authority.
 ALLOWED_MUTABLE_EXACT = frozenset({
-    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V2.json",
+    "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json",
     "artifacts/dgc-product-v1/evidence_status.json",
 })
 
-# Newly generated evidence may be committed only under explicitly evidence-only namespaces.
-# Pre-outcome preregistration, source, scorer, policy, workflow and theorem files are outside
-# these namespaces and therefore cannot change after the qualified execution source revision.
 ALLOWED_ADDED_PREFIXES = (
     "artifacts/dgc-product-v1/generated/",
     "artifacts/dgc-product-v1/evidence/",
@@ -87,7 +83,6 @@ def _allowed_add(path: str) -> bool:
 
 
 def _parse_name_status_z(raw: str) -> tuple[tuple[str, str], ...]:
-    # --no-renames makes the stream regular: STATUS\0PATH\0 pairs.
     parts = raw.split("\0")
     if parts and parts[-1] == "":
         parts.pop()
@@ -139,7 +134,7 @@ class EvidencePackagingAuthority:
     qualified_execution_commit: str
     qualified_execution_tree: str
     qualification_pointer_digest: str
-    global_v4_authority_digest: str
+    global_v5_authority_digest: str
     terminal_ledger_tip_receipt_digest: str
     packaging_commit: str
     packaging_tree: str
@@ -160,6 +155,7 @@ class EvidencePackagingAuthority:
             "schema": SCHEMA,
             **asdict(self),
             "execution_source_identity_distinct_from_packaging_identity": True,
+            "portable_global_v5_authority_required": True,
             "product_qualified": True,
             "production_control_authorized": False,
         }
@@ -178,7 +174,6 @@ def build_evidence_packaging_authority(
 
     execution_commit = _oid("qualified execution commit", qualification.repo_commit)
     execution_tree = _oid("qualified execution tree", qualification.repo_tree)
-
     resolved_execution_tree = _git(
         root, ("rev-parse", f"{execution_commit}^{{tree}}"), runner=runner
     ).stdout.strip().lower()
@@ -229,7 +224,6 @@ def build_evidence_packaging_authority(
                 )
             execution_mode, execution_blob = _tree_entry(root, execution_commit, path, runner=runner)
         else:
-            # Deletions, type changes, unresolved states and every other status are forbidden.
             raise EvidencePackagingAuthorityError(
                 f"post-outcome packaging delta status is not append-only/approved-mutable: {status} {path}"
             )
@@ -269,7 +263,7 @@ def build_evidence_packaging_authority(
         "qualified_execution_commit": execution_commit,
         "qualified_execution_tree": execution_tree,
         "qualification_pointer_digest": _sha("qualification pointer digest", qualification.pointer_digest),
-        "global_v4_authority_digest": _sha("global V4 authority digest", qualification.global_v4_authority_digest),
+        "global_v5_authority_digest": _sha("global V5 authority digest", qualification.global_v5_authority_digest),
         "terminal_ledger_tip_receipt_digest": _sha(
             "terminal ledger tip receipt digest", qualification.ledger_tip_receipt_digest
         ),
@@ -290,7 +284,7 @@ def build_evidence_packaging_authority(
         qualified_execution_commit=execution_commit,
         qualified_execution_tree=execution_tree,
         qualification_pointer_digest=payload["qualification_pointer_digest"],
-        global_v4_authority_digest=payload["global_v4_authority_digest"],
+        global_v5_authority_digest=payload["global_v5_authority_digest"],
         terminal_ledger_tip_receipt_digest=payload["terminal_ledger_tip_receipt_digest"],
         packaging_commit=current_commit,
         packaging_tree=packaging_tree,
