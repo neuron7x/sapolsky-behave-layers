@@ -23,7 +23,11 @@ def main() -> int:
                 raise AssertionError(f"non-reproducible release artifact: {name}")
         print(
             "DGC-RELEASE-REPRO: PASS "
-            f"commit={first['git_commit']} tree={first['git_tree']} files={len(names_a)}"
+            f"execution_commit={first['qualified_execution_source_commit']} "
+            f"execution_tree={first['qualified_execution_source_tree']} "
+            f"packaging_commit={first['evidence_packaging_commit']} "
+            f"packaging_tree={first['evidence_packaging_tree']} "
+            f"files={len(names_a)}"
         )
     return 0
 
