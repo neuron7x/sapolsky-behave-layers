@@ -8,10 +8,8 @@ import subprocess
 import tarfile
 from pathlib import Path
 
-from cwc.governance.qualified_evidence_bundle import (
-    QualifiedEvidenceBundleError,
-    build_qualified_evidence_bundle_authority,
-)
+from cwc.governance.deterministic_git_snapshot import create_deterministic_git_snapshot
+from cwc.governance.qualified_evidence_bundle import build_qualified_evidence_bundle_authority
 
 CRITICAL_PATHS = (
     "artifacts/dgc-product-v1/evidence_status.json",
@@ -92,6 +90,10 @@ def deterministic_tar_gz(root: Path, files: tuple[Path, ...], destination: Path)
         with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=9) as gz:
             with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as archive:
                 for path in files:
+                    if path.is_symlink():
+                        raise RuntimeError(f"packaging evidence symlink rejected: {path.relative_to(root)}")
+                    if not path.is_file():
+                        raise RuntimeError(f"packaging evidence path is not a regular file: {path.relative_to(root)}")
                     archive.add(
                         path,
                         arcname=path.relative_to(root).as_posix(),
@@ -102,13 +104,13 @@ def deterministic_tar_gz(root: Path, files: tuple[Path, ...], destination: Path)
 
 
 def deterministic_git_archive_gz(root: Path, commit: str, destination: Path) -> str:
-    """Archive the immutable Git revision, never the post-outcome packaging working tree."""
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    tar_bytes = _git(root, "archive", "--format=tar", commit, text=False)
-    with destination.open("wb") as raw:
-        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=9) as gz:
-            gz.write(tar_bytes)
-    return sha256_file(destination)
+    """Create a normalized archive directly from immutable Git objects."""
+    snapshot = create_deterministic_git_snapshot(
+        repository_root=root,
+        commit=commit,
+        destination=destination,
+    )
+    return snapshot.archive_sha256
 
 
 def _load_evidence_status_mirror(root: Path) -> dict[str, object]:
@@ -265,6 +267,8 @@ def build_release(
             "The qualified bundle manifest is derived from the actual Pointer/P19/Global-V4 evidence graph, not a fixed filename checklist.",
             "Every required graph subject must be Git-bound either to T_exec or append-only evidence in T_pkg.",
             "Executable/statistical/scorer/policy mutation after T_exec makes product-qualified packaging fail closed.",
+            "Source tar metadata are generated directly from Git objects with normalized UID/GID/mtime/modes; gitlinks and escaping symlinks are rejected.",
+            "Packaging evidence archives reject symlinks and non-regular files.",
             "evidence_status.json is informational only and cannot authorize product qualification.",
             "PRODUCT_QUALIFIED does not imply production control authority; provider trace, shadow and canary remain separate gates.",
             "No SLSA conformance level is claimed by this custom provenance authority.",
