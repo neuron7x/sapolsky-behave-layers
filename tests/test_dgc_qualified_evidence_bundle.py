@@ -40,8 +40,10 @@ def _fixture(tmp_path: Path, monkeypatch):
     subprocess.run(["git", "-C", str(root), "config", "user.name", "DGC Test"], check=True)
 
     _write(root, "cwc/governance/method.py", "METHOD = 'frozen'\n")
+    _write(root, "cwc/governance/p19_external_replay.py", "ENGINE = 'frozen'\n")
     _write(root, "scripts/dgc_external_p19_verifier.py", "print('verify')\n")
-    _write(root, "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json", "{}\n")
+    _write(root, "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json", "{}\n")
+    _write(root, "artifacts/dgc-product-v1/replay/source-registry.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/external_source_authority.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json", "{}\n")
     allowed = _write(
@@ -111,12 +113,20 @@ def _fixture(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(qeb, "build_evidence_packaging_authority", lambda **kwargs: packaging)
     monkeypatch.setattr(qeb, "load_p19_verifier_trust_policy", lambda path: object())
     monkeypatch.setattr(qeb, "resolve_allowed_signers", lambda policy, repository_root: allowed.resolve())
+    monkeypatch.setattr(
+        qeb,
+        "load_p19_external_verification_plan",
+        lambda *args, **kwargs: SimpleNamespace(
+            verifier_dependencies=({"path": "cwc/governance/p19_external_replay.py"},)
+        ),
+    )
 
     def fake_p19(path: Path):
         family = "swe" if "swe" in path.as_posix() else "terminal"
         return {
             "stage_evidence": [{"stage": "SOURCE_VERIFIED", "evidence": {"path": "artifacts/dgc-product-v1/external_source_authority.json"}}],
             "methodology_anchors": [{"path": "cwc/governance/method.py"}],
+            "external_replay_inputs": [{"label": "SOURCE_REGISTRY", "path": "artifacts/dgc-product-v1/replay/source-registry.json"}],
             "subject_roots": [{"path": f"artifacts/dgc-product-v1/generated/raw/{family}", "files": [{"path": "result.json"}]}],
         }
 
@@ -124,7 +134,7 @@ def _fixture(tmp_path: Path, monkeypatch):
         family = "swe" if "swe" in path.as_posix() else "terminal"
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         return {
-            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json",
+            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json",
             "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
             "checks": [{
                 "check_id": "REPOSITORY_IDENTITY",
@@ -140,20 +150,24 @@ def _fixture(tmp_path: Path, monkeypatch):
     return root, execution_commit, packaging_commit, pointer_doc, qualification, packaging
 
 
-def test_qualified_bundle_derives_source_packaging_and_verifier_transcript_roles(tmp_path: Path, monkeypatch):
+def test_qualified_bundle_derives_source_packaging_portable_replay_and_verifier_roles(tmp_path: Path, monkeypatch):
     root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
     qualification, packaging, authority = build_qualified_evidence_bundle_authority(repository_root=root)
     assert authority.evidence_graph_complete is True
     assert authority.raw_p19_verification_transcripts_included is True
     assert authority.frozen_verification_plan_and_entrypoint_included is True
+    assert authority.frozen_verifier_dependency_closure_included is True
+    assert authority.portable_p19_replay_inputs_included is True
     assert authority.portable_global_v5_authority_included is True
     assert authority.all_required_subjects_git_bound is True
     assert authority.qualified_execution_commit == qualification.repo_commit
     assert authority.packaging_commit == packaging.packaging_commit
     roles = {row.path: row for row in authority.required_files}
     assert roles["cwc/governance/method.py"].role == ROLE_EXECUTION_SOURCE
+    assert roles["cwc/governance/p19_external_replay.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["scripts/dgc_external_p19_verifier.py"].role == ROLE_EXECUTION_SOURCE
-    assert roles["artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json"].role == ROLE_EXECUTION_SOURCE
+    assert roles["artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"].role == ROLE_EXECUTION_SOURCE
+    assert roles["artifacts/dgc-product-v1/replay/source-registry.json"].role == ROLE_EXECUTION_SOURCE
     assert roles["artifacts/dgc-product-v1/generated/swe/p19.json"].role == ROLE_PACKAGING_EVIDENCE
     assert roles["artifacts/dgc-product-v1/generated/swe/verify/stderr.bin"].bytes == 0
 
@@ -168,6 +182,7 @@ def test_untracked_raw_subject_cannot_be_hidden_behind_valid_p19_json(tmp_path: 
         return {
             "stage_evidence": [],
             "methodology_anchors": [{"path": "cwc/governance/method.py"}],
+            "external_replay_inputs": [{"label": "SOURCE_REGISTRY", "path": "artifacts/dgc-product-v1/replay/source-registry.json"}],
             "subject_roots": [{"path": f"artifacts/dgc-product-v1/generated/raw/{family}", "files": [{"path": child}]}],
         }
 
@@ -186,7 +201,7 @@ def test_untracked_verifier_transcript_cannot_be_hidden_behind_signed_report(tmp
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         evidence = f"{base}/untracked-evidence.json" if family == "swe" else f"{base}/evidence.json"
         return {
-            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V1.json",
+            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json",
             "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
             "checks": [{
                 "check_id": "REPOSITORY_IDENTITY",
@@ -199,6 +214,21 @@ def test_untracked_verifier_transcript_cannot_be_hidden_behind_signed_report(tmp
 
     monkeypatch.setattr(qeb, "load_p19_verification_report", fake_report)
     assert untracked.is_file()
+    with pytest.raises(QualifiedEvidenceBundleError, match="not tracked in T_pkg"):
+        build_qualified_evidence_bundle_authority(repository_root=root)
+
+
+def test_untracked_verifier_dependency_cannot_be_hidden_behind_frozen_plan(tmp_path: Path, monkeypatch):
+    root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
+    dependency = _write(root, "artifacts/dgc-product-v1/generated/untracked-engine.py", "ENGINE=True\n")
+    monkeypatch.setattr(
+        qeb,
+        "load_p19_external_verification_plan",
+        lambda *args, **kwargs: SimpleNamespace(
+            verifier_dependencies=({"path": "artifacts/dgc-product-v1/generated/untracked-engine.py"},)
+        ),
+    )
+    assert dependency.is_file()
     with pytest.raises(QualifiedEvidenceBundleError, match="not tracked in T_pkg"):
         build_qualified_evidence_bundle_authority(repository_root=root)
 
