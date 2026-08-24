@@ -33,7 +33,10 @@ def test_verification_transcript_graph_includes_plan_entrypoint_dependency_and_r
         qeb,
         "load_p19_external_verification_plan",
         lambda *args, **kwargs: SimpleNamespace(
-            verifier_dependencies=({"path": "cwc/governance/p19_external_replay.py"},)
+            verifier_dependencies=(
+                {"path": "cwc/governance/p19_external_verification_contract.py"},
+                {"path": "cwc/governance/p19_external_replay.py"},
+            )
         ),
     )
 
@@ -42,6 +45,7 @@ def test_verification_transcript_graph_includes_plan_entrypoint_dependency_and_r
         report_rel,
         "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json",
         "scripts/dgc_external_p19_verifier.py",
+        "cwc/governance/p19_external_verification_contract.py",
         "cwc/governance/p19_external_replay.py",
         "artifacts/dgc-product-v1/generated/swe/check.json",
         "artifacts/dgc-product-v1/generated/swe/check.stdout",
