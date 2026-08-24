@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -171,7 +170,7 @@ def test_post_outcome_required_subject_outside_evidence_namespace_fails(tmp_path
     root, _, _, _, _, packaging = _fixture(tmp_path, monkeypatch)
     _write(root, "docs/posthoc/result.json", "{}\n")
     new_commit = _commit(root, "posthoc subject")
-    packaging.packaging_commit = new_commit  # SimpleNamespace remains mutable
+    packaging.packaging_commit = new_commit
     packaging.packaging_tree = _git(root, "rev-parse", "HEAD^{tree}")
 
     def fake_p19(path: Path):
@@ -194,4 +193,44 @@ def test_execution_source_anchor_mutation_is_detected_even_if_packaging_layer_is
     packaging.packaging_commit = _commit(root, "illegal method mutation")
     packaging.packaging_tree = _git(root, "rev-parse", "HEAD^{tree}")
     with pytest.raises(QualifiedEvidenceBundleError, match="execution-source subject changed"):
+        build_qualified_evidence_bundle_authority(repository_root=root)
+
+
+@pytest.mark.parametrize(
+    "bad_path",
+    [
+        "artifacts/dgc-product-v1/generated/swe/p19.json\n",
+        "artifacts/dgc-product-v1/generated/swe/p19\t.json",
+        " artifacts/dgc-product-v1/generated/swe/p19.json",
+        "artifacts//dgc-product-v1/generated/swe/p19.json",
+        "artifacts\\dgc-product-v1\\generated\\swe\\p19.json",
+    ],
+)
+def test_pointer_graph_path_must_be_canonical_and_unambiguous(tmp_path: Path, monkeypatch, bad_path: str):
+    root, _, _, pointer_doc, _, _ = _fixture(tmp_path, monkeypatch)
+    pointer_doc["family_p19_paths"] = [
+        bad_path,
+        "artifacts/dgc-product-v1/generated/terminal/p19.json",
+    ]
+    with pytest.raises(QualifiedEvidenceBundleError):
+        build_qualified_evidence_bundle_authority(repository_root=root)
+
+
+def test_p19_subject_child_cannot_use_parent_traversal(tmp_path: Path, monkeypatch):
+    root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
+
+    def fake_p19(path: Path):
+        family = "swe" if "swe" in path.as_posix() else "terminal"
+        child = "../terminal/result.json" if family == "swe" else "result.json"
+        return {
+            "stage_evidence": [],
+            "methodology_anchors": [{"path": "cwc/governance/method.py"}],
+            "subject_roots": [{
+                "path": f"artifacts/dgc-product-v1/generated/raw/{family}",
+                "files": [{"path": child}],
+            }],
+        }
+
+    monkeypatch.setattr(qeb, "verify_family_p19_evidence_root_document", fake_p19)
+    with pytest.raises(QualifiedEvidenceBundleError, match="canonical repository-relative"):
         build_qualified_evidence_bundle_authority(repository_root=root)
