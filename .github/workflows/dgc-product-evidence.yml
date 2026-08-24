@@ -123,7 +123,7 @@ jobs:
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
       - name: Require graph-derived qualified evidence bundle
         run: PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
-      - name: Require deterministic double-build release
-        run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
+      - name: Require deterministic product-qualified double-build
+        run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py --require-product-qualified
       - name: Build exact product-qualified DGC release
         run: PYTHONPATH=. python scripts/make_dgc_release.py --out dist/dgc-release --require-product-qualified
