@@ -5,6 +5,10 @@ import json
 import subprocess
 from pathlib import Path
 
+from cwc.governance.evidence_packaging_authority import (
+    EvidencePackagingAuthorityError,
+    build_evidence_packaging_authority,
+)
 from cwc.governance.product_evidence import (
     ProductEvidenceRecord,
     ProductEvidenceStage,
@@ -93,22 +97,35 @@ def main() -> int:
 
     if args.require_stage == ProductEvidenceStage.PRODUCT_QUALIFIED.name:
         try:
-            commit, tree = _git_identity(ROOT)
+            packaging_commit, packaging_tree = _git_identity(ROOT)
             verified = verify_product_qualification_pointer(
                 repository_root=ROOT,
                 pointer_path=Path(args.qualification_pointer),
-                expected_repo_commit=commit,
-                expected_repo_tree=tree,
             )
-        except (ProductQualificationPointerError, subprocess.CalledProcessError, OSError) as exc:
-            print(f"DGC-PRODUCT-GATE: FAIL terminal-qualification-replay: {exc}")
+            packaging = build_evidence_packaging_authority(
+                repository_root=ROOT,
+                qualification=verified,
+                packaging_commit=packaging_commit,
+            )
+        except (
+            ProductQualificationPointerError,
+            EvidencePackagingAuthorityError,
+            subprocess.CalledProcessError,
+            OSError,
+        ) as exc:
+            print(f"DGC-PRODUCT-GATE: FAIL terminal-qualification-or-packaging-replay: {exc}")
             return 1
-        print("DGC-PRODUCT-AUTHORITY: LEDGER_PLUS_GLOBAL_V4_POINTER_V1")
-        print(f"DGC-PRODUCT-QUALIFIED: true")
+        print("DGC-PRODUCT-AUTHORITY: GLOBAL_V4_POINTER_V2_PLUS_APPEND_ONLY_PACKAGING_V1")
+        print("DGC-PRODUCT-QUALIFIED: true")
         print(f"DGC-PRODUCT-QUALIFICATION-POINTER: {verified.pointer_digest}")
         print(f"DGC-PRODUCT-GLOBAL-V4: {verified.global_v4_authority_digest}")
         print(f"DGC-PRODUCT-LEDGER-TIP: {verified.ledger_tip_receipt_digest}")
-        print("DGC-PRODUCT-GATE: PASS terminal qualification replayed")
+        print(f"DGC-QUALIFIED-EXECUTION-COMMIT: {verified.repo_commit}")
+        print(f"DGC-QUALIFIED-EXECUTION-TREE: {verified.repo_tree}")
+        print(f"DGC-EVIDENCE-PACKAGING-COMMIT: {packaging_commit}")
+        print(f"DGC-EVIDENCE-PACKAGING-TREE: {packaging_tree}")
+        print(f"DGC-EVIDENCE-PACKAGING-AUTHORITY: {packaging.authority_digest}")
+        print("DGC-PRODUCT-GATE: PASS terminal qualification and append-only packaging replayed")
         return 0
 
     if args.require_stage is not None:
