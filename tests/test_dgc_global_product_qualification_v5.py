@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -110,6 +109,10 @@ def _build(monkeypatch, tmp_path: Path, *, tool_salt: str):
     )
 
 
+def _mutable_document(authority) -> dict[str, object]:
+    return json.loads(json.dumps(authority.document))
+
+
 def _write_doc(path: Path, doc: dict[str, object]) -> None:
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
 
@@ -138,7 +141,7 @@ def test_global_v5_authority_identity_is_independent_of_signature_verifier_binar
 
 def test_v5_structural_verifier_rejects_cross_population_p19_substitution_even_if_authority_is_rehashed(monkeypatch, tmp_path: Path):
     authority = _build(monkeypatch, tmp_path, tool_salt="one")
-    doc = authority.document
+    doc = _mutable_document(authority)
     doc["family_p19_digests"][0][1] = "f" * 64
     _rehash_authority(doc)
     path = tmp_path / "forged-p19.json"
@@ -149,7 +152,7 @@ def test_v5_structural_verifier_rejects_cross_population_p19_substitution_even_i
 
 def test_v5_structural_verifier_rejects_top_level_principal_substitution_even_if_authority_is_rehashed(monkeypatch, tmp_path: Path):
     authority = _build(monkeypatch, tmp_path, tool_salt="one")
-    doc = authority.document
+    doc = _mutable_document(authority)
     doc["verifier_principals"] = ["verifier-a", "attacker"]
     _rehash_authority(doc)
     path = tmp_path / "forged-principal.json"
@@ -160,7 +163,7 @@ def test_v5_structural_verifier_rejects_top_level_principal_substitution_even_if
 
 def test_v5_structural_verifier_rejects_row_trust_store_substitution_with_valid_row_and_authority_digests(monkeypatch, tmp_path: Path):
     authority = _build(monkeypatch, tmp_path, tool_salt="one")
-    doc = authority.document
+    doc = _mutable_document(authority)
     row = doc["stable_family_verification_records"][0]
     row["allowed_signers_sha256"] = "0" * 64
     row_keys = (
