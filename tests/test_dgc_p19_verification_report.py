@@ -79,6 +79,7 @@ def test_complete_receipt_population_builds_canonical_report(tmp_path: Path):
     )
     assert {row["check_id"] for row in report["checks"]} == REQUIRED_CHECKS
     assert report["raw_verification_transcript_disclosed"] is True
+    assert report["receipt_semantics_replayed"] is True
     assert report["all_required_checks_passed"] is True
     path = tmp_path / "report.json"
     path.write_bytes(report_bytes(report))
@@ -111,17 +112,32 @@ def test_noncanonical_check_receipt_fails_closed(tmp_path: Path):
 
 
 def test_raw_transcript_mutation_fails_report_rehash(tmp_path: Path):
-    receipts = _all_receipts(tmp_path)
     report = build_p19_verification_report(
         repository_root=tmp_path,
         family_p19=_p19(),
-        check_receipt_paths=receipts,
+        check_receipt_paths=_all_receipts(tmp_path),
     )
     path = tmp_path / "report.json"
     path.write_bytes(report_bytes(report))
     evidence_rel = str(report["checks"][0]["evidence_path"])
     (tmp_path / evidence_rel).write_bytes(b"mutated\n")
     with pytest.raises(Exception, match="bytes differ"):
+        load_p19_verification_report(path, repository_root=tmp_path)
+
+
+def test_self_consistent_report_cannot_contradict_bound_receipt_semantics(tmp_path: Path):
+    report = build_p19_verification_report(
+        repository_root=tmp_path,
+        family_p19=_p19(),
+        check_receipt_paths=_all_receipts(tmp_path),
+    )
+    row = report["checks"][0]
+    row["command_argv"] = ["python", "forged_verifier.py", str(row["check_id"])]
+    row["command_sha256"] = sha256_bytes(canonical_json_bytes(row["command_argv"]))
+    report["checks_digest"] = sha256_bytes(canonical_json_bytes(report["checks"]))
+    path = tmp_path / "forged-report.json"
+    path.write_bytes(report_bytes(report))
+    with pytest.raises(Exception, match="report/receipt semantic mismatch"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
