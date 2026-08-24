@@ -136,6 +136,8 @@ def build_check_receipt_document(
 def load_check_receipt(path: Path, *, repository_root: Path) -> VerifiedP19CheckReceipt:
     root = Path(repository_root).resolve()
     source = Path(path)
+    if not source.is_absolute():
+        source = root / source
     if source.is_symlink() or not source.is_file():
         raise P19VerificationCheckReceiptError("P19 verification check receipt must be a regular non-symlink file")
     candidate = source.resolve()
