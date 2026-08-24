@@ -33,11 +33,7 @@ def _policy(*, allowed_sha: str = "a" * 64, minimum: int = 2):
 
 
 def _record(family: str, principal: str, *, allowed_sha: str = "a" * 64):
-    return SimpleNamespace(
-        family_id=family,
-        verifier_principal=principal,
-        allowed_signers_sha256=allowed_sha,
-    )
+    return SimpleNamespace(family_id=family, verifier_principal=principal, allowed_signers_sha256=allowed_sha)
 
 
 def _v3(*, principals=("verifier-a", "verifier-b"), allowed_sha: str = "a" * 64):
@@ -92,6 +88,7 @@ def test_v4_requires_two_distinct_principals_under_one_frozen_trust_policy(tmp_p
     verified = verify_global_product_qualification_authority_v4_document(path)
     assert verified["global_product_qualification_authorized"] is True
     assert verified["frozen_verifier_trust_policy_required"] is True
+    assert verified["self_contained_p19_verification_transcript_required"] is True
 
 
 def test_same_verifier_for_both_families_cannot_qualify(tmp_path: Path, monkeypatch):
@@ -107,6 +104,16 @@ def test_runtime_verification_cannot_substitute_different_trust_store(tmp_path: 
 def test_policy_minimum_above_observed_distinct_count_fails_closed(tmp_path: Path, monkeypatch):
     with pytest.raises(GlobalProductQualificationV4Error, match="minimum number"):
         _build(tmp_path, monkeypatch, policy=_policy(minimum=3))
+
+
+def test_v4_document_cannot_omit_self_contained_verifier_transcript_requirement(tmp_path: Path, monkeypatch):
+    authority = _build(tmp_path, monkeypatch)
+    doc = authority.document
+    doc["self_contained_p19_verification_transcript_required"] = False
+    path = tmp_path / "bad-transcript.json"
+    path.write_text(json.dumps(doc, sort_keys=True), encoding="utf-8")
+    with pytest.raises(GlobalProductQualificationV4Error, match="self-contained verifier transcript"):
+        verify_global_product_qualification_authority_v4_document(path)
 
 
 def test_v4_document_cannot_leak_production_authority(tmp_path: Path, monkeypatch):
