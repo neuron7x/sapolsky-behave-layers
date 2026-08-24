@@ -1,4 +1,4 @@
-# DGC Product Statistical Plan v5
+# DGC Product Statistical Plan v5.1
 
 Status: `FROZEN_PRE_EXECUTION / EXTERNAL_CONFIRMATORY_OUTCOMES_UNOBSERVED`.
 
@@ -33,13 +33,17 @@ Bonferroni does not require independence between baseline or endpoint claims.
 
 The executable plan freezes:
 
-- inference: `HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V2`;
-- boundary: `HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V1`;
+- inference: `HOWARD_RAMDAS_MCAULIFFE_SEKHON_THEOREM4_POLY_STITCHING_EXACT_V3`;
+- boundary: `HOWARD_EQ10_POLYNOMIAL_STITCHING_EXACT_V2_4deabb17370edfc7`;
 - target: `AVERAGE_CONDITIONAL_MEAN_OF_PRECOMMITTED_BOUNDED_SEQUENCE`;
 - assumption boundary: `BOUNDED_ADAPTED_PROCESS_PREDICTABLE_CENTER_NO_IID_REQUIRED`;
 - predictor: `BETA_HALF_SMOOTHED_PREVISIBLE_MEAN_V1`;
 - analysis order: `TASK_ID_ASC_THEN_REPLICATE_ASC`;
-- author implementation reference: `gostevehoward/confseq@5ffe733ca2447a2e28c2c91f3b00086173f2ab2c`.
+- author implementation reference: `gostevehoward/confseq@5ffe733ca2447a2e28c2c91f3b00086173f2ab2c`;
+- frozen boundary parameter digest: `4deabb17370edfc770b7612235ee9dfddf932dfc21e894161fb2757ea45a1329`;
+- frozen `zeta(1.4)` binary64 hex: `0x1.8d8292bd8c3a6p+1`.
+
+The boundary-parameter digest is part of the boundary-method string imported by `ProductStatisticalPlan`; therefore a numeric theorem-runtime change changes the plan digest even if every high-level experimental count remains unchanged.
 
 P9 support for each canonical workload family requires both:
 
@@ -66,9 +70,13 @@ The existing cluster-aware variance decomposition
 
 `Var(mean) ~= sigma_between^2/N_tasks + sigma_within^2/(N_tasks*R)`
 
-is retained solely as a calibration-derived resource-planning diagnostic. It is not the V5 confidence-sequence theorem and must never be reported as a confirmatory power guarantee.
+is retained solely as a calibration-derived resource-planning diagnostic. It is not the V5.1 confidence-sequence theorem and must never be reported as a confirmatory power guarantee.
 
-The final V5 gate recomputes its confidence sequence from the actually observed bounded sequence. If the achieved evidence is insufficient, the gate fails; the protocol is not retuned after outcomes.
+The final V5.1 gate recomputes its confidence sequence from the actually observed bounded sequence. If the achieved evidence is insufficient, the gate fails; the protocol is not retuned after outcomes.
+
+## Coverage and execution completeness
+
+The primary raw population is the exact frozen `task × policy × replicate` product. Every P9 baseline comparison must reconstruct the same task/replicate population and `coverage=1.0`; any missing or extra unit prevents certification before statistical inequalities are considered.
 
 ## Product aggregation
 
