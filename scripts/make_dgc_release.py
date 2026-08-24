@@ -8,6 +8,10 @@ import subprocess
 import tarfile
 from pathlib import Path
 
+from cwc.governance.evidence_packaging_authority import (
+    EvidencePackagingAuthorityError,
+    build_evidence_packaging_authority,
+)
 from cwc.governance.product_qualification_pointer import (
     CANONICAL_POINTER_PATH,
     ProductQualificationPointerError,
@@ -23,6 +27,12 @@ CRITICAL_PATHS = (
     ".github/workflows/dgc-product-evidence.yml",
     "SBOM.spdx.json",
     "CITATION.cff",
+)
+
+EVIDENCE_PREFIXES = (
+    "artifacts/",
+    "eval_bundle/",
+    "release_evidence/",
 )
 
 PRODUCT_FIELDS = (
@@ -66,6 +76,11 @@ def tracked_paths(root: Path) -> tuple[Path, ...]:
     return paths
 
 
+def tracked_paths_at_commit(root: Path, commit: str) -> tuple[str, ...]:
+    raw = _git(root, "ls-tree", "-r", "--name-only", "-z", commit, text=False)
+    return tuple(sorted(part.decode("utf-8") for part in raw.split(b"\0") if part))
+
+
 def _normalized_filter(info: tarfile.TarInfo) -> tarfile.TarInfo:
     info.uid = 0
     info.gid = 0
@@ -91,6 +106,16 @@ def deterministic_tar_gz(root: Path, files: tuple[Path, ...], destination: Path)
     return sha256_file(destination)
 
 
+def deterministic_git_archive_gz(root: Path, commit: str, destination: Path) -> str:
+    """Archive the immutable Git revision, not the packaging working tree."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    tar_bytes = _git(root, "archive", "--format=tar", commit, text=False)
+    with destination.open("wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=9) as gz:
+            gz.write(tar_bytes)
+    return sha256_file(destination)
+
+
 def _load_evidence_status_mirror(root: Path) -> dict[str, object]:
     status_path = root / "artifacts/dgc-product-v1/evidence_status.json"
     status = json.loads(status_path.read_text(encoding="utf-8"))
@@ -98,6 +123,11 @@ def _load_evidence_status_mirror(root: Path) -> dict[str, object]:
     if missing:
         raise RuntimeError(f"invalid DGC evidence status fields: {missing}")
     return status
+
+
+def _is_evidence_path(root: Path, path: Path) -> bool:
+    rel = path.relative_to(root).as_posix()
+    return any(rel.startswith(prefix) for prefix in EVIDENCE_PREFIXES)
 
 
 def build_release(
@@ -113,37 +143,50 @@ def build_release(
         dirty = _git(root, "status", "--porcelain", "--untracked-files=no")
         if dirty:
             raise RuntimeError("tracked working tree must be clean for DGC release")
-    commit = _git(root, "rev-parse", "HEAD").lower()
-    tree = _git(root, "rev-parse", "HEAD^{tree}").lower()
+
+    packaging_commit = _git(root, "rev-parse", "HEAD").lower()
+    packaging_tree = _git(root, "rev-parse", "HEAD^{tree}").lower()
     files = tracked_paths(root)
-    evidence_files = tuple(path for path in files if path.relative_to(root).as_posix().startswith("artifacts/"))
-    evidence_set = set(evidence_files)
-    source_files = tuple(path for path in files if path not in evidence_set)
-    if not source_files or not evidence_files:
-        raise RuntimeError("release requires both tracked source and tracked evidence populations")
+    evidence_files = tuple(path for path in files if _is_evidence_path(root, path))
+    if not evidence_files:
+        raise RuntimeError("release requires a tracked evidence/metadata population")
 
     status = _load_evidence_status_mirror(root)
     qualification = None
+    packaging_authority = None
     qualification_error = None
     try:
+        # The pointer identifies T_exec. It is intentionally not required to equal packaging HEAD.
         qualification = verify_product_qualification_pointer(
             repository_root=root,
             pointer_path=Path(CANONICAL_POINTER_PATH),
-            expected_repo_commit=commit,
-            expected_repo_tree=tree,
         )
-    except ProductQualificationPointerError as exc:
+        packaging_authority = build_evidence_packaging_authority(
+            repository_root=root,
+            qualification=qualification,
+            packaging_commit=packaging_commit,
+        )
+    except (ProductQualificationPointerError, EvidencePackagingAuthorityError) as exc:
         qualification_error = str(exc)
-    product_qualified = qualification is not None
+
+    product_qualified = qualification is not None and packaging_authority is not None
     if require_product_qualified and not product_qualified:
-        raise RuntimeError(f"PRODUCT_QUALIFIED requires terminal ledger/Global-V4 replay: {qualification_error}")
+        raise RuntimeError(
+            "PRODUCT_QUALIFIED requires terminal Global-V4 replay plus append-only execution-to-packaging authority: "
+            f"{qualification_error}"
+        )
 
     production_control_authorized = False
+    execution_commit = qualification.repo_commit if qualification is not None else packaging_commit
+    execution_tree = qualification.repo_tree if qualification is not None else packaging_tree
+    execution_files = tracked_paths_at_commit(root, execution_commit)
+    if not execution_files:
+        raise RuntimeError("execution source revision contains no tracked files")
 
     out.mkdir(parents=True, exist_ok=True)
-    source_name = f"dgc-source-{commit[:12]}.tar.gz"
-    evidence_name = f"dgc-evidence-{commit[:12]}.tar.gz"
-    source_sha = deterministic_tar_gz(root, source_files, out / source_name)
+    source_name = f"dgc-execution-source-{execution_commit[:12]}.tar.gz"
+    evidence_name = f"dgc-packaging-evidence-{packaging_commit[:12]}.tar.gz"
+    source_sha = deterministic_git_archive_gz(root, execution_commit, out / source_name)
     evidence_sha = deterministic_tar_gz(root, evidence_files, out / evidence_name)
 
     critical = {}
@@ -158,6 +201,8 @@ def build_release(
         qualification_record = {
             "pointer_digest": qualification.pointer_digest,
             "generation_id": qualification.generation_id,
+            "qualified_execution_commit": qualification.repo_commit,
+            "qualified_execution_tree": qualification.repo_tree,
             "ledger_path": qualification.ledger_path,
             "ledger_sha256": qualification.ledger_sha256,
             "ledger_tip_receipt_digest": qualification.ledger_tip_receipt_digest,
@@ -166,22 +211,45 @@ def build_release(
             "global_v4_authority_digest": qualification.global_v4_authority_digest,
         }
 
+    packaging_record = None
+    if packaging_authority is not None:
+        packaging_record = packaging_authority.document
+
     manifest = {
-        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V2",
-        "git_commit": commit,
-        "git_tree": tree,
+        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V3",
+        "qualified_execution_source_commit": execution_commit,
+        "qualified_execution_source_tree": execution_tree,
+        "evidence_packaging_commit": packaging_commit,
+        "evidence_packaging_tree": packaging_tree,
+        "execution_source_identity_equals_packaging_identity": (
+            execution_commit == packaging_commit and execution_tree == packaging_tree
+        ),
         "release_authority": (
-            "PRODUCT_QUALIFIED_LEDGER_GLOBAL_V4"
+            "PRODUCT_QUALIFIED_EXECUTION_T0_APPEND_ONLY_PACKAGING_T1"
             if product_qualified
             else "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED"
         ),
         "product_qualified": product_qualified,
         "production_control_authorized": production_control_authorized,
         "qualification_authority": qualification_record,
+        "evidence_packaging_authority": packaging_record,
         "qualification_pointer_required_for_product_claim": True,
+        "append_only_packaging_authority_required_for_product_claim": True,
         "evidence_status_is_authority": False,
-        "source_archive": {"name": source_name, "sha256": source_sha, "tracked_files": len(source_files)},
-        "evidence_archive": {"name": evidence_name, "sha256": evidence_sha, "tracked_files": len(evidence_files)},
+        "execution_source_archive": {
+            "name": source_name,
+            "sha256": source_sha,
+            "git_tracked_files": len(execution_files),
+            "source_commit": execution_commit,
+            "source_tree": execution_tree,
+        },
+        "packaging_evidence_archive": {
+            "name": evidence_name,
+            "sha256": evidence_sha,
+            "tracked_files": len(evidence_files),
+            "packaging_commit": packaging_commit,
+            "packaging_tree": packaging_tree,
+        },
         "critical_authority_sha256": critical,
         "evidence_status_mirror": {
             "schema": status.get("schema"),
@@ -199,19 +267,28 @@ def build_release(
                 )
             ),
         },
+        "slsa_conformance_claim": False,
         "historical_root_release_manifest_is_current_dgc_authority": False,
         "notes": [
-            "Archive contents are exactly tracked Git files split into source/non-artifacts and evidence/artifacts.",
-            "gzip/tar metadata are normalized for deterministic rebuilds.",
-            "PRODUCT_QUALIFIED is derived only from the canonical qualification pointer replaying the terminal ledger and Global V4 authority.",
-            "evidence_status.json is an informational mirror and cannot authorize a product-qualified release.",
+            "The execution-source archive is generated from the immutable qualified Git revision T_exec, not from packaging HEAD.",
+            "Post-outcome packaging revision T_pkg may differ from T_exec only under DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V1.",
+            "Executable/statistical/scorer/policy source mutation after T_exec makes product-qualified packaging fail closed.",
+            "The packaging evidence archive contains only tracked evidence/metadata namespaces from T_pkg.",
+            "PRODUCT_QUALIFIED is derived from terminal Global V4 replay plus append-only packaging authority; evidence_status.json is informational only.",
             "PRODUCT_QUALIFIED does not imply production control authority; provider trace, shadow and canary remain separate gates.",
-            "No product or production authority is implied when product_qualified=false.",
+            "No SLSA conformance level is claimed by this custom provenance authority.",
         ],
     }
+
+    packaging_authority_path = out / "DGC_EVIDENCE_PACKAGING_AUTHORITY.json"
+    packaging_authority_path.write_text(
+        json.dumps(packaging_record, indent=2, sort_keys=True) + "\n" if packaging_record is not None
+        else json.dumps({"schema": "DGC_EVIDENCE_PACKAGING_AUTHORITY_NONE", "product_qualified": False}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     manifest_path = out / "DGC_RELEASE_MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    sum_paths = (out / source_name, out / evidence_name, manifest_path)
+    sum_paths = (out / source_name, out / evidence_name, packaging_authority_path, manifest_path)
     sums = "\n".join(
         f"{sha256_file(path)}  {path.name}" for path in sorted(sum_paths, key=lambda path: path.name)
     ) + "\n"
@@ -234,7 +311,8 @@ def main() -> int:
     )
     print(
         "DGC-RELEASE-BUILD: PASS "
-        f"commit={manifest['git_commit']} tree={manifest['git_tree']} "
+        f"execution={manifest['qualified_execution_source_commit']} "
+        f"packaging={manifest['evidence_packaging_commit']} "
         f"authority={manifest['release_authority']}"
     )
     return 0
