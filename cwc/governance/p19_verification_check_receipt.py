@@ -6,9 +6,18 @@ from pathlib import Path, PurePosixPath
 from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS
 
 SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_CHECK_RECEIPT_V2"
+REQUIRED_CHECKS = frozenset({
+    "REPOSITORY_IDENTITY",
+    "THEOREM_AND_PLAN_IDENTITY",
+    "SUBJECT_ROOT_REHASH",
+    "P19_SEAL_REBUILD",
+    "PRIMARY_P9_RAW_REPLAY",
+    "GENERALIZATION_G1_G5_RAW_REPLAY",
+    "FAULT_TOLERANCE_RAW_REPLAY",
+    "INDEPENDENT_REPLICATION_RAW_REPLAY",
+})
 
 
 class P19VerificationCheckReceiptError(RuntimeError):
