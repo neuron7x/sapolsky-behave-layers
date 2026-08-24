@@ -104,7 +104,6 @@ def deterministic_tar_gz(root: Path, files: tuple[Path, ...], destination: Path)
 
 
 def deterministic_git_archive_gz(root: Path, commit: str, destination: Path) -> str:
-    """Create a normalized archive directly from immutable Git objects."""
     snapshot = create_deterministic_git_snapshot(
         repository_root=root,
         commit=commit,
@@ -125,6 +124,14 @@ def _load_evidence_status_mirror(root: Path) -> dict[str, object]:
 def _is_evidence_path(root: Path, path: Path) -> bool:
     rel = path.relative_to(root).as_posix()
     return any(rel.startswith(prefix) for prefix in EVIDENCE_PREFIXES)
+
+
+def _qualified_bundle_semantics_ok(bundle: object) -> bool:
+    return bool(
+        getattr(bundle, "evidence_graph_complete", False)
+        and getattr(bundle, "all_required_subjects_git_bound", False)
+        and getattr(bundle, "raw_p19_verification_transcripts_included", False)
+    )
 
 
 def build_release(
@@ -157,14 +164,19 @@ def build_release(
         qualification, packaging_authority, qualified_bundle = build_qualified_evidence_bundle_authority(
             repository_root=root,
         )
+        if not _qualified_bundle_semantics_ok(qualified_bundle):
+            raise RuntimeError("qualified bundle omitted graph/Git/raw-verifier-transcript invariants")
     except RuntimeError as exc:
+        qualification = None
+        packaging_authority = None
+        qualified_bundle = None
         qualification_error = str(exc)
 
     product_qualified = all(item is not None for item in (qualification, packaging_authority, qualified_bundle))
     if require_product_qualified and not product_qualified:
         raise RuntimeError(
             "PRODUCT_QUALIFIED requires terminal Global-V4 replay, append-only T_exec→T_pkg authority, "
-            f"and graph-derived qualified evidence bundle: {qualification_error}"
+            f"graph-derived bundle and self-contained raw P19 verifier transcripts: {qualification_error}"
         )
 
     production_control_authorized = False
@@ -206,7 +218,7 @@ def build_release(
     bundle_record = qualified_bundle.document if qualified_bundle is not None else None
 
     manifest = {
-        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V4",
+        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V5",
         "qualified_execution_source_commit": execution_commit,
         "qualified_execution_source_tree": execution_tree,
         "evidence_packaging_commit": packaging_commit,
@@ -215,7 +227,7 @@ def build_release(
             execution_commit == packaging_commit and execution_tree == packaging_tree
         ),
         "release_authority": (
-            "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_V1"
+            "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_RAW_VERIFIER_TRANSCRIPT_V2"
             if product_qualified
             else "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED"
         ),
@@ -227,6 +239,7 @@ def build_release(
         "qualification_pointer_required_for_product_claim": True,
         "append_only_packaging_authority_required_for_product_claim": True,
         "graph_derived_bundle_authority_required_for_product_claim": True,
+        "self_contained_raw_p19_verification_transcript_required_for_product_claim": True,
         "evidence_status_is_authority": False,
         "execution_source_archive": {
             "name": source_name,
@@ -266,6 +279,7 @@ def build_release(
             "T_pkg may differ from T_exec only under DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V1.",
             "The qualified bundle manifest is derived from the actual Pointer/P19/Global-V4 evidence graph, not a fixed filename checklist.",
             "Every required graph subject must be Git-bound either to T_exec or append-only evidence in T_pkg.",
+            "Each external P19 verification check discloses and binds its canonical receipt, stdout, stderr and evidence bytes; terminal verification re-hashes these subjects before accepting the SSH signature.",
             "Executable/statistical/scorer/policy mutation after T_exec makes product-qualified packaging fail closed.",
             "Source tar metadata are generated directly from Git objects with normalized UID/GID/mtime/modes; gitlinks and escaping symlinks are rejected.",
             "Packaging evidence archives reject symlinks and non-regular files.",
