@@ -1,4 +1,4 @@
-# DGC Evidence Closure Executor v5
+# DGC Evidence Closure Executor v6
 
 Status: **engineering/research control; not empirical product evidence**.
 
@@ -138,9 +138,9 @@ Fresh subject identity and signature possession are machine-verifiable. Social i
 social_independence_machine_proven = false
 ```
 
-## 10. Family P19
+## 10. Family P19 V3 portable replay root
 
-Each canonical workload family receives its own P19 evidence root. One family cannot authorize the global product claim.
+Each canonical workload family receives its own `DGC_FAMILY_P19_EVIDENCE_ROOT_V3`. One family cannot authorize the global product claim.
 
 Required families are exactly:
 
@@ -149,20 +149,45 @@ SWE_BENCH_VERIFIED
 TERMINAL_BENCH_2_1
 ```
 
-Each P19 seals stage evidence, methodology anchors and disclosed raw subject roots.
+P19 V3 seals:
 
-## 11. External P19 semantic replay
+- pre-P19 ledger snapshot and receipt-chain tip;
+- stage evidence;
+- methodology anchors;
+- disclosed raw subject roots;
+- exact external replay file locators and their SHA-256/byte identities.
 
-For each family, external verification uses one frozen plan with eight checks:
+The external replay locator set is explicit and closed. A verifier must not discover an authority by scanning the repository for a matching digest. Missing, duplicate, escaping or byte-mismatched locators fail closed.
 
-1. repository identity;
-2. theorem/statistical-plan identity;
-3. subject-root rehash;
-4. P19 seal rebuild;
-5. primary P9 raw replay;
-6. G1–G5 raw replay;
-7. fault-tolerance raw replay;
-8. independent-replication raw replay.
+## 11. External P19 semantic replay and Plan V2
+
+The implementation contract is `DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2`. For each family it defines exactly eight checks:
+
+1. `REPOSITORY_IDENTITY`;
+2. `THEOREM_AND_PLAN_IDENTITY`;
+3. `SUBJECT_ROOT_REHASH`;
+4. `P19_SEAL_REBUILD`;
+5. `PRIMARY_P9_RAW_REPLAY`;
+6. `GENERALIZATION_G1_G5_RAW_REPLAY`;
+7. `FAULT_TOLERANCE_RAW_REPLAY`;
+8. `INDEPENDENT_REPLICATION_RAW_REPLAY`.
+
+`cwc/governance/p19_external_verification_contract.py` is the single SSOT for check→method identity. Plan V2 rejects a self-consistent plan whose `method_id` differs from that exact map.
+
+The executable verifier path is:
+
+```text
+scripts/dgc_external_p19_verifier.py
+```
+
+The plan content-addresses both the entrypoint and verifier-specific implementation dependencies:
+
+```text
+cwc/governance/p19_external_verification_contract.py
+cwc/governance/p19_external_replay.py
+```
+
+Each outcome check delegates to the canonical authority builders/verifiers and requires recomputed authority digests to equal the digests sealed in P19. External replay therefore does not introduce a second statistical or scientific interpretation.
 
 Each check discloses and binds:
 
@@ -171,7 +196,19 @@ Each check discloses and binds:
 - stderr bytes;
 - replay evidence bytes.
 
-The final verification report also binds the frozen verification plan and exact verifier entrypoint.
+The final verification report binds the frozen plan, exact entrypoint, dependency closure and raw transcript.
+
+### Current Plan V2 activation state
+
+The V2 implementation exists, but the canonical `artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json` has **not yet been materialized** because exact-head executable regression has not run in the available environment. The historical V1 artifact remains inactive and cannot satisfy the V2 loader.
+
+Therefore:
+
+```text
+external_verifier_v2_activation_authorized = false
+```
+
+No plan may be activated merely because eight Python handlers exist; exact implementation bytes and executable regression evidence must be available first.
 
 ## 12. Frozen external trust
 
@@ -257,12 +294,12 @@ freeze method + verification plan + trust policy
 
 `DGC_EVIDENCE_PACKAGING_AUTHORITY_V2` rejects post-outcome source/methodology/verifier-plan mutation, deletion, mode changes, symlink/special Git objects and ambiguous paths.
 
-## 16. Qualified evidence bundle V4
+## 16. Qualified evidence bundle V5
 
 Current graph authority:
 
 ```text
-DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V4
+DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V5
 ```
 
 It derives required release subjects from the actual Pointer/P19/Global-V5 graph, including:
@@ -271,13 +308,15 @@ It derives required release subjects from the actual Pointer/P19/Global-V5 graph
 - Global V5;
 - source registry;
 - verifier policy and trust store;
-- both P19 roots;
+- both P19 V3 roots;
 - stage evidence;
 - methodology anchors;
 - raw subject roots;
+- P19 external replay inputs;
 - reports/attestations/signatures;
 - frozen verification plan;
 - verifier entrypoint;
+- verifier implementation dependency closure;
 - all check receipts/stdout/stderr/evidence.
 
 Every required file must be either:
@@ -285,7 +324,7 @@ Every required file must be either:
 1. `EXECUTION_SOURCE_T0` — identical Git blob in `T_exec` and `T_pkg`; or
 2. `PACKAGING_EVIDENCE_T1` — approved append-only evidence tracked in `T_pkg`.
 
-Untracked evidence, omitted transcript vertices, mutated source anchors or post-hoc files outside evidence namespaces fail closed.
+Untracked evidence, omitted replay/transcript vertices, mutated verifier dependencies, mutated source anchors or post-hoc files outside evidence namespaces fail closed.
 
 ## 17. Deterministic release V6
 
@@ -312,7 +351,29 @@ No SLSA conformance level is claimed:
 slsa_conformance_claim = false
 ```
 
-## 18. Product is not production
+## 18. Verification execution state
+
+The focused P19/Bundle test surface is wired into `.github/workflows/dgc-product-evidence.yml`, including `test_dgc_p19_external_verification_plan.py` and `test_dgc_p19_external_replay.py`.
+
+At the latest checked branch head, GitHub Actions created the workflow job but returned:
+
+```text
+steps = null
+logs_url = null
+```
+
+A local clone attempt also failed before checkout with DNS resolution failure for `github.com`.
+
+Classification:
+
+```text
+CI_EXECUTION_UNAVAILABLE
+focused_pytest_execution = UNKNOWN
+```
+
+This is neither a code PASS nor a demonstrated code regression.
+
+## 19. Product is not production
 
 Even valid product qualification does not establish production control authority. Production-provider traces, shadow mode, bounded canary, sustained monitoring and applicable operational/client evidence remain separate obligations.
 
@@ -320,15 +381,16 @@ Even valid product qualification does not establish production control authority
 PRODUCT_QUALIFIED != PRODUCTION_CONTROL_AUTHORIZED
 ```
 
-## 19. Current truth
+## 20. Current truth
 
-The external empirical campaign has not been completed. Real P9, G1–G5, fault campaign, independent replication, two real P19 roots and external P19 signatures remain empirical obligations.
+The external empirical campaign has not been completed. Real SWE/Terminal execution, physical provider cost evidence, P9, G1–G5, fault campaign, independent replication, two real P19 roots and external P19 verifier signatures remain empirical obligations.
 
 Current mandatory truth:
 
 ```text
 PRODUCT_QUALIFIED = false
 PRODUCTION_CONTROL_AUTHORIZED = false
+external_verifier_v2_activation_authorized = false
 ```
 
 Current mathematical SSOT:
@@ -337,6 +399,10 @@ Current mathematical SSOT:
 - `docs/DGC_PRODUCT_STATISTICAL_PLAN_v5.md`
 - `docs/DGC_STATISTICAL_AUTHORITY_v5.md`
 - `docs/DGC_THEOREM_AUDIT_v5.md`
+
+Operational evidence-closure SSOT:
+
+- `docs/DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md`
 
 Release provenance SSOT:
 
