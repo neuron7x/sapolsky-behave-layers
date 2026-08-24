@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Mapping
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
@@ -25,7 +25,7 @@ from cwc.governance.product_statistical_plan import (
     PRIMARY_SEQUENCE_ORDER,
 )
 
-SCHEMA = "DGC_FAMILY_P19_EVIDENCE_ROOT_V2"
+SCHEMA = "DGC_FAMILY_P19_EVIDENCE_ROOT_V3"
 
 REQUIRED_SUBJECT_ROOTS = frozenset({
     "PRIMARY_EXECUTION",
@@ -41,6 +41,29 @@ REQUIRED_SUBJECT_ROOTS = frozenset({
     "REPLICA_PHYSICAL_COST",
     "REPLICA_CCF",
     "REPLICATION_ATTESTATION",
+})
+
+# File subjects which cannot be recovered uniquely from stage evidence or raw subject roots.
+# Every locator is frozen into the P19 digest before external semantic replay.
+REQUIRED_EXTERNAL_REPLAY_INPUTS = frozenset({
+    "PRIMARY_ANYTIME_P9_AUTHORITY",
+    "PRIMARY_CCF_ORACLE_AUDIT_AUTHORITY",
+    "SOURCE_REGISTRY",
+    "CONFIRMATORY_ROOT_AUTHORITY",
+    "MATERIALIZATION_REFERENCE",
+    "G1_AXIS_ANYTIME_AUTHORITY",
+    "G2_AXIS_ANYTIME_AUTHORITY",
+    "G3_AXIS_ANYTIME_AUTHORITY",
+    "G4_AXIS_ANYTIME_AUTHORITY",
+    "G5_AXIS_ANYTIME_AUTHORITY",
+    "REPLICA_P9_SCIENTIFIC_AUTHORITY",
+    "REPLICA_ANYTIME_P9_AUTHORITY",
+    "REPLICA_CCF_ORACLE_AUDIT_AUTHORITY",
+    "REPLICA_EXECUTION_AUTHORITY",
+    "REPLICA_CONFIRMATORY_ROOT_AUTHORITY",
+    "REPLICATION_ATTESTATION",
+    "REPLICATION_SIGNATURE",
+    "REPLICATION_ALLOWED_SIGNERS",
 })
 
 METHODOLOGY_ANCHORS = (
@@ -70,14 +93,47 @@ def _sha(name: str, value: object) -> str:
     return text
 
 
+def _canonical_rel(value: object, *, label: str) -> str:
+    text = str(value)
+    if (
+        not text
+        or text != text.strip()
+        or any(ch in text for ch in ("\x00", "\n", "\r", "\t", "\\"))
+        or "//" in text
+    ):
+        raise P19EvidenceError(f"{label} must be a canonical repository-relative POSIX path")
+    rel = PurePosixPath(text)
+    if rel.is_absolute() or any(part in ("", ".", "..") for part in rel.parts):
+        raise P19EvidenceError(f"{label} must be a canonical repository-relative POSIX path")
+    return rel.as_posix()
+
+
 def _repo_file(root: Path, value: str) -> tuple[Path, str]:
-    rel = Path(value)
-    if rel.is_absolute() or ".." in rel.parts or not rel.parts:
-        raise P19EvidenceError("P19 file path must be repository-relative")
+    rel = _canonical_rel(value, label="P19 file path")
     candidate = root / rel
     if candidate.is_symlink() or not candidate.is_file():
         raise P19EvidenceError(f"P19 required file missing or symlinked: {value}")
-    return candidate.resolve(), rel.as_posix()
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise P19EvidenceError("P19 file path escapes repository") from exc
+    return resolved, rel
+
+
+def _repo_path_file(root: Path, value: Path, *, label: str) -> tuple[Path, str]:
+    candidate = value if value.is_absolute() else root / value
+    if candidate.is_symlink():
+        raise P19EvidenceError(f"{label} symlink rejected")
+    resolved = candidate.resolve()
+    try:
+        rel = resolved.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise P19EvidenceError(f"{label} must remain inside repository") from exc
+    _canonical_rel(rel, label=label)
+    if not resolved.is_file() or resolved.stat().st_size <= 0:
+        raise P19EvidenceError(f"{label} must be a non-empty regular file")
+    return resolved, rel
 
 
 def _repo_dir(root: Path, value: Path) -> tuple[Path, str]:
@@ -168,18 +224,38 @@ def _subject_root_manifest(root: Path, label: str, value: Path) -> dict[str, obj
         raise P19EvidenceError(f"P19 subject root is empty: {label}")
     if any(row[1] != "file" for row in rows):
         raise P19EvidenceError(f"P19 subject root contains symlink/non-file object: {label}")
-    manifest_digest = sha256_bytes(canonical_json_bytes(rows))
     return {
         "label": label,
         "path": rel,
         "file_count": len(rows),
         "total_bytes": sum(int(row[3]) for row in rows),
-        "manifest_sha256": manifest_digest,
+        "manifest_sha256": sha256_bytes(canonical_json_bytes(rows)),
         "files": [
             {"path": p, "type": kind, "mode": mode, "bytes": size, "sha256": digest}
             for p, kind, mode, size, digest in rows
         ],
     }
+
+
+def _external_replay_input_manifest(root: Path, values: Mapping[str, Path]) -> tuple[dict[str, object], ...]:
+    if set(values) != REQUIRED_EXTERNAL_REPLAY_INPUTS:
+        missing = sorted(REQUIRED_EXTERNAL_REPLAY_INPUTS - set(values))
+        extra = sorted(set(values) - REQUIRED_EXTERNAL_REPLAY_INPUTS)
+        raise P19EvidenceError(f"P19 external replay input population mismatch: missing={missing}, extra={extra}")
+    rows: list[dict[str, object]] = []
+    seen_paths: set[str] = set()
+    for label in sorted(REQUIRED_EXTERNAL_REPLAY_INPUTS):
+        path, rel = _repo_path_file(root, Path(values[label]), label=f"external replay input {label}")
+        if rel in seen_paths:
+            raise P19EvidenceError("P19 external replay inputs must use distinct file paths")
+        seen_paths.add(rel)
+        rows.append({
+            "label": label,
+            "path": rel,
+            "sha256": sha256_file(path),
+            "bytes": path.stat().st_size,
+        })
+    return tuple(rows)
 
 
 def _theorem_identity_digest() -> str:
@@ -218,6 +294,8 @@ class FamilyP19EvidenceRoot:
     methodology_anchors: tuple[dict[str, object], ...]
     subject_root_manifest_digest: str
     subject_roots: tuple[dict[str, object], ...]
+    external_replay_input_manifest_digest: str
+    external_replay_inputs: tuple[dict[str, object], ...]
     family_p9_supported: bool
     family_generalization_supported: bool
     family_fault_tolerance_supported: bool
@@ -231,6 +309,7 @@ class FamilyP19EvidenceRoot:
             "schema": SCHEMA,
             **asdict(self),
             "p19_sealed": self.family_evidence_complete,
+            "portable_external_replay_inputs_sealed": True,
             "family_qualification_ready": self.family_evidence_complete,
             "global_product_qualification_authorized": False,
             "peer_family_p19_required": True,
@@ -243,6 +322,7 @@ def build_family_p19_evidence_root(
     primary_anytime_p9_authority_path: Path,
     primary_ccf_oracle_audit_authority_path: Path,
     subject_roots: Mapping[str, Path],
+    external_replay_inputs: Mapping[str, Path],
 ) -> FamilyP19EvidenceRoot:
     if ledger.next_stage() != "P19_SEALED":
         raise P19EvidenceError("P19 can be built only after all pre-P19 stages")
@@ -345,18 +425,23 @@ def build_family_p19_evidence_root(
     anchors: list[dict[str, object]] = []
     for rel in METHODOLOGY_ANCHORS:
         path, normalized = _repo_file(root, rel)
-        anchors.append({
-            "path": normalized,
-            "sha256": sha256_file(path),
-            "bytes": path.stat().st_size,
-        })
+        anchors.append({"path": normalized, "sha256": sha256_file(path), "bytes": path.stat().st_size})
     methodology_anchor_digest = sha256_bytes(canonical_json_bytes(anchors))
 
-    root_rows = tuple(
-        _subject_root_manifest(root, label, subject_roots[label])
-        for label in sorted(REQUIRED_SUBJECT_ROOTS)
-    )
+    root_rows = tuple(_subject_root_manifest(root, label, subject_roots[label]) for label in sorted(REQUIRED_SUBJECT_ROOTS))
     subject_root_manifest_digest = sha256_bytes(canonical_json_bytes(root_rows))
+    replay_rows = _external_replay_input_manifest(root, external_replay_inputs)
+    replay_manifest_digest = sha256_bytes(canonical_json_bytes(replay_rows))
+
+    replay_by_label = {str(row["label"]): row for row in replay_rows}
+    for label, actual in (
+        ("PRIMARY_ANYTIME_P9_AUTHORITY", Path(primary_anytime_p9_authority_path)),
+        ("PRIMARY_CCF_ORACLE_AUDIT_AUTHORITY", Path(primary_ccf_oracle_audit_authority_path)),
+    ):
+        actual_path, actual_rel = _repo_path_file(root, actual, label=label)
+        row = replay_by_label[label]
+        if row["path"] != actual_rel or row["sha256"] != sha256_file(actual_path):
+            raise P19EvidenceError(f"P19 external replay locator differs from primary component: {label}")
 
     receipts = state["receipts"]
     assert isinstance(receipts, list) and receipts
@@ -370,6 +455,7 @@ def build_family_p19_evidence_root(
         replication.get("independent_replication_supported") is True,
         len(stage_rows) == len(expected_completed),
         len(root_rows) == len(REQUIRED_SUBJECT_ROOTS),
+        len(replay_rows) == len(REQUIRED_EXTERNAL_REPLAY_INPUTS),
     ))
     payload = {
         "family_id": family_id,
@@ -394,6 +480,8 @@ def build_family_p19_evidence_root(
         "methodology_anchors": anchors,
         "subject_root_manifest_digest": subject_root_manifest_digest,
         "subject_roots": list(root_rows),
+        "external_replay_input_manifest_digest": replay_manifest_digest,
+        "external_replay_inputs": list(replay_rows),
         "family_p9_supported": True,
         "family_generalization_supported": True,
         "family_fault_tolerance_supported": True,
@@ -424,6 +512,8 @@ def build_family_p19_evidence_root(
         methodology_anchors=tuple(anchors),
         subject_root_manifest_digest=subject_root_manifest_digest,
         subject_roots=root_rows,
+        external_replay_input_manifest_digest=replay_manifest_digest,
+        external_replay_inputs=replay_rows,
         family_p9_supported=True,
         family_generalization_supported=True,
         family_fault_tolerance_supported=True,
@@ -445,6 +535,8 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         raise P19EvidenceError("unexpected P19 schema")
     if doc.get("p19_sealed") is not True or doc.get("family_qualification_ready") is not True:
         raise P19EvidenceError("P19 family evidence is incomplete")
+    if doc.get("portable_external_replay_inputs_sealed") is not True:
+        raise P19EvidenceError("P19 portable external replay inputs are not sealed")
     if doc.get("global_product_qualification_authorized") is not False or doc.get("peer_family_p19_required") is not True:
         raise P19EvidenceError("P19 global claim boundary malformed")
     keys = (
@@ -455,6 +547,7 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         "generalization_authority_digest", "fault_tolerance_authority_digest",
         "independent_replication_authority_digest", "statistical_plan_digest", "theorem_identity_digest",
         "methodology_anchor_digest", "methodology_anchors", "subject_root_manifest_digest", "subject_roots",
+        "external_replay_input_manifest_digest", "external_replay_inputs",
         "family_p9_supported", "family_generalization_supported", "family_fault_tolerance_supported",
         "family_replication_supported", "family_evidence_complete",
     )
@@ -464,6 +557,7 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         raise P19EvidenceError("P19 payload incomplete") from exc
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("p19_digest", doc.get("p19_digest")):
         raise P19EvidenceError("P19 digest mismatch")
+
     snapshot = doc.get("ledger_snapshot")
     if not isinstance(snapshot, Mapping):
         raise P19EvidenceError("P19 ledger snapshot missing")
@@ -481,6 +575,7 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
     assert isinstance(receipts, list) and receipts
     if doc.get("receipt_chain_tip_digest") != receipts[-1].get("receipt_digest"):
         raise P19EvidenceError("P19 receipt-chain tip differs from embedded ledger snapshot")
+
     stage_rows = doc.get("stage_evidence")
     if not isinstance(stage_rows, list) or sha256_bytes(canonical_json_bytes(stage_rows)) != doc.get("stage_evidence_manifest_digest"):
         raise P19EvidenceError("P19 stage evidence manifest digest mismatch")
@@ -499,6 +594,7 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
             raise P19EvidenceError("P19 embedded receipt evidence malformed")
         if dict(stage_row.get("evidence", {})) != dict(evidence[0]):
             raise P19EvidenceError("P19 stage evidence differs from embedded receipt evidence")
+
     if doc.get("theorem_identity_digest") != _theorem_identity_digest():
         raise P19EvidenceError("P19 theorem identity is not current V5")
     if not all(doc.get(field) is True for field in (
@@ -506,7 +602,36 @@ def verify_family_p19_evidence_root_document(path: Path) -> dict[str, object]:
         "family_fault_tolerance_supported", "family_replication_supported", "family_evidence_complete",
     )):
         raise P19EvidenceError("P19 family support flags incomplete")
+
     roots = doc.get("subject_roots")
     if not isinstance(roots, list) or {str(row.get("label")) for row in roots if isinstance(row, Mapping)} != REQUIRED_SUBJECT_ROOTS:
         raise P19EvidenceError("P19 subject root population mismatch")
+    if [str(row.get("label")) for row in roots if isinstance(row, Mapping)] != sorted(REQUIRED_SUBJECT_ROOTS):
+        raise P19EvidenceError("P19 subject root ordering is not canonical")
+    if sha256_bytes(canonical_json_bytes(roots)) != doc.get("subject_root_manifest_digest"):
+        raise P19EvidenceError("P19 subject root manifest digest mismatch")
+
+    replay = doc.get("external_replay_inputs")
+    if not isinstance(replay, list) or {str(row.get("label")) for row in replay if isinstance(row, Mapping)} != REQUIRED_EXTERNAL_REPLAY_INPUTS:
+        raise P19EvidenceError("P19 external replay input population mismatch")
+    if [str(row.get("label")) for row in replay if isinstance(row, Mapping)] != sorted(REQUIRED_EXTERNAL_REPLAY_INPUTS):
+        raise P19EvidenceError("P19 external replay input ordering is not canonical")
+    paths: set[str] = set()
+    for row in replay:
+        if not isinstance(row, Mapping):
+            raise P19EvidenceError("P19 external replay input row malformed")
+        label = str(row.get("label", ""))
+        rel = _canonical_rel(row.get("path"), label=f"external replay input {label}")
+        if rel in paths:
+            raise P19EvidenceError("P19 external replay input paths must be distinct")
+        paths.add(rel)
+        _sha(f"external replay input {label}.sha256", row.get("sha256"))
+        try:
+            size = int(row.get("bytes", -1))
+        except (TypeError, ValueError) as exc:
+            raise P19EvidenceError("P19 external replay input byte count malformed") from exc
+        if size <= 0:
+            raise P19EvidenceError("P19 external replay input must be non-empty")
+    if sha256_bytes(canonical_json_bytes(replay)) != doc.get("external_replay_input_manifest_digest"):
+        raise P19EvidenceError("P19 external replay input manifest digest mismatch")
     return doc
