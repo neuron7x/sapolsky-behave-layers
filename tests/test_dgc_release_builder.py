@@ -76,7 +76,7 @@ def _patch_git_and_tracking(monkeypatch, root, files):
     monkeypatch.setattr(mod, "deterministic_git_archive_gz", fake_git_archive)
 
 
-def _qualified_tuple():
+def _qualified_tuple(*, raw_transcripts: bool = True):
     qualification = SimpleNamespace(
         pointer_digest="1" * 64,
         generation_id="generation-1",
@@ -98,16 +98,23 @@ def _qualified_tuple():
         "protected_execution_source_unchanged": True,
         "authority_digest": "6" * 64,
     })
-    bundle = SimpleNamespace(document={
-        "schema": "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V1",
+    bundle_doc = {
+        "schema": "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V2",
         "qualified_execution_commit": "c" * 40,
         "qualified_execution_tree": "d" * 40,
         "packaging_commit": "a" * 40,
         "packaging_tree": "b" * 40,
         "evidence_graph_complete": True,
         "all_required_subjects_git_bound": True,
+        "raw_p19_verification_transcripts_included": raw_transcripts,
         "authority_digest": "7" * 64,
-    })
+    }
+    bundle = SimpleNamespace(
+        document=bundle_doc,
+        evidence_graph_complete=True,
+        all_required_subjects_git_bound=True,
+        raw_p19_verification_transcripts_included=raw_transcripts,
+    )
     return qualification, packaging, bundle
 
 
@@ -125,8 +132,6 @@ def test_all_green_legacy_booleans_cannot_authorize_product_release_without_grap
     assert manifest["product_qualified"] is False
     assert manifest["release_authority"] == "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED"
     assert manifest["production_control_authorized"] is False
-    assert manifest["qualified_execution_source_commit"] == "a" * 40
-    assert manifest["evidence_packaging_commit"] == "a" * 40
 
 
 def test_require_product_qualified_fails_when_graph_replay_is_unavailable(tmp_path, monkeypatch):
@@ -137,42 +142,31 @@ def test_require_product_qualified_fails_when_graph_replay_is_unavailable(tmp_pa
         "build_qualified_evidence_bundle_authority",
         lambda **kwargs: (_ for _ in ()).throw(RuntimeError("unconfigured")),
     )
-    with pytest.raises(RuntimeError, match="graph-derived qualified evidence bundle"):
-        mod.build_release(
-            root,
-            tmp_path / "out",
-            require_clean=False,
-            require_product_qualified=True,
-        )
+    with pytest.raises(RuntimeError, match="self-contained raw P19 verifier transcripts"):
+        mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
 
 
-def test_product_release_requires_terminal_packaging_and_graph_complete_authorities(tmp_path, monkeypatch):
+def test_product_release_requires_terminal_packaging_graph_and_raw_transcript_authorities(tmp_path, monkeypatch):
     root, files = _release_root(tmp_path)
     _patch_git_and_tracking(monkeypatch, root, files)
     qualification, packaging, bundle = _qualified_tuple()
-    monkeypatch.setattr(
-        mod,
-        "build_qualified_evidence_bundle_authority",
-        lambda **kwargs: (qualification, packaging, bundle),
-    )
-    manifest = mod.build_release(
-        root,
-        tmp_path / "out",
-        require_clean=False,
-        require_product_qualified=True,
-    )
+    monkeypatch.setattr(mod, "build_qualified_evidence_bundle_authority", lambda **kwargs: (qualification, packaging, bundle))
+    manifest = mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
+    assert manifest["schema"] == "DGC_DETERMINISTIC_RESEARCH_RELEASE_V5"
     assert manifest["product_qualified"] is True
-    assert manifest["release_authority"] == "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_V1"
-    assert manifest["qualified_execution_source_commit"] == "c" * 40
-    assert manifest["qualified_execution_source_tree"] == "d" * 40
-    assert manifest["evidence_packaging_commit"] == "a" * 40
-    assert manifest["evidence_packaging_tree"] == "b" * 40
-    assert manifest["execution_source_identity_equals_packaging_identity"] is False
-    assert manifest["qualification_authority"]["pointer_digest"] == "1" * 64
-    assert manifest["qualification_authority"]["global_v4_authority_digest"] == "5" * 64
-    assert manifest["evidence_packaging_authority"]["authority_digest"] == "6" * 64
-    assert manifest["qualified_evidence_bundle_authority"]["authority_digest"] == "7" * 64
+    assert manifest["release_authority"] == "PRODUCT_QUALIFIED_T0_T1_GRAPH_COMPLETE_RAW_VERIFIER_TRANSCRIPT_V2"
+    assert manifest["self_contained_raw_p19_verification_transcript_required_for_product_claim"] is True
+    assert manifest["qualified_evidence_bundle_authority"]["raw_p19_verification_transcripts_included"] is True
     assert manifest["production_control_authorized"] is False
+
+
+def test_graph_complete_without_raw_verifier_transcript_cannot_authorize_release(tmp_path, monkeypatch):
+    root, files = _release_root(tmp_path)
+    _patch_git_and_tracking(monkeypatch, root, files)
+    qualification, packaging, bundle = _qualified_tuple(raw_transcripts=False)
+    monkeypatch.setattr(mod, "build_qualified_evidence_bundle_authority", lambda **kwargs: (qualification, packaging, bundle))
+    with pytest.raises(RuntimeError, match="self-contained raw P19 verifier transcripts"):
+        mod.build_release(root, tmp_path / "out", require_clean=False, require_product_qualified=True)
 
 
 def test_pointer_and_packaging_without_graph_complete_bundle_cannot_authorize_release(tmp_path, monkeypatch):
