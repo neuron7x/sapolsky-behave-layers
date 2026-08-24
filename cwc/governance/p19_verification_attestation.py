@@ -9,21 +9,16 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_verification_check_receipt import (
+    REQUIRED_CHECKS,
+    P19VerificationCheckReceiptError,
+    load_check_receipt,
+)
 
 ATTESTATION_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_ATTESTATION_V2"
 REPORT_SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_REPORT_V2"
 NAMESPACE = "dgc-p19-external-verification-v2"
 VERIFICATION_PROTOCOL = "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V2_SELF_CONTAINED_TRANSCRIPT"
-REQUIRED_CHECKS = frozenset({
-    "REPOSITORY_IDENTITY",
-    "THEOREM_AND_PLAN_IDENTITY",
-    "SUBJECT_ROOT_REHASH",
-    "P19_SEAL_REBUILD",
-    "PRIMARY_P9_RAW_REPLAY",
-    "GENERALIZATION_G1_G5_RAW_REPLAY",
-    "FAULT_TOLERANCE_RAW_REPLAY",
-    "INDEPENDENT_REPLICATION_RAW_REPLAY",
-})
 DECLARATION = (
     "I independently executed every required check in the disclosed canonical DGC P19 "
     "verification report and obtained PASS. The report identifies the raw receipt, stdout, "
@@ -64,32 +59,12 @@ def _safe_rel(value: object, *, label: str) -> str:
     return rel.as_posix()
 
 
-def _subject(root: Path, rel: str, *, expected_sha: str, expected_bytes: int, allow_empty: bool, label: str) -> None:
-    path = root / rel
-    if path.is_symlink():
-        raise P19VerificationAttestationError(f"{label} symlink rejected")
-    resolved = path.resolve()
-    try:
-        resolved.relative_to(root)
-    except ValueError as exc:
-        raise P19VerificationAttestationError(f"{label} escapes repository") from exc
-    if not resolved.is_file():
-        raise P19VerificationAttestationError(f"{label} missing")
-    if expected_bytes < 0 or resolved.stat().st_size != expected_bytes:
-        raise P19VerificationAttestationError(f"{label} byte count mismatch")
-    if not allow_empty and expected_bytes == 0:
-        raise P19VerificationAttestationError(f"{label} must be non-empty")
-    if sha256_file(resolved) != expected_sha:
-        raise P19VerificationAttestationError(f"{label} bytes differ from verification report")
-
-
 def _discover_repository_root(path: Path) -> Path:
     candidate = Path(path).resolve().parent
     for root in (candidate, *candidate.parents):
-        marker = root / ".git"
-        if marker.exists():
+        if (root / ".git").exists():
             return root.resolve()
-    raise P19VerificationAttestationError("repository root required to rehash P19 verification transcript")
+    raise P19VerificationAttestationError("repository root required to replay P19 verification transcript")
 
 
 def canonical_attestation_bytes(doc: Mapping[str, object]) -> bytes:
@@ -119,6 +94,42 @@ class P19VerificationSignatureReceipt:
         return sha256_bytes(canonical_json_bytes(asdict(self)))
 
 
+def _structural_report_row(raw_row: Mapping[str, object]) -> tuple[dict[str, object], dict[str, object]]:
+    check_id = str(raw_row.get("check_id", "")).strip()
+    if check_id not in REQUIRED_CHECKS:
+        raise P19VerificationAttestationError("P19 verification report has unknown check")
+    if raw_row.get("status") != "PASS":
+        raise P19VerificationAttestationError(f"P19 external verification check did not PASS: {check_id}")
+    argv = raw_row.get("command_argv")
+    if not isinstance(argv, list) or not argv or any(not isinstance(item, str) or not item for item in argv):
+        raise P19VerificationAttestationError(f"{check_id}.command_argv malformed")
+    command_sha = _sha(f"{check_id}.command_sha256", raw_row.get("command_sha256"))
+    if command_sha != sha256_bytes(canonical_json_bytes(argv)):
+        raise P19VerificationAttestationError(f"{check_id}.command digest mismatch")
+
+    row: dict[str, object] = {
+        "check_id": check_id,
+        "status": "PASS",
+        "command_argv": list(argv),
+        "command_sha256": command_sha,
+    }
+    transcript: dict[str, object] = {"check_id": check_id}
+    for role, allow_empty in (("receipt", False), ("stdout", True), ("stderr", True), ("evidence", False)):
+        rel = _safe_rel(raw_row.get(f"{role}_path"), label=f"{check_id}.{role}_path")
+        digest = _sha(f"{check_id}.{role}_sha256", raw_row.get(f"{role}_sha256"))
+        size = int(raw_row.get(f"{role}_bytes", -1))
+        if size < 0 or (not allow_empty and size == 0):
+            raise P19VerificationAttestationError(f"{check_id}.{role}_bytes invalid")
+        row[f"{role}_path"] = rel
+        row[f"{role}_sha256"] = digest
+        row[f"{role}_bytes"] = size
+        transcript[f"{role}_path"] = rel
+        transcript[f"{role}_sha256"] = digest
+        transcript[f"{role}_bytes"] = size
+    row["evidence_digest"] = _sha(f"{check_id}.evidence_digest", raw_row.get("evidence_digest"))
+    return row, transcript
+
+
 def load_p19_verification_report(path: Path, *, repository_root: Path | None = None) -> dict[str, object]:
     candidate = Path(path)
     if candidate.is_symlink() or not candidate.is_file():
@@ -138,6 +149,8 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
         raise P19VerificationAttestationError("P19 verification report does not attest all required checks PASS")
     if doc.get("raw_verification_transcript_disclosed") is not True:
         raise P19VerificationAttestationError("P19 verification report omitted raw transcript disclosure")
+    if doc.get("receipt_semantics_replayed") is not True:
+        raise P19VerificationAttestationError("P19 verification report omitted receipt semantic replay")
     family = str(doc.get("family_id", "")).strip()
     if not family:
         raise P19VerificationAttestationError("P19 verification report family_id required")
@@ -153,48 +166,32 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
     checks = doc.get("checks")
     if not isinstance(checks, list) or len(checks) != len(REQUIRED_CHECKS):
         raise P19VerificationAttestationError("P19 verification report check population incomplete")
+    root = Path(repository_root).resolve() if repository_root is not None else None
     seen: set[str] = set()
     normalized: list[dict[str, object]] = []
     transcript_rows: list[dict[str, object]] = []
-    root = Path(repository_root).resolve() if repository_root is not None else None
     for raw_row in checks:
         if not isinstance(raw_row, Mapping):
             raise P19VerificationAttestationError("P19 verification report check row malformed")
-        check_id = str(raw_row.get("check_id", "")).strip()
-        if check_id not in REQUIRED_CHECKS or check_id in seen:
-            raise P19VerificationAttestationError("P19 verification report has unknown/duplicate check")
+        row, transcript = _structural_report_row(raw_row)
+        check_id = str(row["check_id"])
+        if check_id in seen:
+            raise P19VerificationAttestationError("P19 verification report has duplicate check")
         seen.add(check_id)
-        if raw_row.get("status") != "PASS":
-            raise P19VerificationAttestationError(f"P19 external verification check did not PASS: {check_id}")
-        argv = raw_row.get("command_argv")
-        if not isinstance(argv, list) or not argv or any(not isinstance(item, str) or not item for item in argv):
-            raise P19VerificationAttestationError(f"{check_id}.command_argv malformed")
-        command_sha = _sha(f"{check_id}.command_sha256", raw_row.get("command_sha256"))
-        if command_sha != sha256_bytes(canonical_json_bytes(argv)):
-            raise P19VerificationAttestationError(f"{check_id}.command digest mismatch")
 
-        row: dict[str, object] = {
-            "check_id": check_id,
-            "status": "PASS",
-            "command_argv": list(argv),
-            "command_sha256": command_sha,
-        }
-        transcript: dict[str, object] = {"check_id": check_id}
-        for role, allow_empty in (("receipt", False), ("stdout", True), ("stderr", True), ("evidence", False)):
-            rel = _safe_rel(raw_row.get(f"{role}_path"), label=f"{check_id}.{role}_path")
-            digest = _sha(f"{check_id}.{role}_sha256", raw_row.get(f"{role}_sha256"))
-            size = int(raw_row.get(f"{role}_bytes", -1))
-            if size < 0 or (not allow_empty and size == 0):
-                raise P19VerificationAttestationError(f"{check_id}.{role}_bytes invalid")
-            row[f"{role}_path"] = rel
-            row[f"{role}_sha256"] = digest
-            row[f"{role}_bytes"] = size
-            transcript[f"{role}_path"] = rel
-            transcript[f"{role}_sha256"] = digest
-            transcript[f"{role}_bytes"] = size
-            if root is not None:
-                _subject(root, rel, expected_sha=digest, expected_bytes=size, allow_empty=allow_empty, label=f"{check_id}.{role}")
-        row["evidence_digest"] = _sha(f"{check_id}.evidence_digest", raw_row.get("evidence_digest"))
+        if root is not None:
+            receipt_rel = str(row["receipt_path"])
+            try:
+                verified_receipt = load_check_receipt(root / receipt_rel, repository_root=root)
+            except P19VerificationCheckReceiptError as exc:
+                raise P19VerificationAttestationError(
+                    f"P19 verification receipt semantic replay failed: {check_id}: {exc}"
+                ) from exc
+            if verified_receipt.report_row != row:
+                raise P19VerificationAttestationError(
+                    f"P19 verification report/receipt semantic mismatch: {check_id}"
+                )
+
         normalized.append(row)
         transcript_rows.append(transcript)
     if seen != REQUIRED_CHECKS:
@@ -202,6 +199,8 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
 
     normalized.sort(key=lambda row: str(row["check_id"]))
     transcript_rows.sort(key=lambda row: str(row["check_id"]))
+    if doc.get("checks") != normalized:
+        raise P19VerificationAttestationError("P19 verification report check ordering/content is not canonical")
     if doc.get("checks_digest") != sha256_bytes(canonical_json_bytes(normalized)):
         raise P19VerificationAttestationError("P19 verification report checks_digest mismatch")
     if doc.get("raw_transcript_manifest") != transcript_rows:
@@ -259,6 +258,7 @@ def make_p19_verification_attestation(
         "semantic_replay_passed": True,
         "raw_evidence_disclosed": True,
         "raw_verification_transcript_disclosed": True,
+        "receipt_semantics_replayed": True,
         "author_control_over_verification": False,
         "social_independence_machine_proven": False,
         "verifier_principal": principal,
@@ -285,8 +285,9 @@ def load_p19_verification_attestation(path: Path) -> dict[str, object]:
         doc.get("semantic_replay_passed") is not True
         or doc.get("raw_evidence_disclosed") is not True
         or doc.get("raw_verification_transcript_disclosed") is not True
+        or doc.get("receipt_semantics_replayed") is not True
     ):
-        raise P19VerificationAttestationError("P19 verifier did not attest semantic replay/raw transcript disclosure")
+        raise P19VerificationAttestationError("P19 verifier did not attest full semantic replay/raw transcript disclosure")
     if doc.get("author_control_over_verification") is not False:
         raise P19VerificationAttestationError("P19 verifier did not attest execution independence")
     if doc.get("social_independence_machine_proven") is not False:
@@ -309,7 +310,7 @@ def _bind_report_to_attestation(report: Mapping[str, object], attestation: Mappi
     for field in (
         "family_id", "p19_digest", "repository_commit", "repository_tree", "statistical_plan_digest",
         "theorem_identity_digest", "methodology_anchor_digest", "stage_evidence_manifest_digest",
-        "subject_root_manifest_digest", "verification_protocol",
+        "subject_root_manifest_digest", "verification_protocol", "receipt_semantics_replayed",
     ):
         if str(report.get(field, "")) != str(attestation.get(field, "")):
             raise P19VerificationAttestationError(f"verification report/attestation mismatch: {field}")
