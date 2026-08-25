@@ -36,6 +36,7 @@ REGRESSION_TEST_FILES = (
     "tests/test_dgc_p19_external_verification_plan.py",
     "tests/test_dgc_p19_external_verifier_regression.py",
     "tests/test_dgc_p19_external_verifier_activation.py",
+    "tests/test_dgc_p19_external_verifier_freeze_readiness.py",
     "tests/test_dgc_p19_external_replay.py",
     "tests/test_dgc_p19_verification_report.py",
     "tests/test_dgc_p19_verification_attestation.py",
@@ -61,6 +62,8 @@ if "cwc/governance/p19_external_replay.py" not in VERIFIER_RUNTIME_DEPENDENCIES:
     raise RuntimeError("P19 external verifier replay engine missing from runtime dependency closure")
 if "cwc/governance/p19_external_verification_contract.py" not in VERIFIER_RUNTIME_DEPENDENCIES:
     raise RuntimeError("P19 external verifier contract missing from runtime dependency closure")
+if "cwc/governance/p19_external_verifier_freeze_readiness.py" not in VERIFIER_RUNTIME_DEPENDENCIES:
+    raise RuntimeError("P19 external verifier freeze-readiness authority missing from runtime dependency closure")
 if len(set(VERIFIER_RUNTIME_DEPENDENCIES)) != len(VERIFIER_RUNTIME_DEPENDENCIES):
     raise RuntimeError("P19 external verifier runtime dependencies must be unique")
 if len(set(REGRESSION_TEST_FILES)) != len(REGRESSION_TEST_FILES):
