@@ -133,6 +133,7 @@ def _qualified_bundle_semantics_ok(bundle: object) -> bool:
         and getattr(bundle, "raw_p19_verification_transcripts_included", False)
         and getattr(bundle, "frozen_verification_plan_and_entrypoint_included", False)
         and getattr(bundle, "frozen_verifier_dependency_closure_included", False)
+        and getattr(bundle, "dual_signed_verifier_activation_authority_included", False)
         and getattr(bundle, "activation_regression_evidence_included", False)
         and getattr(bundle, "portable_p19_replay_inputs_included", False)
         and getattr(bundle, "portable_global_v5_authority_included", False)
@@ -171,7 +172,7 @@ def build_release(
         )
         if not _qualified_bundle_semantics_ok(qualified_bundle):
             raise RuntimeError(
-                "qualified bundle omitted portable graph/transcript/Plan-V3/runtime/regression/replay invariants"
+                "qualified bundle omitted portable graph/transcript/Plan-V4/runtime/dual-signed-activation/regression/replay invariants"
             )
     except RuntimeError as exc:
         qualification = None
@@ -183,8 +184,8 @@ def build_release(
     if require_product_qualified and not product_qualified:
         raise RuntimeError(
             "PRODUCT_QUALIFIED requires portable Global-V5 replay, append-only T_exec→T_pkg authority, "
-            "graph-derived Bundle-V6, self-contained P19 replay transcript, frozen Plan-V3 runtime closure "
-            f"and activation-regression evidence: {qualification_error}"
+            "graph-derived Bundle-V7, self-contained P19 replay transcript, frozen Plan-V4 runtime closure, "
+            f"dual-signed verifier activation authority and regression evidence: {qualification_error}"
         )
 
     production_control_authorized = False
@@ -226,7 +227,7 @@ def build_release(
     bundle_record = qualified_bundle.document if qualified_bundle is not None else None
 
     manifest = {
-        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V6",
+        "schema": "DGC_DETERMINISTIC_RESEARCH_RELEASE_V7",
         "qualified_execution_source_commit": execution_commit,
         "qualified_execution_source_tree": execution_tree,
         "evidence_packaging_commit": packaging_commit,
@@ -235,7 +236,7 @@ def build_release(
             execution_commit == packaging_commit and execution_tree == packaging_tree
         ),
         "release_authority": (
-            "PRODUCT_QUALIFIED_PORTABLE_GLOBAL_V5_T0_T1_GRAPH_COMPLETE_V1"
+            "PRODUCT_QUALIFIED_PORTABLE_GLOBAL_V5_T0_T1_GRAPH_COMPLETE_PLAN_V4_DUAL_SIGNED_ACTIVATION_V1"
             if product_qualified
             else "RESEARCH_RELEASE_NOT_PRODUCT_QUALIFIED"
         ),
@@ -247,10 +248,11 @@ def build_release(
         "qualification_pointer_v3_required_for_product_claim": True,
         "portable_global_v5_required_for_product_claim": True,
         "append_only_packaging_authority_required_for_product_claim": True,
-        "graph_derived_bundle_v6_authority_required_for_product_claim": True,
+        "graph_derived_bundle_v7_authority_required_for_product_claim": True,
         "self_contained_raw_p19_verification_transcript_required_for_product_claim": True,
-        "frozen_verification_plan_v3_and_entrypoint_required_for_product_claim": True,
+        "frozen_verification_plan_v4_and_entrypoint_required_for_product_claim": True,
         "frozen_verifier_dependency_closure_required_for_product_claim": True,
+        "dual_signed_verifier_activation_authority_required_for_product_claim": True,
         "activation_regression_evidence_required_for_product_claim": True,
         "portable_p19_replay_inputs_required_for_product_claim": True,
         "environment_specific_signature_tool_receipt_is_product_authority": False,
@@ -291,10 +293,12 @@ def build_release(
         "notes": [
             "The execution-source archive is generated from immutable qualified revision T_exec, not packaging HEAD.",
             "T_pkg may differ from T_exec only under DGC_APPEND_ONLY_POST_OUTCOME_PACKAGING_POLICY_V2_GLOBAL_V5.",
-            "The qualified Bundle V6 is derived from the actual Pointer-V3/P19/Global-V5 evidence graph.",
+            "The qualified Bundle V7 is derived from the actual Pointer-V3/P19/Global-V5 evidence graph.",
             "Every required graph subject must be Git-bound either to T_exec or append-only evidence in T_pkg.",
-            "P19 check receipts/transcripts, Plan V3, verifier runtime dependencies, activation-regression receipt/transcript/test surface and portable replay inputs are graph-bound product-release subjects.",
-            "Research release generation does not require an activated Plan V3; product-qualified release does through Bundle V6.",
+            "P19 transcripts, Plan V4, security-critical verifier runtime, dual-signed activation authority, regression evidence and portable replay inputs are graph-bound product-release subjects.",
+            "A local regression receipt alone cannot activate Plan V4; two distinct frozen-trust-store external principals/keys must sign the exact Git-bound regression receipt.",
+            "GitHub OIDC/Sigstore artifact attestation is additive workflow provenance and is not treated as proof of scientific correctness.",
+            "Research release generation does not require an activated Plan V4; product-qualified release does through Bundle V7.",
             "Global V5 excludes environment-specific ssh-keygen path/binary/stdout from portable product authority identity while still executing signature verification fail-closed.",
             "Executable/statistical/scorer/policy mutation after T_exec makes product-qualified packaging fail closed.",
             "Source tar metadata are generated directly from Git objects with normalized UID/GID/mtime/modes; gitlinks and escaping symlinks are rejected.",
