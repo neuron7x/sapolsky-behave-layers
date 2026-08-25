@@ -33,6 +33,7 @@ VERIFIER_RUNTIME_DEPENDENCIES = tuple(
 )
 
 REGRESSION_TEST_FILES = (
+    "tests/test_dgc_p19_external_verification_contract.py",
     "tests/test_dgc_p19_external_verification_plan.py",
     "tests/test_dgc_p19_external_verifier_regression.py",
     "tests/test_dgc_p19_external_verifier_activation.py",
