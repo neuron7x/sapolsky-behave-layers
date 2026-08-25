@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from cwc.governance.p19_external_verification_plan import CANONICAL_PLAN_PATH
+from cwc.governance.p19_external_verification_plan_v5 import CANONICAL_PLAN_PATH
 
 ACTIVATED_PLAN_DEFAULT_PATH = (
     "artifacts/dgc-product-v1/generated/verifier-activation/"
-    "P19_EXTERNAL_VERIFICATION_PLAN_V4_ACTIVE.json"
+    "P19_EXTERNAL_VERIFICATION_PLAN_V5_ACTIVE.json"
 )
 
 
