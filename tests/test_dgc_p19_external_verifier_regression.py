@@ -189,14 +189,39 @@ def test_test_suite_mutation_after_regression_invalidates_receipt(tmp_path: Path
         verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
 
 
-def test_checkout_movement_after_regression_invalidates_receipt(tmp_path: Path):
+def test_append_only_descendant_commit_preserves_historical_regression_validity(tmp_path: Path):
+    path, doc = _build(tmp_path)
+    marker = tmp_path / "evidence/activation/witness.txt"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text("append-only witness\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", marker.relative_to(tmp_path).as_posix()], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-qm", "append activation witness"], check=True)
+    loaded = verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
+    assert loaded["source_commit"] == doc["source_commit"]
+    assert _git(tmp_path, "rev-parse", "HEAD") != doc["source_commit"]
+
+
+def test_committed_runtime_mutation_in_descendant_invalidates_historical_regression(tmp_path: Path):
+    path, _ = _build(tmp_path)
+    (tmp_path / VERIFIER_ENTRYPOINT).write_text("print('changed after verifier freeze')\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", VERIFIER_ENTRYPOINT], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-qm", "illegal runtime mutation"], check=True)
+    with pytest.raises(P19ExternalVerifierRegressionError, match="runtime bytes differ"):
+        verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
+
+
+def test_strict_same_checkout_mode_rejects_descendant_commit(tmp_path: Path):
     path, _ = _build(tmp_path)
     marker = tmp_path / "marker.txt"
     marker.write_text("next\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(tmp_path), "add", "marker.txt"], check=True)
     subprocess.run(["git", "-C", str(tmp_path), "commit", "-qm", "move checkout"], check=True)
     with pytest.raises(P19ExternalVerifierRegressionError, match="source commit differs"):
-        verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
+        verify_p19_external_verifier_regression_receipt(
+            path,
+            repository_root=tmp_path,
+            allow_descendant_checkout=False,
+        )
 
 
 def test_stdout_mutation_after_regression_invalidates_receipt(tmp_path: Path):
