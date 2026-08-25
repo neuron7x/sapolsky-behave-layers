@@ -14,6 +14,9 @@ from cwc.governance.evidence_packaging_authority import (
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
 from cwc.governance.p19_external_verification_plan import load_p19_external_verification_plan
+from cwc.governance.p19_external_verifier_activation import (
+    verify_p19_external_verifier_activation_authority_document,
+)
 from cwc.governance.p19_external_verifier_regression import verify_p19_external_verifier_regression_receipt
 from cwc.governance.p19_verification_attestation import load_p19_verification_report
 from cwc.governance.p19_verifier_policy import load_p19_verifier_trust_policy, resolve_allowed_signers
@@ -24,7 +27,7 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V6"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V7"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
 
@@ -152,6 +155,44 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
     return collected
 
 
+def _collect_activation_paths(root: Path, plan) -> set[str]:
+    if not plan.activation_authority_path:
+        raise QualifiedEvidenceBundleError("active Plan V4 lacks activation-authority locator")
+    activation_rel = _safe_rel(plan.activation_authority_path, label="P19 verifier activation authority")
+    activation_path = _safe_file(root, activation_rel)
+    try:
+        authority = verify_p19_external_verifier_activation_authority_document(
+            activation_path,
+            repository_root=root,
+        )
+    except RuntimeError as exc:
+        raise QualifiedEvidenceBundleError("P19 verifier dual-signed activation authority replay failed") from exc
+    if authority.get("authority_digest") != plan.activation_authority_digest:
+        raise QualifiedEvidenceBundleError("P19 verifier activation authority/plan digest mismatch")
+    if authority.get("activation_authorized") is not True or authority.get("all_signatures_verified") is not True:
+        raise QualifiedEvidenceBundleError("P19 verifier activation authority is not supported")
+    principals = authority.get("verifier_principals")
+    keys = authority.get("signer_key_digests")
+    if not isinstance(principals, list) or not isinstance(keys, list) or len(set(map(str, principals))) < 2 or len(set(map(str, keys))) < 2:
+        raise QualifiedEvidenceBundleError("P19 verifier activation lacks two distinct external signers")
+
+    collected = {activation_rel}
+    trust_rel = _safe_rel(authority.get("trust_policy_path"), label="activation trust policy")
+    collected.add(trust_rel)
+    policy = load_p19_verifier_trust_policy(_safe_file(root, trust_rel))
+    allowed = resolve_allowed_signers(policy, repository_root=root)
+    collected.add(allowed.relative_to(root).as_posix())
+    receipt_rel = _safe_rel(authority.get("regression_receipt_path"), label="activation regression receipt")
+    collected.add(receipt_rel)
+    for field in ("attestation_paths", "signature_paths"):
+        values = authority.get(field)
+        if not isinstance(values, list) or len(values) < 2:
+            raise QualifiedEvidenceBundleError(f"P19 verifier activation {field} population incomplete")
+        for value in values:
+            collected.add(_safe_rel(value, label=f"P19 verifier activation {field}"))
+    return collected
+
+
 def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple[set[str], set[str]]:
     report = load_p19_verification_report(_safe_file(root, report_rel), repository_root=root)
     plan_rel = _safe_rel(report.get("verification_plan_path"), label="P19 verification plan path")
@@ -164,6 +205,7 @@ def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple
         raise QualifiedEvidenceBundleError("active P19 verifier plan lacks regression receipt locator")
 
     collected = {report_rel, plan_rel, entry_rel}
+    collected.update(_collect_activation_paths(root, plan))
     for row in plan.verifier_dependencies:
         collected.add(_safe_rel(row.get("path"), label="P19 verifier dependency path"))
 
@@ -240,6 +282,7 @@ class QualifiedEvidenceBundleAuthority:
     raw_p19_verification_transcripts_included: bool
     frozen_verification_plan_and_entrypoint_included: bool
     frozen_verifier_dependency_closure_included: bool
+    dual_signed_verifier_activation_authority_included: bool
     activation_regression_evidence_included: bool
     portable_p19_replay_inputs_included: bool
     portable_global_v5_authority_included: bool
@@ -349,6 +392,7 @@ def build_qualified_evidence_bundle_authority(
         "raw_p19_verification_transcripts_included": True,
         "frozen_verification_plan_and_entrypoint_included": True,
         "frozen_verifier_dependency_closure_included": True,
+        "dual_signed_verifier_activation_authority_included": True,
         "activation_regression_evidence_included": True,
         "portable_p19_replay_inputs_included": True,
         "portable_global_v5_authority_included": True,
@@ -370,6 +414,7 @@ def build_qualified_evidence_bundle_authority(
         raw_p19_verification_transcripts_included=True,
         frozen_verification_plan_and_entrypoint_included=True,
         frozen_verifier_dependency_closure_included=True,
+        dual_signed_verifier_activation_authority_included=True,
         activation_regression_evidence_included=True,
         portable_p19_replay_inputs_included=True,
         portable_global_v5_authority_included=True,
