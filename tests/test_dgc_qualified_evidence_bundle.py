@@ -14,6 +14,15 @@ from cwc.governance.qualified_evidence_bundle import (
     build_qualified_evidence_bundle_authority,
 )
 
+PLAN_REL = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V3.json"
+REGRESSION_RECEIPT_REL = "artifacts/dgc-product-v1/verifier-regression/receipt.json"
+REGRESSION_STDOUT_REL = "artifacts/dgc-product-v1/verifier-regression/stdout.bin"
+REGRESSION_STDERR_REL = "artifacts/dgc-product-v1/verifier-regression/stderr.bin"
+REGRESSION_TESTS = (
+    "tests/test_dgc_p19_external_verification_plan.py",
+    "tests/test_dgc_p19_external_replay.py",
+)
+
 
 def _git(root: Path, *args: str) -> str:
     return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
@@ -43,7 +52,14 @@ def _fixture(tmp_path: Path, monkeypatch):
     _write(root, "cwc/governance/p19_external_verification_contract.py", "CONTRACT = 'frozen'\n")
     _write(root, "cwc/governance/p19_external_replay.py", "ENGINE = 'frozen'\n")
     _write(root, "scripts/dgc_external_p19_verifier.py", "print('verify')\n")
-    _write(root, "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json", "{}\n")
+    for rel in REGRESSION_TESTS:
+        _write(root, rel, f"# frozen regression test {rel}\n")
+    _write(root, PLAN_REL, "{}\n")
+    _write(root, REGRESSION_RECEIPT_REL, "{}\n")
+    _write(root, REGRESSION_STDOUT_REL, "regression passed\n")
+    stderr = root / REGRESSION_STDERR_REL
+    stderr.parent.mkdir(parents=True, exist_ok=True)
+    stderr.write_bytes(b"")
     _write(root, "artifacts/dgc-product-v1/replay/source-registry.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/external_source_authority.json", "{}\n")
     _write(root, "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json", "{}\n")
@@ -121,8 +137,25 @@ def _fixture(tmp_path: Path, monkeypatch):
             verifier_dependencies=(
                 {"path": "cwc/governance/p19_external_verification_contract.py"},
                 {"path": "cwc/governance/p19_external_replay.py"},
-            )
+            ),
+            activation_regression_receipt_path=REGRESSION_RECEIPT_REL,
+            activation_regression_receipt_digest="d" * 64,
         ),
+    )
+    monkeypatch.setattr(
+        qeb,
+        "verify_p19_external_verifier_regression_receipt",
+        lambda *args, **kwargs: {
+            "receipt_digest": "d" * 64,
+            "runtime_manifest": [
+                {"path": "scripts/dgc_external_p19_verifier.py"},
+                {"path": "cwc/governance/p19_external_verification_contract.py"},
+                {"path": "cwc/governance/p19_external_replay.py"},
+            ],
+            "test_manifest": [{"path": rel} for rel in REGRESSION_TESTS],
+            "stdout_path": REGRESSION_STDOUT_REL,
+            "stderr_path": REGRESSION_STDERR_REL,
+        },
     )
 
     def fake_p19(path: Path):
@@ -138,7 +171,7 @@ def _fixture(tmp_path: Path, monkeypatch):
         family = "swe" if "swe" in path.as_posix() else "terminal"
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         return {
-            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json",
+            "verification_plan_path": PLAN_REL,
             "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
             "checks": [{
                 "check_id": "REPOSITORY_IDENTITY",
@@ -161,6 +194,7 @@ def test_qualified_bundle_derives_source_packaging_portable_replay_and_verifier_
     assert authority.raw_p19_verification_transcripts_included is True
     assert authority.frozen_verification_plan_and_entrypoint_included is True
     assert authority.frozen_verifier_dependency_closure_included is True
+    assert authority.activation_regression_evidence_included is True
     assert authority.portable_p19_replay_inputs_included is True
     assert authority.portable_global_v5_authority_included is True
     assert authority.all_required_subjects_git_bound is True
@@ -171,7 +205,12 @@ def test_qualified_bundle_derives_source_packaging_portable_replay_and_verifier_
     assert roles["cwc/governance/p19_external_verification_contract.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["cwc/governance/p19_external_replay.py"].role == ROLE_EXECUTION_SOURCE
     assert roles["scripts/dgc_external_p19_verifier.py"].role == ROLE_EXECUTION_SOURCE
-    assert roles["artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"].role == ROLE_EXECUTION_SOURCE
+    assert roles[PLAN_REL].role == ROLE_EXECUTION_SOURCE
+    assert roles[REGRESSION_RECEIPT_REL].role == ROLE_EXECUTION_SOURCE
+    assert roles[REGRESSION_STDOUT_REL].role == ROLE_EXECUTION_SOURCE
+    assert roles[REGRESSION_STDERR_REL].bytes == 0
+    for rel in REGRESSION_TESTS:
+        assert roles[rel].role == ROLE_EXECUTION_SOURCE
     assert roles["artifacts/dgc-product-v1/replay/source-registry.json"].role == ROLE_EXECUTION_SOURCE
     assert roles["artifacts/dgc-product-v1/generated/swe/p19.json"].role == ROLE_PACKAGING_EVIDENCE
     assert roles["artifacts/dgc-product-v1/generated/swe/verify/stderr.bin"].bytes == 0
@@ -206,7 +245,7 @@ def test_untracked_verifier_transcript_cannot_be_hidden_behind_signed_report(tmp
         base = f"artifacts/dgc-product-v1/generated/{family}/verify"
         evidence = f"{base}/untracked-evidence.json" if family == "swe" else f"{base}/evidence.json"
         return {
-            "verification_plan_path": "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json",
+            "verification_plan_path": PLAN_REL,
             "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
             "checks": [{
                 "check_id": "REPOSITORY_IDENTITY",
@@ -230,10 +269,31 @@ def test_untracked_verifier_dependency_cannot_be_hidden_behind_frozen_plan(tmp_p
         qeb,
         "load_p19_external_verification_plan",
         lambda *args, **kwargs: SimpleNamespace(
-            verifier_dependencies=({"path": "artifacts/dgc-product-v1/generated/untracked-engine.py"},)
+            verifier_dependencies=({"path": "artifacts/dgc-product-v1/generated/untracked-engine.py"},),
+            activation_regression_receipt_path=REGRESSION_RECEIPT_REL,
+            activation_regression_receipt_digest="d" * 64,
         ),
     )
     assert dependency.is_file()
+    with pytest.raises(QualifiedEvidenceBundleError, match="not tracked in T_pkg"):
+        build_qualified_evidence_bundle_authority(repository_root=root)
+
+
+def test_untracked_regression_subject_cannot_be_hidden_behind_active_plan(tmp_path: Path, monkeypatch):
+    root, _, _, _, _, _ = _fixture(tmp_path, monkeypatch)
+    untracked = _write(root, "artifacts/dgc-product-v1/generated/untracked-regression-test.py", "assert True\n")
+    monkeypatch.setattr(
+        qeb,
+        "verify_p19_external_verifier_regression_receipt",
+        lambda *args, **kwargs: {
+            "receipt_digest": "d" * 64,
+            "runtime_manifest": [{"path": "scripts/dgc_external_p19_verifier.py"}],
+            "test_manifest": [{"path": "artifacts/dgc-product-v1/generated/untracked-regression-test.py"}],
+            "stdout_path": REGRESSION_STDOUT_REL,
+            "stderr_path": REGRESSION_STDERR_REL,
+        },
+    )
+    assert untracked.is_file()
     with pytest.raises(QualifiedEvidenceBundleError, match="not tracked in T_pkg"):
         build_qualified_evidence_bundle_authority(repository_root=root)
 
