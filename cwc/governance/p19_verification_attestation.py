@@ -155,6 +155,8 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
         raise P19VerificationAttestationError("P19 verification report omitted raw/receipt semantic replay")
     if doc.get("frozen_verification_plan_replayed") is not True:
         raise P19VerificationAttestationError("P19 verification report omitted frozen verification plan replay")
+    if doc.get("activation_regression_replayed") is not True:
+        raise P19VerificationAttestationError("P19 verification report omitted Plan V3 activation-regression replay")
 
     family = str(doc.get("family_id", "")).strip()
     if not family:
@@ -164,6 +166,33 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
     plan_digest = _sha("verification_plan_digest", doc.get("verification_plan_digest"))
     entry_sha = _sha("verifier_entrypoint_sha256", doc.get("verifier_entrypoint_sha256"))
     entry_rel = _safe_rel(doc.get("verifier_entrypoint_path"), label="P19 report verifier_entrypoint_path")
+    dependency_digest = _sha(
+        "verifier_dependency_manifest_digest", doc.get("verifier_dependency_manifest_digest")
+    )
+    regression_rel = _safe_rel(
+        doc.get("verification_plan_regression_receipt_path"),
+        label="P19 report verification-plan regression receipt path",
+    )
+    regression_sha = _sha(
+        "verification_plan_regression_receipt_sha256",
+        doc.get("verification_plan_regression_receipt_sha256"),
+    )
+    regression_digest = _sha(
+        "verification_plan_regression_receipt_digest",
+        doc.get("verification_plan_regression_receipt_digest"),
+    )
+    regression_source_commit = _oid(
+        "verification_plan_regression_source_commit",
+        doc.get("verification_plan_regression_source_commit"),
+    )
+    regression_source_tree = _oid(
+        "verification_plan_regression_source_tree",
+        doc.get("verification_plan_regression_source_tree"),
+    )
+    regression_test_digest = _sha(
+        "verification_plan_regression_test_manifest_digest",
+        doc.get("verification_plan_regression_test_manifest_digest"),
+    )
     for field in (
         "p19_digest", "statistical_plan_digest", "theorem_identity_digest", "methodology_anchor_digest",
         "stage_evidence_manifest_digest", "subject_root_manifest_digest", "checks_digest",
@@ -190,6 +219,26 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
             raise P19VerificationAttestationError("P19 report verification plan digest mismatch")
         if plan.verifier_entrypoint_path != entry_rel or plan.verifier_entrypoint_sha256 != entry_sha:
             raise P19VerificationAttestationError("P19 report verifier entrypoint identity mismatch")
+        expected_regression = {
+            "verifier_dependency_manifest_digest": plan.verifier_dependency_manifest_digest,
+            "verification_plan_regression_receipt_path": plan.activation_regression_receipt_path,
+            "verification_plan_regression_receipt_sha256": plan.activation_regression_receipt_sha256,
+            "verification_plan_regression_receipt_digest": plan.activation_regression_receipt_digest,
+            "verification_plan_regression_source_commit": plan.activation_regression_source_commit,
+            "verification_plan_regression_source_tree": plan.activation_regression_source_tree,
+            "verification_plan_regression_test_manifest_digest": plan.activation_regression_test_manifest_digest,
+        }
+        observed_regression = {
+            "verifier_dependency_manifest_digest": dependency_digest,
+            "verification_plan_regression_receipt_path": regression_rel,
+            "verification_plan_regression_receipt_sha256": regression_sha,
+            "verification_plan_regression_receipt_digest": regression_digest,
+            "verification_plan_regression_source_commit": regression_source_commit,
+            "verification_plan_regression_source_tree": regression_source_tree,
+            "verification_plan_regression_test_manifest_digest": regression_test_digest,
+        }
+        if observed_regression != expected_regression:
+            raise P19VerificationAttestationError("P19 report Plan V3 regression lineage mismatch")
 
     seen: set[str] = set()
     normalized: list[dict[str, object]] = []
@@ -350,6 +399,8 @@ def _bind_report_to_attestation(report: Mapping[str, object], attestation: Mappi
             raise P19VerificationAttestationError(f"verification report/attestation mismatch: {field}")
     if report.get("frozen_verification_plan_replayed") is not True or attestation.get("frozen_verification_plan_executed") is not True:
         raise P19VerificationAttestationError("verification report/attestation omitted frozen check plan")
+    if report.get("activation_regression_replayed") is not True:
+        raise P19VerificationAttestationError("verification report omitted Plan V3 activation regression replay")
 
 
 def verify_ssh_signed_p19_verification_attestation(
