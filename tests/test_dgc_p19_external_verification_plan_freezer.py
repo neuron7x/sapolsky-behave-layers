@@ -24,7 +24,7 @@ def _prepare_verifier_surface(root: Path) -> None:
         path.write_text(f"# deterministic test dependency: {rel}\n", encoding="utf-8")
 
 
-def test_freezer_materializes_only_inactive_content_addressed_plan_v3(tmp_path: Path, monkeypatch):
+def test_freezer_materializes_only_inactive_content_addressed_plan_v4(tmp_path: Path, monkeypatch):
     _prepare_verifier_surface(tmp_path)
     output = Path(CANONICAL_PLAN_PATH)
     monkeypatch.setattr(
@@ -43,8 +43,13 @@ def test_freezer_materializes_only_inactive_content_addressed_plan_v3(tmp_path: 
         require_active=False,
     )
     assert plan.activation_authorized is False
+    assert plan.activation_evidence_requirement == "DUAL_EXTERNAL_SSH_SIGNED_GIT_BOUND_CANONICAL_REGRESSION_V1"
     assert plan.all_check_implementations_complete is True
     assert plan.product_qualification_authorized is False
+    assert plan.activation_authority_path is None
+    assert plan.activation_authority_digest is None
+    assert plan.activation_verifier_principals == ()
+    assert plan.activation_signer_key_digests == ()
     assert plan.activation_regression_receipt_path is None
     assert plan.activation_regression_receipt_digest is None
     assert plan.activation_regression_test_manifest_digest is None
@@ -82,5 +87,5 @@ def test_freezer_rejects_output_escape(tmp_path: Path, monkeypatch):
             "--output", str(tmp_path.parent / "escaped-plan.json"),
         ],
     )
-    with pytest.raises(SystemExit, match="Plan V3 output must remain inside repository"):
+    with pytest.raises(SystemExit, match="Plan V4 output must remain inside repository"):
         main()
