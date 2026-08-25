@@ -20,6 +20,7 @@ VERIFIER_OPERATOR_DEPENDENCIES = (
     "scripts/dgc_run_p19_external_verifier_regression.py",
     "scripts/dgc_freeze_p19_external_verification_plan.py",
     "scripts/dgc_materialize_inactive_p19_external_verification_plan.py",
+    "scripts/dgc_materialize_activated_p19_external_verification_plan.py",
     "scripts/dgc_authorize_p19_external_verifier.py",
     "scripts/dgc_build_verifier_regression_attestation.py",
     "scripts/dgc_p19_external_verifier_freeze_readiness.py",
@@ -47,6 +48,7 @@ REGRESSION_TEST_FILES = (
     "tests/test_dgc_p19_external_verification_contract.py",
     "tests/test_dgc_p19_external_python_runtime.py",
     "tests/test_dgc_p19_external_verification_plan.py",
+    "tests/test_dgc_p19_external_verification_transition.py",
     "tests/test_dgc_p19_external_verifier_regression.py",
     "tests/test_dgc_p19_external_verifier_activation.py",
     "tests/test_dgc_p19_external_verifier_freeze_readiness.py",
@@ -75,6 +77,7 @@ if not VERIFIER_RUNTIME_DEPENDENCIES:
 for required in (
     "cwc/governance/p19_external_replay.py",
     "cwc/governance/p19_external_verification_contract.py",
+    "cwc/governance/p19_external_verification_transition.py",
     "cwc/governance/p19_external_verifier_freeze_readiness.py",
     "cwc/governance/p19_external_python_runtime.py",
     *VERIFIER_OPERATOR_DEPENDENCIES,
