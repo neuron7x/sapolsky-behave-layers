@@ -320,7 +320,7 @@ def verify_p19_external_verifier_regression_receipt(
     path: Path,
     *,
     repository_root: Path,
-    allow_descendant_checkout: bool = False,
+    allow_descendant_checkout: bool = True,
 ) -> dict[str, object]:
     root = Path(repository_root).resolve()
     current_commit, current_tree = current_repository_identity(root)
