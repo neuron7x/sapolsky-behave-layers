@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_python_runtime import (
+    P19ExternalPythonRuntimeIdentity,
+    inspect_python_runtime,
+    verify_python_runtime_identity_document,
+)
 from cwc.governance.p19_external_verification_contract import (
     CANONICAL_REGRESSION_COMMAND,
     CHECK_METHOD_IDS,
@@ -15,11 +21,11 @@ from cwc.governance.p19_external_verification_contract import (
     VERIFIER_RUNTIME_DEPENDENCIES,
 )
 
-SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V3"
-REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V3_FROZEN_SOURCE_DESCENDANT_REPLAY"
+SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V4"
+REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V4_GIT_AND_CPYTHON_BOUND"
 EXECUTION_PROVENANCE_SCOPE = (
-    "GIT_BOUND_T_VERIFIER_RUNTIME_TESTS_EXIT_TRANSCRIPT_WITH_DESCENDANT_ACTIVATION_REPLAY_"
-    "REMOTE_RUNNER_NOT_MACHINE_PROVEN"
+    "GIT_BOUND_T_VERIFIER_RUNTIME_TESTS_EXIT_TRANSCRIPT_AND_CPYTHON_EXECUTABLE_WITH_"
+    "DESCENDANT_ACTIVATION_REPLAY_REMOTE_RUNNER_NOT_MACHINE_PROVEN"
 )
 
 
@@ -207,12 +213,23 @@ def _verify_frozen_source_lineage(
     _verify_manifest_at_source(root, source_commit, test_rows, label="verifier regression tests")
 
 
+def _normalize_python_runtime(value: Mapping[str, object] | None) -> P19ExternalPythonRuntimeIdentity:
+    try:
+        if value is None:
+            return inspect_python_runtime(Path(sys.executable).resolve())
+        return verify_python_runtime_identity_document(value)
+    except RuntimeError as exc:
+        raise P19ExternalVerifierRegressionError("verifier regression Python runtime identity invalid") from exc
+
+
 @dataclass(frozen=True, slots=True)
 class P19ExternalVerifierRegressionReceipt:
     regression_generation: str
     source_commit: str
     source_tree: str
     canonical_command_argv: tuple[str, ...]
+    python_runtime: dict[str, object]
+    python_runtime_digest: str
     runtime_manifest: tuple[dict[str, object], ...]
     runtime_manifest_digest: str
     test_manifest: tuple[dict[str, object], ...]
@@ -243,6 +260,7 @@ def build_p19_external_verifier_regression_receipt(
     stdout_path: Path,
     stderr_path: Path,
     exit_code: int,
+    python_runtime_identity: Mapping[str, object] | None = None,
 ) -> P19ExternalVerifierRegressionReceipt:
     root = Path(repository_root).resolve()
     observed_commit, observed_tree = current_repository_identity(root)
@@ -255,6 +273,8 @@ def build_p19_external_verifier_regression_receipt(
     if int(exit_code) != 0:
         raise P19ExternalVerifierRegressionError("regression exit code must be zero")
 
+    python_runtime = _normalize_python_runtime(python_runtime_identity)
+    python_doc = python_runtime.document
     stdout_rel = _safe_rel(Path(stdout_path).as_posix(), label="regression stdout")
     stderr_rel = _safe_rel(Path(stderr_path).as_posix(), label="regression stderr")
     stdout = _repo_file(root, stdout_rel, label="regression stdout", allow_empty=False)
@@ -277,6 +297,8 @@ def build_p19_external_verifier_regression_receipt(
         "source_commit": observed_commit,
         "source_tree": observed_tree,
         "canonical_command_argv": list(CANONICAL_REGRESSION_COMMAND),
+        "python_runtime": python_doc,
+        "python_runtime_digest": python_runtime.runtime_digest,
         "runtime_manifest": list(runtime),
         "runtime_manifest_digest": runtime_digest,
         "test_manifest": list(tests),
@@ -298,6 +320,8 @@ def build_p19_external_verifier_regression_receipt(
         source_commit=observed_commit,
         source_tree=observed_tree,
         canonical_command_argv=tuple(CANONICAL_REGRESSION_COMMAND),
+        python_runtime=dict(python_doc),
+        python_runtime_digest=python_runtime.runtime_digest,
         runtime_manifest=runtime,
         runtime_manifest_digest=runtime_digest,
         test_manifest=tests,
@@ -343,6 +367,7 @@ def verify_p19_external_verifier_regression_receipt(
 
     keys = (
         "regression_generation", "source_commit", "source_tree", "canonical_command_argv",
+        "python_runtime", "python_runtime_digest",
         "runtime_manifest", "runtime_manifest_digest", "test_manifest", "test_manifest_digest",
         "method_map_digest", "stdout_path", "stdout_sha256", "stdout_bytes", "stderr_path",
         "stderr_sha256", "stderr_bytes", "exit_code", "all_regression_tests_passed",
@@ -356,6 +381,18 @@ def verify_p19_external_verifier_regression_receipt(
         raise P19ExternalVerifierRegressionError("verifier regression receipt digest mismatch")
     if doc.get("regression_generation") != REGRESSION_GENERATION:
         raise P19ExternalVerifierRegressionError("verifier regression generation mismatch")
+    if doc.get("execution_provenance_scope") != EXECUTION_PROVENANCE_SCOPE:
+        raise P19ExternalVerifierRegressionError("verifier regression provenance scope mismatch")
+
+    python_doc = doc.get("python_runtime")
+    if not isinstance(python_doc, Mapping):
+        raise P19ExternalVerifierRegressionError("verifier regression Python runtime identity missing")
+    try:
+        python_runtime = verify_python_runtime_identity_document(python_doc)
+    except RuntimeError as exc:
+        raise P19ExternalVerifierRegressionError("verifier regression Python runtime identity invalid") from exc
+    if doc.get("python_runtime_digest") != python_runtime.runtime_digest:
+        raise P19ExternalVerifierRegressionError("verifier regression Python runtime digest mismatch")
 
     source_commit = _git_oid("source_commit", doc.get("source_commit"))
     source_tree = _git_oid("source_tree", doc.get("source_tree"))
@@ -374,8 +411,6 @@ def verify_p19_external_verifier_regression_receipt(
         raise P19ExternalVerifierRegressionError("verifier regression command mismatch")
     if doc.get("exit_code") != 0 or doc.get("all_regression_tests_passed") is not True:
         raise P19ExternalVerifierRegressionError("verifier regression did not pass")
-    if doc.get("execution_provenance_scope") != EXECUTION_PROVENANCE_SCOPE:
-        raise P19ExternalVerifierRegressionError("verifier regression provenance scope mismatch")
 
     runtime = current_runtime_manifest(root)
     tests = current_test_manifest(root)
