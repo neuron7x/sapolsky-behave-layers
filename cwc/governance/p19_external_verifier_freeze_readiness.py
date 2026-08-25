@@ -95,13 +95,7 @@ def build_p19_external_verifier_freeze_readiness(
     root = Path(repository_root).resolve()
     source_commit, source_tree = current_repository_identity(root)
 
-    subjects = (
-        VERIFIER_ENTRYPOINT,
-        *VERIFIER_RUNTIME_DEPENDENCIES,
-        *REGRESSION_TEST_FILES,
-        "scripts/dgc_freeze_p19_external_verification_plan.py",
-        "scripts/dgc_materialize_inactive_p19_external_verification_plan.py",
-    )
+    subjects = (VERIFIER_ENTRYPOINT, *VERIFIER_RUNTIME_DEPENDENCIES, *REGRESSION_TEST_FILES)
     if len(set(subjects)) != len(subjects):
         raise P19ExternalVerifierFreezeReadinessError("verifier freeze subject population contains duplicates")
     for rel in subjects:
