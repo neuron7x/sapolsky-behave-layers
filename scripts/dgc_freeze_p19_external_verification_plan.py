@@ -30,7 +30,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Freeze canonical P19 external verification Plan V2 from exact current verifier bytes. "
+            "Freeze canonical P19 external verification Plan V3 from exact current verifier bytes. "
             "This command intentionally creates an INACTIVE plan only."
         )
     )
@@ -44,7 +44,7 @@ def main() -> int:
         resolved_output_parent = output.parent.resolve()
         resolved_output_parent.relative_to(root)
     except ValueError as exc:
-        raise SystemExit("P19 Plan V2 output must remain inside repository") from exc
+        raise SystemExit("P19 Plan V3 output must remain inside repository") from exc
 
     document = build_inactive_p19_external_verification_plan_document(
         repository_root=root,
@@ -57,7 +57,16 @@ def main() -> int:
         require_active=False,
     )
     if verified.activation_authorized:
-        raise RuntimeError("inactive Plan V2 freezer produced an activated plan")
+        raise RuntimeError("inactive Plan V3 freezer produced an activated plan")
+    if any((
+        verified.activation_regression_receipt_path,
+        verified.activation_regression_receipt_sha256,
+        verified.activation_regression_receipt_digest,
+        verified.activation_regression_source_commit,
+        verified.activation_regression_source_tree,
+        verified.activation_regression_test_manifest_digest,
+    )):
+        raise RuntimeError("inactive Plan V3 freezer illegally bound activation evidence")
 
     print(json.dumps({
         "status": "FROZEN_INACTIVE",
@@ -66,7 +75,7 @@ def main() -> int:
         "all_check_implementations_complete": verified.all_check_implementations_complete,
         "activation_authorized": False,
         "product_qualification_authorized": False,
-        "activation_requires_separate_executable_regression_evidence": True,
+        "activation_requires_canonical_regression_receipt": True,
     }, sort_keys=True))
     return 0
 
