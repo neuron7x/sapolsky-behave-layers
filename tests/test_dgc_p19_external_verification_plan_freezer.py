@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.p19_external_verification_plan import (
+    CANONICAL_PLAN_PATH,
     ENTRYPOINT,
     REQUIRED_IMPLEMENTATION_DEPENDENCIES,
     load_p19_external_verification_plan,
@@ -23,9 +24,9 @@ def _prepare_verifier_surface(root: Path) -> None:
         path.write_text(f"# deterministic test dependency: {rel}\n", encoding="utf-8")
 
 
-def test_freezer_materializes_only_inactive_content_addressed_plan(tmp_path: Path, monkeypatch):
+def test_freezer_materializes_only_inactive_content_addressed_plan_v3(tmp_path: Path, monkeypatch):
     _prepare_verifier_surface(tmp_path)
-    output = Path("artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json")
+    output = Path(CANONICAL_PLAN_PATH)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -44,6 +45,9 @@ def test_freezer_materializes_only_inactive_content_addressed_plan(tmp_path: Pat
     assert plan.activation_authorized is False
     assert plan.all_check_implementations_complete is True
     assert plan.product_qualification_authorized is False
+    assert plan.activation_regression_receipt_path is None
+    assert plan.activation_regression_receipt_digest is None
+    assert plan.activation_regression_test_manifest_digest is None
     with pytest.raises(Exception, match="not activated"):
         load_p19_external_verification_plan(
             tmp_path / output,
@@ -54,7 +58,7 @@ def test_freezer_materializes_only_inactive_content_addressed_plan(tmp_path: Pat
 
 def test_freezer_cannot_overwrite_existing_plan(tmp_path: Path, monkeypatch):
     _prepare_verifier_surface(tmp_path)
-    output = Path("artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json")
+    output = Path(CANONICAL_PLAN_PATH)
     argv = [
         "dgc_freeze_p19_external_verification_plan.py",
         "--repository-root", str(tmp_path),
@@ -78,5 +82,5 @@ def test_freezer_rejects_output_escape(tmp_path: Path, monkeypatch):
             "--output", str(tmp_path.parent / "escaped-plan.json"),
         ],
     )
-    with pytest.raises(SystemExit, match="must remain inside repository"):
+    with pytest.raises(SystemExit, match="Plan V3 output must remain inside repository"):
         main()
