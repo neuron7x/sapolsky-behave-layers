@@ -78,6 +78,15 @@ def build_p19_verification_report(
         )
     except P19ExternalVerificationPlanError as exc:
         raise P19VerificationReportError("frozen external verification plan is not execution-ready") from exc
+    if not all((
+        plan.activation_regression_receipt_path,
+        plan.activation_regression_receipt_sha256,
+        plan.activation_regression_receipt_digest,
+        plan.activation_regression_source_commit,
+        plan.activation_regression_source_tree,
+        plan.activation_regression_test_manifest_digest,
+    )):
+        raise P19VerificationReportError("active external verification plan lacks regression lineage")
 
     rows = [load_check_receipt(Path(path), repository_root=root) for path in check_receipt_paths]
     if len(rows) != len(REQUIRED_CHECKS):
@@ -128,6 +137,13 @@ def build_p19_verification_report(
         "verification_plan_digest": plan.plan_digest,
         "verifier_entrypoint_path": plan.verifier_entrypoint_path,
         "verifier_entrypoint_sha256": plan.verifier_entrypoint_sha256,
+        "verifier_dependency_manifest_digest": plan.verifier_dependency_manifest_digest,
+        "verification_plan_regression_receipt_path": plan.activation_regression_receipt_path,
+        "verification_plan_regression_receipt_sha256": plan.activation_regression_receipt_sha256,
+        "verification_plan_regression_receipt_digest": plan.activation_regression_receipt_digest,
+        "verification_plan_regression_source_commit": plan.activation_regression_source_commit,
+        "verification_plan_regression_source_tree": plan.activation_regression_source_tree,
+        "verification_plan_regression_test_manifest_digest": plan.activation_regression_test_manifest_digest,
         "p19_path": p19_rel,
         "family_id": str(family_p19.get("family_id", "")),
         "p19_digest": _sha("p19_digest", family_p19.get("p19_digest")),
@@ -149,6 +165,7 @@ def build_p19_verification_report(
         "raw_verification_transcript_disclosed": True,
         "receipt_semantics_replayed": True,
         "frozen_verification_plan_replayed": True,
+        "activation_regression_replayed": True,
         "all_required_checks_passed": True,
     }
     bind_report_to_p19(doc, family_p19)
