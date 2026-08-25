@@ -155,15 +155,17 @@ def build_p19_external_verifier_regression_receipt(
     stderr = _repo_file(root, stderr_rel, label="regression stderr", allow_empty=True)
     runtime = current_runtime_manifest(root)
     tests = current_test_manifest(root)
-    payload = {
+    runtime_digest = sha256_bytes(canonical_json_bytes(list(runtime)))
+    test_digest = sha256_bytes(canonical_json_bytes(list(tests)))
+    payload: dict[str, object] = {
         "regression_generation": REGRESSION_GENERATION,
         "source_commit": _git_oid("source_commit", source_commit),
         "source_tree": _git_oid("source_tree", source_tree),
         "canonical_command_argv": list(CANONICAL_REGRESSION_COMMAND),
         "runtime_manifest": list(runtime),
-        "runtime_manifest_digest": sha256_bytes(canonical_json_bytes(list(runtime))),
+        "runtime_manifest_digest": runtime_digest,
         "test_manifest": list(tests),
-        "test_manifest_digest": sha256_bytes(canonical_json_bytes(list(tests))),
+        "test_manifest_digest": test_digest,
         "method_map_digest": method_map_digest(),
         "stdout_path": stdout_rel,
         "stdout_sha256": sha256_file(stdout),
@@ -175,12 +177,27 @@ def build_p19_external_verifier_regression_receipt(
         "all_regression_tests_passed": True,
         "execution_provenance_scope": "RAW_EXIT_CODE_AND_TRANSCRIPT_BOUND_NOT_REMOTE_RUNNER_ATTESTED",
     }
+    receipt_digest = sha256_bytes(canonical_json_bytes(payload))
     return P19ExternalVerifierRegressionReceipt(
-        **payload,
-        canonical_command_argv=tuple(payload["canonical_command_argv"]),
+        regression_generation=REGRESSION_GENERATION,
+        source_commit=str(payload["source_commit"]),
+        source_tree=str(payload["source_tree"]),
+        canonical_command_argv=tuple(CANONICAL_REGRESSION_COMMAND),
         runtime_manifest=runtime,
+        runtime_manifest_digest=runtime_digest,
         test_manifest=tests,
-        receipt_digest=sha256_bytes(canonical_json_bytes(payload)),
+        test_manifest_digest=test_digest,
+        method_map_digest=str(payload["method_map_digest"]),
+        stdout_path=stdout_rel,
+        stdout_sha256=str(payload["stdout_sha256"]),
+        stdout_bytes=int(payload["stdout_bytes"]),
+        stderr_path=stderr_rel,
+        stderr_sha256=str(payload["stderr_sha256"]),
+        stderr_bytes=int(payload["stderr_bytes"]),
+        exit_code=0,
+        all_regression_tests_passed=True,
+        execution_provenance_scope=str(payload["execution_provenance_scope"]),
+        receipt_digest=receipt_digest,
     )
 
 
