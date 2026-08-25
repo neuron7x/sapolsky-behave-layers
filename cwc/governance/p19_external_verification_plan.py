@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
@@ -45,20 +45,31 @@ def _git_oid(name: str, value: object) -> str:
 
 def _safe_rel(value: object, *, label: str) -> str:
     text = str(value)
-    if not text or text != text.strip() or text.startswith("/") or ".." in Path(text).parts or "\\" in text:
-        raise P19ExternalVerificationPlanError(f"{label} must be canonical repository-relative path")
+    if (
+        not text
+        or text != text.strip()
+        or any(ch in text for ch in ("\x00", "\n", "\r", "\t", "\\"))
+        or "//" in text
+    ):
+        raise P19ExternalVerificationPlanError(f"{label} must be canonical repository-relative POSIX path")
+    rel = PurePosixPath(text)
+    if rel.is_absolute() or any(part in ("", ".", "..") for part in rel.parts) or rel.as_posix() != text:
+        raise P19ExternalVerificationPlanError(f"{label} must be canonical repository-relative POSIX path")
     return text
 
 
 def _required_regular_file(root: Path, rel: str, *, label: str) -> Path:
-    path = root / rel
+    normalized = _safe_rel(rel, label=label)
+    path = root / normalized
     if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
         raise P19ExternalVerificationPlanError(f"{label} missing/invalid")
     resolved = path.resolve()
     try:
-        resolved.relative_to(root)
+        observed_rel = resolved.relative_to(root).as_posix()
     except ValueError as exc:
         raise P19ExternalVerificationPlanError(f"{label} escapes repository") from exc
+    if observed_rel != normalized:
+        raise P19ExternalVerificationPlanError(f"{label} resolves through a non-canonical alias/symlink")
     return resolved
 
 
@@ -116,9 +127,10 @@ def _build_plan_document(
                 activation_path = resolved.relative_to(root).as_posix()
             except ValueError as exc:
                 raise P19ExternalVerificationPlanError("regression receipt escapes repository") from exc
+            activation_path = _safe_rel(activation_path, label="regression receipt")
         else:
             activation_path = _safe_rel(source.as_posix(), label="regression receipt")
-            resolved = (root / activation_path).resolve()
+            resolved = _required_regular_file(root, activation_path, label="regression receipt")
         try:
             receipt = verify_p19_external_verifier_regression_receipt(resolved, repository_root=root)
         except RuntimeError as exc:
@@ -251,8 +263,13 @@ def load_p19_external_verification_plan(
         source = root / source
     if source.is_symlink() or not source.is_file():
         raise P19ExternalVerificationPlanError("external verification plan must be a regular non-symlink file")
+    resolved_source = source.resolve()
     try:
-        raw = source.read_bytes()
+        resolved_source.relative_to(root)
+    except ValueError as exc:
+        raise P19ExternalVerificationPlanError("external verification plan escapes repository") from exc
+    try:
+        raw = resolved_source.read_bytes()
         doc = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise P19ExternalVerificationPlanError("invalid external verification plan JSON") from exc
