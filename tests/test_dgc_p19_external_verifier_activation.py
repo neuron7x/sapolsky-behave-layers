@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.p19_external_python_runtime import SCHEMA as PYTHON_RUNTIME_SCHEMA
 from cwc.governance.p19_external_verification_contract import (
     CANONICAL_REGRESSION_COMMAND,
     REGRESSION_TEST_FILES,
@@ -37,6 +38,26 @@ def _write(root: Path, rel: str, data: bytes) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
     return path
+
+
+def _python_runtime() -> dict[str, object]:
+    payload = {
+        "implementation": "cpython",
+        "version_major": 3,
+        "version_minor": 10,
+        "version_micro": 14,
+        "releaselevel": "final",
+        "serial": 0,
+        "cache_tag": "cpython-310",
+        "executable_path": "/opt/dgc/python3.10",
+        "executable_sha256": "a" * 64,
+        "executable_bytes": 123456,
+    }
+    return {
+        "schema": PYTHON_RUNTIME_SCHEMA,
+        **payload,
+        "runtime_digest": sha256_bytes(canonical_json_bytes(payload)),
+    }
 
 
 def _policy(root: Path) -> tuple[Path, Path]:
@@ -95,6 +116,7 @@ def _fixture(root: Path):
         stdout_path=stdout.relative_to(root),
         stderr_path=stderr.relative_to(root),
         exit_code=0,
+        python_runtime_identity=_python_runtime(),
     )
     receipt_path = _write(
         root,
