@@ -26,6 +26,9 @@ def main() -> int:
     if not bundle.frozen_verifier_dependency_closure_included:
         print("DGC-PRODUCT-BUNDLE-GATE: FAIL frozen-verifier-dependency-closure-missing")
         return 1
+    if not bundle.dual_signed_verifier_activation_authority_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL dual-signed-verifier-activation-authority-missing")
+        return 1
     if not bundle.activation_regression_evidence_included:
         print("DGC-PRODUCT-BUNDLE-GATE: FAIL verifier-activation-regression-evidence-missing")
         return 1
@@ -49,6 +52,7 @@ def main() -> int:
     print("DGC-PRODUCT-BUNDLE-RAW-P19-VERIFICATION-TRANSCRIPTS: true")
     print("DGC-PRODUCT-BUNDLE-FROZEN-VERIFICATION-PLAN-ENTRYPOINT: true")
     print("DGC-PRODUCT-BUNDLE-FROZEN-VERIFIER-DEPENDENCY-CLOSURE: true")
+    print("DGC-PRODUCT-BUNDLE-DUAL-SIGNED-VERIFIER-ACTIVATION: true")
     print("DGC-PRODUCT-BUNDLE-VERIFIER-ACTIVATION-REGRESSION-EVIDENCE: true")
     print("DGC-PRODUCT-BUNDLE-PORTABLE-P19-REPLAY-INPUTS: true")
     print("DGC-PRODUCT-BUNDLE-PORTABLE-GLOBAL-V5: true")
