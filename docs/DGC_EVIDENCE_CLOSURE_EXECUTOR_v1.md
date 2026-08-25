@@ -1,8 +1,8 @@
-# DGC Evidence Closure Executor v6
+# DGC Evidence Closure Executor v7
 
 Status: **engineering/research control; not empirical product evidence**.
 
-This is the current operational SSOT for DGC evidence closure. A coded transition proves only that exact bound subjects passed the declared verifier under its explicit theorem/engineering assumptions. It never substitutes for the external observation required by that stage.
+This is the current operational SSOT for DGC evidence closure. A coded transition proves only that exact bound subjects passed the declared verifier under explicit theorem/engineering assumptions. It never substitutes for the external observation required by that stage.
 
 ## 1. Scientific stage chain
 
@@ -26,7 +26,7 @@ SOURCE_VERIFIED
 → PRODUCT_QUALIFIED
 ```
 
-The order is evidence, not presentation. Statistical method, CCF, G1–G5, fault semantics, verifier plan and verifier trust policy must be frozen before outcome-bearing execution. B2 is calibration-only. Downstream evidence cannot redefine the method after seeing confirmatory outcomes.
+The order is evidence, not presentation. Statistical method, CCF, G1–G5, fault semantics, external-verifier method surface and verifier trust policy must be frozen before outcome-bearing execution. B2 is calibration-only. Downstream evidence cannot redefine the method after seeing confirmatory outcomes.
 
 ## 2. `T_exec`: immutable execution source identity
 
@@ -36,19 +36,13 @@ Every scientific stage in one generation is bound to one clean Git commit/tree:
 T_exec = (repo_commit, repo_tree)
 ```
 
-`_assert_repository_identity()` requires HEAD/tree to equal the ledger identity and requires a clean tracked working tree. Outcome-bearing execution is therefore not permitted while executable/statistical/scorer/policy/methodology source is moving.
+`_assert_repository_identity()` requires HEAD/tree to equal the ledger identity and requires a clean tracked worktree. Outcome-bearing execution is therefore not permitted while executable/statistical/scorer/policy/methodology source is moving.
 
 ## 3. Materialization and partition
 
 `MATERIALIZED_VERIFIED` is recomputed from frozen external source authority and actual materialized bytes. A self-consistent receipt is insufficient.
 
-Primary tasks are deterministically split before outcomes into pairwise-disjoint:
-
-1. calibration;
-2. primary confirmatory;
-3. G1 unseen-task holdout.
-
-B2 may use only calibration examples and must explicitly forbid both downstream populations.
+Primary tasks are deterministically split before outcomes into pairwise-disjoint calibration, primary-confirmatory and G1 unseen-task populations. B2 may use only calibration examples and explicitly forbids both downstream populations.
 
 ## 4. Pre-outcome freeze
 
@@ -61,10 +55,10 @@ Before B2/confirmatory outcomes the generation freezes:
 - CCF semantics;
 - G1–G5 registry and no-retuning rule;
 - fault-injection matrix;
-- P19 external verification plan;
+- P19 external-verifier method/runtime/test surface;
 - P19 verifier trust policy.
 
-The final B0/B1/B2/B3/DGC harness is frozen after the fitted B2 identity exists and before confirmatory execution.
+The final B0/B1/B2/B3/DGC harness is frozen after fitted-B2 identity exists and before confirmatory execution.
 
 ## 5. Trial sizing versus final inference
 
@@ -75,23 +69,13 @@ Current final primary inference is V5.1:
 1. exact frozen-panel fact; and
 2. anytime-valid average-conditional-mean inference using Howard–Ramdas–McAuliffe–Sekhon Theorem 4 with exact polynomial-stitching Eq. (10).
 
-The primary target is the precommitted bounded adapted sequence average conditional mean, not an iid population mean. Provider-request independence is not a primary validity assumption.
-
-V5.1 also freezes the exact binary64 `zeta(1.4)` reference value and boundary-parameter digest. Historical V4/V5 generations cannot authorize current promotion.
+The primary target is the precommitted bounded adapted-sequence average conditional mean, not an iid population mean. Provider-request independence is not a primary validity assumption. V5.1 freezes the exact binary64 `zeta(1.4)` reference value and boundary-parameter digest. Historical V4/V5 generations cannot authorize current promotion.
 
 ## 6. Confirmatory/P9 contract
 
 `CONFIRMATORY_EXECUTED` requires the complete frozen `task × policy × replicate` population, replayable result/evidence bytes, coordinator audit chain and physical-cost subjects.
 
-`P9_SUPPORTED` requires all of:
-
-- exact-panel cost/quality/regret conditions against B0–B3;
-- V5.1 anytime lower-bound support;
-- exact paired population coverage;
-- ten-component physical-cost verification;
-- frozen multiplicity allocation;
-- CCF audit completeness;
-- raw-subject and lineage replay.
+`P9_SUPPORTED` requires exact-panel cost/quality/regret conditions against B0–B3, V5.1 anytime lower-bound support, exact paired population coverage, ten-component physical-cost verification, frozen multiplicity allocation, CCF audit completeness and raw-subject/lineage replay.
 
 A favorable point estimate cannot rescue a failed confidence gate, and the confidence procedure cannot rescue an unfavorable exact panel.
 
@@ -112,25 +96,15 @@ Per workload family:
 family FWER = 0.05
 ```
 
-`GENERALIZATION_SUPPORTED` means support on the five preregistered shifts only. It is not a universal-generalization claim.
-
-The final two-family product claim uses an explicit intersection–union AND composition.
+`GENERALIZATION_SUPPORTED` means support on the five preregistered shifts only. It is not a universal-generalization claim. The final two-family product claim uses an explicit intersection–union AND composition.
 
 ## 8. Fault tolerance
 
-`FAULT_TOLERANCE_SUPPORTED` is not a boolean chaos-test declaration.
-
-Each frozen fault class requires typed injection evidence, raw artifact binding, state-transition evidence and an evidence-bound audit event. Complete case coverage, no unauthorized promotion, no budget bypass and no duplicate side-effect commit are required.
+`FAULT_TOLERANCE_SUPPORTED` is not a boolean chaos-test declaration. Each frozen fault class requires typed injection evidence, raw artifact binding, state-transition evidence and an evidence-bound audit event. Complete case coverage, no unauthorized promotion, no budget bypass and no duplicate side-effect commit are required.
 
 ## 9. Independent replication
 
-Independent replication requires the same frozen methodology but fresh:
-
-- execution/result population;
-- physical-cost population;
-- CCF population;
-- scientific P9 result;
-- externally signed replication attestation.
+Independent replication requires the same frozen methodology but fresh execution/result population, physical-cost population, CCF population, scientific P9 result and externally signed replication attestation.
 
 Fresh subject identity and signature possession are machine-verifiable. Social independence is externally attested, never machine-proven:
 
@@ -140,28 +114,24 @@ social_independence_machine_proven = false
 
 ## 10. Family P19 V3 portable replay root
 
-Each canonical workload family receives its own `DGC_FAMILY_P19_EVIDENCE_ROOT_V3`. One family cannot authorize the global product claim.
-
-Required families are exactly:
+Each canonical workload family receives its own `DGC_FAMILY_P19_EVIDENCE_ROOT_V3`. Required families are exactly:
 
 ```text
 SWE_BENCH_VERIFIED
 TERMINAL_BENCH_2_1
 ```
 
-P19 V3 seals:
+P19 V3 seals the pre-P19 ledger/receipt chain, stage evidence, methodology anchors, raw subject roots and an exact closed `external_replay_inputs` locator population. Each replay locator binds repository-relative path, SHA-256 and byte count. Missing, duplicate, escaping or byte-mismatched locators fail closed. A verifier must not discover an authority by scanning the repository for a matching digest.
 
-- pre-P19 ledger snapshot and receipt-chain tip;
-- stage evidence;
-- methodology anchors;
-- disclosed raw subject roots;
-- exact external replay file locators and their SHA-256/byte identities.
+## 11. External P19 semantic replay — Plan V4
 
-The external replay locator set is explicit and closed. A verifier must not discover an authority by scanning the repository for a matching digest. Missing, duplicate, escaping or byte-mismatched locators fail closed.
+Current implementation contract:
 
-## 11. External P19 semantic replay and Plan V2
+```text
+DGC_P19_EXTERNAL_VERIFICATION_PLAN_V4
+```
 
-The implementation contract is `DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2`. For each family it defines exactly eight checks:
+It defines exactly eight checks:
 
 1. `REPOSITORY_IDENTITY`;
 2. `THEOREM_AND_PLAN_IDENTITY`;
@@ -172,82 +142,96 @@ The implementation contract is `DGC_P19_EXTERNAL_VERIFICATION_PLAN_V2`. For each
 7. `FAULT_TOLERANCE_RAW_REPLAY`;
 8. `INDEPENDENT_REPLICATION_RAW_REPLAY`.
 
-`cwc/governance/p19_external_verification_contract.py` is the single SSOT for check→method identity. Plan V2 rejects a self-consistent plan whose `method_id` differs from that exact map.
+`cwc/governance/p19_external_verification_contract.py` is the check→method SSOT. Plan V4 requires exact `CHECK_METHOD_IDS`; a self-consistent replacement label cannot pass.
 
-The executable verifier path is:
+The executable entrypoint is:
 
 ```text
 scripts/dgc_external_p19_verifier.py
 ```
 
-The plan content-addresses both the entrypoint and verifier-specific implementation dependencies:
+The scientific replay engine is:
 
 ```text
-cwc/governance/p19_external_verification_contract.py
 cwc/governance/p19_external_replay.py
 ```
 
-Each outcome check delegates to the canonical authority builders/verifiers and requires recomputed authority digests to equal the digests sealed in P19. External replay therefore does not introduce a second statistical or scientific interpretation.
+Each outcome check delegates to the canonical authority builders/verifiers and requires recomputed authority digests to equal the digests sealed in P19. External replay therefore does not create a second statistical interpretation.
 
-Each check discloses and binds:
+### Full transitive governance runtime closure
 
-- canonical check receipt;
-- stdout bytes;
-- stderr bytes;
-- replay evidence bytes.
+The verifier does not freeze only wrapper modules. `VERIFIER_RUNTIME_DEPENDENCIES` is the deterministic sorted set of all Python files under:
 
-The final verification report binds the frozen plan, exact entrypoint, dependency closure and raw transcript.
+```text
+cwc/governance/**/*.py
+```
 
-### Current Plan V2 activation state
+Any governance semantic change invalidates the verifier runtime digest and requires a new pre-outcome freeze/regression cycle. This intentionally prefers conservative invalidation over a transitive-import substitution surface.
 
-The V2 implementation exists, but the canonical `artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json` has **not yet been materialized** because exact-head executable regression has not run in the available environment. The historical V1 artifact remains inactive and cannot satisfy the V2 loader.
+The canonical regression test population is also content-addressed and method-map-bound.
+
+### Raw verification transcript
+
+Each of the eight checks binds canonical receipt, stdout bytes, stderr bytes and replay evidence bytes. Report/receipt/raw-subject semantics are replayed before SSH signature acceptance.
+
+## 12. Plan V4 freeze and activation lifecycle
+
+Development state and frozen-verifier state are distinct.
+
+While verifier source/tests are still changing, **do not materialize the canonical Plan V4**. Instead run:
+
+```text
+python scripts/dgc_p19_external_verifier_freeze_readiness.py
+```
+
+`DGC_P19_EXTERNAL_VERIFIER_FREEZE_READINESS_V1` requires:
+
+- exact eight-handler/method population;
+- full governance runtime closure;
+- canonical regression-test closure;
+- all freeze subjects Git-tracked and clean;
+- deterministic candidate inactive Plan V4 digest;
+- no untracked canonical plan masquerading as frozen evidence.
+
+Once the surface is stable and readiness passes, materialize exactly one immutable inactive Plan V4 with `dgc_freeze_p19_external_verification_plan.py` or the equivalent inactive materializer. The inactive plan cannot authorize activation or product qualification.
+
+Activation is a separate authority. It requires:
+
+1. canonical Git-bound regression receipt with exit code 0;
+2. exact source commit/tree, runtime/test manifests and method-map digest;
+3. two distinct external verifier principals;
+4. two distinct signer key materials from the frozen trust policy;
+5. valid SSH signatures over the exact regression-attestation protocol;
+6. `DGC_P19_EXTERNAL_VERIFIER_ACTIVATION_AUTHORITY_V1` replay.
 
 Therefore:
 
 ```text
-external_verifier_v2_activation_authorized = false
+handlers_implemented = true
+≠ regression_executed
+≠ activation_authorized
+≠ product_qualified
 ```
 
-No plan may be activated merely because eight Python handlers exist; exact implementation bytes and executable regression evidence must be available first.
+The canonical V4 plan artifact is intentionally not frozen while this verifier surface is still changing. No synthetic signature or `CI failure/success` label can substitute for dual signed regression evidence.
 
-## 12. Frozen external trust
+## 13. Frozen external trust
 
-`P19_VERIFIER_TRUST_POLICY_V2` is not caller-supplied at terminal promotion. It requires at least two distinct verifier principals and at least two distinct SSH key materials; one key aliased under two principal names cannot satisfy verifier separation.
+`P19_VERIFIER_TRUST_POLICY_V2` is caller-independent at terminal promotion. It requires at least two distinct verifier principals and at least two distinct SSH key materials; one key aliased under two principal names cannot satisfy verifier separation.
 
 The current canonical trust policy is not activated with real external verifier keys, so product qualification remains fail-closed.
 
-## 13. Global V5 portable product authority
+## 14. Global V5 portable product authority
 
-Current terminal product authority is:
+Current terminal product authority:
 
 ```text
 DGC_GLOBAL_PRODUCT_QUALIFICATION_AUTHORITY_V5
 ```
 
-Global V5 validates the complete two-family evidence chain and SSH signatures but separates two concepts:
+Global V5 validates the complete two-family evidence chain and SSH signatures while separating portable cryptographic truth from environment-specific verification provenance. P19 digest, verifier principal, attestation/report/signature hashes, frozen allowed-signers hash, SSH namespace and `signature_verified=true` are portable authority inputs. Local `ssh-keygen` path/binary hash/stdout/stderr remain forensic execution provenance, not portable product-authority identity.
 
-### Portable cryptographic truth
-
-Product authority binds:
-
-- P19 digest;
-- verifier principal;
-- attestation SHA-256;
-- verification-report SHA-256;
-- signature SHA-256;
-- frozen allowed-signers SHA-256;
-- SSH namespace;
-- `signature_verified=true`.
-
-### Environment-specific verification provenance
-
-The local `ssh-keygen` path, binary SHA and verifier stdout/stderr are useful forensic execution provenance but are **not** part of the portable Global V5 authority digest.
-
-Therefore two machines verifying the same signature inputs may produce different tool-execution receipts but must derive the same portable Global V5 scientific authority.
-
-Global V4 remains a validation component/historical implementation layer; it is not the current terminal release authority.
-
-## 14. Pointer V3
+## 15. Pointer V3
 
 Current terminal replay index:
 
@@ -255,46 +239,37 @@ Current terminal replay index:
 artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json
 ```
 
-Pointer V3 does not trust a standalone green Global V5 document. It:
+Pointer V3 rehashes ledger/Global-V5 bytes, resolves both P19/report/attestation/signature populations and frozen verifier policy, rebuilds Global V5 semantically, and requires the terminal `PRODUCT_QUALIFIED` ledger receipt to bind that exact Global V5 artifact.
 
-- rehashes the terminal ledger and Global V5 bytes;
-- resolves both P19 roots;
-- resolves both reports/attestations/signatures;
-- resolves the frozen verifier policy;
-- rebuilds Global V5 semantically;
-- requires the terminal `PRODUCT_QUALIFIED` ledger receipt to bind that exact Global V5 artifact.
-
-The canonical Pointer V3 is currently:
+Current canonical state:
 
 ```text
 activation_authorized = false
 product_qualified_claimed = false
 ```
 
-## 15. `T_pkg`: post-outcome packaging identity
+## 16. `T_pkg`: post-outcome packaging identity
 
 Scientific closure ends under `T_exec`. Evidence packaging happens later under descendant revision `T_pkg`.
 
-Canonical lifecycle:
-
 ```text
-freeze method + verification plan + trust policy
+freeze method + inactive verifier plan + trust policy
+→ externally validate/activate verifier before outcome-bearing execution
 → commit T_exec
-→ execute and close scientific stages while HEAD stays T_exec
-→ external replay + signatures
+→ execute/close scientific stages while scientific source remains T_exec
+→ external P19 replay + signatures
 → Global V5
-→ ledger reaches PRODUCT_QUALIFIED under T_exec
+→ terminal scientific evidence
 → create T_pkg
-→ add disclosed evidence + activate Pointer V3
-→ verify T_exec is ancestor of T_pkg
+→ add disclosed evidence + terminal pointer metadata
 → verify append-only delta
-→ derive graph-complete bundle
+→ graph-complete bundle
 → deterministic double-build release
 ```
 
 `DGC_EVIDENCE_PACKAGING_AUTHORITY_V2` rejects post-outcome source/methodology/verifier-plan mutation, deletion, mode changes, symlink/special Git objects and ambiguous paths.
 
-## 16. Qualified evidence bundle V5
+## 17. Qualified evidence bundle V5
 
 Current graph authority:
 
@@ -302,95 +277,48 @@ Current graph authority:
 DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V5
 ```
 
-It derives required release subjects from the actual Pointer/P19/Global-V5 graph, including:
+It derives release subjects from the actual Pointer/P19/Global-V5 graph, including ledger, Global V5, source registry, trust policy/store, both P19 V3 roots, stage evidence, methodology anchors, raw subject roots, P19 external replay inputs, reports/attestations/signatures, frozen Plan V4, verifier entrypoint, full verifier runtime dependency closure and all check receipts/stdout/stderr/evidence.
 
-- ledger;
-- Global V5;
-- source registry;
-- verifier policy and trust store;
-- both P19 V3 roots;
-- stage evidence;
-- methodology anchors;
-- raw subject roots;
-- P19 external replay inputs;
-- reports/attestations/signatures;
-- frozen verification plan;
-- verifier entrypoint;
-- verifier implementation dependency closure;
-- all check receipts/stdout/stderr/evidence.
+Every required file must be either unchanged `EXECUTION_SOURCE_T0` or approved append-only `PACKAGING_EVIDENCE_T1`. Untracked evidence, omitted replay/transcript vertices, mutated verifier dependencies or post-hoc source changes fail closed.
 
-Every required file must be either:
+## 18. Deterministic release
 
-1. `EXECUTION_SOURCE_T0` — identical Git blob in `T_exec` and `T_pkg`; or
-2. `PACKAGING_EVIDENCE_T1` — approved append-only evidence tracked in `T_pkg`.
-
-Untracked evidence, omitted replay/transcript vertices, mutated verifier dependencies, mutated source anchors or post-hoc files outside evidence namespaces fail closed.
-
-## 17. Deterministic release V6
-
-Current release manifest schema:
-
-```text
-DGC_DETERMINISTIC_RESEARCH_RELEASE_V6
-```
-
-Qualified release contains separate archive roles:
-
-- `dgc-execution-source-<T_exec>.tar.gz` from immutable Git objects with normalized metadata;
-- `dgc-packaging-evidence-<T_pkg>.tar.gz` from tracked evidence namespaces;
-- packaging authority;
-- qualified bundle authority;
-- release manifest;
-- `SHA256SUMS`.
-
-Product-tag release executes the **product-qualified build twice** and requires byte-identical outputs.
-
-No SLSA conformance level is claimed:
+Qualified release keeps execution source and packaging evidence as separate archive roles, hashes every authority/manifest and performs a product-qualified double build requiring byte-identical outputs. No SLSA conformance level is claimed:
 
 ```text
 slsa_conformance_claim = false
 ```
 
-## 18. Verification execution state
+## 19. Verification execution state
 
-The focused P19/Bundle test surface is wired into `.github/workflows/dgc-product-evidence.yml`, including `test_dgc_p19_external_verification_plan.py` and `test_dgc_p19_external_replay.py`.
+The focused verifier/closure surface is wired into `.github/workflows/dgc-product-evidence.yml`, including Plan V4, regression/activation, freeze readiness, eight-check replay, P19 V3 and Bundle V5 falsifiers.
 
-At the latest checked branch head, GitHub Actions created the workflow job but returned:
+Recent GitHub Actions jobs repeatedly terminated before repository steps with:
 
 ```text
 steps = null
 logs_url = null
 ```
 
-A local clone attempt also failed before checkout with DNS resolution failure for `github.com`.
-
-Classification:
+Classification until an exact current-head run actually executes:
 
 ```text
 CI_EXECUTION_UNAVAILABLE
 focused_pytest_execution = UNKNOWN
 ```
 
-This is neither a code PASS nor a demonstrated code regression.
-
-## 19. Product is not production
-
-Even valid product qualification does not establish production control authority. Production-provider traces, shadow mode, bounded canary, sustained monitoring and applicable operational/client evidence remain separate obligations.
-
-```text
-PRODUCT_QUALIFIED != PRODUCTION_CONTROL_AUTHORIZED
-```
+This is neither code PASS nor a demonstrated code regression.
 
 ## 20. Current truth
 
-The external empirical campaign has not been completed. Real SWE/Terminal execution, physical provider cost evidence, P9, G1–G5, fault campaign, independent replication, two real P19 roots and external P19 verifier signatures remain empirical obligations.
+The external empirical campaign has not been completed. Real SWE/Terminal execution, physical provider-cost evidence, P9, G1–G5, fault campaign, independent replication, two real P19 roots, external P19 verifier regression signatures and P19 verification signatures remain empirical obligations.
 
-Current mandatory truth:
+Mandatory truth:
 
 ```text
 PRODUCT_QUALIFIED = false
 PRODUCTION_CONTROL_AUTHORIZED = false
-external_verifier_v2_activation_authorized = false
+external_verifier_plan_v4_activation_authorized = false
 ```
 
 Current mathematical SSOT:
