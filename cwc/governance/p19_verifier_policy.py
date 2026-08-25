@@ -165,10 +165,16 @@ def parse_allowed_signer_bindings(path: Path) -> tuple[AllowedSignerBinding, ...
 def resolve_allowed_signers(policy: P19VerifierTrustPolicy, *, repository_root: Path) -> Path:
     if not policy.activation_authorized:
         raise P19VerifierPolicyError("P19 external verifier trust policy is not activated")
+    root = Path(repository_root).resolve()
+    canonical_path = root / CANONICAL_POLICY_PATH
+    if canonical_path.is_symlink() or not canonical_path.is_file():
+        raise P19VerifierPolicyError("canonical P19 verifier trust policy is missing/invalid")
+    canonical_policy = load_p19_verifier_trust_policy(canonical_path)
+    if policy.policy_digest != canonical_policy.policy_digest:
+        raise P19VerifierPolicyError("P19 verifier trust policy differs from canonical frozen policy identity")
     rel = Path(policy.allowed_signers_path)
     if rel.is_absolute() or ".." in rel.parts or not rel.parts:
         raise P19VerifierPolicyError("P19 verifier allowed-signers path must be repository-relative")
-    root = Path(repository_root).resolve()
     candidate = root / rel
     if candidate.is_symlink():
         raise P19VerifierPolicyError("P19 verifier allowed-signers symlink rejected")
