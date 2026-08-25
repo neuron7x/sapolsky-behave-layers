@@ -54,6 +54,7 @@ REGRESSION_TEST_FILES = (
     "tests/test_dgc_p19_verification_report.py",
     "tests/test_dgc_p19_verification_attestation.py",
     "tests/test_dgc_p19_evidence_root.py",
+    "tests/test_dgc_p19_verifier_policy_canonical_identity.py",
     "tests/test_dgc_qualified_evidence_bundle.py",
     "tests/test_dgc_qualified_evidence_bundle_v3.py",
 )
