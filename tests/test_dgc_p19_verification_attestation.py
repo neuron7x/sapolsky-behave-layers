@@ -7,11 +7,18 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
+from cwc.governance.p19_external_verification_contract import (
+    CANONICAL_REGRESSION_COMMAND,
+    REGRESSION_TEST_FILES,
+    VERIFIER_ENTRYPOINT,
+    VERIFIER_RUNTIME_DEPENDENCIES,
+)
 from cwc.governance.p19_external_verification_plan import (
-    PLAN_GENERATION,
-    REQUIRED_IMPLEMENTATION_DEPENDENCIES,
-    SCHEMA as PLAN_SCHEMA,
+    CANONICAL_PLAN_PATH,
+    build_activated_p19_external_verification_plan_document,
+)
+from cwc.governance.p19_external_verifier_regression import (
+    build_p19_external_verifier_regression_receipt,
 )
 from cwc.governance.p19_verification_attestation import (
     ATTESTATION_SCHEMA,
@@ -46,43 +53,49 @@ def _p19() -> dict[str, object]:
     }
 
 
-def _active_plan(root: Path) -> Path:
-    entry = root / "scripts/dgc_external_p19_verifier.py"
+def _write(path: Path, doc: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(canonical_json_bytes(doc) + b"\n")
+
+
+def _runtime_and_tests(root: Path) -> None:
+    entry = root / VERIFIER_ENTRYPOINT
     entry.parent.mkdir(parents=True, exist_ok=True)
     entry.write_text("print('test verifier')\n", encoding="utf-8")
-    dependencies = []
-    for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
+    for rel in VERIFIER_RUNTIME_DEPENDENCIES:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"# frozen verifier dependency: {rel}\n", encoding="utf-8")
-        dependencies.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
-    rows = []
-    for check_id in sorted(REQUIRED_CHECKS):
-        rows.append({
-            "check_id": check_id,
-            "method_id": CHECK_METHOD_IDS[check_id],
-            "command_template": [
-                "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
-                "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
-            ],
-            "implementation_status": "IMPLEMENTED",
-        })
-    payload = {
-        "plan_generation": PLAN_GENERATION,
-        "frozen_pre_outcome": True,
-        "activation_authorized": True,
-        "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
-        "verifier_entrypoint_sha256": sha256_file(entry),
-        "verifier_dependency_manifest_digest": sha256_bytes(canonical_json_bytes(dependencies)),
-        "verifier_dependencies": dependencies,
-        "check_contracts": rows,
-        "all_check_implementations_complete": True,
-        "product_qualification_authorized": False,
-    }
-    doc = {"schema": PLAN_SCHEMA, **payload, "plan_digest": sha256_bytes(canonical_json_bytes(payload))}
-    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(canonical_json_bytes(doc) + b"\n")
+    for rel in REGRESSION_TEST_FILES:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"# frozen regression test: {rel}\n", encoding="utf-8")
+
+
+def _active_plan(root: Path) -> Path:
+    _runtime_and_tests(root)
+    stdout = root / "artifacts/dgc-product-v1/generated/regression/stdout.bin"
+    stderr = root / "artifacts/dgc-product-v1/generated/regression/stderr.bin"
+    stdout.parent.mkdir(parents=True, exist_ok=True)
+    stdout.write_bytes(b"canonical verifier regression passed\n")
+    stderr.write_bytes(b"")
+    receipt = build_p19_external_verifier_regression_receipt(
+        repository_root=root,
+        source_commit="a" * 40,
+        source_tree="b" * 40,
+        command_argv=CANONICAL_REGRESSION_COMMAND,
+        stdout_path=stdout.relative_to(root),
+        stderr_path=stderr.relative_to(root),
+        exit_code=0,
+    )
+    receipt_path = root / "artifacts/dgc-product-v1/generated/regression/receipt.json"
+    _write(receipt_path, receipt.document)
+    plan = build_activated_p19_external_verification_plan_document(
+        repository_root=root,
+        regression_receipt_path=receipt_path.relative_to(root),
+    )
+    path = root / CANONICAL_PLAN_PATH
+    _write(path, plan)
     return path
 
 
@@ -107,7 +120,7 @@ def _receipt(root: Path, p19_rel: str, check_id: str) -> Path:
         "check_id": check_id,
         "status": "PASS",
         "command_argv": [
-            "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
+            "python", VERIFIER_ENTRYPOINT, "--check-id", check_id,
             "--p19", p19_rel, "--evidence-output", evidence_rel,
         ],
         "stdout_path": stdout.relative_to(root).as_posix(),
@@ -297,7 +310,7 @@ def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path):
 
 def test_verifier_dependency_mutation_fails_before_signature_acceptance(tmp_path: Path):
     report, _, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
-    dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
+    dependency = tmp_path / VERIFIER_RUNTIME_DEPENDENCIES[0]
     dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
     called = False
 
@@ -305,6 +318,32 @@ def test_verifier_dependency_mutation_fails_before_signature_acceptance(tmp_path
         nonlocal called
         called = True
         raise AssertionError("SSH verifier must not run after verifier-dependency tamper")
+
+    with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
+        verify_ssh_signed_p19_verification_attestation(
+            attestation_path=attestation,
+            verification_report_path=report,
+            signature_path=signature,
+            allowed_signers_path=allowed,
+            repository_root=tmp_path,
+            runner=runner,
+            executable=str(fake_keygen),
+        )
+    assert called is False
+
+
+def test_regression_receipt_mutation_fails_before_signature_acceptance(tmp_path: Path):
+    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+    plan_path = tmp_path / str(report_doc["verification_plan_path"])
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    receipt = tmp_path / str(plan["activation_regression_receipt_path"])
+    receipt.write_bytes(receipt.read_bytes() + b" ")
+    called = False
+
+    def runner(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("SSH verifier must not run after regression-receipt tamper")
 
     with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
         verify_ssh_signed_p19_verification_attestation(
