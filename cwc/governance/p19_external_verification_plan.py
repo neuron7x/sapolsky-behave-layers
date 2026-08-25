@@ -11,16 +11,15 @@ from cwc.governance.p19_external_verification_contract import (
     VERIFIER_ENTRYPOINT,
     VERIFIER_RUNTIME_DEPENDENCIES,
 )
-from cwc.governance.p19_external_verifier_regression import (
-    current_runtime_digest,
-    current_test_manifest_digest,
-    verify_p19_external_verifier_regression_receipt,
+from cwc.governance.p19_external_verifier_activation import (
+    verify_p19_external_verifier_activation_authority_document,
 )
+from cwc.governance.p19_external_verifier_regression import current_runtime_digest, current_test_manifest_digest
 from cwc.governance.p19_verification_check_receipt import REQUIRED_CHECKS
 
-SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V3"
-PLAN_GENERATION = "PRE_OUTCOME_EXTERNAL_VERIFICATION_PLAN_V3"
-CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V3.json"
+SCHEMA = "DGC_P19_EXTERNAL_VERIFICATION_PLAN_V4"
+PLAN_GENERATION = "PRE_OUTCOME_EXTERNAL_VERIFICATION_PLAN_V4_DUAL_SIGNED_REGRESSION_ACTIVATION"
+CANONICAL_PLAN_PATH = "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V4.json"
 ENTRYPOINT = VERIFIER_ENTRYPOINT
 REQUIRED_IMPLEMENTATION_DEPENDENCIES = VERIFIER_RUNTIME_DEPENDENCIES
 
@@ -73,6 +72,23 @@ def _required_regular_file(root: Path, rel: str, *, label: str) -> Path:
     return resolved
 
 
+def _repo_rel(root: Path, value: Path, *, label: str) -> tuple[Path, str]:
+    source = Path(value)
+    if source.is_absolute():
+        resolved = source.resolve()
+        try:
+            rel = resolved.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise P19ExternalVerificationPlanError(f"{label} escapes repository") from exc
+        rel = _safe_rel(rel, label=label)
+    else:
+        rel = _safe_rel(source.as_posix(), label=label)
+        resolved = _required_regular_file(root, rel, label=label)
+    if resolved.is_symlink() or not resolved.is_file() or resolved.stat().st_size <= 0:
+        raise P19ExternalVerificationPlanError(f"{label} missing/invalid")
+    return resolved, rel
+
+
 def _runtime_bindings(root: Path) -> tuple[Path, list[dict[str, object]], str]:
     entry = _required_regular_file(root, ENTRYPOINT, label="external verification entrypoint")
     dependencies: list[dict[str, object]] = []
@@ -102,65 +118,90 @@ def _contracts() -> list[dict[str, object]]:
     ]
 
 
+def _activation_payload(root: Path, activation_authority_path: Path) -> dict[str, object]:
+    authority_file, authority_rel = _repo_rel(root, activation_authority_path, label="verifier activation authority")
+    try:
+        authority = verify_p19_external_verifier_activation_authority_document(
+            authority_file,
+            repository_root=root,
+        )
+    except RuntimeError as exc:
+        raise P19ExternalVerificationPlanError("active Plan V4 activation-authority replay failed") from exc
+    if authority.get("activation_authorized") is not True or authority.get("all_signatures_verified") is not True:
+        raise P19ExternalVerificationPlanError("verifier activation authority is not supported")
+    principals = authority.get("verifier_principals")
+    key_digests = authority.get("signer_key_digests")
+    if not isinstance(principals, list) or not isinstance(key_digests, list) or len(principals) < 2 or len(key_digests) < 2:
+        raise P19ExternalVerificationPlanError("verifier activation authority lacks dual independent signers")
+    if len(set(map(str, principals))) != len(principals) or len(set(map(str, key_digests))) != len(key_digests):
+        raise P19ExternalVerificationPlanError("verifier activation authority signer population is not distinct")
+    if authority.get("runtime_manifest_digest") != current_runtime_digest(root):
+        raise P19ExternalVerificationPlanError("activation authority runtime no longer matches current verifier")
+    if authority.get("test_manifest_digest") != current_test_manifest_digest(root):
+        raise P19ExternalVerificationPlanError("activation authority tests no longer match current canonical suite")
+    return {
+        "activation_authority_path": authority_rel,
+        "activation_authority_sha256": sha256_file(authority_file),
+        "activation_authority_digest": _sha("activation authority digest", authority.get("authority_digest")),
+        "activation_trust_policy_path": _safe_rel(authority.get("trust_policy_path"), label="activation trust policy"),
+        "activation_trust_policy_digest": _sha("activation trust policy digest", authority.get("trust_policy_digest")),
+        "activation_verifier_principals": [str(value) for value in principals],
+        "activation_signer_key_digests": [_sha("activation signer key digest", value) for value in key_digests],
+        "activation_regression_receipt_path": _safe_rel(authority.get("regression_receipt_path"), label="activation regression receipt"),
+        "activation_regression_receipt_sha256": _sha("activation regression receipt sha256", authority.get("regression_receipt_sha256")),
+        "activation_regression_receipt_digest": _sha("activation regression receipt digest", authority.get("regression_receipt_digest")),
+        "activation_regression_source_commit": _git_oid("activation regression source commit", authority.get("source_commit")),
+        "activation_regression_source_tree": _git_oid("activation regression source tree", authority.get("source_tree")),
+        "activation_regression_test_manifest_digest": _sha("activation regression test manifest digest", authority.get("test_manifest_digest")),
+    }
+
+
+def _empty_activation() -> dict[str, object]:
+    return {
+        "activation_authority_path": None,
+        "activation_authority_sha256": None,
+        "activation_authority_digest": None,
+        "activation_trust_policy_path": None,
+        "activation_trust_policy_digest": None,
+        "activation_verifier_principals": [],
+        "activation_signer_key_digests": [],
+        "activation_regression_receipt_path": None,
+        "activation_regression_receipt_sha256": None,
+        "activation_regression_receipt_digest": None,
+        "activation_regression_source_commit": None,
+        "activation_regression_source_tree": None,
+        "activation_regression_test_manifest_digest": None,
+    }
+
+
 def _build_plan_document(
     *,
     repository_root: Path,
     active: bool,
-    regression_receipt_path: Path | None,
+    activation_authority_path: Path | None,
 ) -> dict[str, object]:
     root = Path(repository_root).resolve()
     entry, dependencies, dependency_digest = _runtime_bindings(root)
-
-    activation_path: str | None = None
-    activation_sha: str | None = None
-    activation_digest: str | None = None
-    activation_source_commit: str | None = None
-    activation_source_tree: str | None = None
-    activation_test_digest: str | None = None
+    activation = _empty_activation()
     if active:
-        if regression_receipt_path is None:
-            raise P19ExternalVerificationPlanError("active Plan V3 requires verifier regression receipt")
-        source = Path(regression_receipt_path)
-        if source.is_absolute():
-            resolved = source.resolve()
-            try:
-                activation_path = resolved.relative_to(root).as_posix()
-            except ValueError as exc:
-                raise P19ExternalVerificationPlanError("regression receipt escapes repository") from exc
-            activation_path = _safe_rel(activation_path, label="regression receipt")
-        else:
-            activation_path = _safe_rel(source.as_posix(), label="regression receipt")
-            resolved = _required_regular_file(root, activation_path, label="regression receipt")
-        try:
-            receipt = verify_p19_external_verifier_regression_receipt(resolved, repository_root=root)
-        except RuntimeError as exc:
-            raise P19ExternalVerificationPlanError("active Plan V3 regression receipt replay failed") from exc
-        activation_sha = sha256_file(resolved)
-        activation_digest = _sha("regression receipt digest", receipt.get("receipt_digest"))
-        activation_source_commit = _git_oid("regression source commit", receipt.get("source_commit"))
-        activation_source_tree = _git_oid("regression source tree", receipt.get("source_tree"))
-        activation_test_digest = _sha("regression test manifest digest", receipt.get("test_manifest_digest"))
-        if receipt.get("runtime_manifest_digest") != current_runtime_digest(root):
-            raise P19ExternalVerificationPlanError("regression receipt does not match current verifier runtime")
-        if activation_test_digest != current_test_manifest_digest(root):
-            raise P19ExternalVerificationPlanError("regression receipt does not match current canonical tests")
+        if activation_authority_path is None:
+            raise P19ExternalVerificationPlanError("active Plan V4 requires dual-signed activation authority")
+        activation = _activation_payload(root, activation_authority_path)
+    elif activation_authority_path is not None:
+        raise P19ExternalVerificationPlanError("inactive Plan V4 cannot carry activation authority")
 
     payload = {
         "plan_generation": PLAN_GENERATION,
         "frozen_pre_outcome": True,
         "activation_authorized": active,
+        "activation_evidence_requirement": "DUAL_EXTERNAL_SSH_SIGNED_GIT_BOUND_CANONICAL_REGRESSION_V1",
         "verifier_entrypoint_path": ENTRYPOINT,
         "verifier_entrypoint_sha256": sha256_file(entry),
         "verifier_dependency_manifest_digest": dependency_digest,
         "verifier_dependencies": dependencies,
         "check_contracts": _contracts(),
         "all_check_implementations_complete": True,
-        "activation_regression_receipt_path": activation_path,
-        "activation_regression_receipt_sha256": activation_sha,
-        "activation_regression_receipt_digest": activation_digest,
-        "activation_regression_source_commit": activation_source_commit,
-        "activation_regression_source_tree": activation_source_tree,
-        "activation_regression_test_manifest_digest": activation_test_digest,
+        **activation,
         "product_qualification_authorized": False,
     }
     return {
@@ -175,33 +216,23 @@ def build_inactive_p19_external_verification_plan_document(
     repository_root: Path,
     implemented_check_ids: Sequence[str],
 ) -> dict[str, object]:
-    """Build canonical Plan V3 in an intentionally inactive state.
-
-    Source-code presence is not activation evidence. The inactive builder has no
-    path that can set activation_authorized=true.
-    """
     declared = tuple(str(value) for value in implemented_check_ids)
     if len(declared) != len(set(declared)) or set(declared) != REQUIRED_CHECKS:
         raise P19ExternalVerificationPlanError(
-            "inactive Plan V3 builder requires exact unique implemented check population"
+            "inactive Plan V4 builder requires exact unique implemented check population"
         )
-    return _build_plan_document(
-        repository_root=repository_root,
-        active=False,
-        regression_receipt_path=None,
-    )
+    return _build_plan_document(repository_root=repository_root, active=False, activation_authority_path=None)
 
 
 def build_activated_p19_external_verification_plan_document(
     *,
     repository_root: Path,
-    regression_receipt_path: Path,
+    activation_authority_path: Path,
 ) -> dict[str, object]:
-    """Build active Plan V3 only after canonical regression receipt replay."""
     return _build_plan_document(
         repository_root=repository_root,
         active=True,
-        regression_receipt_path=regression_receipt_path,
+        activation_authority_path=activation_authority_path,
     )
 
 
@@ -210,12 +241,20 @@ class P19ExternalVerificationPlan:
     plan_generation: str
     frozen_pre_outcome: bool
     activation_authorized: bool
+    activation_evidence_requirement: str
     verifier_entrypoint_path: str
     verifier_entrypoint_sha256: str
     verifier_dependency_manifest_digest: str
     verifier_dependencies: tuple[dict[str, object], ...]
     check_contracts: tuple[dict[str, object], ...]
     all_check_implementations_complete: bool
+    activation_authority_path: str | None
+    activation_authority_sha256: str | None
+    activation_authority_digest: str | None
+    activation_trust_policy_path: str | None
+    activation_trust_policy_digest: str | None
+    activation_verifier_principals: tuple[str, ...]
+    activation_signer_key_digests: tuple[str, ...]
     activation_regression_receipt_path: str | None
     activation_regression_receipt_sha256: str | None
     activation_regression_receipt_digest: str | None
@@ -279,13 +318,16 @@ def load_p19_external_verification_plan(
         raise P19ExternalVerificationPlanError("external verification plan must use canonical JSON bytes")
 
     payload_keys = (
-        "plan_generation", "frozen_pre_outcome", "activation_authorized",
+        "plan_generation", "frozen_pre_outcome", "activation_authorized", "activation_evidence_requirement",
         "verifier_entrypoint_path", "verifier_entrypoint_sha256",
         "verifier_dependency_manifest_digest", "verifier_dependencies", "check_contracts",
-        "all_check_implementations_complete", "activation_regression_receipt_path",
-        "activation_regression_receipt_sha256", "activation_regression_receipt_digest",
-        "activation_regression_source_commit", "activation_regression_source_tree",
-        "activation_regression_test_manifest_digest", "product_qualification_authorized",
+        "all_check_implementations_complete", "activation_authority_path", "activation_authority_sha256",
+        "activation_authority_digest", "activation_trust_policy_path", "activation_trust_policy_digest",
+        "activation_verifier_principals", "activation_signer_key_digests",
+        "activation_regression_receipt_path", "activation_regression_receipt_sha256",
+        "activation_regression_receipt_digest", "activation_regression_source_commit",
+        "activation_regression_source_tree", "activation_regression_test_manifest_digest",
+        "product_qualification_authorized",
     )
     try:
         payload = {key: doc[key] for key in payload_keys}
@@ -296,6 +338,8 @@ def load_p19_external_verification_plan(
         raise P19ExternalVerificationPlanError("external verification plan digest mismatch")
     if doc.get("plan_generation") != PLAN_GENERATION:
         raise P19ExternalVerificationPlanError("external verification plan generation mismatch")
+    if doc.get("activation_evidence_requirement") != "DUAL_EXTERNAL_SSH_SIGNED_GIT_BOUND_CANONICAL_REGRESSION_V1":
+        raise P19ExternalVerificationPlanError("external verification activation evidence requirement mismatch")
     if doc.get("frozen_pre_outcome") is not True:
         raise P19ExternalVerificationPlanError("external verification plan must be frozen pre-outcome")
     if doc.get("product_qualification_authorized") is not False:
@@ -337,64 +381,41 @@ def load_p19_external_verification_plan(
             raise P19ExternalVerificationPlanError(f"external verification method identity mismatch: {check_id}")
         if template != expected_template:
             raise P19ExternalVerificationPlanError(f"external verification command template mismatch: {check_id}")
-        if status not in {"IMPLEMENTED", "NOT_IMPLEMENTED"}:
-            raise P19ExternalVerificationPlanError(f"external verification implementation status invalid: {check_id}")
+        if status != "IMPLEMENTED":
+            raise P19ExternalVerificationPlanError(f"external verification implementation incomplete: {check_id}")
         normalized.append({
             "check_id": check_id,
             "method_id": method_id,
             "command_template": list(template),
             "implementation_status": status,
         })
-    if seen != REQUIRED_CHECKS:
-        raise P19ExternalVerificationPlanError("external verification contract set differs from required checks")
     normalized.sort(key=lambda row: str(row["check_id"]))
-    if rows != normalized:
-        raise P19ExternalVerificationPlanError("external verification contracts must be canonically ordered")
-
-    complete = all(row["implementation_status"] == "IMPLEMENTED" for row in normalized)
-    if bool(doc.get("all_check_implementations_complete")) != complete:
+    if seen != REQUIRED_CHECKS or rows != normalized:
+        raise P19ExternalVerificationPlanError("external verification contract population/order differs from canonical SSOT")
+    complete = True
+    if doc.get("all_check_implementations_complete") is not True:
         raise P19ExternalVerificationPlanError("external verification implementation-completeness flag mismatch")
+
     active = doc.get("activation_authorized") is True
-    activation_fields = (
-        "activation_regression_receipt_path", "activation_regression_receipt_sha256",
-        "activation_regression_receipt_digest", "activation_regression_source_commit",
-        "activation_regression_source_tree", "activation_regression_test_manifest_digest",
-    )
+    activation_fields = tuple(_empty_activation().keys())
     if active:
-        if not complete:
-            raise P19ExternalVerificationPlanError("external verification plan cannot activate with incomplete checks")
-        receipt_rel = _safe_rel(doc.get("activation_regression_receipt_path"), label="activation regression receipt")
-        receipt_path = _required_regular_file(root, receipt_rel, label="activation regression receipt")
-        receipt_sha = _sha("activation regression receipt sha256", doc.get("activation_regression_receipt_sha256"))
-        if sha256_file(receipt_path) != receipt_sha:
-            raise P19ExternalVerificationPlanError("activation regression receipt bytes differ from plan")
+        authority_rel = _safe_rel(doc.get("activation_authority_path"), label="activation authority")
+        authority_path = _required_regular_file(root, authority_rel, label="activation authority")
+        if sha256_file(authority_path) != _sha("activation authority sha256", doc.get("activation_authority_sha256")):
+            raise P19ExternalVerificationPlanError("activation authority bytes differ from plan")
         try:
-            receipt = verify_p19_external_verifier_regression_receipt(receipt_path, repository_root=root)
+            authority = verify_p19_external_verifier_activation_authority_document(authority_path, repository_root=root)
         except RuntimeError as exc:
-            raise P19ExternalVerificationPlanError("activation regression receipt replay failed") from exc
-        if receipt.get("receipt_digest") != _sha(
-            "activation regression receipt digest", doc.get("activation_regression_receipt_digest")
-        ):
-            raise P19ExternalVerificationPlanError("activation regression receipt digest differs from plan")
-        if receipt.get("source_commit") != _git_oid(
-            "activation regression source commit", doc.get("activation_regression_source_commit")
-        ):
-            raise P19ExternalVerificationPlanError("activation regression source commit differs from plan")
-        if receipt.get("source_tree") != _git_oid(
-            "activation regression source tree", doc.get("activation_regression_source_tree")
-        ):
-            raise P19ExternalVerificationPlanError("activation regression source tree differs from plan")
-        if receipt.get("test_manifest_digest") != _sha(
-            "activation regression test manifest digest", doc.get("activation_regression_test_manifest_digest")
-        ):
-            raise P19ExternalVerificationPlanError("activation regression test manifest differs from plan")
-        if receipt.get("runtime_manifest_digest") != current_runtime_digest(root):
-            raise P19ExternalVerificationPlanError("activation regression runtime no longer matches current verifier")
-        if receipt.get("test_manifest_digest") != current_test_manifest_digest(root):
-            raise P19ExternalVerificationPlanError("activation regression tests no longer match current suite")
+            raise P19ExternalVerificationPlanError("activation authority signature replay failed") from exc
+        expected = _activation_payload(root, authority_path)
+        for field, value in expected.items():
+            if doc.get(field) != value:
+                raise P19ExternalVerificationPlanError(f"activation authority lineage differs from plan: {field}")
     else:
-        if any(doc.get(field) is not None for field in activation_fields):
-            raise P19ExternalVerificationPlanError("inactive verification plan cannot carry activation regression evidence")
+        empty = _empty_activation()
+        for field in activation_fields:
+            if doc.get(field) != empty[field]:
+                raise P19ExternalVerificationPlanError("inactive verification plan cannot carry activation evidence")
     if require_active and not active:
         raise P19ExternalVerificationPlanError("external verification plan is not activated")
 
@@ -402,30 +423,26 @@ def load_p19_external_verification_plan(
         plan_generation=PLAN_GENERATION,
         frozen_pre_outcome=True,
         activation_authorized=active,
+        activation_evidence_requirement=str(doc["activation_evidence_requirement"]),
         verifier_entrypoint_path=entry_rel,
         verifier_entrypoint_sha256=entry_sha,
         verifier_dependency_manifest_digest=dependency_digest,
         verifier_dependencies=dependencies,
         check_contracts=tuple(normalized),
         all_check_implementations_complete=complete,
-        activation_regression_receipt_path=(
-            str(doc.get("activation_regression_receipt_path")) if active else None
-        ),
-        activation_regression_receipt_sha256=(
-            str(doc.get("activation_regression_receipt_sha256")) if active else None
-        ),
-        activation_regression_receipt_digest=(
-            str(doc.get("activation_regression_receipt_digest")) if active else None
-        ),
-        activation_regression_source_commit=(
-            str(doc.get("activation_regression_source_commit")) if active else None
-        ),
-        activation_regression_source_tree=(
-            str(doc.get("activation_regression_source_tree")) if active else None
-        ),
-        activation_regression_test_manifest_digest=(
-            str(doc.get("activation_regression_test_manifest_digest")) if active else None
-        ),
+        activation_authority_path=(str(doc["activation_authority_path"]) if active else None),
+        activation_authority_sha256=(str(doc["activation_authority_sha256"]) if active else None),
+        activation_authority_digest=(str(doc["activation_authority_digest"]) if active else None),
+        activation_trust_policy_path=(str(doc["activation_trust_policy_path"]) if active else None),
+        activation_trust_policy_digest=(str(doc["activation_trust_policy_digest"]) if active else None),
+        activation_verifier_principals=(tuple(str(v) for v in doc["activation_verifier_principals"]) if active else ()),
+        activation_signer_key_digests=(tuple(str(v) for v in doc["activation_signer_key_digests"]) if active else ()),
+        activation_regression_receipt_path=(str(doc["activation_regression_receipt_path"]) if active else None),
+        activation_regression_receipt_sha256=(str(doc["activation_regression_receipt_sha256"]) if active else None),
+        activation_regression_receipt_digest=(str(doc["activation_regression_receipt_digest"]) if active else None),
+        activation_regression_source_commit=(str(doc["activation_regression_source_commit"]) if active else None),
+        activation_regression_source_tree=(str(doc["activation_regression_source_tree"]) if active else None),
+        activation_regression_test_manifest_digest=(str(doc["activation_regression_test_manifest_digest"]) if active else None),
         product_qualification_authorized=False,
         plan_digest=digest,
     )
