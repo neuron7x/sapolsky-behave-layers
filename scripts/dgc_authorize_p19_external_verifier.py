@@ -6,11 +6,10 @@ import os
 from pathlib import Path
 
 from cwc.governance.materialization_transaction import canonical_json_bytes
-from cwc.governance.p19_external_verifier_activation import (
-    build_p19_external_verifier_activation_authority,
-    verify_p19_external_verifier_activation_authority_document,
+from cwc.governance.p19_external_verifier_activation_v2 import (
+    build_p19_external_verifier_activation_authority_v2,
+    verify_p19_external_verifier_activation_authority_v2_document,
 )
-from cwc.governance.p19_verifier_policy import CANONICAL_POLICY_PATH
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -29,8 +28,8 @@ def _write_immutable(path: Path, data: bytes) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Build and immediately raw-signature-replay the dual-external-verifier activation authority "
-            "against the canonical frozen verifier trust policy."
+            "Build portable Activation Authority V2 from canonical-trust dual external signatures. "
+            "Local ssh-keygen path/version/stdout/stderr remain validation provenance and do not define authority identity."
         )
     )
     parser.add_argument("--repository-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -41,10 +40,9 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.repository_root.resolve()
-    authority = build_p19_external_verifier_activation_authority(
+    authority = build_p19_external_verifier_activation_authority_v2(
         repository_root=root,
         regression_receipt_path=args.regression_receipt,
-        trust_policy_path=root / CANONICAL_POLICY_PATH,
         attestation_paths=args.attestation,
         signature_paths=args.signature,
     )
@@ -54,18 +52,22 @@ def main() -> int:
     except ValueError as exc:
         raise SystemExit("activation authority output must remain inside repository") from exc
     _write_immutable(output, canonical_json_bytes(authority.document) + b"\n")
-    verified = verify_p19_external_verifier_activation_authority_document(output, repository_root=root)
+    verified = verify_p19_external_verifier_activation_authority_v2_document(
+        output,
+        repository_root=root,
+    )
     if verified.get("activation_authorized") is not True:
-        raise RuntimeError("written activation authority failed raw-signature replay")
+        raise RuntimeError("written portable activation V2 authority failed raw-signature replay")
     print(json.dumps({
-        "status": "ACTIVATION_AUTHORITY_VERIFIED",
+        "status": "PORTABLE_ACTIVATION_V2_VERIFIED",
         "authority": output.resolve().relative_to(root).as_posix(),
         "authority_digest": authority.authority_digest,
         "source_commit": authority.source_commit,
         "source_tree": authority.source_tree,
         "verifier_principals": list(authority.verifier_principals),
         "distinct_signer_keys": len(set(authority.signer_key_digests)),
-        "canonical_trust_policy": CANONICAL_POLICY_PATH,
+        "signature_semantics": authority.signature_semantics,
+        "signature_tool_execution_provenance_authoritative": False,
         "activation_authorized": True,
         "product_qualification_authorized": False,
     }, sort_keys=True))
