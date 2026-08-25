@@ -8,6 +8,7 @@ import pytest
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_verifier_policy import (
     ALLOWED_SIGNERS_FORMAT,
+    CANONICAL_POLICY_PATH,
     SCHEMA,
     P19VerifierPolicyError,
     load_p19_verifier_trust_policy,
@@ -48,14 +49,20 @@ def _policy_doc(
 
 
 def _write_policy(path: Path, doc: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
 
 
 def _write_two_key_store(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "verifier-a ssh-ed25519 AQID\nverifier-b ssh-ed25519 BAUG\n",
         encoding="utf-8",
     )
+
+
+def _canonical_policy(tmp_path: Path) -> Path:
+    return tmp_path / CANONICAL_POLICY_PATH
 
 
 def test_unconfigured_policy_loads_but_cannot_activate_trust(tmp_path: Path):
@@ -69,11 +76,9 @@ def test_unconfigured_policy_loads_but_cannot_activate_trust(tmp_path: Path):
 
 
 def test_active_policy_resolves_only_exact_frozen_two_key_store(tmp_path: Path):
-    trust_dir = tmp_path / "trust"
-    trust_dir.mkdir()
-    allowed = trust_dir / "allowed_signers"
+    allowed = tmp_path / "trust/allowed_signers"
     _write_two_key_store(allowed)
-    policy_path = tmp_path / "policy.json"
+    policy_path = _canonical_policy(tmp_path)
     _write_policy(
         policy_path,
         _policy_doc(active=True, allowed_sha=sha256_file(allowed)),
@@ -141,7 +146,7 @@ def test_policy_digest_and_canonical_bytes_are_non_substitutable(tmp_path: Path)
 def test_allowed_signers_path_cannot_escape_repository(tmp_path: Path):
     outside = tmp_path.parent / "outside-signers"
     _write_two_key_store(outside)
-    path = tmp_path / "policy.json"
+    path = _canonical_policy(tmp_path)
     _write_policy(
         path,
         _policy_doc(
