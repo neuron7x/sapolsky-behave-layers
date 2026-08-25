@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -15,8 +16,13 @@ from cwc.governance.p19_external_verification_contract import (
 from cwc.governance.p19_external_verifier_regression import (
     P19ExternalVerifierRegressionError,
     build_p19_external_verifier_regression_receipt,
+    current_repository_identity,
     verify_p19_external_verifier_regression_receipt,
 )
+
+
+def _git(root: Path, *args: str) -> str:
+    return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
 
 
 def _surface(root: Path) -> None:
@@ -33,8 +39,22 @@ def _surface(root: Path) -> None:
         path.write_text(f"# test {rel}\n", encoding="utf-8")
 
 
-def _build(root: Path):
+def _init_repo(root: Path) -> tuple[str, str]:
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.org"], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.name", "DGC Test"], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "freeze verifier regression surface"], check=True)
+    return current_repository_identity(root)
+
+
+def _prepared(root: Path) -> tuple[str, str]:
     _surface(root)
+    return _init_repo(root)
+
+
+def _build(root: Path):
+    source_commit, source_tree = _prepared(root)
     stdout = root / "evidence/regression/stdout.bin"
     stderr = root / "evidence/regression/stderr.bin"
     stdout.parent.mkdir(parents=True, exist_ok=True)
@@ -42,8 +62,8 @@ def _build(root: Path):
     stderr.write_bytes(b"")
     receipt = build_p19_external_verifier_regression_receipt(
         repository_root=root,
-        source_commit="1" * 40,
-        source_tree="2" * 40,
+        source_commit=source_commit,
+        source_tree=source_tree,
         command_argv=CANONICAL_REGRESSION_COMMAND,
         stdout_path=stdout.relative_to(root),
         stderr_path=stderr.relative_to(root),
@@ -54,17 +74,18 @@ def _build(root: Path):
     return path, receipt.document
 
 
-def test_canonical_regression_receipt_replays_current_runtime_tests_and_transcript(tmp_path: Path):
+def test_canonical_regression_receipt_replays_current_git_runtime_tests_and_transcript(tmp_path: Path):
     path, doc = _build(tmp_path)
     loaded = verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
     assert loaded == doc
     assert loaded["all_regression_tests_passed"] is True
     assert loaded["exit_code"] == 0
     assert loaded["activation_authorized"] is False
+    assert (loaded["source_commit"], loaded["source_tree"]) == current_repository_identity(tmp_path)
 
 
 def test_nonzero_exit_code_cannot_build_green_regression_receipt(tmp_path: Path):
-    _surface(tmp_path)
+    source_commit, source_tree = _prepared(tmp_path)
     stdout = tmp_path / "stdout.bin"
     stderr = tmp_path / "stderr.bin"
     stdout.write_bytes(b"failed\n")
@@ -72,8 +93,8 @@ def test_nonzero_exit_code_cannot_build_green_regression_receipt(tmp_path: Path)
     with pytest.raises(P19ExternalVerifierRegressionError, match="exit code must be zero"):
         build_p19_external_verifier_regression_receipt(
             repository_root=tmp_path,
-            source_commit="1" * 40,
-            source_tree="2" * 40,
+            source_commit=source_commit,
+            source_tree=source_tree,
             command_argv=CANONICAL_REGRESSION_COMMAND,
             stdout_path=stdout.relative_to(tmp_path),
             stderr_path=stderr.relative_to(tmp_path),
@@ -82,7 +103,7 @@ def test_nonzero_exit_code_cannot_build_green_regression_receipt(tmp_path: Path)
 
 
 def test_substituted_test_command_is_rejected(tmp_path: Path):
-    _surface(tmp_path)
+    source_commit, source_tree = _prepared(tmp_path)
     stdout = tmp_path / "stdout.bin"
     stderr = tmp_path / "stderr.bin"
     stdout.write_bytes(b"PASS\n")
@@ -90,9 +111,64 @@ def test_substituted_test_command_is_rejected(tmp_path: Path):
     with pytest.raises(P19ExternalVerifierRegressionError, match="differs from canonical"):
         build_p19_external_verifier_regression_receipt(
             repository_root=tmp_path,
-            source_commit="1" * 40,
-            source_tree="2" * 40,
+            source_commit=source_commit,
+            source_tree=source_tree,
             command_argv=("python", "-m", "pytest", "-q", "tests/test_easy.py"),
+            stdout_path=stdout.relative_to(tmp_path),
+            stderr_path=stderr.relative_to(tmp_path),
+            exit_code=0,
+        )
+
+
+def test_forged_source_commit_is_rejected_even_with_current_runtime_bytes(tmp_path: Path):
+    _, source_tree = _prepared(tmp_path)
+    stdout = tmp_path / "stdout.bin"
+    stderr = tmp_path / "stderr.bin"
+    stdout.write_bytes(b"PASS\n")
+    stderr.write_bytes(b"")
+    with pytest.raises(P19ExternalVerifierRegressionError, match="source commit differs"):
+        build_p19_external_verifier_regression_receipt(
+            repository_root=tmp_path,
+            source_commit="1" * 40,
+            source_tree=source_tree,
+            command_argv=CANONICAL_REGRESSION_COMMAND,
+            stdout_path=stdout.relative_to(tmp_path),
+            stderr_path=stderr.relative_to(tmp_path),
+            exit_code=0,
+        )
+
+
+def test_forged_source_tree_is_rejected_even_with_current_runtime_bytes(tmp_path: Path):
+    source_commit, _ = _prepared(tmp_path)
+    stdout = tmp_path / "stdout.bin"
+    stderr = tmp_path / "stderr.bin"
+    stdout.write_bytes(b"PASS\n")
+    stderr.write_bytes(b"")
+    with pytest.raises(P19ExternalVerifierRegressionError, match="source tree differs"):
+        build_p19_external_verifier_regression_receipt(
+            repository_root=tmp_path,
+            source_commit=source_commit,
+            source_tree="2" * 40,
+            command_argv=CANONICAL_REGRESSION_COMMAND,
+            stdout_path=stdout.relative_to(tmp_path),
+            stderr_path=stderr.relative_to(tmp_path),
+            exit_code=0,
+        )
+
+
+def test_tracked_dirty_worktree_cannot_build_regression_receipt(tmp_path: Path):
+    source_commit, source_tree = _prepared(tmp_path)
+    (tmp_path / VERIFIER_ENTRYPOINT).write_text("print('dirty')\n", encoding="utf-8")
+    stdout = tmp_path / "stdout.bin"
+    stderr = tmp_path / "stderr.bin"
+    stdout.write_bytes(b"PASS\n")
+    stderr.write_bytes(b"")
+    with pytest.raises(P19ExternalVerifierRegressionError, match="clean tracked Git worktree"):
+        build_p19_external_verifier_regression_receipt(
+            repository_root=tmp_path,
+            source_commit=source_commit,
+            source_tree=source_tree,
+            command_argv=CANONICAL_REGRESSION_COMMAND,
             stdout_path=stdout.relative_to(tmp_path),
             stderr_path=stderr.relative_to(tmp_path),
             exit_code=0,
@@ -102,14 +178,24 @@ def test_substituted_test_command_is_rejected(tmp_path: Path):
 def test_runtime_mutation_after_regression_invalidates_receipt(tmp_path: Path):
     path, _ = _build(tmp_path)
     (tmp_path / VERIFIER_ENTRYPOINT).write_text("print('post-regression mutation')\n", encoding="utf-8")
-    with pytest.raises(P19ExternalVerifierRegressionError, match="runtime bytes differ"):
+    with pytest.raises(P19ExternalVerifierRegressionError, match="clean tracked Git worktree"):
         verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
 
 
 def test_test_suite_mutation_after_regression_invalidates_receipt(tmp_path: Path):
     path, _ = _build(tmp_path)
     (tmp_path / REGRESSION_TEST_FILES[0]).write_text("# post-regression mutation\n", encoding="utf-8")
-    with pytest.raises(P19ExternalVerifierRegressionError, match="test bytes differ"):
+    with pytest.raises(P19ExternalVerifierRegressionError, match="clean tracked Git worktree"):
+        verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
+
+
+def test_checkout_movement_after_regression_invalidates_receipt(tmp_path: Path):
+    path, _ = _build(tmp_path)
+    marker = tmp_path / "marker.txt"
+    marker.write_text("next\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "marker.txt"], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-qm", "move checkout"], check=True)
+    with pytest.raises(P19ExternalVerifierRegressionError, match="source commit differs"):
         verify_p19_external_verifier_regression_receipt(path, repository_root=tmp_path)
 
 
