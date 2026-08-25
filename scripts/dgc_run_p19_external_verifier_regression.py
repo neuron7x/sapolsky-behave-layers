@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 from cwc.governance.materialization_transaction import canonical_json_bytes
+from cwc.governance.p19_external_python_runtime import inspect_python_runtime
 from cwc.governance.p19_external_verification_contract import CANONICAL_REGRESSION_COMMAND
 from cwc.governance.p19_external_verifier_regression import (
     build_p19_external_verifier_regression_receipt,
@@ -40,12 +42,23 @@ def _write_immutable(path: Path, data: bytes, *, allow_empty: bool) -> None:
         raise
 
 
+def _resolve_canonical_python() -> Path:
+    command_name = CANONICAL_REGRESSION_COMMAND[0]
+    candidate = shutil.which(command_name)
+    if not candidate:
+        raise RuntimeError(f"canonical verifier regression interpreter unavailable: {command_name}")
+    resolved = Path(candidate).resolve()
+    if not resolved.is_file() or resolved.stat().st_size <= 0:
+        raise RuntimeError("canonical verifier regression interpreter path invalid")
+    return resolved
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Execute the exact canonical P19 external-verifier regression suite at immutable T_verifier "
-            "and emit a raw content-addressed receipt. This command never activates Plan V4; activation "
-            "requires separate dual-external-signature authority."
+            "with a content-addressed CPython 3.10.x runtime and emit a raw receipt. This command never "
+            "activates Plan V4; activation requires separate dual-external-signature authority."
         )
     )
     parser.add_argument("--repository-root", default=".")
@@ -70,12 +83,16 @@ def main() -> int:
     if tracked_dirty:
         raise RuntimeError("canonical verifier regression requires a clean tracked Git worktree")
 
+    python_executable = _resolve_canonical_python()
+    python_runtime = inspect_python_runtime(python_executable)
+    executed_argv = [str(python_executable), *CANONICAL_REGRESSION_COMMAND[1:]]
+
     env = dict(os.environ)
     existing_pythonpath = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = str(root) if not existing_pythonpath else f"{root}{os.pathsep}{existing_pythonpath}"
     try:
         completed = subprocess.run(
-            list(CANONICAL_REGRESSION_COMMAND),
+            executed_argv,
             cwd=root,
             env=env,
             stdout=subprocess.PIPE,
@@ -91,6 +108,7 @@ def main() -> int:
     _write_immutable(stderr_path, completed.stderr, allow_empty=True)
     if completed.returncode != 0:
         print(f"DGC-P19-VERIFIER-REGRESSION: FAIL exit={completed.returncode}")
+        print(f"DGC-P19-VERIFIER-PYTHON-RUNTIME-DIGEST: {python_runtime.runtime_digest}")
         print(f"DGC-P19-VERIFIER-REGRESSION-STDOUT: {stdout_path.relative_to(root).as_posix()}")
         print(f"DGC-P19-VERIFIER-REGRESSION-STDERR: {stderr_path.relative_to(root).as_posix()}")
         return int(completed.returncode) if int(completed.returncode) > 0 else 1
@@ -103,6 +121,7 @@ def main() -> int:
         stdout_path=stdout_path.relative_to(root),
         stderr_path=stderr_path.relative_to(root),
         exit_code=completed.returncode,
+        python_runtime_identity=python_runtime.document,
     )
     receipt_path = output / "receipt.json"
     _write_immutable(
@@ -113,6 +132,9 @@ def main() -> int:
     print("DGC-P19-VERIFIER-REGRESSION: PASS")
     print(f"DGC-P19-VERIFIER-T_VERIFIER-COMMIT: {source_commit}")
     print(f"DGC-P19-VERIFIER-T_VERIFIER-TREE: {source_tree}")
+    print(f"DGC-P19-VERIFIER-PYTHON: {python_runtime.implementation} {python_runtime.version_major}.{python_runtime.version_minor}.{python_runtime.version_micro}")
+    print(f"DGC-P19-VERIFIER-PYTHON-RUNTIME-DIGEST: {python_runtime.runtime_digest}")
+    print(f"DGC-P19-VERIFIER-PYTHON-EXECUTABLE-SHA256: {python_runtime.executable_sha256}")
     print(f"DGC-P19-VERIFIER-REGRESSION-RECEIPT: {receipt_path.relative_to(root).as_posix()}")
     print(f"DGC-P19-VERIFIER-REGRESSION-RECEIPT-DIGEST: {receipt.receipt_digest}")
     print("DGC-P19-VERIFIER-PLAN-V4-ACTIVATION-AUTHORIZED: false")
