@@ -5,11 +5,19 @@ from pathlib import Path
 import pytest
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
+from cwc.governance.p19_external_verification_contract import (
+    CANONICAL_REGRESSION_COMMAND,
+    REGRESSION_TEST_FILES,
+    VERIFIER_ENTRYPOINT,
+    VERIFIER_RUNTIME_DEPENDENCIES,
+)
 from cwc.governance.p19_external_verification_plan import (
-    PLAN_GENERATION,
-    REQUIRED_IMPLEMENTATION_DEPENDENCIES,
-    SCHEMA as PLAN_SCHEMA,
+    CANONICAL_PLAN_PATH,
+    build_activated_p19_external_verification_plan_document,
+    build_inactive_p19_external_verification_plan_document,
+)
+from cwc.governance.p19_external_verifier_regression import (
+    build_p19_external_verifier_regression_receipt,
 )
 from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS, load_p19_verification_report
 from cwc.governance.p19_verification_report import (
@@ -39,43 +47,60 @@ def _sha(label: str) -> str:
     return sha256_bytes(label.encode("utf-8"))
 
 
-def _active_plan(root: Path) -> Path:
-    entry = root / "scripts/dgc_external_p19_verifier.py"
+def _runtime_and_tests(root: Path) -> None:
+    entry = root / VERIFIER_ENTRYPOINT
     entry.parent.mkdir(parents=True, exist_ok=True)
     entry.write_text("print('test verifier')\n", encoding="utf-8")
-    dependencies = []
-    for rel in REQUIRED_IMPLEMENTATION_DEPENDENCIES:
+    for rel in VERIFIER_RUNTIME_DEPENDENCIES:
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"# frozen verifier dependency: {rel}\n", encoding="utf-8")
-        dependencies.append({"path": rel, "sha256": sha256_file(path), "bytes": path.stat().st_size})
-    rows = []
-    for check_id in sorted(REQUIRED_CHECKS):
-        rows.append({
-            "check_id": check_id,
-            "method_id": CHECK_METHOD_IDS[check_id],
-            "command_template": [
-                "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
-                "--p19", "{P19_PATH}", "--evidence-output", "{EVIDENCE_PATH}",
-            ],
-            "implementation_status": "IMPLEMENTED",
-        })
-    payload = {
-        "plan_generation": PLAN_GENERATION,
-        "frozen_pre_outcome": True,
-        "activation_authorized": True,
-        "verifier_entrypoint_path": "scripts/dgc_external_p19_verifier.py",
-        "verifier_entrypoint_sha256": sha256_file(entry),
-        "verifier_dependency_manifest_digest": sha256_bytes(canonical_json_bytes(dependencies)),
-        "verifier_dependencies": dependencies,
-        "check_contracts": rows,
-        "all_check_implementations_complete": True,
-        "product_qualification_authorized": False,
-    }
-    doc = {"schema": PLAN_SCHEMA, **payload, "plan_digest": sha256_bytes(canonical_json_bytes(payload))}
-    path = root / "artifacts/dgc-product-v1/P19_EXTERNAL_VERIFICATION_PLAN_V2.json"
+    for rel in REGRESSION_TEST_FILES:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"# frozen regression test: {rel}\n", encoding="utf-8")
+
+
+def _write(path: Path, doc: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(canonical_json_bytes(doc) + b"\n")
+
+
+def _active_plan(root: Path) -> Path:
+    _runtime_and_tests(root)
+    stdout = root / "artifacts/dgc-product-v1/generated/regression/stdout.bin"
+    stderr = root / "artifacts/dgc-product-v1/generated/regression/stderr.bin"
+    stdout.parent.mkdir(parents=True, exist_ok=True)
+    stdout.write_bytes(b"canonical verifier regression passed\n")
+    stderr.write_bytes(b"")
+    receipt = build_p19_external_verifier_regression_receipt(
+        repository_root=root,
+        source_commit="a" * 40,
+        source_tree="b" * 40,
+        command_argv=CANONICAL_REGRESSION_COMMAND,
+        stdout_path=stdout.relative_to(root),
+        stderr_path=stderr.relative_to(root),
+        exit_code=0,
+    )
+    receipt_path = root / "artifacts/dgc-product-v1/generated/regression/receipt.json"
+    _write(receipt_path, receipt.document)
+    plan_doc = build_activated_p19_external_verification_plan_document(
+        repository_root=root,
+        regression_receipt_path=receipt_path.relative_to(root),
+    )
+    path = root / CANONICAL_PLAN_PATH
+    _write(path, plan_doc)
+    return path
+
+
+def _inactive_plan(root: Path) -> Path:
+    _runtime_and_tests(root)
+    doc = build_inactive_p19_external_verification_plan_document(
+        repository_root=root,
+        implemented_check_ids=tuple(sorted(REQUIRED_CHECKS)),
+    )
+    path = root / CANONICAL_PLAN_PATH
+    _write(path, doc)
     return path
 
 
@@ -100,7 +125,7 @@ def _receipt(root: Path, p19_rel: str, check_id: str, *, status: str = "PASS", f
         ["echo", "PASS"]
         if forged_command
         else [
-            "python", "scripts/dgc_external_p19_verifier.py", "--check-id", check_id,
+            "python", VERIFIER_ENTRYPOINT, "--check-id", check_id,
             "--p19", p19_rel, "--evidence-output", evidence_rel,
         ]
     )
@@ -178,17 +203,7 @@ def test_echo_pass_command_cannot_satisfy_named_check(tmp_path: Path):
 
 
 def test_inactive_plan_prevents_report_authority(tmp_path: Path):
-    plan = _active_plan(tmp_path)
-    import json
-    doc = json.loads(plan.read_text(encoding="utf-8"))
-    doc["activation_authorized"] = False
-    keys = (
-        "plan_generation", "frozen_pre_outcome", "activation_authorized", "verifier_entrypoint_path",
-        "verifier_entrypoint_sha256", "verifier_dependency_manifest_digest", "verifier_dependencies",
-        "check_contracts", "all_check_implementations_complete", "product_qualification_authorized",
-    )
-    doc["plan_digest"] = sha256_bytes(canonical_json_bytes({key: doc[key] for key in keys}))
-    plan.write_bytes(canonical_json_bytes(doc) + b"\n")
+    plan = _inactive_plan(tmp_path)
     p19_path = _p19_file(tmp_path)
     p19_rel = p19_path.relative_to(tmp_path).as_posix()
     receipts = tuple(_receipt(tmp_path, p19_rel, check) for check in sorted(REQUIRED_CHECKS))
@@ -216,16 +231,29 @@ def test_verifier_dependency_mutation_fails_report_replay(tmp_path: Path):
     report = _build(tmp_path)
     path = tmp_path / "report.json"
     path.write_bytes(report_bytes(report))
-    dependency = tmp_path / REQUIRED_IMPLEMENTATION_DEPENDENCIES[0]
+    dependency = tmp_path / VERIFIER_RUNTIME_DEPENDENCIES[0]
     dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
     with pytest.raises(Exception, match="dependency bytes differ"):
+        load_p19_verification_report(path, repository_root=tmp_path)
+
+
+def test_regression_receipt_mutation_fails_report_replay(tmp_path: Path):
+    report = _build(tmp_path)
+    path = tmp_path / "report.json"
+    path.write_bytes(report_bytes(report))
+    plan_path = tmp_path / str(report["verification_plan_path"])
+    import json
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    receipt = tmp_path / str(plan["activation_regression_receipt_path"])
+    receipt.write_bytes(receipt.read_bytes() + b" ")
+    with pytest.raises(Exception, match="plan replay failed"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
 def test_self_consistent_report_cannot_contradict_bound_receipt_semantics(tmp_path: Path):
     report = _build(tmp_path)
     row = report["checks"][0]
-    row["command_argv"] = ["python", "scripts/dgc_external_p19_verifier.py", "--check-id", str(row["check_id"]), "--p19", str(report["p19_path"]), "--evidence-output", "artifacts/dgc-product-v1/generated/forged.json"]
+    row["command_argv"] = ["python", VERIFIER_ENTRYPOINT, "--check-id", str(row["check_id"]), "--p19", str(report["p19_path"]), "--evidence-output", "artifacts/dgc-product-v1/generated/forged.json"]
     row["command_sha256"] = sha256_bytes(canonical_json_bytes(row["command_argv"]))
     report["checks_digest"] = sha256_bytes(canonical_json_bytes(report["checks"]))
     path = tmp_path / "forged-report.json"
