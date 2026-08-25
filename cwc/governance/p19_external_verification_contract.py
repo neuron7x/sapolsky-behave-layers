@@ -17,10 +17,18 @@ VERIFIER_ENTRYPOINT = "scripts/dgc_external_p19_verifier.py"
 VERIFIER_RUNTIME_DEPENDENCIES = (
     "cwc/governance/p19_external_verification_contract.py",
     "cwc/governance/p19_external_replay.py",
+    "cwc/governance/p19_external_verification_plan.py",
+    "cwc/governance/p19_external_verifier_regression.py",
+    "cwc/governance/p19_external_verifier_activation.py",
+    "cwc/governance/p19_verification_check_receipt.py",
+    "cwc/governance/p19_verification_report.py",
+    "cwc/governance/p19_verification_attestation.py",
+    "cwc/governance/p19_verifier_policy.py",
 )
 REGRESSION_TEST_FILES = (
     "tests/test_dgc_p19_external_verification_plan.py",
     "tests/test_dgc_p19_external_verifier_regression.py",
+    "tests/test_dgc_p19_external_verifier_activation.py",
     "tests/test_dgc_p19_external_replay.py",
     "tests/test_dgc_p19_verification_report.py",
     "tests/test_dgc_p19_verification_attestation.py",
