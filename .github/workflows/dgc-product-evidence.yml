@@ -2,6 +2,9 @@ name: dgc-product-evidence
 
 permissions:
   contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 on:
   push:
@@ -78,6 +81,7 @@ jobs:
             tests/test_dgc_p19_external_verification_plan.py \
             tests/test_dgc_p19_external_verification_plan_freezer.py \
             tests/test_dgc_p19_external_verifier_regression.py \
+            tests/test_dgc_p19_external_verifier_activation.py \
             tests/test_dgc_p19_external_replay.py \
             tests/test_dgc_p19_verification_report.py \
             tests/test_dgc_p19_verification_attestation.py \
@@ -98,6 +102,9 @@ jobs:
           sha256sum scripts/dgc_external_p19_verifier.py
           sha256sum cwc/governance/p19_external_verification_contract.py
           sha256sum cwc/governance/p19_external_replay.py
+          sha256sum cwc/governance/p19_external_verification_plan.py
+          sha256sum cwc/governance/p19_external_verifier_regression.py
+          sha256sum cwc/governance/p19_external_verifier_activation.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
       - name: B2 fit receipt falsification gate
@@ -126,6 +133,13 @@ jobs:
         run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
       - name: Canonical external P19 verifier regression receipt
         run: PYTHONPATH=. python scripts/dgc_run_p19_external_verifier_regression.py
+      - name: Attest canonical verifier regression evidence provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: |
+            artifacts/dgc-product-v1/generated/verifier-regression/receipt.json
+            artifacts/dgc-product-v1/generated/verifier-regression/stdout.bin
+            artifacts/dgc-product-v1/generated/verifier-regression/stderr.bin
 
   product-qualified-release:
     if: startsWith(github.ref, 'refs/tags/dgc-product-')
