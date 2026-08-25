@@ -78,15 +78,25 @@ def build_p19_verification_report(
         )
     except P19ExternalVerificationPlanError as exc:
         raise P19VerificationReportError("frozen external verification plan is not execution-ready") from exc
-    if not all((
+    activation_required = all((
+        plan.activation_authority_path,
+        plan.activation_authority_sha256,
+        plan.activation_authority_digest,
+        plan.activation_trust_policy_path,
+        plan.activation_trust_policy_digest,
+        plan.activation_verifier_principals,
+        plan.activation_signer_key_digests,
         plan.activation_regression_receipt_path,
         plan.activation_regression_receipt_sha256,
         plan.activation_regression_receipt_digest,
         plan.activation_regression_source_commit,
         plan.activation_regression_source_tree,
         plan.activation_regression_test_manifest_digest,
-    )):
-        raise P19VerificationReportError("active external verification plan lacks regression lineage")
+    ))
+    if not activation_required:
+        raise P19VerificationReportError("active Plan V4 lacks dual-signed activation lineage")
+    if len(set(plan.activation_verifier_principals)) < 2 or len(set(plan.activation_signer_key_digests)) < 2:
+        raise P19VerificationReportError("active Plan V4 lacks two distinct verifier principals/keys")
 
     rows = [load_check_receipt(Path(path), repository_root=root) for path in check_receipt_paths]
     if len(rows) != len(REQUIRED_CHECKS):
@@ -138,6 +148,13 @@ def build_p19_verification_report(
         "verifier_entrypoint_path": plan.verifier_entrypoint_path,
         "verifier_entrypoint_sha256": plan.verifier_entrypoint_sha256,
         "verifier_dependency_manifest_digest": plan.verifier_dependency_manifest_digest,
+        "verification_plan_activation_authority_path": plan.activation_authority_path,
+        "verification_plan_activation_authority_sha256": plan.activation_authority_sha256,
+        "verification_plan_activation_authority_digest": plan.activation_authority_digest,
+        "verification_plan_activation_trust_policy_path": plan.activation_trust_policy_path,
+        "verification_plan_activation_trust_policy_digest": plan.activation_trust_policy_digest,
+        "verification_plan_activation_verifier_principals": list(plan.activation_verifier_principals),
+        "verification_plan_activation_signer_key_digests": list(plan.activation_signer_key_digests),
         "verification_plan_regression_receipt_path": plan.activation_regression_receipt_path,
         "verification_plan_regression_receipt_sha256": plan.activation_regression_receipt_sha256,
         "verification_plan_regression_receipt_digest": plan.activation_regression_receipt_digest,
@@ -165,6 +182,7 @@ def build_p19_verification_report(
         "raw_verification_transcript_disclosed": True,
         "receipt_semantics_replayed": True,
         "frozen_verification_plan_replayed": True,
+        "dual_signed_activation_authority_replayed": True,
         "activation_regression_replayed": True,
         "all_required_checks_passed": True,
     }
