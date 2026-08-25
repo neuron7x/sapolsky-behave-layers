@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -127,6 +126,7 @@ def build_p19_external_verifier_freeze_readiness(
     canonical_present = canonical.is_file() and not canonical.is_symlink()
     canonical_matches = False
     if canonical_present:
+        _tracked_clean(root, CANONICAL_PLAN_PATH)
         verified = load_p19_external_verification_plan(
             canonical,
             repository_root=root,
