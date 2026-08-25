@@ -20,6 +20,7 @@ VERIFIER_RUNTIME_DEPENDENCIES = (
 )
 REGRESSION_TEST_FILES = (
     "tests/test_dgc_p19_external_verification_plan.py",
+    "tests/test_dgc_p19_external_verifier_regression.py",
     "tests/test_dgc_p19_external_replay.py",
     "tests/test_dgc_p19_verification_report.py",
     "tests/test_dgc_p19_verification_attestation.py",
