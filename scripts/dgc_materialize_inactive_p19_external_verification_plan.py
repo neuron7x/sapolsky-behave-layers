@@ -28,7 +28,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Materialize the canonical content-addressed P19 external verification Plan V2 "
+            "Materialize the canonical content-addressed P19 external verification Plan V3 "
             "in an intentionally inactive state. This command cannot authorize activation."
         )
     )
@@ -51,18 +51,28 @@ def main() -> int:
         implemented_check_ids=tuple(sorted(REQUIRED_CHECKS)),
     )
     if doc.get("activation_authorized") is not False:
-        raise RuntimeError("inactive Plan V2 builder illegally authorized activation")
+        raise RuntimeError("inactive Plan V3 builder illegally authorized activation")
     if doc.get("product_qualification_authorized") is not False:
-        raise RuntimeError("inactive Plan V2 builder illegally authorized product qualification")
+        raise RuntimeError("inactive Plan V3 builder illegally authorized product qualification")
     if doc.get("all_check_implementations_complete") is not True:
         raise RuntimeError("canonical eight-check implementation population is incomplete")
+    for field in (
+        "activation_regression_receipt_path",
+        "activation_regression_receipt_sha256",
+        "activation_regression_receipt_digest",
+        "activation_regression_source_commit",
+        "activation_regression_source_tree",
+        "activation_regression_test_manifest_digest",
+    ):
+        if doc.get(field) is not None:
+            raise RuntimeError(f"inactive Plan V3 illegally carries activation evidence: {field}")
 
     _write_immutable(output, canonical_json_bytes(doc) + b"\n")
-    print(f"DGC-P19-EXTERNAL-PLAN-V2: {output.relative_to(root).as_posix()}")
-    print(f"DGC-P19-EXTERNAL-PLAN-V2-DIGEST: {doc['plan_digest']}")
-    print("DGC-P19-EXTERNAL-PLAN-V2-IMPLEMENTATIONS-COMPLETE: true")
-    print("DGC-P19-EXTERNAL-PLAN-V2-ACTIVATION-AUTHORIZED: false")
-    print("DGC-P19-EXTERNAL-PLAN-V2-PRODUCT-QUALIFICATION-AUTHORIZED: false")
+    print(f"DGC-P19-EXTERNAL-PLAN-V3: {output.relative_to(root).as_posix()}")
+    print(f"DGC-P19-EXTERNAL-PLAN-V3-DIGEST: {doc['plan_digest']}")
+    print("DGC-P19-EXTERNAL-PLAN-V3-IMPLEMENTATIONS-COMPLETE: true")
+    print("DGC-P19-EXTERNAL-PLAN-V3-ACTIVATION-AUTHORIZED: false")
+    print("DGC-P19-EXTERNAL-PLAN-V3-PRODUCT-QUALIFICATION-AUTHORIZED: false")
     return 0
 
 
