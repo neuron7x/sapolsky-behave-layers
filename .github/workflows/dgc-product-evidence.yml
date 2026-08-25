@@ -77,6 +77,7 @@ jobs:
             tests/test_dgc_p19_verification_check_receipt.py \
             tests/test_dgc_p19_external_verification_plan.py \
             tests/test_dgc_p19_external_verification_plan_freezer.py \
+            tests/test_dgc_p19_external_verifier_regression.py \
             tests/test_dgc_p19_external_replay.py \
             tests/test_dgc_p19_verification_report.py \
             tests/test_dgc_p19_verification_attestation.py \
@@ -123,6 +124,8 @@ jobs:
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py
       - name: Deterministic release double-build gate
         run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
+      - name: Canonical external P19 verifier regression receipt
+        run: PYTHONPATH=. python scripts/dgc_run_p19_external_verifier_regression.py
 
   product-qualified-release:
     if: startsWith(github.ref, 'refs/tags/dgc-product-')
