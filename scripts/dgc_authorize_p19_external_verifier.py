@@ -10,6 +10,7 @@ from cwc.governance.p19_external_verifier_activation import (
     build_p19_external_verifier_activation_authority,
     verify_p19_external_verifier_activation_authority_document,
 )
+from cwc.governance.p19_verifier_policy import CANONICAL_POLICY_PATH
 
 
 def _write_immutable(path: Path, data: bytes) -> None:
@@ -27,11 +28,13 @@ def _write_immutable(path: Path, data: bytes) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build and immediately raw-signature-replay the dual-external-verifier activation authority."
+        description=(
+            "Build and immediately raw-signature-replay the dual-external-verifier activation authority "
+            "against the canonical frozen verifier trust policy."
+        )
     )
     parser.add_argument("--repository-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--regression-receipt", type=Path, required=True)
-    parser.add_argument("--trust-policy", type=Path, required=True)
     parser.add_argument("--attestation", type=Path, action="append", required=True)
     parser.add_argument("--signature", type=Path, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -41,7 +44,7 @@ def main() -> int:
     authority = build_p19_external_verifier_activation_authority(
         repository_root=root,
         regression_receipt_path=args.regression_receipt,
-        trust_policy_path=args.trust_policy,
+        trust_policy_path=root / CANONICAL_POLICY_PATH,
         attestation_paths=args.attestation,
         signature_paths=args.signature,
     )
@@ -62,6 +65,7 @@ def main() -> int:
         "source_tree": authority.source_tree,
         "verifier_principals": list(authority.verifier_principals),
         "distinct_signer_keys": len(set(authority.signer_key_digests)),
+        "canonical_trust_policy": CANONICAL_POLICY_PATH,
         "activation_authorized": True,
         "product_qualification_authorized": False,
     }, sort_keys=True))
