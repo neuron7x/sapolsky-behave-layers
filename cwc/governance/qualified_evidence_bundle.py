@@ -14,6 +14,7 @@ from cwc.governance.evidence_packaging_authority import (
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
 from cwc.governance.p19_external_verification_plan import load_p19_external_verification_plan
+from cwc.governance.p19_external_verifier_regression import verify_p19_external_verifier_regression_receipt
 from cwc.governance.p19_verification_attestation import load_p19_verification_report
 from cwc.governance.p19_verifier_policy import load_p19_verifier_trust_policy, resolve_allowed_signers
 from cwc.governance.product_qualification_pointer import (
@@ -23,7 +24,7 @@ from cwc.governance.product_qualification_pointer import (
     verify_product_qualification_pointer,
 )
 
-SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V5"
+SCHEMA = "DGC_QUALIFIED_EVIDENCE_BUNDLE_AUTHORITY_V6"
 ROLE_EXECUTION_SOURCE = "EXECUTION_SOURCE_T0"
 ROLE_PACKAGING_EVIDENCE = "PACKAGING_EVIDENCE_T1"
 
@@ -159,10 +160,45 @@ def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple
         plan = load_p19_external_verification_plan(root / plan_rel, repository_root=root, require_active=True)
     except RuntimeError as exc:
         raise QualifiedEvidenceBundleError("P19 verifier plan dependency replay failed") from exc
+    if plan.activation_regression_receipt_path is None:
+        raise QualifiedEvidenceBundleError("active P19 verifier plan lacks regression receipt locator")
+
     collected = {report_rel, plan_rel, entry_rel}
     for row in plan.verifier_dependencies:
         collected.add(_safe_rel(row.get("path"), label="P19 verifier dependency path"))
+
+    regression_rel = _safe_rel(
+        plan.activation_regression_receipt_path,
+        label="P19 verifier activation regression receipt",
+    )
+    regression_path = _safe_file(root, regression_rel)
+    try:
+        regression = verify_p19_external_verifier_regression_receipt(
+            regression_path,
+            repository_root=root,
+        )
+    except RuntimeError as exc:
+        raise QualifiedEvidenceBundleError("P19 verifier activation regression replay failed") from exc
+    if regression.get("receipt_digest") != plan.activation_regression_receipt_digest:
+        raise QualifiedEvidenceBundleError("P19 verifier regression receipt/plan digest mismatch")
+    collected.add(regression_rel)
+
+    for manifest_field in ("runtime_manifest", "test_manifest"):
+        rows = regression.get(manifest_field)
+        if not isinstance(rows, list) or not rows:
+            raise QualifiedEvidenceBundleError(f"P19 verifier regression {manifest_field} missing")
+        for row in rows:
+            if not isinstance(row, Mapping):
+                raise QualifiedEvidenceBundleError(f"P19 verifier regression {manifest_field} row malformed")
+            collected.add(_safe_rel(row.get("path"), label=f"P19 verifier regression {manifest_field} path"))
+
     empty_allowed: set[str] = set()
+    regression_stdout = _safe_rel(regression.get("stdout_path"), label="P19 verifier regression stdout")
+    regression_stderr = _safe_rel(regression.get("stderr_path"), label="P19 verifier regression stderr")
+    collected.add(regression_stdout)
+    collected.add(regression_stderr)
+    empty_allowed.add(regression_stderr)
+
     checks = report.get("checks")
     if not isinstance(checks, list) or not checks:
         raise QualifiedEvidenceBundleError("P19 verification report transcript population missing")
@@ -204,6 +240,7 @@ class QualifiedEvidenceBundleAuthority:
     raw_p19_verification_transcripts_included: bool
     frozen_verification_plan_and_entrypoint_included: bool
     frozen_verifier_dependency_closure_included: bool
+    activation_regression_evidence_included: bool
     portable_p19_replay_inputs_included: bool
     portable_global_v5_authority_included: bool
     all_required_subjects_git_bound: bool
@@ -312,6 +349,7 @@ def build_qualified_evidence_bundle_authority(
         "raw_p19_verification_transcripts_included": True,
         "frozen_verification_plan_and_entrypoint_included": True,
         "frozen_verifier_dependency_closure_included": True,
+        "activation_regression_evidence_included": True,
         "portable_p19_replay_inputs_included": True,
         "portable_global_v5_authority_included": True,
         "all_required_subjects_git_bound": True,
@@ -332,6 +370,7 @@ def build_qualified_evidence_bundle_authority(
         raw_p19_verification_transcripts_included=True,
         frozen_verification_plan_and_entrypoint_included=True,
         frozen_verifier_dependency_closure_included=True,
+        activation_regression_evidence_included=True,
         portable_p19_replay_inputs_included=True,
         portable_global_v5_authority_included=True,
         all_required_subjects_git_bound=True,
