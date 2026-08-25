@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Mapping, Sequence
@@ -14,12 +15,36 @@ from cwc.governance.p19_external_verification_contract import (
     VERIFIER_RUNTIME_DEPENDENCIES,
 )
 
-SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V1"
-REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V1"
+SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V2"
+REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V2_GIT_BOUND"
+EXECUTION_PROVENANCE_SCOPE = "LOCAL_GIT_IDENTITY_RUNTIME_TESTS_EXIT_CODE_AND_RAW_TRANSCRIPT_BOUND_NOT_REMOTE_RUNNER_ATTESTED"
 
 
 class P19ExternalVerifierRegressionError(RuntimeError):
     pass
+
+
+def _git(root: Path, *args: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(root), *args],
+            text=True,
+            stderr=subprocess.PIPE,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise P19ExternalVerifierRegressionError(f"git command failed: {' '.join(args)}") from exc
+
+
+def current_repository_identity(repository_root: Path) -> tuple[str, str]:
+    root = Path(repository_root).resolve()
+    commit = _git(root, "rev-parse", "HEAD").lower()
+    tree = _git(root, "rev-parse", "HEAD^{tree}").lower()
+    _git_oid("current source commit", commit)
+    _git_oid("current source tree", tree)
+    tracked_dirty = _git(root, "status", "--porcelain", "--untracked-files=no")
+    if tracked_dirty:
+        raise P19ExternalVerifierRegressionError("verifier regression requires a clean tracked Git worktree")
+    return commit, tree
 
 
 def _git_oid(name: str, value: object) -> str:
@@ -144,6 +169,11 @@ def build_p19_external_verifier_regression_receipt(
     exit_code: int,
 ) -> P19ExternalVerifierRegressionReceipt:
     root = Path(repository_root).resolve()
+    observed_commit, observed_tree = current_repository_identity(root)
+    if _git_oid("source_commit", source_commit) != observed_commit:
+        raise P19ExternalVerifierRegressionError("declared regression source commit differs from current Git HEAD")
+    if _git_oid("source_tree", source_tree) != observed_tree:
+        raise P19ExternalVerifierRegressionError("declared regression source tree differs from current Git tree")
     if tuple(command_argv) != CANONICAL_REGRESSION_COMMAND:
         raise P19ExternalVerifierRegressionError("regression command differs from canonical verifier regression command")
     if int(exit_code) != 0:
@@ -159,8 +189,8 @@ def build_p19_external_verifier_regression_receipt(
     test_digest = sha256_bytes(canonical_json_bytes(list(tests)))
     payload: dict[str, object] = {
         "regression_generation": REGRESSION_GENERATION,
-        "source_commit": _git_oid("source_commit", source_commit),
-        "source_tree": _git_oid("source_tree", source_tree),
+        "source_commit": observed_commit,
+        "source_tree": observed_tree,
         "canonical_command_argv": list(CANONICAL_REGRESSION_COMMAND),
         "runtime_manifest": list(runtime),
         "runtime_manifest_digest": runtime_digest,
@@ -175,13 +205,13 @@ def build_p19_external_verifier_regression_receipt(
         "stderr_bytes": stderr.stat().st_size,
         "exit_code": 0,
         "all_regression_tests_passed": True,
-        "execution_provenance_scope": "RAW_EXIT_CODE_AND_TRANSCRIPT_BOUND_NOT_REMOTE_RUNNER_ATTESTED",
+        "execution_provenance_scope": EXECUTION_PROVENANCE_SCOPE,
     }
     receipt_digest = sha256_bytes(canonical_json_bytes(payload))
     return P19ExternalVerifierRegressionReceipt(
         regression_generation=REGRESSION_GENERATION,
-        source_commit=str(payload["source_commit"]),
-        source_tree=str(payload["source_tree"]),
+        source_commit=observed_commit,
+        source_tree=observed_tree,
         canonical_command_argv=tuple(CANONICAL_REGRESSION_COMMAND),
         runtime_manifest=runtime,
         runtime_manifest_digest=runtime_digest,
@@ -196,7 +226,7 @@ def build_p19_external_verifier_regression_receipt(
         stderr_bytes=int(payload["stderr_bytes"]),
         exit_code=0,
         all_regression_tests_passed=True,
-        execution_provenance_scope=str(payload["execution_provenance_scope"]),
+        execution_provenance_scope=EXECUTION_PROVENANCE_SCOPE,
         receipt_digest=receipt_digest,
     )
 
@@ -207,6 +237,7 @@ def verify_p19_external_verifier_regression_receipt(
     repository_root: Path,
 ) -> dict[str, object]:
     root = Path(repository_root).resolve()
+    observed_commit, observed_tree = current_repository_identity(root)
     candidate = Path(path)
     if not candidate.is_absolute():
         candidate = root / candidate
@@ -239,13 +270,15 @@ def verify_p19_external_verifier_regression_receipt(
         raise P19ExternalVerifierRegressionError("verifier regression receipt digest mismatch")
     if doc.get("regression_generation") != REGRESSION_GENERATION:
         raise P19ExternalVerifierRegressionError("verifier regression generation mismatch")
-    _git_oid("source_commit", doc.get("source_commit"))
-    _git_oid("source_tree", doc.get("source_tree"))
+    if _git_oid("source_commit", doc.get("source_commit")) != observed_commit:
+        raise P19ExternalVerifierRegressionError("regression receipt source commit differs from current Git HEAD")
+    if _git_oid("source_tree", doc.get("source_tree")) != observed_tree:
+        raise P19ExternalVerifierRegressionError("regression receipt source tree differs from current Git tree")
     if tuple(doc.get("canonical_command_argv", ())) != CANONICAL_REGRESSION_COMMAND:
         raise P19ExternalVerifierRegressionError("verifier regression command mismatch")
     if doc.get("exit_code") != 0 or doc.get("all_regression_tests_passed") is not True:
         raise P19ExternalVerifierRegressionError("verifier regression did not pass")
-    if doc.get("execution_provenance_scope") != "RAW_EXIT_CODE_AND_TRANSCRIPT_BOUND_NOT_REMOTE_RUNNER_ATTESTED":
+    if doc.get("execution_provenance_scope") != EXECUTION_PROVENANCE_SCOPE:
         raise P19ExternalVerifierRegressionError("verifier regression provenance scope mismatch")
 
     runtime = current_runtime_manifest(root)
