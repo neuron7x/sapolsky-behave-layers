@@ -2,6 +2,9 @@ name: dgc-product-evidence
 
 permissions:
   contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 on:
   push:
@@ -65,6 +68,54 @@ jobs:
             tests/test_dgc_continuous_assurance.py \
             tests/test_dgc_combinatorial_coverage.py \
             tests/test_dgc_release_builder.py
+      - name: V5.1 theorem and portable evidence-closure regression
+        run: |
+          PYTHONPATH=. python -m pytest -q \
+            tests/test_dgc_average_conditional_mean_cs.py \
+            tests/test_dgc_average_conditional_mean_finite_tree.py \
+            tests/test_dgc_product_statistical_plan.py \
+            tests/test_dgc_evidence_closure.py \
+            tests/test_dgc_fault_injection_evidence.py \
+            tests/test_dgc_independent_replication_authority_v4.py \
+            tests/test_dgc_p19_verification_check_receipt.py \
+            tests/test_dgc_p19_external_verification_contract.py \
+            tests/test_dgc_p19_external_python_runtime.py \
+            tests/test_dgc_p19_external_verification_plan.py \
+            tests/test_dgc_p19_external_verification_plan_freezer.py \
+            tests/test_dgc_p19_external_verification_transition.py \
+            tests/test_dgc_p19_external_verifier_regression.py \
+            tests/test_dgc_p19_external_verifier_activation.py \
+            tests/test_dgc_p19_external_verifier_freeze_readiness.py \
+            tests/test_dgc_p19_external_replay.py \
+            tests/test_dgc_p19_verification_report.py \
+            tests/test_dgc_p19_verification_attestation.py \
+            tests/test_dgc_p19_verifier_policy.py \
+            tests/test_dgc_p19_verifier_policy_canonical_identity.py \
+            tests/test_dgc_p19_evidence_root.py \
+            tests/test_dgc_global_product_qualification.py \
+            tests/test_dgc_global_product_qualification_v4.py \
+            tests/test_dgc_global_product_qualification_v5.py \
+            tests/test_dgc_product_qualification_pointer.py \
+            tests/test_dgc_product_qualification_pointer_canonical.py \
+            tests/test_dgc_canonical_pointer_v3_state.py \
+            tests/test_dgc_evidence_packaging_authority.py \
+            tests/test_dgc_qualified_evidence_bundle.py \
+            tests/test_dgc_qualified_evidence_bundle_v3.py \
+            tests/test_dgc_deterministic_git_snapshot.py
+      - name: External P19 verifier full semantic fingerprints
+        run: |
+          sha256sum scripts/dgc_external_p19_verifier.py
+          find cwc/governance -type f -name '*.py' -print0 | sort -z | xargs -0 sha256sum
+          sha256sum \
+            scripts/dgc_run_p19_external_verifier_regression.py \
+            scripts/dgc_freeze_p19_external_verification_plan.py \
+            scripts/dgc_materialize_inactive_p19_external_verification_plan.py \
+            scripts/dgc_materialize_activated_p19_external_verification_plan.py \
+            scripts/dgc_authorize_p19_external_verifier.py \
+            scripts/dgc_build_verifier_regression_attestation.py \
+            scripts/dgc_p19_external_verifier_freeze_readiness.py
+      - name: External P19 verifier Plan V4 freeze readiness
+        run: PYTHONPATH=. python scripts/dgc_p19_external_verifier_freeze_readiness.py
       - name: Learned B2 baseline falsification gate
         run: PYTHONPATH=. python scripts/dgc_learned_baseline_attack.py
       - name: B2 fit receipt falsification gate
@@ -91,6 +142,15 @@ jobs:
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py
       - name: Deterministic release double-build gate
         run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
+      - name: Canonical external P19 verifier regression receipt
+        run: PYTHONPATH=. python scripts/dgc_run_p19_external_verifier_regression.py
+      - name: Attest canonical verifier regression evidence provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: |
+            artifacts/dgc-product-v1/generated/verifier-regression/receipt.json
+            artifacts/dgc-product-v1/generated/verifier-regression/stdout.bin
+            artifacts/dgc-product-v1/generated/verifier-regression/stderr.bin
 
   product-qualified-release:
     if: startsWith(github.ref, 'refs/tags/dgc-product-')
@@ -101,11 +161,11 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
-      - name: Require PRODUCT_QUALIFIED evidence state
+      - name: Require PRODUCT_QUALIFIED portable terminal replay
         run: PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
-      - name: Require complete SHA-sealed evidence bundle
+      - name: Require graph-derived qualified evidence bundle, verifier transcript and frozen plan
         run: PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
-      - name: Require deterministic double-build release
-        run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py
-      - name: Build exact product-qualified DGC release
+      - name: Require deterministic product-qualified double-build
+        run: PYTHONPATH=. python scripts/dgc_release_repro_gate.py --require-product-qualified
+      - name: Build exact portable product-qualified DGC release
         run: PYTHONPATH=. python scripts/make_dgc_release.py --out dist/dgc-release --require-product-qualified

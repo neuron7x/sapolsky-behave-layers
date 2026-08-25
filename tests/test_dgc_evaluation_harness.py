@@ -12,7 +12,7 @@ def _h(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def _harness(policy: str, *, tasks="tasks", scorer="scorer") -> FrozenEvaluationHarness:
+def _harness(policy: str, *, tasks="tasks", scorer="scorer", ccf="ccf") -> FrozenEvaluationHarness:
     return FrozenEvaluationHarness(
         model_manifest_digest=_h("models"),
         prompt_policy_digest=_h("prompt"),
@@ -22,6 +22,7 @@ def _harness(policy: str, *, tasks="tasks", scorer="scorer") -> FrozenEvaluation
         budget_digest=_h("budget"),
         pricing_snapshot_digest=_h("pricing"),
         scorer_digest=_h(scorer),
+        counterfactual_oracle_spec_digest=_h(ccf),
         statistical_plan_digest=_h("stats"),
         baseline_panel_digest=_h("baselines"),
         governance_policy_digest=_h(policy),
@@ -44,6 +45,11 @@ def test_scorer_drift_invalidates_comparison():
         certify_controlled_comparison(_harness("B1", scorer="s1"), _harness("DGC", scorer="s2"))
 
 
+def test_ccf_preregistration_drift_invalidates_comparison():
+    with pytest.raises(ValueError):
+        certify_controlled_comparison(_harness("B1", ccf="ccf-v1"), _harness("DGC", ccf="ccf-v2"))
+
+
 def test_identical_policy_is_not_policy_comparison():
     with pytest.raises(ValueError):
         certify_controlled_comparison(_harness("same"), _harness("same"))
@@ -51,7 +57,20 @@ def test_identical_policy_is_not_policy_comparison():
 
 def test_semantic_label_cannot_masquerade_as_digest():
     with pytest.raises(ValueError, match="lowercase SHA-256"):
-        FrozenEvaluationHarness("models", *(_h(str(i)) for i in range(10)))
+        FrozenEvaluationHarness(
+            model_manifest_digest="models",
+            prompt_policy_digest=_h("1"),
+            tool_manifest_digest=_h("2"),
+            task_manifest_digest=_h("3"),
+            environment_digest=_h("4"),
+            budget_digest=_h("5"),
+            pricing_snapshot_digest=_h("6"),
+            scorer_digest=_h("7"),
+            counterfactual_oracle_spec_digest=_h("8"),
+            statistical_plan_digest=_h("9"),
+            baseline_panel_digest=_h("10"),
+            governance_policy_digest=_h("11"),
+        )
 
 
 def test_canonical_manifest_digest_is_order_independent_for_mapping_keys():

@@ -32,6 +32,7 @@ class FrozenEvaluationHarness:
     budget_digest: str
     pricing_snapshot_digest: str
     scorer_digest: str
+    counterfactual_oracle_spec_digest: str
     statistical_plan_digest: str
     baseline_panel_digest: str
     governance_policy_digest: str
@@ -40,8 +41,8 @@ class FrozenEvaluationHarness:
         for name in (
             "model_manifest_digest", "prompt_policy_digest", "tool_manifest_digest",
             "task_manifest_digest", "environment_digest", "budget_digest",
-            "pricing_snapshot_digest", "scorer_digest", "statistical_plan_digest",
-            "baseline_panel_digest", "governance_policy_digest",
+            "pricing_snapshot_digest", "scorer_digest", "counterfactual_oracle_spec_digest",
+            "statistical_plan_digest", "baseline_panel_digest", "governance_policy_digest",
         ):
             object.__setattr__(self, name, _digest_field(name, getattr(self, name)))
 
@@ -57,6 +58,7 @@ class FrozenEvaluationHarness:
             "budget_digest": self.budget_digest,
             "pricing_snapshot_digest": self.pricing_snapshot_digest,
             "scorer_digest": self.scorer_digest,
+            "counterfactual_oracle_spec_digest": self.counterfactual_oracle_spec_digest,
             "statistical_plan_digest": self.statistical_plan_digest,
             "baseline_panel_digest": self.baseline_panel_digest,
         })
@@ -74,7 +76,7 @@ def certify_controlled_comparison(
 ) -> str:
     if reference.comparison_frame_digest != candidate.comparison_frame_digest:
         raise ValueError(
-            "controlled comparison invalid: tasks/models/tools/environment/budget/pricing/scorer/statistical plan/baseline panel differ"
+            "controlled comparison invalid: tasks/models/tools/environment/budget/pricing/scorer/CCF/statistical plan/baseline panel differ"
         )
     if reference.governance_policy_digest == candidate.governance_policy_digest:
         raise ValueError("comparison requires distinct governance policies")
