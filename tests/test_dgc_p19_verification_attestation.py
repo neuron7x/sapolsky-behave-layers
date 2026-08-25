@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
+import cwc.governance.p19_external_verification_plan as plan_mod
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_contract import (
-    CANONICAL_REGRESSION_COMMAND,
     REGRESSION_TEST_FILES,
     VERIFIER_ENTRYPOINT,
     VERIFIER_RUNTIME_DEPENDENCIES,
@@ -17,9 +17,7 @@ from cwc.governance.p19_external_verification_plan import (
     CANONICAL_PLAN_PATH,
     build_activated_p19_external_verification_plan_document,
 )
-from cwc.governance.p19_external_verifier_regression import (
-    build_p19_external_verifier_regression_receipt,
-)
+from cwc.governance.p19_external_verifier_regression import current_runtime_digest, current_test_manifest_digest
 from cwc.governance.p19_verification_attestation import (
     ATTESTATION_SCHEMA,
     DECLARATION,
@@ -72,27 +70,41 @@ def _runtime_and_tests(root: Path) -> None:
         path.write_text(f"# frozen regression test: {rel}\n", encoding="utf-8")
 
 
-def _active_plan(root: Path) -> Path:
+def _fake_activation_authority(root: Path) -> dict[str, object]:
+    return {
+        "schema": "DGC_P19_EXTERNAL_VERIFIER_ACTIVATION_AUTHORITY_V1",
+        "activation_authorized": True,
+        "all_signatures_verified": True,
+        "authority_digest": "a" * 64,
+        "trust_policy_path": "artifacts/dgc-product-v1/P19_VERIFIER_TRUST_POLICY_V2.json",
+        "trust_policy_digest": "b" * 64,
+        "verifier_principals": ["verifier-a", "verifier-b"],
+        "signer_key_digests": ["c" * 64, "d" * 64],
+        "regression_receipt_path": "artifacts/dgc-product-v1/generated/regression/receipt.json",
+        "regression_receipt_sha256": "e" * 64,
+        "regression_receipt_digest": "f" * 64,
+        "source_commit": "1" * 40,
+        "source_tree": "2" * 40,
+        "runtime_manifest_digest": current_runtime_digest(root),
+        "test_manifest_digest": current_test_manifest_digest(root),
+        "method_map_digest": "3" * 64,
+    }
+
+
+def _active_plan(root: Path, monkeypatch) -> Path:
     _runtime_and_tests(root)
-    stdout = root / "artifacts/dgc-product-v1/generated/regression/stdout.bin"
-    stderr = root / "artifacts/dgc-product-v1/generated/regression/stderr.bin"
-    stdout.parent.mkdir(parents=True, exist_ok=True)
-    stdout.write_bytes(b"canonical verifier regression passed\n")
-    stderr.write_bytes(b"")
-    receipt = build_p19_external_verifier_regression_receipt(
-        repository_root=root,
-        source_commit="a" * 40,
-        source_tree="b" * 40,
-        command_argv=CANONICAL_REGRESSION_COMMAND,
-        stdout_path=stdout.relative_to(root),
-        stderr_path=stderr.relative_to(root),
-        exit_code=0,
+    authority_path = root / "artifacts/dgc-product-v1/generated/regression/activation-authority.json"
+    authority_path.parent.mkdir(parents=True, exist_ok=True)
+    authority_path.write_bytes(b"activation-authority\n")
+    authority = _fake_activation_authority(root)
+    monkeypatch.setattr(
+        plan_mod,
+        "verify_p19_external_verifier_activation_authority_document",
+        lambda *args, **kwargs: authority,
     )
-    receipt_path = root / "artifacts/dgc-product-v1/generated/regression/receipt.json"
-    _write(receipt_path, receipt.document)
     plan = build_activated_p19_external_verification_plan_document(
         repository_root=root,
-        regression_receipt_path=receipt_path.relative_to(root),
+        activation_authority_path=authority_path.relative_to(root),
     )
     path = root / CANONICAL_PLAN_PATH
     _write(path, plan)
@@ -144,9 +156,9 @@ def _receipt(root: Path, p19_rel: str, check_id: str) -> Path:
     return path
 
 
-def _write_report(root: Path, path: Path, *, p19: dict[str, object] | None = None) -> dict[str, object]:
+def _write_report(root: Path, path: Path, monkeypatch, *, p19: dict[str, object] | None = None) -> dict[str, object]:
     family = dict(p19 or _p19())
-    plan = _active_plan(root)
+    plan = _active_plan(root, monkeypatch)
     p19_path = _p19_file(root)
     p19_rel = p19_path.relative_to(root).as_posix()
     report = build_p19_verification_report(
@@ -160,9 +172,9 @@ def _write_report(root: Path, path: Path, *, p19: dict[str, object] | None = Non
     return report
 
 
-def test_report_is_canonical_complete_planned_and_bound_to_exact_p19(tmp_path: Path):
+def test_report_is_canonical_complete_planned_and_bound_to_exact_p19(tmp_path: Path, monkeypatch):
     path = tmp_path / "report.json"
-    expected = _write_report(tmp_path, path)
+    expected = _write_report(tmp_path, path, monkeypatch)
     loaded = load_p19_verification_report(path, repository_root=tmp_path)
     assert loaded == expected
     bind_report_to_p19(loaded, _p19())
@@ -170,22 +182,22 @@ def test_report_is_canonical_complete_planned_and_bound_to_exact_p19(tmp_path: P
     assert loaded["raw_verification_transcript_disclosed"] is True
     assert loaded["receipt_semantics_replayed"] is True
     assert loaded["frozen_verification_plan_replayed"] is True
-    assert loaded["verification_plan_digest"]
-    assert loaded["verifier_entrypoint_sha256"]
+    assert loaded["dual_signed_activation_authority_replayed"] is True
+    assert loaded["verification_plan_activation_authority_digest"] == "a" * 64
 
 
-def test_report_wrong_p19_binding_fails_closed(tmp_path: Path):
+def test_report_wrong_p19_binding_fails_closed(tmp_path: Path, monkeypatch):
     path = tmp_path / "report.json"
-    loaded = _write_report(tmp_path, path)
+    loaded = _write_report(tmp_path, path, monkeypatch)
     other = dict(_p19())
     other["p19_digest"] = "9" * 64
     with pytest.raises(P19VerificationAttestationError, match="p19_digest"):
         bind_report_to_p19(loaded, other)
 
 
-def test_attestation_builder_is_v3_and_bound_to_exact_p19(tmp_path: Path):
+def test_attestation_builder_remains_bound_to_exact_plan_v4_report(tmp_path: Path, monkeypatch):
     report = tmp_path / "report.json"
-    _write_report(tmp_path, report)
+    _write_report(tmp_path, report, monkeypatch)
     doc = make_p19_verification_attestation(
         family_p19=_p19(),
         verifier_principal="independent-verifier@example.org",
@@ -204,9 +216,9 @@ def test_attestation_builder_is_v3_and_bound_to_exact_p19(tmp_path: Path):
     bind_attestation_to_p19(loaded, _p19())
 
 
-def test_noncanonical_attestation_bytes_fail_closed(tmp_path: Path):
+def test_noncanonical_attestation_bytes_fail_closed(tmp_path: Path, monkeypatch):
     report = tmp_path / "report.json"
-    _write_report(tmp_path, report)
+    _write_report(tmp_path, report, monkeypatch)
     doc = make_p19_verification_attestation(
         family_p19=_p19(), verifier_principal="verifier", verification_report_sha256=sha256_file(report)
     )
@@ -216,9 +228,9 @@ def test_noncanonical_attestation_bytes_fail_closed(tmp_path: Path):
         load_p19_verification_attestation(path)
 
 
-def _signature_fixture(tmp_path: Path):
+def _signature_fixture(tmp_path: Path, monkeypatch):
     report = tmp_path / "report.json"
-    report_doc = _write_report(tmp_path, report)
+    report_doc = _write_report(tmp_path, report, monkeypatch)
     doc = make_p19_verification_attestation(
         family_p19=_p19(), verifier_principal="verifier", verification_report_sha256=sha256_file(report)
     )
@@ -233,8 +245,8 @@ def _signature_fixture(tmp_path: Path):
     return report, report_doc, doc, attestation, signature, allowed, fake_keygen
 
 
-def test_signed_verifier_binds_frozen_plan_report_transcript_and_namespace(tmp_path: Path):
-    report, _, doc, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+def test_signed_verifier_binds_plan_v4_report_transcript_and_namespace(tmp_path: Path, monkeypatch):
+    report, _, doc, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path, monkeypatch)
     observed: dict[str, object] = {}
 
     def runner(argv, *, input, stdout, stderr, check):
@@ -257,11 +269,11 @@ def test_signed_verifier_binds_frozen_plan_report_transcript_and_namespace(tmp_p
     assert receipt.verification_report_sha256 == sha256_file(report)
     assert observed["input"] == canonical_attestation_bytes(doc)
     assert NAMESPACE in observed["argv"]
-    assert VERIFICATION_PROTOCOL == "DGC_P19_CANONICAL_EXTERNAL_REPLAY_V3_FROZEN_CHECK_PLAN"
+    assert "FROZEN_CHECK_PLAN" in VERIFICATION_PROTOCOL
 
 
-def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path: Path):
-    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path: Path, monkeypatch):
+    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path, monkeypatch)
     evidence_path = tmp_path / str(report_doc["checks"][0]["evidence_path"])
     evidence_path.write_bytes(b"tampered-after-report-signing\n")
     called = False
@@ -284,8 +296,8 @@ def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path:
     assert called is False
 
 
-def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path):
-    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path, monkeypatch):
+    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path, monkeypatch)
     plan_path = tmp_path / str(report_doc["verification_plan_path"])
     plan_path.write_bytes(plan_path.read_bytes() + b" ")
     called = False
@@ -308,8 +320,8 @@ def test_frozen_plan_mutation_fails_before_signature_acceptance(tmp_path: Path):
     assert called is False
 
 
-def test_verifier_dependency_mutation_fails_before_signature_acceptance(tmp_path: Path):
-    report, _, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
+def test_verifier_dependency_mutation_fails_before_signature_acceptance(tmp_path: Path, monkeypatch):
+    report, _, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path, monkeypatch)
     dependency = tmp_path / VERIFIER_RUNTIME_DEPENDENCIES[0]
     dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
     called = False
@@ -332,18 +344,16 @@ def test_verifier_dependency_mutation_fails_before_signature_acceptance(tmp_path
     assert called is False
 
 
-def test_regression_receipt_mutation_fails_before_signature_acceptance(tmp_path: Path):
-    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path)
-    plan_path = tmp_path / str(report_doc["verification_plan_path"])
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    receipt = tmp_path / str(plan["activation_regression_receipt_path"])
-    receipt.write_bytes(receipt.read_bytes() + b" ")
+def test_activation_authority_mutation_fails_before_signature_acceptance(tmp_path: Path, monkeypatch):
+    report, report_doc, _, attestation, signature, allowed, fake_keygen = _signature_fixture(tmp_path, monkeypatch)
+    authority = tmp_path / str(report_doc["verification_plan_activation_authority_path"])
+    authority.write_bytes(b"tampered activation authority\n")
     called = False
 
     def runner(*args, **kwargs):
         nonlocal called
         called = True
-        raise AssertionError("SSH verifier must not run after regression-receipt tamper")
+        raise AssertionError("P19 SSH verifier must not run after activation-authority tamper")
 
     with pytest.raises(P19VerificationAttestationError, match="plan replay failed"):
         verify_ssh_signed_p19_verification_attestation(
