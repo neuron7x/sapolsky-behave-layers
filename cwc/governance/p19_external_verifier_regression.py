@@ -15,9 +15,12 @@ from cwc.governance.p19_external_verification_contract import (
     VERIFIER_RUNTIME_DEPENDENCIES,
 )
 
-SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V2"
-REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V2_GIT_BOUND"
-EXECUTION_PROVENANCE_SCOPE = "LOCAL_GIT_IDENTITY_RUNTIME_TESTS_EXIT_CODE_AND_RAW_TRANSCRIPT_BOUND_NOT_REMOTE_RUNNER_ATTESTED"
+SCHEMA = "DGC_P19_EXTERNAL_VERIFIER_REGRESSION_RECEIPT_V3"
+REGRESSION_GENERATION = "P19_EXTERNAL_VERIFIER_CANONICAL_REGRESSION_V3_FROZEN_SOURCE_DESCENDANT_REPLAY"
+EXECUTION_PROVENANCE_SCOPE = (
+    "GIT_BOUND_T_VERIFIER_RUNTIME_TESTS_EXIT_TRANSCRIPT_WITH_DESCENDANT_ACTIVATION_REPLAY_"
+    "REMOTE_RUNNER_NOT_MACHINE_PROVEN"
+)
 
 
 class P19ExternalVerifierRegressionError(RuntimeError):
@@ -31,6 +34,16 @@ def _git(root: Path, *args: str) -> str:
             text=True,
             stderr=subprocess.PIPE,
         ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise P19ExternalVerifierRegressionError(f"git command failed: {' '.join(args)}") from exc
+
+
+def _git_bytes(root: Path, *args: str) -> bytes:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(root), *args],
+            stderr=subprocess.PIPE,
+        )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise P19ExternalVerifierRegressionError(f"git command failed: {' '.join(args)}") from exc
 
@@ -131,6 +144,69 @@ def method_map_digest() -> str:
     return sha256_bytes(canonical_json_bytes(rows))
 
 
+def _source_tree(root: Path, source_commit: str) -> str:
+    return _git(root, "rev-parse", f"{source_commit}^{{tree}}").lower()
+
+
+def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except OSError as exc:
+        raise P19ExternalVerifierRegressionError("git ancestry check failed") from exc
+    if result.returncode not in (0, 1):
+        raise P19ExternalVerifierRegressionError("git ancestry check failed")
+    return result.returncode == 0
+
+
+def _verify_manifest_at_source(
+    root: Path,
+    source_commit: str,
+    rows: object,
+    *,
+    label: str,
+) -> None:
+    if not isinstance(rows, list) or not rows:
+        raise P19ExternalVerifierRegressionError(f"{label} manifest missing")
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise P19ExternalVerifierRegressionError(f"{label} manifest row malformed")
+        rel = _safe_rel(row.get("path"), label=f"{label} source path")
+        expected_sha = _sha(f"{label} source sha256", row.get("sha256"))
+        expected_bytes = int(row.get("bytes", -1))
+        if expected_bytes <= 0:
+            raise P19ExternalVerifierRegressionError(f"{label} source byte count invalid")
+        blob = _git_bytes(root, "show", f"{source_commit}:{rel}")
+        if len(blob) != expected_bytes or sha256_bytes(blob) != expected_sha:
+            raise P19ExternalVerifierRegressionError(f"{label} bytes differ from frozen T_verifier Git blob")
+
+
+def _verify_frozen_source_lineage(
+    root: Path,
+    *,
+    source_commit: str,
+    source_tree: str,
+    current_commit: str,
+    runtime_rows: object,
+    test_rows: object,
+    require_same_checkout: bool,
+) -> None:
+    observed_tree = _source_tree(root, source_commit)
+    if observed_tree != source_tree:
+        raise P19ExternalVerifierRegressionError("regression receipt source tree is not the tree of source commit")
+    if require_same_checkout:
+        if source_commit != current_commit:
+            raise P19ExternalVerifierRegressionError("regression receipt source commit differs from current Git HEAD")
+    elif not _is_ancestor(root, source_commit, current_commit):
+        raise P19ExternalVerifierRegressionError("T_verifier is not an ancestor of current activation checkout")
+    _verify_manifest_at_source(root, source_commit, runtime_rows, label="verifier runtime")
+    _verify_manifest_at_source(root, source_commit, test_rows, label="verifier regression tests")
+
+
 @dataclass(frozen=True, slots=True)
 class P19ExternalVerifierRegressionReceipt:
     regression_generation: str
@@ -187,6 +263,15 @@ def build_p19_external_verifier_regression_receipt(
     tests = current_test_manifest(root)
     runtime_digest = sha256_bytes(canonical_json_bytes(list(runtime)))
     test_digest = sha256_bytes(canonical_json_bytes(list(tests)))
+    _verify_frozen_source_lineage(
+        root,
+        source_commit=observed_commit,
+        source_tree=observed_tree,
+        current_commit=observed_commit,
+        runtime_rows=list(runtime),
+        test_rows=list(tests),
+        require_same_checkout=True,
+    )
     payload: dict[str, object] = {
         "regression_generation": REGRESSION_GENERATION,
         "source_commit": observed_commit,
@@ -235,9 +320,10 @@ def verify_p19_external_verifier_regression_receipt(
     path: Path,
     *,
     repository_root: Path,
+    allow_descendant_checkout: bool = False,
 ) -> dict[str, object]:
     root = Path(repository_root).resolve()
-    observed_commit, observed_tree = current_repository_identity(root)
+    current_commit, current_tree = current_repository_identity(root)
     candidate = Path(path)
     if not candidate.is_absolute():
         candidate = root / candidate
@@ -270,9 +356,19 @@ def verify_p19_external_verifier_regression_receipt(
         raise P19ExternalVerifierRegressionError("verifier regression receipt digest mismatch")
     if doc.get("regression_generation") != REGRESSION_GENERATION:
         raise P19ExternalVerifierRegressionError("verifier regression generation mismatch")
-    if _git_oid("source_commit", doc.get("source_commit")) != observed_commit:
-        raise P19ExternalVerifierRegressionError("regression receipt source commit differs from current Git HEAD")
-    if _git_oid("source_tree", doc.get("source_tree")) != observed_tree:
+
+    source_commit = _git_oid("source_commit", doc.get("source_commit"))
+    source_tree = _git_oid("source_tree", doc.get("source_tree"))
+    _verify_frozen_source_lineage(
+        root,
+        source_commit=source_commit,
+        source_tree=source_tree,
+        current_commit=current_commit,
+        runtime_rows=doc.get("runtime_manifest"),
+        test_rows=doc.get("test_manifest"),
+        require_same_checkout=not allow_descendant_checkout,
+    )
+    if not allow_descendant_checkout and source_tree != current_tree:
         raise P19ExternalVerifierRegressionError("regression receipt source tree differs from current Git tree")
     if tuple(doc.get("canonical_command_argv", ())) != CANONICAL_REGRESSION_COMMAND:
         raise P19ExternalVerifierRegressionError("verifier regression command mismatch")
@@ -284,9 +380,9 @@ def verify_p19_external_verifier_regression_receipt(
     runtime = current_runtime_manifest(root)
     tests = current_test_manifest(root)
     if doc.get("runtime_manifest") != list(runtime):
-        raise P19ExternalVerifierRegressionError("verifier runtime bytes differ from regression receipt")
+        raise P19ExternalVerifierRegressionError("verifier runtime bytes differ from frozen T_verifier/current checkout")
     if doc.get("test_manifest") != list(tests):
-        raise P19ExternalVerifierRegressionError("verifier regression test bytes differ from receipt")
+        raise P19ExternalVerifierRegressionError("verifier regression test bytes differ from frozen T_verifier/current checkout")
     runtime_digest = sha256_bytes(canonical_json_bytes(list(runtime)))
     test_digest = sha256_bytes(canonical_json_bytes(list(tests)))
     if doc.get("runtime_manifest_digest") != runtime_digest:
