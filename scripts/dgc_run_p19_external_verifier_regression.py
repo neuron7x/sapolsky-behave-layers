@@ -43,8 +43,9 @@ def _write_immutable(path: Path, data: bytes, *, allow_empty: bool) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Execute the canonical P19 external-verifier regression suite and emit a raw, "
-            "content-addressed regression receipt. This command never activates Plan V3."
+            "Execute the exact canonical P19 external-verifier regression suite at immutable T_verifier "
+            "and emit a raw content-addressed receipt. This command never activates Plan V4; activation "
+            "requires separate dual-external-signature authority."
         )
     )
     parser.add_argument("--repository-root", default=".")
@@ -110,11 +111,12 @@ def main() -> int:
         allow_empty=False,
     )
     print("DGC-P19-VERIFIER-REGRESSION: PASS")
-    print(f"DGC-P19-VERIFIER-REGRESSION-SOURCE-COMMIT: {source_commit}")
-    print(f"DGC-P19-VERIFIER-REGRESSION-SOURCE-TREE: {source_tree}")
+    print(f"DGC-P19-VERIFIER-T_VERIFIER-COMMIT: {source_commit}")
+    print(f"DGC-P19-VERIFIER-T_VERIFIER-TREE: {source_tree}")
     print(f"DGC-P19-VERIFIER-REGRESSION-RECEIPT: {receipt_path.relative_to(root).as_posix()}")
     print(f"DGC-P19-VERIFIER-REGRESSION-RECEIPT-DIGEST: {receipt.receipt_digest}")
-    print("DGC-P19-VERIFIER-REGRESSION-ACTIVATION-AUTHORIZED: false")
+    print("DGC-P19-VERIFIER-PLAN-V4-ACTIVATION-AUTHORIZED: false")
+    print("DGC-P19-VERIFIER-NEXT: obtain two distinct external signatures over the exact receipt attestation bytes")
     return 0
 
 
