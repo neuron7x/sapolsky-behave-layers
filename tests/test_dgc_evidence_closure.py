@@ -93,12 +93,31 @@ def test_symlink_evidence_fails_closed(tmp_path: Path) -> None:
     link = tmp_path / "source-link.json"
     link.symlink_to(target)
     ledger = _ledger(tmp_path)
-    with pytest.raises(ClosureError, match="missing regular evidence artifact"):
+    with pytest.raises(ClosureError, match="symlink evidence path rejected"):
         ledger.advance(
             StageExecution(
                 stage="SOURCE_VERIFIED",
                 commands=(),
                 evidence=(EvidenceArtifact("source-link.json", _digest(target)),),
+            ),
+            runner=_ok_runner,
+        )
+
+
+def test_symlink_parent_component_fails_closed(tmp_path: Path) -> None:
+    real_dir = tmp_path / "real"
+    real_dir.mkdir()
+    evidence = real_dir / "source.json"
+    evidence.write_text("source")
+    alias = tmp_path / "alias"
+    alias.symlink_to(real_dir, target_is_directory=True)
+    ledger = _ledger(tmp_path)
+    with pytest.raises(ClosureError, match="symlink evidence path rejected"):
+        ledger.advance(
+            StageExecution(
+                stage="SOURCE_VERIFIED",
+                commands=(),
+                evidence=(EvidenceArtifact("alias/source.json", _digest(evidence)),),
             ),
             runner=_ok_runner,
         )
