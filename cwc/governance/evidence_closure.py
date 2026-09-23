@@ -205,12 +205,18 @@ class EvidenceClosureLedger:
             if artifact.path in seen:
                 raise ClosureError(f"duplicate evidence path: {artifact.path}")
             seen.add(artifact.path)
-            path = (self.repository_root / artifact.path).resolve()
+            candidate = self.repository_root / artifact.path
+            current = self.repository_root
+            for part in Path(artifact.path).parts:
+                current = current / part
+                if current.is_symlink():
+                    raise ClosureError(f"symlink evidence path rejected: {artifact.path}")
+            path = candidate.resolve()
             try:
                 path.relative_to(self.repository_root)
             except ValueError as exc:
                 raise ClosureError("evidence path escapes repository root") from exc
-            if not path.is_file() or path.is_symlink():
+            if not path.is_file():
                 raise ClosureError(f"missing regular evidence artifact: {artifact.path}")
             size = path.stat().st_size
             if size < artifact.minimum_bytes:
