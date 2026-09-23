@@ -223,7 +223,9 @@ class FrozenGovernancePolicy:
     policy_id: str
     path: str
     sha256: str
+    implementation_path: str
     implementation_sha256: str
+    config_path: str
     config_sha256: str
 
 
@@ -343,12 +345,22 @@ def freeze_execution_manifests(
         )
         if _req("governance policy_id", payload.get("policy_id")) != policy_id:
             raise ExecutionManifestError("governance policy id/path binding mismatch")
+        implementation, implementation_rel = _repo_file(root, payload.get("implementation_path"))
+        config, config_rel = _repo_file(root, payload.get("config_path"))
+        implementation_sha = _sha("governance implementation_sha256", payload.get("implementation_sha256"))
+        config_sha = _sha("governance config_sha256", payload.get("config_sha256"))
+        if sha256_file(implementation) != implementation_sha:
+            raise ExecutionManifestError(f"{policy_id}: governance implementation bytes differ from declared SHA-256")
+        if sha256_file(config) != config_sha:
+            raise ExecutionManifestError(f"{policy_id}: governance config bytes differ from declared SHA-256")
         policies.append(FrozenGovernancePolicy(
             policy_id=policy_id,
             path=rel,
             sha256=sha256_file(path),
-            implementation_sha256=_sha("governance implementation_sha256", payload.get("implementation_sha256")),
-            config_sha256=_sha("governance config_sha256", payload.get("config_sha256")),
+            implementation_path=implementation_rel,
+            implementation_sha256=implementation_sha,
+            config_path=config_rel,
+            config_sha256=config_sha,
         ))
 
     try:
