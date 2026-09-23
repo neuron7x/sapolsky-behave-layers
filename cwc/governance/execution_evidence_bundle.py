@@ -61,9 +61,12 @@ def _safe_relative(root: Path, value: object, *, require_file: bool = True) -> t
     rel = Path(str(value))
     if not str(value) or rel.is_absolute() or ".." in rel.parts:
         raise ExecutionEvidenceError("execution evidence path must be relative and non-traversing")
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ExecutionEvidenceError(f"execution evidence symlink rejected: {rel.as_posix()}")
     path = root / rel
-    if path.is_symlink():
-        raise ExecutionEvidenceError(f"execution evidence symlink rejected: {rel.as_posix()}")
     resolved = path.resolve()
     try:
         resolved.relative_to(root.resolve())
