@@ -18,6 +18,7 @@ _OCI_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MUTABLE_VERSION_ALIASES = frozenset({"latest", "default", "current", "stable", "production", "prod"})
 
 COMPONENT_SCHEMAS = {
+    "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
@@ -164,7 +165,40 @@ def _validate_scorer(payload: Mapping[str, object]) -> None:
     _sha("scorer.implementation_sha256", payload.get("implementation_sha256"))
 
 
+EXECUTOR_PROTOCOL = "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1"
+EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
+EXECUTOR_RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
+
+
+def _validate_executor(payload: Mapping[str, object]) -> None:
+    if payload.get("protocol") != EXECUTOR_PROTOCOL:
+        raise ExecutionManifestError("executor protocol identity mismatch")
+    if payload.get("request_schema") != EXECUTOR_REQUEST_SCHEMA:
+        raise ExecutionManifestError("executor request schema identity mismatch")
+    if payload.get("response_schema") != EXECUTOR_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("executor response schema identity mismatch")
+    entrypoint = _req("executor.entrypoint_path", payload.get("entrypoint_path"))
+    _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("executor argv must be a non-empty string list")
+    if entrypoint not in argv:
+        raise ExecutionManifestError("executor argv must contain the frozen entrypoint path")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("executor argv contains forbidden control characters")
+    timeout = _finite_nonnegative("executor.timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("executor timeout_seconds must be > 0")
+    allowed = payload.get("allowed_environment_variables")
+    if not isinstance(allowed, list) or not all(isinstance(x, str) and x.strip() and "=" not in x for x in allowed):
+        raise ExecutionManifestError("executor allowed_environment_variables must be a string list")
+    normalized = [x.strip() for x in allowed]
+    if normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("executor environment allow-list must be sorted and unique")
+
+
 _VALIDATORS = {
+    "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
     "prompt_policy": _validate_prompt,
     "tool_manifest": _validate_tools,
@@ -282,6 +316,12 @@ def freeze_execution_manifests(
     for component in sorted(COMPONENT_SCHEMAS):
         payload, path, rel = _json_manifest(root, component_paths[component], expected_schema=COMPONENT_SCHEMAS[component])
         _VALIDATORS[component](payload)
+        if component == "executor_manifest":
+            entrypoint, entrypoint_rel = _repo_file(root, payload["entrypoint_path"])
+            if sha256_file(entrypoint) != _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256")):
+                raise ExecutionManifestError("executor entrypoint bytes differ from frozen SHA-256")
+            if entrypoint_rel not in payload.get("argv", []):
+                raise ExecutionManifestError("executor argv entrypoint is not canonical repository-relative path")
         components.append(FrozenComponent(
             component=component,
             path=rel,
