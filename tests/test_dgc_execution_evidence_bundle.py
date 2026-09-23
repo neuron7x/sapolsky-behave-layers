@@ -191,3 +191,21 @@ def test_evidence_tamper_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyP
     write_json(root / "evidence" / "DGC.json", {"provider_trace": "tampered"})
     with pytest.raises(ExecutionEvidenceError, match="payload manifest mismatch"):
         verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_parent_symlink_alias_for_evidence_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    root, authority, spec, coordinator = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    evidence = root / "evidence"
+    real = root / "evidence-real"
+    evidence.rename(real)
+    evidence.symlink_to(real, target_is_directory=True)
+    seal_manifest(
+        root,
+        authority=authority,
+        spec=spec,
+        result_paths=["records/B0.json", "records/DGC.json"],
+        coordinator=coordinator,
+    )
+    with pytest.raises(ExecutionEvidenceError, match="execution evidence symlink rejected"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
