@@ -181,22 +181,52 @@ def _finite_cost(value: object, *, cap: float) -> float:
     return result
 
 
+def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str) -> dict[str, object]:
+    policies = execution.get("governance_policies")
+    if not isinstance(policies, list):
+        raise FrozenPanelExecutionError("frozen governance policy population missing")
+    matches = [
+        row for row in policies
+        if isinstance(row, Mapping) and str(row.get("policy_id")) == policy_id
+    ]
+    if len(matches) != 1:
+        raise FrozenPanelExecutionError("work unit policy lacks one frozen governance manifest")
+    row = dict(matches[0])
+    manifest_path, manifest_rel = _safe_repo_file(root, row.get("path"))
+    if sha256_file(manifest_path) != _sha("governance policy manifest sha256", row.get("sha256")):
+        raise FrozenPanelExecutionError("governance policy manifest bytes differ from execution freeze")
+    manifest = _json(manifest_path, schema="DGC_GOVERNANCE_POLICY_MANIFEST_V1")
+    if str(manifest.get("policy_id", "")) != policy_id:
+        raise FrozenPanelExecutionError("governance policy manifest id mismatch")
+    for kind in ("implementation", "config"):
+        path_key = f"{kind}_path"
+        sha_key = f"{kind}_sha256"
+        subject, subject_rel = _safe_repo_file(root, manifest.get(path_key))
+        declared = _sha(f"governance {kind} sha256", manifest.get(sha_key))
+        if sha256_file(subject) != declared:
+            raise FrozenPanelExecutionError(f"governance {kind} bytes differ from frozen manifest")
+        if row.get(path_key) != subject_rel or row.get(sha_key) != declared:
+            raise FrozenPanelExecutionError(f"governance {kind} lineage differs from execution freeze")
+    if row.get("path") != manifest_rel:
+        raise FrozenPanelExecutionError("governance policy path is non-canonical")
+    return row
+
+
 def _request(
     *,
+    repository_root: Path,
     execution: Mapping[str, object],
     root_authority: Mapping[str, object],
     lease: Lease,
 ) -> dict[str, object]:
-    policies = execution.get("governance_policies")
     components = execution.get("components")
-    if not isinstance(policies, list) or not isinstance(components, list):
-        raise FrozenPanelExecutionError("frozen execution subjects missing")
-    policy_matches = [
-        row for row in policies
-        if isinstance(row, Mapping) and str(row.get("policy_id")) == lease.unit.policy_id
-    ]
-    if len(policy_matches) != 1:
-        raise FrozenPanelExecutionError("work unit policy lacks one frozen governance manifest")
+    if not isinstance(components, list):
+        raise FrozenPanelExecutionError("frozen execution component population missing")
+    policy = _policy_subject(
+        root=repository_root,
+        execution=execution,
+        policy_id=lease.unit.policy_id,
+    )
     return {
         "schema": EXECUTOR_REQUEST_SCHEMA,
         "family_id": root_authority["family_id"],
@@ -208,7 +238,7 @@ def _request(
         "unit": asdict(lease.unit),
         "attempt": lease.attempt,
         "frozen_components": components,
-        "governance_policy": policy_matches[0],
+        "governance_policy": policy,
     }
 
 
@@ -343,7 +373,12 @@ def execute_frozen_panel(
                     break
                 raise FrozenPanelExecutionError(f"executor cannot claim remaining frozen units: {counts}")
             tick += 1
-            request = _request(execution=execution, root_authority=authority, lease=lease)
+            request = _request(
+                repository_root=root,
+                execution=execution,
+                root_authority=authority,
+                lease=lease,
+            )
             attempt_id = hashlib.sha256(
                 f"{lease.unit.stable_id}::{lease.attempt}".encode("utf-8")
             ).hexdigest()[:24]
