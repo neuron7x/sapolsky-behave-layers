@@ -10,7 +10,7 @@ from cwc.governance.execution_manifest_freeze import (
     freeze_execution_manifests,
     verify_execution_manifest_freeze_document,
 )
-from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
+from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
 COMMIT = "a" * 40
 TREE = "b" * 40
@@ -69,7 +69,11 @@ def _reference(repo: Path) -> Path:
 
 def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     base = repo / "eval_bundle" / "manifests"
+    adapter = repo / "scripts" / "test-dgc-unit-adapter.py"
+    adapter.parent.mkdir(parents=True, exist_ok=True)
+    adapter.write_text("print('adapter')\n", encoding="utf-8")
     paths = {
+        "executor_manifest": base / "executor.json",
         "model_manifest": base / "model.json",
         "prompt_policy": base / "prompt.json",
         "tool_manifest": base / "tools.json",
@@ -78,6 +82,17 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "pricing_snapshot": base / "pricing.json",
         "scorer": base / "scorer.json",
     }
+    _write(paths["executor_manifest"], {
+        "schema": "DGC_EXECUTOR_MANIFEST_V1",
+        "protocol": "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1",
+        "request_schema": "DGC_UNIT_EXECUTION_REQUEST_V1",
+        "response_schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
+        "entrypoint_path": adapter.relative_to(repo).as_posix(),
+        "entrypoint_sha256": sha256_file(adapter),
+        "argv": ["python", adapter.relative_to(repo).as_posix()],
+        "timeout_seconds": 30,
+        "allowed_environment_variables": [],
+    })
     _write(paths["model_manifest"], {
         "schema": "DGC_MODEL_MANIFEST_V1",
         "models": [{"provider": "provider", "model_id": "model", "model_version": "2026-08-23-r1"}],
@@ -148,12 +163,44 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 7
+    assert len(frozen.components) == 8
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
     assert frozen.prebaseline_comparison_digest
     assert frozen.document["harness_frozen"] is False
+
+
+def test_executor_entrypoint_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    adapter = repo / "scripts" / "test-dgc-unit-adapter.py"
+    adapter.write_text("print('tampered')\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="entrypoint bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_executor_environment_allowlist_must_be_canonical(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["executor_manifest"]
+    doc = json.loads(manifest.read_text())
+    doc["allowed_environment_variables"] = ["Z_KEY", "A_KEY"]
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="sorted and unique"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
 
 
 def test_mutable_model_alias_is_rejected(tmp_path: Path):
