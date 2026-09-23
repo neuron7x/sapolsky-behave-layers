@@ -238,7 +238,7 @@ def build_harness_freeze(
         if isinstance(row, Mapping)
     }
     required_components = {
-        "model_manifest", "prompt_policy", "tool_manifest", "environment",
+        "executor_manifest", "model_manifest", "prompt_policy", "tool_manifest", "environment",
         "budget", "pricing_snapshot", "scorer",
     }
     if set(components) != required_components:
