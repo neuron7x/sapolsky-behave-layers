@@ -60,12 +60,17 @@ def _repo_file(root: Path, value: object) -> tuple[Path, str]:
     rel = Path(str(value))
     if not str(value) or rel.is_absolute() or ".." in rel.parts:
         raise ExecutionManifestError("manifest path must be repository-relative")
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ExecutionManifestError(f"manifest symlink path rejected: {rel.as_posix()}")
     path = (root / rel).resolve()
     try:
         path.relative_to(root)
     except ValueError as exc:
         raise ExecutionManifestError("manifest path escapes repository root") from exc
-    if not path.is_file() or path.is_symlink():
+    if not path.is_file():
         raise ExecutionManifestError(f"manifest must be a regular file: {rel.as_posix()}")
     return path, rel.as_posix()
 
