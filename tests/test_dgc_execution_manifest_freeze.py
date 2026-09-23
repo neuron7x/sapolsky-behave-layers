@@ -193,6 +193,40 @@ def test_mutable_container_tag_is_rejected(tmp_path: Path):
         )
 
 
+def test_symlinked_manifest_file_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    model = repo / components["model_manifest"]
+    real = model.with_name("model-real.json")
+    model.rename(real)
+    model.symlink_to(real)
+    with pytest.raises(ExecutionManifestError, match="manifest symlink path rejected"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_symlinked_manifest_parent_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifests = repo / "eval_bundle" / "manifests"
+    real = repo / "eval_bundle" / "manifests-real"
+    manifests.rename(real)
+    manifests.symlink_to(real, target_is_directory=True)
+    with pytest.raises(ExecutionManifestError, match="manifest symlink path rejected"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
 def test_freeze_digest_detects_post_freeze_tampering(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
