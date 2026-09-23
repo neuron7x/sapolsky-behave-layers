@@ -85,6 +85,34 @@ def _subjects(tmp_path: Path, *, valid_adapter: bool = True):
         harness_digest=h("1"),
         statistical_plan_digest=h("2"),
     )
+    policy_rows = []
+    policy_dir = repo / "policies"
+    policy_dir.mkdir()
+    for policy_id in ("B0", "DGC"):
+        implementation = policy_dir / f"{policy_id}.py"
+        implementation.write_text(f"POLICY_ID = {policy_id!r}\n", encoding="utf-8")
+        config = policy_dir / f"{policy_id}.config.json"
+        config.write_text(json.dumps({"policy_id": policy_id}, sort_keys=True) + "\n", encoding="utf-8")
+        manifest = policy_dir / f"{policy_id}.manifest.json"
+        manifest_doc = {
+            "schema": "DGC_GOVERNANCE_POLICY_MANIFEST_V1",
+            "policy_id": policy_id,
+            "implementation_path": implementation.relative_to(repo).as_posix(),
+            "implementation_sha256": sha256_file(implementation),
+            "config_path": config.relative_to(repo).as_posix(),
+            "config_sha256": sha256_file(config),
+        }
+        manifest.write_text(json.dumps(manifest_doc, sort_keys=True), encoding="utf-8")
+        policy_rows.append({
+            "policy_id": policy_id,
+            "path": manifest.relative_to(repo).as_posix(),
+            "sha256": sha256_file(manifest),
+            "implementation_path": implementation.relative_to(repo).as_posix(),
+            "implementation_sha256": sha256_file(implementation),
+            "config_path": config.relative_to(repo).as_posix(),
+            "config_sha256": sha256_file(config),
+        })
+
     execution = {
         "family_id": "FAM",
         "repository_commit": "a" * 40,
@@ -99,10 +127,7 @@ def _subjects(tmp_path: Path, *, valid_adapter: bool = True):
             "bytes": executor_manifest.stat().st_size,
             "schema": "DGC_EXECUTOR_MANIFEST_V1",
         }],
-        "governance_policies": [
-            {"policy_id": "B0", "path": "p/B0.json", "sha256": h("8")},
-            {"policy_id": "DGC", "path": "p/DGC.json", "sha256": h("9")},
-        ],
+        "governance_policies": policy_rows,
     }
     harness = {
         "family_id": "FAM",
@@ -178,6 +203,24 @@ def test_entrypoint_byte_drift_is_rejected_before_execution(
     _patch(monkeypatch, execution, harness, authority)
     adapter.write_text("raise SystemExit(99)\n", encoding="utf-8")
     with pytest.raises(FrozenPanelExecutionError, match="entrypoint bytes differ"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=tmp_path / "bundle",
+        )
+
+
+def test_policy_implementation_byte_drift_is_rejected_before_unit_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(tmp_path)
+    _patch(monkeypatch, execution, harness, authority)
+    (repo / "policies" / "B0.py").write_text("POLICY_ID = 'tampered'\n", encoding="utf-8")
+    with pytest.raises(FrozenPanelExecutionError, match="governance implementation bytes differ"):
         execute_frozen_panel(
             repository_root=repo,
             execution_manifest_freeze_path=tmp_path / "execution.json",
