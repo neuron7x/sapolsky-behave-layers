@@ -124,8 +124,10 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     if sha256_file(entrypoint) != _sha("executor entrypoint sha256", doc.get("entrypoint_sha256")):
         raise FrozenPanelExecutionError("executor entrypoint bytes differ from frozen manifest")
     argv = doc.get("argv")
-    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x for x in argv):
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
         raise FrozenPanelExecutionError("frozen executor argv malformed")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise FrozenPanelExecutionError("frozen executor argv contains forbidden control characters")
     if entrypoint_rel not in argv:
         raise FrozenPanelExecutionError("frozen executor argv lost entrypoint identity")
     try:
@@ -135,7 +137,11 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     if not math.isfinite(timeout) or timeout <= 0:
         raise FrozenPanelExecutionError("executor timeout must be finite and > 0")
     allowed = doc.get("allowed_environment_variables")
-    if not isinstance(allowed, list) or [str(x) for x in allowed] != sorted(set(str(x) for x in allowed)):
+    if (
+        not isinstance(allowed, list)
+        or not all(isinstance(x, str) and x.strip() and "=" not in x for x in allowed)
+        or [x.strip() for x in allowed] != sorted(set(x.strip() for x in allowed))
+    ):
         raise FrozenPanelExecutionError("executor environment allow-list malformed")
     return doc, tuple(argv), timeout
 
