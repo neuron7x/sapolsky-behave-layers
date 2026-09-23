@@ -133,12 +133,19 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     })
     policies: dict[str, str] = {}
     for index, policy_id in enumerate(("B0", "DGC"), start=6):
+        implementation = repo / "policies" / f"{policy_id}.py"
+        implementation.parent.mkdir(parents=True, exist_ok=True)
+        implementation.write_text(f"POLICY_ID = {policy_id!r}\n", encoding="utf-8")
+        config = repo / "policies" / f"{policy_id}.json"
+        config.write_text(json.dumps({"policy_id": policy_id}, sort_keys=True) + "\n", encoding="utf-8")
         path = base / f"policy-{policy_id}.json"
         _write(path, {
             "schema": "DGC_GOVERNANCE_POLICY_MANIFEST_V1",
             "policy_id": policy_id,
-            "implementation_sha256": _h(str(index)),
-            "config_sha256": _h(str(index + 1)),
+            "implementation_path": implementation.relative_to(repo).as_posix(),
+            "implementation_sha256": sha256_file(implementation),
+            "config_path": config.relative_to(repo).as_posix(),
+            "config_sha256": sha256_file(config),
         })
         policies[policy_id] = path.relative_to(repo).as_posix()
     return {key: path.relative_to(repo).as_posix() for key, path in paths.items()}, policies
@@ -196,6 +203,36 @@ def test_executor_environment_allowlist_must_be_canonical(tmp_path: Path):
     doc["allowed_environment_variables"] = ["Z_KEY", "A_KEY"]
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="sorted and unique"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_policy_implementation_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    implementation = repo / "policies" / "B0.py"
+    implementation.write_text("POLICY_ID = 'tampered'\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="implementation bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_policy_config_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    config = repo / "policies" / "DGC.json"
+    config.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="config bytes differ"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
