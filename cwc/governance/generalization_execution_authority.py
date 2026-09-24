@@ -16,6 +16,7 @@ from cwc.governance.generalization_registry import (
     verify_generalization_registry_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.paired_randomness_protocol import PROTOCOL, paired_seed
 from cwc.governance.pareto import PairedBaselineEvidence, MultiBaselineParetoCertificate, certify_multi_baseline_pareto_improvement
 from cwc.governance.provider_trace import ProviderCallIdKind
 from cwc.governance.physical_cost_evidence import (
@@ -234,6 +235,7 @@ class VerifiedGeneralizationResult:
     task_id: str
     policy_id: str
     replicate: int
+    replicate_seed: int
     quality: float
     catastrophic_regret: float
     covered: bool
@@ -311,6 +313,12 @@ def verify_generalization_axis_bundle(
     raw_rows = manifest.get("results")
     if not isinstance(raw_rows, list) or not raw_rows:
         raise GeneralizationExecutionError("axis execution requires a non-empty result population")
+    schedule_root = sha256_bytes(canonical_json_bytes({
+        "axis": axis.value,
+        "registry_digest": registry_digest,
+        "evaluation_manifest_digest": evaluation_digest,
+        "protocol": PROTOCOL,
+    }))
     results: list[VerifiedGeneralizationResult] = []
     seen_units: set[tuple[str, str, int]] = set()
     seen_provider_calls: set[tuple[str, str]] = set()
@@ -325,6 +333,19 @@ def verify_generalization_axis_bundle(
             raise GeneralizationExecutionError("replicate must be an integer") from exc
         if replicate < 0 or replicate >= replicates:
             raise GeneralizationExecutionError("replicate outside frozen range")
+        if raw.get("randomness_protocol") != PROTOCOL:
+            raise GeneralizationExecutionError("result lacks frozen paired randomness protocol")
+        try:
+            replicate_seed = int(raw.get("replicate_seed"))
+        except (TypeError, ValueError) as exc:
+            raise GeneralizationExecutionError("replicate_seed must be an integer") from exc
+        expected_seed = paired_seed(
+            root_digest=schedule_root,
+            task_id=task_id,
+            replicate=replicate,
+        )
+        if replicate_seed != expected_seed:
+            raise GeneralizationExecutionError("replicate_seed differs from frozen paired schedule")
         if policy_id not in expected_policies:
             raise GeneralizationExecutionError("result policy outside frozen five-arm population")
         unit = (task_id, policy_id, replicate)
@@ -358,6 +379,8 @@ def verify_generalization_axis_bundle(
             "task_id": task_id,
             "policy_id": policy_id,
             "replicate": replicate,
+            "randomness_protocol": PROTOCOL,
+            "replicate_seed": replicate_seed,
             "quality": quality,
             "catastrophic_regret": regret,
             "covered": covered,
@@ -377,6 +400,7 @@ def verify_generalization_axis_bundle(
             task_id=task_id,
             policy_id=policy_id,
             replicate=replicate,
+            replicate_seed=replicate_seed,
             quality=quality,
             catastrophic_regret=regret,
             covered=covered,
