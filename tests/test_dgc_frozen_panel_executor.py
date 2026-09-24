@@ -39,7 +39,7 @@ def _adapter_source(
     mismatched_cost: bool = False,
     bad_rate_card: bool = False,
 ) -> str:
-    trace = '{"provider_request_id":"req-" + req["unit"]["policy_id"]}' if valid else "{}"
+    trace = '{"provider_call_id":"resp-" + req["unit"]["policy_id"],"provider_call_id_kind":"PROVIDER_RESPONSE_ID"}' if valid else "{}"
     components = [
         "router_usd", "countermodel_usd", "retrieval_usd", "tools_usd",
         "verification_usd", "human_review_usd", "infra_usd", "retry_usd", "failure_loss_usd",
@@ -68,7 +68,7 @@ decision_id = (
     + req["unit"]["policy_id"] + "::"
     + str(req["unit"]["replicate"])
 )
-provider_request_id = "req-" + req["unit"]["policy_id"]
+provider_call_id = "resp-" + req["unit"]["policy_id"]
 response = {{
     "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
     "unit": req["unit"],
@@ -91,7 +91,8 @@ response = {{
         "cache_write_tokens": 0,
         "long_cache_write_tokens": 0,
         "output_tokens": 0,
-        "provider_request_id": provider_request_id,
+        "provider_call_id": provider_call_id,
+        "provider_call_id_kind": "PROVIDER_RESPONSE_ID",
     }}],
     "physical_cost_evidence": {cost_literal},
     "trace": {trace},
