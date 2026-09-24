@@ -136,7 +136,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "entrypoint_sha256": sha256_file(adapter),
         "argv": ["python", adapter.relative_to(repo).as_posix()],
         "timeout_seconds": 30,
-        "allowed_environment_variables": [],
+        "allowed_environment_variables": ["DGC_BENCHMARK_RUNTIME_ROOT"],
     })
     _write(paths["model_manifest"], {
         "schema": "DGC_MODEL_MANIFEST_V1",
@@ -289,6 +289,23 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     assert frozen.statistical_plan_digest
     assert frozen.prebaseline_comparison_digest
     assert frozen.document["harness_frozen"] is False
+
+
+def test_executor_must_allow_frozen_runtime_root_variable(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    executor = repo / components["executor_manifest"]
+    doc = json.loads(executor.read_text())
+    doc["allowed_environment_variables"] = []
+    _write(executor, doc)
+    with pytest.raises(ExecutionManifestError, match="allow-list must include benchmark runtime root"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
 
 
 def test_benchmark_runtime_family_mismatch_is_rejected(tmp_path: Path):
