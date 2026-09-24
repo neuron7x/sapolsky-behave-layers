@@ -357,6 +357,9 @@ def _verify_cost_evidence(
         card = cards.get(identity)
         if card is None:
             raise MechanismExecutionBundleError("provider trace lacks frozen rate card")
+        request_id_raw = raw.get("provider_request_id")
+        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
+            raise MechanismExecutionBundleError("live provider trace requires real provider_request_id")
         try:
             trace_obj = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -371,7 +374,7 @@ def _verify_cost_evidence(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=str(raw["provider_request_id"]),
+                provider_request_id=request_id_raw.strip(),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MechanismExecutionBundleError("malformed provider usage trace") from exc
