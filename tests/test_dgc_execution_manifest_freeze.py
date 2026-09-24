@@ -93,6 +93,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
             {
                 "action_id": "DEEP",
                 "harbor_agent": "agent-deep",
+                "harbor_model": "provider/model",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model",
@@ -101,6 +102,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
             {
                 "action_id": "STANDARD",
                 "harbor_agent": "agent-standard",
+                "harbor_model": "provider/model",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model",
