@@ -25,6 +25,7 @@ COMPONENT_SCHEMAS = {
     "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
     "budget": "DGC_BUDGET_MANIFEST_V1",
     "pricing_snapshot": "DGC_PRICING_SNAPSHOT_V1",
+    "risk_endpoint_manifest": "DGC_RISK_ENDPOINT_MANIFEST_V1",
     "scorer": "DGC_SCORER_MANIFEST_V1",
 }
 
@@ -165,6 +166,29 @@ def _validate_scorer(payload: Mapping[str, object]) -> None:
     _sha("scorer.implementation_sha256", payload.get("implementation_sha256"))
 
 
+def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
+    if _req("risk endpoint name", payload.get("endpoint_name")) != "catastrophic_regret":
+        raise ExecutionManifestError("risk endpoint must bind catastrophic_regret")
+    if _req("risk endpoint scale", payload.get("scale")) != "[0,1]":
+        raise ExecutionManifestError("risk endpoint scale must be [0,1]")
+    _req("risk endpoint semantics_version", payload.get("semantics_version"))
+    implementation = _req("risk endpoint implementation_path", payload.get("implementation_path"))
+    _sha("risk endpoint implementation_sha256", payload.get("implementation_sha256"))
+    source_fields = payload.get("source_fields")
+    if not isinstance(source_fields, list) or not source_fields or not all(
+        isinstance(x, str) and x.strip() for x in source_fields
+    ):
+        raise ExecutionManifestError("risk endpoint source_fields must be a non-empty string list")
+    if [x.strip() for x in source_fields] != sorted(set(x.strip() for x in source_fields)):
+        raise ExecutionManifestError("risk endpoint source_fields must be sorted and unique")
+    if payload.get("policy_outcome_independent_definition") is not True:
+        raise ExecutionManifestError("risk endpoint definition must be frozen independently of policy outcomes")
+    if payload.get("post_outcome_relabeling_allowed") is not False:
+        raise ExecutionManifestError("post-outcome risk relabeling must be prohibited")
+    if implementation.startswith("/") or ".." in Path(implementation).parts:
+        raise ExecutionManifestError("risk endpoint implementation path must be repository-relative")
+
+
 EXECUTOR_PROTOCOL = "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1"
 EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
 EXECUTOR_RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
@@ -205,6 +229,7 @@ _VALIDATORS = {
     "environment": _validate_environment,
     "budget": _validate_budget,
     "pricing_snapshot": _validate_pricing,
+    "risk_endpoint_manifest": _validate_risk_endpoint,
     "scorer": _validate_scorer,
 }
 
@@ -324,6 +349,14 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("executor entrypoint bytes differ from frozen SHA-256")
             if entrypoint_rel not in payload.get("argv", []):
                 raise ExecutionManifestError("executor argv entrypoint is not canonical repository-relative path")
+        if component == "risk_endpoint_manifest":
+            implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
+            if sha256_file(implementation) != _sha(
+                "risk endpoint implementation_sha256", payload.get("implementation_sha256")
+            ):
+                raise ExecutionManifestError("risk endpoint implementation bytes differ from frozen SHA-256")
+            if implementation_rel != str(payload.get("implementation_path")):
+                raise ExecutionManifestError("risk endpoint implementation path is non-canonical")
         components.append(FrozenComponent(
             component=component,
             path=rel,
