@@ -399,7 +399,34 @@ def test_physical_cost_semantic_tamper_is_rejected_even_after_rehash(
         result_paths=["records/B0.json", "records/DGC.json"],
         coordinator=coordinator,
     )
-    with pytest.raises(ExecutionEvidenceError, match="physical cost certificate digest mismatch"):
+    with pytest.raises(ExecutionEvidenceError, match="model_usd differs from replayed provider token cost"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_provider_rate_card_tamper_is_rejected_even_after_rehash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, authority, spec, coordinator = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    evidence_path = root / "evidence" / "DGC.json"
+    evidence = json.loads(evidence_path.read_text())
+    evidence["provider_rate_cards"][0]["input_usd_per_million"] = 999.0
+    write_json(evidence_path, evidence)
+    evidence_sha = sha256_file(evidence_path)
+    result_path = root / "records" / "DGC.json"
+    result = json.loads(result_path.read_text())
+    result["evidence_sha256"] = evidence_sha
+    payload = {key: value for key, value in result.items() if key not in {"schema", "record_digest"}}
+    result["record_digest"] = sha256_bytes(canonical_json_bytes(payload))
+    write_json(result_path, result)
+    seal_manifest(
+        root,
+        authority=authority,
+        spec=spec,
+        result_paths=["records/B0.json", "records/DGC.json"],
+        coordinator=coordinator,
+    )
+    with pytest.raises(ExecutionEvidenceError, match="provider rate-card digest mismatch"):
         verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
 
 
