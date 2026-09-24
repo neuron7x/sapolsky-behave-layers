@@ -30,6 +30,10 @@ from cwc.governance.execution_manifest_freeze import (
     EXECUTOR_PROTOCOL,
     EXECUTOR_REQUEST_SCHEMA,
     EXECUTOR_RESPONSE_SCHEMA,
+    POLICY_PROTOCOL,
+    POLICY_REQUEST_SCHEMA,
+    POLICY_RESPONSE_SCHEMA,
+    POLICY_STATE_PROTOCOL,
     RISK_ENDPOINT_PROTOCOL,
     RISK_ENDPOINT_REQUEST_SCHEMA,
     RISK_ENDPOINT_RESPONSE_SCHEMA,
@@ -538,13 +542,13 @@ def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str)
     manifest = _json(manifest_path, schema="DGC_GOVERNANCE_POLICY_MANIFEST_V1")
     if str(manifest.get("policy_id", "")) != policy_id:
         raise FrozenPanelExecutionError("governance policy manifest id mismatch")
-    if manifest.get("protocol") != "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1":
+    if manifest.get("protocol") != POLICY_PROTOCOL:
         raise FrozenPanelExecutionError("governance policy protocol mismatch")
-    if manifest.get("request_schema") != "DGC_POLICY_DECISION_REQUEST_V1":
+    if manifest.get("request_schema") != POLICY_REQUEST_SCHEMA:
         raise FrozenPanelExecutionError("governance policy request schema mismatch")
-    if manifest.get("response_schema") != "DGC_POLICY_DECISION_RESPONSE_V1":
+    if manifest.get("response_schema") != POLICY_RESPONSE_SCHEMA:
         raise FrozenPanelExecutionError("governance policy response schema mismatch")
-    if manifest.get("state_protocol") != "STATE_IN_REQUEST_ONLY":
+    if manifest.get("state_protocol") != POLICY_STATE_PROTOCOL:
         raise FrozenPanelExecutionError("governance policy hidden state prohibited")
     if manifest.get("network_access_allowed") is not False:
         raise FrozenPanelExecutionError("governance policy network access prohibited")
