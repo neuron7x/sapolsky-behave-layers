@@ -19,6 +19,9 @@ class MechanismStatisticalPlan:
     familywise_alpha: float = 0.05
     quality_noninferiority_margin: float = 0.02
     minimum_cost_effect_of_interest: float = 0.05
+    target_power: float = 0.90
+    min_trials_per_task: int = 5
+    max_trials_per_task: int = 50
     risk_qualification_required_for_product: bool = True
     product_promotion_authorized: bool = False
     method: str = METHOD
@@ -32,6 +35,10 @@ class MechanismStatisticalPlan:
             raise ValueError("quality_noninferiority_margin must be in [0,1)")
         if not 0.0 < float(self.minimum_cost_effect_of_interest) < 1.0:
             raise ValueError("minimum_cost_effect_of_interest must be in (0,1)")
+        if not 0.5 < float(self.target_power) < 1.0:
+            raise ValueError("target_power must be in (0.5,1)")
+        if not (1 <= int(self.min_trials_per_task) <= int(self.max_trials_per_task)):
+            raise ValueError("invalid mechanism trial bounds")
         if self.risk_qualification_required_for_product is not True:
             raise ValueError("mechanism evidence cannot waive downstream risk qualification")
         if self.product_promotion_authorized is not False:
@@ -58,6 +65,9 @@ class MechanismStatisticalPlan:
             "familywise_alpha": self.familywise_alpha,
             "quality_noninferiority_margin": self.quality_noninferiority_margin,
             "minimum_cost_effect_of_interest": self.minimum_cost_effect_of_interest,
+            "target_power": self.target_power,
+            "min_trials_per_task": self.min_trials_per_task,
+            "max_trials_per_task": self.max_trials_per_task,
             "risk_qualification_required_for_product": self.risk_qualification_required_for_product,
             "product_promotion_authorized": self.product_promotion_authorized,
             "method": self.method,
