@@ -31,7 +31,7 @@ class _Reference:
         return _Binding()
 
 
-def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, null_request=False):
+def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, null_call=False):
     repo = tmp_path / "repo"
     repo.mkdir()
     spec = DistributedEvalSpec(
@@ -129,7 +129,7 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, nul
     ]
 
     def invoke(*, request, **_kwargs):
-        raw_request_id = None if null_request else "req-1"
+        raw_call_id = None if null_call else "resp-1"
         response = {
             "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
             "unit": request["unit"],
@@ -149,7 +149,10 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, nul
                 "cache_write_tokens": 0,
                 "long_cache_write_tokens": 0,
                 "output_tokens": 0,
-                "provider_request_id": raw_request_id,
+                "provider_call_id": raw_call_id,
+                "provider_call_id_kind": (
+                    None if raw_call_id is None else "PROVIDER_RESPONSE_ID"
+                ),
             }],
             "physical_cost_evidence": {
                 name: {
@@ -239,10 +242,10 @@ def test_adapter_risk_leakage_prevents_publication(
     assert not output.exists()
 
 
-def test_null_provider_request_id_prevents_publication(
+def test_null_provider_call_id_prevents_publication(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    repo, _, _, materialization = _fixture(tmp_path, monkeypatch, null_request=True)
+    repo, _, _, materialization = _fixture(tmp_path, monkeypatch, null_call=True)
     output = tmp_path / "mechanism-bundle"
     with pytest.raises(FrozenMechanismExecutionError, match="remaining frozen units"):
         execute_frozen_mechanism_panel(
