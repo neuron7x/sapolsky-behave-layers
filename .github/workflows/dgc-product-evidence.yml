@@ -77,7 +77,8 @@ jobs:
             tests/test_dgc_harness_freeze.py \
             tests/test_dgc_execution_evidence_bundle.py \
             tests/test_dgc_frozen_panel_executor.py \
-            tests/test_dgc_frozen_policy_runtime.py
+            tests/test_dgc_frozen_policy_runtime.py \
+            tests/test_dgc_frozen_action_catalog.py
       - name: V5.1 theorem and portable evidence-closure regression
         run: |
           PYTHONPATH=. python -m pytest -q \
