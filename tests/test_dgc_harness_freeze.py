@@ -29,8 +29,8 @@ def execution_doc(path: Path, *, policy_ids=("B0", "B1", "B2", "B3", "DGC"), col
     components = [
         {"component": name, "path": f"m/{name}.json", "sha256": h(char), "bytes": 10, "schema": "x"}
         for name, char in zip(
-            ("action_catalog_manifest", "executor_manifest", "model_manifest", "prompt_policy", "tool_manifest", "environment", "budget", "pricing_snapshot", "risk_endpoint_manifest", "scorer"),
-            "123456789a",
+            ("action_catalog_manifest", "executor_manifest", "model_manifest", "observation_provider_manifest", "prompt_policy", "tool_manifest", "environment", "budget", "pricing_snapshot", "risk_endpoint_manifest", "scorer"),
+            "123456789ab",
             strict=True,
         )
     ]

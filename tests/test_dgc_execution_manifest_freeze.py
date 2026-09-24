@@ -78,6 +78,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "action_catalog_manifest": base / "actions.json",
         "executor_manifest": base / "executor.json",
         "model_manifest": base / "model.json",
+        "observation_provider_manifest": base / "observations.json",
         "prompt_policy": base / "prompt.json",
         "tool_manifest": base / "tools.json",
         "environment": base / "environment.json",
@@ -121,6 +122,23 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     _write(paths["model_manifest"], {
         "schema": "DGC_MODEL_MANIFEST_V1",
         "models": [{"provider": "provider", "model_id": "model", "model_version": "2026-08-23-r1"}],
+    })
+    observation_impl = repo / "features" / "terminal_observations.py"
+    observation_impl.parent.mkdir(parents=True, exist_ok=True)
+    observation_impl.write_text("print('observations')\n", encoding="utf-8")
+    _write(paths["observation_provider_manifest"], {
+        "schema": "DGC_OBSERVATION_PROVIDER_MANIFEST_V1",
+        "protocol": "DGC_PREOUTCOME_OBSERVATION_PROTOCOL_V1",
+        "request_schema": "DGC_PREOUTCOME_OBSERVATION_REQUEST_V1",
+        "response_schema": "DGC_PREOUTCOME_OBSERVATION_RESPONSE_V1",
+        "implementation_path": observation_impl.relative_to(repo).as_posix(),
+        "implementation_sha256": sha256_file(observation_impl),
+        "argv": ["python", observation_impl.relative_to(repo).as_posix()],
+        "timeout_seconds": 5,
+        "output_fields": ["budget_remaining", "initial_uncertainty", "step_index"],
+        "network_access_allowed": False,
+        "confirmatory_label_access": False,
+        "post_outcome_access_allowed": False,
     })
     _write(paths["prompt_policy"], {
         "schema": "DGC_PROMPT_POLICY_V1",
@@ -246,12 +264,61 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 10
+    assert len(frozen.components) == 11
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
     assert frozen.prebaseline_comparison_digest
     assert frozen.document["harness_frozen"] is False
+
+
+def test_observation_provider_implementation_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    implementation = repo / "features" / "terminal_observations.py"
+    implementation.write_text("print('tampered')\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="observation provider implementation bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_observation_provider_contract_must_match_all_policies(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    provider = repo / components["observation_provider_manifest"]
+    doc = json.loads(provider.read_text())
+    doc["output_fields"] = ["budget_remaining", "step_index"]
+    _write(provider, doc)
+    with pytest.raises(ExecutionManifestError, match="output fields differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_observation_provider_network_access_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    provider = repo / components["observation_provider_manifest"]
+    doc = json.loads(provider.read_text())
+    doc["network_access_allowed"] = True
+    _write(provider, doc)
+    with pytest.raises(ExecutionManifestError, match="network access must be prohibited"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
 
 
 def test_executor_entrypoint_tamper_is_rejected(tmp_path: Path):
