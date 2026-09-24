@@ -17,7 +17,11 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
-from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
+from cwc.governance.provider_trace import (
+    ProviderCallIdKind,
+    ProviderUsageTrace,
+    TraceAuthority,
+)
 
 BUNDLE_SCHEMA = "DGC_MECHANISM_EXECUTION_BUNDLE_V1"
 RESULT_SCHEMA = "DGC_MECHANISM_RESULT_V1"
@@ -153,6 +157,7 @@ class VerifiedMechanismResult:
     evidence_digest: str
     record_digest: str
     commit_event_sequence: int
+    provider_call_identities: tuple[tuple[str, str], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -262,7 +267,7 @@ def _verify_cost_evidence(
     unit: WorkUnitId,
     expected_pricing_sha: str,
     expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
-) -> None:
+) -> tuple[tuple[str, str], ...]:
     response = doc.get("response")
     if not isinstance(response, Mapping):
         raise MechanismExecutionBundleError("mechanism evidence missing adapter response")
@@ -344,7 +349,7 @@ def _verify_cost_evidence(
     derived: list[dict[str, object]] = []
     meter_population: list[tuple[str, str]] = []
     model_costs: list[float] = []
-    request_ids: set[str] = set()
+    call_ids: set[tuple[str, str]] = set()
     for raw in raw_traces:
         if not isinstance(raw, Mapping):
             raise MechanismExecutionBundleError("invalid raw provider usage trace")
@@ -357,9 +362,13 @@ def _verify_cost_evidence(
         card = cards.get(identity)
         if card is None:
             raise MechanismExecutionBundleError("provider trace lacks frozen rate card")
-        request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise MechanismExecutionBundleError("live provider trace requires real provider_request_id")
+        call_id_raw = raw.get("provider_call_id")
+        if not isinstance(call_id_raw, str) or not call_id_raw.strip():
+            raise MechanismExecutionBundleError("live provider trace requires real provider_call_id")
+        try:
+            call_id_kind = ProviderCallIdKind(str(raw.get("provider_call_id_kind")))
+        except ValueError as exc:
+            raise MechanismExecutionBundleError("invalid provider_call_id_kind") from exc
         try:
             trace_obj = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -374,7 +383,8 @@ def _verify_cost_evidence(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_call_id=call_id_raw.strip(),
+                provider_call_id_kind=call_id_kind,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MechanismExecutionBundleError("malformed provider usage trace") from exc
@@ -384,10 +394,13 @@ def _verify_cost_evidence(
             )
         if trace_obj.decision_id != unit.stable_id or trace_obj.policy_id != unit.policy_id:
             raise MechanismExecutionBundleError("provider trace decision/policy identity mismatch")
-        request_id = str(trace_obj.provider_request_id)
-        if request_id in request_ids:
-            raise MechanismExecutionBundleError("duplicate provider_request_id")
-        request_ids.add(request_id)
+        call_identity = (
+            trace_obj.provider_call_id_kind.value,
+            str(trace_obj.provider_call_id),
+        )
+        if call_identity in call_ids:
+            raise MechanismExecutionBundleError("duplicate provider_call_id")
+        call_ids.add(call_identity)
         if trace_obj.rate_card_digest != card.digest:
             raise MechanismExecutionBundleError("provider trace rate-card digest mismatch")
         metered = trace_obj.meter(card)
@@ -398,7 +411,8 @@ def _verify_cost_evidence(
             "decision_id": trace_obj.decision_id,
             "policy_id": trace_obj.policy_id,
             "authority": trace_obj.authority.value,
-            "provider_request_id": trace_obj.provider_request_id,
+            "provider_call_id": trace_obj.provider_call_id,
+            "provider_call_id_kind": trace_obj.provider_call_id_kind.value,
             "provider": trace_obj.provider,
             "model": trace_obj.model,
             "model_version": version,
@@ -492,6 +506,7 @@ def _verify_cost_evidence(
         abs_tol=1e-12,
     ):
         raise MechanismExecutionBundleError("actual cost differs from physical cost certificate")
+    return tuple(sorted(call_ids))
 
 
 def _verify_audit(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
@@ -592,7 +607,7 @@ def _verify_result(
     evidence_doc = _json(evidence_path, schema=EVIDENCE_SCHEMA)
     if any(field in evidence_doc for field in _FORBIDDEN_RISK_FIELDS):
         raise MechanismExecutionBundleError("mechanism evidence contains forbidden risk field")
-    _verify_cost_evidence(
+    provider_call_identities = _verify_cost_evidence(
         evidence_doc,
         result_payload=result_payload,
         actual_cost_usd=cost,
@@ -658,6 +673,7 @@ def _verify_result(
         evidence_digest=evidence_digest,
         record_digest=record_digest,
         commit_event_sequence=commit_sequence,
+        provider_call_identities=provider_call_identities,
     )
 
 
@@ -747,6 +763,15 @@ def verify_mechanism_execution_bundle(
         raise MechanismExecutionBundleError(
             "mechanism commit audit population differs from result population"
         )
+
+    seen_provider_calls: set[tuple[str, str]] = set()
+    for result in results:
+        for identity in result.provider_call_identities:
+            if identity in seen_provider_calls:
+                raise MechanismExecutionBundleError(
+                    "provider call identity reused across mechanism work units"
+                )
+            seen_provider_calls.add(identity)
 
     by_commit = sorted(results, key=lambda row: row.commit_event_sequence)
     spent = math.fsum(row.actual_cost_usd for row in by_commit)
