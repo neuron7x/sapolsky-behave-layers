@@ -17,7 +17,11 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
-from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
+from cwc.governance.provider_trace import (
+    ProviderCallIdKind,
+    ProviderUsageTrace,
+    TraceAuthority,
+)
 
 BUNDLE_SCHEMA = "DGC_CONFIRMATORY_EXECUTION_BUNDLE_V1"
 RESULT_SCHEMA = "DGC_CONFIRMATORY_RESULT_V1"
@@ -132,6 +136,7 @@ class VerifiedExecutionResult:
     evidence_digest: str
     record_digest: str
     commit_event_sequence: int
+    provider_call_identities: tuple[tuple[str, str], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -249,7 +254,7 @@ def _verify_unit_evidence(
     expected_pricing_sha: str | None = None,
     expected_risk_sha: str | None = None,
     expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
-) -> None:
+) -> tuple[tuple[str, str], ...]:
     doc = _json(path, schema=EVIDENCE_SCHEMA)
 
     response = doc.get("response")
@@ -368,7 +373,7 @@ def _verify_unit_evidence(
         raise ExecutionEvidenceError("provider usage population missing or inconsistent")
     expected_trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
-    request_ids: set[str] = set()
+    call_ids: set[tuple[str, str]] = set()
     model_usd_rows: list[float] = []
     for raw in raw_provider_rows:
         if not isinstance(raw, Mapping):
@@ -396,7 +401,8 @@ def _verify_unit_evidence(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=str(raw["provider_request_id"]),
+                provider_call_id=str(raw["provider_call_id"]),
+                provider_call_id_kind=ProviderCallIdKind(str(raw["provider_call_id_kind"])),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ExecutionEvidenceError("malformed provider usage trace") from exc
@@ -406,10 +412,13 @@ def _verify_unit_evidence(
             raise ExecutionEvidenceError("provider trace decision/policy identity mismatch")
         if provider_trace.rate_card_digest != card.digest:
             raise ExecutionEvidenceError("provider trace rate-card digest mismatch")
-        request_id = str(provider_trace.provider_request_id)
-        if request_id in request_ids:
-            raise ExecutionEvidenceError("duplicate provider request id")
-        request_ids.add(request_id)
+        call_identity = (
+            provider_trace.provider_call_id_kind.value,
+            str(provider_trace.provider_call_id),
+        )
+        if call_identity in call_ids:
+            raise ExecutionEvidenceError("duplicate provider call id")
+        call_ids.add(call_identity)
         metered = provider_trace.meter(card)
         model_usd_rows.append(metered.model_token_usd)
         expected_trace_docs.append({
@@ -418,7 +427,8 @@ def _verify_unit_evidence(
             "decision_id": provider_trace.decision_id,
             "policy_id": provider_trace.policy_id,
             "authority": provider_trace.authority.value,
-            "provider_request_id": provider_trace.provider_request_id,
+            "provider_call_id": provider_trace.provider_call_id,
+            "provider_call_id_kind": provider_trace.provider_call_id_kind.value,
             "provider": provider_trace.provider,
             "model": provider_trace.model,
             "model_version": model_version,
@@ -514,6 +524,7 @@ def _verify_unit_evidence(
         abs_tol=1e-12,
     ):
         raise ExecutionEvidenceError("result actual cost differs from physical cost certificate")
+    return tuple(sorted(call_ids))
 
 
 def _verify_audit_log(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
@@ -620,7 +631,7 @@ def _verify_result(
         raise ExecutionEvidenceError("empty execution evidence artifact is not accepted")
     if _sha("evidence_sha256", doc.get("evidence_sha256")) != evidence_digest:
         raise ExecutionEvidenceError("execution evidence digest mismatch")
-    _verify_unit_evidence(
+    provider_call_identities = _verify_unit_evidence(
         evidence_path,
         result_payload=result_payload,
         actual_cost_usd=cost,
@@ -688,6 +699,7 @@ def _verify_result(
         evidence_digest=evidence_digest,
         record_digest=record_digest,
         commit_event_sequence=commit_sequence,
+        provider_call_identities=provider_call_identities,
     )
 
 
@@ -783,6 +795,13 @@ def verify_execution_bundle(
     commit_events = [event for event in audit_events if event["kind"] == "RESULT_COMMITTED"]
     if len(commit_events) != len(results):
         raise ExecutionEvidenceError("audit RESULT_COMMITTED population differs from result population")
+
+    seen_provider_calls: set[tuple[str, str]] = set()
+    for result in results:
+        for identity in result.provider_call_identities:
+            if identity in seen_provider_calls:
+                raise ExecutionEvidenceError("provider call identity reused across work units")
+            seen_provider_calls.add(identity)
 
     # Reproduce coordinator completion ordering: spend accumulates in commit-event order;
     # result_population_digest is sorted by WorkUnitId.
