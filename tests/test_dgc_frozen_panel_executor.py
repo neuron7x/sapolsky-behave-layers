@@ -316,6 +316,7 @@ def _patch(monkeypatch: pytest.MonkeyPatch, execution: dict, harness: dict, auth
     monkeypatch.setattr(executor_module, "_assert_git_identity", lambda *_: None)
     monkeypatch.setattr(executor_module, "verify_materialization_generation", lambda *_, **__: _Reference())
     monkeypatch.setattr(bundle_module, "verify_confirmatory_root_authority_document", lambda _: authority)
+    monkeypatch.setattr(bundle_module, "verify_execution_manifest_freeze_document", lambda _: execution)
 
 
 def test_frozen_panel_executor_builds_self_replayable_complete_bundle(
