@@ -17,6 +17,7 @@ from cwc.governance.generalization_registry import (
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.pareto import PairedBaselineEvidence, MultiBaselineParetoCertificate, certify_multi_baseline_pareto_improvement
+from cwc.governance.provider_trace import ProviderCallIdKind
 from cwc.governance.physical_cost_evidence import (
     CostAuthority,
     CostComponentEvidence,
@@ -150,6 +151,29 @@ def _axis_manifest(root: Path, row: Mapping[str, object]) -> dict[str, object]:
     return doc
 
 
+def _provider_call_population(raw: object) -> tuple[tuple[str, str], ...]:
+    if not isinstance(raw, list) or not raw:
+        raise GeneralizationExecutionError("provider_call_identities must be a non-empty list")
+    result: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for row in raw:
+        if not isinstance(row, Mapping):
+            raise GeneralizationExecutionError("malformed provider call identity")
+        try:
+            kind = ProviderCallIdKind(str(row.get("kind")))
+        except ValueError as exc:
+            raise GeneralizationExecutionError("invalid provider call identity kind") from exc
+        call_id = str(row.get("id", "")).strip()
+        if not call_id:
+            raise GeneralizationExecutionError("provider call identity id required")
+        identity = (kind.value, call_id)
+        if identity in seen:
+            raise GeneralizationExecutionError("duplicate provider call identity within work unit")
+        seen.add(identity)
+        result.append(identity)
+    return tuple(sorted(result))
+
+
 def _verify_cost_components(
     *,
     bundle_root: Path,
@@ -217,6 +241,7 @@ class VerifiedGeneralizationResult:
     physical_cost_certificate_digest: str
     metric_evidence_path: str
     metric_evidence_digest: str
+    provider_call_identities: tuple[tuple[str, str], ...]
     record_digest: str
 
 
@@ -288,6 +313,7 @@ def verify_generalization_axis_bundle(
         raise GeneralizationExecutionError("axis execution requires a non-empty result population")
     results: list[VerifiedGeneralizationResult] = []
     seen_units: set[tuple[str, str, int]] = set()
+    seen_provider_calls: set[tuple[str, str]] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise GeneralizationExecutionError("malformed generalization result row")
@@ -308,6 +334,11 @@ def verify_generalization_axis_bundle(
         quality = _finite("quality", raw.get("quality"), lower=0.0, upper=1.0)
         regret = _finite("catastrophic_regret", raw.get("catastrophic_regret"), lower=0.0, upper=1.0)
         covered = raw.get("covered") is True
+        provider_calls = _provider_call_population(raw.get("provider_call_identities"))
+        for identity in provider_calls:
+            if identity in seen_provider_calls:
+                raise GeneralizationExecutionError("provider call identity reused across work units")
+            seen_provider_calls.add(identity)
         evidence_path, evidence_rel = _safe_file(root, raw.get("metric_evidence_path"))
         evidence_digest = sha256_file(evidence_path)
         if evidence_digest != _sha("metric_evidence_sha256", raw.get("metric_evidence_sha256")):
@@ -332,6 +363,10 @@ def verify_generalization_axis_bundle(
             "covered": covered,
             "metric_evidence_path": evidence_rel,
             "metric_evidence_sha256": evidence_digest,
+            "provider_call_identities": [
+                {"kind": kind, "id": call_id}
+                for kind, call_id in provider_calls
+            ],
             "physical_cost_components": list(normalized_components),
             "physical_cost_certificate_digest": cost_certificate_digest,
         }
@@ -349,6 +384,7 @@ def verify_generalization_axis_bundle(
             physical_cost_certificate_digest=cost_certificate_digest,
             metric_evidence_path=evidence_rel,
             metric_evidence_digest=evidence_digest,
+            provider_call_identities=provider_calls,
             record_digest=record_digest,
         ))
 
