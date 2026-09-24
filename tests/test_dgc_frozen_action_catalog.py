@@ -22,6 +22,7 @@ def _fixture(tmp_path: Path):
             {
                 "action_id": "DEEP",
                 "harbor_agent": "agent-deep",
+                "harbor_model": "provider/model-deep",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model-deep",
@@ -30,6 +31,7 @@ def _fixture(tmp_path: Path):
             {
                 "action_id": "STANDARD",
                 "harbor_agent": "agent-standard",
+                "harbor_model": "provider/model-standard",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model-standard",
@@ -53,6 +55,7 @@ def test_runtime_resolves_exact_frozen_action(tmp_path: Path):
     catalog = load_frozen_action_catalog(repository_root=repo, execution_freeze=execution)
     deep = catalog.resolve("DEEP")
     assert deep.harbor_agent == "agent-deep"
+    assert deep.harbor_model == "provider/model-deep"
     assert deep.model_id == "model-deep"
     assert deep.model_version == "2026-09-01-r1"
     assert len(catalog.component_sha256) == 64
