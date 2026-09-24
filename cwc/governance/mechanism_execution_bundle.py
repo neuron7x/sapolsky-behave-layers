@@ -344,7 +344,7 @@ def _verify_cost_evidence(
     derived: list[dict[str, object]] = []
     meter_population: list[tuple[str, str]] = []
     model_costs: list[float] = []
-    request_ids: set[str] = set()
+    correlation_ids: set[tuple[str, str]] = set()
     for raw in raw_traces:
         if not isinstance(raw, Mapping):
             raise MechanismExecutionBundleError("invalid raw provider usage trace")
@@ -358,8 +358,21 @@ def _verify_cost_evidence(
         if card is None:
             raise MechanismExecutionBundleError("provider trace lacks frozen rate card")
         request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise MechanismExecutionBundleError("live provider trace requires real provider_request_id")
+        response_id_raw = raw.get("provider_response_id")
+        request_id = (
+            request_id_raw.strip()
+            if isinstance(request_id_raw, str) and request_id_raw.strip()
+            else None
+        )
+        response_id = (
+            response_id_raw.strip()
+            if isinstance(response_id_raw, str) and response_id_raw.strip()
+            else None
+        )
+        if bool(request_id) == bool(response_id):
+            raise MechanismExecutionBundleError(
+                "live provider trace requires exactly one request or response correlation id"
+            )
         try:
             trace_obj = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -374,7 +387,8 @@ def _verify_cost_evidence(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_request_id=request_id,
+                provider_response_id=response_id,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MechanismExecutionBundleError("malformed provider usage trace") from exc
@@ -384,10 +398,14 @@ def _verify_cost_evidence(
             )
         if trace_obj.decision_id != unit.stable_id or trace_obj.policy_id != unit.policy_id:
             raise MechanismExecutionBundleError("provider trace decision/policy identity mismatch")
-        request_id = str(trace_obj.provider_request_id)
-        if request_id in request_ids:
-            raise MechanismExecutionBundleError("duplicate provider_request_id")
-        request_ids.add(request_id)
+        correlation_kind = trace_obj.provider_correlation_kind
+        correlation_id = trace_obj.provider_correlation_id
+        if correlation_kind is None or correlation_id is None:
+            raise MechanismExecutionBundleError("provider trace lacks correlation identity")
+        correlation_key = (correlation_kind, correlation_id)
+        if correlation_key in correlation_ids:
+            raise MechanismExecutionBundleError("duplicate provider correlation id")
+        correlation_ids.add(correlation_key)
         if trace_obj.rate_card_digest != card.digest:
             raise MechanismExecutionBundleError("provider trace rate-card digest mismatch")
         metered = trace_obj.meter(card)
@@ -399,6 +417,8 @@ def _verify_cost_evidence(
             "policy_id": trace_obj.policy_id,
             "authority": trace_obj.authority.value,
             "provider_request_id": trace_obj.provider_request_id,
+            "provider_response_id": trace_obj.provider_response_id,
+            "provider_correlation_kind": trace_obj.provider_correlation_kind,
             "provider": trace_obj.provider,
             "model": trace_obj.model,
             "model_version": version,
