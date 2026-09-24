@@ -140,9 +140,8 @@ def _verify_axis_randomness(
             task_id=result.task_id,
             replicate=result.replicate,
         )
-        # Seed is not stored in the verified result object; the execution bundle digest
-        # binds the raw AXIS_EXECUTION record that was verified upstream. Pair structure
-        # and provider calls are replayed here from authenticated fields only.
+        if result.replicate_seed != expected_seed:
+            raise GeneralizationDualError("verified replicate seed differs from paired schedule")
         if not result.provider_call_identities:
             raise GeneralizationDualError("verified provider call population missing")
         for identity in result.provider_call_identities:
