@@ -30,6 +30,9 @@ def test_mechanism_plan_is_two_endpoint_and_cannot_promote_product():
     assert plan.per_claim_alpha == pytest.approx(0.003125)
     assert plan.risk_qualification_required_for_product is True
     assert plan.product_promotion_authorized is False
+    assert plan.target_power == pytest.approx(0.90)
+    assert plan.min_trials_per_task == 5
+    assert plan.max_trials_per_task == 50
 
 
 def test_mechanism_certificate_requires_all_four_baselines():
@@ -85,3 +88,10 @@ def test_task_population_substitution_is_rejected():
             alpha=0.025,
             quality_noninferiority_margin=0.02,
         )
+
+
+def test_invalid_mechanism_trial_bounds_are_rejected():
+    with pytest.raises(ValueError, match="trial bounds"):
+        MechanismStatisticalPlan(min_trials_per_task=10, max_trials_per_task=5)
+    with pytest.raises(ValueError, match="target_power"):
+        MechanismStatisticalPlan(target_power=0.5)
