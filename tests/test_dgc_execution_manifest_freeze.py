@@ -75,6 +75,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     adapter.parent.mkdir(parents=True, exist_ok=True)
     adapter.write_text("print('adapter')\n", encoding="utf-8")
     paths = {
+        "action_catalog_manifest": base / "actions.json",
         "executor_manifest": base / "executor.json",
         "model_manifest": base / "model.json",
         "prompt_policy": base / "prompt.json",
@@ -85,6 +86,27 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "risk_endpoint_manifest": base / "risk-endpoint.json",
         "scorer": base / "scorer.json",
     }
+    _write(paths["action_catalog_manifest"], {
+        "schema": "DGC_ACTION_CATALOG_MANIFEST_V1",
+        "actions": [
+            {
+                "action_id": "DEEP",
+                "harbor_agent": "agent-deep",
+                "agent_version": "1.0.0",
+                "provider": "provider",
+                "model_id": "model",
+                "model_version": "2026-08-23-r1",
+            },
+            {
+                "action_id": "STANDARD",
+                "harbor_agent": "agent-standard",
+                "agent_version": "1.0.0",
+                "provider": "provider",
+                "model_id": "model",
+                "model_version": "2026-08-23-r1",
+            },
+        ],
+    })
     _write(paths["executor_manifest"], {
         "schema": "DGC_EXECUTOR_MANIFEST_V1",
         "protocol": "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1",
@@ -224,7 +246,7 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 9
+    assert len(frozen.components) == 10
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
@@ -464,6 +486,62 @@ def test_non_usd_pricing_is_rejected(tmp_path: Path):
     doc["entries"][0]["currency"] = "EUR"
     _write(pricing, doc)
     with pytest.raises(ExecutionManifestError, match="currency must be USD"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_action_catalog_model_outside_frozen_model_manifest_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    catalog = repo / components["action_catalog_manifest"]
+    doc = json.loads(catalog.read_text())
+    doc["actions"][0]["model_id"] = "unfrozen-model"
+    _write(catalog, doc)
+    with pytest.raises(ExecutionManifestError, match="outside the frozen model manifest"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_mutable_action_agent_version_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    catalog = repo / components["action_catalog_manifest"]
+    doc = json.loads(catalog.read_text())
+    doc["actions"][0]["agent_version"] = "latest"
+    _write(catalog, doc)
+    with pytest.raises(ExecutionManifestError, match="mutable agent version alias"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    config = repo / "policies" / "DGC.json"
+    config_doc = json.loads(config.read_text())
+    config_doc["action_ids"] = ["DEEP", "STANDARD", "ULTRA"]
+    _write(config, config_doc)
+    manifest = repo / policies["DGC"]
+    manifest_doc = json.loads(manifest.read_text())
+    manifest_doc["config_sha256"] = sha256_file(config)
+    manifest_doc["action_catalog_digest"] = policy_action_catalog_digest(config_doc["action_ids"])
+    _write(manifest, manifest_doc)
+    with pytest.raises(ExecutionManifestError, match="global frozen action catalog"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
