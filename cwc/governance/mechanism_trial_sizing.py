@@ -41,6 +41,7 @@ class MechanismComparisonSizing:
 @dataclass(frozen=True, slots=True)
 class MechanismTrialSizingReceipt:
     plan_digest: str
+    calibration_evidence_digest: str
     confirmatory_task_count: int
     calibration_design_digest: str
     comparisons: tuple[MechanismComparisonSizing, ...]
@@ -52,6 +53,7 @@ class MechanismTrialSizingReceipt:
         return {
             "schema": SCHEMA,
             "plan_digest": self.plan_digest,
+            "calibration_evidence_digest": self.calibration_evidence_digest,
             "confirmatory_task_count": self.confirmatory_task_count,
             "calibration_design_digest": self.calibration_design_digest,
             "comparisons": [asdict(row) for row in self.comparisons],
@@ -112,9 +114,17 @@ def freeze_mechanism_trial_sizing(
     observations: Iterable[CalibrationObservation],
     effects_of_interest: Mapping[str, float],
     confirmatory_task_count: int,
+    calibration_evidence_digest: str,
     plan: MechanismStatisticalPlan | None = None,
 ) -> MechanismTrialSizingReceipt:
     mechanism_plan = plan or MechanismStatisticalPlan()
+    calibration_digest = str(calibration_evidence_digest).strip().lower()
+    if len(calibration_digest) != 64 or any(
+        ch not in "0123456789abcdef" for ch in calibration_digest
+    ):
+        raise MechanismTrialSizingError(
+            "calibration_evidence_digest must be lowercase SHA-256"
+        )
     rows = tuple(observations)
     if not rows:
         raise MechanismTrialSizingError("non-empty calibration observations required")
@@ -182,6 +192,7 @@ def freeze_mechanism_trial_sizing(
     ordered = tuple(sorted(receipts, key=lambda row: row.comparison_id))
     payload = {
         "plan_digest": mechanism_plan.digest,
+        "calibration_evidence_digest": calibration_digest,
         "confirmatory_task_count": int(confirmatory_task_count),
         "calibration_design_digest": calibration_design_digest,
         "comparisons": [asdict(row) for row in ordered],
@@ -219,6 +230,13 @@ def verify_mechanism_trial_sizing_document(
     mechanism_plan = plan or MechanismStatisticalPlan()
     if doc.get("plan_digest") != mechanism_plan.digest:
         raise MechanismTrialSizingError("mechanism sizing plan digest mismatch")
+    calibration_digest = str(doc.get("calibration_evidence_digest", "")).strip().lower()
+    if len(calibration_digest) != 64 or any(
+        ch not in "0123456789abcdef" for ch in calibration_digest
+    ):
+        raise MechanismTrialSizingError(
+            "mechanism sizing calibration evidence digest malformed"
+        )
     try:
         confirmatory_count = int(doc.get("confirmatory_task_count"))
         required = int(doc.get("required_trials_per_task"))
@@ -265,6 +283,7 @@ def verify_mechanism_trial_sizing_document(
 
     payload = {
         "plan_digest": doc["plan_digest"],
+        "calibration_evidence_digest": doc["calibration_evidence_digest"],
         "confirmatory_task_count": confirmatory_count,
         "calibration_design_digest": doc["calibration_design_digest"],
         "comparisons": comparisons,
