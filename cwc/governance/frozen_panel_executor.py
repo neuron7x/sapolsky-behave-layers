@@ -24,6 +24,9 @@ from cwc.governance.execution_manifest_freeze import (
     EXECUTOR_PROTOCOL,
     EXECUTOR_REQUEST_SCHEMA,
     EXECUTOR_RESPONSE_SCHEMA,
+    RISK_ENDPOINT_PROTOCOL,
+    RISK_ENDPOINT_REQUEST_SCHEMA,
+    RISK_ENDPOINT_RESPONSE_SCHEMA,
     verify_execution_manifest_freeze_document,
 )
 from cwc.governance.external_evidence_reference import verify_materialization_generation
@@ -146,6 +149,55 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     return doc, tuple(argv), timeout
 
 
+def _risk_endpoint_manifest(
+    root: Path,
+    execution: Mapping[str, object],
+) -> tuple[dict[str, object], tuple[str, ...], float, str]:
+    rows = execution.get("components")
+    if not isinstance(rows, list):
+        raise FrozenPanelExecutionError("execution component population missing")
+    matches = [
+        row for row in rows
+        if isinstance(row, Mapping) and row.get("component") == "risk_endpoint_manifest"
+    ]
+    if len(matches) != 1:
+        raise FrozenPanelExecutionError("exactly one frozen risk endpoint manifest is required")
+    row = matches[0]
+    manifest_path, _ = _safe_repo_file(root, row.get("path"))
+    component_sha = _sha("risk endpoint component sha256", row.get("sha256"))
+    if sha256_file(manifest_path) != component_sha:
+        raise FrozenPanelExecutionError("risk endpoint manifest bytes differ from execution freeze")
+    doc = _json(manifest_path, schema="DGC_RISK_ENDPOINT_MANIFEST_V1")
+    if doc.get("protocol") != RISK_ENDPOINT_PROTOCOL:
+        raise FrozenPanelExecutionError("risk endpoint protocol identity mismatch")
+    if (
+        doc.get("request_schema") != RISK_ENDPOINT_REQUEST_SCHEMA
+        or doc.get("response_schema") != RISK_ENDPOINT_RESPONSE_SCHEMA
+    ):
+        raise FrozenPanelExecutionError("risk endpoint request/response schema identity mismatch")
+    implementation, implementation_rel = _safe_repo_file(root, doc.get("implementation_path"))
+    if sha256_file(implementation) != _sha(
+        "risk endpoint implementation sha256", doc.get("implementation_sha256")
+    ):
+        raise FrozenPanelExecutionError("risk endpoint implementation bytes differ from frozen manifest")
+    argv = doc.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise FrozenPanelExecutionError("frozen risk endpoint argv malformed")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise FrozenPanelExecutionError("frozen risk endpoint argv contains forbidden control characters")
+    if implementation_rel not in argv:
+        raise FrozenPanelExecutionError("frozen risk endpoint argv lost implementation identity")
+    try:
+        timeout = float(doc.get("timeout_seconds"))
+    except (TypeError, ValueError) as exc:
+        raise FrozenPanelExecutionError("risk endpoint timeout is not numeric") from exc
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise FrozenPanelExecutionError("risk endpoint timeout must be finite and > 0")
+    if doc.get("network_access_allowed") is not False:
+        raise FrozenPanelExecutionError("risk endpoint must remain network-disabled")
+    return doc, tuple(argv), timeout, component_sha
+
+
 def _runtime_env(root: Path, materialization_root: Path, executor: Mapping[str, object]) -> dict[str, str]:
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -159,6 +211,68 @@ def _runtime_env(root: Path, materialization_root: Path, executor: Mapping[str, 
         if name in os.environ:
             env[name] = os.environ[name]
     return env
+
+
+def _risk_runtime_env(root: Path, materialization_root: Path) -> dict[str, str]:
+    return {
+        "PATH": os.environ.get("PATH", ""),
+        "PYTHONPATH": str(root),
+        "PYTHONHASHSEED": "0",
+        "DGC_REPOSITORY_ROOT": str(root),
+        "DGC_MATERIALIZATION_ROOT": str(materialization_root),
+    }
+
+
+def _invoke_risk_endpoint(
+    *,
+    manifest: Mapping[str, object],
+    argv: Sequence[str],
+    timeout: float,
+    adapter_response: Mapping[str, object],
+    unit_request: Mapping[str, object],
+    root: Path,
+    env: Mapping[str, str],
+) -> tuple[dict[str, object], bytes, bytes]:
+    request = {
+        "schema": RISK_ENDPOINT_REQUEST_SCHEMA,
+        "endpoint_name": manifest["endpoint_name"],
+        "semantics_version": manifest["semantics_version"],
+        "source_fields": manifest["source_fields"],
+        "unit": unit_request["unit"],
+        "attempt": unit_request["attempt"],
+        "adapter_response": dict(adapter_response),
+    }
+    raw_request = canonical_json_bytes(request) + b"\n"
+    try:
+        proc = subprocess.run(
+            list(argv),
+            cwd=root,
+            env=dict(env),
+            input=raw_request,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise FrozenPanelExecutionError("frozen risk endpoint timed out") from exc
+    except OSError as exc:
+        raise FrozenPanelExecutionError("frozen risk endpoint could not start") from exc
+    stdout = bytes(proc.stdout or b"")
+    stderr = bytes(proc.stderr or b"")
+    if proc.returncode != 0:
+        raise FrozenPanelExecutionError(f"frozen risk endpoint exited nonzero: {proc.returncode}")
+    try:
+        response = json.loads(stdout.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise FrozenPanelExecutionError("risk endpoint stdout is not one JSON response") from exc
+    if not isinstance(response, dict) or response.get("schema") != RISK_ENDPOINT_RESPONSE_SCHEMA:
+        raise FrozenPanelExecutionError("risk endpoint response schema mismatch")
+    evidence = response.get("evidence")
+    if not isinstance(evidence, Mapping) or not evidence:
+        raise FrozenPanelExecutionError("risk endpoint response requires non-empty evidence")
+    _finite_probability("catastrophic_regret", response.get("catastrophic_regret"))
+    return response, stdout, stderr
 
 
 def _finite_probability(name: str, value: object) -> float:
@@ -346,6 +460,7 @@ def execute_frozen_panel(
         raise FrozenPanelExecutionError("materialized task population differs from execution freeze")
 
     executor, argv, timeout = _executor_manifest(root, execution)
+    risk_endpoint, risk_argv, risk_timeout, risk_component_sha = _risk_endpoint_manifest(root, execution)
     try:
         spec = DistributedEvalSpec(**dict(authority["distributed_spec"]))
     except (KeyError, TypeError, ValueError) as exc:
@@ -363,7 +478,9 @@ def execute_frozen_panel(
     result_paths: list[str] = []
     result_index = 0
     try:
-        env = _runtime_env(root, Path(materialization_generation_root).resolve(), executor)
+        materialization_root = Path(materialization_generation_root).resolve()
+        env = _runtime_env(root, materialization_root, executor)
+        risk_env = _risk_runtime_env(root, materialization_root)
         while True:
             lease = coordinator.claim(worker_id, tick=tick)
             if lease is None:
@@ -389,8 +506,19 @@ def execute_frozen_panel(
                     argv=argv, request=request, root=root, env=env, timeout=timeout
                 )
                 quality = _finite_probability("quality", response.get("quality"))
-                regret = _finite_probability("catastrophic_regret", response.get("catastrophic_regret"))
                 cost = _finite_cost(response.get("actual_cost_usd"), cap=spec.max_cost_per_unit_usd)
+                risk_response, risk_stdout, risk_stderr = _invoke_risk_endpoint(
+                    manifest=risk_endpoint,
+                    argv=risk_argv,
+                    timeout=risk_timeout,
+                    adapter_response=response,
+                    unit_request=request,
+                    root=root,
+                    env=risk_env,
+                )
+                regret = _finite_probability(
+                    "catastrophic_regret", risk_response.get("catastrophic_regret")
+                )
             except FrozenPanelExecutionError as exc:
                 (transcript_dir / "failure.txt").write_text(str(exc) + "\n", encoding="utf-8")
                 tick = max(tick, lease.expires_tick)
@@ -399,10 +527,15 @@ def execute_frozen_panel(
 
             stdout_path = transcript_dir / "stdout.bin"
             stderr_path = transcript_dir / "stderr.bin"
+            risk_stdout_path = transcript_dir / "risk-stdout.bin"
+            risk_stderr_path = transcript_dir / "risk-stderr.bin"
             stdout_path.write_bytes(stdout)
             stderr_path.write_bytes(stderr)
+            risk_stdout_path.write_bytes(risk_stdout)
+            risk_stderr_path.write_bytes(risk_stderr)
             response_digest = sha256_bytes(canonical_json_bytes(response))
             trace_digest = sha256_bytes(canonical_json_bytes(response["trace"]))
+            risk_response_digest = sha256_bytes(canonical_json_bytes(risk_response))
             evidence_rel = f"evidence/{result_index:08d}.json"
             evidence_path = staging / evidence_rel
             evidence_doc = {
@@ -421,6 +554,14 @@ def execute_frozen_panel(
                 "stderr_sha256": sha256_file(stderr_path),
                 "adapter_response_digest": response_digest,
                 "trace_digest": trace_digest,
+                "risk_endpoint_manifest_sha256": risk_component_sha,
+                "risk_endpoint_implementation_sha256": risk_endpoint["implementation_sha256"],
+                "risk_endpoint_response": risk_response,
+                "risk_endpoint_response_digest": risk_response_digest,
+                "risk_stdout_path": risk_stdout_path.relative_to(staging).as_posix(),
+                "risk_stdout_sha256": sha256_file(risk_stdout_path),
+                "risk_stderr_path": risk_stderr_path.relative_to(staging).as_posix(),
+                "risk_stderr_sha256": sha256_file(risk_stderr_path),
             }
             _write_json(evidence_path, evidence_doc)
             evidence_digest = sha256_file(evidence_path)
@@ -429,6 +570,7 @@ def execute_frozen_panel(
                 "catastrophic_regret": regret,
                 "adapter_response_digest": response_digest,
                 "trace_digest": trace_digest,
+                "risk_endpoint_response_digest": risk_response_digest,
             }
             try:
                 record = coordinator.commit(
