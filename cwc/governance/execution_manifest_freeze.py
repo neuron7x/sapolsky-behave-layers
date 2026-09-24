@@ -594,6 +594,16 @@ def freeze_execution_manifests(
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
     if runtime_family != family:
         raise ExecutionManifestError("benchmark runtime family differs from execution family")
+    runtime_env_name = str(
+        component_payloads["benchmark_runtime_manifest"].get("root_environment_variable", "")
+    ).strip()
+    executor_allowed_env = component_payloads["executor_manifest"].get(
+        "allowed_environment_variables"
+    )
+    if not isinstance(executor_allowed_env, list) or runtime_env_name not in executor_allowed_env:
+        raise ExecutionManifestError(
+            "executor environment allow-list must include benchmark runtime root variable"
+        )
 
     action_rows = component_payloads["action_catalog_manifest"].get("actions")
     model_rows = component_payloads["model_manifest"].get("models")

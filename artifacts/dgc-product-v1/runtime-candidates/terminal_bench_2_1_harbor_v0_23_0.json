@@ -59,8 +59,9 @@
     "COMPLETE_TEN_COMPONENT_PHYSICAL_COST_EVIDENCE_NOT_CLOSED",
     "CALIBRATION_ONLY_B2_NOT_FITTED",
     "EXACT_HEAD_EXECUTOR_TESTS_NOT_EXECUTED",
-    "UPSTREAM_HARBOR_SINGLE_TASK_EXECUTION_ADAPTER_NOT_YET_BOUND",
-    "HARBOR_AGENT_COST_IS_NOT_COMPLETE_PHYSICAL_COST_AUTHORITY"
+    "HARBOR_AGENT_COST_IS_NOT_COMPLETE_PHYSICAL_COST_AUTHORITY",
+    "EXTERNAL_HARBOR_ADAPTER_HAS_NOT_EXECUTED_ON_MATERIALIZED_TERMINAL_BENCH_TASK",
+    "SELECTED_HARBOR_AGENT_MUST_EMIT_DGC_PROVIDER_AND_PHYSICAL_COST_EVIDENCE_ENVELOPE"
   ],
   "evidence_boundary": {
     "allows": "runtime candidate design and adapter development only",
@@ -83,6 +84,30 @@
       "agent token/cost telemetry required",
       "raw result and trajectory SHA-256 bound",
       "no physical-cost or product authority granted"
+    ]
+  },
+  "execution_adapter": {
+    "status": "IMPLEMENTED_NOT_EXTERNALLY_EXECUTED",
+    "module": "cwc/governance/terminal_harbor_adapter.py",
+    "entrypoint": "scripts/dgc_terminal_harbor_adapter.py",
+    "test": "tests/test_dgc_terminal_harbor_adapter.py",
+    "chain": [
+      "verified materialized task",
+      "frozen pre-outcome observation provider",
+      "frozen governance policy",
+      "frozen action catalog exact Harbor CLI args",
+      "verified Harbor runtime checkout",
+      "upstream Harbor run/verifier",
+      "upstream trial admission",
+      "DGC provider/cost evidence envelope"
+    ],
+    "fail_closed_on": [
+      "runtime Git/tree/lock drift",
+      "policy/action identity mismatch",
+      "agent/model identity mismatch",
+      "missing real provider request ids",
+      "missing physical cost evidence",
+      "nonzero/timeout Harbor execution"
     ]
   }
 }
