@@ -80,6 +80,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "environment": base / "environment.json",
         "budget": base / "budget.json",
         "pricing_snapshot": base / "pricing.json",
+        "risk_endpoint_manifest": base / "risk-endpoint.json",
         "scorer": base / "scorer.json",
     }
     _write(paths["executor_manifest"], {
@@ -126,6 +127,20 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
             "input_per_million": 1.0, "output_per_million": 2.0,
         }],
     })
+    risk_impl = repo / "metrics" / "catastrophic_regret.py"
+    risk_impl.parent.mkdir(parents=True, exist_ok=True)
+    risk_impl.write_text("def catastrophic_regret(row):\n    return float(row['risk'])\n", encoding="utf-8")
+    _write(paths["risk_endpoint_manifest"], {
+        "schema": "DGC_RISK_ENDPOINT_MANIFEST_V1",
+        "endpoint_name": "catastrophic_regret",
+        "scale": "[0,1]",
+        "semantics_version": "test-v1",
+        "implementation_path": risk_impl.relative_to(repo).as_posix(),
+        "implementation_sha256": sha256_file(risk_impl),
+        "source_fields": ["risk"],
+        "policy_outcome_independent_definition": True,
+        "post_outcome_relabeling_allowed": False,
+    })
     _write(paths["scorer"], {
         "schema": "DGC_SCORER_MANIFEST_V1",
         "version": "v1",
@@ -170,7 +185,7 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 8
+    assert len(frozen.components) == 9
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
@@ -233,6 +248,38 @@ def test_governance_policy_config_tamper_is_rejected(tmp_path: Path):
     config = repo / "policies" / "DGC.json"
     config.write_text("{}\n", encoding="utf-8")
     with pytest.raises(ExecutionManifestError, match="config bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_risk_endpoint_implementation_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    implementation = repo / "metrics" / "catastrophic_regret.py"
+    implementation.write_text("def catastrophic_regret(row):\n    return 0.0\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="risk endpoint implementation bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_risk_endpoint_post_outcome_relabeling_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["risk_endpoint_manifest"]
+    doc = json.loads(manifest.read_text())
+    doc["post_outcome_relabeling_allowed"] = True
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="post-outcome risk relabeling"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
