@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.physical_cost_evidence import (
@@ -15,6 +16,7 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
+from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
 
 BUNDLE_SCHEMA = "DGC_CONFIRMATORY_EXECUTION_BUNDLE_V1"
 RESULT_SCHEMA = "DGC_CONFIRMATORY_RESULT_V1"
@@ -151,6 +153,7 @@ def _verify_unit_evidence(
     *,
     result_payload: Mapping[str, object],
     actual_cost_usd: float,
+    unit: WorkUnitId,
 ) -> None:
     doc = _json(path, schema=EVIDENCE_SCHEMA)
 
@@ -202,6 +205,143 @@ def _verify_unit_evidence(
     if not math.isclose(risk_value, result_risk, rel_tol=0.0, abs_tol=1e-12):
         raise ExecutionEvidenceError("result catastrophic_regret differs from frozen risk response")
 
+    pricing_sha = _sha(
+        "pricing_snapshot_manifest_sha256", doc.get("pricing_snapshot_manifest_sha256")
+    )
+    if _sha(
+        "result pricing_snapshot_manifest_sha256",
+        result_payload.get("pricing_snapshot_manifest_sha256"),
+    ) != pricing_sha:
+        raise ExecutionEvidenceError("result is not bound to frozen pricing snapshot")
+    risk_manifest_sha = _sha(
+        "risk_endpoint_manifest_sha256", doc.get("risk_endpoint_manifest_sha256")
+    )
+    if _sha(
+        "result risk_endpoint_manifest_sha256",
+        result_payload.get("risk_endpoint_manifest_sha256"),
+    ) != risk_manifest_sha:
+        raise ExecutionEvidenceError("result is not bound to frozen risk endpoint manifest")
+
+    rate_rows = doc.get("provider_rate_cards")
+    if not isinstance(rate_rows, list) or not rate_rows:
+        raise ExecutionEvidenceError("execution evidence requires provider rate cards")
+    rate_cards: dict[tuple[str, str, str], ProviderRateCard] = {}
+    try:
+        for row in rate_rows:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid provider rate card row")
+            identity = (
+                _req("rate-card provider", row.get("provider")),
+                _req("rate-card model", row.get("model")),
+                _req("rate-card model_version", row.get("model_version")),
+            )
+            if identity in rate_cards:
+                raise ExecutionEvidenceError("duplicate provider rate-card identity")
+            card = ProviderRateCard(
+                provider=identity[0],
+                model=identity[1],
+                input_usd_per_million=float(row["input_usd_per_million"]),
+                cached_input_usd_per_million=float(row["cached_input_usd_per_million"]),
+                cache_write_usd_per_million=float(row["cache_write_usd_per_million"]),
+                long_cache_write_usd_per_million=float(row["long_cache_write_usd_per_million"]),
+                output_usd_per_million=float(row["output_usd_per_million"]),
+                source_uri=str(row["source_uri"]),
+                retrieved_at=str(row["retrieved_at"]),
+            )
+            if _sha("rate_card_digest", row.get("rate_card_digest")) != card.digest:
+                raise ExecutionEvidenceError("provider rate-card digest mismatch")
+            rate_cards[identity] = card
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ExecutionEvidenceError("invalid provider rate-card evidence") from exc
+
+    raw_provider_rows = response.get("provider_usage_traces")
+    evidence_provider_rows = doc.get("provider_usage_traces")
+    if (
+        not isinstance(raw_provider_rows, list)
+        or not raw_provider_rows
+        or not isinstance(evidence_provider_rows, list)
+        or len(raw_provider_rows) != len(evidence_provider_rows)
+    ):
+        raise ExecutionEvidenceError("provider usage population missing or inconsistent")
+    expected_trace_docs: list[dict[str, object]] = []
+    metered_rows: list[tuple[str, str]] = []
+    request_ids: set[str] = set()
+    model_usd_rows: list[float] = []
+    for raw in raw_provider_rows:
+        if not isinstance(raw, Mapping):
+            raise ExecutionEvidenceError("invalid raw provider usage trace")
+        model_version = _req("provider trace model_version", raw.get("model_version"))
+        identity = (
+            _req("provider trace provider", raw.get("provider")),
+            _req("provider trace model", raw.get("model")),
+            model_version,
+        )
+        card = rate_cards.get(identity)
+        if card is None:
+            raise ExecutionEvidenceError("provider trace has no embedded frozen rate card")
+        try:
+            provider_trace = ProviderUsageTrace(
+                trace_id=str(raw["trace_id"]),
+                decision_id=str(raw["decision_id"]),
+                policy_id=str(raw["policy_id"]),
+                authority=TraceAuthority(str(raw["authority"])),
+                provider=identity[0],
+                model=identity[1],
+                rate_card_digest=str(raw["rate_card_digest"]),
+                input_tokens=int(raw["input_tokens"]),
+                cached_input_tokens=int(raw.get("cached_input_tokens", 0)),
+                cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
+                long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
+                output_tokens=int(raw["output_tokens"]),
+                provider_request_id=str(raw["provider_request_id"]),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ExecutionEvidenceError("malformed provider usage trace") from exc
+        if provider_trace.authority is not TraceAuthority.PROVIDER_LIVE:
+            raise ExecutionEvidenceError("confirmatory provider trace is not PROVIDER_LIVE")
+        if provider_trace.decision_id != unit.stable_id or provider_trace.policy_id != unit.policy_id:
+            raise ExecutionEvidenceError("provider trace decision/policy identity mismatch")
+        if provider_trace.rate_card_digest != card.digest:
+            raise ExecutionEvidenceError("provider trace rate-card digest mismatch")
+        request_id = str(provider_trace.provider_request_id)
+        if request_id in request_ids:
+            raise ExecutionEvidenceError("duplicate provider request id")
+        request_ids.add(request_id)
+        metered = provider_trace.meter(card)
+        model_usd_rows.append(metered.model_token_usd)
+        expected_trace_docs.append({
+            "trace_digest": provider_trace.digest,
+            "trace_id": provider_trace.trace_id,
+            "decision_id": provider_trace.decision_id,
+            "policy_id": provider_trace.policy_id,
+            "authority": provider_trace.authority.value,
+            "provider_request_id": provider_trace.provider_request_id,
+            "provider": provider_trace.provider,
+            "model": provider_trace.model,
+            "model_version": model_version,
+            "rate_card_digest": provider_trace.rate_card_digest,
+            "input_tokens": provider_trace.input_tokens,
+            "cached_input_tokens": provider_trace.cached_input_tokens,
+            "cache_write_tokens": provider_trace.cache_write_tokens,
+            "long_cache_write_tokens": provider_trace.long_cache_write_tokens,
+            "output_tokens": provider_trace.output_tokens,
+            "model_token_usd": metered.model_token_usd,
+        })
+        metered_rows.append((provider_trace.digest, model_version))
+    if evidence_provider_rows != expected_trace_docs:
+        raise ExecutionEvidenceError("derived provider trace evidence differs from raw provider usage")
+    provider_population_digest = sha256_bytes(canonical_json_bytes(sorted(metered_rows)))
+    if _sha(
+        "provider_trace_population_digest", doc.get("provider_trace_population_digest")
+    ) != provider_population_digest:
+        raise ExecutionEvidenceError("provider trace population digest mismatch")
+    if _sha(
+        "result provider_trace_population_digest",
+        result_payload.get("provider_trace_population_digest"),
+    ) != provider_population_digest:
+        raise ExecutionEvidenceError("result is not bound to provider trace population")
+    metered_model_usd = math.fsum(model_usd_rows)
+
     certificate = doc.get("physical_cost_certificate")
     if not isinstance(certificate, Mapping):
         raise ExecutionEvidenceError("execution evidence missing physical cost certificate")
@@ -230,6 +370,21 @@ def _verify_unit_evidence(
         )
     except (TypeError, ValueError, KeyError) as exc:
         raise ExecutionEvidenceError("invalid physical cost certificate") from exc
+    model_component = cost_evidence.get("model_usd")
+    if model_component is None:
+        raise ExecutionEvidenceError("physical cost certificate missing model_usd")
+    if model_component.authority is not CostAuthority.PROVIDER_METER:
+        raise ExecutionEvidenceError("model_usd must use PROVIDER_METER authority")
+    if model_component.source_digest != provider_population_digest:
+        raise ExecutionEvidenceError("model_usd source is not provider trace population")
+    if not math.isclose(
+        model_component.value_usd,
+        metered_model_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("model_usd differs from replayed provider token cost")
+
     if _sha("physical cost certificate digest", certificate.get("digest")) != rebuilt.digest:
         raise ExecutionEvidenceError("physical cost certificate digest mismatch")
     if _sha(
@@ -363,6 +518,7 @@ def _verify_result(
         evidence_path,
         result_payload=result_payload,
         actual_cost_usd=cost,
+        unit=unit,
     )
 
     record_payload = {
