@@ -37,6 +37,12 @@ from cwc.governance.materialization_transaction import (
     sha256_bytes,
     sha256_file,
 )
+from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
+    CostAuthority,
+    CostComponentEvidence,
+    certify_physical_trial_cost,
+)
 
 EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
 
@@ -295,6 +301,62 @@ def _finite_cost(value: object, *, cap: float) -> float:
     return result
 
 
+def _physical_cost_certificate(
+    *,
+    response: Mapping[str, object],
+    trial_id: str,
+    cap: float,
+):
+    raw = response.get("physical_cost_evidence")
+    if not isinstance(raw, Mapping):
+        raise FrozenPanelExecutionError("executor response requires physical_cost_evidence")
+    if set(str(key) for key in raw) != set(PRODUCT_COST_COMPONENTS):
+        raise FrozenPanelExecutionError("physical_cost_evidence must cover exact product cost components")
+    evidence: dict[str, CostComponentEvidence] = {}
+    try:
+        for component in PRODUCT_COST_COMPONENTS:
+            row = raw[component]
+            if not isinstance(row, Mapping):
+                raise FrozenPanelExecutionError(f"invalid physical cost evidence row: {component}")
+            authority = CostAuthority(str(row.get("authority")))
+            evidence[component] = CostComponentEvidence(
+                component=component,
+                value_usd=float(row.get("value_usd")),
+                authority=authority,
+                source_digest=_sha(
+                    f"physical cost source digest {component}", row.get("source_digest")
+                ),
+            )
+        certificate = certify_physical_trial_cost(trial_id=trial_id, evidence=evidence)
+    except (TypeError, ValueError, KeyError) as exc:
+        raise FrozenPanelExecutionError("invalid physical cost evidence") from exc
+    total = certificate.cost.total_operational_usd
+    if total > cap + 1e-12:
+        raise FrozenPanelExecutionError("certified physical cost exceeds frozen per-unit cap")
+    declared = response.get("actual_cost_usd")
+    if declared is not None:
+        try:
+            declared_value = float(declared)
+        except (TypeError, ValueError) as exc:
+            raise FrozenPanelExecutionError("declared actual_cost_usd must be numeric") from exc
+        if not math.isfinite(declared_value) or not math.isclose(
+            declared_value, total, rel_tol=0.0, abs_tol=1e-12
+        ):
+            raise FrozenPanelExecutionError("declared actual_cost_usd differs from certified physical cost")
+    model_row = evidence["model_usd"]
+    if model_row.value_usd > 0.0:
+        trace = response.get("trace")
+        if (
+            model_row.authority is not CostAuthority.PROVIDER_METER
+            or not isinstance(trace, Mapping)
+            or not str(trace.get("provider_request_id", "")).strip()
+        ):
+            raise FrozenPanelExecutionError(
+                "positive model cost requires PROVIDER_METER authority and provider_request_id"
+            )
+    return certificate
+
+
 def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str) -> dict[str, object]:
     policies = execution.get("governance_policies")
     if not isinstance(policies, list):
@@ -506,7 +568,12 @@ def execute_frozen_panel(
                     argv=argv, request=request, root=root, env=env, timeout=timeout
                 )
                 quality = _finite_probability("quality", response.get("quality"))
-                cost = _finite_cost(response.get("actual_cost_usd"), cap=spec.max_cost_per_unit_usd)
+                cost_certificate = _physical_cost_certificate(
+                    response=response,
+                    trial_id=f"{lease.unit.stable_id}::{lease.attempt}",
+                    cap=spec.max_cost_per_unit_usd,
+                )
+                cost = cost_certificate.cost.total_operational_usd
                 risk_response, risk_stdout, risk_stderr = _invoke_risk_endpoint(
                     manifest=risk_endpoint,
                     argv=risk_argv,
@@ -562,6 +629,20 @@ def execute_frozen_panel(
                 "risk_stdout_sha256": sha256_file(risk_stdout_path),
                 "risk_stderr_path": risk_stderr_path.relative_to(staging).as_posix(),
                 "risk_stderr_sha256": sha256_file(risk_stderr_path),
+                "physical_cost_certificate": {
+                    "trial_id": cost_certificate.trial_id,
+                    "digest": cost_certificate.digest,
+                    "components": [
+                        {
+                            "component": item.component,
+                            "value_usd": item.value_usd,
+                            "authority": item.authority.value,
+                            "source_digest": item.source_digest,
+                        }
+                        for item in cost_certificate.component_evidence
+                    ],
+                    "total_operational_usd": cost_certificate.cost.total_operational_usd,
+                },
             }
             _write_json(evidence_path, evidence_doc)
             evidence_digest = sha256_file(evidence_path)
@@ -571,6 +652,7 @@ def execute_frozen_panel(
                 "adapter_response_digest": response_digest,
                 "trace_digest": trace_digest,
                 "risk_endpoint_response_digest": risk_response_digest,
+                "physical_cost_certificate_digest": cost_certificate.digest,
             }
             try:
                 record = coordinator.commit(
