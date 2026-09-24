@@ -83,6 +83,7 @@ For each workload family produce SHA-256 content identities for:
 - environment/container images;
 - model IDs/versions and model manifest;
 - one global action catalog binding every action ID to exact Harbor agent/version + provider/model/version;
+- one common pre-outcome observation/probe builder shared across B0-B3 + DGC and bound into the comparison frame;
 - prompt/system policy;
 - tools;
 - maximum per-task budget;
@@ -91,6 +92,15 @@ For each workload family produce SHA-256 content identities for:
 - product statistical plan.
 
 Semantic labels such as `model-v1` are not evidence identities. `FrozenEvaluationHarness` requires lowercase SHA-256 manifests.
+
+### Common observation/probe rule
+
+The frozen observation builder must run before policy selection and expose exactly the same pre-outcome fields to every policy arm.
+
+- confirmatory labels, verifier results, rewards and ground truth are forbidden inputs;
+- static observation builders must run without network access;
+- a model-based common probe is allowed only when its action/model identity is frozen, its provider/tool traces are source-bound, and its cost is charged identically to every arm;
+- if these conditions are not met, the run fails closed before policy execution.
 
 ## 3. Fit B2 on calibration tasks only
 
