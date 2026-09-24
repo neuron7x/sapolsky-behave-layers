@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec
-from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.execution_manifest_freeze import (
+    EXECUTOR_REQUEST_SCHEMA,
+    verify_execution_manifest_freeze_document,
+)
 from cwc.governance.external_evidence_reference import verify_materialization_generation
 from cwc.governance.frozen_panel_executor import (
     FrozenPanelExecutionError,
@@ -21,7 +24,7 @@ from cwc.governance.frozen_panel_executor import (
     _physical_cost_certificate,
     _pricing_rate_cards,
     _provider_model_meter,
-    _request,
+    _policy_subject,
     _runtime_env,
     _write_json,
 )
@@ -60,6 +63,42 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise FrozenMechanismExecutionError(f"{name} must be lowercase SHA-256")
     return text
+
+
+def _mechanism_request(
+    *,
+    repository_root: Path,
+    execution: Mapping[str, object],
+    authority: Mapping[str, object],
+    lease,
+) -> dict[str, object]:
+    components = execution.get("components")
+    if not isinstance(components, list):
+        raise FrozenMechanismExecutionError(
+            "frozen execution component population missing"
+        )
+    try:
+        policy = _policy_subject(
+            root=repository_root,
+            execution=execution,
+            policy_id=lease.unit.policy_id,
+        )
+    except FrozenPanelExecutionError as exc:
+        raise FrozenMechanismExecutionError(str(exc)) from exc
+    return {
+        "schema": EXECUTOR_REQUEST_SCHEMA,
+        "authority_kind": "MECHANISM_EXECUTION",
+        "family_id": authority["family_id"],
+        "mechanism_authority_digest": authority["authority_digest"],
+        "distributed_spec_digest": authority["distributed_spec_digest"],
+        "materialization_reference_digest": execution[
+            "materialization_reference_digest"
+        ],
+        "unit": asdict(lease.unit),
+        "attempt": lease.attempt,
+        "frozen_components": components,
+        "governance_policy": policy,
+    }
 
 
 def execute_frozen_mechanism_panel(
@@ -174,10 +213,10 @@ def execute_frozen_mechanism_panel(
                     f"mechanism executor cannot claim remaining frozen units: {counts}"
                 )
             tick += 1
-            request = _request(
+            request = _mechanism_request(
                 repository_root=root,
                 execution=execution,
-                root_authority=authority,
+                authority=authority,
                 lease=lease,
             )
             attempt_id = hashlib.sha256(
