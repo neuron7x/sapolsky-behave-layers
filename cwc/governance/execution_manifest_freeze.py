@@ -14,11 +14,13 @@ SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_V1"
 INPUT_SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_INPUT_V1"
 REFERENCE_SCHEMA = "DGC_EXTERNAL_EVIDENCE_REFERENCE_V2"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_GIT_OID_RE = re.compile(r"^[0-9a-f]{40}$")
 _OCI_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MUTABLE_VERSION_ALIASES = frozenset({"latest", "default", "current", "stable", "production", "prod"})
 
 COMPONENT_SCHEMAS = {
     "action_catalog_manifest": "DGC_ACTION_CATALOG_MANIFEST_V1",
+    "benchmark_runtime_manifest": "DGC_BENCHMARK_RUNTIME_MANIFEST_V1",
     "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
     "observation_provider_manifest": "DGC_OBSERVATION_PROVIDER_MANIFEST_V1",
@@ -107,6 +109,44 @@ def _validate_model(payload: Mapping[str, object]) -> None:
         if identity in seen:
             raise ExecutionManifestError("duplicate model identity")
         seen.add(identity)
+
+
+def _validate_benchmark_runtime(payload: Mapping[str, object]) -> None:
+    _req("benchmark runtime family_id", payload.get("family_id"))
+    _req("benchmark runtime runtime_name", payload.get("runtime_name"))
+    version = _req("benchmark runtime runtime_version", payload.get("runtime_version"))
+    if version.lower() in _MUTABLE_VERSION_ALIASES:
+        raise ExecutionManifestError("mutable benchmark runtime version alias is prohibited")
+    _req("benchmark runtime repository", payload.get("repository"))
+    commit = _req("benchmark runtime repository_commit", payload.get("repository_commit")).lower()
+    tree = _req("benchmark runtime repository_tree", payload.get("repository_tree")).lower()
+    lock_blob = _req("benchmark runtime lock_file_blob_oid", payload.get("lock_file_blob_oid")).lower()
+    if _GIT_OID_RE.fullmatch(commit) is None:
+        raise ExecutionManifestError("benchmark runtime repository_commit must be a Git object id")
+    if _GIT_OID_RE.fullmatch(tree) is None:
+        raise ExecutionManifestError("benchmark runtime repository_tree must be a Git tree id")
+    if _GIT_OID_RE.fullmatch(lock_blob) is None:
+        raise ExecutionManifestError("benchmark runtime lock_file_blob_oid must be a Git blob id")
+    lock_path = Path(_req("benchmark runtime lock_file_path", payload.get("lock_file_path")))
+    if lock_path.is_absolute() or ".." in lock_path.parts:
+        raise ExecutionManifestError("benchmark runtime lock_file_path must be repository-relative")
+    invocation = payload.get("invocation")
+    if (
+        not isinstance(invocation, list)
+        or not invocation
+        or not all(isinstance(x, str) and x.strip() for x in invocation)
+    ):
+        raise ExecutionManifestError("benchmark runtime invocation must be a non-empty string list")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in invocation):
+        raise ExecutionManifestError("benchmark runtime invocation contains control characters")
+    env_name = _req(
+        "benchmark runtime root_environment_variable",
+        payload.get("root_environment_variable"),
+    )
+    if not env_name.replace("_", "").isalnum() or not env_name[0].isalpha():
+        raise ExecutionManifestError("benchmark runtime root_environment_variable is invalid")
+    if payload.get("local_materialization_required") is not True:
+        raise ExecutionManifestError("benchmark runtime must require local materialization")
 
 
 def _validate_action_catalog(payload: Mapping[str, object]) -> None:
@@ -383,6 +423,7 @@ def _validate_executor(payload: Mapping[str, object]) -> None:
 
 _VALIDATORS = {
     "action_catalog_manifest": _validate_action_catalog,
+    "benchmark_runtime_manifest": _validate_benchmark_runtime,
     "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
     "observation_provider_manifest": _validate_observation_provider,
@@ -547,6 +588,10 @@ def freeze_execution_manifests(
             bytes=path.stat().st_size,
             schema=COMPONENT_SCHEMAS[component],
         ))
+
+    runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
+    if runtime_family != family:
+        raise ExecutionManifestError("benchmark runtime family differs from execution family")
 
     action_rows = component_payloads["action_catalog_manifest"].get("actions")
     model_rows = component_payloads["model_manifest"].get("models")

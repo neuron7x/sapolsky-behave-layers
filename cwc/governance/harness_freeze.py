@@ -238,7 +238,7 @@ def build_harness_freeze(
         if isinstance(row, Mapping)
     }
     required_components = {
-        "action_catalog_manifest", "executor_manifest", "model_manifest", "observation_provider_manifest", "prompt_policy", "tool_manifest", "environment",
+        "action_catalog_manifest", "benchmark_runtime_manifest", "executor_manifest", "model_manifest", "observation_provider_manifest", "prompt_policy", "tool_manifest", "environment",
         "budget", "pricing_snapshot", "risk_endpoint_manifest", "scorer",
     }
     if set(components) != required_components:
@@ -260,6 +260,7 @@ def build_harness_freeze(
     for policy_id in sorted(governance):
         harness = FrozenEvaluationHarness(
             action_catalog_digest=components["action_catalog_manifest"],
+            benchmark_runtime_digest=components["benchmark_runtime_manifest"],
             model_manifest_digest=components["model_manifest"],
             observation_provider_digest=components["observation_provider_manifest"],
             prompt_policy_digest=components["prompt_policy"],
