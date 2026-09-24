@@ -21,6 +21,7 @@ COMPONENT_SCHEMAS = {
     "action_catalog_manifest": "DGC_ACTION_CATALOG_MANIFEST_V1",
     "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
+    "observation_provider_manifest": "DGC_OBSERVATION_PROVIDER_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
     "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
@@ -245,6 +246,10 @@ def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
         raise ExecutionManifestError("risk endpoint implementation path must be repository-relative")
 
 
+OBSERVATION_PROVIDER_PROTOCOL = "DGC_PREOUTCOME_OBSERVATION_PROTOCOL_V1"
+OBSERVATION_PROVIDER_REQUEST_SCHEMA = "DGC_PREOUTCOME_OBSERVATION_REQUEST_V1"
+OBSERVATION_PROVIDER_RESPONSE_SCHEMA = "DGC_PREOUTCOME_OBSERVATION_RESPONSE_V1"
+
 RISK_ENDPOINT_PROTOCOL = "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1"
 RISK_ENDPOINT_REQUEST_SCHEMA = "DGC_RISK_ENDPOINT_REQUEST_V1"
 RISK_ENDPOINT_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
@@ -314,6 +319,41 @@ def _validate_policy_config(
         raise ExecutionManifestError(f"{policy_id}: observation contract digest does not match config")
 
 
+def _validate_observation_provider(payload: Mapping[str, object]) -> None:
+    if payload.get("protocol") != OBSERVATION_PROVIDER_PROTOCOL:
+        raise ExecutionManifestError("observation provider protocol identity mismatch")
+    if payload.get("request_schema") != OBSERVATION_PROVIDER_REQUEST_SCHEMA:
+        raise ExecutionManifestError("observation provider request schema identity mismatch")
+    if payload.get("response_schema") != OBSERVATION_PROVIDER_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("observation provider response schema identity mismatch")
+    implementation = _req("observation provider implementation_path", payload.get("implementation_path"))
+    _sha("observation provider implementation_sha256", payload.get("implementation_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("observation provider argv must be a non-empty string list")
+    if implementation not in argv:
+        raise ExecutionManifestError("observation provider argv must contain the frozen implementation path")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("observation provider argv contains forbidden control characters")
+    timeout = _finite_nonnegative("observation provider timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("observation provider timeout_seconds must be > 0")
+    fields = payload.get("output_fields")
+    if not isinstance(fields, list) or not fields or not all(isinstance(x, str) and x.strip() for x in fields):
+        raise ExecutionManifestError("observation provider output_fields must be a non-empty string list")
+    normalized = [x.strip() for x in fields]
+    if normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("observation provider output_fields must be sorted and unique")
+    if payload.get("network_access_allowed") is not False:
+        raise ExecutionManifestError("observation provider network access must be prohibited")
+    if payload.get("confirmatory_label_access") is not False:
+        raise ExecutionManifestError("observation provider confirmatory label access must be prohibited")
+    if payload.get("post_outcome_access_allowed") is not False:
+        raise ExecutionManifestError("observation provider post-outcome access must be prohibited")
+    if implementation.startswith("/") or ".." in Path(implementation).parts:
+        raise ExecutionManifestError("observation provider implementation path must be repository-relative")
+
+
 def _validate_executor(payload: Mapping[str, object]) -> None:
     if payload.get("protocol") != EXECUTOR_PROTOCOL:
         raise ExecutionManifestError("executor protocol identity mismatch")
@@ -345,6 +385,7 @@ _VALIDATORS = {
     "action_catalog_manifest": _validate_action_catalog,
     "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
+    "observation_provider_manifest": _validate_observation_provider,
     "prompt_policy": _validate_prompt,
     "tool_manifest": _validate_tools,
     "environment": _validate_environment,
@@ -477,6 +518,18 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("executor entrypoint bytes differ from frozen SHA-256")
             if entrypoint_rel not in payload.get("argv", []):
                 raise ExecutionManifestError("executor argv entrypoint is not canonical repository-relative path")
+        if component == "observation_provider_manifest":
+            implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
+            if sha256_file(implementation) != _sha(
+                "observation provider implementation_sha256", payload.get("implementation_sha256")
+            ):
+                raise ExecutionManifestError("observation provider implementation bytes differ from frozen SHA-256")
+            if implementation_rel != str(payload.get("implementation_path")):
+                raise ExecutionManifestError("observation provider implementation path is non-canonical")
+            if implementation_rel not in payload.get("argv", []):
+                raise ExecutionManifestError(
+                    "observation provider argv implementation is not canonical repository-relative path"
+                )
         if component == "risk_endpoint_manifest":
             implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
             if sha256_file(implementation) != _sha(
@@ -612,6 +665,12 @@ def freeze_execution_manifests(
         )
     if len({row.observation_contract_digest for row in policies}) != 1:
         raise ExecutionManifestError("all governance policies must share one admissible observation contract")
+    frozen_observation_contract_digest = next(iter({row.observation_contract_digest for row in policies}))
+    provider_fields = component_payloads["observation_provider_manifest"].get("output_fields")
+    if policy_observation_contract_digest(provider_fields) != frozen_observation_contract_digest:
+        raise ExecutionManifestError(
+            "observation provider output fields differ from governance observation contract"
+        )
 
     try:
         plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
