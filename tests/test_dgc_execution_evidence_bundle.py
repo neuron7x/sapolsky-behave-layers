@@ -17,7 +17,11 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
-from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
+from cwc.governance.provider_trace import (
+    ProviderCallIdKind,
+    ProviderUsageTrace,
+    TraceAuthority,
+)
 
 
 def h(char: str) -> str:
@@ -147,7 +151,7 @@ def make_bundle(tmp_path: Path):
         assert lease is not None
         tick += 1
         actual_cost = 0.6 - 0.2 * index
-        provider_request_id = f"req-{policy}"
+        provider_call_id = f"req-{policy}"
         raw_provider_trace = {
             "trace_id": f"trace-{lease.unit.stable_id}",
             "decision_id": lease.unit.stable_id,
@@ -162,7 +166,8 @@ def make_bundle(tmp_path: Path):
             "cache_write_tokens": 0,
             "long_cache_write_tokens": 0,
             "output_tokens": 0,
-            "provider_request_id": provider_request_id,
+            "provider_call_id": provider_call_id,
+            "provider_call_id_kind": "PROVIDER_RESPONSE_ID",
         }
         provider_trace = ProviderUsageTrace(
             trace_id=raw_provider_trace["trace_id"],
@@ -177,7 +182,8 @@ def make_bundle(tmp_path: Path):
             cache_write_tokens=0,
             long_cache_write_tokens=0,
             output_tokens=0,
-            provider_request_id=provider_request_id,
+            provider_call_id=provider_call_id,
+            provider_call_id_kind=ProviderCallIdKind.PROVIDER_RESPONSE_ID,
         )
         metered = provider_trace.meter(rate_card)
         provider_trace_doc = {
@@ -186,7 +192,8 @@ def make_bundle(tmp_path: Path):
             "decision_id": provider_trace.decision_id,
             "policy_id": provider_trace.policy_id,
             "authority": provider_trace.authority.value,
-            "provider_request_id": provider_trace.provider_request_id,
+            "provider_call_id": provider_trace.provider_call_id,
+            "provider_call_id_kind": provider_trace.provider_call_id_kind.value,
             "provider": provider_trace.provider,
             "model": provider_trace.model,
             "model_version": "2026-08-23-r1",
@@ -208,7 +215,10 @@ def make_bundle(tmp_path: Path):
             "quality": 0.8 + 0.1 * index,
             "actual_cost_usd": actual_cost,
             "provider_usage_traces": [raw_provider_trace],
-            "trace": {"provider_request_id": provider_request_id},
+            "trace": {
+                "provider_call_id": provider_call_id,
+                "provider_call_id_kind": "PROVIDER_RESPONSE_ID",
+            },
         }
         adapter_digest = sha256_bytes(canonical_json_bytes(adapter_response))
         trace_digest = sha256_bytes(canonical_json_bytes(adapter_response["trace"]))
