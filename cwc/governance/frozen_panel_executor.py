@@ -902,6 +902,8 @@ def execute_frozen_panel(
         verify_execution_bundle(
             staging,
             confirmatory_root_authority_path=Path(confirmatory_root_authority_path),
+            execution_manifest_freeze_path=Path(execution_manifest_freeze_path),
+            repository_root=root,
         )
         os.replace(staging, final)
         return final
