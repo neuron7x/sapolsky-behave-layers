@@ -9,6 +9,7 @@ import pytest
 import cwc.governance.execution_evidence_bundle as bundle_module
 import cwc.governance.frozen_panel_executor as executor_module
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.execution_evidence_bundle import verify_execution_bundle
 from cwc.governance.frozen_panel_executor import FrozenPanelExecutionError, execute_frozen_panel
 from cwc.governance.materialization_transaction import sha256_file
@@ -32,35 +33,42 @@ class _Reference:
 
 def _adapter_source(
     *,
+    rate_card_digest: str,
     valid: bool = True,
     incomplete_cost: bool = False,
     mismatched_cost: bool = False,
+    bad_rate_card: bool = False,
 ) -> str:
     trace = '{"provider_request_id":"req-" + req["unit"]["policy_id"]}' if valid else "{}"
     components = [
-        "model_usd", "router_usd", "countermodel_usd", "retrieval_usd", "tools_usd",
+        "router_usd", "countermodel_usd", "retrieval_usd", "tools_usd",
         "verification_usd", "human_review_usd", "infra_usd", "retry_usd", "failure_loss_usd",
     ]
     if incomplete_cost:
         components = components[:-1]
     rows = []
     for name in components:
-        value = 0.25 if name == "model_usd" else 0.0
-        authority = "PROVIDER_METER" if name == "model_usd" else "ZERO_BY_CONTRACT"
         rows.append(
             repr(name)
             + ": {"
-            + repr("value_usd") + ": " + repr(value) + ", "
-            + repr("authority") + ": " + repr(authority) + ", "
+            + repr("value_usd") + ": 0.0, "
+            + repr("authority") + ": " + repr("ZERO_BY_CONTRACT") + ", "
             + repr("source_digest") + ": " + repr("a" * 64)
             + "}"
         )
     cost_literal = "{" + ", ".join(rows) + "}"
     declared_cost = 0.5 if mismatched_cost else 0.25
+    frozen_rate = "f" * 64 if bad_rate_card else rate_card_digest
     return f"""
 import json
 import sys
 req = json.load(sys.stdin)
+decision_id = (
+    req["unit"]["task_id"] + "::"
+    + req["unit"]["policy_id"] + "::"
+    + str(req["unit"]["replicate"])
+)
+provider_request_id = "req-" + req["unit"]["policy_id"]
 response = {{
     "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
     "unit": req["unit"],
@@ -69,36 +77,82 @@ response = {{
     "catastrophic_regret": 0.99,
     "risk_signal": 0.1,
     "actual_cost_usd": {declared_cost},
+    "provider_usage_traces": [{{
+        "trace_id": "trace-" + decision_id,
+        "decision_id": decision_id,
+        "policy_id": req["unit"]["policy_id"],
+        "authority": "PROVIDER_LIVE",
+        "provider": "provider",
+        "model": "model",
+        "model_version": "2026-08-23-r1",
+        "rate_card_digest": "{frozen_rate}",
+        "input_tokens": 250000,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "long_cache_write_tokens": 0,
+        "output_tokens": 0,
+        "provider_request_id": provider_request_id,
+    }}],
     "physical_cost_evidence": {cost_literal},
     "trace": {trace},
 }}
 sys.stdout.write(json.dumps(response, sort_keys=True))
 """
-
-
 def _subjects(
     tmp_path: Path,
     *,
     valid_adapter: bool = True,
     incomplete_cost: bool = False,
     mismatched_cost: bool = False,
+    bad_rate_card: bool = False,
 ):
     repo = tmp_path / "repo"
     repo.mkdir()
     scripts = repo / "scripts"
     scripts.mkdir()
+    rate_card = ProviderRateCard(
+        provider="provider",
+        model="model",
+        input_usd_per_million=1.0,
+        cached_input_usd_per_million=0.1,
+        cache_write_usd_per_million=1.25,
+        long_cache_write_usd_per_million=1.25,
+        output_usd_per_million=2.0,
+        source_uri="https://example.invalid/provider/model/pricing",
+        retrieved_at="2026-08-23T00:00:00Z",
+    )
     adapter = scripts / "fixture_adapter.py"
     adapter.write_text(
         _adapter_source(
+            rate_card_digest=rate_card.digest,
             valid=valid_adapter,
             incomplete_cost=incomplete_cost,
             mismatched_cost=mismatched_cost,
+            bad_rate_card=bad_rate_card,
         ),
         encoding="utf-8",
     )
 
     manifest_dir = repo / "manifests"
     manifest_dir.mkdir()
+    pricing_manifest = manifest_dir / "pricing.json"
+    pricing_doc = {
+        "schema": "DGC_PRICING_SNAPSHOT_V1",
+        "captured_at": "2026-08-23T00:00:00Z",
+        "entries": [{
+            "provider": "provider",
+            "model_id": "model",
+            "model_version": "2026-08-23-r1",
+            "currency": "USD",
+            "source_uri": "https://example.invalid/provider/model/pricing",
+            "input_per_million": 1.0,
+            "cached_input_per_million": 0.1,
+            "cache_write_per_million": 1.25,
+            "long_cache_write_per_million": 1.25,
+            "output_per_million": 2.0,
+        }],
+    }
+    pricing_manifest.write_text(json.dumps(pricing_doc), encoding="utf-8")
     executor_manifest = manifest_dir / "executor.json"
     executor_doc = {
         "schema": "DGC_EXECUTOR_MANIFEST_V1",
@@ -205,6 +259,13 @@ sys.stdout.write(json.dumps(response, sort_keys=True))
                 "sha256": sha256_file(executor_manifest),
                 "bytes": executor_manifest.stat().st_size,
                 "schema": "DGC_EXECUTOR_MANIFEST_V1",
+            },
+            {
+                "component": "pricing_snapshot",
+                "path": "manifests/pricing.json",
+                "sha256": sha256_file(pricing_manifest),
+                "bytes": pricing_manifest.stat().st_size,
+                "schema": "DGC_PRICING_SNAPSHOT_V1",
             },
             {
                 "component": "risk_endpoint_manifest",
@@ -365,6 +426,27 @@ def test_declared_cost_mismatch_fails_closed(
 ):
     repo, _, execution, harness, authority, materialization = _subjects(
         tmp_path, mismatched_cost=True
+    )
+    _patch(monkeypatch, execution, harness, authority)
+    output = tmp_path / "bundle"
+    with pytest.raises(FrozenPanelExecutionError, match="cannot claim remaining frozen units"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=output,
+        )
+    assert not output.exists()
+
+
+def test_unfrozen_provider_rate_card_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(
+        tmp_path, bad_rate_card=True
     )
     _patch(monkeypatch, execution, harness, authority)
     output = tmp_path / "bundle"
