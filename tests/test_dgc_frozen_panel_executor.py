@@ -30,8 +30,33 @@ class _Reference:
         return _Binding()
 
 
-def _adapter_source(*, valid: bool = True) -> str:
+def _adapter_source(
+    *,
+    valid: bool = True,
+    incomplete_cost: bool = False,
+    mismatched_cost: bool = False,
+) -> str:
     trace = '{"provider_request_id":"req-" + req["unit"]["policy_id"]}' if valid else "{}"
+    components = [
+        "model_usd", "router_usd", "countermodel_usd", "retrieval_usd", "tools_usd",
+        "verification_usd", "human_review_usd", "infra_usd", "retry_usd", "failure_loss_usd",
+    ]
+    if incomplete_cost:
+        components = components[:-1]
+    rows = []
+    for name in components:
+        value = 0.25 if name == "model_usd" else 0.0
+        authority = "PROVIDER_METER" if name == "model_usd" else "ZERO_BY_CONTRACT"
+        rows.append(
+            repr(name)
+            + ": {"
+            + repr("value_usd") + ": " + repr(value) + ", "
+            + repr("authority") + ": " + repr(authority) + ", "
+            + repr("source_digest") + ": " + repr("a" * 64)
+            + "}"
+        )
+    cost_literal = "{" + ", ".join(rows) + "}"
+    declared_cost = 0.5 if mismatched_cost else 0.25
     return f"""
 import json
 import sys
@@ -43,20 +68,34 @@ response = {{
     "quality": 0.8,
     "catastrophic_regret": 0.99,
     "risk_signal": 0.1,
-    "actual_cost_usd": 0.25,
+    "actual_cost_usd": {declared_cost},
+    "physical_cost_evidence": {cost_literal},
     "trace": {trace},
 }}
 sys.stdout.write(json.dumps(response, sort_keys=True))
 """
 
 
-def _subjects(tmp_path: Path, *, valid_adapter: bool = True):
+def _subjects(
+    tmp_path: Path,
+    *,
+    valid_adapter: bool = True,
+    incomplete_cost: bool = False,
+    mismatched_cost: bool = False,
+):
     repo = tmp_path / "repo"
     repo.mkdir()
     scripts = repo / "scripts"
     scripts.mkdir()
     adapter = scripts / "fixture_adapter.py"
-    adapter.write_text(_adapter_source(valid=valid_adapter), encoding="utf-8")
+    adapter.write_text(
+        _adapter_source(
+            valid=valid_adapter,
+            incomplete_cost=incomplete_cost,
+            mismatched_cost=mismatched_cost,
+        ),
+        encoding="utf-8",
+    )
 
     manifest_dir = repo / "manifests"
     manifest_dir.mkdir()
@@ -298,6 +337,48 @@ def test_risk_implementation_byte_drift_is_rejected_before_execution(
             source_registry_path=tmp_path / "registry.json",
             output_root=tmp_path / "bundle",
         )
+
+
+def test_incomplete_physical_cost_evidence_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(
+        tmp_path, incomplete_cost=True
+    )
+    _patch(monkeypatch, execution, harness, authority)
+    output = tmp_path / "bundle"
+    with pytest.raises(FrozenPanelExecutionError, match="cannot claim remaining frozen units"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=output,
+        )
+    assert not output.exists()
+
+
+def test_declared_cost_mismatch_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(
+        tmp_path, mismatched_cost=True
+    )
+    _patch(monkeypatch, execution, harness, authority)
+    output = tmp_path / "bundle"
+    with pytest.raises(FrozenPanelExecutionError, match="cannot claim remaining frozen units"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=output,
+        )
+    assert not output.exists()
 
 
 def test_invalid_adapter_evidence_fails_closed_without_publishing_bundle(
