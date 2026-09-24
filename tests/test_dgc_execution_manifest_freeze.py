@@ -108,6 +108,8 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
             {
                 "action_id": "DEEP",
                 "harbor_agent": "agent-deep",
+                "harbor_agent_argument": "acp:agent-deep@1.0.0",
+                "harbor_model_argument": "provider/model",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model",
@@ -116,6 +118,8 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
             {
                 "action_id": "STANDARD",
                 "harbor_agent": "agent-standard",
+                "harbor_agent_argument": "acp:agent-standard@1.0.0",
+                "harbor_model_argument": "provider/model",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model",
@@ -636,6 +640,23 @@ def test_action_catalog_model_outside_frozen_model_manifest_is_rejected(tmp_path
     doc["actions"][0]["model_id"] = "unfrozen-model"
     _write(catalog, doc)
     with pytest.raises(ExecutionManifestError, match="outside the frozen model manifest"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_action_catalog_requires_exact_harbor_cli_arguments(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    catalog = repo / components["action_catalog_manifest"]
+    doc = json.loads(catalog.read_text())
+    doc["actions"][0]["harbor_agent_argument"] = ""
+    _write(catalog, doc)
+    with pytest.raises(ExecutionManifestError, match="action.harbor_agent_argument required"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
