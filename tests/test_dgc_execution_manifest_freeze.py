@@ -135,11 +135,17 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "endpoint_name": "catastrophic_regret",
         "scale": "[0,1]",
         "semantics_version": "test-v1",
+        "protocol": "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1",
+        "request_schema": "DGC_RISK_ENDPOINT_REQUEST_V1",
+        "response_schema": "DGC_RISK_ENDPOINT_RESPONSE_V1",
         "implementation_path": risk_impl.relative_to(repo).as_posix(),
         "implementation_sha256": sha256_file(risk_impl),
+        "argv": ["python", risk_impl.relative_to(repo).as_posix()],
+        "timeout_seconds": 5,
         "source_fields": ["risk"],
         "policy_outcome_independent_definition": True,
         "post_outcome_relabeling_allowed": False,
+        "network_access_allowed": False,
     })
     _write(paths["scorer"], {
         "schema": "DGC_SCORER_MANIFEST_V1",
@@ -280,6 +286,23 @@ def test_risk_endpoint_post_outcome_relabeling_is_rejected(tmp_path: Path):
     doc["post_outcome_relabeling_allowed"] = True
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="post-outcome risk relabeling"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_risk_endpoint_network_access_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["risk_endpoint_manifest"]
+    doc = json.loads(manifest.read_text())
+    doc["network_access_allowed"] = True
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="prohibit network access"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
