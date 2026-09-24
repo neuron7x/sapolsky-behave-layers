@@ -112,7 +112,7 @@ def _write_harbor_trial(
     *,
     metadata: dict | None = None,
     model_name: str = "model",
-    provider_request_id: str | None = "req-1",
+    provider_call_id: str | None = "req-1",
 ):
     jobs_dir = Path(command[command.index("--jobs-dir") + 1])
     job_name = command[command.index("--job-name") + 1]
@@ -132,7 +132,8 @@ def _write_harbor_trial(
         "cache_write_tokens": 0,
         "long_cache_write_tokens": 0,
         "output_tokens": 10,
-        "provider_request_id": provider_request_id,
+        "provider_call_id": provider_call_id,
+        "provider_call_id_kind": "PROVIDER_RESPONSE_ID",
     }]
     if metadata is None:
         metadata = {
@@ -200,7 +201,8 @@ def test_adapter_executes_exact_frozen_harbor_action(
     assert response["schema"] == "DGC_UNIT_EXECUTION_RESPONSE_V1"
     assert response["quality"] == pytest.approx(1.0)
     assert response["unit"] == request["unit"]
-    assert response["provider_usage_traces"][0]["provider_request_id"] == "req-1"
+    assert response["provider_usage_traces"][0]["provider_call_id"] == "req-1"
+    assert response["provider_usage_traces"][0]["provider_call_id_kind"] == "PROVIDER_RESPONSE_ID"
     assert response["trace"]["action"]["action_id"] == "STANDARD"
     assert len(response["trace"]["harbor_command_digest"]) == 64
 
@@ -226,18 +228,49 @@ def test_missing_dgc_agent_metadata_fails_closed(
         )
 
 
-def test_missing_real_provider_request_id_fails_closed(
+def test_missing_real_provider_call_id_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
     _patch_stack(monkeypatch, runtime_root)
 
     def run(command, **kwargs):
-        _write_harbor_trial(list(command), provider_request_id=None)
+        _write_harbor_trial(list(command), provider_call_id=None)
         return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
 
     monkeypatch.setattr(adapter.subprocess, "run", run)
-    with pytest.raises(TerminalHarborAdapterError, match="real provider_request_id"):
+    with pytest.raises(TerminalHarborAdapterError, match="real provider_call_id"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+
+
+def test_untyped_provider_call_id_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+
+    def run(command, **kwargs):
+        _write_harbor_trial(list(command))
+        jobs_dir = Path(command[command.index("--jobs-dir") + 1])
+        job_name = command[command.index("--job-name") + 1]
+        result_path = next(
+            p / "result.json"
+            for p in (jobs_dir / job_name).iterdir()
+            if p.is_dir()
+        )
+        doc = json.loads(result_path.read_text())
+        del doc["agent_result"]["metadata"]["dgc_provider_usage_traces"][0]["provider_call_id_kind"]
+        result_path.write_text(json.dumps(doc), encoding="utf-8")
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(TerminalHarborAdapterError, match="trusted provider_call_id_kind"):
         execute_terminal_harbor_unit(
             request=request,
             repository_root=repo,
@@ -289,7 +322,7 @@ def test_missing_physical_cost_evidence_fails_closed(
                     "rate_card_digest": "c" * 64,
                     "input_tokens": 100,
                     "output_tokens": 10,
-                    "provider_request_id": "req-1",
+                    "provider_call_id": "req-1",
                 }]
             },
         )
