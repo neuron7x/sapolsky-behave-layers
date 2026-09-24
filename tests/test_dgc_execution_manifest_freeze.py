@@ -8,6 +8,8 @@ import pytest
 from cwc.governance.execution_manifest_freeze import (
     ExecutionManifestError,
     freeze_execution_manifests,
+    policy_action_catalog_digest,
+    policy_observation_contract_digest,
     verify_execution_manifest_freeze_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
@@ -166,7 +168,13 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         implementation.parent.mkdir(parents=True, exist_ok=True)
         implementation.write_text(f"POLICY_ID = {policy_id!r}\n", encoding="utf-8")
         config = repo / "policies" / f"{policy_id}.json"
-        config.write_text(json.dumps({"policy_id": policy_id}, sort_keys=True) + "\n", encoding="utf-8")
+        config_doc = {
+            "schema": "DGC_GOVERNANCE_POLICY_CONFIG_V1",
+            "policy_id": policy_id,
+            "action_ids": ["DEEP", "STANDARD"],
+            "observation_fields": ["budget_remaining", "initial_uncertainty", "step_index"],
+        }
+        config.write_text(json.dumps(config_doc, sort_keys=True) + "\n", encoding="utf-8")
         path = base / f"policy-{policy_id}.json"
         _write(path, {
             "schema": "DGC_GOVERNANCE_POLICY_MANIFEST_V1",
@@ -188,8 +196,10 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
                 config.relative_to(repo).as_posix(),
             ],
             "timeout_seconds": 5,
-            "action_catalog_digest": _h("c"),
-            "observation_contract_digest": _h("d"),
+            "action_catalog_digest": policy_action_catalog_digest(config_doc["action_ids"]),
+            "observation_contract_digest": policy_observation_contract_digest(
+                config_doc["observation_fields"]
+            ),
         })
         policies[policy_id] = path.relative_to(repo).as_posix()
     return {key: path.relative_to(repo).as_posix() for key, path in paths.items()}, policies
@@ -261,7 +271,12 @@ def test_governance_action_catalog_drift_is_rejected(tmp_path: Path):
     components, policies = _manifests(repo)
     manifest = repo / policies["DGC"]
     doc = json.loads(manifest.read_text())
-    doc["action_catalog_digest"] = _h("e")
+    config = repo / doc["config_path"]
+    config_doc = json.loads(config.read_text())
+    config_doc["action_ids"] = ["DEEP", "STANDARD", "ULTRA"]
+    _write(config, config_doc)
+    doc["config_sha256"] = sha256_file(config)
+    doc["action_catalog_digest"] = policy_action_catalog_digest(config_doc["action_ids"])
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="share one frozen action catalog"):
         freeze_execution_manifests(
@@ -278,9 +293,47 @@ def test_governance_observation_contract_drift_is_rejected(tmp_path: Path):
     components, policies = _manifests(repo)
     manifest = repo / policies["DGC"]
     doc = json.loads(manifest.read_text())
-    doc["observation_contract_digest"] = _h("e")
+    config = repo / doc["config_path"]
+    config_doc = json.loads(config.read_text())
+    config_doc["observation_fields"] = [
+        "budget_remaining",
+        "initial_uncertainty",
+        "model_disagreement",
+        "step_index",
+    ]
+    _write(config, config_doc)
+    doc["config_sha256"] = sha256_file(config)
+    doc["observation_contract_digest"] = policy_observation_contract_digest(
+        config_doc["observation_fields"]
+    )
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="share one admissible observation contract"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_observation_contract_cannot_include_confirmatory_label(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / policies["DGC"]
+    doc = json.loads(manifest.read_text())
+    config = repo / doc["config_path"]
+    config_doc = json.loads(config.read_text())
+    config_doc["observation_fields"] = [
+        "budget_remaining",
+        "ground_truth",
+        "initial_uncertainty",
+        "step_index",
+    ]
+    _write(config, config_doc)
+    doc["config_sha256"] = sha256_file(config)
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="leaks confirmatory outcomes"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
