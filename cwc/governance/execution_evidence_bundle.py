@@ -202,6 +202,9 @@ def _strict_execution_lineage(
     pricing_path = _safe_repository_subject(repo_root, by_name["pricing_snapshot"].get("path"))
     if sha256_file(pricing_path) != pricing_sha:
         raise ExecutionEvidenceError("repository pricing bytes differ from execution freeze")
+    risk_path = _safe_repository_subject(repo_root, by_name["risk_endpoint_manifest"].get("path"))
+    if sha256_file(risk_path) != risk_sha:
+        raise ExecutionEvidenceError("repository risk endpoint bytes differ from execution freeze")
     pricing_doc = _json(pricing_path, schema="DGC_PRICING_SNAPSHOT_V1")
     captured_at = _req("pricing captured_at", pricing_doc.get("captured_at"))
     entries = pricing_doc.get("entries")
