@@ -728,9 +728,13 @@ def execute_frozen_panel(
             ).hexdigest()[:24]
             transcript_dir = staging / "transcripts" / attempt_id
             transcript_dir.mkdir(parents=True, exist_ok=True)
+            unit_runtime_root = transcript_dir / "runtime"
+            unit_runtime_root.mkdir(parents=True, exist_ok=False)
+            unit_env = dict(env)
+            unit_env["DGC_UNIT_RUNTIME_ROOT"] = str(unit_runtime_root)
             try:
                 response, stdout, stderr = _invoke(
-                    argv=argv, request=request, root=root, env=env, timeout=timeout
+                    argv=argv, request=request, root=root, env=unit_env, timeout=timeout
                 )
                 quality = _finite_probability("quality", response.get("quality"))
                 (
@@ -792,6 +796,7 @@ def execute_frozen_panel(
                 ),
                 "executor_entrypoint_sha256": executor["entrypoint_sha256"],
                 "argv": list(argv),
+                "unit_runtime_root": unit_runtime_root.relative_to(staging).as_posix(),
                 "stdout_path": stdout_path.relative_to(staging).as_posix(),
                 "stdout_sha256": sha256_file(stdout_path),
                 "stderr_path": stderr_path.relative_to(staging).as_posix(),
