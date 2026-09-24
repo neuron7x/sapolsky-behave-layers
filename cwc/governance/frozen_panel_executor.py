@@ -237,7 +237,7 @@ def _provider_model_meter(
     trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
     used_cards: dict[str, dict[str, object]] = {}
-    request_ids: set[str] = set()
+    correlation_ids: set[tuple[str, str]] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise FrozenPanelExecutionError("invalid provider usage trace row")
@@ -251,8 +251,21 @@ def _provider_model_meter(
         if card is None:
             raise FrozenPanelExecutionError("provider usage trace has no exact frozen rate card")
         request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise FrozenPanelExecutionError("live provider usage requires real provider_request_id")
+        response_id_raw = raw.get("provider_response_id")
+        request_id = (
+            request_id_raw.strip()
+            if isinstance(request_id_raw, str) and request_id_raw.strip()
+            else None
+        )
+        response_id = (
+            response_id_raw.strip()
+            if isinstance(response_id_raw, str) and response_id_raw.strip()
+            else None
+        )
+        if bool(request_id) == bool(response_id):
+            raise FrozenPanelExecutionError(
+                "live provider usage requires exactly one provider_request_id or provider_response_id"
+            )
         try:
             trace = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -267,7 +280,8 @@ def _provider_model_meter(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_request_id=request_id,
+                provider_response_id=response_id,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise FrozenPanelExecutionError("malformed provider usage trace") from exc
@@ -277,10 +291,14 @@ def _provider_model_meter(
             raise FrozenPanelExecutionError("provider trace decision/policy identity mismatch")
         if trace.rate_card_digest != card.digest:
             raise FrozenPanelExecutionError("provider trace rate-card digest mismatch")
-        request_id = str(trace.provider_request_id)
-        if request_id in request_ids:
-            raise FrozenPanelExecutionError("duplicate provider_request_id in one work unit")
-        request_ids.add(request_id)
+        correlation_kind = trace.provider_correlation_kind
+        correlation_id = trace.provider_correlation_id
+        if correlation_kind is None or correlation_id is None:
+            raise FrozenPanelExecutionError("live provider usage lacks correlation identity")
+        correlation_key = (correlation_kind, correlation_id)
+        if correlation_key in correlation_ids:
+            raise FrozenPanelExecutionError("duplicate provider correlation id in one work unit")
+        correlation_ids.add(correlation_key)
         metered = trace.meter(card)
         trace_doc = {
             "trace_digest": trace.digest,
@@ -289,6 +307,8 @@ def _provider_model_meter(
             "policy_id": trace.policy_id,
             "authority": trace.authority.value,
             "provider_request_id": trace.provider_request_id,
+            "provider_response_id": trace.provider_response_id,
+            "provider_correlation_kind": trace.provider_correlation_kind,
             "provider": trace.provider,
             "model": trace.model,
             "model_version": model_version,
