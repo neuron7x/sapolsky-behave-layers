@@ -538,6 +538,42 @@ def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str)
     manifest = _json(manifest_path, schema="DGC_GOVERNANCE_POLICY_MANIFEST_V1")
     if str(manifest.get("policy_id", "")) != policy_id:
         raise FrozenPanelExecutionError("governance policy manifest id mismatch")
+    if manifest.get("protocol") != "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1":
+        raise FrozenPanelExecutionError("governance policy protocol mismatch")
+    if manifest.get("request_schema") != "DGC_POLICY_DECISION_REQUEST_V1":
+        raise FrozenPanelExecutionError("governance policy request schema mismatch")
+    if manifest.get("response_schema") != "DGC_POLICY_DECISION_RESPONSE_V1":
+        raise FrozenPanelExecutionError("governance policy response schema mismatch")
+    if manifest.get("state_protocol") != "STATE_IN_REQUEST_ONLY":
+        raise FrozenPanelExecutionError("governance policy hidden state prohibited")
+    if manifest.get("network_access_allowed") is not False:
+        raise FrozenPanelExecutionError("governance policy network access prohibited")
+    if manifest.get("confirmatory_label_access") is not False:
+        raise FrozenPanelExecutionError("governance policy confirmatory label access prohibited")
+    argv = manifest.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise FrozenPanelExecutionError("governance policy argv malformed")
+    try:
+        timeout = float(manifest.get("timeout_seconds"))
+    except (TypeError, ValueError) as exc:
+        raise FrozenPanelExecutionError("governance policy timeout malformed") from exc
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise FrozenPanelExecutionError("governance policy timeout must be > 0")
+    for field in ("action_catalog_digest", "observation_contract_digest"):
+        observed = _sha(f"governance {field}", manifest.get(field))
+        if row.get(field) != observed:
+            raise FrozenPanelExecutionError(f"governance {field} differs from execution freeze")
+    if row.get("protocol") != manifest.get("protocol"):
+        raise FrozenPanelExecutionError("governance protocol differs from execution freeze")
+    frozen_argv = row.get("argv")
+    if not isinstance(frozen_argv, list) or frozen_argv != argv:
+        raise FrozenPanelExecutionError("governance argv differs from execution freeze")
+    try:
+        frozen_timeout = float(row.get("timeout_seconds"))
+    except (TypeError, ValueError) as exc:
+        raise FrozenPanelExecutionError("frozen governance timeout malformed") from exc
+    if not math.isclose(frozen_timeout, timeout, rel_tol=0.0, abs_tol=1e-12):
+        raise FrozenPanelExecutionError("governance timeout differs from execution freeze")
     for kind in ("implementation", "config"):
         path_key = f"{kind}_path"
         sha_key = f"{kind}_sha256"
@@ -549,6 +585,8 @@ def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str)
             raise FrozenPanelExecutionError(f"governance {kind} lineage differs from execution freeze")
     if row.get("path") != manifest_rel:
         raise FrozenPanelExecutionError("governance policy path is non-canonical")
+    if str(manifest.get("implementation_path")) not in argv or str(manifest.get("config_path")) not in argv:
+        raise FrozenPanelExecutionError("governance argv lost implementation/config identity")
     return row
 
 
