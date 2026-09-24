@@ -123,8 +123,16 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "schema": "DGC_PRICING_SNAPSHOT_V1",
         "captured_at": "2026-08-23T00:00:00Z",
         "entries": [{
-            "provider": "provider", "model_id": "model", "currency": "USD",
-            "input_per_million": 1.0, "output_per_million": 2.0,
+            "provider": "provider",
+            "model_id": "model",
+            "model_version": "2026-08-23-r1",
+            "currency": "USD",
+            "source_uri": "https://example.invalid/provider/model/pricing",
+            "input_per_million": 1.0,
+            "cached_input_per_million": 0.1,
+            "cache_write_per_million": 1.25,
+            "long_cache_write_per_million": 1.25,
+            "output_per_million": 2.0,
         }],
     })
     risk_impl = repo / "metrics" / "catastrophic_regret.py"
@@ -303,6 +311,40 @@ def test_risk_endpoint_network_access_is_rejected(tmp_path: Path):
     doc["network_access_allowed"] = True
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="prohibit network access"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_pricing_model_identity_drift_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    pricing = repo / components["pricing_snapshot"]
+    doc = json.loads(pricing.read_text())
+    doc["entries"][0]["model_version"] = "different-version"
+    _write(pricing, doc)
+    with pytest.raises(ExecutionManifestError, match="pricing snapshot must bind exactly"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_non_usd_pricing_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    pricing = repo / components["pricing_snapshot"]
+    doc = json.loads(pricing.read_text())
+    doc["entries"][0]["currency"] = "EUR"
+    _write(pricing, doc)
+    with pytest.raises(ExecutionManifestError, match="currency must be USD"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
