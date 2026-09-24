@@ -22,6 +22,8 @@ def _fixture(tmp_path: Path):
             {
                 "action_id": "DEEP",
                 "harbor_agent": "agent-deep",
+                "harbor_agent_argument": "acp:agent-deep@1.0.0",
+                "harbor_model_argument": "provider/model-deep",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model-deep",
@@ -30,6 +32,8 @@ def _fixture(tmp_path: Path):
             {
                 "action_id": "STANDARD",
                 "harbor_agent": "agent-standard",
+                "harbor_agent_argument": "acp:agent-standard@1.0.0",
+                "harbor_model_argument": "provider/model-standard",
                 "agent_version": "1.0.0",
                 "provider": "provider",
                 "model_id": "model-standard",
@@ -53,9 +57,21 @@ def test_runtime_resolves_exact_frozen_action(tmp_path: Path):
     catalog = load_frozen_action_catalog(repository_root=repo, execution_freeze=execution)
     deep = catalog.resolve("DEEP")
     assert deep.harbor_agent == "agent-deep"
+    assert deep.harbor_agent_argument == "acp:agent-deep@1.0.0"
+    assert deep.harbor_model_argument == "provider/model-deep"
     assert deep.model_id == "model-deep"
     assert deep.model_version == "2026-09-01-r1"
     assert len(catalog.component_sha256) == 64
+
+
+def test_missing_exact_harbor_argument_is_rejected(tmp_path: Path):
+    repo, manifest, execution = _fixture(tmp_path)
+    doc = json.loads(manifest.read_text())
+    del doc["actions"][0]["harbor_model_argument"]
+    manifest.write_text(json.dumps(doc), encoding="utf-8")
+    execution["components"][0]["sha256"] = sha256_file(manifest)
+    with pytest.raises(FrozenActionCatalogError, match="empty identity field"):
+        load_frozen_action_catalog(repository_root=repo, execution_freeze=execution)
 
 
 def test_action_catalog_byte_drift_is_rejected(tmp_path: Path):
