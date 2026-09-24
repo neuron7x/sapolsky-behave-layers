@@ -235,6 +235,61 @@ EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
 EXECUTOR_RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
 
 
+_FORBIDDEN_POLICY_OBSERVATIONS = frozenset({
+    "accepted_success",
+    "catastrophic_regret",
+    "confirmatory_label",
+    "final_reward",
+    "ground_truth",
+    "test_outcome",
+    "verifier_result",
+})
+
+
+def policy_action_catalog_digest(action_ids: object) -> str:
+    if not isinstance(action_ids, list) or len(action_ids) < 2:
+        raise ExecutionManifestError("policy action_ids must contain at least two actions")
+    normalized = [str(x).strip() for x in action_ids]
+    if any(not x for x in normalized) or normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("policy action_ids must be sorted, unique and non-empty")
+    return sha256_bytes(canonical_json_bytes({"action_ids": normalized}))
+
+
+def policy_observation_contract_digest(fields: object) -> str:
+    if not isinstance(fields, list) or not fields:
+        raise ExecutionManifestError("policy observation_fields must be non-empty")
+    normalized = [str(x).strip() for x in fields]
+    if any(not x for x in normalized) or normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("policy observation_fields must be sorted, unique and non-empty")
+    forbidden = sorted(set(normalized) & _FORBIDDEN_POLICY_OBSERVATIONS)
+    if forbidden:
+        raise ExecutionManifestError(
+            f"policy observation contract leaks confirmatory outcomes: {forbidden}"
+        )
+    return sha256_bytes(canonical_json_bytes({"observation_fields": normalized}))
+
+
+def _validate_policy_config(
+    path: Path,
+    *,
+    policy_id: str,
+    action_catalog_digest: str,
+    observation_contract_digest: str,
+) -> None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ExecutionManifestError(f"{policy_id}: invalid governance config JSON") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != "DGC_GOVERNANCE_POLICY_CONFIG_V1":
+        raise ExecutionManifestError(f"{policy_id}: governance config schema mismatch")
+    if _req("governance config policy_id", payload.get("policy_id")) != policy_id:
+        raise ExecutionManifestError(f"{policy_id}: governance config policy id mismatch")
+    if policy_action_catalog_digest(payload.get("action_ids")) != action_catalog_digest:
+        raise ExecutionManifestError(f"{policy_id}: action catalog digest does not match config")
+    if policy_observation_contract_digest(payload.get("observation_fields")) != observation_contract_digest:
+        raise ExecutionManifestError(f"{policy_id}: observation contract digest does not match config")
+
+
 def _validate_executor(payload: Mapping[str, object]) -> None:
     if payload.get("protocol") != EXECUTOR_PROTOCOL:
         raise ExecutionManifestError("executor protocol identity mismatch")
@@ -487,6 +542,12 @@ def freeze_execution_manifests(
             raise ExecutionManifestError(f"{policy_id}: governance implementation bytes differ from declared SHA-256")
         if sha256_file(config) != config_sha:
             raise ExecutionManifestError(f"{policy_id}: governance config bytes differ from declared SHA-256")
+        _validate_policy_config(
+            config,
+            policy_id=policy_id,
+            action_catalog_digest=action_catalog_digest,
+            observation_contract_digest=observation_contract_digest,
+        )
         if implementation_rel not in argv_raw or config_rel not in argv_raw:
             raise ExecutionManifestError(
                 f"{policy_id}: governance argv must bind canonical implementation and config paths"
