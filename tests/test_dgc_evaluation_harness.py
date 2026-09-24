@@ -20,10 +20,12 @@ def _harness(
     risk="risk",
     actions="actions",
     observations="observations",
+    runtime="runtime",
     ccf="ccf",
 ) -> FrozenEvaluationHarness:
     return FrozenEvaluationHarness(
         action_catalog_digest=_h(actions),
+        benchmark_runtime_digest=_h(runtime),
         model_manifest_digest=_h("models"),
         observation_provider_digest=_h(observations),
         prompt_policy_digest=_h("prompt"),
@@ -52,6 +54,14 @@ def test_action_catalog_drift_invalidates_comparison():
         certify_controlled_comparison(
             _harness("B1", actions="a1"),
             _harness("DGC", actions="a2"),
+        )
+
+
+def test_benchmark_runtime_drift_invalidates_comparison():
+    with pytest.raises(ValueError):
+        certify_controlled_comparison(
+            _harness("B1", runtime="harbor-v1"),
+            _harness("DGC", runtime="harbor-v2"),
         )
 
 
@@ -95,6 +105,7 @@ def test_semantic_label_cannot_masquerade_as_digest():
     with pytest.raises(ValueError, match="lowercase SHA-256"):
         FrozenEvaluationHarness(
             action_catalog_digest=_h("actions"),
+            benchmark_runtime_digest=_h("runtime"),
             model_manifest_digest="models",
             observation_provider_digest=_h("observations"),
             prompt_policy_digest=_h("1"),
