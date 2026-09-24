@@ -171,10 +171,25 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         _write(path, {
             "schema": "DGC_GOVERNANCE_POLICY_MANIFEST_V1",
             "policy_id": policy_id,
+            "protocol": "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1",
+            "request_schema": "DGC_POLICY_DECISION_REQUEST_V1",
+            "response_schema": "DGC_POLICY_DECISION_RESPONSE_V1",
+            "state_protocol": "STATE_IN_REQUEST_ONLY",
+            "network_access_allowed": False,
+            "confirmatory_label_access": False,
             "implementation_path": implementation.relative_to(repo).as_posix(),
             "implementation_sha256": sha256_file(implementation),
             "config_path": config.relative_to(repo).as_posix(),
             "config_sha256": sha256_file(config),
+            "argv": [
+                "python",
+                implementation.relative_to(repo).as_posix(),
+                "--config",
+                config.relative_to(repo).as_posix(),
+            ],
+            "timeout_seconds": 5,
+            "action_catalog_digest": _h("c"),
+            "observation_contract_digest": _h("d"),
         })
         policies[policy_id] = path.relative_to(repo).as_posix()
     return {key: path.relative_to(repo).as_posix() for key, path in paths.items()}, policies
@@ -232,6 +247,57 @@ def test_executor_environment_allowlist_must_be_canonical(tmp_path: Path):
     doc["allowed_environment_variables"] = ["Z_KEY", "A_KEY"]
     _write(manifest, doc)
     with pytest.raises(ExecutionManifestError, match="sorted and unique"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_action_catalog_drift_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / policies["DGC"]
+    doc = json.loads(manifest.read_text())
+    doc["action_catalog_digest"] = _h("e")
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="share one frozen action catalog"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_observation_contract_drift_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / policies["DGC"]
+    doc = json.loads(manifest.read_text())
+    doc["observation_contract_digest"] = _h("e")
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="share one admissible observation contract"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_governance_network_access_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / policies["B0"]
+    doc = json.loads(manifest.read_text())
+    doc["network_access_allowed"] = True
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="network access prohibited"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
