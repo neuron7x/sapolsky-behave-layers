@@ -87,3 +87,28 @@ Product qualification still requires a separate pre-outcome, scientifically defe
 - `tests/test_dgc_mechanism_evidence_plan.py`
 
 The existing three-endpoint product plan remains unchanged and remains the authority for any product-level risk claim.
+
+
+## Frozen mechanism execution authority
+
+The mechanism lane has a separate execution authority and evidence bundle. It does not reuse the product confirmatory root or product execution bundle.
+
+Pre-outcome sequence:
+
+`materialize → partition → calibration evidence → mechanism sizing → final harness → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
+
+The mechanism sizing receipt is bound to the SHA-256 of the canonical calibration evidence artifact. It freezes the maximum required within-task repeat count across the exact eight baseline×endpoint comparisons.
+
+The mechanism execution authority binds:
+
+- exact execution-freeze digest;
+- exact final harness digest and comparison frame;
+- exact confirmatory task IDs/digest;
+- exact semantic B0-B3 + DGC policy mapping;
+- exact two-endpoint mechanism plan;
+- calibration-derived repeat count;
+- frozen per-unit cost cap and full worst-case global budget.
+
+The mechanism bundle contains only `quality` and certified total operational cost outcomes. Any `catastrophic_regret` or `risk_endpoint_*` field is invalid in this lane.
+
+A complete mechanism bundle may feed `REAL_WORKLOAD_MECHANISM_SUPPORTED` only. It cannot authorize risk qualification, product promotion, client verification, commercial claims, or production control.
