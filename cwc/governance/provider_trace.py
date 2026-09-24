@@ -35,6 +35,19 @@ class TraceAuthority(str, Enum):
     CLIENT_PRODUCTION = "CLIENT_PRODUCTION"
 
 
+class ProviderCallIdKind(str, Enum):
+    HTTP_REQUEST_ID = "HTTP_REQUEST_ID"
+    PROVIDER_RESPONSE_ID = "PROVIDER_RESPONSE_ID"
+    PROVIDER_INTERACTION_ID = "PROVIDER_INTERACTION_ID"
+
+
+_LIVE_CALL_ID_KINDS = frozenset({
+    ProviderCallIdKind.HTTP_REQUEST_ID,
+    ProviderCallIdKind.PROVIDER_RESPONSE_ID,
+    ProviderCallIdKind.PROVIDER_INTERACTION_ID,
+})
+
+
 @dataclass(frozen=True, slots=True)
 class ProviderUsageTrace:
     trace_id: str
@@ -59,7 +72,8 @@ class ProviderUsageTrace:
     latency_penalty_usd: float = 0.0
     quality_score: float | None = None
     covered: bool = True
-    provider_request_id: str | None = None
+    provider_call_id: str | None = None
+    provider_call_id_kind: ProviderCallIdKind | None = None
 
     def __post_init__(self) -> None:
         required = (self.trace_id, self.decision_id, self.policy_id, self.provider, self.model, self.rate_card_digest)
@@ -80,8 +94,18 @@ class ProviderUsageTrace:
             if not math.isfinite(q):
                 raise ValueError("quality_score must be finite when present")
             object.__setattr__(self, "quality_score", q)
-        if self.authority in {TraceAuthority.PROVIDER_LIVE, TraceAuthority.CLIENT_PRODUCTION} and not self.provider_request_id:
-            raise ValueError("live provider/client traces require provider_request_id")
+        live = self.authority in {TraceAuthority.PROVIDER_LIVE, TraceAuthority.CLIENT_PRODUCTION}
+        call_id = str(self.provider_call_id or "").strip()
+        kind = self.provider_call_id_kind
+        if live:
+            if not call_id:
+                raise ValueError("live provider/client traces require provider_call_id")
+            if kind not in _LIVE_CALL_ID_KINDS:
+                raise ValueError("live provider/client traces require trusted provider_call_id_kind")
+        elif bool(call_id) != (kind is not None):
+            raise ValueError("provider_call_id and provider_call_id_kind must be supplied together")
+        if call_id:
+            object.__setattr__(self, "provider_call_id", call_id)
 
     @property
     def digest(self) -> str:
@@ -108,7 +132,10 @@ class ProviderUsageTrace:
             "latency_penalty_usd": self.latency_penalty_usd,
             "quality_score": self.quality_score,
             "covered": self.covered,
-            "provider_request_id": self.provider_request_id,
+            "provider_call_id": self.provider_call_id,
+            "provider_call_id_kind": (
+                self.provider_call_id_kind.value if self.provider_call_id_kind is not None else None
+            ),
         })
 
     def meter(self, rate_card: ProviderRateCard) -> MeteredDecisionCost:
