@@ -225,6 +225,11 @@ RISK_ENDPOINT_PROTOCOL = "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1"
 RISK_ENDPOINT_REQUEST_SCHEMA = "DGC_RISK_ENDPOINT_REQUEST_V1"
 RISK_ENDPOINT_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
 
+POLICY_PROTOCOL = "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1"
+POLICY_REQUEST_SCHEMA = "DGC_POLICY_DECISION_REQUEST_V1"
+POLICY_RESPONSE_SCHEMA = "DGC_POLICY_DECISION_RESPONSE_V1"
+POLICY_STATE_PROTOCOL = "STATE_IN_REQUEST_ONLY"
+
 EXECUTOR_PROTOCOL = "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1"
 EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
 EXECUTOR_RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
@@ -288,6 +293,11 @@ class FrozenGovernancePolicy:
     implementation_sha256: str
     config_path: str
     config_sha256: str
+    protocol: str
+    argv: tuple[str, ...]
+    timeout_seconds: float
+    action_catalog_digest: str
+    observation_contract_digest: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -437,6 +447,38 @@ def freeze_execution_manifests(
         )
         if _req("governance policy_id", payload.get("policy_id")) != policy_id:
             raise ExecutionManifestError("governance policy id/path binding mismatch")
+        if payload.get("protocol") != POLICY_PROTOCOL:
+            raise ExecutionManifestError(f"{policy_id}: governance execution protocol mismatch")
+        if payload.get("request_schema") != POLICY_REQUEST_SCHEMA:
+            raise ExecutionManifestError(f"{policy_id}: governance request schema mismatch")
+        if payload.get("response_schema") != POLICY_RESPONSE_SCHEMA:
+            raise ExecutionManifestError(f"{policy_id}: governance response schema mismatch")
+        if payload.get("state_protocol") != POLICY_STATE_PROTOCOL:
+            raise ExecutionManifestError(f"{policy_id}: hidden policy state is prohibited")
+        if payload.get("network_access_allowed") is not False:
+            raise ExecutionManifestError(f"{policy_id}: governance policy network access prohibited")
+        if payload.get("confirmatory_label_access") is not False:
+            raise ExecutionManifestError(f"{policy_id}: confirmatory label access prohibited")
+        argv_raw = payload.get("argv")
+        if (
+            not isinstance(argv_raw, list)
+            or not argv_raw
+            or not all(isinstance(x, str) and x.strip() for x in argv_raw)
+        ):
+            raise ExecutionManifestError(f"{policy_id}: governance argv malformed")
+        if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv_raw):
+            raise ExecutionManifestError(f"{policy_id}: governance argv contains control characters")
+        timeout_seconds = _finite_nonnegative(
+            f"{policy_id}.timeout_seconds", payload.get("timeout_seconds")
+        )
+        if timeout_seconds <= 0:
+            raise ExecutionManifestError(f"{policy_id}: governance timeout must be > 0")
+        action_catalog_digest = _sha(
+            f"{policy_id}.action_catalog_digest", payload.get("action_catalog_digest")
+        )
+        observation_contract_digest = _sha(
+            f"{policy_id}.observation_contract_digest", payload.get("observation_contract_digest")
+        )
         implementation, implementation_rel = _repo_file(root, payload.get("implementation_path"))
         config, config_rel = _repo_file(root, payload.get("config_path"))
         implementation_sha = _sha("governance implementation_sha256", payload.get("implementation_sha256"))
@@ -445,6 +487,10 @@ def freeze_execution_manifests(
             raise ExecutionManifestError(f"{policy_id}: governance implementation bytes differ from declared SHA-256")
         if sha256_file(config) != config_sha:
             raise ExecutionManifestError(f"{policy_id}: governance config bytes differ from declared SHA-256")
+        if implementation_rel not in argv_raw or config_rel not in argv_raw:
+            raise ExecutionManifestError(
+                f"{policy_id}: governance argv must bind canonical implementation and config paths"
+            )
         policies.append(FrozenGovernancePolicy(
             policy_id=policy_id,
             path=rel,
@@ -453,7 +499,17 @@ def freeze_execution_manifests(
             implementation_sha256=implementation_sha,
             config_path=config_rel,
             config_sha256=config_sha,
+            protocol=POLICY_PROTOCOL,
+            argv=tuple(argv_raw),
+            timeout_seconds=timeout_seconds,
+            action_catalog_digest=action_catalog_digest,
+            observation_contract_digest=observation_contract_digest,
         ))
+
+    if len({row.action_catalog_digest for row in policies}) != 1:
+        raise ExecutionManifestError("all governance policies must share one frozen action catalog")
+    if len({row.observation_contract_digest for row in policies}) != 1:
+        raise ExecutionManifestError("all governance policies must share one admissible observation contract")
 
     try:
         plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
