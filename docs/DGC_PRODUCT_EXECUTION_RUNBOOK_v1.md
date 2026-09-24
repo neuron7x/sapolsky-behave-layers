@@ -79,6 +79,7 @@ For each workload family produce SHA-256 content identities for:
 
 - materialization receipt and task manifest;
 - scorer/evaluator source;
+- frozen `catastrophic_regret` endpoint implementation + semantics contract;
 - environment/container images;
 - model IDs/versions and model manifest;
 - prompt/system policy;
@@ -213,13 +214,15 @@ Every trial must emit:
 - unique trial/work-unit identity;
 - accepted-success outcome;
 - normalized quality;
-- catastrophic regret;
+- catastrophic regret computed only by the frozen family-specific risk-endpoint implementation;
 - complete physical cost certificate including human/infra/retry/failure loss where applicable;
 - coverage/abstention state;
 - raw provider/tool usage identifiers;
 - evidence digest bound to the frozen harness.
 
 Missing telemetry => invalid trial, never zero cost.
+
+Missing or post-outcome-defined catastrophic-regret semantics => invalid generation. Benchmark pass/fail must not be silently re-labeled as catastrophic regret. If a workload family lacks a scientifically defensible pre-outcome risk endpoint, re-preregister a new statistical-plan generation before inspecting confirmatory outcomes.
 
 ## 8. Certify completion and promote source authority to EXECUTED
 

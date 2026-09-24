@@ -18,12 +18,14 @@ _OCI_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MUTABLE_VERSION_ALIASES = frozenset({"latest", "default", "current", "stable", "production", "prod"})
 
 COMPONENT_SCHEMAS = {
+    "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
     "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
     "budget": "DGC_BUDGET_MANIFEST_V1",
     "pricing_snapshot": "DGC_PRICING_SNAPSHOT_V1",
+    "risk_endpoint_manifest": "DGC_RISK_ENDPOINT_MANIFEST_V1",
     "scorer": "DGC_SCORER_MANIFEST_V1",
 }
 
@@ -149,14 +151,28 @@ def _validate_pricing(payload: Mapping[str, object]) -> None:
     entries = payload.get("entries")
     if not isinstance(entries, list) or not entries:
         raise ExecutionManifestError("pricing snapshot requires entries")
+    seen: set[tuple[str, str, str]] = set()
     for row in entries:
         if not isinstance(row, Mapping):
             raise ExecutionManifestError("invalid pricing row")
-        _req("pricing.provider", row.get("provider"))
-        _req("pricing.model_id", row.get("model_id"))
-        _req("pricing.currency", row.get("currency"))
-        _finite_nonnegative("pricing.input_per_million", row.get("input_per_million"))
-        _finite_nonnegative("pricing.output_per_million", row.get("output_per_million"))
+        provider = _req("pricing.provider", row.get("provider"))
+        model_id = _req("pricing.model_id", row.get("model_id"))
+        model_version = _req("pricing.model_version", row.get("model_version"))
+        if _req("pricing.currency", row.get("currency")) != "USD":
+            raise ExecutionManifestError("pricing currency must be USD")
+        _req("pricing.source_uri", row.get("source_uri"))
+        identity = (provider, model_id, model_version)
+        if identity in seen:
+            raise ExecutionManifestError("duplicate pricing model identity")
+        seen.add(identity)
+        for field in (
+            "input_per_million",
+            "cached_input_per_million",
+            "cache_write_per_million",
+            "long_cache_write_per_million",
+            "output_per_million",
+        ):
+            _finite_nonnegative(f"pricing.{field}", row.get(field))
 
 
 def _validate_scorer(payload: Mapping[str, object]) -> None:
@@ -164,13 +180,152 @@ def _validate_scorer(payload: Mapping[str, object]) -> None:
     _sha("scorer.implementation_sha256", payload.get("implementation_sha256"))
 
 
+def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
+    if _req("risk endpoint name", payload.get("endpoint_name")) != "catastrophic_regret":
+        raise ExecutionManifestError("risk endpoint must bind catastrophic_regret")
+    if _req("risk endpoint scale", payload.get("scale")) != "[0,1]":
+        raise ExecutionManifestError("risk endpoint scale must be [0,1]")
+    _req("risk endpoint semantics_version", payload.get("semantics_version"))
+    if payload.get("protocol") != RISK_ENDPOINT_PROTOCOL:
+        raise ExecutionManifestError("risk endpoint protocol identity mismatch")
+    if payload.get("request_schema") != RISK_ENDPOINT_REQUEST_SCHEMA:
+        raise ExecutionManifestError("risk endpoint request schema identity mismatch")
+    if payload.get("response_schema") != RISK_ENDPOINT_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("risk endpoint response schema identity mismatch")
+    implementation = _req("risk endpoint implementation_path", payload.get("implementation_path"))
+    _sha("risk endpoint implementation_sha256", payload.get("implementation_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("risk endpoint argv must be a non-empty string list")
+    if implementation not in argv:
+        raise ExecutionManifestError("risk endpoint argv must contain the frozen implementation path")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("risk endpoint argv contains forbidden control characters")
+    timeout = _finite_nonnegative("risk endpoint timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("risk endpoint timeout_seconds must be > 0")
+    source_fields = payload.get("source_fields")
+    if not isinstance(source_fields, list) or not source_fields or not all(
+        isinstance(x, str) and x.strip() for x in source_fields
+    ):
+        raise ExecutionManifestError("risk endpoint source_fields must be a non-empty string list")
+    if [x.strip() for x in source_fields] != sorted(set(x.strip() for x in source_fields)):
+        raise ExecutionManifestError("risk endpoint source_fields must be sorted and unique")
+    if payload.get("policy_outcome_independent_definition") is not True:
+        raise ExecutionManifestError("risk endpoint definition must be frozen independently of policy outcomes")
+    if payload.get("post_outcome_relabeling_allowed") is not False:
+        raise ExecutionManifestError("post-outcome risk relabeling must be prohibited")
+    if payload.get("network_access_allowed") is not False:
+        raise ExecutionManifestError("risk endpoint execution must prohibit network access")
+    if implementation.startswith("/") or ".." in Path(implementation).parts:
+        raise ExecutionManifestError("risk endpoint implementation path must be repository-relative")
+
+
+RISK_ENDPOINT_PROTOCOL = "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1"
+RISK_ENDPOINT_REQUEST_SCHEMA = "DGC_RISK_ENDPOINT_REQUEST_V1"
+RISK_ENDPOINT_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
+
+POLICY_PROTOCOL = "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1"
+POLICY_REQUEST_SCHEMA = "DGC_POLICY_DECISION_REQUEST_V1"
+POLICY_RESPONSE_SCHEMA = "DGC_POLICY_DECISION_RESPONSE_V1"
+POLICY_STATE_PROTOCOL = "STATE_IN_REQUEST_ONLY"
+
+EXECUTOR_PROTOCOL = "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1"
+EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
+EXECUTOR_RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
+
+
+_FORBIDDEN_POLICY_OBSERVATIONS = frozenset({
+    "accepted_success",
+    "catastrophic_regret",
+    "confirmatory_label",
+    "final_reward",
+    "ground_truth",
+    "test_outcome",
+    "verifier_result",
+})
+
+
+def policy_action_catalog_digest(action_ids: object) -> str:
+    if not isinstance(action_ids, list) or len(action_ids) < 2:
+        raise ExecutionManifestError("policy action_ids must contain at least two actions")
+    normalized = [str(x).strip() for x in action_ids]
+    if any(not x for x in normalized) or normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("policy action_ids must be sorted, unique and non-empty")
+    return sha256_bytes(canonical_json_bytes({"action_ids": normalized}))
+
+
+def policy_observation_contract_digest(fields: object) -> str:
+    if not isinstance(fields, list) or not fields:
+        raise ExecutionManifestError("policy observation_fields must be non-empty")
+    normalized = [str(x).strip() for x in fields]
+    if any(not x for x in normalized) or normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("policy observation_fields must be sorted, unique and non-empty")
+    forbidden = sorted(set(normalized) & _FORBIDDEN_POLICY_OBSERVATIONS)
+    if forbidden:
+        raise ExecutionManifestError(
+            f"policy observation contract leaks confirmatory outcomes: {forbidden}"
+        )
+    return sha256_bytes(canonical_json_bytes({"observation_fields": normalized}))
+
+
+def _validate_policy_config(
+    path: Path,
+    *,
+    policy_id: str,
+    action_catalog_digest: str,
+    observation_contract_digest: str,
+) -> None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ExecutionManifestError(f"{policy_id}: invalid governance config JSON") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != "DGC_GOVERNANCE_POLICY_CONFIG_V1":
+        raise ExecutionManifestError(f"{policy_id}: governance config schema mismatch")
+    if _req("governance config policy_id", payload.get("policy_id")) != policy_id:
+        raise ExecutionManifestError(f"{policy_id}: governance config policy id mismatch")
+    if policy_action_catalog_digest(payload.get("action_ids")) != action_catalog_digest:
+        raise ExecutionManifestError(f"{policy_id}: action catalog digest does not match config")
+    if policy_observation_contract_digest(payload.get("observation_fields")) != observation_contract_digest:
+        raise ExecutionManifestError(f"{policy_id}: observation contract digest does not match config")
+
+
+def _validate_executor(payload: Mapping[str, object]) -> None:
+    if payload.get("protocol") != EXECUTOR_PROTOCOL:
+        raise ExecutionManifestError("executor protocol identity mismatch")
+    if payload.get("request_schema") != EXECUTOR_REQUEST_SCHEMA:
+        raise ExecutionManifestError("executor request schema identity mismatch")
+    if payload.get("response_schema") != EXECUTOR_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("executor response schema identity mismatch")
+    entrypoint = _req("executor.entrypoint_path", payload.get("entrypoint_path"))
+    _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("executor argv must be a non-empty string list")
+    if entrypoint not in argv:
+        raise ExecutionManifestError("executor argv must contain the frozen entrypoint path")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("executor argv contains forbidden control characters")
+    timeout = _finite_nonnegative("executor.timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("executor timeout_seconds must be > 0")
+    allowed = payload.get("allowed_environment_variables")
+    if not isinstance(allowed, list) or not all(isinstance(x, str) and x.strip() and "=" not in x for x in allowed):
+        raise ExecutionManifestError("executor allowed_environment_variables must be a string list")
+    normalized = [x.strip() for x in allowed]
+    if normalized != sorted(set(normalized)):
+        raise ExecutionManifestError("executor environment allow-list must be sorted and unique")
+
+
 _VALIDATORS = {
+    "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
     "prompt_policy": _validate_prompt,
     "tool_manifest": _validate_tools,
     "environment": _validate_environment,
     "budget": _validate_budget,
     "pricing_snapshot": _validate_pricing,
+    "risk_endpoint_manifest": _validate_risk_endpoint,
     "scorer": _validate_scorer,
 }
 
@@ -189,8 +344,15 @@ class FrozenGovernancePolicy:
     policy_id: str
     path: str
     sha256: str
+    implementation_path: str
     implementation_sha256: str
+    config_path: str
     config_sha256: str
+    protocol: str
+    argv: tuple[str, ...]
+    timeout_seconds: float
+    action_catalog_digest: str
+    observation_contract_digest: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,9 +441,27 @@ def freeze_execution_manifests(
         extra = sorted(set(component_paths) - set(COMPONENT_SCHEMAS))
         raise ExecutionManifestError(f"execution component set mismatch; missing={missing}; extra={extra}")
     components: list[FrozenComponent] = []
+    component_payloads: dict[str, dict[str, object]] = {}
     for component in sorted(COMPONENT_SCHEMAS):
         payload, path, rel = _json_manifest(root, component_paths[component], expected_schema=COMPONENT_SCHEMAS[component])
         _VALIDATORS[component](payload)
+        component_payloads[component] = payload
+        if component == "executor_manifest":
+            entrypoint, entrypoint_rel = _repo_file(root, payload["entrypoint_path"])
+            if sha256_file(entrypoint) != _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256")):
+                raise ExecutionManifestError("executor entrypoint bytes differ from frozen SHA-256")
+            if entrypoint_rel not in payload.get("argv", []):
+                raise ExecutionManifestError("executor argv entrypoint is not canonical repository-relative path")
+        if component == "risk_endpoint_manifest":
+            implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
+            if sha256_file(implementation) != _sha(
+                "risk endpoint implementation_sha256", payload.get("implementation_sha256")
+            ):
+                raise ExecutionManifestError("risk endpoint implementation bytes differ from frozen SHA-256")
+            if implementation_rel != str(payload.get("implementation_path")):
+                raise ExecutionManifestError("risk endpoint implementation path is non-canonical")
+            if implementation_rel not in payload.get("argv", []):
+                raise ExecutionManifestError("risk endpoint argv implementation is not canonical repository-relative path")
         components.append(FrozenComponent(
             component=component,
             path=rel,
@@ -289,6 +469,25 @@ def freeze_execution_manifests(
             bytes=path.stat().st_size,
             schema=COMPONENT_SCHEMAS[component],
         ))
+
+    model_rows = component_payloads["model_manifest"].get("models")
+    pricing_rows = component_payloads["pricing_snapshot"].get("entries")
+    if not isinstance(model_rows, list) or not isinstance(pricing_rows, list):
+        raise ExecutionManifestError("model/pricing populations missing after validation")
+    model_identities = {
+        (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
+        for row in model_rows
+        if isinstance(row, Mapping)
+    }
+    pricing_identities = {
+        (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
+        for row in pricing_rows
+        if isinstance(row, Mapping)
+    }
+    if pricing_identities != model_identities:
+        raise ExecutionManifestError(
+            "pricing snapshot must bind exactly the frozen model provider/id/version population"
+        )
 
     if not isinstance(governance_policy_paths, Mapping) or len(governance_policy_paths) < 2:
         raise ExecutionManifestError("at least two governance policies are required for controlled comparison")
@@ -303,13 +502,75 @@ def freeze_execution_manifests(
         )
         if _req("governance policy_id", payload.get("policy_id")) != policy_id:
             raise ExecutionManifestError("governance policy id/path binding mismatch")
+        if payload.get("protocol") != POLICY_PROTOCOL:
+            raise ExecutionManifestError(f"{policy_id}: governance execution protocol mismatch")
+        if payload.get("request_schema") != POLICY_REQUEST_SCHEMA:
+            raise ExecutionManifestError(f"{policy_id}: governance request schema mismatch")
+        if payload.get("response_schema") != POLICY_RESPONSE_SCHEMA:
+            raise ExecutionManifestError(f"{policy_id}: governance response schema mismatch")
+        if payload.get("state_protocol") != POLICY_STATE_PROTOCOL:
+            raise ExecutionManifestError(f"{policy_id}: hidden policy state is prohibited")
+        if payload.get("network_access_allowed") is not False:
+            raise ExecutionManifestError(f"{policy_id}: governance policy network access prohibited")
+        if payload.get("confirmatory_label_access") is not False:
+            raise ExecutionManifestError(f"{policy_id}: confirmatory label access prohibited")
+        argv_raw = payload.get("argv")
+        if (
+            not isinstance(argv_raw, list)
+            or not argv_raw
+            or not all(isinstance(x, str) and x.strip() for x in argv_raw)
+        ):
+            raise ExecutionManifestError(f"{policy_id}: governance argv malformed")
+        if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv_raw):
+            raise ExecutionManifestError(f"{policy_id}: governance argv contains control characters")
+        timeout_seconds = _finite_nonnegative(
+            f"{policy_id}.timeout_seconds", payload.get("timeout_seconds")
+        )
+        if timeout_seconds <= 0:
+            raise ExecutionManifestError(f"{policy_id}: governance timeout must be > 0")
+        action_catalog_digest = _sha(
+            f"{policy_id}.action_catalog_digest", payload.get("action_catalog_digest")
+        )
+        observation_contract_digest = _sha(
+            f"{policy_id}.observation_contract_digest", payload.get("observation_contract_digest")
+        )
+        implementation, implementation_rel = _repo_file(root, payload.get("implementation_path"))
+        config, config_rel = _repo_file(root, payload.get("config_path"))
+        implementation_sha = _sha("governance implementation_sha256", payload.get("implementation_sha256"))
+        config_sha = _sha("governance config_sha256", payload.get("config_sha256"))
+        if sha256_file(implementation) != implementation_sha:
+            raise ExecutionManifestError(f"{policy_id}: governance implementation bytes differ from declared SHA-256")
+        if sha256_file(config) != config_sha:
+            raise ExecutionManifestError(f"{policy_id}: governance config bytes differ from declared SHA-256")
+        _validate_policy_config(
+            config,
+            policy_id=policy_id,
+            action_catalog_digest=action_catalog_digest,
+            observation_contract_digest=observation_contract_digest,
+        )
+        if implementation_rel not in argv_raw or config_rel not in argv_raw:
+            raise ExecutionManifestError(
+                f"{policy_id}: governance argv must bind canonical implementation and config paths"
+            )
         policies.append(FrozenGovernancePolicy(
             policy_id=policy_id,
             path=rel,
             sha256=sha256_file(path),
-            implementation_sha256=_sha("governance implementation_sha256", payload.get("implementation_sha256")),
-            config_sha256=_sha("governance config_sha256", payload.get("config_sha256")),
+            implementation_path=implementation_rel,
+            implementation_sha256=implementation_sha,
+            config_path=config_rel,
+            config_sha256=config_sha,
+            protocol=POLICY_PROTOCOL,
+            argv=tuple(argv_raw),
+            timeout_seconds=timeout_seconds,
+            action_catalog_digest=action_catalog_digest,
+            observation_contract_digest=observation_contract_digest,
         ))
+
+    if len({row.action_catalog_digest for row in policies}) != 1:
+        raise ExecutionManifestError("all governance policies must share one frozen action catalog")
+    if len({row.observation_contract_digest for row in policies}) != 1:
+        raise ExecutionManifestError("all governance policies must share one admissible observation contract")
 
     try:
         plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))

@@ -8,8 +8,16 @@ import pytest
 
 import cwc.governance.execution_evidence_bundle as bundle_module
 from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.execution_evidence_bundle import ExecutionEvidenceError, verify_execution_bundle
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
+    CostAuthority,
+    CostComponentEvidence,
+    certify_physical_trial_cost,
+)
+from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
 
 
 def h(char: str) -> str:
@@ -109,24 +117,169 @@ def make_bundle(tmp_path: Path):
     results_dir = root / "records"
     evidence_dir = root / "evidence"
     result_paths: list[str] = []
+    rate_card = ProviderRateCard(
+        provider="provider",
+        model="model",
+        input_usd_per_million=1.0,
+        cached_input_usd_per_million=0.1,
+        cache_write_usd_per_million=1.25,
+        long_cache_write_usd_per_million=1.25,
+        output_usd_per_million=2.0,
+        source_uri="https://example.invalid/provider/model/pricing",
+        retrieved_at="2026-08-23T00:00:00Z",
+    )
+    rate_card_doc = {
+        "rate_card_digest": rate_card.digest,
+        "provider": rate_card.provider,
+        "model": rate_card.model,
+        "model_version": "2026-08-23-r1",
+        "input_usd_per_million": rate_card.input_usd_per_million,
+        "cached_input_usd_per_million": rate_card.cached_input_usd_per_million,
+        "cache_write_usd_per_million": rate_card.cache_write_usd_per_million,
+        "long_cache_write_usd_per_million": rate_card.long_cache_write_usd_per_million,
+        "output_usd_per_million": rate_card.output_usd_per_million,
+        "source_uri": rate_card.source_uri,
+        "retrieved_at": rate_card.retrieved_at,
+    }
     tick = 0
     for index, policy in enumerate(("B0", "DGC")):
         lease = coordinator.claim(f"worker-{policy}", tick=tick)
         assert lease is not None
         tick += 1
-        result_payload = {
+        actual_cost = 0.6 - 0.2 * index
+        provider_request_id = f"req-{policy}"
+        raw_provider_trace = {
+            "trace_id": f"trace-{lease.unit.stable_id}",
+            "decision_id": lease.unit.stable_id,
+            "policy_id": policy,
+            "authority": "PROVIDER_LIVE",
+            "provider": "provider",
+            "model": "model",
+            "model_version": "2026-08-23-r1",
+            "rate_card_digest": rate_card.digest,
+            "input_tokens": int(round(actual_cost * 1_000_000)),
+            "cached_input_tokens": 0,
+            "cache_write_tokens": 0,
+            "long_cache_write_tokens": 0,
+            "output_tokens": 0,
+            "provider_request_id": provider_request_id,
+        }
+        provider_trace = ProviderUsageTrace(
+            trace_id=raw_provider_trace["trace_id"],
+            decision_id=raw_provider_trace["decision_id"],
+            policy_id=raw_provider_trace["policy_id"],
+            authority=TraceAuthority.PROVIDER_LIVE,
+            provider="provider",
+            model="model",
+            rate_card_digest=rate_card.digest,
+            input_tokens=raw_provider_trace["input_tokens"],
+            cached_input_tokens=0,
+            cache_write_tokens=0,
+            long_cache_write_tokens=0,
+            output_tokens=0,
+            provider_request_id=provider_request_id,
+        )
+        metered = provider_trace.meter(rate_card)
+        provider_trace_doc = {
+            "trace_digest": provider_trace.digest,
+            "trace_id": provider_trace.trace_id,
+            "decision_id": provider_trace.decision_id,
+            "policy_id": provider_trace.policy_id,
+            "authority": provider_trace.authority.value,
+            "provider_request_id": provider_trace.provider_request_id,
+            "provider": provider_trace.provider,
+            "model": provider_trace.model,
+            "model_version": "2026-08-23-r1",
+            "rate_card_digest": provider_trace.rate_card_digest,
+            "input_tokens": provider_trace.input_tokens,
+            "cached_input_tokens": provider_trace.cached_input_tokens,
+            "cache_write_tokens": provider_trace.cache_write_tokens,
+            "long_cache_write_tokens": provider_trace.long_cache_write_tokens,
+            "output_tokens": provider_trace.output_tokens,
+            "model_token_usd": metered.model_token_usd,
+        }
+        provider_population_digest = sha256_bytes(
+            canonical_json_bytes([(provider_trace.digest, "2026-08-23-r1")])
+        )
+        adapter_response = {
+            "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
+            "unit": asdict(lease.unit),
+            "attempt": lease.attempt,
             "quality": 0.8 + 0.1 * index,
+            "actual_cost_usd": actual_cost,
+            "provider_usage_traces": [raw_provider_trace],
+            "trace": {"provider_request_id": provider_request_id},
+        }
+        adapter_digest = sha256_bytes(canonical_json_bytes(adapter_response))
+        trace_digest = sha256_bytes(canonical_json_bytes(adapter_response["trace"]))
+        risk_response = {
+            "schema": "DGC_RISK_ENDPOINT_RESPONSE_V1",
             "catastrophic_regret": 0.1 - 0.05 * index,
+            "evidence": {"source": "fixture", "policy": policy},
+        }
+        risk_digest = sha256_bytes(canonical_json_bytes(risk_response))
+        cost_evidence = {}
+        for component in PRODUCT_COST_COMPONENTS:
+            cost_evidence[component] = CostComponentEvidence(
+                component=component,
+                value_usd=metered.model_token_usd if component == "model_usd" else 0.0,
+                authority=(
+                    CostAuthority.PROVIDER_METER
+                    if component == "model_usd"
+                    else CostAuthority.ZERO_BY_CONTRACT
+                ),
+                source_digest=provider_population_digest if component == "model_usd" else h("c"),
+            )
+        cost_certificate = certify_physical_trial_cost(
+            trial_id=f"{lease.unit.stable_id}::{lease.attempt}",
+            evidence=cost_evidence,
+        )
+        result_payload = {
+            "quality": adapter_response["quality"],
+            "catastrophic_regret": risk_response["catastrophic_regret"],
+            "adapter_response_digest": adapter_digest,
+            "trace_digest": trace_digest,
+            "risk_endpoint_response_digest": risk_digest,
+            "risk_endpoint_manifest_sha256": h("e"),
+            "physical_cost_certificate_digest": cost_certificate.digest,
+            "provider_trace_population_digest": provider_population_digest,
+            "pricing_snapshot_manifest_sha256": h("d"),
         }
         evidence = evidence_dir / f"{policy}.json"
-        write_json(evidence, {"provider_trace": policy})
+        write_json(evidence, {
+            "schema": "DGC_UNIT_EXECUTION_EVIDENCE_V1",
+            "response": adapter_response,
+            "adapter_response_digest": adapter_digest,
+            "trace_digest": trace_digest,
+            "risk_endpoint_manifest_sha256": h("e"),
+            "risk_endpoint_response": risk_response,
+            "risk_endpoint_response_digest": risk_digest,
+            "pricing_snapshot_manifest_sha256": h("d"),
+            "provider_rate_cards": [rate_card_doc],
+            "provider_usage_traces": [provider_trace_doc],
+            "provider_trace_population_digest": provider_population_digest,
+            "physical_cost_certificate": {
+                "trial_id": cost_certificate.trial_id,
+                "digest": cost_certificate.digest,
+                "components": [
+                    {
+                        "component": row.component,
+                        "value_usd": row.value_usd,
+                        "authority": row.authority.value,
+                        "source_digest": row.source_digest,
+                    }
+                    for row in cost_certificate.component_evidence
+                ],
+                "total_operational_usd": cost_certificate.cost.total_operational_usd,
+            },
+        })
         evidence_sha = sha256_file(evidence)
         result = coordinator.commit(
             lease,
             tick=tick,
             result_payload=result_payload,
             evidence_digest=evidence_sha,
-            actual_cost_usd=0.6 - 0.2 * index,
+            actual_cost_usd=actual_cost,
         )
         tick += 1
         rel = f"records/{policy}.json"
@@ -190,6 +343,90 @@ def test_evidence_tamper_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyP
     patch_root(monkeypatch, authority)
     write_json(root / "evidence" / "DGC.json", {"provider_trace": "tampered"})
     with pytest.raises(ExecutionEvidenceError, match="payload manifest mismatch"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_risk_semantic_tamper_is_rejected_even_after_rehash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, authority, spec, coordinator = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    evidence_path = root / "evidence" / "DGC.json"
+    evidence = json.loads(evidence_path.read_text())
+    evidence["risk_endpoint_response"]["catastrophic_regret"] = 0.9
+    evidence["risk_endpoint_response_digest"] = sha256_bytes(
+        canonical_json_bytes(evidence["risk_endpoint_response"])
+    )
+    write_json(evidence_path, evidence)
+    evidence_sha = sha256_file(evidence_path)
+    result_path = root / "records" / "DGC.json"
+    result = json.loads(result_path.read_text())
+    result["evidence_sha256"] = evidence_sha
+    payload = {key: value for key, value in result.items() if key not in {"schema", "record_digest"}}
+    result["record_digest"] = sha256_bytes(canonical_json_bytes(payload))
+    write_json(result_path, result)
+    seal_manifest(
+        root,
+        authority=authority,
+        spec=spec,
+        result_paths=["records/B0.json", "records/DGC.json"],
+        coordinator=coordinator,
+    )
+    with pytest.raises(ExecutionEvidenceError, match="result is not bound to frozen risk response"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_physical_cost_semantic_tamper_is_rejected_even_after_rehash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, authority, spec, coordinator = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    evidence_path = root / "evidence" / "DGC.json"
+    evidence = json.loads(evidence_path.read_text())
+    evidence["physical_cost_certificate"]["components"][0]["value_usd"] += 0.1
+    write_json(evidence_path, evidence)
+    evidence_sha = sha256_file(evidence_path)
+    result_path = root / "records" / "DGC.json"
+    result = json.loads(result_path.read_text())
+    result["evidence_sha256"] = evidence_sha
+    payload = {key: value for key, value in result.items() if key not in {"schema", "record_digest"}}
+    result["record_digest"] = sha256_bytes(canonical_json_bytes(payload))
+    write_json(result_path, result)
+    seal_manifest(
+        root,
+        authority=authority,
+        spec=spec,
+        result_paths=["records/B0.json", "records/DGC.json"],
+        coordinator=coordinator,
+    )
+    with pytest.raises(ExecutionEvidenceError, match="model_usd differs from replayed provider token cost"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_provider_rate_card_tamper_is_rejected_even_after_rehash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, authority, spec, coordinator = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    evidence_path = root / "evidence" / "DGC.json"
+    evidence = json.loads(evidence_path.read_text())
+    evidence["provider_rate_cards"][0]["input_usd_per_million"] = 999.0
+    write_json(evidence_path, evidence)
+    evidence_sha = sha256_file(evidence_path)
+    result_path = root / "records" / "DGC.json"
+    result = json.loads(result_path.read_text())
+    result["evidence_sha256"] = evidence_sha
+    payload = {key: value for key, value in result.items() if key not in {"schema", "record_digest"}}
+    result["record_digest"] = sha256_bytes(canonical_json_bytes(payload))
+    write_json(result_path, result)
+    seal_manifest(
+        root,
+        authority=authority,
+        spec=spec,
+        result_paths=["records/B0.json", "records/DGC.json"],
+        coordinator=coordinator,
+    )
+    with pytest.raises(ExecutionEvidenceError, match="provider rate-card digest mismatch"):
         verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
 
 

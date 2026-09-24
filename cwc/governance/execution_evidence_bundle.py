@@ -7,12 +7,23 @@ from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
+from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
+    CostAuthority,
+    CostComponentEvidence,
+    certify_physical_trial_cost,
+)
+from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
 
 BUNDLE_SCHEMA = "DGC_CONFIRMATORY_EXECUTION_BUNDLE_V1"
 RESULT_SCHEMA = "DGC_CONFIRMATORY_RESULT_V1"
 AUDIT_SCHEMA = "DGC_DISTRIBUTED_AUDIT_LOG_V1"
+EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
+RISK_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
 
 
 class ExecutionEvidenceError(RuntimeError):
@@ -138,6 +149,373 @@ class VerifiedExecutionBundle:
     bundle_digest: str
 
 
+def _safe_repository_subject(root: Path, value: object) -> Path:
+    rel = Path(str(value))
+    if not str(value) or rel.is_absolute() or ".." in rel.parts:
+        raise ExecutionEvidenceError("frozen component path must be repository-relative")
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ExecutionEvidenceError("frozen component path contains symlink")
+    path = (root / rel).resolve()
+    try:
+        path.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ExecutionEvidenceError("frozen component path escapes repository root") from exc
+    if not path.is_file():
+        raise ExecutionEvidenceError("frozen component file missing from repository")
+    return path
+
+
+def _strict_execution_lineage(
+    *,
+    root_authority: Mapping[str, object],
+    execution_manifest_freeze_path: Path | None,
+    repository_root: Path | None,
+) -> tuple[str | None, str | None, dict[tuple[str, str, str], ProviderRateCard] | None]:
+    if execution_manifest_freeze_path is None:
+        return None, None, None
+    execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
+    freeze_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
+    if freeze_digest != _sha(
+        "root execution_manifest_freeze_digest",
+        root_authority.get("execution_manifest_freeze_digest"),
+    ):
+        raise ExecutionEvidenceError("execution bundle replay uses a different execution freeze")
+    rows = execution.get("components")
+    if not isinstance(rows, list):
+        raise ExecutionEvidenceError("execution freeze component population missing")
+    by_name = {
+        str(row.get("component")): row
+        for row in rows
+        if isinstance(row, Mapping)
+    }
+    if "pricing_snapshot" not in by_name or "risk_endpoint_manifest" not in by_name:
+        raise ExecutionEvidenceError("execution freeze lacks pricing/risk components")
+    pricing_sha = _sha("frozen pricing component sha256", by_name["pricing_snapshot"].get("sha256"))
+    risk_sha = _sha("frozen risk component sha256", by_name["risk_endpoint_manifest"].get("sha256"))
+    if repository_root is None:
+        return pricing_sha, risk_sha, None
+
+    repo_root = Path(repository_root).resolve()
+    pricing_path = _safe_repository_subject(repo_root, by_name["pricing_snapshot"].get("path"))
+    if sha256_file(pricing_path) != pricing_sha:
+        raise ExecutionEvidenceError("repository pricing bytes differ from execution freeze")
+    risk_path = _safe_repository_subject(repo_root, by_name["risk_endpoint_manifest"].get("path"))
+    if sha256_file(risk_path) != risk_sha:
+        raise ExecutionEvidenceError("repository risk endpoint bytes differ from execution freeze")
+    pricing_doc = _json(pricing_path, schema="DGC_PRICING_SNAPSHOT_V1")
+    captured_at = _req("pricing captured_at", pricing_doc.get("captured_at"))
+    entries = pricing_doc.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise ExecutionEvidenceError("frozen pricing entries missing")
+    expected: dict[tuple[str, str, str], ProviderRateCard] = {}
+    try:
+        for row in entries:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid frozen pricing row")
+            identity = (
+                _req("pricing provider", row.get("provider")),
+                _req("pricing model_id", row.get("model_id")),
+                _req("pricing model_version", row.get("model_version")),
+            )
+            if identity in expected:
+                raise ExecutionEvidenceError("duplicate frozen pricing identity")
+            if str(row.get("currency", "")) != "USD":
+                raise ExecutionEvidenceError("frozen pricing currency is not USD")
+            expected[identity] = ProviderRateCard(
+                provider=identity[0],
+                model=identity[1],
+                input_usd_per_million=float(row["input_per_million"]),
+                cached_input_usd_per_million=float(row["cached_input_per_million"]),
+                cache_write_usd_per_million=float(row["cache_write_per_million"]),
+                long_cache_write_usd_per_million=float(row["long_cache_write_per_million"]),
+                output_usd_per_million=float(row["output_per_million"]),
+                source_uri=str(row["source_uri"]),
+                retrieved_at=captured_at,
+            )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ExecutionEvidenceError("invalid frozen pricing manifest") from exc
+    return pricing_sha, risk_sha, expected
+
+
+def _verify_unit_evidence(
+    path: Path,
+    *,
+    result_payload: Mapping[str, object],
+    actual_cost_usd: float,
+    unit: WorkUnitId,
+    expected_pricing_sha: str | None = None,
+    expected_risk_sha: str | None = None,
+    expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
+) -> None:
+    doc = _json(path, schema=EVIDENCE_SCHEMA)
+
+    response = doc.get("response")
+    if not isinstance(response, Mapping):
+        raise ExecutionEvidenceError("execution evidence missing adapter response")
+    adapter_digest = sha256_bytes(canonical_json_bytes(dict(response)))
+    if _sha("adapter_response_digest", doc.get("adapter_response_digest")) != adapter_digest:
+        raise ExecutionEvidenceError("adapter response digest mismatch")
+    if _sha(
+        "result adapter_response_digest", result_payload.get("adapter_response_digest")
+    ) != adapter_digest:
+        raise ExecutionEvidenceError("result is not bound to adapter response")
+
+    trace = response.get("trace")
+    if not isinstance(trace, Mapping) or not trace:
+        raise ExecutionEvidenceError("execution evidence missing raw trace metadata")
+    trace_digest = sha256_bytes(canonical_json_bytes(dict(trace)))
+    if _sha("trace_digest", doc.get("trace_digest")) != trace_digest:
+        raise ExecutionEvidenceError("raw trace digest mismatch")
+    if _sha("result trace_digest", result_payload.get("trace_digest")) != trace_digest:
+        raise ExecutionEvidenceError("result is not bound to raw trace")
+
+    risk = doc.get("risk_endpoint_response")
+    if not isinstance(risk, Mapping) or risk.get("schema") != RISK_RESPONSE_SCHEMA:
+        raise ExecutionEvidenceError("execution evidence missing frozen risk response")
+    evidence = risk.get("evidence")
+    if not isinstance(evidence, Mapping) or not evidence:
+        raise ExecutionEvidenceError("risk response requires non-empty evidence")
+    risk_digest = sha256_bytes(canonical_json_bytes(dict(risk)))
+    if _sha("risk_endpoint_response_digest", doc.get("risk_endpoint_response_digest")) != risk_digest:
+        raise ExecutionEvidenceError("risk response digest mismatch")
+    if _sha(
+        "result risk_endpoint_response_digest", result_payload.get("risk_endpoint_response_digest")
+    ) != risk_digest:
+        raise ExecutionEvidenceError("result is not bound to frozen risk response")
+    risk_value = _finite(
+        "risk response catastrophic_regret",
+        risk.get("catastrophic_regret"),
+        lower=0.0,
+        upper=1.0,
+    )
+    result_risk = _finite(
+        "result catastrophic_regret",
+        result_payload.get("catastrophic_regret"),
+        lower=0.0,
+        upper=1.0,
+    )
+    if not math.isclose(risk_value, result_risk, rel_tol=0.0, abs_tol=1e-12):
+        raise ExecutionEvidenceError("result catastrophic_regret differs from frozen risk response")
+
+    pricing_sha = _sha(
+        "pricing_snapshot_manifest_sha256", doc.get("pricing_snapshot_manifest_sha256")
+    )
+    if expected_pricing_sha is not None and pricing_sha != expected_pricing_sha:
+        raise ExecutionEvidenceError("evidence pricing snapshot differs from execution freeze")
+    if _sha(
+        "result pricing_snapshot_manifest_sha256",
+        result_payload.get("pricing_snapshot_manifest_sha256"),
+    ) != pricing_sha:
+        raise ExecutionEvidenceError("result is not bound to frozen pricing snapshot")
+    risk_manifest_sha = _sha(
+        "risk_endpoint_manifest_sha256", doc.get("risk_endpoint_manifest_sha256")
+    )
+    if expected_risk_sha is not None and risk_manifest_sha != expected_risk_sha:
+        raise ExecutionEvidenceError("evidence risk endpoint differs from execution freeze")
+    if _sha(
+        "result risk_endpoint_manifest_sha256",
+        result_payload.get("risk_endpoint_manifest_sha256"),
+    ) != risk_manifest_sha:
+        raise ExecutionEvidenceError("result is not bound to frozen risk endpoint manifest")
+
+    rate_rows = doc.get("provider_rate_cards")
+    if not isinstance(rate_rows, list) or not rate_rows:
+        raise ExecutionEvidenceError("execution evidence requires provider rate cards")
+    rate_cards: dict[tuple[str, str, str], ProviderRateCard] = {}
+    try:
+        for row in rate_rows:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid provider rate card row")
+            identity = (
+                _req("rate-card provider", row.get("provider")),
+                _req("rate-card model", row.get("model")),
+                _req("rate-card model_version", row.get("model_version")),
+            )
+            if identity in rate_cards:
+                raise ExecutionEvidenceError("duplicate provider rate-card identity")
+            card = ProviderRateCard(
+                provider=identity[0],
+                model=identity[1],
+                input_usd_per_million=float(row["input_usd_per_million"]),
+                cached_input_usd_per_million=float(row["cached_input_usd_per_million"]),
+                cache_write_usd_per_million=float(row["cache_write_usd_per_million"]),
+                long_cache_write_usd_per_million=float(row["long_cache_write_usd_per_million"]),
+                output_usd_per_million=float(row["output_usd_per_million"]),
+                source_uri=str(row["source_uri"]),
+                retrieved_at=str(row["retrieved_at"]),
+            )
+            if _sha("rate_card_digest", row.get("rate_card_digest")) != card.digest:
+                raise ExecutionEvidenceError("provider rate-card digest mismatch")
+            if expected_rate_cards is not None:
+                expected_card = expected_rate_cards.get(identity)
+                if expected_card is None or expected_card.digest != card.digest:
+                    raise ExecutionEvidenceError("embedded provider rate card differs from frozen pricing")
+            rate_cards[identity] = card
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ExecutionEvidenceError("invalid provider rate-card evidence") from exc
+
+    raw_provider_rows = response.get("provider_usage_traces")
+    evidence_provider_rows = doc.get("provider_usage_traces")
+    if (
+        not isinstance(raw_provider_rows, list)
+        or not raw_provider_rows
+        or not isinstance(evidence_provider_rows, list)
+        or len(raw_provider_rows) != len(evidence_provider_rows)
+    ):
+        raise ExecutionEvidenceError("provider usage population missing or inconsistent")
+    expected_trace_docs: list[dict[str, object]] = []
+    metered_rows: list[tuple[str, str]] = []
+    request_ids: set[str] = set()
+    model_usd_rows: list[float] = []
+    for raw in raw_provider_rows:
+        if not isinstance(raw, Mapping):
+            raise ExecutionEvidenceError("invalid raw provider usage trace")
+        model_version = _req("provider trace model_version", raw.get("model_version"))
+        identity = (
+            _req("provider trace provider", raw.get("provider")),
+            _req("provider trace model", raw.get("model")),
+            model_version,
+        )
+        card = rate_cards.get(identity)
+        if card is None:
+            raise ExecutionEvidenceError("provider trace has no embedded frozen rate card")
+        try:
+            provider_trace = ProviderUsageTrace(
+                trace_id=str(raw["trace_id"]),
+                decision_id=str(raw["decision_id"]),
+                policy_id=str(raw["policy_id"]),
+                authority=TraceAuthority(str(raw["authority"])),
+                provider=identity[0],
+                model=identity[1],
+                rate_card_digest=str(raw["rate_card_digest"]),
+                input_tokens=int(raw["input_tokens"]),
+                cached_input_tokens=int(raw.get("cached_input_tokens", 0)),
+                cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
+                long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
+                output_tokens=int(raw["output_tokens"]),
+                provider_request_id=str(raw["provider_request_id"]),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ExecutionEvidenceError("malformed provider usage trace") from exc
+        if provider_trace.authority is not TraceAuthority.PROVIDER_LIVE:
+            raise ExecutionEvidenceError("confirmatory provider trace is not PROVIDER_LIVE")
+        if provider_trace.decision_id != unit.stable_id or provider_trace.policy_id != unit.policy_id:
+            raise ExecutionEvidenceError("provider trace decision/policy identity mismatch")
+        if provider_trace.rate_card_digest != card.digest:
+            raise ExecutionEvidenceError("provider trace rate-card digest mismatch")
+        request_id = str(provider_trace.provider_request_id)
+        if request_id in request_ids:
+            raise ExecutionEvidenceError("duplicate provider request id")
+        request_ids.add(request_id)
+        metered = provider_trace.meter(card)
+        model_usd_rows.append(metered.model_token_usd)
+        expected_trace_docs.append({
+            "trace_digest": provider_trace.digest,
+            "trace_id": provider_trace.trace_id,
+            "decision_id": provider_trace.decision_id,
+            "policy_id": provider_trace.policy_id,
+            "authority": provider_trace.authority.value,
+            "provider_request_id": provider_trace.provider_request_id,
+            "provider": provider_trace.provider,
+            "model": provider_trace.model,
+            "model_version": model_version,
+            "rate_card_digest": provider_trace.rate_card_digest,
+            "input_tokens": provider_trace.input_tokens,
+            "cached_input_tokens": provider_trace.cached_input_tokens,
+            "cache_write_tokens": provider_trace.cache_write_tokens,
+            "long_cache_write_tokens": provider_trace.long_cache_write_tokens,
+            "output_tokens": provider_trace.output_tokens,
+            "model_token_usd": metered.model_token_usd,
+        })
+        metered_rows.append((provider_trace.digest, model_version))
+    if evidence_provider_rows != expected_trace_docs:
+        raise ExecutionEvidenceError("derived provider trace evidence differs from raw provider usage")
+    provider_population_digest = sha256_bytes(canonical_json_bytes(sorted(metered_rows)))
+    if _sha(
+        "provider_trace_population_digest", doc.get("provider_trace_population_digest")
+    ) != provider_population_digest:
+        raise ExecutionEvidenceError("provider trace population digest mismatch")
+    if _sha(
+        "result provider_trace_population_digest",
+        result_payload.get("provider_trace_population_digest"),
+    ) != provider_population_digest:
+        raise ExecutionEvidenceError("result is not bound to provider trace population")
+    metered_model_usd = math.fsum(model_usd_rows)
+
+    certificate = doc.get("physical_cost_certificate")
+    if not isinstance(certificate, Mapping):
+        raise ExecutionEvidenceError("execution evidence missing physical cost certificate")
+    rows = certificate.get("components")
+    if not isinstance(rows, list) or len(rows) != len(PRODUCT_COST_COMPONENTS):
+        raise ExecutionEvidenceError("physical cost certificate component population mismatch")
+    cost_evidence: dict[str, CostComponentEvidence] = {}
+    try:
+        for row in rows:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid physical cost certificate row")
+            component = str(row.get("component", ""))
+            if component in cost_evidence or component not in PRODUCT_COST_COMPONENTS:
+                raise ExecutionEvidenceError("physical cost certificate component identity mismatch")
+            cost_evidence[component] = CostComponentEvidence(
+                component=component,
+                value_usd=float(row.get("value_usd")),
+                authority=CostAuthority(str(row.get("authority"))),
+                source_digest=_sha(
+                    f"physical cost source digest {component}", row.get("source_digest")
+                ),
+            )
+        rebuilt = certify_physical_trial_cost(
+            trial_id=_req("physical cost trial_id", certificate.get("trial_id")),
+            evidence=cost_evidence,
+        )
+    except (TypeError, ValueError, KeyError) as exc:
+        raise ExecutionEvidenceError("invalid physical cost certificate") from exc
+    model_component = cost_evidence.get("model_usd")
+    if model_component is None:
+        raise ExecutionEvidenceError("physical cost certificate missing model_usd")
+    if model_component.authority is not CostAuthority.PROVIDER_METER:
+        raise ExecutionEvidenceError("model_usd must use PROVIDER_METER authority")
+    if model_component.source_digest != provider_population_digest:
+        raise ExecutionEvidenceError("model_usd source is not provider trace population")
+    if not math.isclose(
+        model_component.value_usd,
+        metered_model_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("model_usd differs from replayed provider token cost")
+
+    if _sha("physical cost certificate digest", certificate.get("digest")) != rebuilt.digest:
+        raise ExecutionEvidenceError("physical cost certificate digest mismatch")
+    if _sha(
+        "result physical cost certificate digest",
+        result_payload.get("physical_cost_certificate_digest"),
+    ) != rebuilt.digest:
+        raise ExecutionEvidenceError("result is not bound to physical cost certificate")
+    declared_total = _finite(
+        "physical cost certificate total",
+        certificate.get("total_operational_usd"),
+        lower=0.0,
+    )
+    if not math.isclose(
+        declared_total,
+        rebuilt.cost.total_operational_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("physical cost certificate total mismatch")
+    if not math.isclose(
+        rebuilt.cost.total_operational_usd,
+        actual_cost_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("result actual cost differs from physical cost certificate")
+
+
 def _verify_audit_log(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
     doc = _json(path, schema=AUDIT_SCHEMA)
     if _sha("audit spec_digest", doc.get("spec_digest")) != spec_digest:
@@ -203,6 +581,9 @@ def _verify_result(
     root_digest: str,
     spec: DistributedEvalSpec,
     audit_events: list[dict[str, object]],
+    expected_pricing_sha: str | None = None,
+    expected_risk_sha: str | None = None,
+    expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
 ) -> VerifiedExecutionResult:
     doc = _json(path, schema=RESULT_SCHEMA)
     if _sha("result root_authority_digest", doc.get("root_authority_digest")) != root_authority_digest:
@@ -239,6 +620,15 @@ def _verify_result(
         raise ExecutionEvidenceError("empty execution evidence artifact is not accepted")
     if _sha("evidence_sha256", doc.get("evidence_sha256")) != evidence_digest:
         raise ExecutionEvidenceError("execution evidence digest mismatch")
+    _verify_unit_evidence(
+        evidence_path,
+        result_payload=result_payload,
+        actual_cost_usd=cost,
+        unit=unit,
+        expected_pricing_sha=expected_pricing_sha,
+        expected_risk_sha=expected_risk_sha,
+        expected_rate_cards=expected_rate_cards,
+    )
 
     record_payload = {
         "root_authority_digest": root_authority_digest,
@@ -305,6 +695,8 @@ def verify_execution_bundle(
     bundle_root: Path,
     *,
     confirmatory_root_authority_path: Path,
+    execution_manifest_freeze_path: Path | None = None,
+    repository_root: Path | None = None,
 ) -> VerifiedExecutionBundle:
     supplied = Path(bundle_root)
     if supplied.is_symlink() or not supplied.is_dir():
@@ -313,6 +705,11 @@ def verify_execution_bundle(
     manifest_path = root / "EXECUTION_BUNDLE.json"
     manifest = _json(manifest_path, schema=BUNDLE_SCHEMA)
     root_authority = verify_confirmatory_root_authority_document(Path(confirmatory_root_authority_path))
+    expected_pricing_sha, expected_risk_sha, expected_rate_cards = _strict_execution_lineage(
+        root_authority=root_authority,
+        execution_manifest_freeze_path=execution_manifest_freeze_path,
+        repository_root=repository_root,
+    )
     root_authority_digest = _sha("root authority_digest", root_authority.get("authority_digest"))
     root_doc = root_authority.get("root")
     spec_doc = root_authority.get("distributed_spec")
@@ -367,6 +764,9 @@ def verify_execution_bundle(
             root_digest=root_digest,
             spec=spec,
             audit_events=audit_events,
+            expected_pricing_sha=expected_pricing_sha,
+            expected_risk_sha=expected_risk_sha,
+            expected_rate_cards=expected_rate_cards,
         )
         for path, _ in result_paths
     )

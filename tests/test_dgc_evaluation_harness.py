@@ -12,7 +12,14 @@ def _h(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def _harness(policy: str, *, tasks="tasks", scorer="scorer", ccf="ccf") -> FrozenEvaluationHarness:
+def _harness(
+    policy: str,
+    *,
+    tasks="tasks",
+    scorer="scorer",
+    risk="risk",
+    ccf="ccf",
+) -> FrozenEvaluationHarness:
     return FrozenEvaluationHarness(
         model_manifest_digest=_h("models"),
         prompt_policy_digest=_h("prompt"),
@@ -22,6 +29,7 @@ def _harness(policy: str, *, tasks="tasks", scorer="scorer", ccf="ccf") -> Froze
         budget_digest=_h("budget"),
         pricing_snapshot_digest=_h("pricing"),
         scorer_digest=_h(scorer),
+        risk_endpoint_digest=_h(risk),
         counterfactual_oracle_spec_digest=_h(ccf),
         statistical_plan_digest=_h("stats"),
         baseline_panel_digest=_h("baselines"),
@@ -45,6 +53,14 @@ def test_scorer_drift_invalidates_comparison():
         certify_controlled_comparison(_harness("B1", scorer="s1"), _harness("DGC", scorer="s2"))
 
 
+def test_risk_endpoint_drift_invalidates_comparison():
+    with pytest.raises(ValueError):
+        certify_controlled_comparison(
+            _harness("B1", risk="risk-v1"),
+            _harness("DGC", risk="risk-v2"),
+        )
+
+
 def test_ccf_preregistration_drift_invalidates_comparison():
     with pytest.raises(ValueError):
         certify_controlled_comparison(_harness("B1", ccf="ccf-v1"), _harness("DGC", ccf="ccf-v2"))
@@ -66,10 +82,11 @@ def test_semantic_label_cannot_masquerade_as_digest():
             budget_digest=_h("5"),
             pricing_snapshot_digest=_h("6"),
             scorer_digest=_h("7"),
-            counterfactual_oracle_spec_digest=_h("8"),
-            statistical_plan_digest=_h("9"),
-            baseline_panel_digest=_h("10"),
-            governance_policy_digest=_h("11"),
+            risk_endpoint_digest=_h("8"),
+            counterfactual_oracle_spec_digest=_h("9"),
+            statistical_plan_digest=_h("10"),
+            baseline_panel_digest=_h("11"),
+            governance_policy_digest=_h("12"),
         )
 
 
