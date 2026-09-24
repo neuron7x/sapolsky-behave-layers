@@ -239,7 +239,7 @@ def build_harness_freeze(
     }
     required_components = {
         "executor_manifest", "model_manifest", "prompt_policy", "tool_manifest", "environment",
-        "budget", "pricing_snapshot", "scorer",
+        "budget", "pricing_snapshot", "risk_endpoint_manifest", "scorer",
     }
     if set(components) != required_components:
         raise HarnessFreezeError("execution freeze component population incomplete")
