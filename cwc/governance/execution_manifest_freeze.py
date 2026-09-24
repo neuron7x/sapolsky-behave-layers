@@ -18,6 +18,7 @@ _OCI_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MUTABLE_VERSION_ALIASES = frozenset({"latest", "default", "current", "stable", "production", "prod"})
 
 COMPONENT_SCHEMAS = {
+    "action_catalog_manifest": "DGC_ACTION_CATALOG_MANIFEST_V1",
     "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
@@ -105,6 +106,29 @@ def _validate_model(payload: Mapping[str, object]) -> None:
         if identity in seen:
             raise ExecutionManifestError("duplicate model identity")
         seen.add(identity)
+
+
+def _validate_action_catalog(payload: Mapping[str, object]) -> None:
+    actions = payload.get("actions")
+    if not isinstance(actions, list) or len(actions) < 2:
+        raise ExecutionManifestError("action catalog requires at least two actions")
+    ids: list[str] = []
+    for row in actions:
+        if not isinstance(row, Mapping):
+            raise ExecutionManifestError("invalid action catalog row")
+        action_id = _req("action.action_id", row.get("action_id"))
+        _req("action.harbor_agent", row.get("harbor_agent"))
+        agent_version = _req("action.agent_version", row.get("agent_version"))
+        provider = _req("action.provider", row.get("provider"))
+        model_id = _req("action.model_id", row.get("model_id"))
+        model_version = _req("action.model_version", row.get("model_version"))
+        if agent_version.lower() in _MUTABLE_VERSION_ALIASES:
+            raise ExecutionManifestError("mutable agent version alias is prohibited")
+        if model_version.lower() in _MUTABLE_VERSION_ALIASES:
+            raise ExecutionManifestError("mutable action model version alias is prohibited")
+        ids.append(action_id)
+    if ids != sorted(set(ids)):
+        raise ExecutionManifestError("action catalog must be sorted by unique action_id")
 
 
 def _validate_prompt(payload: Mapping[str, object]) -> None:
@@ -318,6 +342,7 @@ def _validate_executor(payload: Mapping[str, object]) -> None:
 
 
 _VALIDATORS = {
+    "action_catalog_manifest": _validate_action_catalog,
     "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
     "prompt_policy": _validate_prompt,
@@ -470,10 +495,11 @@ def freeze_execution_manifests(
             schema=COMPONENT_SCHEMAS[component],
         ))
 
+    action_rows = component_payloads["action_catalog_manifest"].get("actions")
     model_rows = component_payloads["model_manifest"].get("models")
     pricing_rows = component_payloads["pricing_snapshot"].get("entries")
-    if not isinstance(model_rows, list) or not isinstance(pricing_rows, list):
-        raise ExecutionManifestError("model/pricing populations missing after validation")
+    if not isinstance(action_rows, list) or not isinstance(model_rows, list) or not isinstance(pricing_rows, list):
+        raise ExecutionManifestError("action/model/pricing populations missing after validation")
     model_identities = {
         (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
         for row in model_rows
@@ -488,6 +514,17 @@ def freeze_execution_manifests(
         raise ExecutionManifestError(
             "pricing snapshot must bind exactly the frozen model provider/id/version population"
         )
+    action_model_identities = {
+        (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
+        for row in action_rows
+        if isinstance(row, Mapping)
+    }
+    if not action_model_identities.issubset(model_identities):
+        raise ExecutionManifestError(
+            "action catalog references model identities outside the frozen model manifest"
+        )
+    frozen_action_ids = [str(row["action_id"]) for row in action_rows if isinstance(row, Mapping)]
+    frozen_action_catalog_digest = policy_action_catalog_digest(frozen_action_ids)
 
     if not isinstance(governance_policy_paths, Mapping) or len(governance_policy_paths) < 2:
         raise ExecutionManifestError("at least two governance policies are required for controlled comparison")
@@ -569,6 +606,10 @@ def freeze_execution_manifests(
 
     if len({row.action_catalog_digest for row in policies}) != 1:
         raise ExecutionManifestError("all governance policies must share one frozen action catalog")
+    if any(row.action_catalog_digest != frozen_action_catalog_digest for row in policies):
+        raise ExecutionManifestError(
+            "governance policy action catalog differs from global frozen action catalog"
+        )
     if len({row.observation_contract_digest for row in policies}) != 1:
         raise ExecutionManifestError("all governance policies must share one admissible observation contract")
 
