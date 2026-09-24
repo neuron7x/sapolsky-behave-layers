@@ -250,6 +250,9 @@ def _provider_model_meter(
         card = rate_cards.get(identity)
         if card is None:
             raise FrozenPanelExecutionError("provider usage trace has no exact frozen rate card")
+        request_id_raw = raw.get("provider_request_id")
+        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
+            raise FrozenPanelExecutionError("live provider usage requires real provider_request_id")
         try:
             trace = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -264,7 +267,7 @@ def _provider_model_meter(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=str(raw["provider_request_id"]),
+                provider_request_id=request_id_raw.strip(),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise FrozenPanelExecutionError("malformed provider usage trace") from exc
