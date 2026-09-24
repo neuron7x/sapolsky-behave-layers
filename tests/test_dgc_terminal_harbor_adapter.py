@@ -323,6 +323,7 @@ def test_missing_physical_cost_evidence_fails_closed(
                     "input_tokens": 100,
                     "output_tokens": 10,
                     "provider_call_id": "req-1",
+                    "provider_call_id_kind": "PROVIDER_RESPONSE_ID",
                 }]
             },
         )
