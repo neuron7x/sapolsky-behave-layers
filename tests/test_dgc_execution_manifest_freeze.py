@@ -78,6 +78,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "action_catalog_manifest": base / "actions.json",
         "executor_manifest": base / "executor.json",
         "model_manifest": base / "model.json",
+        "observation_builder_manifest": base / "observation-builder.json",
         "prompt_policy": base / "prompt.json",
         "tool_manifest": base / "tools.json",
         "environment": base / "environment.json",
@@ -121,6 +122,42 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     _write(paths["model_manifest"], {
         "schema": "DGC_MODEL_MANIFEST_V1",
         "models": [{"provider": "provider", "model_id": "model", "model_version": "2026-08-23-r1"}],
+    })
+    observation_impl = repo / "observations" / "builder.py"
+    observation_impl.parent.mkdir(parents=True, exist_ok=True)
+    observation_impl.write_text("print('observations')\n", encoding="utf-8")
+    observation_config = repo / "observations" / "builder.json"
+    observation_config_doc = {
+        "schema": "DGC_OBSERVATION_BUILDER_CONFIG_V1",
+        "mode": "STATIC_ONLY_V1",
+        "observation_fields": ["budget_remaining", "initial_uncertainty", "step_index"],
+        "probe_action_id": None,
+    }
+    observation_config.write_text(
+        json.dumps(observation_config_doc, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    _write(paths["observation_builder_manifest"], {
+        "schema": "DGC_OBSERVATION_BUILDER_MANIFEST_V1",
+        "protocol": "DGC_OBSERVATION_BUILDER_PROTOCOL_V1",
+        "request_schema": "DGC_OBSERVATION_REQUEST_V1",
+        "response_schema": "DGC_OBSERVATION_RESPONSE_V1",
+        "implementation_path": observation_impl.relative_to(repo).as_posix(),
+        "implementation_sha256": sha256_file(observation_impl),
+        "config_path": observation_config.relative_to(repo).as_posix(),
+        "config_sha256": sha256_file(observation_config),
+        "argv": [
+            "python",
+            observation_impl.relative_to(repo).as_posix(),
+            "--config",
+            observation_config.relative_to(repo).as_posix(),
+        ],
+        "timeout_seconds": 5,
+        "mode": "STATIC_ONLY_V1",
+        "observation_fields": observation_config_doc["observation_fields"],
+        "probe_action_id": None,
+        "confirmatory_label_access": False,
+        "post_outcome_feature_mutation_allowed": False,
+        "network_access_allowed": False,
     })
     _write(paths["prompt_policy"], {
         "schema": "DGC_PROMPT_POLICY_V1",
@@ -246,7 +283,7 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 10
+    assert len(frozen.components) == 11
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
@@ -542,6 +579,90 @@ def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
     manifest_doc["action_catalog_digest"] = policy_action_catalog_digest(config_doc["action_ids"])
     _write(manifest, manifest_doc)
     with pytest.raises(ExecutionManifestError, match="global frozen action catalog"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_observation_builder_implementation_tamper_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    implementation = repo / "observations" / "builder.py"
+    implementation.write_text("print('tampered')\n", encoding="utf-8")
+    with pytest.raises(ExecutionManifestError, match="observation builder implementation bytes differ"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_observation_builder_post_outcome_mutation_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["observation_builder_manifest"]
+    doc = json.loads(manifest.read_text())
+    doc["post_outcome_feature_mutation_allowed"] = True
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="post-outcome observation mutation"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_observation_builder_contract_must_equal_policy_contract(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["observation_builder_manifest"]
+    doc = json.loads(manifest.read_text())
+    config = repo / doc["config_path"]
+    config_doc = json.loads(config.read_text())
+    fields = ["budget_remaining", "initial_uncertainty", "probe_score", "step_index"]
+    doc["observation_fields"] = fields
+    config_doc["observation_fields"] = fields
+    _write(config, config_doc)
+    doc["config_sha256"] = sha256_file(config)
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="global frozen observation builder"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_common_probe_action_must_exist_in_global_action_catalog(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    manifest = repo / components["observation_builder_manifest"]
+    doc = json.loads(manifest.read_text())
+    config = repo / doc["config_path"]
+    config_doc = json.loads(config.read_text())
+    doc.update({
+        "mode": "COMMON_MODEL_PROBE_V1",
+        "probe_action_id": "ULTRA",
+        "network_access_allowed": True,
+        "probe_cost_allocation": "CHARGED_IDENTICALLY_TO_ALL_ARMS",
+        "probe_runs_in_clean_environment": True,
+    })
+    config_doc["mode"] = "COMMON_MODEL_PROBE_V1"
+    config_doc["probe_action_id"] = "ULTRA"
+    _write(config, config_doc)
+    doc["config_sha256"] = sha256_file(config)
+    _write(manifest, doc)
+    with pytest.raises(ExecutionManifestError, match="outside global frozen action catalog"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
