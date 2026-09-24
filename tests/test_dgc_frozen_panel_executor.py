@@ -229,10 +229,25 @@ sys.stdout.write(json.dumps(response, sort_keys=True))
         manifest_doc = {
             "schema": "DGC_GOVERNANCE_POLICY_MANIFEST_V1",
             "policy_id": policy_id,
+            "protocol": "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1",
+            "request_schema": "DGC_POLICY_DECISION_REQUEST_V1",
+            "response_schema": "DGC_POLICY_DECISION_RESPONSE_V1",
+            "state_protocol": "STATE_IN_REQUEST_ONLY",
+            "network_access_allowed": False,
+            "confirmatory_label_access": False,
             "implementation_path": implementation.relative_to(repo).as_posix(),
             "implementation_sha256": sha256_file(implementation),
             "config_path": config.relative_to(repo).as_posix(),
             "config_sha256": sha256_file(config),
+            "argv": [
+                sys.executable,
+                implementation.relative_to(repo).as_posix(),
+                "--config",
+                config.relative_to(repo).as_posix(),
+            ],
+            "timeout_seconds": 5,
+            "action_catalog_digest": h("c"),
+            "observation_contract_digest": h("d"),
         }
         manifest.write_text(json.dumps(manifest_doc, sort_keys=True), encoding="utf-8")
         policy_rows.append({
@@ -243,6 +258,11 @@ sys.stdout.write(json.dumps(response, sort_keys=True))
             "implementation_sha256": sha256_file(implementation),
             "config_path": config.relative_to(repo).as_posix(),
             "config_sha256": sha256_file(config),
+            "protocol": manifest_doc["protocol"],
+            "argv": manifest_doc["argv"],
+            "timeout_seconds": manifest_doc["timeout_seconds"],
+            "action_catalog_digest": manifest_doc["action_catalog_digest"],
+            "observation_contract_digest": manifest_doc["observation_contract_digest"],
         })
 
     execution = {
@@ -354,6 +374,28 @@ def test_entrypoint_byte_drift_is_rejected_before_execution(
     _patch(monkeypatch, execution, harness, authority)
     adapter.write_text("raise SystemExit(99)\n", encoding="utf-8")
     with pytest.raises(FrozenPanelExecutionError, match="entrypoint bytes differ"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=tmp_path / "bundle",
+        )
+
+
+def test_policy_action_catalog_runtime_drift_is_rejected_before_unit_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(tmp_path)
+    _patch(monkeypatch, execution, harness, authority)
+    manifest = repo / "policies" / "B0.manifest.json"
+    doc = json.loads(manifest.read_text())
+    doc["action_catalog_digest"] = h("e")
+    manifest.write_text(json.dumps(doc, sort_keys=True), encoding="utf-8")
+    execution["governance_policies"][0]["sha256"] = sha256_file(manifest)
+    with pytest.raises(FrozenPanelExecutionError, match="action_catalog_digest differs"):
         execute_frozen_panel(
             repository_root=repo,
             execution_manifest_freeze_path=tmp_path / "execution.json",
