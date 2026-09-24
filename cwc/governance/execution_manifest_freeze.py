@@ -172,8 +172,24 @@ def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
     if _req("risk endpoint scale", payload.get("scale")) != "[0,1]":
         raise ExecutionManifestError("risk endpoint scale must be [0,1]")
     _req("risk endpoint semantics_version", payload.get("semantics_version"))
+    if payload.get("protocol") != RISK_ENDPOINT_PROTOCOL:
+        raise ExecutionManifestError("risk endpoint protocol identity mismatch")
+    if payload.get("request_schema") != RISK_ENDPOINT_REQUEST_SCHEMA:
+        raise ExecutionManifestError("risk endpoint request schema identity mismatch")
+    if payload.get("response_schema") != RISK_ENDPOINT_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("risk endpoint response schema identity mismatch")
     implementation = _req("risk endpoint implementation_path", payload.get("implementation_path"))
     _sha("risk endpoint implementation_sha256", payload.get("implementation_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("risk endpoint argv must be a non-empty string list")
+    if implementation not in argv:
+        raise ExecutionManifestError("risk endpoint argv must contain the frozen implementation path")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("risk endpoint argv contains forbidden control characters")
+    timeout = _finite_nonnegative("risk endpoint timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("risk endpoint timeout_seconds must be > 0")
     source_fields = payload.get("source_fields")
     if not isinstance(source_fields, list) or not source_fields or not all(
         isinstance(x, str) and x.strip() for x in source_fields
@@ -185,9 +201,15 @@ def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
         raise ExecutionManifestError("risk endpoint definition must be frozen independently of policy outcomes")
     if payload.get("post_outcome_relabeling_allowed") is not False:
         raise ExecutionManifestError("post-outcome risk relabeling must be prohibited")
+    if payload.get("network_access_allowed") is not False:
+        raise ExecutionManifestError("risk endpoint execution must prohibit network access")
     if implementation.startswith("/") or ".." in Path(implementation).parts:
         raise ExecutionManifestError("risk endpoint implementation path must be repository-relative")
 
+
+RISK_ENDPOINT_PROTOCOL = "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1"
+RISK_ENDPOINT_REQUEST_SCHEMA = "DGC_RISK_ENDPOINT_REQUEST_V1"
+RISK_ENDPOINT_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
 
 EXECUTOR_PROTOCOL = "DGC_FROZEN_UNIT_EXECUTOR_PROTOCOL_V1"
 EXECUTOR_REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
@@ -357,6 +379,8 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("risk endpoint implementation bytes differ from frozen SHA-256")
             if implementation_rel != str(payload.get("implementation_path")):
                 raise ExecutionManifestError("risk endpoint implementation path is non-canonical")
+            if implementation_rel not in payload.get("argv", []):
+                raise ExecutionManifestError("risk endpoint argv implementation is not canonical repository-relative path")
         components.append(FrozenComponent(
             component=component,
             path=rel,
