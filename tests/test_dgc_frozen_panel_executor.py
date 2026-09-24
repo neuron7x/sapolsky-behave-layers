@@ -41,7 +41,8 @@ response = {{
     "unit": req["unit"],
     "attempt": req["attempt"],
     "quality": 0.8,
-    "catastrophic_regret": 0.1,
+    "catastrophic_regret": 0.99,
+    "risk_signal": 0.1,
     "actual_cost_usd": 0.25,
     "trace": {trace},
 }}
@@ -72,6 +73,44 @@ def _subjects(tmp_path: Path, *, valid_adapter: bool = True):
         "allowed_environment_variables": [],
     }
     executor_manifest.write_text(json.dumps(executor_doc), encoding="utf-8")
+
+    risk_impl = scripts / "fixture_risk.py"
+    risk_impl.write_text(
+        """
+import json
+import sys
+req = json.load(sys.stdin)
+response = {
+    "schema": "DGC_RISK_ENDPOINT_RESPONSE_V1",
+    "catastrophic_regret": float(req["adapter_response"]["risk_signal"]),
+    "evidence": {
+        "source_field": "risk_signal",
+        "source_value": req["adapter_response"]["risk_signal"],
+    },
+}
+sys.stdout.write(json.dumps(response, sort_keys=True))
+""",
+        encoding="utf-8",
+    )
+    risk_manifest = manifest_dir / "risk.json"
+    risk_doc = {
+        "schema": "DGC_RISK_ENDPOINT_MANIFEST_V1",
+        "endpoint_name": "catastrophic_regret",
+        "scale": "[0,1]",
+        "semantics_version": "fixture-v1",
+        "protocol": "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1",
+        "request_schema": "DGC_RISK_ENDPOINT_REQUEST_V1",
+        "response_schema": "DGC_RISK_ENDPOINT_RESPONSE_V1",
+        "implementation_path": "scripts/fixture_risk.py",
+        "implementation_sha256": sha256_file(risk_impl),
+        "argv": [sys.executable, "scripts/fixture_risk.py"],
+        "timeout_seconds": 10,
+        "source_fields": ["risk_signal"],
+        "policy_outcome_independent_definition": True,
+        "post_outcome_relabeling_allowed": False,
+        "network_access_allowed": False,
+    }
+    risk_manifest.write_text(json.dumps(risk_doc), encoding="utf-8")
 
     spec = DistributedEvalSpec(
         experiment_id="exec-fixture",
@@ -120,13 +159,22 @@ def _subjects(tmp_path: Path, *, valid_adapter: bool = True):
         "materialization_reference_digest": h("3"),
         "task_manifest_digest": h("4"),
         "freeze_digest": h("7"),
-        "components": [{
-            "component": "executor_manifest",
-            "path": "manifests/executor.json",
-            "sha256": sha256_file(executor_manifest),
-            "bytes": executor_manifest.stat().st_size,
-            "schema": "DGC_EXECUTOR_MANIFEST_V1",
-        }],
+        "components": [
+            {
+                "component": "executor_manifest",
+                "path": "manifests/executor.json",
+                "sha256": sha256_file(executor_manifest),
+                "bytes": executor_manifest.stat().st_size,
+                "schema": "DGC_EXECUTOR_MANIFEST_V1",
+            },
+            {
+                "component": "risk_endpoint_manifest",
+                "path": "manifests/risk.json",
+                "sha256": sha256_file(risk_manifest),
+                "bytes": risk_manifest.stat().st_size,
+                "schema": "DGC_RISK_ENDPOINT_MANIFEST_V1",
+            },
+        ],
         "governance_policies": policy_rows,
     }
     harness = {
@@ -192,6 +240,8 @@ def test_frozen_panel_executor_builds_self_replayable_complete_bundle(
     assert verified.completion.committed_units == 2
     assert len(verified.results) == 2
     assert all(row.actual_cost_usd == 0.25 for row in verified.results)
+    assert all(row.catastrophic_regret == pytest.approx(0.1) for row in verified.results)
+    assert all(row.catastrophic_regret != pytest.approx(0.99) for row in verified.results)
     assert (output / "AUDIT_LOG.json").is_file()
     assert (output / "EXECUTION_BUNDLE.json").is_file()
 
@@ -221,6 +271,24 @@ def test_policy_implementation_byte_drift_is_rejected_before_unit_execution(
     _patch(monkeypatch, execution, harness, authority)
     (repo / "policies" / "B0.py").write_text("POLICY_ID = 'tampered'\n", encoding="utf-8")
     with pytest.raises(FrozenPanelExecutionError, match="governance implementation bytes differ"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=tmp_path / "bundle",
+        )
+
+
+def test_risk_implementation_byte_drift_is_rejected_before_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(tmp_path)
+    _patch(monkeypatch, execution, harness, authority)
+    (repo / "scripts" / "fixture_risk.py").write_text("raise SystemExit(23)\n", encoding="utf-8")
+    with pytest.raises(FrozenPanelExecutionError, match="risk endpoint implementation bytes differ"):
         execute_frozen_panel(
             repository_root=repo,
             execution_manifest_freeze_path=tmp_path / "execution.json",
