@@ -25,7 +25,11 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
-from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
+from cwc.governance.provider_trace import (
+    ProviderCallIdKind,
+    ProviderUsageTrace,
+    TraceAuthority,
+)
 
 
 def h(char: str) -> str:
@@ -128,7 +132,7 @@ def _build_bundle(
     monkeypatch: pytest.MonkeyPatch,
     *,
     inject_risk: bool = False,
-    null_request_id: bool = False,
+    null_call_id: bool = False,
 ):
     repo, card, spec, authority = _fixture(tmp_path, monkeypatch)
     root = tmp_path / "bundle"
@@ -148,7 +152,8 @@ def _build_bundle(
         cache_write_tokens=0,
         long_cache_write_tokens=0,
         output_tokens=0,
-        provider_request_id="req-1",
+        provider_call_id="resp-1",
+        provider_call_id_kind=ProviderCallIdKind.PROVIDER_RESPONSE_ID,
     )
     model_cost = trace.meter(card).model_token_usd
     population_digest = sha256_bytes(canonical_json_bytes([(trace.digest, "v1")]))
@@ -166,7 +171,10 @@ def _build_bundle(
         "cache_write_tokens": trace.cache_write_tokens,
         "long_cache_write_tokens": trace.long_cache_write_tokens,
         "output_tokens": trace.output_tokens,
-        "provider_request_id": None if null_request_id else trace.provider_request_id,
+        "provider_call_id": None if null_call_id else trace.provider_call_id,
+        "provider_call_id_kind": (
+            None if null_call_id else trace.provider_call_id_kind.value
+        ),
     }
     response = {
         "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
@@ -185,7 +193,8 @@ def _build_bundle(
         "decision_id": trace.decision_id,
         "policy_id": trace.policy_id,
         "authority": trace.authority.value,
-        "provider_request_id": trace.provider_request_id,
+        "provider_call_id": trace.provider_call_id,
+        "provider_call_id_kind": trace.provider_call_id_kind.value,
         "provider": trace.provider,
         "model": trace.model,
         "model_version": "v1",
@@ -371,11 +380,11 @@ def test_risk_field_leakage_is_rejected(
         )
 
 
-def test_null_provider_request_id_is_rejected(
+def test_null_provider_call_id_is_rejected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    root, repo = _build_bundle(tmp_path, monkeypatch, null_request_id=True)
-    with pytest.raises(MechanismExecutionBundleError, match="real provider_request_id"):
+    root, repo = _build_bundle(tmp_path, monkeypatch, null_call_id=True)
+    with pytest.raises(MechanismExecutionBundleError, match="real provider_call_id"):
         verify_mechanism_execution_bundle(
             root,
             mechanism_authority_path=tmp_path / "authority.json",
