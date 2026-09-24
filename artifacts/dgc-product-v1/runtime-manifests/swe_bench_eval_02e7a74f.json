@@ -1,0 +1,19 @@
+{
+  "schema": "DGC_BENCHMARK_RUNTIME_MANIFEST_V1",
+  "family_id": "SWE_BENCH_VERIFIED",
+  "runtime_name": "swebench",
+  "runtime_version": "commit-02e7a74ffd0b707a",
+  "repository": "SWE-bench/SWE-bench",
+  "repository_commit": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+  "repository_tree": "3c53c27bd4ae6a14ddf58be94156965dcd00f6f3",
+  "lock_file_path": "uv.lock",
+  "lock_file_blob_oid": "c8197c00147247b892266d5c5117463fc015a15b",
+  "invocation": [
+    "uv",
+    "run",
+    "--frozen",
+    "swebench"
+  ],
+  "root_environment_variable": "DGC_BENCHMARK_RUNTIME_ROOT",
+  "local_materialization_required": true
+}
