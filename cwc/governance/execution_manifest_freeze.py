@@ -151,14 +151,28 @@ def _validate_pricing(payload: Mapping[str, object]) -> None:
     entries = payload.get("entries")
     if not isinstance(entries, list) or not entries:
         raise ExecutionManifestError("pricing snapshot requires entries")
+    seen: set[tuple[str, str, str]] = set()
     for row in entries:
         if not isinstance(row, Mapping):
             raise ExecutionManifestError("invalid pricing row")
-        _req("pricing.provider", row.get("provider"))
-        _req("pricing.model_id", row.get("model_id"))
-        _req("pricing.currency", row.get("currency"))
-        _finite_nonnegative("pricing.input_per_million", row.get("input_per_million"))
-        _finite_nonnegative("pricing.output_per_million", row.get("output_per_million"))
+        provider = _req("pricing.provider", row.get("provider"))
+        model_id = _req("pricing.model_id", row.get("model_id"))
+        model_version = _req("pricing.model_version", row.get("model_version"))
+        if _req("pricing.currency", row.get("currency")) != "USD":
+            raise ExecutionManifestError("pricing currency must be USD")
+        _req("pricing.source_uri", row.get("source_uri"))
+        identity = (provider, model_id, model_version)
+        if identity in seen:
+            raise ExecutionManifestError("duplicate pricing model identity")
+        seen.add(identity)
+        for field in (
+            "input_per_million",
+            "cached_input_per_million",
+            "cache_write_per_million",
+            "long_cache_write_per_million",
+            "output_per_million",
+        ):
+            _finite_nonnegative(f"pricing.{field}", row.get(field))
 
 
 def _validate_scorer(payload: Mapping[str, object]) -> None:
@@ -362,9 +376,11 @@ def freeze_execution_manifests(
         extra = sorted(set(component_paths) - set(COMPONENT_SCHEMAS))
         raise ExecutionManifestError(f"execution component set mismatch; missing={missing}; extra={extra}")
     components: list[FrozenComponent] = []
+    component_payloads: dict[str, dict[str, object]] = {}
     for component in sorted(COMPONENT_SCHEMAS):
         payload, path, rel = _json_manifest(root, component_paths[component], expected_schema=COMPONENT_SCHEMAS[component])
         _VALIDATORS[component](payload)
+        component_payloads[component] = payload
         if component == "executor_manifest":
             entrypoint, entrypoint_rel = _repo_file(root, payload["entrypoint_path"])
             if sha256_file(entrypoint) != _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256")):
@@ -388,6 +404,25 @@ def freeze_execution_manifests(
             bytes=path.stat().st_size,
             schema=COMPONENT_SCHEMAS[component],
         ))
+
+    model_rows = component_payloads["model_manifest"].get("models")
+    pricing_rows = component_payloads["pricing_snapshot"].get("entries")
+    if not isinstance(model_rows, list) or not isinstance(pricing_rows, list):
+        raise ExecutionManifestError("model/pricing populations missing after validation")
+    model_identities = {
+        (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
+        for row in model_rows
+        if isinstance(row, Mapping)
+    }
+    pricing_identities = {
+        (str(row["provider"]), str(row["model_id"]), str(row["model_version"]))
+        for row in pricing_rows
+        if isinstance(row, Mapping)
+    }
+    if pricing_identities != model_identities:
+        raise ExecutionManifestError(
+            "pricing snapshot must bind exactly the frozen model provider/id/version population"
+        )
 
     if not isinstance(governance_policy_paths, Mapping) or len(governance_policy_paths) < 2:
         raise ExecutionManifestError("at least two governance policies are required for controlled comparison")
