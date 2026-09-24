@@ -58,7 +58,8 @@
     "large_scale_operational_evidence": false,
     "production_control_authorized": false,
     "real_workload_mechanism_lane": "PREREGISTERED_COST_QUALITY_COVERAGE_ONLY_PRODUCT_PROMOTION_FORBIDDEN",
-    "risk_qualification_lane": "REQUIRED_FOR_PRODUCT_NOT_YET_OPERATIONALIZED_ON_SWE_BENCH_OR_TERMINAL_BENCH"
+    "risk_qualification_lane": "REQUIRED_FOR_PRODUCT_NOT_YET_OPERATIONALIZED_ON_SWE_BENCH_OR_TERMINAL_BENCH",
+    "frozen_policy_runtime": "IMPLEMENTED_NETWORK_ISOLATED_STATE_IN_REQUEST_ONLY_EXACT_ACTION_AND_OBSERVATION_CONTRACT_EXTERNAL_EXECUTION_PENDING"
   },
   "external_blockers": [
     "materialized and byte-sealed external task/scorer/environment manifests",
