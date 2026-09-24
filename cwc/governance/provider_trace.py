@@ -113,6 +113,18 @@ class ProviderUsageTrace:
             )
 
     @property
+    def provider_correlation_kind(self) -> str | None:
+        if self.provider_request_id:
+            return "REQUEST_ID"
+        if self.provider_response_id:
+            return "RESPONSE_ID"
+        return None
+
+    @property
+    def provider_correlation_id(self) -> str | None:
+        return self.provider_request_id or self.provider_response_id
+
+    @property
     def digest(self) -> str:
         return _digest({
             "trace_id": self.trace_id,
