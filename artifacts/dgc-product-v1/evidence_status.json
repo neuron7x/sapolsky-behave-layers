@@ -56,7 +56,9 @@
     "client_verified": false,
     "commercial_claim_authorized": false,
     "large_scale_operational_evidence": false,
-    "production_control_authorized": false
+    "production_control_authorized": false,
+    "real_workload_mechanism_lane": "PREREGISTERED_COST_QUALITY_COVERAGE_ONLY_PRODUCT_PROMOTION_FORBIDDEN",
+    "risk_qualification_lane": "REQUIRED_FOR_PRODUCT_NOT_YET_OPERATIONALIZED_ON_SWE_BENCH_OR_TERMINAL_BENCH"
   },
   "external_blockers": [
     "materialized and byte-sealed external task/scorer/environment manifests",
@@ -66,11 +68,12 @@
     "minted confirmatory generation roots for each materialized external workload family",
     "complete confirmatory execution populations promoted to EXECUTED authority",
     "real provider/client physical cost traces on the frozen harness",
-    "executed-population P9 quality/cost/catastrophic-regret evidence against exact B0-B3",
     "net cost superiority against every preregistered baseline",
     "unseen-task/domain/model/economic/perturbation generalization",
     "independent replication or independent theorem/formal review",
     "actual multi-node/cloud scale, load/soak and fault-recovery evidence",
-    "shadow qualification and bounded canary before production control authority"
+    "shadow qualification and bounded canary before production control authority",
+    "real-workload mechanism execution: paired cost + quality + full coverage against exact B0-B3 on SWE-bench Verified and Terminal-Bench 2.1",
+    "separate pre-outcome catastrophic-regret qualification on a scientifically defensible risk-labeled workload before PRODUCT_QUALIFIED"
   ]
 }
