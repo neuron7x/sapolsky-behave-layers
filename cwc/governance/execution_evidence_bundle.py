@@ -9,10 +9,18 @@ from typing import Mapping
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
+    CostAuthority,
+    CostComponentEvidence,
+    certify_physical_trial_cost,
+)
 
 BUNDLE_SCHEMA = "DGC_CONFIRMATORY_EXECUTION_BUNDLE_V1"
 RESULT_SCHEMA = "DGC_CONFIRMATORY_RESULT_V1"
 AUDIT_SCHEMA = "DGC_DISTRIBUTED_AUDIT_LOG_V1"
+EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
+RISK_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
 
 
 class ExecutionEvidenceError(RuntimeError):
@@ -138,6 +146,118 @@ class VerifiedExecutionBundle:
     bundle_digest: str
 
 
+def _verify_unit_evidence(
+    path: Path,
+    *,
+    result_payload: Mapping[str, object],
+    actual_cost_usd: float,
+) -> None:
+    doc = _json(path, schema=EVIDENCE_SCHEMA)
+
+    response = doc.get("response")
+    if not isinstance(response, Mapping):
+        raise ExecutionEvidenceError("execution evidence missing adapter response")
+    adapter_digest = sha256_bytes(canonical_json_bytes(dict(response)))
+    if _sha("adapter_response_digest", doc.get("adapter_response_digest")) != adapter_digest:
+        raise ExecutionEvidenceError("adapter response digest mismatch")
+    if _sha(
+        "result adapter_response_digest", result_payload.get("adapter_response_digest")
+    ) != adapter_digest:
+        raise ExecutionEvidenceError("result is not bound to adapter response")
+
+    trace = response.get("trace")
+    if not isinstance(trace, Mapping) or not trace:
+        raise ExecutionEvidenceError("execution evidence missing raw trace metadata")
+    trace_digest = sha256_bytes(canonical_json_bytes(dict(trace)))
+    if _sha("trace_digest", doc.get("trace_digest")) != trace_digest:
+        raise ExecutionEvidenceError("raw trace digest mismatch")
+    if _sha("result trace_digest", result_payload.get("trace_digest")) != trace_digest:
+        raise ExecutionEvidenceError("result is not bound to raw trace")
+
+    risk = doc.get("risk_endpoint_response")
+    if not isinstance(risk, Mapping) or risk.get("schema") != RISK_RESPONSE_SCHEMA:
+        raise ExecutionEvidenceError("execution evidence missing frozen risk response")
+    evidence = risk.get("evidence")
+    if not isinstance(evidence, Mapping) or not evidence:
+        raise ExecutionEvidenceError("risk response requires non-empty evidence")
+    risk_digest = sha256_bytes(canonical_json_bytes(dict(risk)))
+    if _sha("risk_endpoint_response_digest", doc.get("risk_endpoint_response_digest")) != risk_digest:
+        raise ExecutionEvidenceError("risk response digest mismatch")
+    if _sha(
+        "result risk_endpoint_response_digest", result_payload.get("risk_endpoint_response_digest")
+    ) != risk_digest:
+        raise ExecutionEvidenceError("result is not bound to frozen risk response")
+    risk_value = _finite(
+        "risk response catastrophic_regret",
+        risk.get("catastrophic_regret"),
+        lower=0.0,
+        upper=1.0,
+    )
+    result_risk = _finite(
+        "result catastrophic_regret",
+        result_payload.get("catastrophic_regret"),
+        lower=0.0,
+        upper=1.0,
+    )
+    if not math.isclose(risk_value, result_risk, rel_tol=0.0, abs_tol=1e-12):
+        raise ExecutionEvidenceError("result catastrophic_regret differs from frozen risk response")
+
+    certificate = doc.get("physical_cost_certificate")
+    if not isinstance(certificate, Mapping):
+        raise ExecutionEvidenceError("execution evidence missing physical cost certificate")
+    rows = certificate.get("components")
+    if not isinstance(rows, list) or len(rows) != len(PRODUCT_COST_COMPONENTS):
+        raise ExecutionEvidenceError("physical cost certificate component population mismatch")
+    cost_evidence: dict[str, CostComponentEvidence] = {}
+    try:
+        for row in rows:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid physical cost certificate row")
+            component = str(row.get("component", ""))
+            if component in cost_evidence or component not in PRODUCT_COST_COMPONENTS:
+                raise ExecutionEvidenceError("physical cost certificate component identity mismatch")
+            cost_evidence[component] = CostComponentEvidence(
+                component=component,
+                value_usd=float(row.get("value_usd")),
+                authority=CostAuthority(str(row.get("authority"))),
+                source_digest=_sha(
+                    f"physical cost source digest {component}", row.get("source_digest")
+                ),
+            )
+        rebuilt = certify_physical_trial_cost(
+            trial_id=_req("physical cost trial_id", certificate.get("trial_id")),
+            evidence=cost_evidence,
+        )
+    except (TypeError, ValueError, KeyError) as exc:
+        raise ExecutionEvidenceError("invalid physical cost certificate") from exc
+    if _sha("physical cost certificate digest", certificate.get("digest")) != rebuilt.digest:
+        raise ExecutionEvidenceError("physical cost certificate digest mismatch")
+    if _sha(
+        "result physical cost certificate digest",
+        result_payload.get("physical_cost_certificate_digest"),
+    ) != rebuilt.digest:
+        raise ExecutionEvidenceError("result is not bound to physical cost certificate")
+    declared_total = _finite(
+        "physical cost certificate total",
+        certificate.get("total_operational_usd"),
+        lower=0.0,
+    )
+    if not math.isclose(
+        declared_total,
+        rebuilt.cost.total_operational_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("physical cost certificate total mismatch")
+    if not math.isclose(
+        rebuilt.cost.total_operational_usd,
+        actual_cost_usd,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutionEvidenceError("result actual cost differs from physical cost certificate")
+
+
 def _verify_audit_log(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
     doc = _json(path, schema=AUDIT_SCHEMA)
     if _sha("audit spec_digest", doc.get("spec_digest")) != spec_digest:
@@ -239,6 +359,11 @@ def _verify_result(
         raise ExecutionEvidenceError("empty execution evidence artifact is not accepted")
     if _sha("evidence_sha256", doc.get("evidence_sha256")) != evidence_digest:
         raise ExecutionEvidenceError("execution evidence digest mismatch")
+    _verify_unit_evidence(
+        evidence_path,
+        result_payload=result_payload,
+        actual_cost_usd=cost,
+    )
 
     record_payload = {
         "root_authority_digest": root_authority_digest,
