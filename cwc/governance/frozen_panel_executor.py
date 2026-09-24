@@ -54,7 +54,11 @@ from cwc.governance.physical_cost_evidence import (
     PhysicalCostCertificate,
     certify_physical_trial_cost,
 )
-from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
+from cwc.governance.provider_trace import (
+    ProviderCallIdKind,
+    ProviderUsageTrace,
+    TraceAuthority,
+)
 
 EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
 
@@ -237,7 +241,7 @@ def _provider_model_meter(
     trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
     used_cards: dict[str, dict[str, object]] = {}
-    request_ids: set[str] = set()
+    call_ids: set[tuple[ProviderCallIdKind, str]] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise FrozenPanelExecutionError("invalid provider usage trace row")
@@ -250,9 +254,13 @@ def _provider_model_meter(
         card = rate_cards.get(identity)
         if card is None:
             raise FrozenPanelExecutionError("provider usage trace has no exact frozen rate card")
-        request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise FrozenPanelExecutionError("live provider usage requires real provider_request_id")
+        call_id_raw = raw.get("provider_call_id")
+        if not isinstance(call_id_raw, str) or not call_id_raw.strip():
+            raise FrozenPanelExecutionError("live provider usage requires real provider_call_id")
+        try:
+            call_id_kind = ProviderCallIdKind(str(raw.get("provider_call_id_kind")))
+        except ValueError as exc:
+            raise FrozenPanelExecutionError("invalid provider_call_id_kind") from exc
         try:
             trace = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
@@ -267,7 +275,8 @@ def _provider_model_meter(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_call_id=call_id_raw.strip(),
+                provider_call_id_kind=call_id_kind,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise FrozenPanelExecutionError("malformed provider usage trace") from exc
@@ -277,10 +286,10 @@ def _provider_model_meter(
             raise FrozenPanelExecutionError("provider trace decision/policy identity mismatch")
         if trace.rate_card_digest != card.digest:
             raise FrozenPanelExecutionError("provider trace rate-card digest mismatch")
-        request_id = str(trace.provider_request_id)
-        if request_id in request_ids:
-            raise FrozenPanelExecutionError("duplicate provider_request_id in one work unit")
-        request_ids.add(request_id)
+        call_identity = (call_id_kind, str(trace.provider_call_id))
+        if call_identity in call_ids:
+            raise FrozenPanelExecutionError("duplicate provider_call_id in one work unit")
+        call_ids.add(call_identity)
         metered = trace.meter(card)
         trace_doc = {
             "trace_digest": trace.digest,
@@ -288,7 +297,8 @@ def _provider_model_meter(
             "decision_id": trace.decision_id,
             "policy_id": trace.policy_id,
             "authority": trace.authority.value,
-            "provider_request_id": trace.provider_request_id,
+            "provider_call_id": trace.provider_call_id,
+            "provider_call_id_kind": trace.provider_call_id_kind.value,
             "provider": trace.provider,
             "model": trace.model,
             "model_version": model_version,
