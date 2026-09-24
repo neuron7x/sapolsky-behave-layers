@@ -21,6 +21,7 @@ COMPONENT_SCHEMAS = {
     "action_catalog_manifest": "DGC_ACTION_CATALOG_MANIFEST_V1",
     "executor_manifest": "DGC_EXECUTOR_MANIFEST_V1",
     "model_manifest": "DGC_MODEL_MANIFEST_V1",
+    "observation_builder_manifest": "DGC_OBSERVATION_BUILDER_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
     "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
@@ -249,6 +250,12 @@ RISK_ENDPOINT_PROTOCOL = "DGC_RISK_ENDPOINT_EXECUTION_PROTOCOL_V1"
 RISK_ENDPOINT_REQUEST_SCHEMA = "DGC_RISK_ENDPOINT_REQUEST_V1"
 RISK_ENDPOINT_RESPONSE_SCHEMA = "DGC_RISK_ENDPOINT_RESPONSE_V1"
 
+OBSERVATION_BUILDER_PROTOCOL = "DGC_OBSERVATION_BUILDER_PROTOCOL_V1"
+OBSERVATION_REQUEST_SCHEMA = "DGC_OBSERVATION_REQUEST_V1"
+OBSERVATION_RESPONSE_SCHEMA = "DGC_OBSERVATION_RESPONSE_V1"
+_OBSERVATION_MODES = frozenset({"STATIC_ONLY_V1", "COMMON_MODEL_PROBE_V1"})
+_COMMON_PROBE_COST_RULE = "CHARGED_IDENTICALLY_TO_ALL_ARMS"
+
 POLICY_PROTOCOL = "DGC_GOVERNANCE_POLICY_EXECUTION_PROTOCOL_V1"
 POLICY_REQUEST_SCHEMA = "DGC_POLICY_DECISION_REQUEST_V1"
 POLICY_RESPONSE_SCHEMA = "DGC_POLICY_DECISION_RESPONSE_V1"
@@ -314,6 +321,52 @@ def _validate_policy_config(
         raise ExecutionManifestError(f"{policy_id}: observation contract digest does not match config")
 
 
+def _validate_observation_builder(payload: Mapping[str, object]) -> None:
+    if payload.get("protocol") != OBSERVATION_BUILDER_PROTOCOL:
+        raise ExecutionManifestError("observation builder protocol identity mismatch")
+    if payload.get("request_schema") != OBSERVATION_REQUEST_SCHEMA:
+        raise ExecutionManifestError("observation builder request schema identity mismatch")
+    if payload.get("response_schema") != OBSERVATION_RESPONSE_SCHEMA:
+        raise ExecutionManifestError("observation builder response schema identity mismatch")
+    implementation = _req("observation builder implementation_path", payload.get("implementation_path"))
+    config = _req("observation builder config_path", payload.get("config_path"))
+    _sha("observation builder implementation_sha256", payload.get("implementation_sha256"))
+    _sha("observation builder config_sha256", payload.get("config_sha256"))
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
+        raise ExecutionManifestError("observation builder argv must be a non-empty string list")
+    if implementation not in argv or config not in argv:
+        raise ExecutionManifestError("observation builder argv must bind implementation and config paths")
+    if any(any(ch in x for ch in ("\x00", "\n", "\r")) for x in argv):
+        raise ExecutionManifestError("observation builder argv contains forbidden control characters")
+    timeout = _finite_nonnegative("observation builder timeout_seconds", payload.get("timeout_seconds"))
+    if timeout <= 0:
+        raise ExecutionManifestError("observation builder timeout_seconds must be > 0")
+    mode = _req("observation builder mode", payload.get("mode"))
+    if mode not in _OBSERVATION_MODES:
+        raise ExecutionManifestError("unsupported observation builder mode")
+    fields = payload.get("observation_fields")
+    policy_observation_contract_digest(fields)
+    if payload.get("confirmatory_label_access") is not False:
+        raise ExecutionManifestError("observation builder confirmatory-label access prohibited")
+    if payload.get("post_outcome_feature_mutation_allowed") is not False:
+        raise ExecutionManifestError("post-outcome observation mutation must be prohibited")
+    network = payload.get("network_access_allowed")
+    if mode == "STATIC_ONLY_V1":
+        if network is not False:
+            raise ExecutionManifestError("static observation builder must prohibit network access")
+        if payload.get("probe_action_id") not in (None, ""):
+            raise ExecutionManifestError("static observation builder cannot declare probe_action_id")
+    else:
+        if network is not True:
+            raise ExecutionManifestError("common model probe requires network access")
+        _req("observation builder probe_action_id", payload.get("probe_action_id"))
+        if payload.get("probe_cost_allocation") != _COMMON_PROBE_COST_RULE:
+            raise ExecutionManifestError("common probe cost must be charged identically to all arms")
+        if payload.get("probe_runs_in_clean_environment") is not True:
+            raise ExecutionManifestError("common probe must run in a clean environment")
+
+
 def _validate_executor(payload: Mapping[str, object]) -> None:
     if payload.get("protocol") != EXECUTOR_PROTOCOL:
         raise ExecutionManifestError("executor protocol identity mismatch")
@@ -345,6 +398,7 @@ _VALIDATORS = {
     "action_catalog_manifest": _validate_action_catalog,
     "executor_manifest": _validate_executor,
     "model_manifest": _validate_model,
+    "observation_builder_manifest": _validate_observation_builder,
     "prompt_policy": _validate_prompt,
     "tool_manifest": _validate_tools,
     "environment": _validate_environment,
@@ -487,6 +541,30 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("risk endpoint implementation path is non-canonical")
             if implementation_rel not in payload.get("argv", []):
                 raise ExecutionManifestError("risk endpoint argv implementation is not canonical repository-relative path")
+        if component == "observation_builder_manifest":
+            implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
+            config, config_rel = _repo_file(root, payload["config_path"])
+            if sha256_file(implementation) != _sha(
+                "observation builder implementation_sha256", payload.get("implementation_sha256")
+            ):
+                raise ExecutionManifestError("observation builder implementation bytes differ from frozen SHA-256")
+            if sha256_file(config) != _sha(
+                "observation builder config_sha256", payload.get("config_sha256")
+            ):
+                raise ExecutionManifestError("observation builder config bytes differ from frozen SHA-256")
+            if implementation_rel != str(payload.get("implementation_path")) or config_rel != str(payload.get("config_path")):
+                raise ExecutionManifestError("observation builder path is non-canonical")
+            if implementation_rel not in payload.get("argv", []) or config_rel not in payload.get("argv", []):
+                raise ExecutionManifestError("observation builder argv lost implementation/config identity")
+            try:
+                config_payload = json.loads(config.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise ExecutionManifestError("invalid observation builder config JSON") from exc
+            if not isinstance(config_payload, dict) or config_payload.get("schema") != "DGC_OBSERVATION_BUILDER_CONFIG_V1":
+                raise ExecutionManifestError("observation builder config schema mismatch")
+            for field in ("mode", "observation_fields", "probe_action_id"):
+                if config_payload.get(field) != payload.get(field):
+                    raise ExecutionManifestError(f"observation builder config {field} differs from manifest")
         components.append(FrozenComponent(
             component=component,
             path=rel,
@@ -525,6 +603,13 @@ def freeze_execution_manifests(
         )
     frozen_action_ids = [str(row["action_id"]) for row in action_rows if isinstance(row, Mapping)]
     frozen_action_catalog_digest = policy_action_catalog_digest(frozen_action_ids)
+    observation_builder = component_payloads["observation_builder_manifest"]
+    frozen_observation_contract_digest = policy_observation_contract_digest(
+        observation_builder.get("observation_fields")
+    )
+    if observation_builder.get("mode") == "COMMON_MODEL_PROBE_V1":
+        if str(observation_builder.get("probe_action_id")) not in set(frozen_action_ids):
+            raise ExecutionManifestError("common observation probe action is outside global frozen action catalog")
 
     if not isinstance(governance_policy_paths, Mapping) or len(governance_policy_paths) < 2:
         raise ExecutionManifestError("at least two governance policies are required for controlled comparison")
@@ -612,6 +697,10 @@ def freeze_execution_manifests(
         )
     if len({row.observation_contract_digest for row in policies}) != 1:
         raise ExecutionManifestError("all governance policies must share one admissible observation contract")
+    if any(row.observation_contract_digest != frozen_observation_contract_digest for row in policies):
+        raise ExecutionManifestError(
+            "governance policy observation contract differs from global frozen observation builder"
+        )
 
     try:
         plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
