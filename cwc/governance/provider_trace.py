@@ -60,6 +60,7 @@ class ProviderUsageTrace:
     quality_score: float | None = None
     covered: bool = True
     provider_request_id: str | None = None
+    provider_response_id: str | None = None
 
     def __post_init__(self) -> None:
         required = (self.trace_id, self.decision_id, self.policy_id, self.provider, self.model, self.rate_card_digest)
@@ -80,8 +81,36 @@ class ProviderUsageTrace:
             if not math.isfinite(q):
                 raise ValueError("quality_score must be finite when present")
             object.__setattr__(self, "quality_score", q)
-        if self.authority in {TraceAuthority.PROVIDER_LIVE, TraceAuthority.CLIENT_PRODUCTION} and not self.provider_request_id:
-            raise ValueError("live provider/client traces require provider_request_id")
+        request_id = (
+            self.provider_request_id.strip()
+            if isinstance(self.provider_request_id, str)
+            else ""
+        )
+        response_id = (
+            self.provider_response_id.strip()
+            if isinstance(self.provider_response_id, str)
+            else ""
+        )
+        if request_id:
+            object.__setattr__(self, "provider_request_id", request_id)
+        elif self.provider_request_id is not None:
+            raise ValueError("provider_request_id must be a non-empty string when present")
+        if response_id:
+            object.__setattr__(self, "provider_response_id", response_id)
+        elif self.provider_response_id is not None:
+            raise ValueError("provider_response_id must be a non-empty string when present")
+        if request_id and response_id:
+            raise ValueError("provider trace must use exactly one correlation identifier")
+        if (
+            self.authority in {
+                TraceAuthority.PROVIDER_LIVE,
+                TraceAuthority.CLIENT_PRODUCTION,
+            }
+            and not (request_id or response_id)
+        ):
+            raise ValueError(
+                "live provider/client traces require provider_request_id or provider_response_id"
+            )
 
     @property
     def digest(self) -> str:
@@ -109,6 +138,7 @@ class ProviderUsageTrace:
             "quality_score": self.quality_score,
             "covered": self.covered,
             "provider_request_id": self.provider_request_id,
+            "provider_response_id": self.provider_response_id,
         })
 
     def meter(self, rate_card: ProviderRateCard) -> MeteredDecisionCost:
