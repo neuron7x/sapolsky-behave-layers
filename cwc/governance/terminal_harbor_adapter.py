@@ -153,17 +153,25 @@ def _provider_traces(
     if not isinstance(raw, list) or not raw or not all(isinstance(row, Mapping) for row in raw):
         raise TerminalHarborAdapterError("real dgc_provider_usage_traces required")
     rows = [{str(k): v for k, v in row.items()} for row in raw]
-    request_ids: set[str] = set()
+    call_ids: set[tuple[str, str]] = set()
     selected_action_seen = False
     for row in rows:
         if str(row.get("policy_id", "")).strip() != policy_id:
             raise TerminalHarborAdapterError("provider trace policy identity mismatch")
-        request_id = str(row.get("provider_request_id", "")).strip()
-        if not request_id:
-            raise TerminalHarborAdapterError("provider trace requires real provider_request_id")
-        if request_id in request_ids:
-            raise TerminalHarborAdapterError("duplicate provider_request_id in Harbor telemetry")
-        request_ids.add(request_id)
+        call_id = str(row.get("provider_call_id", "")).strip()
+        call_id_kind = str(row.get("provider_call_id_kind", "")).strip()
+        if not call_id:
+            raise TerminalHarborAdapterError("provider trace requires real provider_call_id")
+        if call_id_kind not in {
+            "HTTP_REQUEST_ID",
+            "PROVIDER_RESPONSE_ID",
+            "PROVIDER_INTERACTION_ID",
+        }:
+            raise TerminalHarborAdapterError("provider trace requires trusted provider_call_id_kind")
+        call_identity = (call_id_kind, call_id)
+        if call_identity in call_ids:
+            raise TerminalHarborAdapterError("duplicate provider_call_id in Harbor telemetry")
+        call_ids.add(call_identity)
         identity = (
             str(row.get("provider", "")).strip(),
             str(row.get("model", "")).strip(),
