@@ -9,6 +9,7 @@ from typing import Mapping
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
+from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.physical_cost_evidence import (
     PRODUCT_COST_COMPONENTS,
@@ -148,12 +149,103 @@ class VerifiedExecutionBundle:
     bundle_digest: str
 
 
+def _safe_repository_subject(root: Path, value: object) -> Path:
+    rel = Path(str(value))
+    if not str(value) or rel.is_absolute() or ".." in rel.parts:
+        raise ExecutionEvidenceError("frozen component path must be repository-relative")
+    current = root
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ExecutionEvidenceError("frozen component path contains symlink")
+    path = (root / rel).resolve()
+    try:
+        path.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ExecutionEvidenceError("frozen component path escapes repository root") from exc
+    if not path.is_file():
+        raise ExecutionEvidenceError("frozen component file missing from repository")
+    return path
+
+
+def _strict_execution_lineage(
+    *,
+    root_authority: Mapping[str, object],
+    execution_manifest_freeze_path: Path | None,
+    repository_root: Path | None,
+) -> tuple[str | None, str | None, dict[tuple[str, str, str], ProviderRateCard] | None]:
+    if execution_manifest_freeze_path is None:
+        return None, None, None
+    execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
+    freeze_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
+    if freeze_digest != _sha(
+        "root execution_manifest_freeze_digest",
+        root_authority.get("execution_manifest_freeze_digest"),
+    ):
+        raise ExecutionEvidenceError("execution bundle replay uses a different execution freeze")
+    rows = execution.get("components")
+    if not isinstance(rows, list):
+        raise ExecutionEvidenceError("execution freeze component population missing")
+    by_name = {
+        str(row.get("component")): row
+        for row in rows
+        if isinstance(row, Mapping)
+    }
+    if "pricing_snapshot" not in by_name or "risk_endpoint_manifest" not in by_name:
+        raise ExecutionEvidenceError("execution freeze lacks pricing/risk components")
+    pricing_sha = _sha("frozen pricing component sha256", by_name["pricing_snapshot"].get("sha256"))
+    risk_sha = _sha("frozen risk component sha256", by_name["risk_endpoint_manifest"].get("sha256"))
+    if repository_root is None:
+        return pricing_sha, risk_sha, None
+
+    repo_root = Path(repository_root).resolve()
+    pricing_path = _safe_repository_subject(repo_root, by_name["pricing_snapshot"].get("path"))
+    if sha256_file(pricing_path) != pricing_sha:
+        raise ExecutionEvidenceError("repository pricing bytes differ from execution freeze")
+    pricing_doc = _json(pricing_path, schema="DGC_PRICING_SNAPSHOT_V1")
+    captured_at = _req("pricing captured_at", pricing_doc.get("captured_at"))
+    entries = pricing_doc.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise ExecutionEvidenceError("frozen pricing entries missing")
+    expected: dict[tuple[str, str, str], ProviderRateCard] = {}
+    try:
+        for row in entries:
+            if not isinstance(row, Mapping):
+                raise ExecutionEvidenceError("invalid frozen pricing row")
+            identity = (
+                _req("pricing provider", row.get("provider")),
+                _req("pricing model_id", row.get("model_id")),
+                _req("pricing model_version", row.get("model_version")),
+            )
+            if identity in expected:
+                raise ExecutionEvidenceError("duplicate frozen pricing identity")
+            if str(row.get("currency", "")) != "USD":
+                raise ExecutionEvidenceError("frozen pricing currency is not USD")
+            expected[identity] = ProviderRateCard(
+                provider=identity[0],
+                model=identity[1],
+                input_usd_per_million=float(row["input_per_million"]),
+                cached_input_usd_per_million=float(row["cached_input_per_million"]),
+                cache_write_usd_per_million=float(row["cache_write_per_million"]),
+                long_cache_write_usd_per_million=float(row["long_cache_write_per_million"]),
+                output_usd_per_million=float(row["output_per_million"]),
+                source_uri=str(row["source_uri"]),
+                retrieved_at=captured_at,
+            )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ExecutionEvidenceError("invalid frozen pricing manifest") from exc
+    return pricing_sha, risk_sha, expected
+
+
 def _verify_unit_evidence(
     path: Path,
     *,
     result_payload: Mapping[str, object],
     actual_cost_usd: float,
     unit: WorkUnitId,
+    expected_pricing_sha: str | None = None,
+    expected_risk_sha: str | None = None,
+    expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
 ) -> None:
     doc = _json(path, schema=EVIDENCE_SCHEMA)
 
@@ -208,6 +300,8 @@ def _verify_unit_evidence(
     pricing_sha = _sha(
         "pricing_snapshot_manifest_sha256", doc.get("pricing_snapshot_manifest_sha256")
     )
+    if expected_pricing_sha is not None and pricing_sha != expected_pricing_sha:
+        raise ExecutionEvidenceError("evidence pricing snapshot differs from execution freeze")
     if _sha(
         "result pricing_snapshot_manifest_sha256",
         result_payload.get("pricing_snapshot_manifest_sha256"),
@@ -216,6 +310,8 @@ def _verify_unit_evidence(
     risk_manifest_sha = _sha(
         "risk_endpoint_manifest_sha256", doc.get("risk_endpoint_manifest_sha256")
     )
+    if expected_risk_sha is not None and risk_manifest_sha != expected_risk_sha:
+        raise ExecutionEvidenceError("evidence risk endpoint differs from execution freeze")
     if _sha(
         "result risk_endpoint_manifest_sha256",
         result_payload.get("risk_endpoint_manifest_sha256"),
@@ -250,6 +346,10 @@ def _verify_unit_evidence(
             )
             if _sha("rate_card_digest", row.get("rate_card_digest")) != card.digest:
                 raise ExecutionEvidenceError("provider rate-card digest mismatch")
+            if expected_rate_cards is not None:
+                expected_card = expected_rate_cards.get(identity)
+                if expected_card is None or expected_card.digest != card.digest:
+                    raise ExecutionEvidenceError("embedded provider rate card differs from frozen pricing")
             rate_cards[identity] = card
     except (KeyError, TypeError, ValueError) as exc:
         raise ExecutionEvidenceError("invalid provider rate-card evidence") from exc
@@ -478,6 +578,9 @@ def _verify_result(
     root_digest: str,
     spec: DistributedEvalSpec,
     audit_events: list[dict[str, object]],
+    expected_pricing_sha: str | None = None,
+    expected_risk_sha: str | None = None,
+    expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
 ) -> VerifiedExecutionResult:
     doc = _json(path, schema=RESULT_SCHEMA)
     if _sha("result root_authority_digest", doc.get("root_authority_digest")) != root_authority_digest:
@@ -519,6 +622,9 @@ def _verify_result(
         result_payload=result_payload,
         actual_cost_usd=cost,
         unit=unit,
+        expected_pricing_sha=expected_pricing_sha,
+        expected_risk_sha=expected_risk_sha,
+        expected_rate_cards=expected_rate_cards,
     )
 
     record_payload = {
@@ -586,6 +692,8 @@ def verify_execution_bundle(
     bundle_root: Path,
     *,
     confirmatory_root_authority_path: Path,
+    execution_manifest_freeze_path: Path | None = None,
+    repository_root: Path | None = None,
 ) -> VerifiedExecutionBundle:
     supplied = Path(bundle_root)
     if supplied.is_symlink() or not supplied.is_dir():
@@ -594,6 +702,11 @@ def verify_execution_bundle(
     manifest_path = root / "EXECUTION_BUNDLE.json"
     manifest = _json(manifest_path, schema=BUNDLE_SCHEMA)
     root_authority = verify_confirmatory_root_authority_document(Path(confirmatory_root_authority_path))
+    expected_pricing_sha, expected_risk_sha, expected_rate_cards = _strict_execution_lineage(
+        root_authority=root_authority,
+        execution_manifest_freeze_path=execution_manifest_freeze_path,
+        repository_root=repository_root,
+    )
     root_authority_digest = _sha("root authority_digest", root_authority.get("authority_digest"))
     root_doc = root_authority.get("root")
     spec_doc = root_authority.get("distributed_spec")
@@ -648,6 +761,9 @@ def verify_execution_bundle(
             root_digest=root_digest,
             spec=spec,
             audit_events=audit_events,
+            expected_pricing_sha=expected_pricing_sha,
+            expected_risk_sha=expected_risk_sha,
+            expected_rate_cards=expected_rate_cards,
         )
         for path, _ in result_paths
     )
