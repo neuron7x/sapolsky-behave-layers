@@ -4,12 +4,16 @@
     {
       "root": "cwc/instrumentation",
       "internal_namespace": "cwc",
-      "allowed_prefixes": ["cwc.instrumentation"]
+      "allowed_prefixes": [
+        "cwc.instrumentation"
+      ]
     },
     {
       "root": "cwc/plasticity",
       "internal_namespace": "cwc",
-      "allowed_prefixes": ["cwc.plasticity"]
+      "allowed_prefixes": [
+        "cwc.plasticity"
+      ]
     },
     {
       "root": "experiments/common",
@@ -22,7 +26,28 @@
     {
       "root": "cwc/causal",
       "internal_namespace": "cwc",
-      "allowed_prefixes": ["cwc.causal"]
+      "allowed_prefixes": [
+        "cwc.causal"
+      ]
+    },
+    {
+      "root": "cwc/epistemics",
+      "internal_namespace": "cwc",
+      "allowed_prefixes": [
+        "cwc.epistemics",
+        "cwc.causal",
+        "cwc.replay",
+        "cwc.memory",
+        "cwc.planning"
+      ]
+    },
+    {
+      "root": "cwc/governance",
+      "internal_namespace": "cwc",
+      "allowed_prefixes": [
+        "cwc.governance",
+        "cwc.epistemics"
+      ]
     }
   ]
 }

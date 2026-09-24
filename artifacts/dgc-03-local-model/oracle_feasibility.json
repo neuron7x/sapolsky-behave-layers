@@ -1,0 +1,29 @@
+{
+  "action_set": [
+    "DEPTH_1_STOP",
+    "DEPTH_2_CONTINUE"
+  ],
+  "authority": "FINITE_WORKLOAD_OMNISCIENT_UPPER_BOUND",
+  "cohorts": {
+    "PRIMARY": {
+      "delta_quality_vs_depth2": 1.4803217103083929e-05,
+      "max_logical_flop_savings_zero_route_overhead": 0.2059791504075616,
+      "max_skip_rate": 0.4752604166666667,
+      "max_skips": 365,
+      "rows": 768,
+      "skipped_gain_sum": -0.011368870735168457
+    },
+    "REPLICATION": {
+      "delta_quality_vs_depth2": 2.6537726322809856e-05,
+      "max_logical_flop_savings_zero_route_overhead": 0.21105808836281653,
+      "max_skip_rate": 0.4869791666666667,
+      "max_skips": 187,
+      "rows": 384,
+      "skipped_gain_sum": -0.010190486907958984
+    }
+  },
+  "route_overhead_assumed": 0.0,
+  "schema": "dgc03-oracle-feasibility/1",
+  "thirty_percent_feasible": false,
+  "verdict": "LOCAL_MODEL_30PCT_ORACLE_INFEASIBLE"
+}

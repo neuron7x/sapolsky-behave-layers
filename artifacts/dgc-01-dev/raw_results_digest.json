@@ -1,0 +1,8 @@
+{
+  "bytes": 142308860,
+  "derived_regenerable": true,
+  "file": "raw_results.jsonl",
+  "line_count": 400000,
+  "regeneration": "python -m experiments.dgc_01.run --per-regime 20000 --seed-offset 0 --keep-raw",
+  "sha256": "2673dd1d74423754e054b880d52373df5c5c0e019a3234b6320ce2c9dfaa0143"
+}

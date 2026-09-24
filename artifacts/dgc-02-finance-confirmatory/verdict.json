@@ -1,0 +1,43 @@
+{
+  "analytic_population_savings_at_overhead": 0.35031847133757954,
+  "analytic_theorem": {
+    "core_savings": 0.5095541401273885,
+    "dgc_core_expected_cost": 0.0385,
+    "max_overhead_for_threshold": 0.01645,
+    "max_overhead_fraction_of_reference": 0.20955414012738852,
+    "quality_delta": 0.0,
+    "reference_expected_cost": 0.0785,
+    "threshold": 0.3
+  },
+  "authority": "PROSPECTIVE_SYNTHETIC_CONFIRMATION",
+  "client_verified": false,
+  "commercial_claim_allowed": false,
+  "coverage": 1.0,
+  "financial_gate": {
+    "delta_quality": 0.0,
+    "max_mean_overhead_for_threshold": 0.016463324673455855,
+    "mean_dgc_core_cost": 0.03851175472728219,
+    "mean_dgc_total_cost": 0.0510117547272822,
+    "mean_governance_overhead": 0.0125,
+    "mean_reference_cost": 0.07853582771534007,
+    "method": "STRATIFIED_FIXED_N_HOEFFDING_BONFERRONI_V1",
+    "n": 100000,
+    "net_inference_savings": 0.3504651798898875,
+    "quality_lcb": 0.0,
+    "quality_ucb": 0.0,
+    "savings_lcb": 0.30393402255124596,
+    "savings_ucb": 0.3988299894450282,
+    "threshold": 0.3,
+    "threshold_met": true
+  },
+  "general_superiority_claim_allowed": false,
+  "monte_carlo_gap_to_analytic": 0.00014670855230797253,
+  "per_regime": 20000,
+  "preregistration_commit": "8e6db42fcb1a12dcf7e3fca54f695e6b05a06e70",
+  "schema": "dgc-02-synthetic-confirmatory/1",
+  "seed_offset": 200000000,
+  "status": "SYNTHETIC_CONFIRMATORY_THRESHOLD_MET",
+  "synthetic_governance_overhead": 0.0125,
+  "tasks": 100000,
+  "threshold": 0.3
+}

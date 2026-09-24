@@ -1,0 +1,15 @@
+{
+  "claim_scope_effect": "DGC optimality requires a valid decision model; misspecified belief can make DGC worse than fixed compute.",
+  "counterexample": {
+    "b0_expected_value": -0.02,
+    "believed_p_b": 0.005,
+    "cost": 0.02,
+    "dgc_buy": false,
+    "dgc_expected_value": -0.025,
+    "dgc_minus_b0": -0.005000000000000001,
+    "loss_b": 0.5,
+    "true_p_b": 0.05
+  },
+  "promotion_effect": "NONE_NEGATIVE_BOUNDARY_ONLY",
+  "status": "COUNTEREXAMPLE_FOUND"
+}
