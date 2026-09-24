@@ -8,7 +8,7 @@ from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 
 PROTOCOL = "DGC_PAIRED_COMMON_RANDOM_NUMBERS_V1"
-INDEPENDENCE_ASSUMPTION = "CROSS_TASK_REPLICATE_PROVIDER_REQUESTS_CONDITIONALLY_INDEPENDENT"
+INDEPENDENCE_ASSUMPTION = "CROSS_TASK_REPLICATE_PROVIDER_CALLS_CONDITIONALLY_INDEPENDENT"
 
 
 class RandomnessProtocolError(RuntimeError):
@@ -29,7 +29,7 @@ class RandomnessProtocolAuthority:
     protocol: str
     independence_assumption: str
     task_replicate_pairs: int
-    provider_requests: int
+    provider_calls: int
     schedule_digest: str
     authority_digest: str
     assumption_verified: bool = False
@@ -40,7 +40,7 @@ def verify_paired_randomness_protocol(
     *,
     root_digest: str,
 ) -> RandomnessProtocolAuthority:
-    request_ids: set[str] = set()
+    provider_calls: set[tuple[str, str]] = set()
     schedule_rows: list[tuple[str, int, int, tuple[str, ...]]] = []
     by_pair: dict[tuple[str, int], list] = {}
     for result in bundle.results:
@@ -58,12 +58,12 @@ def verify_paired_randomness_protocol(
         )
         if seed != expected:
             raise RandomnessProtocolError("execution result seed differs from precommitted paired schedule")
-        request_id = str(payload.get("provider_request_id", "")).strip()
-        if not request_id:
-            raise RandomnessProtocolError("provider_request_id required for randomness protocol")
-        if request_id in request_ids:
-            raise RandomnessProtocolError("provider_request_id reused across execution units")
-        request_ids.add(request_id)
+        if not result.provider_call_identities:
+            raise RandomnessProtocolError("verified provider call population required for randomness protocol")
+        for call_identity in result.provider_call_identities:
+            if call_identity in provider_calls:
+                raise RandomnessProtocolError("provider call identity reused across execution units")
+            provider_calls.add(call_identity)
         by_pair.setdefault((result.unit.task_id, result.unit.replicate), []).append(result)
 
     for (task_id, replicate), rows in sorted(by_pair.items()):
@@ -82,7 +82,7 @@ def verify_paired_randomness_protocol(
         "protocol": PROTOCOL,
         "independence_assumption": INDEPENDENCE_ASSUMPTION,
         "task_replicate_pairs": len(schedule_rows),
-        "provider_requests": len(request_ids),
+        "provider_calls": len(provider_calls),
         "schedule_digest": schedule_digest,
         "assumption_verified": False,
     }
@@ -92,7 +92,7 @@ def verify_paired_randomness_protocol(
         protocol=PROTOCOL,
         independence_assumption=INDEPENDENCE_ASSUMPTION,
         task_replicate_pairs=len(schedule_rows),
-        provider_requests=len(request_ids),
+        provider_calls=len(provider_calls),
         schedule_digest=schedule_digest,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
         assumption_verified=False,
