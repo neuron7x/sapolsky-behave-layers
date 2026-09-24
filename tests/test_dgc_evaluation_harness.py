@@ -19,11 +19,13 @@ def _harness(
     scorer="scorer",
     risk="risk",
     actions="actions",
+    observations="observations",
     ccf="ccf",
 ) -> FrozenEvaluationHarness:
     return FrozenEvaluationHarness(
         action_catalog_digest=_h(actions),
         model_manifest_digest=_h("models"),
+        observation_provider_digest=_h(observations),
         prompt_policy_digest=_h("prompt"),
         tool_manifest_digest=_h("tools"),
         task_manifest_digest=_h(tasks),
@@ -50,6 +52,14 @@ def test_action_catalog_drift_invalidates_comparison():
         certify_controlled_comparison(
             _harness("B1", actions="a1"),
             _harness("DGC", actions="a2"),
+        )
+
+
+def test_observation_provider_drift_invalidates_comparison():
+    with pytest.raises(ValueError):
+        certify_controlled_comparison(
+            _harness("B1", observations="features-v1"),
+            _harness("DGC", observations="features-v2"),
         )
 
 
@@ -86,6 +96,7 @@ def test_semantic_label_cannot_masquerade_as_digest():
         FrozenEvaluationHarness(
             action_catalog_digest=_h("actions"),
             model_manifest_digest="models",
+            observation_provider_digest=_h("observations"),
             prompt_policy_digest=_h("1"),
             tool_manifest_digest=_h("2"),
             task_manifest_digest=_h("3"),
