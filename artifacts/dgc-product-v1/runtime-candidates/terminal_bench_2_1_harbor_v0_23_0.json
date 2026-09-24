@@ -1,0 +1,73 @@
+{
+  "schema": "DGC_BENCHMARK_RUNTIME_CANDIDATE_V1",
+  "family_id": "TERMINAL_BENCH_2_1",
+  "status": "SOURCE_VERIFIED_RUNTIME_CANDIDATE",
+  "confirmatory_usable": false,
+  "product_promotion_authorized": false,
+  "benchmark_source": {
+    "repository": "harbor-framework/terminal-bench-2-1",
+    "commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "root_tree": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+    "tasks_tree": "2f0f5fdc68f0befd9b4745386eb8698264b00d8a",
+    "dataset_manifest_blob": "6e7e030fd37a7cefdbd597badcf8560c8748d995",
+    "expected_tasks": 89
+  },
+  "harness_runtime": {
+    "repository": "harbor-framework/harbor",
+    "version": "0.23.0",
+    "tag": "v0.23.0",
+    "tag_object": "3c305dc5611e3600afc3c818735a82322f0264f8",
+    "tag_signature_verified": false,
+    "commit": "1e5c5c6db929a10a140d05e606882c671ae20729",
+    "tree": "b399c3e614a6180d194359d8fd8df7fded1dad89",
+    "source_files": {
+      "pyproject.toml": "f37c92e1b2de2dec7a042bad8db0f6483f9a76f3",
+      "uv.lock": "15acce780d6ff0b3c87948de412686e686499ab5",
+      "src/harbor/cli/main.py": "7ee9eba07dc741a600899456848aed50a3ba8803",
+      "src/harbor/cli/jobs.py": "6c7136ef526b42c2b1095127c5e595e03deac3a1"
+    },
+    "python_requires": ">=3.12",
+    "execution_semantics": {
+      "task_source": "materialized local task directory",
+      "task_selection": "--path <exact-task-dir>",
+      "attempts": 1,
+      "concurrency": 1,
+      "upload": false,
+      "result_root": "--jobs-dir <unit-staging-dir>",
+      "deterministic_job_name": "derived from frozen generation/unit/attempt",
+      "auto_confirm": true
+    },
+    "observed_result_fields": [
+      "verifier_result.rewards",
+      "agent_result.n_input_tokens",
+      "agent_result.n_cache_tokens",
+      "agent_result.n_output_tokens",
+      "agent_result.cost_usd",
+      "agent_result.model_usage",
+      "agent_result.metadata",
+      "trial task_checksum",
+      "raw trial result.json",
+      "raw trajectory"
+    ]
+  },
+  "admissibility_blockers": [
+    "IMMUTABLE_SANDBOX_OCI_DIGEST_NOT_FROZEN",
+    "HARBOR_RUNTIME_NOT_MATERIALIZED_AND_VERSION_ATTESTED",
+    "EXECUTABLE_B0_B1_B2_B3_DGC_POLICY_PANEL_NOT_FROZEN",
+    "EXACT_PROVIDER_MODEL_VERSIONS_NOT_FROZEN",
+    "PROVIDER_REQUEST_ID_TRACE_CONTRACT_NOT_CLOSED",
+    "COMPLETE_TEN_COMPONENT_PHYSICAL_COST_EVIDENCE_NOT_CLOSED",
+    "CALIBRATION_ONLY_B2_NOT_FITTED",
+    "EXACT_HEAD_EXECUTOR_TESTS_NOT_EXECUTED"
+  ],
+  "evidence_boundary": {
+    "allows": "runtime candidate design and adapter development only",
+    "forbids": [
+      "CONFIRMATORY_EXECUTED",
+      "P9_SUPPORTED",
+      "PRODUCT_QUALIFIED",
+      "PROVIDER_LIVE cost authority",
+      "commercial savings claims"
+    ]
+  }
+}
