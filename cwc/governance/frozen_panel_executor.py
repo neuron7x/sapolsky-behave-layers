@@ -221,12 +221,18 @@ def _provider_model_meter(
     response: Mapping[str, object],
     unit: WorkUnitId,
     rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
-) -> tuple[float, str, tuple[dict[str, object], ...]]:
+) -> tuple[
+    float,
+    str,
+    tuple[dict[str, object], ...],
+    tuple[dict[str, object], ...],
+]:
     raw_rows = response.get("provider_usage_traces")
     if not isinstance(raw_rows, list) or not raw_rows:
         raise FrozenPanelExecutionError("executor response requires provider_usage_traces")
     trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
+    used_cards: dict[str, dict[str, object]] = {}
     request_ids: set[str] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
@@ -272,6 +278,9 @@ def _provider_model_meter(
         trace_doc = {
             "trace_digest": trace.digest,
             "trace_id": trace.trace_id,
+            "decision_id": trace.decision_id,
+            "policy_id": trace.policy_id,
+            "authority": trace.authority.value,
             "provider_request_id": trace.provider_request_id,
             "provider": trace.provider,
             "model": trace.model,
@@ -284,10 +293,28 @@ def _provider_model_meter(
             "output_tokens": trace.output_tokens,
             "model_token_usd": metered.model_token_usd,
         }
+        used_cards.setdefault(card.digest, {
+            "rate_card_digest": card.digest,
+            "provider": card.provider,
+            "model": card.model,
+            "model_version": model_version,
+            "input_usd_per_million": card.input_usd_per_million,
+            "cached_input_usd_per_million": card.cached_input_usd_per_million,
+            "cache_write_usd_per_million": card.cache_write_usd_per_million,
+            "long_cache_write_usd_per_million": card.long_cache_write_usd_per_million,
+            "output_usd_per_million": card.output_usd_per_million,
+            "source_uri": card.source_uri,
+            "retrieved_at": card.retrieved_at,
+        })
         trace_docs.append(trace_doc)
         metered_rows.append((trace.digest, model_version))
     population_digest = sha256_bytes(canonical_json_bytes(sorted(metered_rows)))
-    return math.fsum([float(row["model_token_usd"]) for row in trace_docs]), population_digest, tuple(trace_docs)
+    return (
+        math.fsum([float(row["model_token_usd"]) for row in trace_docs]),
+        population_digest,
+        tuple(trace_docs),
+        tuple(used_cards[key] for key in sorted(used_cards)),
+    )
 
 
 def _risk_endpoint_manifest(
@@ -706,7 +733,12 @@ def execute_frozen_panel(
                     argv=argv, request=request, root=root, env=env, timeout=timeout
                 )
                 quality = _finite_probability("quality", response.get("quality"))
-                model_usd, provider_trace_population_digest, provider_trace_docs = _provider_model_meter(
+                (
+                    model_usd,
+                    provider_trace_population_digest,
+                    provider_trace_docs,
+                    provider_rate_card_docs,
+                ) = _provider_model_meter(
                     response=response,
                     unit=lease.unit,
                     rate_cards=rate_cards,
@@ -775,6 +807,7 @@ def execute_frozen_panel(
                 "risk_stderr_path": risk_stderr_path.relative_to(staging).as_posix(),
                 "risk_stderr_sha256": sha256_file(risk_stderr_path),
                 "pricing_snapshot_manifest_sha256": pricing_component_sha,
+                "provider_rate_cards": list(provider_rate_card_docs),
                 "provider_usage_traces": list(provider_trace_docs),
                 "provider_trace_population_digest": provider_trace_population_digest,
                 "physical_cost_certificate": {
@@ -800,6 +833,7 @@ def execute_frozen_panel(
                 "adapter_response_digest": response_digest,
                 "trace_digest": trace_digest,
                 "risk_endpoint_response_digest": risk_response_digest,
+                "risk_endpoint_manifest_sha256": risk_component_sha,
                 "physical_cost_certificate_digest": cost_certificate.digest,
                 "provider_trace_population_digest": provider_trace_population_digest,
                 "pricing_snapshot_manifest_sha256": pricing_component_sha,
