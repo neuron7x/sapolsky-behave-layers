@@ -76,6 +76,7 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
     adapter.write_text("print('adapter')\n", encoding="utf-8")
     paths = {
         "action_catalog_manifest": base / "actions.json",
+        "benchmark_runtime_manifest": base / "benchmark-runtime.json",
         "executor_manifest": base / "executor.json",
         "model_manifest": base / "model.json",
         "observation_provider_manifest": base / "observations.json",
@@ -87,6 +88,20 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "risk_endpoint_manifest": base / "risk-endpoint.json",
         "scorer": base / "scorer.json",
     }
+    _write(paths["benchmark_runtime_manifest"], {
+        "schema": "DGC_BENCHMARK_RUNTIME_MANIFEST_V1",
+        "family_id": FAMILY,
+        "runtime_name": "harbor",
+        "runtime_version": "0.23.0",
+        "repository": "harbor-framework/harbor",
+        "repository_commit": "1" * 40,
+        "repository_tree": "2" * 40,
+        "lock_file_path": "uv.lock",
+        "lock_file_blob_oid": "3" * 40,
+        "invocation": ["uv", "run", "--frozen", "harbor"],
+        "root_environment_variable": "DGC_BENCHMARK_RUNTIME_ROOT",
+        "local_materialization_required": True,
+    })
     _write(paths["action_catalog_manifest"], {
         "schema": "DGC_ACTION_CATALOG_MANIFEST_V1",
         "actions": [
@@ -264,12 +279,63 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     repo.mkdir()
     frozen = _freeze(repo)
     assert frozen.family_id == FAMILY
-    assert len(frozen.components) == 11
+    assert len(frozen.components) == 12
     assert len(frozen.governance_policies) == 2
     assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
     assert frozen.prebaseline_comparison_digest
     assert frozen.document["harness_frozen"] is False
+
+
+def test_benchmark_runtime_family_mismatch_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    runtime = repo / components["benchmark_runtime_manifest"]
+    doc = json.loads(runtime.read_text())
+    doc["family_id"] = "OTHER"
+    _write(runtime, doc)
+    with pytest.raises(ExecutionManifestError, match="runtime family differs"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_mutable_benchmark_runtime_version_is_rejected(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    runtime = repo / components["benchmark_runtime_manifest"]
+    doc = json.loads(runtime.read_text())
+    doc["runtime_version"] = "latest"
+    _write(runtime, doc)
+    with pytest.raises(ExecutionManifestError, match="mutable benchmark runtime version alias"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_benchmark_runtime_git_identity_must_be_exact(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    runtime = repo / components["benchmark_runtime_manifest"]
+    doc = json.loads(runtime.read_text())
+    doc["repository_commit"] = "not-a-git-object"
+    _write(runtime, doc)
+    with pytest.raises(ExecutionManifestError, match="repository_commit must be a Git object id"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
 
 
 def test_observation_provider_implementation_tamper_is_rejected(tmp_path: Path):
