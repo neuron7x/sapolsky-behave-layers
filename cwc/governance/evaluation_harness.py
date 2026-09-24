@@ -24,6 +24,7 @@ def _digest_field(name: str, value: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class FrozenEvaluationHarness:
+    action_catalog_digest: str
     model_manifest_digest: str
     prompt_policy_digest: str
     tool_manifest_digest: str
@@ -40,7 +41,7 @@ class FrozenEvaluationHarness:
 
     def __post_init__(self) -> None:
         for name in (
-            "model_manifest_digest", "prompt_policy_digest", "tool_manifest_digest",
+            "action_catalog_digest", "model_manifest_digest", "prompt_policy_digest", "tool_manifest_digest",
             "task_manifest_digest", "environment_digest", "budget_digest",
             "pricing_snapshot_digest", "scorer_digest", "risk_endpoint_digest",
             "counterfactual_oracle_spec_digest", "statistical_plan_digest", "baseline_panel_digest", "governance_policy_digest",
@@ -51,6 +52,7 @@ class FrozenEvaluationHarness:
     def comparison_frame_digest(self) -> str:
         """Digest of everything that must remain identical across policies."""
         return canonical_manifest_digest({
+            "action_catalog_digest": self.action_catalog_digest,
             "model_manifest_digest": self.model_manifest_digest,
             "prompt_policy_digest": self.prompt_policy_digest,
             "tool_manifest_digest": self.tool_manifest_digest,
@@ -78,7 +80,7 @@ def certify_controlled_comparison(
 ) -> str:
     if reference.comparison_frame_digest != candidate.comparison_frame_digest:
         raise ValueError(
-            "controlled comparison invalid: tasks/models/tools/environment/budget/pricing/scorer/risk-endpoint/CCF/statistical plan/baseline panel differ"
+            "controlled comparison invalid: actions/tasks/models/tools/environment/budget/pricing/scorer/risk-endpoint/CCF/statistical plan/baseline panel differ"
         )
     if reference.governance_policy_digest == candidate.governance_policy_digest:
         raise ValueError("comparison requires distinct governance policies")

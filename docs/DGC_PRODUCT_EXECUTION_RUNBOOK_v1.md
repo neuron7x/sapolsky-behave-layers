@@ -82,6 +82,7 @@ For each workload family produce SHA-256 content identities for:
 - frozen `catastrophic_regret` endpoint implementation + semantics contract;
 - environment/container images;
 - model IDs/versions and model manifest;
+- one global action catalog binding every action ID to exact Harbor agent/version + provider/model/version;
 - prompt/system policy;
 - tools;
 - maximum per-task budget;

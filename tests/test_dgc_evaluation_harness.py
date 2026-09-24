@@ -18,9 +18,11 @@ def _harness(
     tasks="tasks",
     scorer="scorer",
     risk="risk",
+    actions="actions",
     ccf="ccf",
 ) -> FrozenEvaluationHarness:
     return FrozenEvaluationHarness(
+        action_catalog_digest=_h(actions),
         model_manifest_digest=_h("models"),
         prompt_policy_digest=_h("prompt"),
         tool_manifest_digest=_h("tools"),
@@ -41,6 +43,14 @@ def test_only_governance_policy_may_differ():
     baseline = _harness("B1")
     dgc = _harness("DGC")
     assert certify_controlled_comparison(baseline, dgc) == baseline.comparison_frame_digest
+
+
+def test_action_catalog_drift_invalidates_comparison():
+    with pytest.raises(ValueError):
+        certify_controlled_comparison(
+            _harness("B1", actions="a1"),
+            _harness("DGC", actions="a2"),
+        )
 
 
 def test_task_population_drift_invalidates_comparison():
@@ -74,6 +84,7 @@ def test_identical_policy_is_not_policy_comparison():
 def test_semantic_label_cannot_masquerade_as_digest():
     with pytest.raises(ValueError, match="lowercase SHA-256"):
         FrozenEvaluationHarness(
+            action_catalog_digest=_h("actions"),
             model_manifest_digest="models",
             prompt_policy_digest=_h("1"),
             tool_manifest_digest=_h("2"),
