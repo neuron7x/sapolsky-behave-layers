@@ -47,6 +47,7 @@ jobs:
             tests/test_dgc_product_economics.py \
             tests/test_dgc_product_statistical_plan.py \
             tests/test_dgc_mechanism_evidence_plan.py \
+            tests/test_dgc_terminal_bench_admission.py \
             tests/test_dgc_evaluation_harness.py \
             tests/test_dgc_product_evidence.py \
             tests/test_dgc_evidence_bundle.py \
