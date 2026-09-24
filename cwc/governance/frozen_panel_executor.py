@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec, Lease
 from cwc.governance.execution_evidence_bundle import (
     AUDIT_SCHEMA,
@@ -43,6 +44,7 @@ from cwc.governance.physical_cost_evidence import (
     CostComponentEvidence,
     certify_physical_trial_cost,
 )
+from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
 
 EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
 
@@ -153,6 +155,135 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     ):
         raise FrozenPanelExecutionError("executor environment allow-list malformed")
     return doc, tuple(argv), timeout
+
+
+def _pricing_rate_cards(
+    root: Path,
+    execution: Mapping[str, object],
+) -> tuple[dict[tuple[str, str, str], ProviderRateCard], str]:
+    rows = execution.get("components")
+    if not isinstance(rows, list):
+        raise FrozenPanelExecutionError("execution component population missing")
+    matches = [
+        row for row in rows
+        if isinstance(row, Mapping) and row.get("component") == "pricing_snapshot"
+    ]
+    if len(matches) != 1:
+        raise FrozenPanelExecutionError("exactly one frozen pricing snapshot is required")
+    component = matches[0]
+    path, _ = _safe_repo_file(root, component.get("path"))
+    component_sha = _sha("pricing snapshot component sha256", component.get("sha256"))
+    if sha256_file(path) != component_sha:
+        raise FrozenPanelExecutionError("pricing snapshot bytes differ from execution freeze")
+    doc = _json(path, schema="DGC_PRICING_SNAPSHOT_V1")
+    captured_at = str(doc.get("captured_at", "")).strip()
+    entries = doc.get("entries")
+    if not captured_at or not isinstance(entries, list) or not entries:
+        raise FrozenPanelExecutionError("frozen pricing snapshot is incomplete")
+    cards: dict[tuple[str, str, str], ProviderRateCard] = {}
+    try:
+        for row in entries:
+            if not isinstance(row, Mapping):
+                raise FrozenPanelExecutionError("invalid frozen pricing row")
+            identity = (
+                str(row["provider"]).strip(),
+                str(row["model_id"]).strip(),
+                str(row["model_version"]).strip(),
+            )
+            if not all(identity) or identity in cards:
+                raise FrozenPanelExecutionError("duplicate/empty frozen pricing identity")
+            if str(row.get("currency", "")) != "USD":
+                raise FrozenPanelExecutionError("frozen pricing currency must be USD")
+            cards[identity] = ProviderRateCard(
+                provider=identity[0],
+                model=identity[1],
+                input_usd_per_million=float(row["input_per_million"]),
+                cached_input_usd_per_million=float(row["cached_input_per_million"]),
+                cache_write_usd_per_million=float(row["cache_write_per_million"]),
+                long_cache_write_usd_per_million=float(row["long_cache_write_per_million"]),
+                output_usd_per_million=float(row["output_per_million"]),
+                source_uri=str(row["source_uri"]),
+                retrieved_at=captured_at,
+            )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise FrozenPanelExecutionError("invalid frozen pricing rate card") from exc
+    return cards, component_sha
+
+
+def _provider_model_meter(
+    *,
+    response: Mapping[str, object],
+    unit,
+    rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
+) -> tuple[float, str, tuple[dict[str, object], ...]]:
+    raw_rows = response.get("provider_usage_traces")
+    if not isinstance(raw_rows, list) or not raw_rows:
+        raise FrozenPanelExecutionError("executor response requires provider_usage_traces")
+    trace_docs: list[dict[str, object]] = []
+    metered_rows: list[tuple[str, str]] = []
+    request_ids: set[str] = set()
+    total = 0.0
+    for raw in raw_rows:
+        if not isinstance(raw, Mapping):
+            raise FrozenPanelExecutionError("invalid provider usage trace row")
+        model_version = str(raw.get("model_version", "")).strip()
+        identity = (
+            str(raw.get("provider", "")).strip(),
+            str(raw.get("model", "")).strip(),
+            model_version,
+        )
+        card = rate_cards.get(identity)
+        if card is None:
+            raise FrozenPanelExecutionError("provider usage trace has no exact frozen rate card")
+        try:
+            trace = ProviderUsageTrace(
+                trace_id=str(raw["trace_id"]),
+                decision_id=str(raw["decision_id"]),
+                policy_id=str(raw["policy_id"]),
+                authority=TraceAuthority(str(raw["authority"])),
+                provider=identity[0],
+                model=identity[1],
+                rate_card_digest=str(raw["rate_card_digest"]),
+                input_tokens=int(raw["input_tokens"]),
+                cached_input_tokens=int(raw.get("cached_input_tokens", 0)),
+                cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
+                long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
+                output_tokens=int(raw["output_tokens"]),
+                provider_request_id=str(raw["provider_request_id"]),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise FrozenPanelExecutionError("malformed provider usage trace") from exc
+        if trace.authority is not TraceAuthority.PROVIDER_LIVE:
+            raise FrozenPanelExecutionError("confirmatory provider usage must be PROVIDER_LIVE")
+        if trace.decision_id != unit.stable_id or trace.policy_id != unit.policy_id:
+            raise FrozenPanelExecutionError("provider trace decision/policy identity mismatch")
+        if trace.rate_card_digest != card.digest:
+            raise FrozenPanelExecutionError("provider trace rate-card digest mismatch")
+        request_id = str(trace.provider_request_id)
+        if request_id in request_ids:
+            raise FrozenPanelExecutionError("duplicate provider_request_id in one work unit")
+        request_ids.add(request_id)
+        metered = trace.meter(card)
+        total += metered.model_token_usd
+        trace_doc = {
+            "trace_digest": trace.digest,
+            "trace_id": trace.trace_id,
+            "provider_request_id": trace.provider_request_id,
+            "provider": trace.provider,
+            "model": trace.model,
+            "model_version": model_version,
+            "rate_card_digest": trace.rate_card_digest,
+            "input_tokens": trace.input_tokens,
+            "cached_input_tokens": trace.cached_input_tokens,
+            "cache_write_tokens": trace.cache_write_tokens,
+            "long_cache_write_tokens": trace.long_cache_write_tokens,
+            "output_tokens": trace.output_tokens,
+            "model_token_usd": metered.model_token_usd,
+        }
+        trace_docs.append(trace_doc)
+        metered_rows.append((trace.digest, model_version))
+    population_digest = sha256_bytes(canonical_json_bytes(sorted(metered_rows)))
+    return math.fsum([float(row["model_token_usd"]) for row in trace_docs]), population_digest, tuple(trace_docs)
 
 
 def _risk_endpoint_manifest(
@@ -306,15 +437,29 @@ def _physical_cost_certificate(
     response: Mapping[str, object],
     trial_id: str,
     cap: float,
+    model_usd: float,
+    model_source_digest: str,
 ):
     raw = response.get("physical_cost_evidence")
     if not isinstance(raw, Mapping):
         raise FrozenPanelExecutionError("executor response requires physical_cost_evidence")
-    if set(str(key) for key in raw) != set(PRODUCT_COST_COMPONENTS):
-        raise FrozenPanelExecutionError("physical_cost_evidence must cover exact product cost components")
-    evidence: dict[str, CostComponentEvidence] = {}
+    adapter_components = set(PRODUCT_COST_COMPONENTS) - {"model_usd"}
+    if set(str(key) for key in raw) != adapter_components:
+        raise FrozenPanelExecutionError(
+            "physical_cost_evidence must cover exact non-model product cost components"
+        )
+    evidence: dict[str, CostComponentEvidence] = {
+        "model_usd": CostComponentEvidence(
+            component="model_usd",
+            value_usd=model_usd,
+            authority=CostAuthority.PROVIDER_METER,
+            source_digest=model_source_digest,
+        )
+    }
     try:
         for component in PRODUCT_COST_COMPONENTS:
+            if component == "model_usd":
+                continue
             row = raw[component]
             if not isinstance(row, Mapping):
                 raise FrozenPanelExecutionError(f"invalid physical cost evidence row: {component}")
@@ -343,19 +488,7 @@ def _physical_cost_certificate(
             declared_value, total, rel_tol=0.0, abs_tol=1e-12
         ):
             raise FrozenPanelExecutionError("declared actual_cost_usd differs from certified physical cost")
-    model_row = evidence["model_usd"]
-    if model_row.value_usd > 0.0:
-        trace = response.get("trace")
-        if (
-            model_row.authority is not CostAuthority.PROVIDER_METER
-            or not isinstance(trace, Mapping)
-            or not str(trace.get("provider_request_id", "")).strip()
-        ):
-            raise FrozenPanelExecutionError(
-                "positive model cost requires PROVIDER_METER authority and provider_request_id"
-            )
     return certificate
-
 
 def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str) -> dict[str, object]:
     policies = execution.get("governance_policies")
@@ -522,6 +655,7 @@ def execute_frozen_panel(
         raise FrozenPanelExecutionError("materialized task population differs from execution freeze")
 
     executor, argv, timeout = _executor_manifest(root, execution)
+    rate_cards, pricing_component_sha = _pricing_rate_cards(root, execution)
     risk_endpoint, risk_argv, risk_timeout, risk_component_sha = _risk_endpoint_manifest(root, execution)
     try:
         spec = DistributedEvalSpec(**dict(authority["distributed_spec"]))
@@ -568,10 +702,17 @@ def execute_frozen_panel(
                     argv=argv, request=request, root=root, env=env, timeout=timeout
                 )
                 quality = _finite_probability("quality", response.get("quality"))
+                model_usd, provider_trace_population_digest, provider_trace_docs = _provider_model_meter(
+                    response=response,
+                    unit=lease.unit,
+                    rate_cards=rate_cards,
+                )
                 cost_certificate = _physical_cost_certificate(
                     response=response,
                     trial_id=f"{lease.unit.stable_id}::{lease.attempt}",
                     cap=spec.max_cost_per_unit_usd,
+                    model_usd=model_usd,
+                    model_source_digest=provider_trace_population_digest,
                 )
                 cost = cost_certificate.cost.total_operational_usd
                 risk_response, risk_stdout, risk_stderr = _invoke_risk_endpoint(
@@ -629,6 +770,9 @@ def execute_frozen_panel(
                 "risk_stdout_sha256": sha256_file(risk_stdout_path),
                 "risk_stderr_path": risk_stderr_path.relative_to(staging).as_posix(),
                 "risk_stderr_sha256": sha256_file(risk_stderr_path),
+                "pricing_snapshot_manifest_sha256": pricing_component_sha,
+                "provider_usage_traces": list(provider_trace_docs),
+                "provider_trace_population_digest": provider_trace_population_digest,
                 "physical_cost_certificate": {
                     "trial_id": cost_certificate.trial_id,
                     "digest": cost_certificate.digest,
@@ -653,6 +797,8 @@ def execute_frozen_panel(
                 "trace_digest": trace_digest,
                 "risk_endpoint_response_digest": risk_response_digest,
                 "physical_cost_certificate_digest": cost_certificate.digest,
+                "provider_trace_population_digest": provider_trace_population_digest,
+                "pricing_snapshot_manifest_sha256": pricing_component_sha,
             }
             try:
                 record = coordinator.commit(
