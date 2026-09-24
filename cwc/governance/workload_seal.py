@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest
+
 
 @dataclass(frozen=True, slots=True)
 class WorkloadSeal:
@@ -22,22 +24,16 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
 def seal_materialized_workload(
     *, family_id: str, root: Path, task_ids: Iterable[str], expected_task_count: int
 ) -> WorkloadSeal:
     family = str(family_id).strip()
     if not family:
         raise ValueError("family_id required")
-    if not root.is_dir():
-        raise ValueError("materialized workload root must be a directory")
+    supplied_root = Path(root)
+    if supplied_root.is_symlink() or not supplied_root.is_dir():
+        raise ValueError("materialized workload root must be a real directory")
+    root = supplied_root.resolve()
     if expected_task_count <= 0:
         raise ValueError("expected_task_count must be > 0")
 
@@ -52,21 +48,13 @@ def seal_materialized_workload(
         json.dumps(tasks, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     )
 
-    rows: list[tuple[str, int, str]] = []
-    total_bytes = 0
-    for path in sorted(p for p in root.rglob("*") if p.is_file()):
-        rel = path.relative_to(root).as_posix()
-        if rel in {"WORKLOAD_SEAL.json", "SHA256SUMS"}:
-            continue
-        size = path.stat().st_size
-        digest = _sha256_file(path)
-        rows.append((rel, size, digest))
-        total_bytes += size
+    rows = file_manifest(root, excluded_names=frozenset({"WORKLOAD_SEAL.json", "SHA256SUMS"}))
     if not rows:
         raise ValueError("materialized workload contains no payload files")
-    tree_digest = _sha256_bytes(
-        json.dumps(rows, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    )
+    # V2 tree semantics bind path, object kind, POSIX mode, byte/link-target length,
+    # and SHA-256 without dereferencing symlinks.
+    tree_digest = _sha256_bytes(canonical_json_bytes(rows))
+    total_bytes = sum(size for _, _, _, size, _ in rows)
     return WorkloadSeal(
         family_id=family,
         expected_task_count=expected_task_count,

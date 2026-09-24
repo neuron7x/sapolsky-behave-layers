@@ -1,48 +1,102 @@
 import pytest
 
 from cwc.governance.product_statistical_plan import (
+    CONFSEQ_REFERENCE_COMMIT,
+    PLAN_METHOD,
+    PRIMARY_ASSUMPTION_BOUNDARY,
+    PRIMARY_BOUNDARY_METHOD,
+    PRIMARY_CLAIM_TARGET,
+    PRIMARY_INFERENCE_METHOD,
+    PRIMARY_PREDICTOR_RULE,
+    PRIMARY_SEQUENCE_ORDER,
     ProductStatisticalPlan,
     approximate_required_trials_per_task,
     cluster_aware_required_trials_per_task,
     deterministic_task_split,
+    deterministic_three_way_task_split,
 )
 
 
-def test_default_plan_has_global_24_claim_familywise_allocation():
+def test_default_plan_has_global_24_claim_allocation_g1_holdout_and_v5_theorem_identity():
     plan = ProductStatisticalPlan()
     assert plan.family_count == 2
     assert plan.baseline_count == 4
     assert plan.endpoint_count == 3
+    assert plan.per_family_alpha == pytest.approx(0.025)
     assert plan.per_claim_alpha == pytest.approx(0.05 / 24.0)
+    assert plan.boundary_crossing_alpha_per_claim == pytest.approx(0.05 / 48.0)
     assert plan.quality_noninferiority_margin == pytest.approx(0.02)
     assert plan.catastrophic_regret_noninferiority_margin == pytest.approx(0.01)
     assert plan.minimum_cost_effect_of_interest == pytest.approx(0.05)
-    assert plan.method == "DGC_PRODUCT_PAIRED_CLUSTER_AWARE_V2"
+    assert plan.calibration_fraction == pytest.approx(0.20)
+    assert plan.generalization_holdout_fraction == pytest.approx(0.20)
+    assert plan.primary_inference_method == PRIMARY_INFERENCE_METHOD
+    assert plan.primary_boundary_method == PRIMARY_BOUNDARY_METHOD
+    assert plan.primary_claim_target == PRIMARY_CLAIM_TARGET
+    assert plan.primary_assumption_boundary == PRIMARY_ASSUMPTION_BOUNDARY
+    assert plan.primary_sequence_order == PRIMARY_SEQUENCE_ORDER
+    assert plan.primary_predictor_rule == PRIMARY_PREDICTOR_RULE
+    assert plan.confseq_reference_commit == CONFSEQ_REFERENCE_COMMIT
+    assert plan.method == PLAN_METHOD
+    assert "V5" in plan.method
 
 
-def test_plan_digest_is_deterministic_and_changes_with_margin():
+def test_plan_digest_is_deterministic_and_theorem_identity_is_non_substitutable():
     a = ProductStatisticalPlan()
     b = ProductStatisticalPlan()
     c = ProductStatisticalPlan(quality_noninferiority_margin=0.03)
+    d = ProductStatisticalPlan(generalization_holdout_fraction=0.15)
     assert a.digest == b.digest
     assert a.digest != c.digest
+    assert a.digest != d.digest
+
+    mutations = (
+        {"primary_inference_method": "LEGACY"},
+        {"primary_boundary_method": "SHORTCUT"},
+        {"primary_claim_target": "UNIVERSAL_MEAN"},
+        {"primary_assumption_boundary": "IID"},
+        {"primary_sequence_order": "OUTCOME_SORTED"},
+        {"primary_predictor_rule": "USES_CURRENT_X"},
+        {"confseq_reference_commit": "0" * 40},
+        {"method": "V4"},
+    )
+    for mutation in mutations:
+        with pytest.raises(ValueError, match="frozen V5 identity"):
+            ProductStatisticalPlan(**mutation)
 
 
-def test_task_split_is_deterministic_disjoint_and_complete():
+def test_three_way_split_is_deterministic_disjoint_complete_and_reserves_g1():
     tasks = [f"task-{i:03d}" for i in range(100)]
-    cal_a, conf_a = deterministic_task_split(tasks, calibration_fraction=0.20)
-    cal_b, conf_b = deterministic_task_split(reversed(tasks), calibration_fraction=0.20)
-    assert cal_a == cal_b
-    assert conf_a == conf_b
+    cal_a, conf_a, g1_a = deterministic_three_way_task_split(
+        tasks,
+        calibration_fraction=0.20,
+        generalization_holdout_fraction=0.20,
+    )
+    cal_b, conf_b, g1_b = deterministic_three_way_task_split(
+        reversed(tasks),
+        calibration_fraction=0.20,
+        generalization_holdout_fraction=0.20,
+    )
+    assert (cal_a, conf_a, g1_a) == (cal_b, conf_b, g1_b)
     assert len(cal_a) == 20
-    assert len(conf_a) == 80
+    assert len(g1_a) == 20
+    assert len(conf_a) == 60
     assert not (set(cal_a) & set(conf_a))
-    assert set(cal_a) | set(conf_a) == set(tasks)
+    assert not (set(cal_a) & set(g1_a))
+    assert not (set(conf_a) & set(g1_a))
+    assert set(cal_a) | set(conf_a) | set(g1_a) == set(tasks)
 
 
-def test_split_requires_nontrivial_population():
+def test_three_way_split_requires_nontrivial_population():
     with pytest.raises(ValueError):
-        deterministic_task_split(["a", "b", "c", "d"])
+        deterministic_three_way_task_split([f"t{i}" for i in range(9)])
+
+
+def test_legacy_two_way_split_is_retained_but_not_product_authorized():
+    tasks = [f"task-{i:03d}" for i in range(100)]
+    cal, conf = deterministic_task_split(tasks, calibration_fraction=0.20)
+    assert len(cal) == 20 and len(conf) == 80
+    assert not (set(cal) & set(conf))
 
 
 def test_cluster_aware_sizing_respects_minimum_floor_when_variance_small():
@@ -51,11 +105,12 @@ def test_cluster_aware_sizing_respects_minimum_floor_when_variance_small():
         between_task_std=0.01,
         within_task_std=0.01,
         effect_of_interest=0.10,
-        confirmatory_task_count=400,
+        confirmatory_task_count=300,
         plan=plan,
     )
     assert sizing.required_trials_per_task == plan.min_trials_per_task
     assert sizing.achieved_standard_error_at_required_trials <= sizing.target_standard_error
+    assert sizing.method.endswith("PLANNING_ONLY")
 
 
 def test_cluster_aware_repeats_increase_with_within_task_variance():
@@ -117,5 +172,9 @@ def test_invalid_plan_fails_closed():
         ProductStatisticalPlan(familywise_alpha=1.0)
     with pytest.raises(ValueError):
         ProductStatisticalPlan(calibration_fraction=0.5)
+    with pytest.raises(ValueError):
+        ProductStatisticalPlan(generalization_holdout_fraction=0.5)
+    with pytest.raises(ValueError):
+        ProductStatisticalPlan(calibration_fraction=0.30, generalization_holdout_fraction=0.20)
     with pytest.raises(ValueError):
         ProductStatisticalPlan(min_trials_per_task=10, max_trials_per_task=5)

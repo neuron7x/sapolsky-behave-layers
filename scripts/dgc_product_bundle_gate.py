@@ -2,25 +2,67 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cwc.governance.evidence_bundle import verify_evidence_bundle
+from cwc.governance.qualified_evidence_bundle import build_qualified_evidence_bundle_authority
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE = ROOT / "artifacts/dgc-product-v1"
 
 
 def main() -> int:
-    result = verify_evidence_bundle(BUNDLE)
-    print(f"DGC-PRODUCT-BUNDLE-COMPLETE: {str(result.complete).lower()}")
-    if result.missing_files:
-        print("DGC-PRODUCT-BUNDLE-MISSING: " + ",".join(result.missing_files))
-    if result.unhashed_files:
-        print("DGC-PRODUCT-BUNDLE-UNHASHED: " + ",".join(result.unhashed_files))
-    if result.hash_mismatches:
-        print("DGC-PRODUCT-BUNDLE-HASH-MISMATCH: " + ",".join(result.hash_mismatches))
-    if not result.complete:
-        print("DGC-PRODUCT-BUNDLE-GATE: FAIL")
+    try:
+        qualification, packaging, bundle = build_qualified_evidence_bundle_authority(repository_root=ROOT)
+    except RuntimeError as exc:
+        print(f"DGC-PRODUCT-BUNDLE-GATE: FAIL qualified-evidence-graph: {exc}")
         return 1
-    print("DGC-PRODUCT-BUNDLE-GATE: PASS")
+
+    if not bundle.evidence_graph_complete or not bundle.all_required_subjects_git_bound:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL incomplete-qualified-evidence-graph")
+        return 1
+    if not bundle.raw_p19_verification_transcripts_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL raw-p19-verification-transcripts-missing")
+        return 1
+    if not bundle.frozen_verification_plan_and_entrypoint_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL frozen-verification-plan-or-entrypoint-missing")
+        return 1
+    if not bundle.frozen_verifier_dependency_closure_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL frozen-verifier-dependency-closure-missing")
+        return 1
+    if not bundle.dual_signed_verifier_activation_authority_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL dual-signed-verifier-activation-authority-missing")
+        return 1
+    if not bundle.activation_regression_evidence_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL verifier-activation-regression-evidence-missing")
+        return 1
+    if not bundle.portable_p19_replay_inputs_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL portable-p19-replay-inputs-missing")
+        return 1
+    if not bundle.portable_global_v5_authority_included:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL portable-global-v5-authority-missing")
+        return 1
+    if bundle.global_v5_authority_digest != qualification.global_v5_authority_digest:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL global-v5-lineage-mismatch")
+        return 1
+    if bundle.qualified_execution_commit != qualification.repo_commit:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL execution-source-lineage-mismatch")
+        return 1
+    if bundle.packaging_commit != packaging.packaging_commit:
+        print("DGC-PRODUCT-BUNDLE-GATE: FAIL packaging-lineage-mismatch")
+        return 1
+
+    print("DGC-PRODUCT-BUNDLE-COMPLETE: true")
+    print("DGC-PRODUCT-BUNDLE-RAW-P19-VERIFICATION-TRANSCRIPTS: true")
+    print("DGC-PRODUCT-BUNDLE-FROZEN-VERIFICATION-PLAN-ENTRYPOINT: true")
+    print("DGC-PRODUCT-BUNDLE-FROZEN-VERIFIER-DEPENDENCY-CLOSURE: true")
+    print("DGC-PRODUCT-BUNDLE-DUAL-SIGNED-VERIFIER-ACTIVATION: true")
+    print("DGC-PRODUCT-BUNDLE-VERIFIER-ACTIVATION-REGRESSION-EVIDENCE: true")
+    print("DGC-PRODUCT-BUNDLE-PORTABLE-P19-REPLAY-INPUTS: true")
+    print("DGC-PRODUCT-BUNDLE-PORTABLE-GLOBAL-V5: true")
+    print(f"DGC-PRODUCT-BUNDLE-AUTHORITY: {bundle.authority_digest}")
+    print(f"DGC-PRODUCT-BUNDLE-MANIFEST: {bundle.required_file_manifest_digest}")
+    print(f"DGC-PRODUCT-BUNDLE-EXECUTION-SOURCE-FILES: {bundle.execution_source_file_count}")
+    print(f"DGC-PRODUCT-BUNDLE-PACKAGING-EVIDENCE-FILES: {bundle.packaging_evidence_file_count}")
+    print(f"DGC-QUALIFIED-EXECUTION-COMMIT: {bundle.qualified_execution_commit}")
+    print(f"DGC-EVIDENCE-PACKAGING-COMMIT: {bundle.packaging_commit}")
+    print("DGC-PRODUCT-BUNDLE-GATE: PASS portable graph-derived qualified evidence bundle")
     return 0
 
 

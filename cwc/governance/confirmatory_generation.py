@@ -118,6 +118,7 @@ class ConfirmatoryGenerationRoot:
     repo_tree_oid: str
     source_authority_digest: str
     materialized_tree_sha256: str
+    materialized_task_manifest_sha256: str
     task_manifest_sha256: str
     comparison_frame_digest: str
     baseline_panel_digest: str
@@ -127,6 +128,11 @@ class ConfirmatoryGenerationRoot:
     policy_bindings: tuple[PolicyHarnessBinding, ...]
     expected_work_units: int
     root_digest: str
+
+    @property
+    def confirmatory_task_manifest_sha256(self) -> str:
+        """Task identity actually executed in the confirmatory population."""
+        return self.task_manifest_sha256
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +159,16 @@ def freeze_confirmatory_generation(
     trial_sizing: _TrialSizing,
     policy_harnesses: Mapping[str, _Harness],
     distributed_spec: _DistributedSpec,
+    confirmatory_task_manifest_sha256: str | None = None,
 ) -> ConfirmatoryGenerationRoot:
+    """Freeze one immutable confirmatory execution generation.
+
+    ``source_authority.materialized_task_manifest_sha256`` always identifies the full
+    materialized workload. ``confirmatory_task_manifest_sha256`` identifies the held-out
+    execution subset after calibration. The optional argument preserves compatibility for
+    pre-split research callers; product qualification must pass the held-out digest.
+    """
+
     generation = str(generation_id).strip()
     if not generation:
         raise ValueError("generation_id required")
@@ -173,9 +188,14 @@ def freeze_confirmatory_generation(
     materialized_tree = _sha256(
         "materialized_tree_sha256", str(source_authority.materialized_tree_sha256 or "")
     )
-    source_task_manifest = _sha256(
+    materialized_task_manifest = _sha256(
         "materialized_task_manifest_sha256",
         str(source_authority.materialized_task_manifest_sha256 or ""),
+    )
+    confirmatory_task_manifest = (
+        materialized_task_manifest
+        if confirmatory_task_manifest_sha256 is None
+        else _sha256("confirmatory_task_manifest_sha256", confirmatory_task_manifest_sha256)
     )
 
     if not bool(baseline_panel.executable_frozen):
@@ -206,8 +226,8 @@ def freeze_confirmatory_generation(
 
     tasks = tuple(distributed_spec.task_ids)
     observed_task_manifest = _canonical_task_manifest(tasks)
-    if observed_task_manifest != source_task_manifest:
-        raise ValueError("distributed task population does not match materialized workload task manifest")
+    if observed_task_manifest != confirmatory_task_manifest:
+        raise ValueError("distributed task population does not match frozen confirmatory task manifest")
 
     policies = tuple(sorted(str(x).strip() for x in distributed_spec.policy_ids))
     if not policies or len(policies) != len(set(policies)):
@@ -222,8 +242,8 @@ def freeze_confirmatory_generation(
     for policy_id in policies:
         harness = harness_map[policy_id]
         task_digest = _sha256("harness.task_manifest_digest", harness.task_manifest_digest)
-        if task_digest != source_task_manifest:
-            raise ValueError(f"{policy_id}: harness task manifest differs from materialized workload")
+        if task_digest != confirmatory_task_manifest:
+            raise ValueError(f"{policy_id}: harness task manifest differs from frozen confirmatory population")
         if _sha256("harness.statistical_plan_digest", harness.statistical_plan_digest) != plan_digest:
             raise ValueError(f"{policy_id}: harness statistical plan digest mismatch")
         if _sha256("harness.baseline_panel_digest", harness.baseline_panel_digest) != baseline_digest:
@@ -253,14 +273,15 @@ def freeze_confirmatory_generation(
 
     ordered_bindings = tuple(sorted(bindings, key=lambda x: x.policy_id))
     root_payload = {
-        "schema": "DGC_CONFIRMATORY_GENERATION_ROOT_V1",
+        "schema": "DGC_CONFIRMATORY_GENERATION_ROOT_V2",
         "generation_id": generation,
         "family_id": family_id,
         "repo_commit_oid": commit,
         "repo_tree_oid": tree,
         "source_authority_digest": source_digest,
         "materialized_tree_sha256": materialized_tree,
-        "task_manifest_sha256": source_task_manifest,
+        "materialized_task_manifest_sha256": materialized_task_manifest,
+        "confirmatory_task_manifest_sha256": confirmatory_task_manifest,
         "comparison_frame_digest": comparison_frame,
         "baseline_panel_digest": baseline_digest,
         "statistical_plan_digest": plan_digest,
@@ -279,7 +300,8 @@ def freeze_confirmatory_generation(
         repo_tree_oid=tree,
         source_authority_digest=source_digest,
         materialized_tree_sha256=materialized_tree,
-        task_manifest_sha256=source_task_manifest,
+        materialized_task_manifest_sha256=materialized_task_manifest,
+        task_manifest_sha256=confirmatory_task_manifest,
         comparison_frame_digest=comparison_frame,
         baseline_panel_digest=baseline_digest,
         statistical_plan_digest=plan_digest,
