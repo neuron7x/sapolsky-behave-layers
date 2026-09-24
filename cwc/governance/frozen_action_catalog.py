@@ -42,6 +42,8 @@ def _safe_file(root: Path, value: object) -> tuple[Path, str]:
 class FrozenActionSpec:
     action_id: str
     harbor_agent: str
+    harbor_agent_argument: str
+    harbor_model_argument: str
     agent_version: str
     provider: str
     model_id: str
@@ -99,7 +101,8 @@ def load_frozen_action_catalog(
         fields = {
             name: str(item.get(name, "")).strip()
             for name in (
-                "action_id", "harbor_agent", "agent_version",
+                "action_id", "harbor_agent", "harbor_agent_argument",
+                "harbor_model_argument", "agent_version",
                 "provider", "model_id", "model_version",
             )
         }

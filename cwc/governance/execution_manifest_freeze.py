@@ -159,6 +159,8 @@ def _validate_action_catalog(payload: Mapping[str, object]) -> None:
             raise ExecutionManifestError("invalid action catalog row")
         action_id = _req("action.action_id", row.get("action_id"))
         _req("action.harbor_agent", row.get("harbor_agent"))
+        _req("action.harbor_agent_argument", row.get("harbor_agent_argument"))
+        _req("action.harbor_model_argument", row.get("harbor_model_argument"))
         agent_version = _req("action.agent_version", row.get("agent_version"))
         provider = _req("action.provider", row.get("provider"))
         model_id = _req("action.model_id", row.get("model_id"))
