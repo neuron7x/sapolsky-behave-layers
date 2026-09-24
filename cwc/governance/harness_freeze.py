@@ -267,6 +267,7 @@ def build_harness_freeze(
             budget_digest=components["budget"],
             pricing_snapshot_digest=components["pricing_snapshot"],
             scorer_digest=components["scorer"],
+            risk_endpoint_digest=components["risk_endpoint_manifest"],
             counterfactual_oracle_spec_digest=ccf_spec_digest,
             statistical_plan_digest=_sha("statistical_plan_digest", execution.get("statistical_plan_digest")),
             baseline_panel_digest=panel.digest,
