@@ -41,6 +41,7 @@ def test_mechanism_sizing_freezes_eight_comparisons_and_global_max(tmp_path: Pat
         observations=_observations(),
         effects_of_interest=_effects(),
         confirmatory_task_count=40,
+        calibration_evidence_digest="e" * 64,
         plan=plan,
     )
     assert len(receipt.comparisons) == 8
@@ -110,6 +111,7 @@ def test_task_heterogeneity_that_repeats_cannot_fix_fails_closed():
             observations=rows,
             effects_of_interest={f"cmp-{i:02d}": 0.05 for i in range(8)},
             confirmatory_task_count=10,
+            calibration_evidence_digest="e" * 64,
             plan=plan,
         )
 
@@ -120,6 +122,7 @@ def test_tampered_receipt_digest_is_rejected(tmp_path: Path):
         observations=_observations(),
         effects_of_interest=_effects(),
         confirmatory_task_count=40,
+        calibration_evidence_digest="e" * 64,
         plan=plan,
     )
     doc = receipt.document
@@ -135,6 +138,7 @@ def test_authority_flags_are_fail_closed(tmp_path: Path):
         observations=_observations(),
         effects_of_interest=_effects(),
         confirmatory_task_count=40,
+        calibration_evidence_digest="e" * 64,
         plan=plan,
     )
     doc = receipt.document
@@ -142,3 +146,15 @@ def test_authority_flags_are_fail_closed(tmp_path: Path):
     out = _write(tmp_path / "illegal.json", doc)
     with pytest.raises(MechanismTrialSizingError, match="authority boundary"):
         verify_mechanism_trial_sizing_document(out, plan=plan)
+
+
+def test_calibration_evidence_digest_is_required():
+    plan = MechanismStatisticalPlan(min_trials_per_task=2, max_trials_per_task=20)
+    with pytest.raises(MechanismTrialSizingError, match="calibration_evidence_digest"):
+        freeze_mechanism_trial_sizing(
+            observations=_observations(),
+            effects_of_interest=_effects(),
+            confirmatory_task_count=40,
+            calibration_evidence_digest="not-a-digest",
+            plan=plan,
+        )
