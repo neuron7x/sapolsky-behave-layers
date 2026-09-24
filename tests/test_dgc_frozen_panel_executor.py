@@ -383,6 +383,27 @@ def test_policy_implementation_byte_drift_is_rejected_before_unit_execution(
         )
 
 
+def test_frozen_pricing_byte_drift_is_rejected_before_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, execution, harness, authority, materialization = _subjects(tmp_path)
+    _patch(monkeypatch, execution, harness, authority)
+    pricing = repo / "manifests" / "pricing.json"
+    doc = json.loads(pricing.read_text())
+    doc["entries"][0]["input_per_million"] = 999.0
+    pricing.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(FrozenPanelExecutionError, match="pricing snapshot bytes differ"):
+        execute_frozen_panel(
+            repository_root=repo,
+            execution_manifest_freeze_path=tmp_path / "execution.json",
+            harness_freeze_path=tmp_path / "harness.json",
+            confirmatory_root_authority_path=tmp_path / "root.json",
+            materialization_generation_root=materialization,
+            source_registry_path=tmp_path / "registry.json",
+            output_root=tmp_path / "bundle",
+        )
+
+
 def test_risk_implementation_byte_drift_is_rejected_before_execution(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
