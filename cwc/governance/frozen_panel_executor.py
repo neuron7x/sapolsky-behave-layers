@@ -13,7 +13,12 @@ from typing import Mapping, Sequence
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.cost_accounting import ProviderRateCard
-from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec, Lease
+from cwc.governance.distributed_eval_control import (
+    DistributedEvalCoordinator,
+    DistributedEvalSpec,
+    Lease,
+    WorkUnitId,
+)
 from cwc.governance.execution_evidence_bundle import (
     AUDIT_SCHEMA,
     BUNDLE_SCHEMA,
@@ -42,6 +47,7 @@ from cwc.governance.physical_cost_evidence import (
     PRODUCT_COST_COMPONENTS,
     CostAuthority,
     CostComponentEvidence,
+    PhysicalCostCertificate,
     certify_physical_trial_cost,
 )
 from cwc.governance.provider_trace import ProviderUsageTrace, TraceAuthority
@@ -213,7 +219,7 @@ def _pricing_rate_cards(
 def _provider_model_meter(
     *,
     response: Mapping[str, object],
-    unit,
+    unit: WorkUnitId,
     rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
 ) -> tuple[float, str, tuple[dict[str, object], ...]]:
     raw_rows = response.get("provider_usage_traces")
@@ -222,7 +228,6 @@ def _provider_model_meter(
     trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
     request_ids: set[str] = set()
-    total = 0.0
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise FrozenPanelExecutionError("invalid provider usage trace row")
@@ -264,7 +269,6 @@ def _provider_model_meter(
             raise FrozenPanelExecutionError("duplicate provider_request_id in one work unit")
         request_ids.add(request_id)
         metered = trace.meter(card)
-        total += metered.model_token_usd
         trace_doc = {
             "trace_digest": trace.digest,
             "trace_id": trace.trace_id,
@@ -439,7 +443,7 @@ def _physical_cost_certificate(
     cap: float,
     model_usd: float,
     model_source_digest: str,
-):
+) -> PhysicalCostCertificate:
     raw = response.get("physical_cost_evidence")
     if not isinstance(raw, Mapping):
         raise FrozenPanelExecutionError("executor response requires physical_cost_evidence")
