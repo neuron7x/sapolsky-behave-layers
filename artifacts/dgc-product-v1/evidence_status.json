@@ -60,7 +60,8 @@
     "real_workload_mechanism_lane": "PREREGISTERED_COST_QUALITY_COVERAGE_ONLY_PRODUCT_PROMOTION_FORBIDDEN",
     "risk_qualification_lane": "REQUIRED_FOR_PRODUCT_NOT_YET_OPERATIONALIZED_ON_SWE_BENCH_OR_TERMINAL_BENCH",
     "frozen_policy_runtime": "IMPLEMENTED_NETWORK_ISOLATED_STATE_IN_REQUEST_ONLY_EXACT_ACTION_AND_OBSERVATION_CONTRACT_EXTERNAL_EXECUTION_PENDING",
-    "frozen_action_catalog": "IMPLEMENTED_GLOBAL_ACTION_TO_AGENT_MODEL_VERSION_BINDING_CONTROLLED_COMPARISON_BOUND"
+    "frozen_action_catalog": "IMPLEMENTED_GLOBAL_ACTION_TO_AGENT_MODEL_VERSION_BINDING_CONTROLLED_COMPARISON_BOUND",
+    "common_observation_builder": "IMPLEMENTED_STATIC_ONLY_NETWORK_ISOLATED_PREOUTCOME_CONTRACT_COMMON_MODEL_PROBE_FAIL_CLOSED_PENDING_METERED_WORKLOAD_ADAPTER"
   },
   "external_blockers": [
     "materialized and byte-sealed external task/scorer/environment manifests",
@@ -76,6 +77,7 @@
     "actual multi-node/cloud scale, load/soak and fault-recovery evidence",
     "shadow qualification and bounded canary before production control authority",
     "real-workload mechanism execution: paired cost + quality + full coverage against exact B0-B3 on SWE-bench Verified and Terminal-Bench 2.1",
-    "separate pre-outcome catastrophic-regret qualification on a scientifically defensible risk-labeled workload before PRODUCT_QUALIFIED"
+    "separate pre-outcome catastrophic-regret qualification on a scientifically defensible risk-labeled workload before PRODUCT_QUALIFIED",
+    "common observation/probe implementation frozen and source-bound for every external policy arm"
   ]
 }
