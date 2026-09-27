@@ -129,6 +129,7 @@ def _build_bundle(
     *,
     inject_risk: bool = False,
     null_request_id: bool = False,
+    runtime_live: bool = False,
 ):
     repo, card, spec, authority = _fixture(tmp_path, monkeypatch)
     root = tmp_path / "bundle"
@@ -139,7 +140,11 @@ def _build_bundle(
         trace_id="trace-1",
         decision_id=unit.stable_id,
         policy_id=unit.policy_id,
-        authority=TraceAuthority.PROVIDER_LIVE,
+        authority=(
+            TraceAuthority.RUNTIME_LIVE
+            if runtime_live
+            else TraceAuthority.PROVIDER_LIVE
+        ),
         provider="provider",
         model="model",
         rate_card_digest=card.digest,
@@ -148,7 +153,9 @@ def _build_bundle(
         cache_write_tokens=0,
         long_cache_write_tokens=0,
         output_tokens=0,
-        provider_request_id="req-1",
+        provider_request_id=None if runtime_live else "req-1",
+        runtime_call_id="harbor-atif:session-1:aggregate" if runtime_live else None,
+        source_artifact_digest=h("6") if runtime_live else None,
     )
     model_cost = trace.meter(card).model_token_usd
     population_digest = sha256_bytes(canonical_json_bytes([(trace.digest, "v1")]))
@@ -166,7 +173,17 @@ def _build_bundle(
         "cache_write_tokens": trace.cache_write_tokens,
         "long_cache_write_tokens": trace.long_cache_write_tokens,
         "output_tokens": trace.output_tokens,
-        "provider_request_id": None if null_request_id else trace.provider_request_id,
+        "provider_request_id": (
+            None if null_request_id else trace.provider_request_id
+        ),
+        **(
+            {
+                "runtime_call_id": trace.runtime_call_id,
+                "source_artifact_digest": trace.source_artifact_digest,
+            }
+            if runtime_live
+            else {}
+        ),
     }
     response = {
         "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
@@ -196,6 +213,14 @@ def _build_bundle(
         "long_cache_write_tokens": trace.long_cache_write_tokens,
         "output_tokens": trace.output_tokens,
         "model_token_usd": model_cost,
+        **(
+            {
+                "runtime_call_id": trace.runtime_call_id,
+                "source_artifact_digest": trace.source_artifact_digest,
+            }
+            if runtime_live
+            else {}
+        ),
     }
     card_doc = {
         "rate_card_digest": card.digest,
@@ -216,7 +241,11 @@ def _build_bundle(
             evidence_rows[component] = CostComponentEvidence(
                 component,
                 model_cost,
-                CostAuthority.PROVIDER_METER,
+                (
+                    CostAuthority.RUNTIME_METER
+                    if runtime_live
+                    else CostAuthority.PROVIDER_METER
+                ),
                 population_digest,
             )
         else:
@@ -356,6 +385,24 @@ def test_mechanism_bundle_replays_full_cost_quality_population(
     assert verified.results[0].quality == pytest.approx(0.8)
     assert verified.results[0].actual_cost_usd == pytest.approx(1.0)
     assert verified.total_cost_usd == pytest.approx(1.0)
+
+
+def test_runtime_live_mechanism_bundle_replays_without_provider_request_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, repo = _build_bundle(
+        tmp_path,
+        monkeypatch,
+        runtime_live=True,
+    )
+    verified = verify_mechanism_execution_bundle(
+        root,
+        mechanism_authority_path=tmp_path / "authority.json",
+        execution_manifest_freeze_path=tmp_path / "execution.json",
+        repository_root=repo,
+    )
+    assert verified.completion.complete is True
+    assert verified.results[0].actual_cost_usd == pytest.approx(1.0)
 
 
 def test_risk_field_leakage_is_rejected(
