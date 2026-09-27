@@ -56,6 +56,11 @@ def _image_name(registry_prefix: str, task_id: str) -> str:
         raise SandboxImageBuildError(
             "registry_prefix must be a Docker image namespace without scheme/tag/digest"
         )
+    tail = prefix.rsplit("/", 1)[-1]
+    if "/" in prefix and ":" in tail:
+        raise SandboxImageBuildError(
+            "registry_prefix must not contain a mutable tag"
+        )
     task = str(task_id).strip()
     if _TASK_ID_RE.fullmatch(task) is None:
         raise SandboxImageBuildError("task_id is not a canonical image-name component")
