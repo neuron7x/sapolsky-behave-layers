@@ -1,0 +1,28 @@
+{
+  "schema": "DGC_ACTION_CATALOG_MANIFEST_V1",
+  "authority": "FROZEN_PRE_EXECUTION_CANDIDATE_NO_EXECUTION_EVIDENCE",
+  "panel_id": "OPENAI_GPT_5_4_TWO_TIER_SNAPSHOT_V1",
+  "actions": [
+    {
+      "action_id": "DEEP",
+      "harbor_agent": "codex",
+      "harbor_agent_argument": "codex@0.157.1",
+      "harbor_model_argument": "openai/gpt-5.4-mini-2026-03-17",
+      "agent_version": "0.157.1",
+      "provider": "openai",
+      "model_id": "gpt-5.4-mini-2026-03-17",
+      "model_version": "2026-03-17"
+    },
+    {
+      "action_id": "STANDARD",
+      "harbor_agent": "codex",
+      "harbor_agent_argument": "codex@0.157.1",
+      "harbor_model_argument": "openai/gpt-5.4-nano-2026-03-17",
+      "agent_version": "0.157.1",
+      "provider": "openai",
+      "model_id": "gpt-5.4-nano-2026-03-17",
+      "model_version": "2026-03-17"
+    }
+  ],
+  "product_promotion_authorized": false
+}
