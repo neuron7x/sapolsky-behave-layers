@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
@@ -73,7 +74,6 @@ class SandboxImageBinding:
         receipt_path = str(self.build_receipt_path).strip()
         if not receipt_path:
             raise SandboxImagePopulationError("build_receipt_path required")
-        from pathlib import Path
         receipt_rel = Path(receipt_path)
         if receipt_rel.is_absolute() or ".." in receipt_rel.parts:
             raise SandboxImagePopulationError(
