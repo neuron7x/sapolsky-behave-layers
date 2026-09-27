@@ -131,6 +131,10 @@ def build_mechanism_execution_authority(
     harness_digest = _sha("harness freeze_digest", harness.get("harness_freeze_digest"))
     if harness.get("execution_manifest_freeze_digest") != execution_digest:
         raise MechanismExecutionAuthorityError("harness is bound to a different execution freeze")
+    if _sha("execution mechanism_plan_digest", execution.get("mechanism_plan_digest")) != plan.digest:
+        raise MechanismExecutionAuthorityError("execution freeze mechanism plan differs from requested authority plan")
+    if _sha("harness mechanism_plan_digest", harness.get("mechanism_plan_digest")) != plan.digest:
+        raise MechanismExecutionAuthorityError("mechanism harness plan differs from requested authority plan")
 
     if partition.get("statistical_plan_digest") != execution.get("statistical_plan_digest"):
         raise MechanismExecutionAuthorityError(
