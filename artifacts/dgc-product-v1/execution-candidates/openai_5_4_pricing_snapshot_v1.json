@@ -1,0 +1,38 @@
+{
+  "schema": "DGC_PRICING_SNAPSHOT_V1",
+  "authority": "FROZEN_PRE_EXECUTION_PROVIDER_PUBLISHED_PRICE_SNAPSHOT",
+  "captured_at": "2026-09-27T00:00:00Z",
+  "currency": "USD",
+  "interpretation": {
+    "units": "USD_PER_1M_TOKENS",
+    "cache_write_mapping": "OPENAI_HAS_NO_SEPARATE_CACHE_WRITE_SURCHARGE_IN_PUBLISHED_MODEL_CARD; CHARGED_AS_UNCACHED_INPUT",
+    "regional_processing_uplift_included": false
+  },
+  "entries": [
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.4-mini-2026-03-17",
+      "model_version": "2026-03-17",
+      "currency": "USD",
+      "source_uri": "https://developers.openai.com/api/docs/models/gpt-5.4-mini",
+      "input_per_million": 0.75,
+      "cached_input_per_million": 0.075,
+      "cache_write_per_million": 0.75,
+      "long_cache_write_per_million": 0.75,
+      "output_per_million": 4.5
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.4-nano-2026-03-17",
+      "model_version": "2026-03-17",
+      "currency": "USD",
+      "source_uri": "https://developers.openai.com/api/docs/models/gpt-5.4-nano",
+      "input_per_million": 0.2,
+      "cached_input_per_million": 0.02,
+      "cache_write_per_million": 0.2,
+      "long_cache_write_per_million": 0.2,
+      "output_per_million": 1.25
+    }
+  ],
+  "product_promotion_authorized": false
+}
