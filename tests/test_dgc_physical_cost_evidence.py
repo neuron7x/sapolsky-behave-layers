@@ -67,3 +67,30 @@ def test_missing_source_digest_fails_closed():
             authority=CostAuthority.ZERO_BY_CONTRACT,
             source_digest="",
         )
+
+
+def test_runtime_meter_is_distinct_nonzero_cost_authority():
+    row = CostComponentEvidence(
+        component="model_usd",
+        value_usd=0.25,
+        authority=CostAuthority.RUNTIME_METER,
+        source_digest="a" * 64,
+    )
+    cert = certify_physical_trial_cost(
+        trial_id="runtime-trial",
+        evidence={
+            component: (
+                row
+                if component == "model_usd"
+                else CostComponentEvidence(
+                    component=component,
+                    value_usd=0.0,
+                    authority=CostAuthority.ZERO_BY_CONTRACT,
+                    source_digest="b" * 64,
+                )
+            )
+            for component in PRODUCT_COST_COMPONENTS
+        },
+    )
+    assert cert.cost.model_usd == pytest.approx(0.25)
+    assert cert.component_evidence[0].authority is CostAuthority.RUNTIME_METER
