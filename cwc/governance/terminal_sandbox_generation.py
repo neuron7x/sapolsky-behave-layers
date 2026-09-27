@@ -116,7 +116,7 @@ def _verify_environment(
     path: Path,
     population: SandboxImagePopulation,
     population_sha256: str,
-) -> str:
+) -> tuple[str, str]:
     environment = _read_json(path, schema=ENVIRONMENT_SCHEMA)
     expected = {
         "family_id": population.family_id,
@@ -141,7 +141,7 @@ def _verify_environment(
         raise TerminalSandboxGenerationError(
             "environment population path must target SANDBOX_IMAGE_POPULATION.json"
         )
-    return sha256_file(path)
+    return sha256_file(path), population_path
 
 
 def _verify_build_receipt(
@@ -149,6 +149,7 @@ def _verify_build_receipt(
     path: Path,
     population: SandboxImagePopulation,
     task_id: str,
+    expected_binding_path: str,
 ) -> None:
     if path.is_symlink() or not path.is_file():
         raise TerminalSandboxGenerationError(
@@ -202,10 +203,7 @@ def _verify_build_receipt(
         raise TerminalSandboxGenerationError(
             f"{task_id}: build receipt platform mismatch"
         )
-    suffix = Path("build-receipts") / f"{task_id}.json"
-    binding_parts = Path(binding.build_receipt_path).parts
-    suffix_parts = suffix.parts
-    if tuple(binding_parts[-len(suffix_parts):]) != suffix_parts:
+    if binding.build_receipt_path != expected_binding_path:
         raise TerminalSandboxGenerationError(
             f"{task_id}: build receipt path binding mismatch"
         )
@@ -300,11 +298,14 @@ def verify_terminal_sandbox_build_generation(
             "sandbox build generation family mismatch"
         )
     population_sha = sha256_file(population_path)
-    environment_sha = _verify_environment(
+    environment_sha, declared_population_path = _verify_environment(
         path=environment_path,
         population=population,
         population_sha256=population_sha,
     )
+    declared_generation_root = Path(
+        declared_population_path
+    ).parent
 
     receipt_checks = {
         "family_id": population.family_id,
@@ -403,6 +404,11 @@ def verify_terminal_sandbox_build_generation(
             path=receipts_root / f"{binding.task_id}.json",
             population=population,
             task_id=binding.task_id,
+            expected_binding_path=(
+                declared_generation_root
+                / "build-receipts"
+                / f"{binding.task_id}.json"
+            ).as_posix(),
         )
 
     generation_digest = sha256_bytes(
