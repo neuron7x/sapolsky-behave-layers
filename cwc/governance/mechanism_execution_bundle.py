@@ -482,9 +482,23 @@ def _verify_cost_evidence(
     except (TypeError, ValueError, KeyError) as exc:
         raise MechanismExecutionBundleError("invalid physical cost certificate") from exc
 
+    trace_authorities = {str(row["authority"]) for row in derived}
+    if trace_authorities == {TraceAuthority.PROVIDER_LIVE.value}:
+        expected_model_cost_authority = CostAuthority.PROVIDER_METER
+    elif trace_authorities == {TraceAuthority.RUNTIME_LIVE.value}:
+        expected_model_cost_authority = CostAuthority.RUNTIME_METER
+    else:
+        raise MechanismExecutionBundleError(
+            "mechanism evidence cannot mix provider-live and runtime-live authority"
+        )
     model_component = evidence.get("model_usd")
-    if model_component is None or model_component.authority is not CostAuthority.PROVIDER_METER:
-        raise MechanismExecutionBundleError("model_usd must use PROVIDER_METER")
+    if (
+        model_component is None
+        or model_component.authority is not expected_model_cost_authority
+    ):
+        raise MechanismExecutionBundleError(
+            "model_usd authority differs from provider trace authority"
+        )
     if model_component.source_digest != trace_population_digest:
         raise MechanismExecutionBundleError("model_usd source is not provider trace population")
     if not math.isclose(
