@@ -362,6 +362,16 @@ def _verify_cost_evidence(
             request_id_raw = raw.get("provider_request_id")
             runtime_call_id_raw = raw.get("runtime_call_id")
             source_artifact_digest_raw = raw.get("source_artifact_digest")
+            if authority in {
+                TraceAuthority.PROVIDER_LIVE,
+                TraceAuthority.CLIENT_PRODUCTION,
+            } and (
+                not isinstance(request_id_raw, str)
+                or not request_id_raw.strip()
+            ):
+                raise MechanismExecutionBundleError(
+                    "live provider usage requires real provider_request_id"
+                )
             trace_obj = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
                 decision_id=str(raw["decision_id"]),
