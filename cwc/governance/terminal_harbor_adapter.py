@@ -334,6 +334,7 @@ def execute_terminal_harbor_unit(
         *runtime.invocation,
         "run",
         "--path", str(execution_task_root),
+        "--env", "docker",
         "--no-force-build",
         "--agent", action.harbor_agent_argument,
         "--model", action.harbor_model_argument,
