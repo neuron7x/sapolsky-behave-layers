@@ -323,6 +323,8 @@ def test_adapter_executes_exact_frozen_harbor_action(
     )
     command = captured["command"]
     assert command[:5] == ["uv", "run", "--frozen", "harbor", "run"]
+    assert command[command.index("--env") + 1] == "docker"
+    assert "--no-force-build" in command
     assert command[command.index("--agent") + 1] == "acp:agent-standard@1.0.0"
     assert command[command.index("--model") + 1] == "provider/model"
     assert command[command.index("--n-attempts") + 1] == "1"
