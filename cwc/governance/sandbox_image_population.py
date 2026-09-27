@@ -167,10 +167,16 @@ def freeze_sandbox_image_population(
         if isinstance(row, SandboxImageBinding):
             parsed.append(row)
         elif isinstance(row, Mapping):
-            try:
-                parsed.append(SandboxImageBinding(**dict(row)))
-            except TypeError as exc:
-                raise SandboxImagePopulationError("invalid sandbox image binding") from exc
+            parsed.append(
+                SandboxImageBinding(
+                    task_id=str(row.get("task_id", "")),
+                    task_source_sha256=str(row.get("task_source_sha256", "")),
+                    build_context_sha256=str(row.get("build_context_sha256", "")),
+                    image_reference=str(row.get("image_reference", "")),
+                    container_image_digest=str(row.get("container_image_digest", "")),
+                    build_receipt_sha256=str(row.get("build_receipt_sha256", "")),
+                )
+            )
         else:
             raise SandboxImagePopulationError("invalid sandbox image binding")
     parsed_tuple = tuple(sorted(parsed, key=lambda row: row.task_id))
