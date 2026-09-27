@@ -516,6 +516,7 @@ def _physical_cost_certificate(
     cap: float,
     model_usd: float,
     model_source_digest: str,
+    model_cost_authority: CostAuthority = CostAuthority.PROVIDER_METER,
 ) -> PhysicalCostCertificate:
     raw = response.get("physical_cost_evidence")
     if not isinstance(raw, Mapping):
@@ -529,7 +530,7 @@ def _physical_cost_certificate(
         "model_usd": CostComponentEvidence(
             component="model_usd",
             value_usd=model_usd,
-            authority=CostAuthority.PROVIDER_METER,
+            authority=model_cost_authority,
             source_digest=model_source_digest,
         )
     }
