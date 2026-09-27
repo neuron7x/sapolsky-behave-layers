@@ -83,10 +83,18 @@ Product qualification still requires a separate pre-outcome, scientifically defe
 
 ## Implementation authority
 
-- `cwc/governance/mechanism_evidence_plan.py`
-- `tests/test_dgc_mechanism_evidence_plan.py`
+The mechanism lane is now structurally risk-free end to end:
 
-The existing three-endpoint product plan remains unchanged and remains the authority for any product-level risk claim.
+- `cwc/governance/mechanism_evidence_plan.py` — two-endpoint statistical claim;
+- `cwc/governance/mechanism_execution_freeze.py` — exact 11-component execution freeze that rejects `risk_endpoint_manifest`;
+- `cwc/governance/mechanism_learned_baseline.py` — B2 utility over quality and cost only;
+- `cwc/governance/mechanism_b2_fit_receipt.py` and `mechanism_b2_fit_authority.py` — calibration-only B2 evidence with no risk field in the input schema;
+- `cwc/governance/mechanism_harness_freeze.py` — B0-B3+DGC controlled-comparison frame without risk/CCF/product authority;
+- `cwc/governance/mechanism_execution_authority.py` — bounded execution authority;
+- `cwc/governance/frozen_mechanism_executor.py` and `mechanism_execution_bundle.py` — risk-field-rejecting execution/replay;
+- `cwc/governance/mechanism_trial_sizing.py` — eight baseline×endpoint calibration comparisons.
+
+The generic product execution freeze and product harness remain unchanged and continue to require an explicit frozen `catastrophic_regret` endpoint. Risk-free mechanism evidence cannot be substituted into product qualification.
 
 
 ## Frozen mechanism execution authority
@@ -95,7 +103,7 @@ The mechanism lane has a separate execution authority and evidence bundle. It do
 
 Pre-outcome sequence:
 
-`materialize → partition → calibration evidence → mechanism sizing → final harness → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
+`materialize → partition → mechanism execution freeze (risk-free) → mechanism B2 calibration/authority → mechanism sizing → mechanism harness freeze → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
 
 The mechanism sizing receipt is bound to the SHA-256 of the canonical calibration evidence artifact. It freezes the maximum required within-task repeat count across the exact eight baseline×endpoint comparisons.
 
