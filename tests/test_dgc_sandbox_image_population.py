@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-
 import pytest
 
 from cwc.governance.sandbox_image_population import (
