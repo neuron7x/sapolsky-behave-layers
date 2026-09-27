@@ -57,6 +57,7 @@ class SandboxImageBinding:
     container_image_digest: str
     build_receipt_path: str
     build_receipt_sha256: str
+    build_receipt_digest: str
 
     def __post_init__(self) -> None:
         task_id = _required("task_id", self.task_id)
@@ -81,6 +82,9 @@ class SandboxImageBinding:
         object.__setattr__(self, "build_receipt_path", receipt_rel.as_posix())
         object.__setattr__(
             self, "build_receipt_sha256", _sha("build_receipt_sha256", self.build_receipt_sha256)
+        )
+        object.__setattr__(
+            self, "build_receipt_digest", _sha("build_receipt_digest", self.build_receipt_digest)
         )
         digest = _oci_digest("container_image_digest", self.container_image_digest)
         object.__setattr__(self, "container_image_digest", digest)
