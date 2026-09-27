@@ -4,12 +4,13 @@ import copy
 import os
 import re
 import shutil
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
 try:
     import tomllib
 except ModuleNotFoundError:  # Python 3.10 compatibility for canonical product CI.
     import tomli as tomllib
-from dataclasses import asdict, dataclass
-from pathlib import Path
 
 from cwc.governance.materialization_transaction import (
     canonical_json_bytes,
