@@ -42,6 +42,28 @@ def _fixture(tmp_path: Path):
             "max_cost_usd": 2.0,
             "max_wall_time_s": 60,
             "max_steps": 10,
+            "runtime_cost_contract": {
+                "schema": "DGC_RUNTIME_COST_CONTRACT_V1",
+                "allocation_policy": "ALL_LOCAL_COMPUTE_TO_INFRA_V1",
+                "host_profile_id": "fixture-linux-amd64",
+                "infra_usd_per_second": 0.001,
+                "infra_rate_source_uri": "https://example.invalid/fixture-host-rate",
+                "infra_rate_captured_at": "2026-09-27T00:00:00Z",
+                "billable_external_tools_allowed": False,
+                "paid_retrieval_allowed": False,
+                "human_review_allowed": False,
+                "automatic_retries_allowed": False,
+                "zero_by_contract": {
+                    "router_usd": "ROUTER_INCLUDED_IN_INFRA_V1",
+                    "countermodel_usd": "NO_COUNTERMODEL_V1",
+                    "retrieval_usd": "NO_PAID_RETRIEVAL_V1",
+                    "tools_usd": "NO_PAID_EXTERNAL_TOOLS_V1",
+                    "verification_usd": "VERIFIER_INCLUDED_IN_INFRA_V1",
+                    "human_review_usd": "NO_HUMAN_REVIEW_V1",
+                    "retry_usd": "NO_AUTOMATIC_RETRIES_V1",
+                    "failure_loss_usd": "NO_EXTERNAL_FAILURE_LOSS_V1",
+                },
+            },
         }),
         encoding="utf-8",
     )
@@ -154,6 +176,26 @@ def _fixture(tmp_path: Path):
         }),
         encoding="utf-8",
     )
+    pricing = manifests / "pricing.json"
+    pricing.write_text(
+        json.dumps({
+            "schema": "DGC_PRICING_SNAPSHOT_V1",
+            "captured_at": "2026-09-27T00:00:00Z",
+            "entries": [{
+                "provider": "provider",
+                "model_id": "model",
+                "model_version": "v1",
+                "currency": "USD",
+                "source_uri": "https://example.invalid/provider/model/pricing",
+                "input_per_million": 1.0,
+                "cached_input_per_million": 0.1,
+                "cache_write_per_million": 1.25,
+                "long_cache_write_per_million": 1.25,
+                "output_per_million": 2.0,
+            }],
+        }),
+        encoding="utf-8",
+    )
 
     runtime = tmp_path / "runtime"
     runtime.mkdir()
@@ -179,6 +221,13 @@ def _fixture(tmp_path: Path):
                 "sha256": sha256_file(environment),
                 "bytes": environment.stat().st_size,
                 "schema": "DGC_ENVIRONMENT_MANIFEST_V2",
+            },
+            {
+                "component": "pricing_snapshot",
+                "path": "manifests/pricing.json",
+                "sha256": sha256_file(pricing),
+                "bytes": pricing.stat().st_size,
+                "schema": "DGC_PRICING_SNAPSHOT_V1",
             },
         ],
         "governance_policy": {"policy_id": "B0"},
@@ -244,6 +293,8 @@ def _write_harbor_trial(
     metadata: dict | None = None,
     model_name: str = "model",
     provider_request_id: str | None = "req-1",
+    native_atif: bool = False,
+    atif_input_tokens: int = 100,
 ):
     jobs_dir = Path(command[command.index("--jobs-dir") + 1])
     job_name = command[command.index("--job-name") + 1]
@@ -265,7 +316,7 @@ def _write_harbor_trial(
         "output_tokens": 10,
         "provider_request_id": provider_request_id,
     }]
-    if metadata is None:
+    if metadata is None and not native_atif:
         metadata = {
             "dgc_provider_usage_traces": traces,
             "dgc_physical_cost_evidence": {
@@ -285,7 +336,7 @@ def _write_harbor_trial(
             "n_cache_tokens": 20,
             "n_output_tokens": 10,
             "cost_usd": 0.1,
-            "metadata": metadata,
+            **({"metadata": metadata} if metadata is not None else {}),
         },
         "agent_info": {
             "name": "agent-standard",
@@ -294,8 +345,30 @@ def _write_harbor_trial(
         },
     }
     (trial / "result.json").write_text(json.dumps(result), encoding="utf-8")
+    trajectory = (
+        {
+            "schema_version": "ATIF-v1.7",
+            "session_id": "session-1",
+            "agent": {
+                "name": "agent-standard",
+                "version": "1.0.0",
+                "model_name": model_name,
+            },
+            "steps": [{"step_id": 1}],
+            "final_metrics": {
+                "total_prompt_tokens": atif_input_tokens,
+                "total_cached_tokens": 20,
+                "total_completion_tokens": 10,
+                "total_cost_usd": 0.1,
+                "total_steps": 1,
+                "extra": {"total_cache_write_input_tokens": 0},
+            },
+        }
+        if native_atif
+        else {"messages": [{"role": "assistant", "content": "done"}]}
+    )
     (trial / "agent" / "trajectory.json").write_text(
-        json.dumps({"messages": [{"role": "assistant", "content": "done"}]}),
+        json.dumps(trajectory),
         encoding="utf-8",
     )
 
@@ -362,7 +435,73 @@ def test_missing_dgc_agent_metadata_fails_closed(
         return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
 
     monkeypatch.setattr(adapter.subprocess, "run", run)
-    with pytest.raises(TerminalHarborAdapterError, match="provider_usage_traces"):
+    with pytest.raises(TerminalHarborAdapterError, match="ATIF-v1.7"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+
+
+def test_native_atif_emits_source_bound_runtime_live_trace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    clock = iter((1_000_000_000, 3_000_000_000))
+    monkeypatch.setattr(adapter.time, "monotonic_ns", lambda: next(clock))
+
+    def run(command, **kwargs):
+        _write_harbor_trial(list(command), native_atif=True)
+        return SimpleNamespace(returncode=0, stdout=b"harbor-ok", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    response = execute_terminal_harbor_unit(
+        request=request,
+        repository_root=repo,
+        materialization_root=materialization,
+        runtime_root=runtime_root,
+        unit_runtime_root=unit_root,
+    )
+    trace = response["provider_usage_traces"][0]
+    assert trace["authority"] == "RUNTIME_LIVE"
+    assert trace["provider_request_id"] is None
+    assert trace["runtime_call_id"] == "harbor-atif:session-1:aggregate"
+    assert trace["source_artifact_digest"] == response["trace"]["trajectory_sha256"]
+    assert trace["input_tokens"] == 100
+    assert trace["cached_input_tokens"] == 20
+    assert trace["output_tokens"] == 10
+    assert response["trace"]["telemetry_authority"] == "RUNTIME_LIVE"
+    measurement = response["trace"]["runtime_cost_measurement"]
+    assert measurement["elapsed_ns"] == 2_000_000_000
+    assert measurement["infra_usd"] == pytest.approx(0.002)
+    assert response["physical_cost_evidence"]["infra_usd"]["authority"] == "INFRA_METER"
+    assert response["physical_cost_evidence"]["router_usd"]["authority"] == "ZERO_BY_CONTRACT"
+    assert response["actual_cost_usd"] > measurement["infra_usd"]
+
+
+def test_native_atif_token_drift_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    monkeypatch.setattr(adapter.time, "monotonic_ns", lambda: 1_000_000_000)
+
+    def run(command, **kwargs):
+        _write_harbor_trial(
+            list(command),
+            native_atif=True,
+            atif_input_tokens=101,
+        )
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(
+        TerminalHarborAdapterError,
+        match="ATIF token totals differ",
+    ):
         execute_terminal_harbor_unit(
             request=request,
             repository_root=repo,
