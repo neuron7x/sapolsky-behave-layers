@@ -336,6 +336,7 @@ def execute_terminal_harbor_unit(
         "--path", str(execution_task_root),
         "--env", "docker",
         "--no-force-build",
+        "--delete",
         "--agent", action.harbor_agent_argument,
         "--model", action.harbor_model_argument,
         "--job-name", job_name,
