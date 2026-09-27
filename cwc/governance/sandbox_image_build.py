@@ -56,8 +56,12 @@ def _image_name(registry_prefix: str, task_id: str) -> str:
         raise SandboxImageBuildError(
             "registry_prefix must be a Docker image namespace without scheme/tag/digest"
         )
+    if "/" not in prefix:
+        raise SandboxImageBuildError(
+            "registry_prefix must include an explicit repository namespace"
+        )
     tail = prefix.rsplit("/", 1)[-1]
-    if "/" in prefix and ":" in tail:
+    if ":" in tail:
         raise SandboxImageBuildError(
             "registry_prefix must not contain a mutable tag"
         )
@@ -348,6 +352,23 @@ def build_and_push_terminal_task_image(
             "--pull",
             str(environment),
         ]
+        receipt_command = [
+            "<DOCKER>",
+            "buildx",
+            "build",
+            "--platform",
+            platform,
+            "--provenance=false",
+            "--sbom=false",
+            "--push",
+            "--metadata-file",
+            "<BUILD_METADATA_JSON>",
+            "--tag",
+            staging_reference,
+            "--no-cache",
+            "--pull",
+            "<FROZEN_TASK_ENVIRONMENT>",
+        ]
         _run(command, timeout_seconds=command_timeout_seconds, runner=runner)
         if metadata_path.is_symlink() or not metadata_path.is_file():
             raise SandboxImageBuildError("buildx metadata file missing")
@@ -397,7 +418,7 @@ def build_and_push_terminal_task_image(
         "container_image_digest": digest,
         "docker_version": docker_version,
         "buildx_version": buildx_version,
-        "build_command": command,
+        "build_command": receipt_command,
         "build_metadata_json": metadata_json,
         "registry_manifest_json": manifest_json,
     }
@@ -413,7 +434,7 @@ def build_and_push_terminal_task_image(
         container_image_digest=digest,
         docker_version=docker_version,
         buildx_version=buildx_version,
-        build_command=tuple(command),
+        build_command=tuple(receipt_command),
         build_metadata_json=metadata_json,
         registry_manifest_json=manifest_json,
         receipt_digest=_receipt_digest(payload),
