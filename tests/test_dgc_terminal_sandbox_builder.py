@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,6 +11,9 @@ from cwc.governance.materialization_transaction import (
     canonical_json_bytes,
     file_manifest,
     sha256_bytes,
+)
+from cwc.governance.sandbox_image_build import (
+    sandbox_image_build_receipt_bytes,
 )
 from cwc.governance.sandbox_image_population import task_population_digest
 from cwc.governance.terminal_sandbox_builder import (
@@ -95,57 +99,135 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path]:
     return tasks, reference
 
 
-class FakeDocker:
-    def __init__(self) -> None:
+class FakeBuildx:
+    def __init__(self, *, wrong_digest: bool = False) -> None:
         self.commands: list[list[str]] = []
+        self.wrong_digest = wrong_digest
+        self.manifests = {
+            "task-a": (
+                b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json",'
+                b'"config":{"mediaType":"application/vnd.oci.image.config.v1+json",'
+                b'"digest":"sha256:' + b"1" * 64 + b'","size":2},"layers":[]}'
+            ),
+            "task-b": (
+                b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json",'
+                b'"config":{"mediaType":"application/vnd.oci.image.config.v1+json",'
+                b'"digest":"sha256:' + b"2" * 64 + b'","size":2},"layers":[]}'
+            ),
+        }
+
+    def _task(self, value: str) -> str:
+        if "/task-a" in value:
+            return "task-a"
+        if "/task-b" in value:
+            return "task-b"
+        raise AssertionError(value)
 
     def __call__(self, command, **kwargs):
         cmd = list(command)
         self.commands.append(cmd)
-        if cmd[1:3] == ["version", "--format"]:
-            return SimpleNamespace(returncode=0, stdout=b'{"Client":{"Version":"test"}}', stderr=b"")
-        if cmd[1] == "build":
-            return SimpleNamespace(returncode=0, stdout=b"build-ok", stderr=b"")
-        if cmd[1] == "push":
-            return SimpleNamespace(returncode=0, stdout=b"push-ok", stderr=b"")
-        if cmd[1:3] == ["image", "inspect"]:
-            tag = cmd[3]
-            task = "task-a" if "task-a-" in tag else "task-b"
-            digest = "a" * 64 if task == "task-a" else "b" * 64
-            repository = tag.rsplit(":", 1)[0]
-            stdout = json.dumps([f"{repository}@sha256:{digest}"]).encode("utf-8")
-            return SimpleNamespace(returncode=0, stdout=stdout, stderr=b"")
+        if cmd[1:2] == ["version"]:
+            return SimpleNamespace(
+                returncode=0,
+                stdout=b'{"Version":"28.0.0"}',
+                stderr=b"",
+            )
+        if cmd[1:3] == ["buildx", "version"]:
+            return SimpleNamespace(
+                returncode=0,
+                stdout=b"github.com/docker/buildx v0.30.0",
+                stderr=b"",
+            )
+        if cmd[1:3] == ["buildx", "build"]:
+            tag = cmd[cmd.index("--tag") + 1]
+            task_id = self._task(tag)
+            digest = "sha256:" + hashlib.sha256(
+                self.manifests[task_id]
+            ).hexdigest()
+            if self.wrong_digest and task_id == "task-a":
+                digest = "sha256:" + "9" * 64
+            metadata = Path(
+                cmd[cmd.index("--metadata-file") + 1]
+            )
+            metadata.write_text(
+                json.dumps({"containerimage.digest": digest}),
+                encoding="utf-8",
+            )
+            return SimpleNamespace(
+                returncode=0,
+                stdout=b"build-ok",
+                stderr=b"",
+            )
+        if cmd[1:4] == ["buildx", "imagetools", "inspect"]:
+            reference = cmd[-1]
+            task_id = self._task(reference)
+            return SimpleNamespace(
+                returncode=0,
+                stdout=self.manifests[task_id],
+                stderr=b"",
+            )
         raise AssertionError(cmd)
 
 
 def test_builder_emits_exact_task_scoped_oci_population(tmp_path: Path):
     tasks, reference = _fixture(tmp_path)
-    docker = FakeDocker()
+    docker = FakeBuildx()
     result = build_terminal_sandbox_population(
         materialized_tasks_root=tasks,
         materialization_reference_path=reference,
         registry_prefix="registry.example/dgc/terminal-bench-2-1",
+        receipt_path_prefix="eval_bundle/test/build-receipts",
         runner=docker,
     )
     assert result.population.expected_task_count == 2
     assert len(result.population.bindings) == 2
-    assert result.population.resolve("task-a").container_image_digest == "sha256:" + "a" * 64
-    assert result.population.resolve("task-b").container_image_digest == "sha256:" + "b" * 64
-    assert all(row["external_benchmark_execution_performed"] is False for row in result.receipts)
-    build_commands = [cmd for cmd in docker.commands if len(cmd) > 1 and cmd[1] == "build"]
+    assert len(result.receipts) == 2
+    for receipt in result.receipts:
+        binding = result.population.resolve(receipt.task_id)
+        assert binding.container_image_digest == receipt.container_image_digest
+        assert binding.image_reference == receipt.image_reference
+        assert binding.build_receipt_digest == receipt.receipt_digest
+        assert binding.build_receipt_sha256 == sha256_bytes(
+            sandbox_image_build_receipt_bytes(receipt)
+        )
+        assert binding.build_receipt_path.endswith(
+            f"build-receipts/{receipt.task_id}.json"
+        )
+        assert receipt.document["benchmark_execution_performed"] is False
+    build_commands = [
+        cmd
+        for cmd in docker.commands
+        if len(cmd) > 2 and cmd[1:3] == ["buildx", "build"]
+    ]
     assert len(build_commands) == 2
-    assert all("--pull" in cmd and "--platform" in cmd for cmd in build_commands)
+    assert all(
+        "--pull" in cmd
+        and "--no-cache" in cmd
+        and "--provenance=false" in cmd
+        and "--sbom=false" in cmd
+        and "--push" in cmd
+        for cmd in build_commands
+    )
 
 
-def test_materialized_task_byte_substitution_is_rejected_before_docker(tmp_path: Path):
+def test_materialized_task_byte_substitution_is_rejected_before_docker(
+    tmp_path: Path,
+):
     tasks, reference = _fixture(tmp_path)
-    (tasks / "task-a" / "instruction.md").write_text("tampered\n", encoding="utf-8")
-    docker = FakeDocker()
-    with pytest.raises(TerminalSandboxBuildError, match="task bytes differ"):
+    (tasks / "task-a" / "instruction.md").write_text(
+        "tampered\n",
+        encoding="utf-8",
+    )
+    docker = FakeBuildx()
+    with pytest.raises(
+        TerminalSandboxBuildError,
+        match="task bytes differ",
+    ):
         build_terminal_sandbox_population(
             materialized_tasks_root=tasks,
             materialization_reference_path=reference,
             registry_prefix="registry.example/dgc/terminal-bench-2-1",
+            receipt_path_prefix="eval_bundle/test/build-receipts",
             runner=docker,
         )
     assert docker.commands == []
@@ -153,32 +235,47 @@ def test_materialized_task_byte_substitution_is_rejected_before_docker(tmp_path:
 
 def test_registry_prefix_with_mutable_tag_is_rejected(tmp_path: Path):
     tasks, reference = _fixture(tmp_path)
-    docker = FakeDocker()
-    with pytest.raises(TerminalSandboxBuildError, match="must not contain a tag"):
+    docker = FakeBuildx()
+    with pytest.raises(
+        TerminalSandboxBuildError,
+        match="sandbox image build failed",
+    ):
         build_terminal_sandbox_population(
             materialized_tasks_root=tasks,
             materialization_reference_path=reference,
             registry_prefix="registry.example/dgc/terminal-bench-2-1:latest",
+            receipt_path_prefix="eval_bundle/test/build-receipts",
             runner=docker,
         )
 
 
-def test_missing_repo_digest_fails_closed(tmp_path: Path):
+def test_registry_digest_mismatch_fails_closed(tmp_path: Path):
     tasks, reference = _fixture(tmp_path)
-
-    class MissingDigestDocker(FakeDocker):
-        def __call__(self, command, **kwargs):
-            cmd = list(command)
-            if cmd[1:3] == ["image", "inspect"]:
-                self.commands.append(cmd)
-                return SimpleNamespace(returncode=0, stdout=b"[]", stderr=b"")
-            return super().__call__(command, **kwargs)
-
-    docker = MissingDigestDocker()
-    with pytest.raises(TerminalSandboxBuildError, match="immutable repository digest"):
+    docker = FakeBuildx(wrong_digest=True)
+    with pytest.raises(
+        TerminalSandboxBuildError,
+        match="sandbox image build failed",
+    ):
         build_terminal_sandbox_population(
             materialized_tasks_root=tasks,
             materialization_reference_path=reference,
             registry_prefix="registry.example/dgc/terminal-bench-2-1",
+            receipt_path_prefix="eval_bundle/test/build-receipts",
+            runner=docker,
+        )
+
+
+def test_receipt_path_prefix_must_be_repository_relative(tmp_path: Path):
+    tasks, reference = _fixture(tmp_path)
+    docker = FakeBuildx()
+    with pytest.raises(
+        TerminalSandboxBuildError,
+        match="receipt_path_prefix",
+    ):
+        build_terminal_sandbox_population(
+            materialized_tasks_root=tasks,
+            materialization_reference_path=reference,
+            registry_prefix="registry.example/dgc/terminal-bench-2-1",
+            receipt_path_prefix="/tmp/receipts",
             runner=docker,
         )
