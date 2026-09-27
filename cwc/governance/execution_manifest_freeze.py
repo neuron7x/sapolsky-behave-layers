@@ -9,6 +9,11 @@ from typing import Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
+from cwc.governance.sandbox_image_population import (
+    EXECUTION_MODE as SANDBOX_EXECUTION_MODE,
+    SandboxImagePopulationError,
+    verify_sandbox_image_population_document,
+)
 
 SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_V1"
 INPUT_SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_INPUT_V1"
@@ -26,7 +31,7 @@ COMPONENT_SCHEMAS = {
     "observation_provider_manifest": "DGC_OBSERVATION_PROVIDER_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
-    "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
+    "environment": "DGC_ENVIRONMENT_MANIFEST_V2",
     "budget": "DGC_BUDGET_MANIFEST_V1",
     "pricing_snapshot": "DGC_PRICING_SNAPSHOT_V1",
     "risk_endpoint_manifest": "DGC_RISK_ENDPOINT_MANIFEST_V1",
@@ -196,10 +201,35 @@ def _validate_tools(payload: Mapping[str, object]) -> None:
 
 
 def _validate_environment(payload: Mapping[str, object]) -> None:
-    digest = _req("container_image_digest", payload.get("container_image_digest")).lower()
-    if _OCI_DIGEST_RE.fullmatch(digest) is None:
-        raise ExecutionManifestError("environment requires immutable OCI sha256 image digest")
-    _req("runtime", payload.get("runtime"))
+    _req("environment family_id", payload.get("family_id"))
+    _req("environment runtime", payload.get("runtime"))
+    _sha(
+        "environment materialization_reference_digest",
+        payload.get("materialization_reference_digest"),
+    )
+    _sha("environment task_manifest_sha256", payload.get("task_manifest_sha256"))
+    population_path = Path(
+        _req(
+            "environment sandbox_image_population_path",
+            payload.get("sandbox_image_population_path"),
+        )
+    )
+    if population_path.is_absolute() or ".." in population_path.parts:
+        raise ExecutionManifestError(
+            "environment sandbox_image_population_path must be repository-relative"
+        )
+    _sha(
+        "environment sandbox_image_population_sha256",
+        payload.get("sandbox_image_population_sha256"),
+    )
+    _sha(
+        "environment sandbox_image_population_digest",
+        payload.get("sandbox_image_population_digest"),
+    )
+    if payload.get("execution_mode") != SANDBOX_EXECUTION_MODE:
+        raise ExecutionManifestError(
+            "environment must require PREBUILT_IMMUTABLE_OCI execution"
+        )
 
 
 def _validate_budget(payload: Mapping[str, object]) -> None:
@@ -590,6 +620,70 @@ def freeze_execution_manifests(
             bytes=path.stat().st_size,
             schema=COMPONENT_SCHEMAS[component],
         ))
+
+    environment_payload = component_payloads["environment"]
+    if str(environment_payload.get("family_id", "")).strip() != family:
+        raise ExecutionManifestError("environment family differs from execution family")
+    if _sha(
+        "environment materialization_reference_digest",
+        environment_payload.get("materialization_reference_digest"),
+    ) != reference_digest:
+        raise ExecutionManifestError(
+            "environment image population is bound to a different materialization reference"
+        )
+    if _sha(
+        "environment task_manifest_sha256",
+        environment_payload.get("task_manifest_sha256"),
+    ) != task_manifest:
+        raise ExecutionManifestError(
+            "environment image population is bound to a different task population"
+        )
+    population_path, population_rel = _repo_file(
+        root, environment_payload.get("sandbox_image_population_path")
+    )
+    population_file_sha = _sha(
+        "environment sandbox_image_population_sha256",
+        environment_payload.get("sandbox_image_population_sha256"),
+    )
+    if sha256_file(population_path) != population_file_sha:
+        raise ExecutionManifestError(
+            "sandbox image population bytes differ from environment manifest"
+        )
+    try:
+        population_document = json.loads(population_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ExecutionManifestError("invalid sandbox image population JSON") from exc
+    if not isinstance(population_document, Mapping):
+        raise ExecutionManifestError("sandbox image population must be a JSON object")
+    try:
+        sandbox_population = verify_sandbox_image_population_document(population_document)
+    except SandboxImagePopulationError as exc:
+        raise ExecutionManifestError("invalid sandbox image population") from exc
+    if sandbox_population.family_id != family:
+        raise ExecutionManifestError("sandbox image population family mismatch")
+    if sandbox_population.runtime != str(environment_payload.get("runtime", "")).strip():
+        raise ExecutionManifestError("sandbox image population runtime mismatch")
+    if sandbox_population.materialization_reference_digest != reference_digest:
+        raise ExecutionManifestError(
+            "sandbox image population materialization reference mismatch"
+        )
+    if sandbox_population.task_manifest_sha256 != task_manifest:
+        raise ExecutionManifestError("sandbox image population task manifest mismatch")
+    try:
+        expected_task_count = int(binding.get("expected_task_count"))
+    except (TypeError, ValueError) as exc:
+        raise ExecutionManifestError(
+            "materialization reference expected_task_count malformed"
+        ) from exc
+    if sandbox_population.expected_task_count != expected_task_count:
+        raise ExecutionManifestError("sandbox image population task count mismatch")
+    if sandbox_population.population_digest != _sha(
+        "environment sandbox_image_population_digest",
+        environment_payload.get("sandbox_image_population_digest"),
+    ):
+        raise ExecutionManifestError("sandbox image population semantic digest mismatch")
+    if population_rel != str(environment_payload.get("sandbox_image_population_path")):
+        raise ExecutionManifestError("sandbox image population path is non-canonical")
 
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
     if runtime_family != family:
