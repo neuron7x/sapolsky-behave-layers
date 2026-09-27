@@ -22,7 +22,9 @@ def _rows() -> list[dict[str, object]]:
             "build_context_sha256": _h("2"),
             "image_reference": "registry.example/dgc/task-a@sha256:" + _h("3"),
             "container_image_digest": "sha256:" + _h("3"),
+            "build_receipt_path": "receipts/task-a.json",
             "build_receipt_sha256": _h("4"),
+            "build_receipt_digest": _h("a"),
         },
         {
             "task_id": "task-b",
@@ -30,7 +32,9 @@ def _rows() -> list[dict[str, object]]:
             "build_context_sha256": _h("6"),
             "image_reference": "registry.example/dgc/task-b@sha256:" + _h("7"),
             "container_image_digest": "sha256:" + _h("7"),
+            "build_receipt_path": "receipts/task-b.json",
             "build_receipt_sha256": _h("8"),
+            "build_receipt_digest": _h("b"),
         },
     ]
 
