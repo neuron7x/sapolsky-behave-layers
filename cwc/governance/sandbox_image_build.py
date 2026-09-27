@@ -65,6 +65,7 @@ def _image_name(registry_prefix: str, task_id: str) -> str:
 def _run(
     argv: Sequence[str],
     *,
+    timeout_seconds: float,
     runner: Callable[..., subprocess.CompletedProcess[bytes]] = subprocess.run,
 ) -> subprocess.CompletedProcess[bytes]:
     try:
@@ -73,8 +74,9 @@ def _run(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False,
+            timeout=timeout_seconds,
         )
-    except OSError as exc:
+    except (OSError, subprocess.TimeoutExpired) as exc:
         raise SandboxImageBuildError(f"could not execute {argv[0]}") from exc
     if proc.returncode != 0:
         stderr = bytes(proc.stderr or b"").decode("utf-8", errors="replace")[-4000:]
@@ -87,9 +89,12 @@ def _run(
 def _capture_text(
     argv: Sequence[str],
     *,
+    timeout_seconds: float,
     runner: Callable[..., subprocess.CompletedProcess[bytes]] = subprocess.run,
 ) -> str:
-    return bytes(_run(argv, runner=runner).stdout or b"").decode(
+    return bytes(
+        _run(argv, timeout_seconds=timeout_seconds, runner=runner).stdout or b""
+    ).decode(
         "utf-8", errors="strict"
     ).strip()
 
@@ -138,6 +143,15 @@ class SandboxImageBuildReceipt:
 
 def _receipt_digest(payload: Mapping[str, object]) -> str:
     return sha256_bytes(canonical_json_bytes(dict(payload)))
+
+
+def sandbox_image_build_receipt_bytes(
+    receipt: SandboxImageBuildReceipt,
+) -> bytes:
+    return (
+        json.dumps(receipt.document, indent=2, sort_keys=True).encode("utf-8")
+        + b"\n"
+    )
 
 
 def verify_sandbox_image_build_receipt_document(
@@ -272,6 +286,7 @@ def build_and_push_terminal_task_image(
     registry_prefix: str,
     docker_command: str = "docker",
     platform: str = "linux/amd64",
+    command_timeout_seconds: float = 3600.0,
     runner: Callable[..., subprocess.CompletedProcess[bytes]] = subprocess.run,
 ) -> SandboxImageBuildReceipt:
     task = str(task_id).strip()
@@ -279,6 +294,8 @@ def build_and_push_terminal_task_image(
         raise SandboxImageBuildError("invalid task_id")
     if platform != "linux/amd64":
         raise SandboxImageBuildError("only linux/amd64 is admitted for frozen Terminal-Bench builds")
+    if command_timeout_seconds <= 0:
+        raise SandboxImageBuildError("command_timeout_seconds must be > 0")
     root = Path(task_root)
     if root.is_symlink() or not root.is_dir():
         raise SandboxImageBuildError("task_root must be a real directory")
@@ -298,10 +315,12 @@ def build_and_push_terminal_task_image(
 
     docker_version = _capture_text(
         [docker_command, "version", "--format", "{{json .Client}}"],
+        timeout_seconds=command_timeout_seconds,
         runner=runner,
     )
     buildx_version = _capture_text(
         [docker_command, "buildx", "version"],
+        timeout_seconds=command_timeout_seconds,
         runner=runner,
     )
 
@@ -324,7 +343,7 @@ def build_and_push_terminal_task_image(
             "--pull",
             str(environment),
         ]
-        _run(command, runner=runner)
+        _run(command, timeout_seconds=command_timeout_seconds, runner=runner)
         if metadata_path.is_symlink() or not metadata_path.is_file():
             raise SandboxImageBuildError("buildx metadata file missing")
         metadata_json = metadata_path.read_text(encoding="utf-8")
@@ -340,6 +359,7 @@ def build_and_push_terminal_task_image(
     manifest_bytes = bytes(
         _run(
             [docker_command, "buildx", "imagetools", "inspect", "--raw", image_reference],
+            timeout_seconds=command_timeout_seconds,
             runner=runner,
         ).stdout
         or b""
