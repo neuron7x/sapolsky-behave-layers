@@ -668,7 +668,7 @@ def freeze_execution_manifests(
             )
         except TerminalSandboxAuthorityError as exc:
             raise ExecutionManifestError(
-                "Terminal sandbox environment authority replay failed"
+                f"Terminal sandbox environment authority replay failed: {exc}"
             ) from exc
         try:
             expected_task_count = int(
