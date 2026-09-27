@@ -96,7 +96,12 @@ def _verify_build_receipt(
     observed = sha256_bytes(canonical_json_bytes(payload))
     if declared != observed:
         raise TerminalSandboxGenerationError(f"{task_id}: build receipt digest mismatch")
-    binding = population.resolve(task_id)
+    try:
+        binding = population.resolve(task_id)
+    except SandboxImagePopulationError as exc:
+        raise TerminalSandboxGenerationError(
+            f"{task_id}: sandbox image binding missing"
+        ) from exc
     expected = {
         "family_id": FAMILY,
         "task_id": task_id,
