@@ -137,9 +137,15 @@ def _verify_environment(
     population_path = str(
         environment.get("sandbox_image_population_path", "")
     ).strip()
-    if not population_path or Path(population_path).name != "SANDBOX_IMAGE_POPULATION.json":
+    declared_path = Path(population_path)
+    if (
+        not population_path
+        or declared_path.is_absolute()
+        or ".." in declared_path.parts
+        or declared_path.name != "SANDBOX_IMAGE_POPULATION.json"
+    ):
         raise TerminalSandboxGenerationError(
-            "environment population path must target SANDBOX_IMAGE_POPULATION.json"
+            "environment population path must be safe repository-relative SANDBOX_IMAGE_POPULATION.json"
         )
     return sha256_file(path), population_path
 
