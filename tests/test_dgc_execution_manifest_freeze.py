@@ -13,6 +13,11 @@ from cwc.governance.execution_manifest_freeze import (
     verify_execution_manifest_freeze_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.mechanism_execution_freeze import (
+    MechanismExecutionFreezeError,
+    freeze_mechanism_execution_manifests,
+    verify_mechanism_execution_freeze_document,
+)
 
 COMMIT = "a" * 40
 TREE = "b" * 40
@@ -802,3 +807,89 @@ def test_freeze_digest_detects_post_freeze_tampering(tmp_path: Path):
     _write(path, doc)
     with pytest.raises(ExecutionManifestError, match="freeze digest mismatch"):
         verify_execution_manifest_freeze_document(path)
+
+
+def test_mechanism_execution_freeze_is_exactly_risk_free(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    components.pop("risk_endpoint_manifest")
+    frozen = freeze_mechanism_execution_manifests(
+        repository_root=repo,
+        repository_commit=COMMIT,
+        repository_tree=TREE,
+        family_id=FAMILY,
+        materialization_reference_path=reference.relative_to(repo),
+        component_paths=components,
+        governance_policy_paths=policies,
+    )
+    assert len(frozen.components) == 11
+    assert {row.component for row in frozen.components}.isdisjoint({"risk_endpoint_manifest"})
+    assert frozen.document["risk_endpoint_bound"] is False
+    assert frozen.document["risk_qualification_authorized"] is False
+    assert frozen.document["mechanism_execution_authorized"] is False
+    assert frozen.document["product_promotion_authorized"] is False
+    out = repo / "eval_bundle" / "mechanism-freeze.json"
+    _write(out, frozen.document)
+    verified = verify_mechanism_execution_freeze_document(out)
+    assert verified["freeze_digest"] == frozen.freeze_digest
+
+
+def test_mechanism_execution_freeze_rejects_risk_endpoint_injection(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    with pytest.raises(MechanismExecutionFreezeError, match="prohibits risk_endpoint_manifest"):
+        freeze_mechanism_execution_manifests(
+            repository_root=repo,
+            repository_commit=COMMIT,
+            repository_tree=TREE,
+            family_id=FAMILY,
+            materialization_reference_path=reference.relative_to(repo),
+            component_paths=components,
+            governance_policy_paths=policies,
+        )
+
+
+def test_product_execution_freeze_still_requires_risk_endpoint(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    components.pop("risk_endpoint_manifest")
+    with pytest.raises(ExecutionManifestError, match="execution component set mismatch"):
+        freeze_execution_manifests(
+            repository_root=repo,
+            repository_commit=COMMIT,
+            repository_tree=TREE,
+            family_id=FAMILY,
+            materialization_reference_path=reference.relative_to(repo),
+            component_paths=components,
+            governance_policy_paths=policies,
+        )
+
+
+def test_mechanism_freeze_digest_rejects_risk_authority_escalation(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    components.pop("risk_endpoint_manifest")
+    frozen = freeze_mechanism_execution_manifests(
+        repository_root=repo,
+        repository_commit=COMMIT,
+        repository_tree=TREE,
+        family_id=FAMILY,
+        materialization_reference_path=reference.relative_to(repo),
+        component_paths=components,
+        governance_policy_paths=policies,
+    )
+    out = repo / "eval_bundle" / "mechanism-freeze.json"
+    _write(out, frozen.document)
+    doc = json.loads(out.read_text())
+    doc["risk_qualification_authorized"] = True
+    _write(out, doc)
+    with pytest.raises(MechanismExecutionFreezeError, match="authority boundary"):
+        verify_mechanism_execution_freeze_document(out)
