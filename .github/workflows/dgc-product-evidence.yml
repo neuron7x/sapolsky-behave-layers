@@ -55,6 +55,7 @@ jobs:
             tests/test_dgc_sandbox_image_build.py \
             tests/test_dgc_sandbox_image_population.py \
             tests/test_dgc_terminal_task_overlay.py \
+            tests/test_dgc_terminal_sandbox_authority.py \
             tests/test_dgc_terminal_sandbox_builder.py \
             tests/test_dgc_terminal_sandbox_generation.py \
             tests/test_dgc_terminal_harbor_adapter.py \
