@@ -723,7 +723,7 @@ def freeze_execution_manifests(
             raise ExecutionManifestError("sandbox image build receipt image reference mismatch")
         if build_receipt.container_image_digest != image_binding.container_image_digest:
             raise ExecutionManifestError("sandbox image build receipt OCI digest mismatch")
-        if build_receipt.receipt_digest != image_binding.build_receipt_sha256:
+        if build_receipt.receipt_digest != image_binding.build_receipt_digest:
             raise ExecutionManifestError("sandbox image build receipt semantic digest mismatch")
 
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
