@@ -160,6 +160,66 @@ For each workload family produce SHA-256 content identities for:
 
 Semantic labels such as `model-v1` are not evidence identities. `FrozenEvaluationHarness` requires lowercase SHA-256 manifests.
 
+## 2M. Mechanism lane: use the risk-free execution freeze
+
+The real-workload mechanism lane MUST NOT use the product execution freeze, because SWE-bench Verified and Terminal-Bench 2.1 do not provide the frozen product `catastrophic_regret` endpoint.
+
+Prepare `DGC_MECHANISM_EXECUTION_FREEZE_INPUT_V1` with the same common execution identities as Section 2 **except** `risk_endpoint_manifest`. Any risk endpoint in this input is a hard error.
+
+```bash
+PYTHONPATH=. python scripts/dgc_freeze_mechanism_execution.py \
+  --input eval_bundle/MECHANISM_EXECUTION_FREEZE_INPUT.json \
+  --output eval_bundle/MECHANISM_EXECUTION_FREEZE.json
+```
+
+Required result:
+
+- schema `DGC_MECHANISM_EXECUTION_FREEZE_V1`;
+- exactly 11 common components;
+- `risk_endpoint_bound=false`;
+- exact materialization, model/action/pricing, observation, executor, scorer, budget and governance-policy identities;
+- `mechanism_execution_authorized=false`;
+- `product_promotion_authorized=false`.
+
+The product freeze remains unchanged and still requires the risk endpoint.
+
+## 3M. Mechanism lane: fit B2 on quality + cost only
+
+Do not feed synthetic or post-outcome risk labels into B2. Prepare `DGC_MECHANISM_B2_FIT_INPUT_V1` with:
+
+- frozen `MechanismLearnedRouterConfig`;
+- complete calibration `task × action` counterfactual table;
+- only `quality` and `cost_usd` outcomes;
+- exact forbidden confirmatory + G1 task IDs;
+- frozen feature-schema and training-algorithm digests.
+
+```bash
+PYTHONPATH=. python scripts/dgc_fit_mechanism_b2.py \
+  --input eval_bundle/MECHANISM_B2_FIT_INPUT.json \
+  --output eval_bundle/MECHANISM_B2_FIT_RECEIPT.json
+
+PYTHONPATH=. python scripts/dgc_authorize_mechanism_b2.py \
+  --execution-freeze eval_bundle/MECHANISM_EXECUTION_FREEZE.json \
+  --task-partition eval_bundle/TASK_PARTITION.json \
+  --fit-input eval_bundle/MECHANISM_B2_FIT_INPUT.json \
+  --fit-receipt eval_bundle/MECHANISM_B2_FIT_RECEIPT.json \
+  --output eval_bundle/MECHANISM_B2_FIT_AUTHORITY.json
+```
+
+Any `catastrophic_regret`, `risk`, `risk_score` or `risk_endpoint` field in mechanism B2 input => STOP.
+
+After mechanism sizing, freeze the final risk-free comparison harness:
+
+```bash
+PYTHONPATH=. python scripts/dgc_build_mechanism_harness_freeze.py \
+  --execution-freeze eval_bundle/MECHANISM_EXECUTION_FREEZE.json \
+  --mechanism-b2-authority eval_bundle/MECHANISM_B2_FIT_AUTHORITY.json \
+  --baseline-panel-input eval_bundle/BASELINE_PANEL_INPUT.json \
+  --output eval_bundle/MECHANISM_HARNESS_FREEZE.json
+```
+
+Only this mechanism-specific freeze/harness pair may feed `dgc_build_mechanism_execution_authority.py`.
+
 ## 3. Fit B2 on calibration tasks only
 
 B0/B1/B3 are static policy contracts. B2 is a learned cost-quality router and must be fitted only after the task split is frozen.
