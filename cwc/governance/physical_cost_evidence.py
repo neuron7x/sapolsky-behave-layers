@@ -12,6 +12,7 @@ from cwc.governance.product_economics import ProductTrialCost
 
 class CostAuthority(str, Enum):
     PROVIDER_METER = "PROVIDER_METER"
+    RUNTIME_METER = "RUNTIME_METER"
     TOOL_METER = "TOOL_METER"
     INFRA_METER = "INFRA_METER"
     HUMAN_TIME_LOG = "HUMAN_TIME_LOG"
