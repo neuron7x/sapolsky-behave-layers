@@ -8,10 +8,14 @@ import pytest
 
 import cwc.governance.execution_evidence_bundle as bundle_module
 import cwc.governance.frozen_panel_executor as executor_module
-from cwc.governance.distributed_eval_control import DistributedEvalSpec
+from cwc.governance.distributed_eval_control import DistributedEvalSpec, WorkUnitId
 from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.execution_evidence_bundle import verify_execution_bundle
-from cwc.governance.frozen_panel_executor import FrozenPanelExecutionError, execute_frozen_panel
+from cwc.governance.frozen_panel_executor import (
+    FrozenPanelExecutionError,
+    _provider_model_meter,
+    execute_frozen_panel,
+)
 from cwc.governance.materialization_transaction import sha256_file
 
 
@@ -544,3 +548,44 @@ def test_invalid_adapter_evidence_fails_closed_without_publishing_bundle(
             output_root=output,
         )
     assert not output.exists()
+
+
+def test_product_provider_meter_rejects_runtime_live_authority_by_default():
+    card = ProviderRateCard(
+        provider="provider",
+        model="model",
+        input_usd_per_million=1.0,
+        cached_input_usd_per_million=0.1,
+        cache_write_usd_per_million=1.25,
+        long_cache_write_usd_per_million=1.25,
+        output_usd_per_million=2.0,
+        source_uri="https://example.invalid/pricing",
+        retrieved_at="2026-09-27T00:00:00Z",
+    )
+    unit = WorkUnitId("task-1", "DGC", 0)
+    response = {
+        "provider_usage_traces": [{
+            "trace_id": "trace-runtime",
+            "decision_id": unit.stable_id,
+            "policy_id": unit.policy_id,
+            "authority": "RUNTIME_LIVE",
+            "provider": "provider",
+            "model": "model",
+            "model_version": "v1",
+            "rate_card_digest": card.digest,
+            "input_tokens": 100,
+            "cached_input_tokens": 0,
+            "cache_write_tokens": 0,
+            "long_cache_write_tokens": 0,
+            "output_tokens": 10,
+            "provider_request_id": None,
+            "runtime_call_id": "harbor-atif:session-1:aggregate",
+            "source_artifact_digest": "a" * 64,
+        }]
+    }
+    with pytest.raises(FrozenPanelExecutionError, match="not admitted"):
+        _provider_model_meter(
+            response=response,
+            unit=unit,
+            rate_cards={("provider", "model", "v1"): card},
+        )
