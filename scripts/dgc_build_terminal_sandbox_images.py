@@ -18,6 +18,9 @@ from cwc.governance.terminal_sandbox_builder import (
     RUNTIME,
     build_terminal_sandbox_population,
 )
+from cwc.governance.terminal_sandbox_generation import (
+    verify_terminal_sandbox_build_generation,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_ROOT = ROOT / "eval_bundle"
@@ -241,6 +244,17 @@ def main() -> int:
             provenance=provenance,
         )
 
+    verified = verify_terminal_sandbox_build_generation(
+        output
+    )
+    if (
+        verified.population.population_digest
+        != result.population.population_digest
+    ):
+        raise RuntimeError(
+            "published sandbox generation replay digest mismatch"
+        )
+
     print(
         json.dumps(
             {
@@ -248,6 +262,7 @@ def main() -> int:
                 "family_id": result.population.family_id,
                 "task_count": result.population.expected_task_count,
                 "population_digest": result.population.population_digest,
+                "generation_digest": verified.generation_digest,
                 "payload_manifest_sha256": (
                     published.payload_manifest_sha256
                 ),
