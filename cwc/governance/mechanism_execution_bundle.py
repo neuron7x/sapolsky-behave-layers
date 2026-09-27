@@ -8,7 +8,9 @@ from typing import Mapping
 
 from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
-from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.mechanism_execution_freeze import (
+    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
+)
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.mechanism_execution_authority import verify_mechanism_execution_authority_document
 from cwc.governance.physical_cost_evidence import (

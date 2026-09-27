@@ -79,6 +79,8 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         "confirmatory_task_digest": task_digest,
     }
     plan = MechanismStatisticalPlan(min_trials_per_task=2, max_trials_per_task=10)
+    execution["mechanism_plan_digest"] = plan.digest
+    harness["mechanism_plan_digest"] = plan.digest
     sizing = {
         "receipt_digest": h("7"),
         "confirmatory_task_count": len(tasks),

@@ -76,12 +76,16 @@
     "terminal_sandbox_generation_verifier": "IMPLEMENTED_V2_ATOMIC_GENERATION_REPLAY_PAYLOAD_PUBLICATION_ENVIRONMENT_POPULATION_AND_PER_TASK_CANONICAL_BUILD_RECEIPTS_EXTERNAL_GENERATION_PENDING",
     "runtime_live_trace_authority": "IMPLEMENTED_SOURCE_BOUND_HARBOR_ATIF_USAGE_FOR_MECHANISM_ONLY_PRODUCT_PROVIDER_REQUEST_ID_GATE_UNCHANGED_EXTERNAL_EXECUTION_PENDING",
     "runtime_cost_contract": "IMPLEMENTED_BUDGET_BOUND_TOTAL_LOCAL_COMPUTE_TO_INFRA_ALLOCATION_WITH_EXPLICIT_ZERO_BY_CONTRACT_CLAUSES_EXTERNAL_METERING_PENDING",
-    "openai_snapshot_candidate_panel": "IMPLEMENTED_TWO_TIER_EXACT_GPT_5_4_SNAPSHOTS_CODEX_0_157_1_MODEL_ACTION_PRICING_IDENTITY_GATE_NO_EXECUTION_EVIDENCE"
+    "openai_snapshot_candidate_panel": "IMPLEMENTED_TWO_TIER_EXACT_GPT_5_4_SNAPSHOTS_CODEX_0_157_1_MODEL_ACTION_PRICING_IDENTITY_GATE_NO_EXECUTION_EVIDENCE",
+    "mechanism_execution_freeze": "IMPLEMENTED_RISK_FREE_EXACT_11_COMPONENT_FREEZE_REJECTS_RISK_ENDPOINT_PRODUCT_FREEZE_UNCHANGED",
+    "mechanism_b2_learned_router": "IMPLEMENTED_CALIBRATION_ONLY_QUALITY_COST_ROUTER_NO_CATASTROPHIC_REGRET_FIELD_EXTERNAL_FIT_PENDING",
+    "mechanism_harness_freeze": "IMPLEMENTED_RISK_FREE_B0_B3_PLUS_DGC_COMPARISON_FRAME_MECHANISM_PLAN_BOUND_EXTERNAL_FREEZE_PENDING",
+    "mechanism_risk_boundary": "STRUCTURALLY_SEPARATED_PRODUCT_RISK_ENDPOINT_REQUIRED_MECHANISM_RISK_ENDPOINT_FORBIDDEN"
   },
   "external_blockers": [
     "materialized and byte-sealed external task/scorer/environment manifests",
     "executable host with Docker/Buildx, registry push access and live provider credentials for source-bound runtime execution",
-    "calibration-only external B2 fit receipt and baseline-panel binding",
+    "calibration-only external B2 fits and baseline-panel bindings: risk-free quality+cost B2 for mechanism lane; risk-aware B2 remains separate for product qualification",
     "externally built task-scoped immutable OCI sandbox population plus final content-addressed prompt/tool/budget/scorer/environment manifests; OpenAI model/action/pricing candidate panel exists but is not execution-frozen until the complete harness closes",
     "external calibration variance observations and frozen cluster-aware trial-sizing receipt",
     "minted confirmatory generation roots for each materialized external workload family",

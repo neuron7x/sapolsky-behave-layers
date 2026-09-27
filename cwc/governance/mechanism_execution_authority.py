@@ -7,8 +7,13 @@ from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
-from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
-from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
+from cwc.governance.mechanism_execution_freeze import (
+    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
+)
+from cwc.governance.harness_freeze import DGC_ROLE
+from cwc.governance.mechanism_harness_freeze import (
+    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
+)
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.mechanism_evidence_plan import MechanismStatisticalPlan
 from cwc.governance.mechanism_trial_sizing import verify_mechanism_trial_sizing_document
@@ -126,6 +131,10 @@ def build_mechanism_execution_authority(
     harness_digest = _sha("harness freeze_digest", harness.get("harness_freeze_digest"))
     if harness.get("execution_manifest_freeze_digest") != execution_digest:
         raise MechanismExecutionAuthorityError("harness is bound to a different execution freeze")
+    if _sha("execution mechanism_plan_digest", execution.get("mechanism_plan_digest")) != plan.digest:
+        raise MechanismExecutionAuthorityError("execution freeze mechanism plan differs from requested authority plan")
+    if _sha("harness mechanism_plan_digest", harness.get("mechanism_plan_digest")) != plan.digest:
+        raise MechanismExecutionAuthorityError("mechanism harness plan differs from requested authority plan")
 
     if partition.get("statistical_plan_digest") != execution.get("statistical_plan_digest"):
         raise MechanismExecutionAuthorityError(
