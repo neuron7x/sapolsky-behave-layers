@@ -1,0 +1,13 @@
+{
+  "hypothesis_id": "H-DGC-01",
+  "research_question_id": "RQ-dgc-online-voc",
+  "type": "confirmatory",
+  "H0": "At matched total inference budget, DGC does not improve NetDecisionValue over the best preregistered baseline and does not achieve non-inferior decision quality at lower total compute cost.",
+  "H1": "At matched total inference budget, DGC improves NetDecisionValue over the best preregistered baseline on the frozen synthetic oracle workload, or achieves non-inferior decision quality at lower total compute cost.",
+  "estimand": "Delta NetDecisionValue = B3_DGC - max(B0_FIXED, B1_UNCERTAINTY, B2_COST_QUALITY_ROUTER), with the preregistered non-inferiority alternative evaluated separately.",
+  "experimental_unit": "held-out synthetic oracle task",
+  "decision_rule": "Promote only if the preregistered uncertainty interval for the frozen primary comparison excludes zero in favor of DGC and coverage/catastrophic-regret guardrails do not fail; otherwise NOT_SUPPORTED or SUPPORTED_NARROWED.",
+  "preregistration": "experiments/dgc_01/PREREGISTRATION.md",
+  "status": "NOT_TESTED",
+  "claim_id": "CWC-DGC-H1"
+}

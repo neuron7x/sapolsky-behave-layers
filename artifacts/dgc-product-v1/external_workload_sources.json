@@ -1,0 +1,41 @@
+{
+  "schema": "DGC_EXTERNAL_WORKLOAD_SOURCES_V1",
+  "frozen_on": "2026-08-22",
+  "materialized": false,
+  "families": [
+    {
+      "family_id": "SWE_BENCH_VERIFIED",
+      "repository": "SWE-bench/SWE-bench",
+      "repository_commit": "7a21e05772954cc81471ae19d56f436cecf43c54",
+      "repository_tree_sha": "e667352e125abfd369a6129673d5289aa168e78b",
+      "repository_commit_signature_verified": false,
+      "dataset_id": "SWE-bench/SWE-bench_Verified",
+      "dataset_revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
+      "expected_task_count": 500,
+      "dataset_parquet": "data/test-00000-of-00001.parquet",
+      "dataset_size_display": "2.48 MB",
+      "dataset_bytes_sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8",
+      "task_manifest_sha256": null,
+      "environment_manifest_sha256": null,
+      "scorer_digest": null
+    },
+    {
+      "family_id": "TERMINAL_BENCH_2_1",
+      "repository": "harbor-framework/terminal-bench-2-1",
+      "repository_commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+      "repository_tree_sha": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+      "repository_commit_signature_verified": true,
+      "dataset_id": "terminal-bench/terminal-bench-2-1",
+      "expected_task_count": 89,
+      "tasks_tree_git_sha": "2f0f5fdc68f0befd9b4745386eb8698264b00d8a",
+      "dataset_manifest_git_blob_sha": "6e7e030fd37a7cefdbd597badcf8560c8748d995",
+      "dataset_manifest_contains_per_task_sha256": true,
+      "task_manifest_sha256": null,
+      "dataset_bytes_sha256": null,
+      "environment_manifest_sha256": null,
+      "scorer_digest": null
+    }
+  ],
+  "promotion_authorized": false,
+  "reason": "External task identities are strongly source-frozen, including SWE-bench Verified dataset bytes and the Terminal-Bench per-task digest manifest; scorer/environment/model/tool/budget manifests and executable workload seals remain incomplete."
+}

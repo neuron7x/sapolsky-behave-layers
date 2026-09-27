@@ -1,0 +1,18 @@
+{
+  "schema": "cwc-dgc-baseline-tests/1.0",
+  "source_commit": "08c03b1e5a217c05c263ac1fd20bebb9365aac2a",
+  "results": [
+    {"gate": "architecture_gate", "status": "PASS"},
+    {"gate": "architecture_contract_real_import_graph", "status": "PASS", "tests_passed": 1},
+    {"gate": "hermeticity_gate", "status": "PASS"},
+    {"gate": "complexity_gate", "status": "PASS"},
+    {"gate": "dependency_integrity_self_test", "status": "PASS", "injected_faults_killed": 5, "injected_faults_total": 5},
+    {"gate": "dependency_integrity_gate", "status": "PASS", "external_cve_audit": "UNKNOWN"},
+    {"gate": "sbom_gate", "status": "PASS", "frozen_components": 110},
+    {"gate": "inference_integrity_gate", "status": "PASS"},
+    {"gate": "assurance_attack", "status": "PASS", "injected_faults_killed": 5, "injected_faults_total": 5},
+    {"gate": "assurance_report", "status": "BLOCKED", "reason": "uploaded archive has no .git object database required by git rev-parse"},
+    {"gate": "full_make_verify", "status": "NOT_EXECUTED", "reason": "canonical repository virtual environment/tooling unavailable in sandbox"}
+  ],
+  "overall": "PARTIAL_FAIL_CLOSED"
+}

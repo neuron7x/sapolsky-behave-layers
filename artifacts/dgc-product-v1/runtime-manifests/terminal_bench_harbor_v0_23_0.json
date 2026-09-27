@@ -1,0 +1,19 @@
+{
+  "schema": "DGC_BENCHMARK_RUNTIME_MANIFEST_V1",
+  "family_id": "TERMINAL_BENCH_2_1",
+  "runtime_name": "harbor",
+  "runtime_version": "0.23.0",
+  "repository": "harbor-framework/harbor",
+  "repository_commit": "1e5c5c6db929a10a140d05e606882c671ae20729",
+  "repository_tree": "b399c3e614a6180d194359d8fd8df7fded1dad89",
+  "lock_file_path": "uv.lock",
+  "lock_file_blob_oid": "15acce780d6ff0b3c87948de412686e686499ab5",
+  "invocation": [
+    "uv",
+    "run",
+    "--frozen",
+    "harbor"
+  ],
+  "root_environment_variable": "DGC_BENCHMARK_RUNTIME_ROOT",
+  "local_materialization_required": true
+}

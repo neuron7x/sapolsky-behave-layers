@@ -1,5 +1,11 @@
 # Research Roadmap
 
+## P0 — Decision-Gradient Computing (DGC)
+
+DGC is the primary next implementation/research objective. Status: `RESEARCH_HYPOTHESIS / ENGINEERING_CANDIDATE`; empirical claim `CWC-DGC-H1` is `NOT_TESTED`. The programme must execute the ordered ACT-00..ACT-27 contract in `docs/DGC_INTEGRATION_AND_VERIFICATION_PROTOCOL.md`, starting with the synthetic oracle preregistration in `experiments/dgc_01/PREREGISTRATION.md`.
+
+Promotion is blocked until DGC beats the best preregistered fixed/uncertainty/cost-quality baseline on the frozen primary endpoint under matched budget, with anti-gaming and catastrophic-regret guardrails intact. Existing CWC epistemic authority is reused; DGC is an online compute-governance layer, not a replacement for `cwc.epistemics` or the existing programme-level adaptive-computation admissibility gate.
+
 ## Phase 0 — Repository authority
 
 Exit criteria:

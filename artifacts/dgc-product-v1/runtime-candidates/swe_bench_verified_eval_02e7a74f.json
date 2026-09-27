@@ -1,0 +1,66 @@
+{
+  "schema": "DGC_BENCHMARK_RUNTIME_CANDIDATE_V1",
+  "family_id": "SWE_BENCH_VERIFIED",
+  "status": "SOURCE_VERIFIED_RUNTIME_CANDIDATE",
+  "confirmatory_usable": false,
+  "product_promotion_authorized": false,
+  "workload_source": {
+    "huggingface_revision": "03e151cf5560b1af6a4363c6a9d766deaaea6b56",
+    "expected_rows": 500,
+    "parquet_sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8",
+    "repository_commit": "7a21e05772954cc81471ae19d56f436cecf43c54"
+  },
+  "evaluator_runtime": {
+    "repository": "SWE-bench/SWE-bench",
+    "commit": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+    "tree": "3c53c27bd4ae6a14ddf58be94156965dcd00f6f3",
+    "commit_signature_verified": false,
+    "source_files": {
+      "pyproject.toml": "0e38b7a9f13b8e21e5af430222cca7b0e7fbdec6",
+      "uv.lock": "c8197c00147247b892266d5c5117463fc015a15b",
+      "swebench/cli/evaluate.py": "2402ab1fe3f2fdc9156c9ecc3c3386271b5d80cf",
+      "swebench/cli/infer.py": "e6177a580f62690b8bfe528b2353b79d22aa7703"
+    },
+    "python_requires": ">=3.10",
+    "evaluation_semantics": {
+      "command": "swebench eval",
+      "predictions": "frozen predictions JSON/JSONL",
+      "single_instance_filter": "--instance <instance_id>",
+      "workers": 1,
+      "task_repository": "pinned local SWE-bench/swe-bench-tasks checkout",
+      "custom_substitute_scorer": false,
+      "result_authority": "upstream SWE-bench evaluation report and raw test logs"
+    }
+  },
+  "task_environment_source": {
+    "repository": "SWE-bench/swe-bench-tasks",
+    "commit": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+    "tree": "4bf3e75187bbe4798cdf20be88b12b6e7ca910c4",
+    "tasks_tree": "39df60edb3d9e709c7f6c19516c1d4b1fa3a8d50",
+    "uv_lock_blob": "d3691adf245e3ac3bb65c2b2f78420794a9ba2ce",
+    "commit_signature_verified": false,
+    "rationale": "Use --task-repo so evaluator builds from pinned task definitions instead of silently trusting a mutable registry image."
+  },
+  "admissibility_blockers": [
+    "TASK_REPO_500_VERIFIED_INSTANCE_MAPPING_NOT_YET_PROVED",
+    "BUILT_TASK_IMAGE_DIGESTS_NOT_FROZEN",
+    "EVALUATOR_RUNTIME_NOT_LOCALLY_MATERIALIZED_AND_ATTESTED",
+    "EXECUTABLE_B0_B1_B2_B3_DGC_POLICY_PANEL_NOT_FROZEN",
+    "EXACT_PROVIDER_MODEL_VERSIONS_NOT_FROZEN",
+    "PROVIDER_USAGE_REQUEST_ID_TRACE_CONTRACT_NOT_CLOSED",
+    "COMPLETE_TEN_COMPONENT_PHYSICAL_COST_EVIDENCE_NOT_CLOSED",
+    "CATASTROPHIC_REGRET_ENDPOINT_NOT_BENCHMARK_NATIVE",
+    "CALIBRATION_ONLY_B2_NOT_FITTED",
+    "EXACT_HEAD_EXECUTOR_TESTS_NOT_EXECUTED"
+  ],
+  "evidence_boundary": {
+    "allows": "runtime candidate design, adapter development, local materialization validation",
+    "forbids": [
+      "CONFIRMATORY_EXECUTED",
+      "P9_SUPPORTED",
+      "PRODUCT_QUALIFIED",
+      "PROVIDER_LIVE cost authority",
+      "commercial savings claims"
+    ]
+  }
+}

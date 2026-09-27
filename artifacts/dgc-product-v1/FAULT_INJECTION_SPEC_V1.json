@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {"case_id":"F01_PROVIDER_TIMEOUT","expected_terminal_actions":["SAFE_ABSTAIN","SAFE_FALLBACK"],"fault_class":"PROVIDER_TIMEOUT","injection_point":"MODEL_CALL"},
+    {"case_id":"F02_PROVIDER_RATE_LIMIT","expected_terminal_actions":["SAFE_ABSTAIN","SAFE_FALLBACK"],"fault_class":"PROVIDER_RATE_LIMIT","injection_point":"MODEL_CALL"},
+    {"case_id":"F03_MALFORMED_MODEL_OUTPUT","expected_terminal_actions":["SAFE_ABSTAIN","SAFE_FALLBACK","REJECT"],"fault_class":"MALFORMED_MODEL_OUTPUT","injection_point":"MODEL_RESPONSE_PARSE"},
+    {"case_id":"F04_TOOL_TIMEOUT","expected_terminal_actions":["SAFE_ABSTAIN","SAFE_FALLBACK"],"fault_class":"TOOL_TIMEOUT","injection_point":"TOOL_CALL"},
+    {"case_id":"F05_TOOL_NONZERO_EXIT","expected_terminal_actions":["SAFE_ABSTAIN","SAFE_FALLBACK","REJECT"],"fault_class":"TOOL_NONZERO_EXIT","injection_point":"TOOL_CALL"},
+    {"case_id":"F06_SCORER_UNAVAILABLE","expected_terminal_actions":["SAFE_ABSTAIN","REJECT"],"fault_class":"SCORER_UNAVAILABLE","injection_point":"SCORER"},
+    {"case_id":"F07_BUDGET_EXHAUSTION","expected_terminal_actions":["SAFE_STOP","SAFE_ABSTAIN"],"fault_class":"BUDGET_EXHAUSTION","injection_point":"BUDGET_GOVERNOR"},
+    {"case_id":"F08_WORKER_CRASH_AFTER_LEASE","expected_terminal_actions":["RECOVERED","SAFE_STOP"],"fault_class":"WORKER_CRASH_AFTER_LEASE","injection_point":"DISTRIBUTED_WORKER"},
+    {"case_id":"F09_STALE_LEASE_REPLAY","expected_terminal_actions":["REJECT"],"fault_class":"STALE_LEASE_REPLAY","injection_point":"DISTRIBUTED_COORDINATOR"},
+    {"case_id":"F10_DUPLICATE_RESULT_COMMIT","expected_terminal_actions":["REJECT","IDEMPOTENT_NOOP"],"fault_class":"DUPLICATE_RESULT_COMMIT","injection_point":"DISTRIBUTED_COORDINATOR"},
+    {"case_id":"F11_EVIDENCE_DIGEST_CORRUPTION","expected_terminal_actions":["REJECT"],"fault_class":"EVIDENCE_DIGEST_CORRUPTION","injection_point":"EVIDENCE_IMPORT"},
+    {"case_id":"F12_PARTIAL_EXECUTION_POPULATION","expected_terminal_actions":["REJECT","SAFE_STOP"],"fault_class":"PARTIAL_EXECUTION_POPULATION","injection_point":"COMPLETION_GATE"}
+  ],
+  "global_invariants": [
+    "NO_UNAUTHORIZED_PROMOTION",
+    "NO_BUDGET_LIMIT_BYPASS",
+    "AUDIT_CHAIN_CONTIGUOUS",
+    "NO_DUPLICATE_SIDE_EFFECT_COMMIT",
+    "NO_UNVERIFIED_OUTPUT_PROMOTION",
+    "SAFE_TERMINAL_OR_RECOVERED"
+  ],
+  "outcomes_observed": false,
+  "policy_retuning_allowed": false,
+  "schema": "DGC_FAULT_INJECTION_SPEC_V1"
+}

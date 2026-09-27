@@ -1,0 +1,16 @@
+{
+  "authority": "LOCAL_SHARED_RUNTIME_DIAGNOSTIC_ONLY",
+  "candidate_operations": 3,
+  "iterations_per_repeat": 50000,
+  "machine": "x86_64",
+  "max_ns_per_select": 8953.16556,
+  "median_ns_per_select": 8460.99254,
+  "min_ns_per_select": 8250.60578,
+  "note": "Shared-runtime wall-time diagnostic; not a production latency or USD-cost claim.",
+  "p95_ns_per_select": 8928.48876,
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "python": "3.13.5",
+  "repeats": 21,
+  "schema": "dgc-governor-local-microbench/1",
+  "warmup_calls": 10000
+}
