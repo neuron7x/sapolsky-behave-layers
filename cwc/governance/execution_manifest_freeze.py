@@ -9,6 +9,10 @@ from typing import Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
+from cwc.governance.sandbox_image_build import (
+    SandboxImageBuildError,
+    verify_sandbox_image_build_receipt_document,
+)
 from cwc.governance.sandbox_image_population import (
     EXECUTION_MODE as SANDBOX_EXECUTION_MODE,
     SandboxImagePopulationError,
@@ -684,6 +688,43 @@ def freeze_execution_manifests(
         raise ExecutionManifestError("sandbox image population semantic digest mismatch")
     if population_rel != str(environment_payload.get("sandbox_image_population_path")):
         raise ExecutionManifestError("sandbox image population path is non-canonical")
+
+    for image_binding in sandbox_population.bindings:
+        receipt_path, receipt_rel = _repo_file(root, image_binding.build_receipt_path)
+        if receipt_rel != image_binding.build_receipt_path:
+            raise ExecutionManifestError("sandbox image build receipt path is non-canonical")
+        if sha256_file(receipt_path) != image_binding.build_receipt_sha256:
+            raise ExecutionManifestError(
+                f"sandbox image build receipt bytes differ for {image_binding.task_id}"
+            )
+        try:
+            receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ExecutionManifestError(
+                f"invalid sandbox image build receipt JSON for {image_binding.task_id}"
+            ) from exc
+        if not isinstance(receipt_document, Mapping):
+            raise ExecutionManifestError("sandbox image build receipt must be a JSON object")
+        try:
+            build_receipt = verify_sandbox_image_build_receipt_document(receipt_document)
+        except SandboxImageBuildError as exc:
+            raise ExecutionManifestError(
+                f"invalid sandbox image build receipt for {image_binding.task_id}"
+            ) from exc
+        if build_receipt.task_id != image_binding.task_id:
+            raise ExecutionManifestError("sandbox image build receipt task identity mismatch")
+        if build_receipt.family_id != family:
+            raise ExecutionManifestError("sandbox image build receipt family mismatch")
+        if build_receipt.task_source_sha256 != image_binding.task_source_sha256:
+            raise ExecutionManifestError("sandbox image build receipt task source mismatch")
+        if build_receipt.build_context_sha256 != image_binding.build_context_sha256:
+            raise ExecutionManifestError("sandbox image build receipt context mismatch")
+        if build_receipt.image_reference != image_binding.image_reference:
+            raise ExecutionManifestError("sandbox image build receipt image reference mismatch")
+        if build_receipt.container_image_digest != image_binding.container_image_digest:
+            raise ExecutionManifestError("sandbox image build receipt OCI digest mismatch")
+        if build_receipt.receipt_digest != image_binding.build_receipt_sha256:
+            raise ExecutionManifestError("sandbox image build receipt semantic digest mismatch")
 
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
     if runtime_family != family:
