@@ -1,6 +1,6 @@
 {
   "schema": "DGC_PRODUCT_EVIDENCE_STATUS_V1",
-  "generated_on": "2026-08-23",
+  "generated_on": "2026-09-27",
   "status": "RESEARCH_ARCHITECTURE_WITH_NARROW_VERIFIED_COMPONENTS",
   "claim_frozen": true,
   "metrics_frozen": true,
@@ -68,12 +68,17 @@
     "mechanism_execution_bundle": "IMPLEMENTED_RISK_FREE_FULL_POPULATION_REPLAY_PROVIDER_LIVE_AND_PHYSICAL_COST_REQUIRED",
     "mechanism_executor": "IMPLEMENTED_ATOMIC_SELF_REPLAYING_EXTERNAL_EXECUTION_NOT_RUN",
     "benchmark_runtime_identity": "FROZEN_IN_COMPARISON_FRAME_LOCAL_GIT_TREE_LOCK_REPLAY_REQUIRED_EXTERNAL_MATERIALIZATION_PENDING",
-    "terminal_bench_harbor_adapter": "IMPLEMENTED_FROZEN_OBSERVATION_POLICY_ACTION_RUNTIME_CHAIN_EXTERNAL_EXECUTION_PENDING"
+    "terminal_bench_harbor_adapter": "IMPLEMENTED_FROZEN_OBSERVATION_POLICY_ACTION_RUNTIME_CHAIN_EXTERNAL_EXECUTION_PENDING",
+    "sandbox_image_population_authority": "IMPLEMENTED_TASK_SCOPED_IMMUTABLE_OCI_BOUND_TO_MATERIALIZATION_REFERENCE_EXACT_TASK_POPULATION_AND_DUAL_BUILD_RECEIPT_IDENTITY_EXTERNAL_BUILD_PENDING",
+    "terminal_task_oci_overlay": "IMPLEMENTED_SOURCE_AND_BUILD_CONTEXT_HASH_BOUND_DOCKER_IMAGE_ONLY_OVERLAY_NO_FORCE_BUILD_EXTERNAL_EXECUTION_PENDING",
+    "terminal_sandbox_builder": "IMPLEMENTED_SINGLE_TASK_BUILDX_PUSH_RAW_REGISTRY_MANIFEST_VERIFICATION_PLUS_FULL_POPULATION_ORCHESTRATION_EXTERNAL_RUN_PENDING",
+    "ci_execution_state": "UNAVAILABLE_2026_09_27_GITHUB_ACTIONS_JOBS_TERMINATED_BEFORE_REPOSITORY_STEPS_NO_CODE_PASS_FAIL_INFERENCE",
+    "terminal_sandbox_generation_verifier": "IMPLEMENTED_V2_ATOMIC_GENERATION_REPLAY_PAYLOAD_PUBLICATION_ENVIRONMENT_POPULATION_AND_PER_TASK_CANONICAL_BUILD_RECEIPTS_EXTERNAL_GENERATION_PENDING"
   },
   "external_blockers": [
     "materialized and byte-sealed external task/scorer/environment manifests",
     "calibration-only external B2 fit receipt and baseline-panel binding",
-    "content-addressed frozen model/tool/environment/budget/pricing/scorer manifests for the real harness",
+    "externally built task-scoped immutable OCI sandbox population plus content-addressed frozen model/tool/budget/pricing/scorer manifests for the real harness",
     "external calibration variance observations and frozen cluster-aware trial-sizing receipt",
     "minted confirmatory generation roots for each materialized external workload family",
     "complete confirmatory execution populations promoted to EXECUTED authority",

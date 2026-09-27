@@ -9,6 +9,13 @@ from typing import Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
+from cwc.governance.sandbox_image_population import (
+    EXECUTION_MODE as SANDBOX_EXECUTION_MODE,
+)
+from cwc.governance.terminal_sandbox_authority import (
+    TerminalSandboxAuthorityError,
+    verify_terminal_sandbox_environment,
+)
 
 SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_V1"
 INPUT_SCHEMA = "DGC_EXECUTION_MANIFEST_FREEZE_INPUT_V1"
@@ -196,10 +203,46 @@ def _validate_tools(payload: Mapping[str, object]) -> None:
 
 
 def _validate_environment(payload: Mapping[str, object]) -> None:
-    digest = _req("container_image_digest", payload.get("container_image_digest")).lower()
-    if _OCI_DIGEST_RE.fullmatch(digest) is None:
-        raise ExecutionManifestError("environment requires immutable OCI sha256 image digest")
-    _req("runtime", payload.get("runtime"))
+    schema = payload.get("schema")
+    if schema == "DGC_ENVIRONMENT_MANIFEST_V1":
+        digest = _req("container_image_digest", payload.get("container_image_digest")).lower()
+        if _OCI_DIGEST_RE.fullmatch(digest) is None:
+            raise ExecutionManifestError(
+                "environment requires immutable OCI sha256 image digest"
+            )
+        _req("environment runtime", payload.get("runtime"))
+        return
+    if schema != "DGC_ENVIRONMENT_MANIFEST_V2":
+        raise ExecutionManifestError("unsupported environment manifest schema")
+    _req("environment family_id", payload.get("family_id"))
+    _req("environment runtime", payload.get("runtime"))
+    _sha(
+        "environment materialization_reference_digest",
+        payload.get("materialization_reference_digest"),
+    )
+    _sha("environment task_manifest_sha256", payload.get("task_manifest_sha256"))
+    population_path = Path(
+        _req(
+            "environment sandbox_image_population_path",
+            payload.get("sandbox_image_population_path"),
+        )
+    )
+    if population_path.is_absolute() or ".." in population_path.parts:
+        raise ExecutionManifestError(
+            "environment sandbox_image_population_path must be repository-relative"
+        )
+    _sha(
+        "environment sandbox_image_population_sha256",
+        payload.get("sandbox_image_population_sha256"),
+    )
+    _sha(
+        "environment sandbox_image_population_digest",
+        payload.get("sandbox_image_population_digest"),
+    )
+    if payload.get("execution_mode") != SANDBOX_EXECUTION_MODE:
+        raise ExecutionManifestError(
+            "environment must require PREBUILT_IMMUTABLE_OCI execution"
+        )
 
 
 def _validate_budget(payload: Mapping[str, object]) -> None:
@@ -552,7 +595,14 @@ def freeze_execution_manifests(
     components: list[FrozenComponent] = []
     component_payloads: dict[str, dict[str, object]] = {}
     for component in sorted(COMPONENT_SCHEMAS):
-        payload, path, rel = _json_manifest(root, component_paths[component], expected_schema=COMPONENT_SCHEMAS[component])
+        expected_schema = COMPONENT_SCHEMAS[component]
+        if component == "environment" and family == "TERMINAL_BENCH_2_1":
+            expected_schema = "DGC_ENVIRONMENT_MANIFEST_V2"
+        payload, path, rel = _json_manifest(
+            root,
+            component_paths[component],
+            expected_schema=expected_schema,
+        )
         _VALIDATORS[component](payload)
         component_payloads[component] = payload
         if component == "executor_manifest":
@@ -588,8 +638,50 @@ def freeze_execution_manifests(
             path=rel,
             sha256=sha256_file(path),
             bytes=path.stat().st_size,
-            schema=COMPONENT_SCHEMAS[component],
+            schema=str(payload["schema"]),
         ))
+
+    if family == "TERMINAL_BENCH_2_1":
+        environment_payload = component_payloads["environment"]
+        if str(environment_payload.get("family_id", "")).strip() != family:
+            raise ExecutionManifestError(
+                "environment family differs from execution family"
+            )
+        if _sha(
+            "environment materialization_reference_digest",
+            environment_payload.get("materialization_reference_digest"),
+        ) != reference_digest:
+            raise ExecutionManifestError(
+                "environment image population is bound to a different materialization reference"
+            )
+        if _sha(
+            "environment task_manifest_sha256",
+            environment_payload.get("task_manifest_sha256"),
+        ) != task_manifest:
+            raise ExecutionManifestError(
+                "environment image population is bound to a different task population"
+            )
+        try:
+            sandbox_population = verify_terminal_sandbox_environment(
+                repository_root=root,
+                environment=environment_payload,
+            )
+        except TerminalSandboxAuthorityError as exc:
+            raise ExecutionManifestError(
+                f"Terminal sandbox environment authority replay failed: {exc}"
+            ) from exc
+        try:
+            expected_task_count = int(
+                binding.get("expected_task_count")
+            )
+        except (TypeError, ValueError) as exc:
+            raise ExecutionManifestError(
+                "materialization reference expected_task_count malformed"
+            ) from exc
+        if sandbox_population.expected_task_count != expected_task_count:
+            raise ExecutionManifestError(
+                "sandbox image population task count mismatch"
+            )
 
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
     if runtime_family != family:

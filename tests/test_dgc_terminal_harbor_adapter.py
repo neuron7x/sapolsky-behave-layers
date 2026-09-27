@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -7,11 +8,25 @@ from types import SimpleNamespace
 import pytest
 
 import cwc.governance.terminal_harbor_adapter as adapter
-from cwc.governance.materialization_transaction import sha256_file
+from cwc.governance.materialization_transaction import (
+    canonical_json_bytes,
+    file_manifest,
+    sha256_bytes,
+    sha256_file,
+)
+from cwc.governance.sandbox_image_build import SandboxImageBuildReceipt
+from cwc.governance.sandbox_image_population import (
+    freeze_sandbox_image_population,
+    task_population_digest,
+)
 from cwc.governance.terminal_harbor_adapter import (
     TerminalHarborAdapterError,
     execute_terminal_harbor_unit,
 )
+
+
+def _tree_digest(root: Path) -> str:
+    return sha256_bytes(canonical_json_bytes(file_manifest(root)))
 
 
 def _fixture(tmp_path: Path):
@@ -30,9 +45,116 @@ def _fixture(tmp_path: Path):
         }),
         encoding="utf-8",
     )
+
     materialization = tmp_path / "materialization"
     task = materialization / "TERMINAL_BENCH_2_1" / "repo" / "tasks" / "task-a"
-    task.mkdir(parents=True)
+    environment_dir = task / "environment"
+    environment_dir.mkdir(parents=True)
+    (task / "task.toml").write_text(
+        "[environment]\n"
+        "cpus = 2\n"
+        "memory_mb = 1024\n"
+        "\n"
+        "[verifier]\n"
+        "timeout_sec = 30\n",
+        encoding="utf-8",
+    )
+    (task / "instruction.md").write_text("solve task-a\n", encoding="utf-8")
+    (environment_dir / "Dockerfile").write_text(
+        "FROM ubuntu:24.04\nWORKDIR /workspace\n",
+        encoding="utf-8",
+    )
+
+    registry_manifest_json = (
+        '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json",'
+        '"config":{"mediaType":"application/vnd.oci.image.config.v1+json",'
+        '"digest":"sha256:' + "1" * 64 + '","size":2},"layers":[]}'
+    )
+    image_digest = "sha256:" + hashlib.sha256(
+        registry_manifest_json.encode("utf-8")
+    ).hexdigest()
+    staging_reference = "registry.example/dgc/task-a:dgc-test"
+    image_reference = "registry.example/dgc/task-a@" + image_digest
+    build_command = [
+        "docker", "buildx", "build",
+        "--platform", "linux/amd64",
+        "--provenance=false", "--sbom=false", "--push",
+        "--metadata-file", "/tmp/metadata.json",
+        "--tag", staging_reference,
+        "--no-cache", "--pull",
+        str(environment_dir),
+    ]
+    build_metadata_json = json.dumps(
+        {"containerimage.digest": image_digest},
+        separators=(",", ":"),
+    )
+    receipt_payload = {
+        "family_id": "TERMINAL_BENCH_2_1",
+        "task_id": "task-a",
+        "platform": "linux/amd64",
+        "task_source_sha256": _tree_digest(task),
+        "build_context_sha256": _tree_digest(environment_dir),
+        "dockerfile_sha256": sha256_file(environment_dir / "Dockerfile"),
+        "staging_reference": staging_reference,
+        "image_reference": image_reference,
+        "container_image_digest": image_digest,
+        "docker_version": '{"Version":"28.0.0"}',
+        "buildx_version": "github.com/docker/buildx v0.30.0",
+        "build_command": build_command,
+        "build_metadata_json": build_metadata_json,
+        "registry_manifest_json": registry_manifest_json,
+    }
+    receipt_kwargs = dict(receipt_payload)
+    receipt_kwargs["build_command"] = tuple(build_command)
+    receipt = SandboxImageBuildReceipt(
+        **receipt_kwargs,
+        receipt_digest=sha256_bytes(canonical_json_bytes(receipt_payload)),
+    )
+    receipt_path = manifests / "receipts" / "task-a.json"
+    receipt_path.parent.mkdir(parents=True)
+    receipt_path.write_text(
+        json.dumps(receipt.document, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    population = freeze_sandbox_image_population(
+        family_id="TERMINAL_BENCH_2_1",
+        runtime="docker-linux-amd64",
+        materialization_reference_digest="a" * 64,
+        task_manifest_sha256=task_population_digest(["task-a"]),
+        expected_task_count=1,
+        bindings=[{
+            "task_id": "task-a",
+            "task_source_sha256": _tree_digest(task),
+            "build_context_sha256": _tree_digest(environment_dir),
+            "image_reference": image_reference,
+            "container_image_digest": image_digest,
+            "build_receipt_path": receipt_path.relative_to(repo).as_posix(),
+            "build_receipt_sha256": sha256_file(receipt_path),
+            "build_receipt_digest": receipt.receipt_digest,
+        }],
+    )
+    population_path = manifests / "sandbox-images.json"
+    population_path.write_text(
+        json.dumps(population.document, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    environment = manifests / "environment.json"
+    environment.write_text(
+        json.dumps({
+            "schema": "DGC_ENVIRONMENT_MANIFEST_V2",
+            "family_id": "TERMINAL_BENCH_2_1",
+            "runtime": "docker-linux-amd64",
+            "execution_mode": "PREBUILT_IMMUTABLE_OCI",
+            "materialization_reference_digest": "a" * 64,
+            "task_manifest_sha256": task_population_digest(["task-a"]),
+            "sandbox_image_population_path": "manifests/sandbox-images.json",
+            "sandbox_image_population_sha256": sha256_file(population_path),
+            "sandbox_image_population_digest": population.population_digest,
+        }),
+        encoding="utf-8",
+    )
+
     runtime = tmp_path / "runtime"
     runtime.mkdir()
     unit_root = tmp_path / "unit"
@@ -43,13 +165,22 @@ def _fixture(tmp_path: Path):
         "generation_id": "gen-1",
         "unit": {"task_id": "task-a", "policy_id": "B0", "replicate": 0},
         "attempt": 1,
-        "frozen_components": [{
-            "component": "budget",
-            "path": "manifests/budget.json",
-            "sha256": sha256_file(budget),
-            "bytes": budget.stat().st_size,
-            "schema": "DGC_BUDGET_MANIFEST_V1",
-        }],
+        "frozen_components": [
+            {
+                "component": "budget",
+                "path": "manifests/budget.json",
+                "sha256": sha256_file(budget),
+                "bytes": budget.stat().st_size,
+                "schema": "DGC_BUDGET_MANIFEST_V1",
+            },
+            {
+                "component": "environment",
+                "path": "manifests/environment.json",
+                "sha256": sha256_file(environment),
+                "bytes": environment.stat().st_size,
+                "schema": "DGC_ENVIRONMENT_MANIFEST_V2",
+            },
+        ],
         "governance_policy": {"policy_id": "B0"},
     }
     return repo, materialization, runtime, unit_root, request
@@ -192,16 +323,31 @@ def test_adapter_executes_exact_frozen_harbor_action(
     )
     command = captured["command"]
     assert command[:5] == ["uv", "run", "--frozen", "harbor", "run"]
+    assert command[command.index("--env") + 1] == "docker"
+    assert "--no-force-build" in command
+    assert "--delete" in command
     assert command[command.index("--agent") + 1] == "acp:agent-standard@1.0.0"
     assert command[command.index("--model") + 1] == "provider/model"
     assert command[command.index("--n-attempts") + 1] == "1"
     assert command[command.index("--n-concurrent") + 1] == "1"
     assert command[command.index("--max-retries") + 1] == "0"
+    assert "--no-force-build" in command
+    overlay_task = Path(command[command.index("--path") + 1])
+    assert overlay_task != materialization / "TERMINAL_BENCH_2_1" / "repo" / "tasks" / "task-a"
+    assert "registry.example/dgc/task-a@sha256:" in (
+        overlay_task / "task.toml"
+    ).read_text(encoding="utf-8")
     assert response["schema"] == "DGC_UNIT_EXECUTION_RESPONSE_V1"
     assert response["quality"] == pytest.approx(1.0)
     assert response["unit"] == request["unit"]
     assert response["provider_usage_traces"][0]["provider_request_id"] == "req-1"
     assert response["trace"]["action"]["action_id"] == "STANDARD"
+    assert response["trace"]["sandbox_image"]["container_image_digest"].startswith("sha256:")
+    assert (
+        response["trace"]["sandbox_image"]["build_receipt_digest"]
+        == response["trace"]["sandbox_image"]["verified_receipt_digest"]
+    )
+    assert response["trace"]["task_overlay"]["semantic_delta"] == "environment.docker_image_only"
     assert len(response["trace"]["harbor_command_digest"]) == 64
 
 
@@ -324,3 +470,85 @@ def test_harbor_nonzero_exit_fails_closed(
             runtime_root=runtime_root,
             unit_runtime_root=unit_root,
         )
+
+
+def test_tampered_materialized_task_fails_before_harbor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    task = materialization / "TERMINAL_BENCH_2_1" / "repo" / "tasks" / "task-a"
+    (task / "instruction.md").write_text("tampered\n", encoding="utf-8")
+
+    called = False
+
+    def run(*args, **kwargs):
+        nonlocal called
+        called = True
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(TerminalHarborAdapterError, match="immutable OCI task overlay rejected"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+    assert called is False
+
+
+def test_tampered_sandbox_population_fails_before_harbor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    population = repo / "manifests" / "sandbox-images.json"
+    population.write_text("{}\n", encoding="utf-8")
+
+    called = False
+
+    def run(*args, **kwargs):
+        nonlocal called
+        called = True
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(TerminalHarborAdapterError, match="population bytes differ"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+    assert called is False
+
+
+
+def test_tampered_build_receipt_fails_before_harbor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    receipt = repo / "manifests" / "receipts" / "task-a.json"
+    receipt.write_text("{}\n", encoding="utf-8")
+
+    called = False
+
+    def run(*args, **kwargs):
+        nonlocal called
+        called = True
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(TerminalHarborAdapterError, match="build receipt bytes differ"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+    assert called is False

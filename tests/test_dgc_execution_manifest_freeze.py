@@ -756,7 +756,6 @@ def test_mutable_container_tag_is_rejected(tmp_path: Path):
             component_paths=components, governance_policy_paths=policies,
         )
 
-
 def test_symlinked_manifest_file_is_rejected(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()

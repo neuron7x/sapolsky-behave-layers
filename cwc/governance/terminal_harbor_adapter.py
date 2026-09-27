@@ -13,7 +13,16 @@ from cwc.governance.frozen_action_catalog import load_frozen_action_catalog
 from cwc.governance.frozen_observation_runtime import invoke_frozen_observation_provider
 from cwc.governance.frozen_policy_runtime import invoke_frozen_policy
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_file
+from cwc.governance.sandbox_image_population import SandboxImagePopulationError
+from cwc.governance.terminal_sandbox_authority import (
+    TerminalSandboxAuthorityError,
+    verify_terminal_sandbox_environment,
+)
 from cwc.governance.terminal_bench_admission import admit_terminal_bench_trial
+from cwc.governance.terminal_task_overlay import (
+    TerminalTaskOverlayError,
+    prepare_terminal_task_overlay,
+)
 
 FAMILY = "TERMINAL_BENCH_2_1"
 REQUEST_SCHEMA = "DGC_UNIT_EXECUTION_REQUEST_V1"
@@ -78,6 +87,35 @@ def _component_json(
         raise TerminalHarborAdapterError(f"{component} schema mismatch")
     return doc
 
+
+def _sandbox_image_binding(
+    *,
+    repository_root: Path,
+    execution_freeze: Mapping[str, object],
+    task_id: str,
+):
+    environment = _component_json(
+        repository_root=repository_root,
+        execution_freeze=execution_freeze,
+        component="environment",
+        schema="DGC_ENVIRONMENT_MANIFEST_V2",
+    )
+    try:
+        population = verify_terminal_sandbox_environment(
+            repository_root=repository_root,
+            environment=environment,
+        )
+    except TerminalSandboxAuthorityError as exc:
+        raise TerminalHarborAdapterError(
+            f"Terminal sandbox environment authority replay failed: {exc}"
+        ) from exc
+    try:
+        binding = population.resolve(task_id)
+    except SandboxImagePopulationError as exc:
+        raise TerminalHarborAdapterError(
+            "sandbox image binding missing for frozen task"
+        ) from exc
+    return environment, population, binding
 
 def _finite_positive(name: str, value: object) -> float:
     try:
@@ -262,6 +300,23 @@ def execute_terminal_harbor_unit(
     if task_root.is_symlink() or not task_root.is_dir():
         raise TerminalHarborAdapterError("materialized Terminal task root missing or symlinked")
 
+    environment, sandbox_population, sandbox_binding = _sandbox_image_binding(
+        repository_root=root,
+        execution_freeze=execution,
+        task_id=task_id,
+    )
+    overlay_parent = unit_root / "task-overlay"
+    try:
+        overlay = prepare_terminal_task_overlay(
+            task_id=task_id,
+            task_root=task_root,
+            destination_root=overlay_parent,
+            binding=sandbox_binding,
+        )
+    except TerminalTaskOverlayError as exc:
+        raise TerminalHarborAdapterError("immutable OCI task overlay rejected") from exc
+    execution_task_root = overlay_parent / task_id
+
     stable = hashlib.sha256(
         canonical_json_bytes({
             "generation_id": request.get("generation_id"),
@@ -278,7 +333,10 @@ def execute_terminal_harbor_unit(
     command = [
         *runtime.invocation,
         "run",
-        "--path", str(task_root),
+        "--path", str(execution_task_root),
+        "--env", "docker",
+        "--no-force-build",
+        "--delete",
         "--agent", action.harbor_agent_argument,
         "--model", action.harbor_model_argument,
         "--job-name", job_name,
@@ -366,6 +424,21 @@ def execute_terminal_harbor_unit(
                 "model_id": action.model_id,
                 "model_version": action.model_version,
             },
+            "sandbox_image": {
+                "runtime": sandbox_population.runtime,
+                "population_digest": sandbox_population.population_digest,
+                "task_id": sandbox_binding.task_id,
+                "task_source_sha256": sandbox_binding.task_source_sha256,
+                "build_context_sha256": sandbox_binding.build_context_sha256,
+                "image_reference": sandbox_binding.image_reference,
+                "container_image_digest": sandbox_binding.container_image_digest,
+                "build_receipt_path": sandbox_binding.build_receipt_path,
+                "build_receipt_sha256": sandbox_binding.build_receipt_sha256,
+                "build_receipt_digest": sandbox_binding.build_receipt_digest,
+                "verified_receipt_digest": sandbox_binding.build_receipt_digest,
+                "environment_manifest_runtime": environment.get("runtime"),
+            },
+            "task_overlay": overlay.document,
             "harbor_command_digest": hashlib.sha256(
                 canonical_json_bytes(command)
             ).hexdigest(),
