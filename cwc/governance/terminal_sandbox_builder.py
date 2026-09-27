@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import subprocess
@@ -27,7 +26,6 @@ FAMILY = "TERMINAL_BENCH_2_1"
 BUILD_RECEIPT_SCHEMA = "DGC_TERMINAL_SANDBOX_BUILD_RECEIPT_V1"
 _REGISTRY_RE = re.compile(r"^[A-Za-z0-9._:/-]+$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-_GIT_OID_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 class TerminalSandboxBuildError(RuntimeError):
@@ -171,6 +169,14 @@ def build_terminal_sandbox_population(
     ).strip().lower()
     if not _SHA256_RE.fullmatch(expected_task_manifest):
         raise TerminalSandboxBuildError("materialization task manifest digest malformed")
+    expected_tree = str(binding.get("materialized_tree_sha256", "")).strip().lower()
+    if not _SHA256_RE.fullmatch(expected_tree):
+        raise TerminalSandboxBuildError("materialization tree digest malformed")
+    observed_tree = _tree_digest(tasks_root)
+    if observed_tree != expected_tree:
+        raise TerminalSandboxBuildError(
+            "materialized Terminal task bytes differ from evidence reference"
+        )
 
     try:
         manifest = parse_terminal_dataset_manifest(
