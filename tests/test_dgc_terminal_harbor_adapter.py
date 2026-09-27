@@ -104,9 +104,10 @@ def _fixture(tmp_path: Path):
         "build_metadata_json": build_metadata_json,
         "registry_manifest_json": registry_manifest_json,
     }
+    receipt_kwargs = dict(receipt_payload)
+    receipt_kwargs["build_command"] = tuple(build_command)
     receipt = SandboxImageBuildReceipt(
-        **receipt_payload,
-        build_command=tuple(build_command),
+        **receipt_kwargs,
         receipt_digest=sha256_bytes(canonical_json_bytes(receipt_payload)),
     )
     receipt_path = manifests / "receipts" / "task-a.json"
