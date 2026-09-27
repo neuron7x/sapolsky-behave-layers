@@ -11,7 +11,10 @@ from cwc.governance.materialization_transaction import (
     sha256_bytes,
     sha256_file,
 )
-from cwc.governance.sandbox_image_population import freeze_sandbox_image_population
+from cwc.governance.sandbox_image_population import (
+    freeze_sandbox_image_population,
+    task_population_digest,
+)
 from cwc.governance.terminal_sandbox_builder import BUILD_RECEIPT_SCHEMA
 from cwc.governance.terminal_sandbox_generation import (
     TerminalSandboxGenerationError,
@@ -23,6 +26,9 @@ def _h(char: str) -> str:
     return char * 64
 
 
+TASK_MANIFEST = task_population_digest(["task-a"])
+
+
 def _build_receipt(*, receipt_sha_override: str | None = None) -> tuple[dict[str, object], str]:
     payload = {
         "schema": BUILD_RECEIPT_SCHEMA,
@@ -31,7 +37,7 @@ def _build_receipt(*, receipt_sha_override: str | None = None) -> tuple[dict[str
         "runtime": "docker-linux-amd64",
         "platform": "linux/amd64",
         "materialization_reference_digest": _h("1"),
-        "materialized_task_manifest_sha256": _h("2"),
+        "materialized_task_manifest_sha256": TASK_MANIFEST,
         "task_source_sha256": _h("3"),
         "build_context_sha256": _h("4"),
         "dockerfile_sha256": _h("5"),
@@ -65,7 +71,7 @@ def _generation(
         family_id="TERMINAL_BENCH_2_1",
         runtime="docker-linux-amd64",
         materialization_reference_digest=_h("1"),
-        task_manifest_sha256=_h("2"),
+        task_manifest_sha256=TASK_MANIFEST,
         expected_task_count=1,
         bindings=[{
             "task_id": "task-a",
