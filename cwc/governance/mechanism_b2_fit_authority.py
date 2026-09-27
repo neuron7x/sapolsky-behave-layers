@@ -127,7 +127,8 @@ def authorize_mechanism_b2_fit(
         expected_feature_schema_digest=config.feature_schema_digest,
         expected_training_algorithm_digest=config.training_algorithm_digest,
     )
-    if asdict(recomputed) != declared:
+    recomputed_json = json.loads(json.dumps(asdict(recomputed), sort_keys=True))
+    if recomputed_json != declared:
         raise MechanismB2FitAuthorityError("declared mechanism B2 receipt differs from deterministic recomputation")
     if recomputed.calibration_task_digest != partition.get("calibration_task_digest"):
         raise MechanismB2FitAuthorityError("mechanism B2 calibration digest differs from partition")
