@@ -45,7 +45,9 @@ def _fixture(tmp_path: Path) -> tuple[Path, SandboxImageBinding]:
         build_context_sha256=_tree_digest(task / "environment"),
         image_reference="registry.example/dgc/task-a@sha256:" + digest,
         container_image_digest="sha256:" + digest,
+        build_receipt_path="receipts/task-a.json",
         build_receipt_sha256="4" * 64,
+        build_receipt_digest="5" * 64,
     )
     return task, binding
 
@@ -105,7 +107,9 @@ def test_build_context_substitution_fails_closed(tmp_path: Path):
         build_context_sha256="9" * 64,
         image_reference=binding.image_reference,
         container_image_digest=binding.container_image_digest,
+        build_receipt_path=binding.build_receipt_path,
         build_receipt_sha256=binding.build_receipt_sha256,
+        build_receipt_digest=binding.build_receipt_digest,
     )
     with pytest.raises(TerminalTaskOverlayError, match="build context"):
         prepare_terminal_task_overlay(
@@ -138,7 +142,9 @@ def test_escaping_task_symlink_fails_closed(tmp_path: Path):
         build_context_sha256=binding.build_context_sha256,
         image_reference=binding.image_reference,
         container_image_digest=binding.container_image_digest,
+        build_receipt_path=binding.build_receipt_path,
         build_receipt_sha256=binding.build_receipt_sha256,
+        build_receipt_digest=binding.build_receipt_digest,
     )
     with pytest.raises(TerminalTaskOverlayError, match="symlink escapes"):
         prepare_terminal_task_overlay(
@@ -162,7 +168,9 @@ def test_duplicate_environment_table_fails_closed(tmp_path: Path):
         build_context_sha256=binding.build_context_sha256,
         image_reference=binding.image_reference,
         container_image_digest=binding.container_image_digest,
+        build_receipt_path=binding.build_receipt_path,
         build_receipt_sha256=binding.build_receipt_sha256,
+        build_receipt_digest=binding.build_receipt_digest,
     )
     with pytest.raises(TerminalTaskOverlayError):
         prepare_terminal_task_overlay(
