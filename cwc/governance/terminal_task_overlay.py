@@ -4,7 +4,10 @@ import copy
 import os
 import re
 import shutil
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 compatibility for canonical product CI.
+    import tomli as tomllib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
