@@ -13,6 +13,10 @@ from cwc.governance.frozen_action_catalog import load_frozen_action_catalog
 from cwc.governance.frozen_observation_runtime import invoke_frozen_observation_provider
 from cwc.governance.frozen_policy_runtime import invoke_frozen_policy
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_file
+from cwc.governance.sandbox_image_build import (
+    SandboxImageBuildError,
+    verify_sandbox_image_build_receipt_document,
+)
 from cwc.governance.sandbox_image_population import (
     SandboxImagePopulationError,
     verify_sandbox_image_population_document,
@@ -148,7 +152,33 @@ def _sandbox_image_binding(
         binding = population.resolve(task_id)
     except SandboxImagePopulationError as exc:
         raise TerminalHarborAdapterError("sandbox image binding missing for frozen task") from exc
-    return environment, population, binding
+
+    receipt_path = _safe_repo_file(repository_root, binding.build_receipt_path)
+    if sha256_file(receipt_path) != binding.build_receipt_sha256:
+        raise TerminalHarborAdapterError("sandbox image build receipt bytes differ")
+    try:
+        receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise TerminalHarborAdapterError("invalid sandbox image build receipt JSON") from exc
+    if not isinstance(receipt_document, Mapping):
+        raise TerminalHarborAdapterError("sandbox image build receipt must be a JSON object")
+    try:
+        receipt = verify_sandbox_image_build_receipt_document(receipt_document)
+    except SandboxImageBuildError as exc:
+        raise TerminalHarborAdapterError("invalid sandbox image build receipt") from exc
+    if receipt.receipt_digest != binding.build_receipt_digest:
+        raise TerminalHarborAdapterError("sandbox image build receipt semantic digest mismatch")
+    if receipt.task_id != binding.task_id or receipt.family_id != FAMILY:
+        raise TerminalHarborAdapterError("sandbox image build receipt identity mismatch")
+    if receipt.task_source_sha256 != binding.task_source_sha256:
+        raise TerminalHarborAdapterError("sandbox image build receipt task source mismatch")
+    if receipt.build_context_sha256 != binding.build_context_sha256:
+        raise TerminalHarborAdapterError("sandbox image build receipt context mismatch")
+    if receipt.image_reference != binding.image_reference:
+        raise TerminalHarborAdapterError("sandbox image build receipt image reference mismatch")
+    if receipt.container_image_digest != binding.container_image_digest:
+        raise TerminalHarborAdapterError("sandbox image build receipt OCI digest mismatch")
+    return environment, population, binding, receipt
 
 
 def _finite_positive(name: str, value: object) -> float:
@@ -334,7 +364,7 @@ def execute_terminal_harbor_unit(
     if task_root.is_symlink() or not task_root.is_dir():
         raise TerminalHarborAdapterError("materialized Terminal task root missing or symlinked")
 
-    environment, sandbox_population, sandbox_binding = _sandbox_image_binding(
+    environment, sandbox_population, sandbox_binding, sandbox_receipt = _sandbox_image_binding(
         repository_root=root,
         execution_freeze=execution,
         task_id=task_id,
@@ -464,7 +494,10 @@ def execute_terminal_harbor_unit(
                 "build_context_sha256": sandbox_binding.build_context_sha256,
                 "image_reference": sandbox_binding.image_reference,
                 "container_image_digest": sandbox_binding.container_image_digest,
+                "build_receipt_path": sandbox_binding.build_receipt_path,
                 "build_receipt_sha256": sandbox_binding.build_receipt_sha256,
+                "build_receipt_digest": sandbox_binding.build_receipt_digest,
+                "verified_receipt_digest": sandbox_receipt.receipt_digest,
                 "environment_manifest_runtime": environment.get("runtime"),
             },
             "task_overlay": overlay.document,
