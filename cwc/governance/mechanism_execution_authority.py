@@ -7,8 +7,8 @@ from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
-from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
-from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
+from cwc.governance.mechanism_execution_freeze import (\n    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,\n)
+from cwc.governance.harness_freeze import DGC_ROLE\nfrom cwc.governance.mechanism_harness_freeze import (\n    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,\n)
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.mechanism_evidence_plan import MechanismStatisticalPlan
 from cwc.governance.mechanism_trial_sizing import verify_mechanism_trial_sizing_document
