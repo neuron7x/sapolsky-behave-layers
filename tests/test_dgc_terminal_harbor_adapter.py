@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,6 +14,7 @@ from cwc.governance.materialization_transaction import (
     sha256_bytes,
     sha256_file,
 )
+from cwc.governance.sandbox_image_build import SandboxImageBuildReceipt
 from cwc.governance.sandbox_image_population import (
     freeze_sandbox_image_population,
     task_population_digest,
@@ -63,7 +65,57 @@ def _fixture(tmp_path: Path):
         encoding="utf-8",
     )
 
-    image_hex = "4" * 64
+    registry_manifest_json = (
+        '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json",'
+        '"config":{"mediaType":"application/vnd.oci.image.config.v1+json",'
+        '"digest":"sha256:' + "1" * 64 + '","size":2},"layers":[]}'
+    )
+    image_digest = "sha256:" + hashlib.sha256(
+        registry_manifest_json.encode("utf-8")
+    ).hexdigest()
+    staging_reference = "registry.example/dgc/task-a:dgc-test"
+    image_reference = "registry.example/dgc/task-a@" + image_digest
+    build_command = [
+        "docker", "buildx", "build",
+        "--platform", "linux/amd64",
+        "--provenance=false", "--sbom=false", "--push",
+        "--metadata-file", "/tmp/metadata.json",
+        "--tag", staging_reference,
+        "--no-cache", "--pull",
+        str(environment_dir),
+    ]
+    build_metadata_json = json.dumps(
+        {"containerimage.digest": image_digest},
+        separators=(",", ":"),
+    )
+    receipt_payload = {
+        "family_id": "TERMINAL_BENCH_2_1",
+        "task_id": "task-a",
+        "platform": "linux/amd64",
+        "task_source_sha256": _tree_digest(task),
+        "build_context_sha256": _tree_digest(environment_dir),
+        "dockerfile_sha256": sha256_file(environment_dir / "Dockerfile"),
+        "staging_reference": staging_reference,
+        "image_reference": image_reference,
+        "container_image_digest": image_digest,
+        "docker_version": '{"Version":"28.0.0"}',
+        "buildx_version": "github.com/docker/buildx v0.30.0",
+        "build_command": build_command,
+        "build_metadata_json": build_metadata_json,
+        "registry_manifest_json": registry_manifest_json,
+    }
+    receipt = SandboxImageBuildReceipt(
+        **receipt_payload,
+        build_command=tuple(build_command),
+        receipt_digest=sha256_bytes(canonical_json_bytes(receipt_payload)),
+    )
+    receipt_path = manifests / "receipts" / "task-a.json"
+    receipt_path.parent.mkdir(parents=True)
+    receipt_path.write_text(
+        json.dumps(receipt.document, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
     population = freeze_sandbox_image_population(
         family_id="TERMINAL_BENCH_2_1",
         runtime="docker-linux-amd64",
@@ -74,9 +126,11 @@ def _fixture(tmp_path: Path):
             "task_id": "task-a",
             "task_source_sha256": _tree_digest(task),
             "build_context_sha256": _tree_digest(environment_dir),
-            "image_reference": "registry.example/dgc/task-a@sha256:" + image_hex,
-            "container_image_digest": "sha256:" + image_hex,
-            "build_receipt_sha256": "5" * 64,
+            "image_reference": image_reference,
+            "container_image_digest": image_digest,
+            "build_receipt_path": receipt_path.relative_to(repo).as_posix(),
+            "build_receipt_sha256": sha256_file(receipt_path),
+            "build_receipt_digest": receipt.receipt_digest,
         }],
     )
     population_path = manifests / "sandbox-images.json"
@@ -284,7 +338,11 @@ def test_adapter_executes_exact_frozen_harbor_action(
     assert response["unit"] == request["unit"]
     assert response["provider_usage_traces"][0]["provider_request_id"] == "req-1"
     assert response["trace"]["action"]["action_id"] == "STANDARD"
-    assert response["trace"]["sandbox_image"]["container_image_digest"] == "sha256:" + "4" * 64
+    assert response["trace"]["sandbox_image"]["container_image_digest"].startswith("sha256:")
+    assert (
+        response["trace"]["sandbox_image"]["build_receipt_digest"]
+        == response["trace"]["sandbox_image"]["verified_receipt_digest"]
+    )
     assert response["trace"]["task_overlay"]["semantic_delta"] == "environment.docker_image_only"
     assert len(response["trace"]["harbor_command_digest"]) == 64
 
@@ -454,6 +512,34 @@ def test_tampered_sandbox_population_fails_before_harbor(
 
     monkeypatch.setattr(adapter.subprocess, "run", run)
     with pytest.raises(TerminalHarborAdapterError, match="population bytes differ"):
+        execute_terminal_harbor_unit(
+            request=request,
+            repository_root=repo,
+            materialization_root=materialization,
+            runtime_root=runtime_root,
+            unit_runtime_root=unit_root,
+        )
+    assert called is False
+
+
+
+def test_tampered_build_receipt_fails_before_harbor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, materialization, runtime_root, unit_root, request = _fixture(tmp_path)
+    _patch_stack(monkeypatch, runtime_root)
+    receipt = repo / "manifests" / "receipts" / "task-a.json"
+    receipt.write_text("{}\n", encoding="utf-8")
+
+    called = False
+
+    def run(*args, **kwargs):
+        nonlocal called
+        called = True
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(adapter.subprocess, "run", run)
+    with pytest.raises(TerminalHarborAdapterError, match="build receipt bytes differ"):
         execute_terminal_harbor_unit(
             request=request,
             repository_root=repo,
