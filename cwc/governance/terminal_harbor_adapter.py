@@ -388,6 +388,10 @@ def _provider_traces(
     for row in rows:
         if str(row.get("policy_id", "")).strip() != policy_id:
             raise TerminalHarborAdapterError("provider trace policy identity mismatch")
+        if str(row.get("authority", "")).strip() != "PROVIDER_LIVE":
+            raise TerminalHarborAdapterError(
+                "custom Harbor provider telemetry must be PROVIDER_LIVE"
+            )
         request_id = str(row.get("provider_request_id", "")).strip()
         if not request_id:
             raise TerminalHarborAdapterError("provider trace requires real provider_request_id")
