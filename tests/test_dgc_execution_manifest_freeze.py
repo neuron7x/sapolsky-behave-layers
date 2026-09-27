@@ -13,15 +13,10 @@ from cwc.governance.execution_manifest_freeze import (
     verify_execution_manifest_freeze_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.sandbox_image_population import (
-    freeze_sandbox_image_population,
-    task_population_digest,
-)
 
 COMMIT = "a" * 40
 TREE = "b" * 40
 FAMILY = "SWE_BENCH_VERIFIED"
-SWE_TASK_IDS = tuple(f"task-{index:03d}" for index in range(500))
 
 
 def _h(char: str) -> str:
@@ -52,7 +47,7 @@ def _reference(repo: Path) -> Path:
                 "source_authority_digest": _h("7"),
                 "materialized_authority_digest": _h("8"),
                 "materialized_tree_sha256": _h("9"),
-                "materialized_task_manifest_sha256": task_population_digest(SWE_TASK_IDS),
+                "materialized_task_manifest_sha256": _h("a"),
                 "expected_task_count": 500,
                 "semantic_verification_digest": _h("b"),
             },
@@ -173,57 +168,10 @@ def _manifests(repo: Path) -> tuple[dict[str, str], dict[str, str]]:
         "schema": "DGC_TOOL_MANIFEST_V1",
         "tools": [{"name": "shell", "version": "1", "contract_sha256": _h("3")}],
     })
-    reference_doc = json.loads(
-        (repo / "eval_bundle" / "materialization-reference.json").read_text(encoding="utf-8")
-    )
-    reference_digest = str(reference_doc["reference_digest"])
-    task_manifest_digest = task_population_digest(SWE_TASK_IDS)
-    population = freeze_sandbox_image_population(
-        family_id=FAMILY,
-        runtime="docker-linux-amd64",
-        materialization_reference_digest=reference_digest,
-        task_manifest_sha256=task_manifest_digest,
-        expected_task_count=len(SWE_TASK_IDS),
-        bindings=[
-            {
-                "task_id": task_id,
-                "task_source_sha256": sha256_bytes(
-                    canonical_json_bytes({"task_id": task_id, "subject": "task-source"})
-                ),
-                "build_context_sha256": sha256_bytes(
-                    canonical_json_bytes({"task_id": task_id, "subject": "build-context"})
-                ),
-                "image_reference": (
-                    f"registry.example/dgc/{task_id}@sha256:"
-                    + sha256_bytes(
-                        canonical_json_bytes({"task_id": task_id, "subject": "oci-image"})
-                    )
-                ),
-                "container_image_digest": (
-                    "sha256:"
-                    + sha256_bytes(
-                        canonical_json_bytes({"task_id": task_id, "subject": "oci-image"})
-                    )
-                ),
-                "build_receipt_sha256": sha256_bytes(
-                    canonical_json_bytes({"task_id": task_id, "subject": "build-receipt"})
-                ),
-            }
-            for task_id in SWE_TASK_IDS
-        ],
-    )
-    population_path = base / "sandbox-images.json"
-    _write(population_path, population.document)
     _write(paths["environment"], {
-        "schema": "DGC_ENVIRONMENT_MANIFEST_V2",
-        "family_id": FAMILY,
-        "runtime": "docker-linux-amd64",
-        "execution_mode": "PREBUILT_IMMUTABLE_OCI",
-        "materialization_reference_digest": reference_digest,
-        "task_manifest_sha256": task_manifest_digest,
-        "sandbox_image_population_path": population_path.relative_to(repo).as_posix(),
-        "sandbox_image_population_sha256": sha256_file(population_path),
-        "sandbox_image_population_digest": population.population_digest,
+        "schema": "DGC_ENVIRONMENT_MANIFEST_V1",
+        "container_image_digest": "sha256:" + _h("4"),
+        "runtime": "linux-amd64",
     })
     _write(paths["budget"], {
         "schema": "DGC_BUDGET_MANIFEST_V1",
@@ -337,7 +285,7 @@ def test_valid_execution_freeze_binds_actual_manifest_bytes(tmp_path: Path):
     assert frozen.family_id == FAMILY
     assert len(frozen.components) == 12
     assert len(frozen.governance_policies) == 2
-    assert frozen.task_manifest_digest == task_population_digest(SWE_TASK_IDS)
+    assert frozen.task_manifest_digest == _h("a")
     assert frozen.statistical_plan_digest
     assert frozen.prebaseline_comparison_digest
     assert frozen.document["harness_frozen"] is False
@@ -790,7 +738,7 @@ def test_mutable_model_alias_is_rejected(tmp_path: Path):
         )
 
 
-def test_legacy_single_image_environment_manifest_is_rejected(tmp_path: Path):
+def test_mutable_container_tag_is_rejected(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
     reference = _reference(repo)
@@ -798,50 +746,15 @@ def test_legacy_single_image_environment_manifest_is_rejected(tmp_path: Path):
     environment = repo / components["environment"]
     _write(environment, {
         "schema": "DGC_ENVIRONMENT_MANIFEST_V1",
-        "container_image_digest": "sha256:" + _h("4"),
+        "container_image_digest": "ubuntu:latest",
         "runtime": "linux-amd64",
     })
-    with pytest.raises(ExecutionManifestError, match="unexpected manifest schema"):
+    with pytest.raises(ExecutionManifestError, match="immutable OCI"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
             component_paths=components, governance_policy_paths=policies,
         )
-
-
-def test_sandbox_image_population_byte_tamper_is_rejected(tmp_path: Path):
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    reference = _reference(repo)
-    components, policies = _manifests(repo)
-    environment = repo / components["environment"]
-    environment_doc = json.loads(environment.read_text())
-    population = repo / environment_doc["sandbox_image_population_path"]
-    population.write_text("{}\n", encoding="utf-8")
-    with pytest.raises(ExecutionManifestError, match="population bytes differ"):
-        freeze_execution_manifests(
-            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
-            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
-            component_paths=components, governance_policy_paths=policies,
-        )
-
-
-def test_environment_task_population_substitution_is_rejected(tmp_path: Path):
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    reference = _reference(repo)
-    components, policies = _manifests(repo)
-    environment = repo / components["environment"]
-    doc = json.loads(environment.read_text())
-    doc["task_manifest_sha256"] = _h("f")
-    _write(environment, doc)
-    with pytest.raises(ExecutionManifestError, match="different task population"):
-        freeze_execution_manifests(
-            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
-            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
-            component_paths=components, governance_policy_paths=policies,
-        )
-
 
 def test_symlinked_manifest_file_is_rejected(tmp_path: Path):
     repo = tmp_path / "repo"
