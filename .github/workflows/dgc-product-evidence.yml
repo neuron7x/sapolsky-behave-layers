@@ -73,6 +73,7 @@ jobs:
             tests/test_dgc_physical_cost_evidence.py \
             tests/test_dgc_runtime_cost_contract.py \
             tests/test_dgc_runtime_live_trace.py \
+            tests/test_dgc_openai_snapshot_panel.py \
             tests/test_dgc_product_counterfactual_frontier.py \
             tests/test_dgc_product_external_source_authority.py \
             tests/test_dgc_product_external_materialization.py \

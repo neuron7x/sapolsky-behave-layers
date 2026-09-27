@@ -124,6 +124,23 @@ The generation must contain:
 
 Any missing task, extra receipt, task/context substitution, registry-manifest digest mismatch, mutable image reference, symlink escape, or generation replay failure => STOP. Partial registry pushes do not constitute evidence authority.
 
+## 1.3 Verify the frozen OpenAI two-tier candidate panel
+
+Before composing the complete execution freeze, verify the pre-execution model/action/pricing candidate authority:
+
+```bash
+PYTHONPATH=. python scripts/dgc_openai_snapshot_panel_gate.py
+```
+
+Frozen candidate identities:
+
+- `STANDARD`: `codex@0.157.1` + `openai/gpt-5.4-nano-2026-03-17`;
+- `DEEP`: `codex@0.157.1` + `openai/gpt-5.4-mini-2026-03-17`.
+
+Both model IDs are dated OpenAI snapshots. The gate requires exact action/model/pricing population closure, official OpenAI pricing-source URLs, exact Codex semver, and strict cost monotonicity `STANDARD < DEEP` for input/cached-input/output token rates.
+
+This is a **candidate execution panel**, not outcome evidence. It keeps `executable_evidence_observed=false` and `product_promotion_authorized=false`. The complete harness still requires the materialized workload, prompt/tool/budget/scorer/environment identities and final execution freeze.
+
 ## 2. Freeze content-addressed execution manifests
 
 For each workload family produce SHA-256 content identities for:
