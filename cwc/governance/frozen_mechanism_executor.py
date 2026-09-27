@@ -45,6 +45,7 @@ from cwc.governance.mechanism_execution_bundle import (
     canonical_mechanism_result_digest,
     verify_mechanism_execution_bundle,
 )
+from cwc.governance.provider_trace import TraceAuthority
 
 _FORBIDDEN_RISK_FIELDS = frozenset({
     "catastrophic_regret",
@@ -251,6 +252,10 @@ def execute_frozen_mechanism_panel(
                     response=response,
                     unit=lease.unit,
                     rate_cards=rate_cards,
+                    allowed_authorities=frozenset({
+                        TraceAuthority.PROVIDER_LIVE,
+                        TraceAuthority.RUNTIME_LIVE,
+                    }),
                 )
                 cost_certificate = _physical_cost_certificate(
                     response=response,
