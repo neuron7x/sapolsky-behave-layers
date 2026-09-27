@@ -79,6 +79,8 @@ def _reference_binding(path: Path) -> tuple[str, Mapping[str, object]]:
         raise TerminalSandboxBuildError("invalid materialization reference JSON") from exc
     if not isinstance(document, dict) or document.get("schema") != REFERENCE_SCHEMA:
         raise TerminalSandboxBuildError("unexpected materialization reference schema")
+    if document.get("subject_type") != "DGC_EXTERNAL_MATERIALIZATION_GENERATION_V2":
+        raise TerminalSandboxBuildError("unexpected materialization reference subject type")
     reference_digest = str(document.get("reference_digest", "")).strip().lower()
     payload = dict(document)
     payload.pop("reference_digest", None)
