@@ -189,7 +189,9 @@ def freeze_sandbox_image_population(
                     build_context_sha256=str(row.get("build_context_sha256", "")),
                     image_reference=str(row.get("image_reference", "")),
                     container_image_digest=str(row.get("container_image_digest", "")),
+                    build_receipt_path=str(row.get("build_receipt_path", "")),
                     build_receipt_sha256=str(row.get("build_receipt_sha256", "")),
+                    build_receipt_digest=str(row.get("build_receipt_digest", "")),
                 )
             )
         else:
