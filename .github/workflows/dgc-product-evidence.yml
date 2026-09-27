@@ -47,6 +47,9 @@ jobs:
             tests/test_dgc_product_economics.py \
             tests/test_dgc_product_statistical_plan.py \
             tests/test_dgc_mechanism_evidence_plan.py \
+            tests/test_dgc_mechanism_b2_fit.py \
+            tests/test_dgc_mechanism_b2_fit_authority.py \
+            tests/test_dgc_mechanism_harness_freeze.py \
             tests/test_dgc_frozen_mechanism_executor.py \
             tests/test_dgc_mechanism_execution_bundle.py \
             tests/test_dgc_mechanism_execution_authority.py \
