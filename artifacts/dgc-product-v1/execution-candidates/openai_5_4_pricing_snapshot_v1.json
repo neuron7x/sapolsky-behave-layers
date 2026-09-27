@@ -1,6 +1,7 @@
 {
   "schema": "DGC_PRICING_SNAPSHOT_V1",
   "authority": "FROZEN_PRE_EXECUTION_PROVIDER_PUBLISHED_PRICE_SNAPSHOT",
+  "panel_id": "OPENAI_GPT_5_4_TWO_TIER_SNAPSHOT_V1",
   "captured_at": "2026-09-27T00:00:00Z",
   "currency": "USD",
   "interpretation": {
