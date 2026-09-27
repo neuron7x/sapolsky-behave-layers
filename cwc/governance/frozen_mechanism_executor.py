@@ -141,6 +141,11 @@ def execute_frozen_mechanism_panel(
         raise FrozenMechanismExecutionError(
             "harness belongs to different execution freeze"
         )
+    plan_digest = _sha("authority mechanism plan digest", authority.get("mechanism_plan_digest"))
+    if _sha("execution mechanism plan digest", execution.get("mechanism_plan_digest")) != plan_digest:
+        raise FrozenMechanismExecutionError("mechanism authority plan differs from execution freeze")
+    if _sha("harness mechanism plan digest", harness.get("mechanism_plan_digest")) != plan_digest:
+        raise FrozenMechanismExecutionError("mechanism authority plan differs from harness")
     family = str(authority.get("family_id", "")).strip()
     if family != str(execution.get("family_id", "")).strip():
         raise FrozenMechanismExecutionError("mechanism family differs from execution freeze")
