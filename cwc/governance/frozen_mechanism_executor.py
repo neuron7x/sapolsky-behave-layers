@@ -46,6 +46,7 @@ from cwc.governance.mechanism_execution_bundle import (
     verify_mechanism_execution_bundle,
 )
 from cwc.governance.provider_trace import TraceAuthority
+from cwc.governance.physical_cost_evidence import CostAuthority
 
 _FORBIDDEN_RISK_FIELDS = frozenset({
     "catastrophic_regret",
@@ -257,12 +258,25 @@ def execute_frozen_mechanism_panel(
                         TraceAuthority.RUNTIME_LIVE,
                     }),
                 )
+                trace_authorities = {
+                    str(row.get("authority", ""))
+                    for row in provider_trace_docs
+                }
+                if trace_authorities == {TraceAuthority.PROVIDER_LIVE.value}:
+                    model_cost_authority = CostAuthority.PROVIDER_METER
+                elif trace_authorities == {TraceAuthority.RUNTIME_LIVE.value}:
+                    model_cost_authority = CostAuthority.RUNTIME_METER
+                else:
+                    raise FrozenMechanismExecutionError(
+                        "mechanism work unit cannot mix provider-live and runtime-live authority"
+                    )
                 cost_certificate = _physical_cost_certificate(
                     response=response,
                     trial_id=f"{lease.unit.stable_id}::{lease.attempt}",
                     cap=spec.max_cost_per_unit_usd,
                     model_usd=model_usd,
                     model_source_digest=provider_trace_population_digest,
+                    model_cost_authority=model_cost_authority,
                 )
                 cost = cost_certificate.cost.total_operational_usd
             except (FrozenPanelExecutionError, FrozenMechanismExecutionError) as exc:
