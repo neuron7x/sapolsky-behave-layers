@@ -6,23 +6,13 @@ from typing import Mapping
 
 from cwc.governance.execution_manifest_freeze import (
     COMPONENT_SCHEMAS,
-    POLICY_PROTOCOL,
-    POLICY_REQUEST_SCHEMA,
-    POLICY_RESPONSE_SCHEMA,
-    POLICY_STATE_PROTOCOL,
     FrozenComponent,
-    FrozenGovernancePolicy,
     _VALIDATORS,
     _family_binding,
-    _finite_nonnegative,
     _json_manifest,
     _load_reference,
     _repo_file,
-    _req,
     _sha,
-    _validate_policy_config,
-    policy_action_catalog_digest,
-    policy_observation_contract_digest,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.mechanism_evidence_plan import MechanismStatisticalPlan
@@ -33,8 +23,8 @@ from cwc.governance.terminal_sandbox_authority import (
     verify_terminal_sandbox_environment,
 )
 
-SCHEMA = "DGC_MECHANISM_EXECUTION_FREEZE_V1"
-INPUT_SCHEMA = "DGC_MECHANISM_EXECUTION_FREEZE_INPUT_V1"
+SCHEMA = "DGC_MECHANISM_EXECUTION_FREEZE_V2"
+INPUT_SCHEMA = "DGC_MECHANISM_EXECUTION_FREEZE_INPUT_V2"
 COMPONENT_SCHEMAS_MECHANISM = {
     key: value for key, value in COMPONENT_SCHEMAS.items()
     if key != "risk_endpoint_manifest"
@@ -62,7 +52,6 @@ class MechanismExecutionFreeze:
     statistical_plan: dict[str, object]
     mechanism_plan_digest: str
     components: tuple[FrozenComponent, ...]
-    governance_policies: tuple[FrozenGovernancePolicy, ...]
     prebaseline_comparison_digest: str
     freeze_digest: str
 
@@ -73,6 +62,7 @@ class MechanismExecutionFreeze:
             **asdict(self),
             "risk_endpoint_bound": False,
             "risk_qualification_authorized": False,
+            "governance_policies_bound": False,
             "baseline_panel_bound": False,
             "harness_frozen": False,
             "mechanism_execution_authorized": False,
@@ -89,7 +79,6 @@ def freeze_mechanism_execution_manifests(
     family_id: str,
     materialization_reference_path: Path,
     component_paths: Mapping[str, object],
-    governance_policy_paths: Mapping[str, object],
     statistical_plan_payload: Mapping[str, object] | None = None,
     mechanism_plan: MechanismStatisticalPlan | None = None,
 ) -> MechanismExecutionFreeze:
@@ -238,116 +227,6 @@ def freeze_mechanism_execution_manifests(
         raise MechanismExecutionFreezeError("pricing population must equal frozen model population")
     if not action_model_ids.issubset(model_ids):
         raise MechanismExecutionFreezeError("action catalog references model outside frozen model manifest")
-    action_ids = [str(row["action_id"]) for row in actions if isinstance(row, Mapping)]
-    try:
-        action_digest = policy_action_catalog_digest(action_ids)
-    except Exception as exc:
-        raise _translate(exc) from exc
-
-    if not isinstance(governance_policy_paths, Mapping) or len(governance_policy_paths) < 2:
-        raise MechanismExecutionFreezeError("at least two governance policies required")
-    policies: list[FrozenGovernancePolicy] = []
-    try:
-        for policy_id in sorted(str(key).strip() for key in governance_policy_paths):
-            if not policy_id:
-                raise MechanismExecutionFreezeError("empty governance policy id")
-            payload, path, rel = _json_manifest(
-                root,
-                governance_policy_paths[policy_id],
-                expected_schema="DGC_GOVERNANCE_POLICY_MANIFEST_V1",
-            )
-            if _req("governance policy_id", payload.get("policy_id")) != policy_id:
-                raise MechanismExecutionFreezeError("governance policy id/path mismatch")
-            if payload.get("protocol") != POLICY_PROTOCOL:
-                raise MechanismExecutionFreezeError(f"{policy_id}: policy protocol mismatch")
-            if payload.get("request_schema") != POLICY_REQUEST_SCHEMA:
-                raise MechanismExecutionFreezeError(f"{policy_id}: request schema mismatch")
-            if payload.get("response_schema") != POLICY_RESPONSE_SCHEMA:
-                raise MechanismExecutionFreezeError(f"{policy_id}: response schema mismatch")
-            if payload.get("state_protocol") != POLICY_STATE_PROTOCOL:
-                raise MechanismExecutionFreezeError(f"{policy_id}: hidden policy state prohibited")
-            if payload.get("network_access_allowed") is not False:
-                raise MechanismExecutionFreezeError(f"{policy_id}: network access prohibited")
-            if payload.get("confirmatory_label_access") is not False:
-                raise MechanismExecutionFreezeError(f"{policy_id}: confirmatory label access prohibited")
-            argv = payload.get("argv")
-            if not isinstance(argv, list) or not argv or not all(
-                isinstance(x, str) and x.strip() for x in argv
-            ):
-                raise MechanismExecutionFreezeError(f"{policy_id}: argv malformed")
-            timeout = _finite_nonnegative(
-                f"{policy_id}.timeout_seconds", payload.get("timeout_seconds")
-            )
-            if timeout <= 0:
-                raise MechanismExecutionFreezeError(f"{policy_id}: timeout must be > 0")
-            declared_action = _sha(
-                f"{policy_id}.action_catalog_digest", payload.get("action_catalog_digest")
-            )
-            obs_digest = _sha(
-                f"{policy_id}.observation_contract_digest",
-                payload.get("observation_contract_digest"),
-            )
-            implementation, implementation_rel = _repo_file(root, payload.get("implementation_path"))
-            config, config_rel = _repo_file(root, payload.get("config_path"))
-            implementation_sha = _sha(
-                "governance implementation_sha256", payload.get("implementation_sha256")
-            )
-            config_sha = _sha("governance config_sha256", payload.get("config_sha256"))
-            if sha256_file(implementation) != implementation_sha:
-                raise MechanismExecutionFreezeError(
-                    f"{policy_id}: governance implementation bytes differ"
-                )
-            if sha256_file(config) != config_sha:
-                raise MechanismExecutionFreezeError(
-                    f"{policy_id}: governance config bytes differ"
-                )
-            _validate_policy_config(
-                config,
-                policy_id=policy_id,
-                action_catalog_digest=declared_action,
-                observation_contract_digest=obs_digest,
-            )
-            if implementation_rel not in argv or config_rel not in argv:
-                raise MechanismExecutionFreezeError(
-                    f"{policy_id}: argv must bind implementation and config"
-                )
-            policies.append(FrozenGovernancePolicy(
-                policy_id=policy_id,
-                path=rel,
-                sha256=sha256_file(path),
-                implementation_path=implementation_rel,
-                implementation_sha256=implementation_sha,
-                config_path=config_rel,
-                config_sha256=config_sha,
-                protocol=POLICY_PROTOCOL,
-                argv=tuple(argv),
-                timeout_seconds=timeout,
-                action_catalog_digest=declared_action,
-                observation_contract_digest=obs_digest,
-            ))
-    except MechanismExecutionFreezeError:
-        raise
-    except Exception as exc:
-        raise _translate(exc) from exc
-
-    if len({row.action_catalog_digest for row in policies}) != 1:
-        raise MechanismExecutionFreezeError("governance policies must share one action catalog")
-    if any(row.action_catalog_digest != action_digest for row in policies):
-        raise MechanismExecutionFreezeError("governance action catalog differs from frozen catalog")
-    if len({row.observation_contract_digest for row in policies}) != 1:
-        raise MechanismExecutionFreezeError("governance policies must share one observation contract")
-    observation_digest = next(iter({row.observation_contract_digest for row in policies}))
-    try:
-        provider_digest = policy_observation_contract_digest(
-            payloads["observation_provider_manifest"].get("output_fields")
-        )
-    except Exception as exc:
-        raise _translate(exc) from exc
-    if provider_digest != observation_digest:
-        raise MechanismExecutionFreezeError(
-            "observation provider fields differ from governance observation contract"
-        )
-
     try:
         statistical_plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
     except (TypeError, ValueError) as exc:
@@ -376,7 +255,6 @@ def freeze_mechanism_execution_manifests(
         "statistical_plan": asdict(statistical_plan),
         "mechanism_plan_digest": mechanism.digest,
         "components": [asdict(row) for row in components],
-        "governance_policies": [asdict(row) for row in policies],
         "prebaseline_comparison_digest": prebaseline,
     }
     return MechanismExecutionFreeze(
@@ -399,6 +277,7 @@ def verify_mechanism_execution_freeze_document(path: Path) -> dict[str, object]:
     if (
         doc.get("risk_endpoint_bound") is not False
         or doc.get("risk_qualification_authorized") is not False
+        or doc.get("governance_policies_bound") is not False
         or doc.get("baseline_panel_bound") is not False
         or doc.get("harness_frozen") is not False
         or doc.get("mechanism_execution_authorized") is not False
@@ -421,7 +300,7 @@ def verify_mechanism_execution_freeze_document(path: Path) -> dict[str, object]:
             "materialization_reference_path", "materialization_reference_digest",
             "materialized_tree_sha256", "task_manifest_digest",
             "statistical_plan_digest", "statistical_plan", "mechanism_plan_digest",
-            "components", "governance_policies", "prebaseline_comparison_digest",
+            "components", "prebaseline_comparison_digest",
         )
     }
     observed = str(doc.get("freeze_digest", "")).strip().lower()
