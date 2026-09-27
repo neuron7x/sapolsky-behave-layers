@@ -112,6 +112,7 @@ def _generation(
     tamper_receipt_after_publish: bool = False,
     extra_receipt: bool = False,
     execution_claim: bool = False,
+    population_path_override: str | None = None,
 ) -> Path:
     build_receipt = _build_receipt()
     root = tmp_path / "generation"
@@ -190,8 +191,11 @@ def _generation(
                 population.task_manifest_sha256
             ),
             "sandbox_image_population_path": (
-                "eval_bundle/test-generation/"
-                "SANDBOX_IMAGE_POPULATION.json"
+                population_path_override
+                or (
+                    "eval_bundle/test-generation/"
+                    "SANDBOX_IMAGE_POPULATION.json"
+                )
             ),
             "sandbox_image_population_sha256": (
                 sha256_file(population_path)
@@ -361,5 +365,19 @@ def test_environment_byte_tamper_is_rejected_by_publication_manifest(
     with pytest.raises(
         TerminalSandboxGenerationError,
         match="publication manifest mismatch",
+    ):
+        verify_terminal_sandbox_build_generation(root)
+
+
+def test_escaping_declared_population_path_is_rejected(
+    tmp_path: Path,
+):
+    root = _generation(
+        tmp_path,
+        population_path_override="../SANDBOX_IMAGE_POPULATION.json",
+    )
+    with pytest.raises(
+        TerminalSandboxGenerationError,
+        match="safe repository-relative",
     ):
         verify_terminal_sandbox_build_generation(root)
