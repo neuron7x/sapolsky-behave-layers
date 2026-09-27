@@ -15,6 +15,11 @@ from cwc.governance.frozen_action_catalog import load_frozen_action_catalog
 from cwc.governance.frozen_observation_runtime import invoke_frozen_observation_provider
 from cwc.governance.frozen_policy_runtime import invoke_frozen_policy
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.runtime_cost_contract import (
+    RuntimeCostContractError,
+    parse_runtime_cost_contract,
+    runtime_physical_cost_evidence,
+)
 from cwc.governance.sandbox_image_population import SandboxImagePopulationError
 from cwc.governance.terminal_sandbox_authority import (
     TerminalSandboxAuthorityError,
@@ -366,100 +371,6 @@ def _native_runtime_trace(
     }
 
 
-_ZERO_RUNTIME_COMPONENTS = (
-    "router_usd",
-    "countermodel_usd",
-    "retrieval_usd",
-    "tools_usd",
-    "verification_usd",
-    "human_review_usd",
-    "retry_usd",
-    "failure_loss_usd",
-)
-
-
-def _runtime_physical_cost_evidence(
-    *,
-    budget: Mapping[str, object],
-    budget_sha256: str,
-    elapsed_ns: int,
-) -> tuple[dict[str, object], dict[str, object], float]:
-    contract = budget.get("runtime_cost_contract")
-    if not isinstance(contract, Mapping):
-        raise TerminalHarborAdapterError(
-            "native runtime telemetry requires frozen runtime_cost_contract"
-        )
-    if contract.get("schema") != "DGC_RUNTIME_COST_CONTRACT_V1":
-        raise TerminalHarborAdapterError("runtime cost contract schema mismatch")
-    if contract.get("allocation_policy") != "ALL_LOCAL_COMPUTE_TO_INFRA_V1":
-        raise TerminalHarborAdapterError("runtime cost allocation policy mismatch")
-    host_profile_id = str(contract.get("host_profile_id", "")).strip()
-    source_uri = str(contract.get("infra_rate_source_uri", "")).strip()
-    captured_at = str(contract.get("infra_rate_captured_at", "")).strip()
-    if not host_profile_id or not source_uri or not captured_at:
-        raise TerminalHarborAdapterError("runtime infra rate provenance incomplete")
-    rate = _finite_positive(
-        "runtime infra_usd_per_second", contract.get("infra_usd_per_second")
-    )
-    for field in (
-        "billable_external_tools_allowed",
-        "paid_retrieval_allowed",
-        "human_review_allowed",
-        "automatic_retries_allowed",
-    ):
-        if contract.get(field) is not False:
-            raise TerminalHarborAdapterError(
-                f"native runtime cost contract requires {field}=false"
-            )
-    clauses = contract.get("zero_by_contract")
-    if not isinstance(clauses, Mapping) or set(str(key) for key in clauses) != set(
-        _ZERO_RUNTIME_COMPONENTS
-    ):
-        raise TerminalHarborAdapterError(
-            "runtime zero-by-contract component population mismatch"
-        )
-    if elapsed_ns <= 0:
-        raise TerminalHarborAdapterError("runtime elapsed measurement must be > 0")
-    elapsed_seconds = elapsed_ns / 1_000_000_000.0
-    infra_usd = elapsed_seconds * rate
-    measurement = {
-        "schema": "DGC_RUNTIME_COST_MEASUREMENT_V1",
-        "budget_manifest_sha256": budget_sha256,
-        "host_profile_id": host_profile_id,
-        "infra_rate_source_uri": source_uri,
-        "infra_rate_captured_at": captured_at,
-        "infra_usd_per_second": rate,
-        "elapsed_ns": elapsed_ns,
-        "elapsed_seconds": elapsed_seconds,
-        "infra_usd": infra_usd,
-        "clock": "time.monotonic_ns",
-    }
-    evidence: dict[str, object] = {}
-    for component in _ZERO_RUNTIME_COMPONENTS:
-        clause_id = str(clauses.get(component, "")).strip()
-        if not clause_id:
-            raise TerminalHarborAdapterError(
-                f"runtime zero-by-contract clause missing for {component}"
-            )
-        evidence[component] = {
-            "value_usd": 0.0,
-            "authority": "ZERO_BY_CONTRACT",
-            "source_digest": sha256_bytes(
-                canonical_json_bytes({
-                    "budget_manifest_sha256": budget_sha256,
-                    "component": component,
-                    "clause_id": clause_id,
-                })
-            ),
-        }
-    evidence["infra_usd"] = {
-        "value_usd": infra_usd,
-        "authority": "INFRA_METER",
-        "source_digest": sha256_bytes(canonical_json_bytes(measurement)),
-    }
-    return evidence, measurement, infra_usd
-
-
 def _provider_traces(
     metadata: Mapping[str, object],
     *,
@@ -708,13 +619,21 @@ def execute_terminal_harbor_unit(
         )
         traces = [runtime_trace]
         elapsed_ns = time.monotonic_ns() - adapter_started_ns
-        physical_doc, runtime_cost_measurement, infra_usd = (
-            _runtime_physical_cost_evidence(
-                budget=budget,
-                budget_sha256=_component_sha(execution, "budget"),
-                elapsed_ns=elapsed_ns,
+        try:
+            cost_contract = parse_runtime_cost_contract(
+                budget.get("runtime_cost_contract")
             )
-        )
+            physical_doc, runtime_cost_measurement, infra_usd = (
+                runtime_physical_cost_evidence(
+                    contract=cost_contract,
+                    budget_manifest_sha256=_component_sha(execution, "budget"),
+                    elapsed_ns=elapsed_ns,
+                )
+            )
+        except RuntimeCostContractError as exc:
+            raise TerminalHarborAdapterError(
+                "frozen runtime cost contract rejected"
+            ) from exc
         model_usd = rate_card.token_cost_usd(
             input_tokens=int(runtime_trace["input_tokens"]),
             cached_input_tokens=int(runtime_trace["cached_input_tokens"]),
