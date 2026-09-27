@@ -35,7 +35,7 @@ COMPONENT_SCHEMAS = {
     "observation_provider_manifest": "DGC_OBSERVATION_PROVIDER_MANIFEST_V1",
     "prompt_policy": "DGC_PROMPT_POLICY_V1",
     "tool_manifest": "DGC_TOOL_MANIFEST_V1",
-    "environment": "DGC_ENVIRONMENT_MANIFEST_V2",
+    "environment": "DGC_ENVIRONMENT_MANIFEST_V1",
     "budget": "DGC_BUDGET_MANIFEST_V1",
     "pricing_snapshot": "DGC_PRICING_SNAPSHOT_V1",
     "risk_endpoint_manifest": "DGC_RISK_ENDPOINT_MANIFEST_V1",
@@ -205,6 +205,17 @@ def _validate_tools(payload: Mapping[str, object]) -> None:
 
 
 def _validate_environment(payload: Mapping[str, object]) -> None:
+    schema = payload.get("schema")
+    if schema == "DGC_ENVIRONMENT_MANIFEST_V1":
+        digest = _req("container_image_digest", payload.get("container_image_digest")).lower()
+        if _OCI_DIGEST_RE.fullmatch(digest) is None:
+            raise ExecutionManifestError(
+                "environment requires immutable OCI sha256 image digest"
+            )
+        _req("environment runtime", payload.get("runtime"))
+        return
+    if schema != "DGC_ENVIRONMENT_MANIFEST_V2":
+        raise ExecutionManifestError("unsupported environment manifest schema")
     _req("environment family_id", payload.get("family_id"))
     _req("environment runtime", payload.get("runtime"))
     _sha(
@@ -586,7 +597,14 @@ def freeze_execution_manifests(
     components: list[FrozenComponent] = []
     component_payloads: dict[str, dict[str, object]] = {}
     for component in sorted(COMPONENT_SCHEMAS):
-        payload, path, rel = _json_manifest(root, component_paths[component], expected_schema=COMPONENT_SCHEMAS[component])
+        expected_schema = COMPONENT_SCHEMAS[component]
+        if component == "environment" and family == "TERMINAL_BENCH_2_1":
+            expected_schema = "DGC_ENVIRONMENT_MANIFEST_V2"
+        payload, path, rel = _json_manifest(
+            root,
+            component_paths[component],
+            expected_schema=expected_schema,
+        )
         _VALIDATORS[component](payload)
         component_payloads[component] = payload
         if component == "executor_manifest":
@@ -622,109 +640,111 @@ def freeze_execution_manifests(
             path=rel,
             sha256=sha256_file(path),
             bytes=path.stat().st_size,
-            schema=COMPONENT_SCHEMAS[component],
+            schema=str(payload["schema"]),
         ))
 
-    environment_payload = component_payloads["environment"]
-    if str(environment_payload.get("family_id", "")).strip() != family:
-        raise ExecutionManifestError("environment family differs from execution family")
-    if _sha(
-        "environment materialization_reference_digest",
-        environment_payload.get("materialization_reference_digest"),
-    ) != reference_digest:
-        raise ExecutionManifestError(
-            "environment image population is bound to a different materialization reference"
-        )
-    if _sha(
-        "environment task_manifest_sha256",
-        environment_payload.get("task_manifest_sha256"),
-    ) != task_manifest:
-        raise ExecutionManifestError(
-            "environment image population is bound to a different task population"
-        )
-    population_path, population_rel = _repo_file(
-        root, environment_payload.get("sandbox_image_population_path")
-    )
-    population_file_sha = _sha(
-        "environment sandbox_image_population_sha256",
-        environment_payload.get("sandbox_image_population_sha256"),
-    )
-    if sha256_file(population_path) != population_file_sha:
-        raise ExecutionManifestError(
-            "sandbox image population bytes differ from environment manifest"
-        )
-    try:
-        population_document = json.loads(population_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ExecutionManifestError("invalid sandbox image population JSON") from exc
-    if not isinstance(population_document, Mapping):
-        raise ExecutionManifestError("sandbox image population must be a JSON object")
-    try:
-        sandbox_population = verify_sandbox_image_population_document(population_document)
-    except SandboxImagePopulationError as exc:
-        raise ExecutionManifestError("invalid sandbox image population") from exc
-    if sandbox_population.family_id != family:
-        raise ExecutionManifestError("sandbox image population family mismatch")
-    if sandbox_population.runtime != str(environment_payload.get("runtime", "")).strip():
-        raise ExecutionManifestError("sandbox image population runtime mismatch")
-    if sandbox_population.materialization_reference_digest != reference_digest:
-        raise ExecutionManifestError(
-            "sandbox image population materialization reference mismatch"
-        )
-    if sandbox_population.task_manifest_sha256 != task_manifest:
-        raise ExecutionManifestError("sandbox image population task manifest mismatch")
-    try:
-        expected_task_count = int(binding.get("expected_task_count"))
-    except (TypeError, ValueError) as exc:
-        raise ExecutionManifestError(
-            "materialization reference expected_task_count malformed"
-        ) from exc
-    if sandbox_population.expected_task_count != expected_task_count:
-        raise ExecutionManifestError("sandbox image population task count mismatch")
-    if sandbox_population.population_digest != _sha(
-        "environment sandbox_image_population_digest",
-        environment_payload.get("sandbox_image_population_digest"),
-    ):
-        raise ExecutionManifestError("sandbox image population semantic digest mismatch")
-    if population_rel != str(environment_payload.get("sandbox_image_population_path")):
-        raise ExecutionManifestError("sandbox image population path is non-canonical")
-
-    for image_binding in sandbox_population.bindings:
-        receipt_path, receipt_rel = _repo_file(root, image_binding.build_receipt_path)
-        if receipt_rel != image_binding.build_receipt_path:
-            raise ExecutionManifestError("sandbox image build receipt path is non-canonical")
-        if sha256_file(receipt_path) != image_binding.build_receipt_sha256:
+    if family == "TERMINAL_BENCH_2_1":
+        environment_payload = component_payloads["environment"]
+        if str(environment_payload.get("family_id", "")).strip() != family:
+            raise ExecutionManifestError("environment family differs from execution family")
+        if _sha(
+            "environment materialization_reference_digest",
+            environment_payload.get("materialization_reference_digest"),
+        ) != reference_digest:
             raise ExecutionManifestError(
-                f"sandbox image build receipt bytes differ for {image_binding.task_id}"
+                "environment image population is bound to a different materialization reference"
+            )
+        if _sha(
+            "environment task_manifest_sha256",
+            environment_payload.get("task_manifest_sha256"),
+        ) != task_manifest:
+            raise ExecutionManifestError(
+                "environment image population is bound to a different task population"
+            )
+        population_path, population_rel = _repo_file(
+            root, environment_payload.get("sandbox_image_population_path")
+        )
+        population_file_sha = _sha(
+            "environment sandbox_image_population_sha256",
+            environment_payload.get("sandbox_image_population_sha256"),
+        )
+        if sha256_file(population_path) != population_file_sha:
+            raise ExecutionManifestError(
+                "sandbox image population bytes differ from environment manifest"
             )
         try:
-            receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+            population_document = json.loads(population_path.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            raise ExecutionManifestError(
-                f"invalid sandbox image build receipt JSON for {image_binding.task_id}"
-            ) from exc
-        if not isinstance(receipt_document, Mapping):
-            raise ExecutionManifestError("sandbox image build receipt must be a JSON object")
+            raise ExecutionManifestError("invalid sandbox image population JSON") from exc
+        if not isinstance(population_document, Mapping):
+            raise ExecutionManifestError("sandbox image population must be a JSON object")
         try:
-            build_receipt = verify_sandbox_image_build_receipt_document(receipt_document)
-        except SandboxImageBuildError as exc:
+            sandbox_population = verify_sandbox_image_population_document(population_document)
+        except SandboxImagePopulationError as exc:
+            raise ExecutionManifestError("invalid sandbox image population") from exc
+        if sandbox_population.family_id != family:
+            raise ExecutionManifestError("sandbox image population family mismatch")
+        if sandbox_population.runtime != str(environment_payload.get("runtime", "")).strip():
+            raise ExecutionManifestError("sandbox image population runtime mismatch")
+        if sandbox_population.materialization_reference_digest != reference_digest:
             raise ExecutionManifestError(
-                f"invalid sandbox image build receipt for {image_binding.task_id}"
+                "sandbox image population materialization reference mismatch"
+            )
+        if sandbox_population.task_manifest_sha256 != task_manifest:
+            raise ExecutionManifestError("sandbox image population task manifest mismatch")
+        try:
+            expected_task_count = int(binding.get("expected_task_count"))
+        except (TypeError, ValueError) as exc:
+            raise ExecutionManifestError(
+                "materialization reference expected_task_count malformed"
             ) from exc
-        if build_receipt.task_id != image_binding.task_id:
-            raise ExecutionManifestError("sandbox image build receipt task identity mismatch")
-        if build_receipt.family_id != family:
-            raise ExecutionManifestError("sandbox image build receipt family mismatch")
-        if build_receipt.task_source_sha256 != image_binding.task_source_sha256:
-            raise ExecutionManifestError("sandbox image build receipt task source mismatch")
-        if build_receipt.build_context_sha256 != image_binding.build_context_sha256:
-            raise ExecutionManifestError("sandbox image build receipt context mismatch")
-        if build_receipt.image_reference != image_binding.image_reference:
-            raise ExecutionManifestError("sandbox image build receipt image reference mismatch")
-        if build_receipt.container_image_digest != image_binding.container_image_digest:
-            raise ExecutionManifestError("sandbox image build receipt OCI digest mismatch")
-        if build_receipt.receipt_digest != image_binding.build_receipt_digest:
-            raise ExecutionManifestError("sandbox image build receipt semantic digest mismatch")
+        if sandbox_population.expected_task_count != expected_task_count:
+            raise ExecutionManifestError("sandbox image population task count mismatch")
+        if sandbox_population.population_digest != _sha(
+            "environment sandbox_image_population_digest",
+            environment_payload.get("sandbox_image_population_digest"),
+        ):
+            raise ExecutionManifestError("sandbox image population semantic digest mismatch")
+        if population_rel != str(environment_payload.get("sandbox_image_population_path")):
+            raise ExecutionManifestError("sandbox image population path is non-canonical")
+
+        for image_binding in sandbox_population.bindings:
+            receipt_path, receipt_rel = _repo_file(root, image_binding.build_receipt_path)
+            if receipt_rel != image_binding.build_receipt_path:
+                raise ExecutionManifestError("sandbox image build receipt path is non-canonical")
+            if sha256_file(receipt_path) != image_binding.build_receipt_sha256:
+                raise ExecutionManifestError(
+                    f"sandbox image build receipt bytes differ for {image_binding.task_id}"
+                )
+            try:
+                receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise ExecutionManifestError(
+                    f"invalid sandbox image build receipt JSON for {image_binding.task_id}"
+                ) from exc
+            if not isinstance(receipt_document, Mapping):
+                raise ExecutionManifestError("sandbox image build receipt must be a JSON object")
+            try:
+                build_receipt = verify_sandbox_image_build_receipt_document(receipt_document)
+            except SandboxImageBuildError as exc:
+                raise ExecutionManifestError(
+                    f"invalid sandbox image build receipt for {image_binding.task_id}"
+                ) from exc
+            if build_receipt.task_id != image_binding.task_id:
+                raise ExecutionManifestError("sandbox image build receipt task identity mismatch")
+            if build_receipt.family_id != family:
+                raise ExecutionManifestError("sandbox image build receipt family mismatch")
+            if build_receipt.task_source_sha256 != image_binding.task_source_sha256:
+                raise ExecutionManifestError("sandbox image build receipt task source mismatch")
+            if build_receipt.build_context_sha256 != image_binding.build_context_sha256:
+                raise ExecutionManifestError("sandbox image build receipt context mismatch")
+            if build_receipt.image_reference != image_binding.image_reference:
+                raise ExecutionManifestError("sandbox image build receipt image reference mismatch")
+            if build_receipt.container_image_digest != image_binding.container_image_digest:
+                raise ExecutionManifestError("sandbox image build receipt OCI digest mismatch")
+            if build_receipt.receipt_digest != image_binding.build_receipt_digest:
+                raise ExecutionManifestError("sandbox image build receipt semantic digest mismatch")
+
 
     runtime_family = str(component_payloads["benchmark_runtime_manifest"].get("family_id", "")).strip()
     if runtime_family != family:
