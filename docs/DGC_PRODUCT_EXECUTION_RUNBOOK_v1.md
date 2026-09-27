@@ -1,6 +1,6 @@
 # DGC Product Qualification — Execution Runbook v1
 
-Date: 2026-08-23
+Date: 2026-09-27
 Status: `EXECUTABLE_FRONTIER / EXTERNAL_EVIDENCE_REQUIRED`
 
 This runbook starts from the current canonical research/evidence architecture. It does not authorize skipping any gate or replacing missing external observations with synthetic evidence.
@@ -72,6 +72,57 @@ Dataset manifest blob:
 Expected: `89` tasks with upstream per-task SHA-256 digests.
 
 Any Git-object or manifest mismatch => STOP.
+
+### 1.1 Import the verified materialization reference
+
+The build and execution layers consume the verified reference, not the materialization directory by convention alone.
+
+```bash
+MATERIALIZATION_ROOT=eval_bundle/dgc-external/materialization-gen-001
+MATERIALIZATION_REFERENCE=eval_bundle/dgc-external/materialization-reference-gen-001.json
+
+PYTHONPATH=. python scripts/dgc_import_materialization_reference.py \
+  --generation-root "$MATERIALIZATION_ROOT" \
+  --output "$MATERIALIZATION_REFERENCE"
+```
+
+Required result:
+
+- reference schema: `DGC_EXTERNAL_EVIDENCE_REFERENCE_V2`;
+- repository commit/tree equal the clean current DGC checkout;
+- Terminal-Bench binding contains the frozen 89-task manifest and the exact `repo/tasks` workload-tree SHA-256;
+- no execution or product authority is created.
+
+### 1.2 Build and freeze the Terminal-Bench task-scoped OCI population
+
+Terminal-Bench 2.1 does **not** have one global sandbox image. The frozen population contains 89 task environments, so each task must be bound to its own registry-resolved immutable OCI identity.
+
+Use a fresh runtime output root and a registry namespace with no mutable tag:
+
+```bash
+TERMINAL_TASKS="$MATERIALIZATION_ROOT/TERMINAL_BENCH_2_1/repo/tasks"
+SANDBOX_GENERATION=eval_bundle/dgc-terminal-sandboxes/gen-001
+
+PYTHONPATH=. python scripts/dgc_build_terminal_sandbox_images.py \
+  --tasks-root "$TERMINAL_TASKS" \
+  --materialization-reference "$MATERIALIZATION_REFERENCE" \
+  --registry-prefix <registry>/<namespace>/dgc-terminal-bench-2-1 \
+  --output-root "$SANDBOX_GENERATION"
+```
+
+This step performs image builds and registry pushes but **does not execute benchmark agents**. Authority is minted only after the complete 89-task generation replays successfully.
+
+The generation must contain:
+
+- one canonical build receipt per frozen task;
+- exact task-source and `environment/` build-context SHA-256 identities;
+- registry-resolved `repo@sha256:...` image references;
+- separate receipt file SHA-256 and semantic receipt digest;
+- `SANDBOX_IMAGE_POPULATION.json`;
+- `ENVIRONMENT_MANIFEST.json` using `DGC_ENVIRONMENT_MANIFEST_V2`;
+- atomic generation receipt/provenance with `external_benchmark_execution_performed=false`.
+
+Any missing task, extra receipt, task/context substitution, registry-manifest digest mismatch, mutable image reference, symlink escape, or generation replay failure => STOP. Partial registry pushes do not constitute evidence authority.
 
 ## 2. Freeze content-addressed execution manifests
 
