@@ -55,6 +55,7 @@ class SandboxImageBinding:
     build_context_sha256: str
     image_reference: str
     container_image_digest: str
+    build_receipt_path: str
     build_receipt_sha256: str
 
     def __post_init__(self) -> None:
@@ -68,6 +69,16 @@ class SandboxImageBinding:
         object.__setattr__(
             self, "build_context_sha256", _sha("build_context_sha256", self.build_context_sha256)
         )
+        receipt_path = str(self.build_receipt_path).strip()
+        if not receipt_path:
+            raise SandboxImagePopulationError("build_receipt_path required")
+        from pathlib import Path
+        receipt_rel = Path(receipt_path)
+        if receipt_rel.is_absolute() or ".." in receipt_rel.parts:
+            raise SandboxImagePopulationError(
+                "build_receipt_path must be repository-relative"
+            )
+        object.__setattr__(self, "build_receipt_path", receipt_rel.as_posix())
         object.__setattr__(
             self, "build_receipt_sha256", _sha("build_receipt_sha256", self.build_receipt_sha256)
         )
