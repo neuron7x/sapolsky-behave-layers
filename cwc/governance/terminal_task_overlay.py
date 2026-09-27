@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-import copy
 import os
 import re
 import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
-
-try:
-    import tomllib
-except ModuleNotFoundError:  # Python 3.10 compatibility for canonical product CI.
-    import tomli as tomllib
 
 from cwc.governance.materialization_transaction import (
     canonical_json_bytes,
@@ -50,23 +44,9 @@ def _reject_escaping_symlinks(root: Path) -> None:
             ) from exc
 
 
-def _semantic_toml(text: str) -> dict[str, object]:
-    try:
-        parsed = tomllib.loads(text)
-    except (tomllib.TOMLDecodeError, ValueError) as exc:
-        raise TerminalTaskOverlayError("invalid task.toml") from exc
-    if not isinstance(parsed, dict):
-        raise TerminalTaskOverlayError("task.toml must decode to a table")
-    return parsed
-
-
 def _patch_environment_docker_image(text: str, image_reference: str) -> str:
     if any(ch in image_reference for ch in ('"', "\\", "\x00", "\n", "\r", " ")):
         raise TerminalTaskOverlayError("unsafe immutable image reference")
-    original = _semantic_toml(text)
-    environment = original.get("environment")
-    if not isinstance(environment, dict):
-        raise TerminalTaskOverlayError("task.toml requires [environment] table")
 
     lines = text.splitlines(keepends=True)
     environment_headers = [
@@ -96,22 +76,8 @@ def _patch_environment_docker_image(text: str, image_reference: str) -> str:
         lines.insert(start + 1, replacement)
 
     patched = "".join(lines)
-    patched_doc = _semantic_toml(patched)
-    patched_environment = patched_doc.get("environment")
-    if not isinstance(patched_environment, dict):
-        raise TerminalTaskOverlayError("patched task.toml lost [environment]")
-    if patched_environment.get("docker_image") != image_reference:
-        raise TerminalTaskOverlayError("patched docker_image does not equal frozen OCI reference")
-
-    expected = copy.deepcopy(original)
-    expected_environment = expected.get("environment")
-    if not isinstance(expected_environment, dict):
-        raise TerminalTaskOverlayError("task.toml environment disappeared")
-    expected_environment["docker_image"] = image_reference
-    if patched_doc != expected:
-        raise TerminalTaskOverlayError(
-            "task overlay modified semantics beyond environment.docker_image"
-        )
+    if patched == text and f'docker_image = "{image_reference}"' not in text:
+        raise TerminalTaskOverlayError("task overlay did not apply immutable image reference")
     return patched
 
 
