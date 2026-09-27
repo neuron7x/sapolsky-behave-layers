@@ -60,6 +60,7 @@ def _fixture(
         "repository_tree": "b" * 40,
         "materialization_reference_digest": h("3"),
         "task_manifest_digest": h("4"),
+        "mechanism_plan_digest": h("f"),
         "components": [{"component": "executor_manifest", "sha256": h("6")}],
         "governance_policies": [{"policy_id": "DGC"}],
     }
@@ -67,12 +68,14 @@ def _fixture(
         "family_id": "FAM",
         "execution_manifest_freeze_digest": h("5"),
         "harness_freeze_digest": h("7"),
+        "mechanism_plan_digest": h("f"),
     }
     authority = {
         "family_id": "FAM",
         "authority_digest": h("8"),
         "execution_manifest_freeze_digest": h("5"),
         "harness_freeze_digest": h("7"),
+        "mechanism_plan_digest": h("f"),
         "distributed_spec_digest": spec.digest,
         "distributed_spec": {
             "experiment_id": spec.experiment_id,
