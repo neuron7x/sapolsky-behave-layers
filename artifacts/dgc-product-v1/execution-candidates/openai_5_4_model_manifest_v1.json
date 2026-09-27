@@ -1,0 +1,19 @@
+{
+  "schema": "DGC_MODEL_MANIFEST_V1",
+  "authority": "FROZEN_PRE_EXECUTION_CANDIDATE_NO_EXECUTION_EVIDENCE",
+  "panel_id": "OPENAI_GPT_5_4_TWO_TIER_SNAPSHOT_V1",
+  "captured_at": "2026-09-27T00:00:00Z",
+  "models": [
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.4-mini-2026-03-17",
+      "model_version": "2026-03-17"
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5.4-nano-2026-03-17",
+      "model_version": "2026-03-17"
+    }
+  ],
+  "product_promotion_authorized": false
+}
