@@ -107,7 +107,7 @@ def _sandbox_image_binding(
         )
     except TerminalSandboxAuthorityError as exc:
         raise TerminalHarborAdapterError(
-            "Terminal sandbox environment authority replay failed"
+            f"Terminal sandbox environment authority replay failed: {exc}"
         ) from exc
     try:
         binding = population.resolve(task_id)
