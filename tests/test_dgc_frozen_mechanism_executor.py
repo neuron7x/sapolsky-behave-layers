@@ -31,7 +31,14 @@ class _Reference:
         return _Binding()
 
 
-def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, null_request=False):
+def _fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    risk=False,
+    null_request=False,
+    runtime_live=False,
+):
     repo = tmp_path / "repo"
     repo.mkdir()
     spec = DistributedEvalSpec(
@@ -129,7 +136,7 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, nul
     ]
 
     def invoke(*, request, **_kwargs):
-        raw_request_id = None if null_request else "req-1"
+        raw_request_id = None if (null_request or runtime_live) else "req-1"
         response = {
             "schema": "DGC_UNIT_EXECUTION_RESPONSE_V1",
             "unit": request["unit"],
@@ -139,7 +146,7 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, nul
                 "trace_id": "trace-1",
                 "decision_id": "task-1::DGC::0",
                 "policy_id": "DGC",
-                "authority": "PROVIDER_LIVE",
+                "authority": "RUNTIME_LIVE" if runtime_live else "PROVIDER_LIVE",
                 "provider": "provider",
                 "model": "model",
                 "model_version": "v1",
@@ -150,6 +157,14 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, risk=False, nul
                 "long_cache_write_tokens": 0,
                 "output_tokens": 0,
                 "provider_request_id": raw_request_id,
+                **(
+                    {
+                        "runtime_call_id": "harbor-atif:session-1:aggregate",
+                        "source_artifact_digest": h("e"),
+                    }
+                    if runtime_live
+                    else {}
+                ),
             }],
             "physical_cost_evidence": {
                 name: {
@@ -219,6 +234,36 @@ def test_executor_publishes_risk_free_mechanism_bundle(
     assert "catastrophic_regret" not in record["result_payload"]
     evidence = json.loads(next((output / "evidence").glob("*.json")).read_text())
     assert "risk_endpoint_response" not in evidence
+
+
+def test_runtime_live_mechanism_execution_publishes_narrow_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    repo, _, _, materialization = _fixture(
+        tmp_path,
+        monkeypatch,
+        runtime_live=True,
+    )
+    output = tmp_path / "mechanism-bundle-runtime"
+    result = execute_frozen_mechanism_panel(
+        repository_root=repo,
+        execution_manifest_freeze_path=tmp_path / "execution.json",
+        harness_freeze_path=tmp_path / "harness.json",
+        mechanism_authority_path=tmp_path / "authority.json",
+        materialization_generation_root=materialization,
+        source_registry_path=tmp_path / "registry.json",
+        output_root=output,
+    )
+    assert output.exists()
+    evidence = json.loads(next((output / "evidence").glob("*.json")).read_text())
+    assert evidence["provider_usage_traces"][0]["authority"] == "RUNTIME_LIVE"
+    model_rows = [
+        row
+        for row in evidence["physical_cost_certificate"]["components"]
+        if row["component"] == "model_usd"
+    ]
+    assert model_rows[0]["authority"] == "RUNTIME_METER"
+    assert result is not None
 
 
 def test_adapter_risk_leakage_prevents_publication(

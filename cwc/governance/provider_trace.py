@@ -32,6 +32,7 @@ class TraceAuthority(str, Enum):
     SYNTHETIC = "SYNTHETIC"
     LOCAL_EXPERIMENT = "LOCAL_EXPERIMENT"
     PROVIDER_LIVE = "PROVIDER_LIVE"
+    RUNTIME_LIVE = "RUNTIME_LIVE"
     CLIENT_PRODUCTION = "CLIENT_PRODUCTION"
 
 
@@ -60,6 +61,8 @@ class ProviderUsageTrace:
     quality_score: float | None = None
     covered: bool = True
     provider_request_id: str | None = None
+    runtime_call_id: str | None = None
+    source_artifact_digest: str | None = None
 
     def __post_init__(self) -> None:
         required = (self.trace_id, self.decision_id, self.policy_id, self.provider, self.model, self.rate_card_digest)
@@ -82,10 +85,16 @@ class ProviderUsageTrace:
             object.__setattr__(self, "quality_score", q)
         if self.authority in {TraceAuthority.PROVIDER_LIVE, TraceAuthority.CLIENT_PRODUCTION} and not self.provider_request_id:
             raise ValueError("live provider/client traces require provider_request_id")
+        if self.authority is TraceAuthority.RUNTIME_LIVE:
+            if not str(self.runtime_call_id or "").strip():
+                raise ValueError("runtime-live traces require runtime_call_id")
+            digest = str(self.source_artifact_digest or "").strip().lower()
+            if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+                raise ValueError("runtime-live traces require source_artifact_digest SHA-256")
 
     @property
     def digest(self) -> str:
-        return _digest({
+        payload = {
             "trace_id": self.trace_id,
             "decision_id": self.decision_id,
             "policy_id": self.policy_id,
@@ -109,7 +118,13 @@ class ProviderUsageTrace:
             "quality_score": self.quality_score,
             "covered": self.covered,
             "provider_request_id": self.provider_request_id,
-        })
+        }
+        # Preserve historical digests for pre-existing authorities. Runtime-live
+        # adds source-bound identity only when that authority is actually used.
+        if self.authority is TraceAuthority.RUNTIME_LIVE:
+            payload["runtime_call_id"] = self.runtime_call_id
+            payload["source_artifact_digest"] = self.source_artifact_digest
+        return _digest(payload)
 
     def meter(self, rate_card: ProviderRateCard) -> MeteredDecisionCost:
         if rate_card.digest != self.rate_card_digest:

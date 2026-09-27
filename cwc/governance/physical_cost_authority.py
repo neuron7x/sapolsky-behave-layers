@@ -104,6 +104,8 @@ def _verify_source(
 
     if authority is CostAuthority.PROVIDER_METER:
         _req("provider_request_id", doc.get("provider_request_id"))
+    elif authority is CostAuthority.RUNTIME_METER:
+        _req("runtime_record_id", doc.get("runtime_record_id"))
     elif authority in {CostAuthority.TOOL_METER, CostAuthority.INFRA_METER}:
         _req("meter_record_id", doc.get("meter_record_id"))
     elif authority is CostAuthority.HUMAN_TIME_LOG:

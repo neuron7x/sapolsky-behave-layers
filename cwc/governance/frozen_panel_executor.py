@@ -225,19 +225,24 @@ def _provider_model_meter(
     response: Mapping[str, object],
     unit: WorkUnitId,
     rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
+    allowed_authorities: frozenset[TraceAuthority] = frozenset(
+        {TraceAuthority.PROVIDER_LIVE}
+    ),
 ) -> tuple[
     float,
     str,
     tuple[dict[str, object], ...],
     tuple[dict[str, object], ...],
 ]:
+    if not allowed_authorities:
+        raise FrozenPanelExecutionError("provider meter authority set cannot be empty")
     raw_rows = response.get("provider_usage_traces")
     if not isinstance(raw_rows, list) or not raw_rows:
         raise FrozenPanelExecutionError("executor response requires provider_usage_traces")
     trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
     used_cards: dict[str, dict[str, object]] = {}
-    request_ids: set[str] = set()
+    source_ids: set[str] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise FrozenPanelExecutionError("invalid provider usage trace row")
@@ -250,15 +255,26 @@ def _provider_model_meter(
         card = rate_cards.get(identity)
         if card is None:
             raise FrozenPanelExecutionError("provider usage trace has no exact frozen rate card")
-        request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise FrozenPanelExecutionError("live provider usage requires real provider_request_id")
         try:
+            authority = TraceAuthority(str(raw["authority"]))
+            request_id_raw = raw.get("provider_request_id")
+            runtime_call_id_raw = raw.get("runtime_call_id")
+            source_artifact_digest_raw = raw.get("source_artifact_digest")
+            if authority in {
+                TraceAuthority.PROVIDER_LIVE,
+                TraceAuthority.CLIENT_PRODUCTION,
+            } and (
+                not isinstance(request_id_raw, str)
+                or not request_id_raw.strip()
+            ):
+                raise FrozenPanelExecutionError(
+                    "live provider usage requires real provider_request_id"
+                )
             trace = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
                 decision_id=str(raw["decision_id"]),
                 policy_id=str(raw["policy_id"]),
-                authority=TraceAuthority(str(raw["authority"])),
+                authority=authority,
                 provider=identity[0],
                 model=identity[1],
                 rate_card_digest=str(raw["rate_card_digest"]),
@@ -267,20 +283,50 @@ def _provider_model_meter(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_request_id=(
+                    request_id_raw.strip()
+                    if isinstance(request_id_raw, str) and request_id_raw.strip()
+                    else None
+                ),
+                runtime_call_id=(
+                    runtime_call_id_raw.strip()
+                    if isinstance(runtime_call_id_raw, str) and runtime_call_id_raw.strip()
+                    else None
+                ),
+                source_artifact_digest=(
+                    source_artifact_digest_raw.strip().lower()
+                    if isinstance(source_artifact_digest_raw, str)
+                    and source_artifact_digest_raw.strip()
+                    else None
+                ),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise FrozenPanelExecutionError("malformed provider usage trace") from exc
-        if trace.authority is not TraceAuthority.PROVIDER_LIVE:
-            raise FrozenPanelExecutionError("confirmatory provider usage must be PROVIDER_LIVE")
+        if trace.authority not in allowed_authorities:
+            allowed = ",".join(sorted(row.value for row in allowed_authorities))
+            raise FrozenPanelExecutionError(
+                f"provider trace authority {trace.authority.value} not admitted; allowed={allowed}"
+            )
         if trace.decision_id != unit.stable_id or trace.policy_id != unit.policy_id:
             raise FrozenPanelExecutionError("provider trace decision/policy identity mismatch")
         if trace.rate_card_digest != card.digest:
             raise FrozenPanelExecutionError("provider trace rate-card digest mismatch")
-        request_id = str(trace.provider_request_id)
-        if request_id in request_ids:
-            raise FrozenPanelExecutionError("duplicate provider_request_id in one work unit")
-        request_ids.add(request_id)
+
+        if trace.authority in {
+            TraceAuthority.PROVIDER_LIVE,
+            TraceAuthority.CLIENT_PRODUCTION,
+        }:
+            source_id = f"provider:{trace.provider_request_id}"
+        elif trace.authority is TraceAuthority.RUNTIME_LIVE:
+            source_id = (
+                f"runtime:{trace.runtime_call_id}:{trace.source_artifact_digest}"
+            )
+        else:
+            source_id = f"{trace.authority.value}:{trace.trace_id}"
+        if source_id in source_ids:
+            raise FrozenPanelExecutionError("duplicate live usage source identity in one work unit")
+        source_ids.add(source_id)
+
         metered = trace.meter(card)
         trace_doc = {
             "trace_digest": trace.digest,
@@ -300,6 +346,9 @@ def _provider_model_meter(
             "output_tokens": trace.output_tokens,
             "model_token_usd": metered.model_token_usd,
         }
+        if trace.authority is TraceAuthority.RUNTIME_LIVE:
+            trace_doc["runtime_call_id"] = trace.runtime_call_id
+            trace_doc["source_artifact_digest"] = trace.source_artifact_digest
         used_cards.setdefault(card.digest, {
             "rate_card_digest": card.digest,
             "provider": card.provider,
@@ -477,6 +526,7 @@ def _physical_cost_certificate(
     cap: float,
     model_usd: float,
     model_source_digest: str,
+    model_cost_authority: CostAuthority = CostAuthority.PROVIDER_METER,
 ) -> PhysicalCostCertificate:
     raw = response.get("physical_cost_evidence")
     if not isinstance(raw, Mapping):
@@ -490,7 +540,7 @@ def _physical_cost_certificate(
         "model_usd": CostComponentEvidence(
             component="model_usd",
             value_usd=model_usd,
-            authority=CostAuthority.PROVIDER_METER,
+            authority=model_cost_authority,
             source_digest=model_source_digest,
         )
     }

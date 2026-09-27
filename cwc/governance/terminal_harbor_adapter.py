@@ -5,14 +5,21 @@ import json
 import math
 import os
 import subprocess
+import time
 from pathlib import Path
 from typing import Mapping
 
 from cwc.governance.benchmark_runtime import verify_benchmark_runtime
+from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.frozen_action_catalog import load_frozen_action_catalog
 from cwc.governance.frozen_observation_runtime import invoke_frozen_observation_provider
 from cwc.governance.frozen_policy_runtime import invoke_frozen_policy
-from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_file
+from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.runtime_cost_contract import (
+    RuntimeCostContractError,
+    parse_runtime_cost_contract,
+    runtime_physical_cost_evidence,
+)
 from cwc.governance.sandbox_image_population import SandboxImagePopulationError
 from cwc.governance.terminal_sandbox_authority import (
     TerminalSandboxAuthorityError,
@@ -171,12 +178,197 @@ def _dgc_agent_metadata(trial: Mapping[str, object]) -> dict[str, object]:
     agent = trial.get("agent_result")
     if not isinstance(agent, Mapping):
         raise TerminalHarborAdapterError(
-            "top-level Harbor agent_result required for DGC confirmatory telemetry"
+            "top-level Harbor agent_result required for DGC telemetry"
         )
     metadata = agent.get("metadata")
+    if metadata is None:
+        return {}
     if not isinstance(metadata, Mapping):
-        raise TerminalHarborAdapterError("Harbor agent metadata missing DGC evidence envelope")
+        raise TerminalHarborAdapterError("Harbor agent metadata must be an object")
     return {str(k): v for k, v in metadata.items()}
+
+
+def _component_sha(
+    execution_freeze: Mapping[str, object],
+    component: str,
+) -> str:
+    rows = execution_freeze.get("components")
+    if not isinstance(rows, list):
+        raise TerminalHarborAdapterError("execution component population missing")
+    matches = [
+        row for row in rows
+        if isinstance(row, Mapping) and row.get("component") == component
+    ]
+    if len(matches) != 1:
+        raise TerminalHarborAdapterError(f"exactly one {component} required")
+    return _sha(f"{component} sha256", matches[0].get("sha256"))
+
+
+def _frozen_rate_card(
+    *,
+    repository_root: Path,
+    execution_freeze: Mapping[str, object],
+    provider: str,
+    model_id: str,
+    model_version: str,
+) -> ProviderRateCard:
+    pricing = _component_json(
+        repository_root=repository_root,
+        execution_freeze=execution_freeze,
+        component="pricing_snapshot",
+        schema="DGC_PRICING_SNAPSHOT_V1",
+    )
+    captured_at = str(pricing.get("captured_at", "")).strip()
+    rows = pricing.get("entries")
+    if not captured_at or not isinstance(rows, list):
+        raise TerminalHarborAdapterError("frozen pricing snapshot incomplete")
+    matches = [
+        row for row in rows
+        if isinstance(row, Mapping)
+        and (
+            str(row.get("provider", "")).strip(),
+            str(row.get("model_id", "")).strip(),
+            str(row.get("model_version", "")).strip(),
+        ) == (provider, model_id, model_version)
+    ]
+    if len(matches) != 1:
+        raise TerminalHarborAdapterError(
+            "selected action lacks exactly one frozen pricing identity"
+        )
+    row = matches[0]
+    if str(row.get("currency", "")) != "USD":
+        raise TerminalHarborAdapterError("frozen model pricing must be USD")
+    try:
+        return ProviderRateCard(
+            provider=provider,
+            model=model_id,
+            input_usd_per_million=float(row["input_per_million"]),
+            cached_input_usd_per_million=float(row["cached_input_per_million"]),
+            cache_write_usd_per_million=float(row["cache_write_per_million"]),
+            long_cache_write_usd_per_million=float(
+                row["long_cache_write_per_million"]
+            ),
+            output_usd_per_million=float(row["output_per_million"]),
+            source_uri=str(row["source_uri"]),
+            retrieved_at=captured_at,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise TerminalHarborAdapterError("invalid frozen selected-action pricing") from exc
+
+
+def _nonnegative_int(name: str, value: object) -> int:
+    if isinstance(value, bool):
+        raise TerminalHarborAdapterError(f"{name} must be an integer")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise TerminalHarborAdapterError(f"{name} must be an integer") from exc
+    if parsed < 0:
+        raise TerminalHarborAdapterError(f"{name} must be >= 0")
+    return parsed
+
+
+def _native_runtime_trace(
+    *,
+    trial_dir: Path,
+    admitted,
+    action,
+    policy_id: str,
+    task_id: str,
+    replicate: int,
+    rate_card: ProviderRateCard,
+) -> dict[str, object]:
+    trajectory_path = trial_dir / "agent" / "trajectory.json"
+    if trajectory_path.is_symlink() or not trajectory_path.is_file():
+        raise TerminalHarborAdapterError("native Harbor ATIF trajectory missing")
+    if sha256_file(trajectory_path) != admitted.trajectory_sha256:
+        raise TerminalHarborAdapterError("native Harbor trajectory digest drift")
+    try:
+        trajectory = json.loads(trajectory_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise TerminalHarborAdapterError("invalid native Harbor ATIF trajectory") from exc
+    if not isinstance(trajectory, Mapping) or trajectory.get("schema_version") != "ATIF-v1.7":
+        raise TerminalHarborAdapterError(
+            "native runtime telemetry requires Harbor Codex ATIF-v1.7"
+        )
+    session_id = str(trajectory.get("session_id", "")).strip()
+    if not session_id:
+        raise TerminalHarborAdapterError("native ATIF session_id required")
+    agent = trajectory.get("agent")
+    if not isinstance(agent, Mapping):
+        raise TerminalHarborAdapterError("native ATIF agent identity missing")
+    if str(agent.get("name", "")).strip() != action.harbor_agent:
+        raise TerminalHarborAdapterError("native ATIF agent differs from frozen action")
+    if str(agent.get("version", "")).strip() != action.agent_version:
+        raise TerminalHarborAdapterError(
+            "native ATIF agent version differs from frozen action"
+        )
+    if str(agent.get("model_name", "")).strip() != action.model_id:
+        raise TerminalHarborAdapterError("native ATIF model differs from frozen action")
+    metrics = trajectory.get("final_metrics")
+    if not isinstance(metrics, Mapping):
+        raise TerminalHarborAdapterError("native ATIF final_metrics required")
+    input_tokens = _nonnegative_int(
+        "ATIF total_prompt_tokens", metrics.get("total_prompt_tokens")
+    )
+    cached_tokens = _nonnegative_int(
+        "ATIF total_cached_tokens", metrics.get("total_cached_tokens", 0)
+    )
+    output_tokens = _nonnegative_int(
+        "ATIF total_completion_tokens", metrics.get("total_completion_tokens")
+    )
+    if (
+        input_tokens != admitted.n_input_tokens
+        or cached_tokens != admitted.n_cache_tokens
+        or output_tokens != admitted.n_output_tokens
+    ):
+        raise TerminalHarborAdapterError(
+            "ATIF token totals differ from Harbor result AgentContext"
+        )
+    extra = metrics.get("extra")
+    if extra is None:
+        extra = {}
+    if not isinstance(extra, Mapping):
+        raise TerminalHarborAdapterError("native ATIF final_metrics.extra malformed")
+    cache_write_tokens = _nonnegative_int(
+        "ATIF total_cache_write_input_tokens",
+        extra.get("total_cache_write_input_tokens", 0),
+    )
+    if cached_tokens + cache_write_tokens > input_tokens:
+        raise TerminalHarborAdapterError(
+            "ATIF cached/cache-write subsets exceed total prompt tokens"
+        )
+    decision_id = f"{task_id}::{policy_id}::{replicate}"
+    source_digest = admitted.trajectory_sha256
+    runtime_call_id = f"harbor-atif:{session_id}:aggregate"
+    trace_id = sha256_bytes(
+        canonical_json_bytes({
+            "authority": "RUNTIME_LIVE",
+            "decision_id": decision_id,
+            "runtime_call_id": runtime_call_id,
+            "source_artifact_digest": source_digest,
+            "model": action.model_id,
+            "model_version": action.model_version,
+        })
+    )
+    return {
+        "trace_id": trace_id,
+        "decision_id": decision_id,
+        "policy_id": policy_id,
+        "authority": "RUNTIME_LIVE",
+        "provider": action.provider,
+        "model": action.model_id,
+        "model_version": action.model_version,
+        "rate_card_digest": rate_card.digest,
+        "input_tokens": input_tokens,
+        "cached_input_tokens": cached_tokens,
+        "cache_write_tokens": cache_write_tokens,
+        "long_cache_write_tokens": 0,
+        "output_tokens": output_tokens,
+        "provider_request_id": None,
+        "runtime_call_id": runtime_call_id,
+        "source_artifact_digest": source_digest,
+    }
 
 
 def _provider_traces(
@@ -196,6 +388,10 @@ def _provider_traces(
     for row in rows:
         if str(row.get("policy_id", "")).strip() != policy_id:
             raise TerminalHarborAdapterError("provider trace policy identity mismatch")
+        if str(row.get("authority", "")).strip() != "PROVIDER_LIVE":
+            raise TerminalHarborAdapterError(
+                "custom Harbor provider telemetry must be PROVIDER_LIVE"
+            )
         request_id = str(row.get("provider_request_id", "")).strip()
         if not request_id:
             raise TerminalHarborAdapterError("provider trace requires real provider_request_id")
@@ -233,6 +429,7 @@ def execute_terminal_harbor_unit(
     unit_root = Path(unit_runtime_root).resolve()
     if not root.is_dir() or not materialization.is_dir() or not unit_root.is_dir():
         raise TerminalHarborAdapterError("required execution root missing")
+    adapter_started_ns = time.monotonic_ns()
 
     unit = _unit(request)
     task_id = str(unit["task_id"]).strip()
@@ -390,17 +587,66 @@ def execute_terminal_harbor_unit(
         raise TerminalHarborAdapterError("Harbor model differs from frozen action")
 
     metadata = _dgc_agent_metadata(raw_trial)
-    traces = _provider_traces(
-        metadata,
-        policy_id=policy_id,
-        action_provider=action.provider,
-        action_model=action.model_id,
-        action_model_version=action.model_version,
-    )
-    physical = metadata.get("dgc_physical_cost_evidence")
-    if not isinstance(physical, Mapping):
-        raise TerminalHarborAdapterError("complete dgc_physical_cost_evidence required")
-    physical_doc = {str(k): v for k, v in physical.items()}
+    runtime_cost_measurement: dict[str, object] | None = None
+    native_actual_cost: float | None = None
+    if "dgc_provider_usage_traces" in metadata:
+        traces = _provider_traces(
+            metadata,
+            policy_id=policy_id,
+            action_provider=action.provider,
+            action_model=action.model_id,
+            action_model_version=action.model_version,
+        )
+        physical = metadata.get("dgc_physical_cost_evidence")
+        if not isinstance(physical, Mapping):
+            raise TerminalHarborAdapterError(
+                "complete dgc_physical_cost_evidence required with custom provider telemetry"
+            )
+        physical_doc = {str(k): v for k, v in physical.items()}
+        telemetry_authority = "PROVIDER_LIVE"
+    else:
+        rate_card = _frozen_rate_card(
+            repository_root=root,
+            execution_freeze=execution,
+            provider=action.provider,
+            model_id=action.model_id,
+            model_version=action.model_version,
+        )
+        runtime_trace = _native_runtime_trace(
+            trial_dir=trial_dir,
+            admitted=admitted,
+            action=action,
+            policy_id=policy_id,
+            task_id=task_id,
+            replicate=replicate,
+            rate_card=rate_card,
+        )
+        traces = [runtime_trace]
+        elapsed_ns = time.monotonic_ns() - adapter_started_ns
+        try:
+            cost_contract = parse_runtime_cost_contract(
+                budget.get("runtime_cost_contract")
+            )
+            physical_doc, runtime_cost_measurement, infra_usd = (
+                runtime_physical_cost_evidence(
+                    contract=cost_contract,
+                    budget_manifest_sha256=_component_sha(execution, "budget"),
+                    elapsed_ns=elapsed_ns,
+                )
+            )
+        except RuntimeCostContractError as exc:
+            raise TerminalHarborAdapterError(
+                "frozen runtime cost contract rejected"
+            ) from exc
+        model_usd = rate_card.token_cost_usd(
+            input_tokens=int(runtime_trace["input_tokens"]),
+            cached_input_tokens=int(runtime_trace["cached_input_tokens"]),
+            cache_write_tokens=int(runtime_trace["cache_write_tokens"]),
+            long_cache_write_tokens=int(runtime_trace["long_cache_write_tokens"]),
+            output_tokens=int(runtime_trace["output_tokens"]),
+        )
+        native_actual_cost = model_usd + infra_usd
+        telemetry_authority = "RUNTIME_LIVE"
 
     response: dict[str, object] = {
         "schema": RESPONSE_SCHEMA,
@@ -439,6 +685,8 @@ def execute_terminal_harbor_unit(
                 "environment_manifest_runtime": environment.get("runtime"),
             },
             "task_overlay": overlay.document,
+            "telemetry_authority": telemetry_authority,
+            "runtime_cost_measurement": runtime_cost_measurement,
             "harbor_command_digest": hashlib.sha256(
                 canonical_json_bytes(command)
             ).hexdigest(),
@@ -451,7 +699,9 @@ def execute_terminal_harbor_unit(
             "trial_name": admitted.trial_name,
         },
     }
-    if "dgc_actual_cost_usd" in metadata:
+    if native_actual_cost is not None:
+        response["actual_cost_usd"] = native_actual_cost
+    elif "dgc_actual_cost_usd" in metadata:
         try:
             declared = float(metadata["dgc_actual_cost_usd"])
         except (TypeError, ValueError) as exc:

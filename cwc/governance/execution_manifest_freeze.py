@@ -9,6 +9,10 @@ from typing import Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
+from cwc.governance.runtime_cost_contract import (
+    RuntimeCostContractError,
+    parse_runtime_cost_contract,
+)
 from cwc.governance.sandbox_image_population import (
     EXECUTION_MODE as SANDBOX_EXECUTION_MODE,
 )
@@ -604,6 +608,13 @@ def freeze_execution_manifests(
             expected_schema=expected_schema,
         )
         _VALIDATORS[component](payload)
+        if component == "budget" and family == "TERMINAL_BENCH_2_1":
+            try:
+                parse_runtime_cost_contract(payload.get("runtime_cost_contract"))
+            except RuntimeCostContractError as exc:
+                raise ExecutionManifestError(
+                    "Terminal-Bench budget requires a valid frozen runtime cost contract"
+                ) from exc
         component_payloads[component] = payload
         if component == "executor_manifest":
             entrypoint, entrypoint_rel = _repo_file(root, payload["entrypoint_path"])

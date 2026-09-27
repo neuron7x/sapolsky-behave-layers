@@ -344,7 +344,7 @@ def _verify_cost_evidence(
     derived: list[dict[str, object]] = []
     meter_population: list[tuple[str, str]] = []
     model_costs: list[float] = []
-    request_ids: set[str] = set()
+    source_ids: set[str] = set()
     for raw in raw_traces:
         if not isinstance(raw, Mapping):
             raise MechanismExecutionBundleError("invalid raw provider usage trace")
@@ -357,15 +357,26 @@ def _verify_cost_evidence(
         card = cards.get(identity)
         if card is None:
             raise MechanismExecutionBundleError("provider trace lacks frozen rate card")
-        request_id_raw = raw.get("provider_request_id")
-        if not isinstance(request_id_raw, str) or not request_id_raw.strip():
-            raise MechanismExecutionBundleError("live provider trace requires real provider_request_id")
         try:
+            authority = TraceAuthority(str(raw["authority"]))
+            request_id_raw = raw.get("provider_request_id")
+            runtime_call_id_raw = raw.get("runtime_call_id")
+            source_artifact_digest_raw = raw.get("source_artifact_digest")
+            if authority in {
+                TraceAuthority.PROVIDER_LIVE,
+                TraceAuthority.CLIENT_PRODUCTION,
+            } and (
+                not isinstance(request_id_raw, str)
+                or not request_id_raw.strip()
+            ):
+                raise MechanismExecutionBundleError(
+                    "live provider usage requires real provider_request_id"
+                )
             trace_obj = ProviderUsageTrace(
                 trace_id=str(raw["trace_id"]),
                 decision_id=str(raw["decision_id"]),
                 policy_id=str(raw["policy_id"]),
-                authority=TraceAuthority(str(raw["authority"])),
+                authority=authority,
                 provider=identity[0],
                 model=identity[1],
                 rate_card_digest=str(raw["rate_card_digest"]),
@@ -374,25 +385,48 @@ def _verify_cost_evidence(
                 cache_write_tokens=int(raw.get("cache_write_tokens", 0)),
                 long_cache_write_tokens=int(raw.get("long_cache_write_tokens", 0)),
                 output_tokens=int(raw["output_tokens"]),
-                provider_request_id=request_id_raw.strip(),
+                provider_request_id=(
+                    request_id_raw.strip()
+                    if isinstance(request_id_raw, str) and request_id_raw.strip()
+                    else None
+                ),
+                runtime_call_id=(
+                    runtime_call_id_raw.strip()
+                    if isinstance(runtime_call_id_raw, str) and runtime_call_id_raw.strip()
+                    else None
+                ),
+                source_artifact_digest=(
+                    source_artifact_digest_raw.strip().lower()
+                    if isinstance(source_artifact_digest_raw, str)
+                    and source_artifact_digest_raw.strip()
+                    else None
+                ),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MechanismExecutionBundleError("malformed provider usage trace") from exc
-        if trace_obj.authority is not TraceAuthority.PROVIDER_LIVE:
+        if trace_obj.authority not in {
+            TraceAuthority.PROVIDER_LIVE,
+            TraceAuthority.RUNTIME_LIVE,
+        }:
             raise MechanismExecutionBundleError(
-                "real-workload mechanism provider trace must be PROVIDER_LIVE"
+                "real-workload mechanism trace must be PROVIDER_LIVE or RUNTIME_LIVE"
             )
         if trace_obj.decision_id != unit.stable_id or trace_obj.policy_id != unit.policy_id:
             raise MechanismExecutionBundleError("provider trace decision/policy identity mismatch")
-        request_id = str(trace_obj.provider_request_id)
-        if request_id in request_ids:
-            raise MechanismExecutionBundleError("duplicate provider_request_id")
-        request_ids.add(request_id)
+        if trace_obj.authority is TraceAuthority.PROVIDER_LIVE:
+            source_id = f"provider:{trace_obj.provider_request_id}"
+        else:
+            source_id = (
+                f"runtime:{trace_obj.runtime_call_id}:{trace_obj.source_artifact_digest}"
+            )
+        if source_id in source_ids:
+            raise MechanismExecutionBundleError("duplicate live usage source identity")
+        source_ids.add(source_id)
         if trace_obj.rate_card_digest != card.digest:
             raise MechanismExecutionBundleError("provider trace rate-card digest mismatch")
         metered = trace_obj.meter(card)
         model_costs.append(metered.model_token_usd)
-        derived.append({
+        trace_doc = {
             "trace_digest": trace_obj.digest,
             "trace_id": trace_obj.trace_id,
             "decision_id": trace_obj.decision_id,
@@ -409,7 +443,11 @@ def _verify_cost_evidence(
             "long_cache_write_tokens": trace_obj.long_cache_write_tokens,
             "output_tokens": trace_obj.output_tokens,
             "model_token_usd": metered.model_token_usd,
-        })
+        }
+        if trace_obj.authority is TraceAuthority.RUNTIME_LIVE:
+            trace_doc["runtime_call_id"] = trace_obj.runtime_call_id
+            trace_doc["source_artifact_digest"] = trace_obj.source_artifact_digest
+        derived.append(trace_doc)
         meter_population.append((trace_obj.digest, version))
     if evidence_traces != derived:
         raise MechanismExecutionBundleError("derived provider evidence differs from raw traces")
@@ -454,9 +492,23 @@ def _verify_cost_evidence(
     except (TypeError, ValueError, KeyError) as exc:
         raise MechanismExecutionBundleError("invalid physical cost certificate") from exc
 
+    trace_authorities = {str(row["authority"]) for row in derived}
+    if trace_authorities == {TraceAuthority.PROVIDER_LIVE.value}:
+        expected_model_cost_authority = CostAuthority.PROVIDER_METER
+    elif trace_authorities == {TraceAuthority.RUNTIME_LIVE.value}:
+        expected_model_cost_authority = CostAuthority.RUNTIME_METER
+    else:
+        raise MechanismExecutionBundleError(
+            "mechanism evidence cannot mix provider-live and runtime-live authority"
+        )
     model_component = evidence.get("model_usd")
-    if model_component is None or model_component.authority is not CostAuthority.PROVIDER_METER:
-        raise MechanismExecutionBundleError("model_usd must use PROVIDER_METER")
+    if (
+        model_component is None
+        or model_component.authority is not expected_model_cost_authority
+    ):
+        raise MechanismExecutionBundleError(
+            "model_usd authority differs from provider trace authority"
+        )
     if model_component.source_digest != trace_population_digest:
         raise MechanismExecutionBundleError("model_usd source is not provider trace population")
     if not math.isclose(
