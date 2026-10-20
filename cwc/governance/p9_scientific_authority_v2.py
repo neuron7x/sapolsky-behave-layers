@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
 from cwc.governance.executed_p9_dual_authority import verify_dual_p9_authority_document
@@ -14,6 +15,15 @@ CLAIM_SCOPE = "EXACT_PRIMARY_PANEL_PLUS_CONDITIONAL_BOUNDED_INFERENCE_PLUS_CCF_V
 
 class P9ScientificAuthorityV2Error(RuntimeError):
     pass
+
+
+def _int_value(value: object) -> int:
+    """``int(value)`` restricted to operands ``int()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(
+        f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}"
+    )
 
 
 def _sha(name: str, value: object) -> str:
@@ -60,6 +70,32 @@ class P9ScientificAuthorityV2:
         }
 
 
+class _P9ScientificAuthorityV2Payload(TypedDict):
+    family_id: str
+    dual_p9_authority_digest: str
+    ccf_oracle_audit_authority_digest: str
+    execution_authority_digest: str
+    execution_population_digest: str
+    execution_bundle_digest: str
+    physical_cost_bundle_digest: str
+    physical_cost_population_digest: str
+    harness_freeze_digest: str
+    confirmatory_task_manifest_digest: str
+    exact_panel_certificate_digest: str
+    exact_panel_supported: bool
+    expected_effect_certificate_digest: str
+    expected_effect_supported_under_independence_assumption: bool
+    p9_supported_under_frozen_assumptions: bool
+    randomness_independence_assumption: str
+    randomness_assumption_verified: bool
+    ccf_headroom_audit_complete: bool
+    ccf_total_value_regret_units: int
+    ccf_total_avoidable_cost_units: int
+    ccf_max_value_regret_units: int
+    ccf_max_avoidable_cost_units: int
+    generalization_evaluation_authorized: bool
+
+
 def build_p9_scientific_authority_v2(
     *,
     dual_p9_authority_path: Path,
@@ -83,7 +119,7 @@ def build_p9_scientific_authority_v2(
         raise P9ScientificAuthorityV2Error("dual P9 scientific support is not exact+conditional derived")
     ccf_complete = ccf.get("headroom_audit_complete") is True
     authorize_generalization = p9_supported and ccf_complete
-    payload = {
+    payload: _P9ScientificAuthorityV2Payload = {
         "family_id": str(p9["family_id"]),
         "dual_p9_authority_digest": _sha("dual P9 authority_digest", p9.get("authority_digest")),
         "ccf_oracle_audit_authority_digest": _sha("CCF authority_digest", ccf.get("authority_digest")),
@@ -108,10 +144,10 @@ def build_p9_scientific_authority_v2(
         "randomness_independence_assumption": str(p9.get("randomness_independence_assumption", "")),
         "randomness_assumption_verified": p9.get("randomness_assumption_verified") is True,
         "ccf_headroom_audit_complete": ccf_complete,
-        "ccf_total_value_regret_units": int(ccf["total_value_regret_units"]),
-        "ccf_total_avoidable_cost_units": int(ccf["total_avoidable_cost_units"]),
-        "ccf_max_value_regret_units": int(ccf["max_value_regret_units"]),
-        "ccf_max_avoidable_cost_units": int(ccf["max_avoidable_cost_units"]),
+        "ccf_total_value_regret_units": _int_value(ccf["total_value_regret_units"]),
+        "ccf_total_avoidable_cost_units": _int_value(ccf["total_avoidable_cost_units"]),
+        "ccf_max_value_regret_units": _int_value(ccf["max_value_regret_units"]),
+        "ccf_max_avoidable_cost_units": _int_value(ccf["max_avoidable_cost_units"]),
         "generalization_evaluation_authorized": authorize_generalization,
     }
     return P9ScientificAuthorityV2(

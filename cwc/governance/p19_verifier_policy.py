@@ -6,6 +6,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -57,6 +58,20 @@ class P19VerifierTrustPolicy:
         return self.activation_authorized
 
 
+class _P19VerifierTrustPolicyPayload(TypedDict):
+    policy_generation: str
+    frozen_pre_outcome: bool
+    activation_authorized: bool
+    allowed_signers_path: str
+    allowed_signers_sha256: str
+    allowed_signers_format: str
+    minimum_distinct_verifiers: int
+    minimum_distinct_signer_keys: int
+    same_verifier_across_families_allowed: bool
+    same_signer_key_across_families_allowed: bool
+    social_independence_machine_proven: bool
+
+
 def load_p19_verifier_trust_policy(path: Path) -> P19VerifierTrustPolicy:
     candidate = Path(path)
     if candidate.is_symlink() or not candidate.is_file():
@@ -94,7 +109,7 @@ def load_p19_verifier_trust_policy(path: Path) -> P19VerifierTrustPolicy:
     if not allowed_path:
         raise P19VerifierPolicyError("P19 verifier allowed_signers_path required")
     allowed_sha = _sha("allowed_signers_sha256", doc.get("allowed_signers_sha256"))
-    payload = {
+    payload: _P19VerifierTrustPolicyPayload = {
         "policy_generation": generation,
         "frozen_pre_outcome": True,
         "activation_authorized": doc.get("activation_authorized") is True,

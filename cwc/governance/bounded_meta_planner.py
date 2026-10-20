@@ -82,7 +82,9 @@ def certify_bounded_horizon_meta_plan(
                     raise ValueError("transition to unknown state")
 
     @cache
-    def bound(state: str, h: int, depth: int):
+    def bound(
+        state: str, h: int, depth: int
+    ) -> tuple[float, float, tuple[MetaActionInterval, ...], str, str | None]:
         stop = dvals[state]
         if h == 0:
             row = MetaActionInterval("STOP", stop, stop)

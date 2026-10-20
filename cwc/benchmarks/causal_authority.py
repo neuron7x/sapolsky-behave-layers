@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 import random
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 
 from cwc.epistemics.information_acquisition import (
@@ -197,7 +197,7 @@ def generate_case(family: str, cohort: str, seed: int, *, variant: str = "S") ->
         raise KeyError(family)
     rng = random.Random(seed * 37 + sum(ord(c) for c in variant))
 
-    def jitter(lo, hi):
+    def jitter(lo: float, hi: float) -> float:
         return rng.uniform(lo, hi)
 
     generic = (
@@ -611,7 +611,7 @@ def score_policy(cases: Sequence[CabCase], outputs: Sequence[CabDecision]) -> di
             emitted_rejects += 1
             correct_rejects += int(exact)
 
-    def rate(indices: Sequence[int], predicate) -> float:
+    def rate(indices: Sequence[int], predicate: Callable[[int], bool]) -> float:
         if not indices:
             return 1.0
         return sum(1 for i in indices if predicate(i)) / len(indices)

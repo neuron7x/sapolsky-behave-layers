@@ -5,6 +5,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.physical_cost_evidence import (
@@ -23,6 +24,13 @@ class PhysicalCostAuthorityError(RuntimeError):
     pass
 
 
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
 def _sha(name: str, value: object) -> str:
     text = str(value).strip().lower()
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
@@ -39,7 +47,7 @@ def _req(name: str, value: object) -> str:
 
 def _finite_nonnegative(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_value(value)
     except (TypeError, ValueError) as exc:
         raise PhysicalCostAuthorityError(f"{name} must be numeric") from exc
     if not math.isfinite(result) or result < 0.0:

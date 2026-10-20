@@ -5,6 +5,7 @@ import json
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import TypedDict
 
 from cwc.governance.mechanism_learned_baseline import (
     MechanismCalibrationExample,
@@ -39,11 +40,26 @@ class MechanismB2FitReceipt:
     calibration_task_count: int
     calibration_input_digest: str
     forbidden_task_manifest_digest: str
-    model_rows: tuple[dict, ...]
+    model_rows: tuple[dict[str, object], ...]
     receipt_digest: str
     risk_fields_consumed: bool = False
     mechanism_execution_authorized: bool = False
     product_promotion_authorized: bool = False
+
+
+class _MechanismB2FitPayload(TypedDict):
+    schema: str
+    feature_schema_digest: str
+    training_algorithm_digest: str
+    calibration_task_digest: str
+    fitted_model_digest: str
+    calibration_task_count: int
+    calibration_input_digest: str
+    forbidden_task_manifest_digest: str
+    model_rows: tuple[dict[str, object], ...]
+    risk_fields_consumed: bool
+    mechanism_execution_authorized: bool
+    product_promotion_authorized: bool
 
 
 def fit_mechanism_b2_with_receipt(
@@ -71,7 +87,7 @@ def fit_mechanism_b2_with_receipt(
         list(rows),
         forbidden_task_ids=forbidden,
     )
-    model_rows = tuple(
+    model_rows: tuple[dict[str, object], ...] = tuple(
         {
             "action_id": row.action_id,
             "intercept": row.intercept,
@@ -79,7 +95,7 @@ def fit_mechanism_b2_with_receipt(
         }
         for row in fitted.models
     )
-    payload = {
+    payload: _MechanismB2FitPayload = {
         "schema": SCHEMA,
         "feature_schema_digest": schema,
         "training_algorithm_digest": algorithm,

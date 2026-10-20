@@ -109,7 +109,7 @@ def antithetic_permutation_ablation_shapley(
     if pairs < 1:
         raise ValueError("pairs must be >=1")
     cached = CachedCoalitionEvaluator(evaluator)
-    samples = {p: [] for p in names}
+    samples: dict[str, list[float]] = {p: [] for p in names}
     base_order = list(names)
     for _ in range(pairs):
         rng.shuffle(base_order)

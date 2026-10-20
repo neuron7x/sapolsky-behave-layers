@@ -7,6 +7,7 @@ import subprocess
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_plan import (
@@ -38,6 +39,15 @@ class P19VerificationAttestationError(RuntimeError):
 
 
 Runner = Callable[..., subprocess.CompletedProcess[bytes]]
+
+
+def _int_value(value: object) -> int:
+    """``int(value)`` restricted to operands ``int()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(
+        f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}"
+    )
 
 
 def _sha(name: str, value: object) -> str:
@@ -121,7 +131,7 @@ def _structural_report_row(raw_row: Mapping[str, object]) -> tuple[dict[str, obj
     for role, allow_empty in (("receipt", False), ("stdout", True), ("stderr", True), ("evidence", False)):
         rel = _safe_rel(raw_row.get(f"{role}_path"), label=f"{check_id}.{role}_path")
         digest = _sha(f"{check_id}.{role}_sha256", raw_row.get(f"{role}_sha256"))
-        size = int(raw_row.get(f"{role}_bytes", -1))
+        size = _int_value(raw_row.get(f"{role}_bytes", -1))
         if size < 0 or (not allow_empty and size == 0):
             raise P19VerificationAttestationError(f"{check_id}.{role}_bytes invalid")
         row[f"{role}_path"] = rel
@@ -258,10 +268,13 @@ def load_p19_verification_report(path: Path, *, repository_root: Path | None = N
                     raise P19VerificationAttestationError(
                         f"P19 verification report/receipt semantic mismatch: {check_id}"
                     )
+                command_argv = row["command_argv"]
+                if not isinstance(command_argv, list) or not all(isinstance(item, str) for item in command_argv):
+                    raise P19VerificationAttestationError(f"{check_id}.command_argv malformed")
                 verify_command_against_plan(
                     plan,
                     check_id=check_id,
-                    command_argv=row["command_argv"],
+                    command_argv=command_argv,
                     p19_path=p19_rel,
                     evidence_path=str(row["evidence_path"]),
                 )

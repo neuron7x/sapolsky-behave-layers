@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.confirmatory_execution_authority import (
     verify_confirmatory_execution_authority_document,
@@ -19,6 +20,22 @@ from cwc.governance.harness_freeze import verify_harness_freeze_document
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.qualification_closure import _stage_evidence_file
 from cwc.governance.trial_sizing_authority import verify_trial_sizing_authority_document
+
+
+def _int_value(value: object) -> int:
+    """``int(value)`` restricted to operands ``int()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(
+        f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}"
+    )
+
+
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _repo_authority_file(ledger: EvidenceClosureLedger, path: Path, *, label: str) -> tuple[Path, str]:
@@ -132,12 +149,12 @@ def close_confirmatory_executed(
     for field, observed in comparisons:
         if execution.get(field) != observed:
             raise ClosureError(f"execution authority {field} differs from replayed bundle")
-    if int(execution.get("expected_work_units", -1)) != bundle.completion.expected_units:
+    if _int_value(execution.get("expected_work_units", -1)) != bundle.completion.expected_units:
         raise ClosureError("execution authority expected work-unit count mismatch")
-    if int(execution.get("committed_work_units", -1)) != bundle.completion.committed_units:
+    if _int_value(execution.get("committed_work_units", -1)) != bundle.completion.committed_units:
         raise ClosureError("execution authority committed work-unit count mismatch")
     if not math.isclose(
-        float(execution.get("total_cost_usd", -1)),
+        _float_value(execution.get("total_cost_usd", -1)),
         bundle.total_cost_usd,
         rel_tol=0.0,
         abs_tol=1e-12,

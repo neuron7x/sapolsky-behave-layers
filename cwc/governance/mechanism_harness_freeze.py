@@ -210,7 +210,7 @@ def build_mechanism_harness_freeze(
         MechanismPolicyRoleBinding(role=role, policy_id=role_map[role])
         for role in sorted(role_map)
     )
-    serialized_specs = tuple({
+    serialized_specs: tuple[dict[str, object], ...] = tuple({
         "kind": row.kind.value,
         "implementation_version": row.implementation_version,
         "feature_schema_digest": row.feature_schema_digest,
