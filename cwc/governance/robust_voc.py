@@ -125,6 +125,9 @@ def robustify_voc_estimate(
     """Return a governor-compatible estimate with an ambiguity-robust LCB."""
     from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
 
+    if estimate.authority is VOCAuthority.ROBUST_AMBIGUITY_BOUND:
+        raise ValueError("estimate is already ambiguity-robust")
+
     robust = robust_voc_lower_bound(
         nominal_gross_lower=estimate.lower_bound + estimate.total_cost,
         nominal_cost=estimate.total_cost,

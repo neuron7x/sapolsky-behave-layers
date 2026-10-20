@@ -8,7 +8,7 @@ from cwc.governance.transport_geometry import certify_weighted_l1_transport_geom
 from cwc.governance.metareasoning import MetaOperation, MetaTransition
 from cwc.governance.metareasoning_branch_bound import certify_meta_action_with_transition_bounds
 from cwc.governance.compute_value import ValueOfComputationEstimate
-from cwc.governance.statistical_authority import StatisticalScope, certify_statistical_inference_authority
+from cwc.governance.statistical_authority import StatisticalScope, certify_statistical_inference_authority, sign_statistical_inference_certificate
 from cwc.governance.compute_governor import ComputeGovernor
 from cwc.governance.contracts import CandidateOperation, ComputeDirective
 from cwc.governance.budget import BudgetLedger
@@ -101,16 +101,21 @@ def test_strict_governor_requires_bound_statistical_certificate():
     no=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True)
     assert no.directive is ComputeDirective.STOP
     cert=certify_statistical_inference_authority(estimate=est,scope=StatisticalScope.IID_FIXED,sampling_policy_digest="p",sampling_trace_digest="t",calibration_digest="c",drift_guard_digest="g",invalidated_by_drift=False)
-    yes=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True,statistical_certificates={"op":cert})
+    unsigned=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True,statistical_certificates={"op":cert})
+    assert unsigned.directive is ComputeDirective.STOP
+    signed=sign_statistical_inference_certificate(cert,issuer_id="test-issuer",secret_key=b"t"*32)
+    yes=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True,signed_statistical_certificates={"op":signed},trusted_statistical_issuer_id="test-issuer",trusted_statistical_secret=b"t"*32)
     assert yes.operation_id=="op"
 
 
 def test_strict_governor_rejects_drift_invalidated_certificate_and_estimate_swap():
     est=_estimate(); op=CandidateOperation("op",ComputeDirective.RETRIEVE,.2); budget=BudgetLedger(10,10,10)
     bad=certify_statistical_inference_authority(estimate=est,scope=StatisticalScope.IID_FIXED,sampling_policy_digest="p",sampling_trace_digest="t",calibration_digest="c",drift_guard_digest="g",invalidated_by_drift=True)
-    out=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True,statistical_certificates={"op":bad})
+    signed_bad=sign_statistical_inference_certificate(bad,issuer_id="test-issuer",secret_key=b"t"*32)
+    out=ComputeGovernor.select(operations=[op],estimates={"op":est},budget=budget,decision_digest="d",production_strict_math=True,signed_statistical_certificates={"op":signed_bad},trusted_statistical_issuer_id="test-issuer",trusted_statistical_secret=b"t"*32)
     assert out.directive is ComputeDirective.STOP
     cert=certify_statistical_inference_authority(estimate=est,scope=StatisticalScope.IID_FIXED,sampling_policy_digest="p",sampling_trace_digest="t",calibration_digest="c",drift_guard_digest="g",invalidated_by_drift=False)
     swapped=ValueOfComputationEstimate("op",2.0,.2,1.8,1.0,2.0,"TEST")
-    out2=ComputeGovernor.select(operations=[op],estimates={"op":swapped},budget=budget,decision_digest="d",production_strict_math=True,statistical_certificates={"op":cert})
+    signed_good=sign_statistical_inference_certificate(cert,issuer_id="test-issuer",secret_key=b"t"*32)
+    out2=ComputeGovernor.select(operations=[op],estimates={"op":swapped},budget=budget,decision_digest="d",production_strict_math=True,signed_statistical_certificates={"op":signed_good},trusted_statistical_issuer_id="test-issuer",trusted_statistical_secret=b"t"*32)
     assert out2.directive is ComputeDirective.STOP

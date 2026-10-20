@@ -38,7 +38,9 @@ def test_bounded_planner_contains_exact_bellman_and_gap_refines_on_random_models
         upper={s:max(d.values()) for s in states}; gap=float("inf")
         for depth in range(4):
             c=certify_bounded_horizon_meta_plan(root_state="s0",decision_values=d,operations=ops,state_value_upper=upper,horizon=3,expansion_depth=depth,upper_bound_authority_digest="pi",pure_information_certified=True)
-            assert c.lower_value<=exact+1e-10<=c.upper_value+1e-10 and c.residual_optimality_gap<=gap+1e-10; gap=c.residual_optimality_gap
+            assert c.lower_value<=exact+1e-10 and exact<=c.upper_value+1e-10
+            assert c.residual_optimality_gap<=gap+1e-10
+            gap=c.residual_optimality_gap
         assert c.lower_value==pytest.approx(exact)==c.upper_value
 
 
