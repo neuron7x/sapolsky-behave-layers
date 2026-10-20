@@ -10,13 +10,17 @@ from cwc.governance.global_product_qualification_v4 import (
     build_global_product_qualification_authority_v4,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
+from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
 from cwc.governance.p19_verification_attestation import (
     NAMESPACE,
     bind_attestation_to_p19,
     verify_ssh_signed_p19_verification_attestation,
 )
-from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
-from cwc.governance.p19_verifier_policy import CANONICAL_POLICY_PATH, load_p19_verifier_trust_policy, resolve_allowed_signers
+from cwc.governance.p19_verifier_policy import (
+    CANONICAL_POLICY_PATH,
+    load_p19_verifier_trust_policy,
+    resolve_allowed_signers,
+)
 
 SCHEMA = "DGC_GLOBAL_PRODUCT_QUALIFICATION_AUTHORITY_V5"
 SIGNATURE_SEMANTICS = "SSH_SIGNATURE_INPUT_SEMANTICS_ENVIRONMENT_INDEPENDENT_V1"

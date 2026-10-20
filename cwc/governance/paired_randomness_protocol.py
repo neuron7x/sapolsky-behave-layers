@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
@@ -18,7 +18,7 @@ class RandomnessProtocolError(RuntimeError):
 def paired_seed(*, root_digest: str, task_id: str, replicate: int) -> int:
     if replicate < 0 or not task_id.strip():
         raise ValueError("valid task_id and nonnegative replicate required")
-    material = f"{PROTOCOL}|{root_digest}|{task_id}|{replicate}".encode("utf-8")
+    material = f"{PROTOCOL}|{root_digest}|{task_id}|{replicate}".encode()
     return int.from_bytes(hashlib.sha256(material).digest()[:8], "big") & ((1 << 63) - 1)
 
 

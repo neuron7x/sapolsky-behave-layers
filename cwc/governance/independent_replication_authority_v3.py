@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 from cwc.governance.ccf_oracle_audit_authority import (
     build_ccf_oracle_audit_authority,

@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from cwc.governance.baseline_panel import REQUIRED_BASELINES
 from cwc.governance.external_source_authority import ExternalSourceAuthority, ExternalSourceStage

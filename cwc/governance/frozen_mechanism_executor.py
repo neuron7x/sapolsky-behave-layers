@@ -4,15 +4,12 @@ import hashlib
 import os
 import shutil
 import tempfile
+from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec
 from cwc.governance.execution_manifest_freeze import EXECUTOR_REQUEST_SCHEMA
-from cwc.governance.mechanism_execution_freeze import (
-    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
-)
 from cwc.governance.external_evidence_reference import verify_materialization_generation
 from cwc.governance.frozen_panel_executor import (
     FrozenPanelExecutionError,
@@ -22,14 +19,11 @@ from cwc.governance.frozen_panel_executor import (
     _finite_probability,
     _invoke,
     _physical_cost_certificate,
+    _policy_subject,
     _pricing_rate_cards,
     _provider_model_meter,
-    _policy_subject,
     _runtime_env,
     _write_json,
-)
-from cwc.governance.mechanism_harness_freeze import (
-    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
 )
 from cwc.governance.materialization_transaction import (
     canonical_json_bytes,
@@ -47,8 +41,14 @@ from cwc.governance.mechanism_execution_bundle import (
     canonical_mechanism_result_digest,
     verify_mechanism_execution_bundle,
 )
-from cwc.governance.provider_trace import TraceAuthority
+from cwc.governance.mechanism_execution_freeze import (
+    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
+)
+from cwc.governance.mechanism_harness_freeze import (
+    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
+)
 from cwc.governance.physical_cost_evidence import CostAuthority
+from cwc.governance.provider_trace import TraceAuthority
 
 _FORBIDDEN_RISK_FIELDS = frozenset({
     "catastrophic_regret",
@@ -229,7 +229,7 @@ def execute_frozen_mechanism_panel(
                 lease=lease,
             )
             attempt_id = hashlib.sha256(
-                f"{lease.unit.stable_id}::{lease.attempt}".encode("utf-8")
+                f"{lease.unit.stable_id}::{lease.attempt}".encode()
             ).hexdigest()[:24]
             transcript_dir = staging / "transcripts" / attempt_id
             transcript_dir.mkdir(parents=True, exist_ok=True)

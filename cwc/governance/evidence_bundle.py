@@ -4,7 +4,6 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
-
 REQUIRED_PRODUCT_EVIDENCE_FILES = (
     "PREREGISTRATION.md",
     "CLAIM_BOUNDARY.md",

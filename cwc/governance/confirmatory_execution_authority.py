@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.confirmatory_generation import certify_confirmatory_completion
 from cwc.governance.confirmatory_root_authority import (
     REFERENCE_SCHEMA,
     REGISTRY_SCHEMA,
-    _json as _root_json,
     _materialized_authority,
     verify_confirmatory_root_authority_document,
+)
+from cwc.governance.confirmatory_root_authority import (
+    _json as _root_json,
 )
 from cwc.governance.execution_authority_binding import promote_executed_from_confirmatory
 from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle

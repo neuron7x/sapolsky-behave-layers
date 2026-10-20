@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
@@ -18,6 +18,8 @@ from cwc.governance.average_conditional_mean_cs import (
 )
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.generalization_execution_authority import (
@@ -26,9 +28,9 @@ from cwc.governance.generalization_execution_authority import (
 )
 from cwc.governance.generalization_registry import (
     DGC_ROLE,
-    GeneralizationAxis,
     REQUIRED_AXES,
     REQUIRED_BASELINE_ROLES,
+    GeneralizationAxis,
     verify_generalization_registry_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes

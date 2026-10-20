@@ -4,9 +4,9 @@ import hashlib
 import json
 import os
 import subprocess
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Sequence
 
 from cwc.governance.execution_manifest_freeze import (
     POLICY_PROTOCOL,

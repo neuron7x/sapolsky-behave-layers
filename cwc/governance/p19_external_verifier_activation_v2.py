@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Callable, Mapping, Protocol, Sequence
+from typing import Protocol
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verifier_activation import (
-    AUTHORITY_SCHEMA as V1_AUTHORITY_SCHEMA,
     NAMESPACE,
     P19ExternalVerifierActivationAuthority,
     build_p19_external_verifier_activation_authority,

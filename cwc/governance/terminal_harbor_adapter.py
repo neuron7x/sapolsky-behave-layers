@@ -6,8 +6,8 @@ import math
 import os
 import subprocess
 import time
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.benchmark_runtime import verify_benchmark_runtime
 from cwc.governance.cost_accounting import ProviderRateCard
@@ -21,11 +21,11 @@ from cwc.governance.runtime_cost_contract import (
     runtime_physical_cost_evidence,
 )
 from cwc.governance.sandbox_image_population import SandboxImagePopulationError
+from cwc.governance.terminal_bench_admission import admit_terminal_bench_trial
 from cwc.governance.terminal_sandbox_authority import (
     TerminalSandboxAuthorityError,
     verify_terminal_sandbox_environment,
 )
-from cwc.governance.terminal_bench_admission import admit_terminal_bench_trial
 from cwc.governance.terminal_task_overlay import (
     TerminalTaskOverlayError,
     prepare_terminal_task_overlay,

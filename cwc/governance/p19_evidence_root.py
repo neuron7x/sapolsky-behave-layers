@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
-from cwc.governance.evidence_closure import EvidenceClosureLedger, RECEIPT_SCHEMA, STAGES, sha256_file
+from cwc.governance.evidence_closure import RECEIPT_SCHEMA, STAGES, EvidenceClosureLedger, sha256_file
 from cwc.governance.executed_p9_anytime_authority import verify_anytime_p9_authority_document
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.fault_tolerance_authority import verify_fault_tolerance_authority_document

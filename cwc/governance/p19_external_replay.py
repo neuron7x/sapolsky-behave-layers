@@ -1,27 +1,33 @@
 from __future__ import annotations
 
-import json
 import subprocess
+from collections.abc import Callable, Mapping
 from pathlib import Path, PurePosixPath
-from typing import Callable, Mapping
 
 from cwc.governance.ccf_oracle_audit_authority import build_ccf_oracle_audit_authority
 from cwc.governance.executed_p9_anytime_authority import build_anytime_p9_authority
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
-from cwc.governance.fault_tolerance_authority import build_fault_tolerance_authority, verify_fault_tolerance_authority_document
+from cwc.governance.fault_tolerance_authority import (
+    build_fault_tolerance_authority,
+    verify_fault_tolerance_authority_document,
+)
 from cwc.governance.generalization_anytime_authority import (
     build_generalization_anytime_authority,
     build_generalization_axis_anytime_authority,
     verify_generalization_anytime_authority_document,
     verify_generalization_axis_anytime_authority_document,
 )
-from cwc.governance.generalization_registry import GeneralizationAxis, REQUIRED_AXES
+from cwc.governance.generalization_registry import REQUIRED_AXES, GeneralizationAxis
 from cwc.governance.generalization_source_guard import verify_generalization_source_binding
 from cwc.governance.independent_replication_authority_v4 import (
     build_independent_replication_authority_v4,
     verify_independent_replication_authority_v4_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.p9_scientific_authority_v3 import (
+    build_p9_scientific_authority_v3,
+    verify_p9_scientific_authority_v3_document,
+)
 from cwc.governance.p19_evidence_root import (
     METHODOLOGY_ANCHORS,
     REQUIRED_EXTERNAL_REPLAY_INPUTS,
@@ -30,10 +36,6 @@ from cwc.governance.p19_evidence_root import (
     verify_family_p19_evidence_root_document,
 )
 from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
-from cwc.governance.p9_scientific_authority_v3 import (
-    build_p9_scientific_authority_v3,
-    verify_p9_scientific_authority_v3_document,
-)
 
 EVIDENCE_SCHEMA = "DGC_P19_EXTERNAL_CHECK_EVIDENCE_V1"
 

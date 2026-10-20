@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 def _digest(payload: object) -> str:
@@ -44,7 +44,7 @@ class TelemetryLedger:
         budget_after: str,
         decision_digest: str,
         evidence_ids: Sequence[str] = (),
-    ) -> "TelemetryLedger":
+    ) -> TelemetryLedger:
         previous = self.events[-1].event_digest if self.events else "GENESIS"
         payload = {
             "index": len(self.events),

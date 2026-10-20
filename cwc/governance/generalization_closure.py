@@ -1,16 +1,22 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.generalization_anytime_authority import (
     build_generalization_anytime_authority,
     build_generalization_axis_anytime_authority,
     verify_generalization_anytime_authority_document,
     verify_generalization_axis_anytime_authority_document,
 )
-from cwc.governance.generalization_registry import GeneralizationAxis, REQUIRED_AXES
+from cwc.governance.generalization_registry import REQUIRED_AXES, GeneralizationAxis
 from cwc.governance.generalization_source_guard import verify_generalization_source_binding
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity
 from cwc.governance.qualification_closure import _stage_evidence_file

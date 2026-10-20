@@ -57,7 +57,7 @@ class SignedStatisticalInferenceCertificate:
 def _signature_message(certificate:StatisticalInferenceCertificate,issuer_id:str)->bytes:
     issuer=issuer_id.strip()
     if not issuer: raise ValueError("issuer_id required")
-    return f"{issuer}:{certificate.digest}".encode("utf-8")
+    return f"{issuer}:{certificate.digest}".encode()
 
 
 def sign_statistical_inference_certificate(certificate:StatisticalInferenceCertificate,*,issuer_id:str,secret_key:bytes)->SignedStatisticalInferenceCertificate:

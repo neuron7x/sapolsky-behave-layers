@@ -6,8 +6,12 @@ from pathlib import Path
 
 from cwc.governance.global_product_qualification import (
     GLOBAL_STATISTICAL_COMPOSITION_RULE,
-    FamilyP19VerificationInput as V3FamilyP19VerificationInput,
     P19AttestationVerifier,
+)
+from cwc.governance.global_product_qualification import (
+    FamilyP19VerificationInput as V3FamilyP19VerificationInput,
+)
+from cwc.governance.global_product_qualification import (
     build_global_product_qualification_authority as build_v3_global_authority,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes

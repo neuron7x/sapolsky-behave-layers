@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
     CostAuthority,
     CostComponentEvidence,
-    PRODUCT_COST_COMPONENTS,
     PhysicalCostCertificate,
     certify_physical_trial_cost,
 )

@@ -5,7 +5,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.mechanism_b2_fit_receipt import SCHEMA as RECEIPT_SCHEMA, fit_mechanism_b2_with_receipt
+from cwc.governance.mechanism_b2_fit_receipt import SCHEMA as RECEIPT_SCHEMA
+from cwc.governance.mechanism_b2_fit_receipt import fit_mechanism_b2_with_receipt
 from cwc.governance.mechanism_execution_freeze import verify_mechanism_execution_freeze_document
 from cwc.governance.mechanism_learned_baseline import MechanismCalibrationExample, MechanismLearnedRouterConfig
 from cwc.governance.task_partition import verify_task_partition_document

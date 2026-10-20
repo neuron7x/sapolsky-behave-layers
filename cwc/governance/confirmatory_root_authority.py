@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind, BaselinePanelSeal, BaselinePolicySpec
-from cwc.governance.confirmatory_generation import ConfirmatoryGenerationRoot, freeze_confirmatory_generation
+from cwc.governance.confirmatory_generation import freeze_confirmatory_generation
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.external_source_authority import (

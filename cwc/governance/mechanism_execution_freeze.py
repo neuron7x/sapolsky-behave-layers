@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.execution_manifest_freeze import (
+    _VALIDATORS,
     COMPONENT_SCHEMAS,
     POLICY_PROTOCOL,
     POLICY_REQUEST_SCHEMA,
@@ -12,7 +13,6 @@ from cwc.governance.execution_manifest_freeze import (
     POLICY_STATE_PROTOCOL,
     FrozenComponent,
     FrozenGovernancePolicy,
-    _VALIDATORS,
     _family_binding,
     _finite_nonnegative,
     _json_manifest,

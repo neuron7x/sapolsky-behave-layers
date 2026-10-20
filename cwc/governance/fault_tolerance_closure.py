@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.fault_injection_spec import (
     build_fault_injection_spec_authority,
     verify_fault_injection_spec_authority_document,

@@ -6,7 +6,11 @@ from dataclasses import dataclass
 from enum import Enum
 
 from cwc.governance.compute_value import ValueOfComputationEstimate
-from cwc.governance.statistical_authority import StatisticalInferenceCertificate, StatisticalScope, certify_statistical_inference_authority
+from cwc.governance.statistical_authority import (
+    StatisticalInferenceCertificate,
+    StatisticalScope,
+    certify_statistical_inference_authority,
+)
 
 
 class CalibrationState(str, Enum):

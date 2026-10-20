@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.materialization_transaction import sha256_file
 

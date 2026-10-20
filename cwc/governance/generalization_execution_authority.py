@@ -2,28 +2,32 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import fmean
-from typing import Mapping, Sequence
 
 from cwc.governance.generalization_registry import (
     AXIS_SCHEMA,
     DGC_ROLE,
-    GeneralizationAxis,
     REQUIRED_AXES,
     REQUIRED_BASELINE_ROLES,
+    GeneralizationAxis,
     verify_generalization_registry_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.pareto import PairedBaselineEvidence, MultiBaselineParetoCertificate, certify_multi_baseline_pareto_improvement
+from cwc.governance.p9_scientific_authority import verify_p9_scientific_authority_document
+from cwc.governance.pareto import (
+    MultiBaselineParetoCertificate,
+    PairedBaselineEvidence,
+    certify_multi_baseline_pareto_improvement,
+)
 from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
     CostAuthority,
     CostComponentEvidence,
-    PRODUCT_COST_COMPONENTS,
     certify_physical_trial_cost,
 )
-from cwc.governance.p9_scientific_authority import verify_p9_scientific_authority_document
 from cwc.governance.trial_sizing_authority import verify_trial_sizing_authority_document
 
 AXIS_EXECUTION_SCHEMA = "DGC_GENERALIZATION_AXIS_EXECUTION_V1"

@@ -3,17 +3,29 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
 from statistics import NormalDist
-from typing import Iterable
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY as PRIMARY_ASSUMPTION_BOUNDARY,
+)
+from cwc.governance.average_conditional_mean_cs import (
     BOUNDARY_METHOD as PRIMARY_BOUNDARY_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
     CLAIM_TARGET as PRIMARY_CLAIM_TARGET,
+)
+from cwc.governance.average_conditional_mean_cs import (
     CONFSEQ_REFERENCE_COMMIT,
+)
+from cwc.governance.average_conditional_mean_cs import (
     METHOD as PRIMARY_INFERENCE_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
     PREDICTOR_RULE as PRIMARY_PREDICTOR_RULE,
+)
+from cwc.governance.average_conditional_mean_cs import (
     SEQUENCE_ORDER_RULE as PRIMARY_SEQUENCE_ORDER,
 )
 

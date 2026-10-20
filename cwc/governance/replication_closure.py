@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.independent_replication_authority_v4 import (
     build_independent_replication_authority_v4,
     verify_independent_replication_authority_v4_document,

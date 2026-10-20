@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.executed_p9_finite_panel_authority import (

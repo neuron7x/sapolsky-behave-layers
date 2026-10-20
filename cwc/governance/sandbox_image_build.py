@@ -5,9 +5,9 @@ import json
 import re
 import subprocess
 import tempfile
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Sequence
 
 from cwc.governance.materialization_transaction import (
     canonical_json_bytes,

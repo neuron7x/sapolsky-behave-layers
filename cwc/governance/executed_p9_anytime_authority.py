@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
@@ -21,6 +21,8 @@ from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_
 from cwc.governance.distributed_eval_control import DistributedEvalSpec, WorkUnitId
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.executed_p9_authority import build_executed_p9_authority

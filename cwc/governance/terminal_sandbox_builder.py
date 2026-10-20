@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping
 
 from cwc.governance.external_materialization import parse_terminal_dataset_manifest
 from cwc.governance.materialization_transaction import (

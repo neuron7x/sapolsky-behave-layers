@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.b2_fit_authority import verify_b2_fit_authority_document
 from cwc.governance.baseline_panel import (

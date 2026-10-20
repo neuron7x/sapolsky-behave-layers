@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
 from cwc.governance.global_product_qualification_v5 import (
     build_global_product_qualification_authority_v5,

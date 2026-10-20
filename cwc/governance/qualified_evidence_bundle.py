@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import subprocess
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping
 
 from cwc.governance.evidence_packaging_authority import (
     ALLOWED_ADDED_PREFIXES,

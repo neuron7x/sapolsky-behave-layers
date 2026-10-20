@@ -7,9 +7,9 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict
 from pathlib import Path
-from typing import Mapping, Sequence
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.cost_accounting import ProviderRateCard
@@ -819,7 +819,7 @@ def execute_frozen_panel(
                 lease=lease,
             )
             attempt_id = hashlib.sha256(
-                f"{lease.unit.stable_id}::{lease.attempt}".encode("utf-8")
+                f"{lease.unit.stable_id}::{lease.attempt}".encode()
             ).hexdigest()[:24]
             transcript_dir = staging / "transcripts" / attempt_id
             transcript_dir.mkdir(parents=True, exist_ok=True)

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import NormalDist
-from typing import Iterable, Mapping
 
 from cwc.governance.calibration_variance import (
     CalibrationObservation,

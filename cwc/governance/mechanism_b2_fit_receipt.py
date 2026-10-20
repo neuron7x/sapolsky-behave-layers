@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from cwc.governance.mechanism_learned_baseline import (
     MechanismCalibrationExample,

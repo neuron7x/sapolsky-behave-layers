@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from statistics import fmean, variance
-from typing import Sequence
 
 from cwc.governance.pareto import MeanBound, PairedBaselineEvidence
 

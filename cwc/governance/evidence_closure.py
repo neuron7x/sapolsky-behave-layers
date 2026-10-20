@@ -5,9 +5,9 @@ import json
 import os
 import re
 import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Sequence
 
 SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V3"
 RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V3"

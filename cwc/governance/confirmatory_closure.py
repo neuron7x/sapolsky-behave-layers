@@ -7,7 +7,13 @@ from cwc.governance.confirmatory_execution_authority import (
     verify_confirmatory_execution_authority_document,
 )
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.execution_evidence_bundle import verify_execution_bundle
 from cwc.governance.harness_freeze import verify_harness_freeze_document
 from cwc.governance.materialization_closure import RepositoryIdentityChecker, _assert_repository_identity

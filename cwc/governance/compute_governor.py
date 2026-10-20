@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 from cwc.governance.budget import BudgetLedger
-from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
+from cwc.governance.compute_value import ValueOfComputationEstimate, VOCAuthority
 from cwc.governance.contracts import CandidateOperation, ComputeDecision, ComputeDirective, RiskClass
 from cwc.governance.statistical_authority import (
     SignedStatisticalInferenceCertificate,

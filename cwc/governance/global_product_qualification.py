@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Mapping
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import REQUIRED_SUBJECT_ROOTS, verify_family_p19_evidence_root_document

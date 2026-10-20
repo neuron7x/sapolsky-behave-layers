@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
 from statistics import fmean
-from typing import Iterable
 
 
 def _digest(payload: object) -> str:

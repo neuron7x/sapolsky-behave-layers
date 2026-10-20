@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from functools import lru_cache
-from typing import Mapping, Sequence
+from functools import cache
 
 from cwc.governance.metareasoning import MetaOperation
 
@@ -74,7 +74,7 @@ def certify_bounded_horizon_meta_plan(
             for t in op.transitions:
                 if t.next_state not in dvals: raise ValueError("transition to unknown state")
 
-    @lru_cache(maxsize=None)
+    @cache
     def bound(state:str,h:int,depth:int):
         stop=dvals[state]
         if h==0:

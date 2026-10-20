@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_FLOOR
+from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal, InvalidOperation
 
-from cwc.governance.counterfactual_oracle_spec import CounterfactualOracleSpec
 from cwc.governance.counterfactual_frontier import CounterfactualOption
+from cwc.governance.counterfactual_oracle_spec import CounterfactualOracleSpec
 
 
 class CCFQuantizationError(ValueError):

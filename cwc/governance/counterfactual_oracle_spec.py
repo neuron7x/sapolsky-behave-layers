@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 SCHEMA = "DGC_COUNTERFACTUAL_ORACLE_SPEC_V1"
 AGGREGATION = "REPLICATE_WISE_TASK_FRONTIER_V1"

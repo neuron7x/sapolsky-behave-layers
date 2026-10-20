@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.ccf_quantizer import RawCounterfactualOption, quantize_counterfactual_option
 from cwc.governance.ccf_spec_authority import (

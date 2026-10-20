@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Hashable, Sequence
 from dataclasses import dataclass
-from typing import Hashable, Sequence
 
 
 def _required(name: str, value: str) -> str:

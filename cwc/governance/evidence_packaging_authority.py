@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import subprocess
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.product_qualification_pointer import VerifiedProductQualificationPointer

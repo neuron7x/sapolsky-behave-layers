@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.materialization_transaction import sha256_file
 from cwc.governance.sandbox_image_build import (

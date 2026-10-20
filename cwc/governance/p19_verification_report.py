@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.p19_external_verification_plan import (
@@ -18,8 +18,9 @@ from cwc.governance.p19_verification_attestation import (
 )
 from cwc.governance.p19_verification_check_receipt import (
     REQUIRED_CHECKS,
-    SCHEMA as CHECK_RECEIPT_SCHEMA,
     P19VerificationCheckReceiptError,
+)
+from cwc.governance.p19_verification_check_receipt import (
     load_check_receipt as load_verified_check_receipt,
 )
 

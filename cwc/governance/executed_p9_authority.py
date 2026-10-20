@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import fmean
-from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.confirmatory_execution_authority import (
@@ -14,12 +14,14 @@ from cwc.governance.confirmatory_execution_authority import (
 from cwc.governance.confirmatory_root_authority import (
     REFERENCE_SCHEMA,
     REGISTRY_SCHEMA,
-    _json as _root_json,
     _materialized_authority,
     verify_confirmatory_root_authority_document,
 )
+from cwc.governance.confirmatory_root_authority import (
+    _json as _root_json,
+)
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
-from cwc.governance.executed_p9 import ExecutedPairedBaselineEvidence, ExecutedP9Certificate, certify_executed_p9
+from cwc.governance.executed_p9 import ExecutedP9Certificate, ExecutedPairedBaselineEvidence, certify_executed_p9
 from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.external_source_authority import promote_executed

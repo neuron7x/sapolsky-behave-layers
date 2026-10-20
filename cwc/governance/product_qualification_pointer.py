@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
 
-from cwc.governance.evidence_closure import EvidenceClosureLedger, STAGES, sha256_file
+from cwc.governance.evidence_closure import STAGES, EvidenceClosureLedger, sha256_file
 from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
 from cwc.governance.global_product_qualification_v5 import (
     build_global_product_qualification_authority_v5,

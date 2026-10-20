@@ -3,12 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import stat
 import shutil
+import stat
 import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 
 def canonical_json_bytes(payload: object) -> bytes:
@@ -125,7 +125,7 @@ class AtomicEvidenceGeneration:
         self.staging_root: Path | None = None
         self._published = False
 
-    def __enter__(self) -> "AtomicEvidenceGeneration":
+    def __enter__(self) -> AtomicEvidenceGeneration:
         if self.final_root.exists():
             raise FileExistsError("final evidence root must not exist")
         parent = self.final_root.parent

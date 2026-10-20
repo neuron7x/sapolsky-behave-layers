@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document

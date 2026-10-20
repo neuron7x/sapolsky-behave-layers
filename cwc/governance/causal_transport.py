@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import itertools
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Mapping, Sequence
 
 Edge = tuple[str, str]
 

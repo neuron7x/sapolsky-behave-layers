@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from cwc.governance.adaptive_eprocess import AdaptiveImportanceSample, adaptive_importance_mean_eprocess
 from cwc.governance.restricted_sampling import RestrictedAdaptiveSamplingPolicy

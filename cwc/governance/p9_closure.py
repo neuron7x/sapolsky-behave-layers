@@ -7,12 +7,22 @@ from cwc.governance.ccf_oracle_audit_authority import (
     verify_ccf_oracle_audit_authority_document,
 )
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.executed_p9_anytime_authority import (
     build_anytime_p9_authority,
     verify_anytime_p9_authority_document,
 )
-from cwc.governance.materialization_closure import SOURCE_REGISTRY_REL, RepositoryIdentityChecker, _assert_repository_identity
+from cwc.governance.materialization_closure import (
+    SOURCE_REGISTRY_REL,
+    RepositoryIdentityChecker,
+    _assert_repository_identity,
+)
 from cwc.governance.p9_scientific_authority_v3 import (
     build_p9_scientific_authority_v3,
     verify_p9_scientific_authority_v3_document,
