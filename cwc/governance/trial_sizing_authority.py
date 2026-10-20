@@ -189,7 +189,11 @@ def authorize_trial_sizing(
         )
     except (TypeError, ValueError, RuntimeError) as exc:
         raise TrialSizingAuthorityError("cluster-aware trial sizing failed") from exc
-    if asdict(recomputed) != declared_receipt:
+    # Compare in the JSON domain the declared receipt lives in: asdict() keeps
+    # ``comparisons`` as a tuple while the parsed file holds a list, so a raw
+    # dict comparison rejected every genuine receipt. Canonical bytes also keep
+    # 1 / 1.0 / true distinct, which Python ``==`` would conflate.
+    if canonical_json_bytes(asdict(recomputed)) != canonical_json_bytes(declared_receipt):
         raise TrialSizingAuthorityError("declared trial-sizing receipt does not equal deterministic recomputation")
     if recomputed.plan_digest != plan.digest:
         raise TrialSizingAuthorityError("trial-sizing receipt plan digest mismatch")
