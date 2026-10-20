@@ -100,7 +100,7 @@ def legacy_independent_mc(
     names = tuple(players)
     if permutations < 1:
         raise ValueError("permutations must be >=1")
-    samples: dict[str, list[float]] = {p: [] for p in names}
+    samples = {p: [] for p in names}
     factual_value = float(evaluator(factual))
     evaluations = 1
     order = list(names)
@@ -132,7 +132,7 @@ def crn_chain_mc(
     names = tuple(players)
     if permutations < 1:
         raise ValueError("permutations must be >=1")
-    samples: dict[str, list[float]] = {p: [] for p in names}
+    samples = {p: [] for p in names}
     factual_value = float(evaluator(factual))
     evaluations = 1
     order = list(names)
@@ -181,7 +181,7 @@ def antithetic_crn_mc(
     names = tuple(players)
     if pairs < 1:
         raise ValueError("pairs must be >=1")
-    samples: dict[str, list[float]] = {p: [] for p in names}
+    samples = {p: [] for p in names}
     factual_value = float(evaluator(factual))
     evaluations = 1
     order = list(names)
@@ -209,7 +209,7 @@ def double_antithetic_crn_mc(
     names = tuple(players)
     if quartets < 1:
         raise ValueError("quartets must be >=1")
-    samples: dict[str, list[float]] = {p: [] for p in names}
+    samples = {p: [] for p in names}
     factual_value = float(evaluator(factual))
     evaluations = 1
     order = list(names)
