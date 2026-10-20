@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 def _digest(payload: object) -> str:
@@ -44,10 +44,12 @@ class TelemetryLedger:
         budget_after: str,
         decision_digest: str,
         evidence_ids: Sequence[str] = (),
-    ) -> "TelemetryLedger":
+    ) -> TelemetryLedger:
         previous = self.events[-1].event_digest if self.events else "GENESIS"
+        index = len(self.events)
+        sorted_evidence_ids = sorted({str(x) for x in evidence_ids})
         payload = {
-            "index": len(self.events),
+            "index": index,
             "operation_requested": operation_requested,
             "reason_code": reason_code,
             "predicted_voc": predicted_voc,
@@ -56,24 +58,24 @@ class TelemetryLedger:
             "budget_before": budget_before,
             "budget_after": budget_after,
             "decision_digest": decision_digest,
-            "evidence_ids": sorted(set(str(x) for x in evidence_ids)),
+            "evidence_ids": sorted_evidence_ids,
             "previous_event_digest": previous,
         }
         event = GovernanceEvent(
-            index=int(payload["index"]),
-            operation_requested=str(payload["operation_requested"]),
-            reason_code=str(payload["reason_code"]),
-            predicted_voc=payload["predicted_voc"],
-            predicted_voc_lower=payload["predicted_voc_lower"],
-            predicted_voc_upper=payload["predicted_voc_upper"],
-            budget_before=str(payload["budget_before"]),
-            budget_after=str(payload["budget_after"]),
-            decision_digest=str(payload["decision_digest"]),
-            evidence_ids=tuple(payload["evidence_ids"]),
-            previous_event_digest=str(payload["previous_event_digest"]),
+            index=index,
+            operation_requested=str(operation_requested),
+            reason_code=str(reason_code),
+            predicted_voc=predicted_voc,
+            predicted_voc_lower=predicted_voc_lower,
+            predicted_voc_upper=predicted_voc_upper,
+            budget_before=str(budget_before),
+            budget_after=str(budget_after),
+            decision_digest=str(decision_digest),
+            evidence_ids=tuple(sorted_evidence_ids),
+            previous_event_digest=str(previous),
             event_digest=_digest(payload),
         )
-        return TelemetryLedger(self.events + (event,))
+        return TelemetryLedger((*self.events, event))
 
     def verify(self) -> bool:
         previous = "GENESIS"

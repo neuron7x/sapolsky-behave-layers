@@ -4,12 +4,13 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:  # Python 3.10 compatibility for the canonical product CI.
+else:  # Python 3.10 compatibility for the canonical product CI.
     import tomli as tomllib
 
 _SHA256_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
@@ -74,8 +75,7 @@ def _git(root: Path, *args: str) -> str:
     proc = subprocess.run(
         ["git", "-C", str(root), *args],
         check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
     )
     return proc.stdout.strip()

@@ -7,6 +7,7 @@ import subprocess
 import tarfile
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
+from typing import TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -23,13 +24,15 @@ def _run(root: Path, *args: str, text: bool = False) -> bytes | str:
         proc = subprocess.run(
             ["git", "-C", str(root), *args],
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=text,
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise DeterministicGitSnapshotError(f"git command failed: {' '.join(args)}") from exc
-    return proc.stdout
+    stdout = proc.stdout
+    if not isinstance(stdout, (bytes, str)):
+        raise DeterministicGitSnapshotError(f"git command produced no output stream: {' '.join(args)}")
+    return stdout
 
 
 def _oid(name: str, value: str) -> str:
@@ -76,6 +79,14 @@ class GitSnapshotEntry:
     bytes: int
     symlink: bool
     entry_digest: str
+
+
+class _GitSnapshotEntryPayload(TypedDict):
+    path: str
+    mode: str
+    blob_oid: str
+    bytes: int
+    symlink: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,41 +149,43 @@ def create_deterministic_git_snapshot(
     entry_records: list[GitSnapshotEntry] = []
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with destination.open("wb") as raw_out:
-        with gzip.GzipFile(filename="", mode="wb", fileobj=raw_out, mtime=0, compresslevel=9) as gz:
-            with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as archive:
-                for path, mode, blob_oid in _entries(root, commit_oid):
-                    blob = _run(root, "cat-file", "blob", blob_oid, text=False)
-                    assert isinstance(blob, bytes)
-                    info = tarfile.TarInfo(name=path)
-                    info.uid = 0
-                    info.gid = 0
-                    info.uname = ""
-                    info.gname = ""
-                    info.mtime = 0
-                    symlink = mode == "120000"
-                    if symlink:
-                        info.type = tarfile.SYMTYPE
-                        info.mode = 0o777
-                        info.size = 0
-                        info.linkname = _safe_symlink_target(path, blob)
-                        archive.addfile(info)
-                    else:
-                        info.type = tarfile.REGTYPE
-                        info.mode = 0o755 if mode == "100755" else 0o644
-                        info.size = len(blob)
-                        archive.addfile(info, io.BytesIO(blob))
-                    payload = {
-                        "path": path,
-                        "mode": mode,
-                        "blob_oid": blob_oid,
-                        "bytes": len(blob),
-                        "symlink": symlink,
-                    }
-                    entry_records.append(GitSnapshotEntry(
-                        **payload,
-                        entry_digest=sha256_bytes(canonical_json_bytes(payload)),
-                    ))
+    with (
+        destination.open("wb") as raw_out,
+        gzip.GzipFile(filename="", mode="wb", fileobj=raw_out, mtime=0, compresslevel=9) as gz,
+        tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as archive,
+    ):
+        for path, mode, blob_oid in _entries(root, commit_oid):
+            blob = _run(root, "cat-file", "blob", blob_oid, text=False)
+            assert isinstance(blob, bytes)
+            info = tarfile.TarInfo(name=path)
+            info.uid = 0
+            info.gid = 0
+            info.uname = ""
+            info.gname = ""
+            info.mtime = 0
+            symlink = mode == "120000"
+            if symlink:
+                info.type = tarfile.SYMTYPE
+                info.mode = 0o777
+                info.size = 0
+                info.linkname = _safe_symlink_target(path, blob)
+                archive.addfile(info)
+            else:
+                info.type = tarfile.REGTYPE
+                info.mode = 0o755 if mode == "100755" else 0o644
+                info.size = len(blob)
+                archive.addfile(info, io.BytesIO(blob))
+            payload: _GitSnapshotEntryPayload = {
+                "path": path,
+                "mode": mode,
+                "blob_oid": blob_oid,
+                "bytes": len(blob),
+                "symlink": symlink,
+            }
+            entry_records.append(GitSnapshotEntry(
+                **payload,
+                entry_digest=sha256_bytes(canonical_json_bytes(payload)),
+            ))
 
     ordered = tuple(entry_records)
     population_digest = sha256_bytes(canonical_json_bytes([asdict(row) for row in ordered]))

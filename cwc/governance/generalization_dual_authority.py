@@ -2,18 +2,23 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.empirical_bernstein_pareto import certify_multi_baseline_empirical_bernstein
-from cwc.governance.exact_finite_panel_pareto import certificate_digest as exact_certificate_digest, certify_exact_finite_panel
-from cwc.governance.generalization_execution_authority import verify_generalization_axis_bundle
+from cwc.governance.exact_finite_panel_pareto import certificate_digest as exact_certificate_digest
+from cwc.governance.exact_finite_panel_pareto import certify_exact_finite_panel
+from cwc.governance.generalization_execution_authority import (
+    VerifiedGeneralizationAxisBundle,
+    verify_generalization_axis_bundle,
+)
 from cwc.governance.generalization_registry import (
     DGC_ROLE,
-    GeneralizationAxis,
     REQUIRED_AXES,
     REQUIRED_BASELINE_ROLES,
+    GeneralizationAxis,
     verify_generalization_registry_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
@@ -35,6 +40,18 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise GeneralizationDualError(f"{name} must be lowercase SHA-256")
     return text
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise GeneralizationDualError(f"{name} must be an integer")
+    return int(value)
+
+
+def _float(name: str, value: object) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise GeneralizationDualError(f"{name} must be numeric")
+    return float(value)
 
 
 def _role_map(registry: Mapping[str, object]) -> dict[str, str]:
@@ -78,7 +95,11 @@ def _axis_manifest(repository_root: Path, row: Mapping[str, object]) -> Mapping[
     return doc
 
 
-def _flat_evidence(bundle, roles: Mapping[str, str], paired_panel_digest: str) -> tuple[PairedBaselineEvidence, ...]:
+def _flat_evidence(
+    bundle: VerifiedGeneralizationAxisBundle,
+    roles: Mapping[str, str],
+    paired_panel_digest: str,
+) -> tuple[PairedBaselineEvidence, ...]:
     by_unit = {(row.task_id, row.policy_id, row.replicate): row for row in bundle.results}
     tasks = tuple(sorted({row.task_id for row in bundle.results}))
     dgc = roles[DGC_ROLE]
@@ -145,7 +166,6 @@ def _verify_axis_randomness(
         if raw.get("randomness_protocol") != PROTOCOL:
             raise GeneralizationDualError("axis result lacks preregistered randomness protocol")
         task = str(raw.get("task_id", ""))
-        policy = str(raw.get("policy_id", ""))
         replicate = int(raw.get("replicate", -1))
         expected_seed = paired_seed(root_digest=schedule_root, task_id=task, replicate=replicate)
         if int(raw.get("replicate_seed", -1)) != expected_seed:
@@ -165,10 +185,33 @@ def _verify_axis_randomness(
         if policies != tuple(sorted(policy_ids)):
             raise GeneralizationDualError("axis paired randomness policy population mismatch")
         seed = paired_seed(root_digest=schedule_root, task_id=task, replicate=replicate)
-        if any(int(row.get("replicate_seed", -1)) != seed for row in rows_for_pair):
+        if any(_int("replicate_seed", row.get("replicate_seed", -1)) != seed for row in rows_for_pair):
             raise GeneralizationDualError("axis policies do not share paired seed")
         schedule.append((task, replicate, seed, policies))
     return sha256_bytes(canonical_json_bytes(schedule)), len(seen_requests)
+
+
+class _AxisDualPayload(TypedDict):
+    axis: str
+    registry_digest: str
+    evaluation_manifest_digest: str
+    task_population_digest: str
+    execution_bundle_digest: str
+    metric_population_digest: str
+    physical_cost_population_digest: str
+    replicates: int
+    paired_observations_per_baseline: int
+    paired_panel_digest: str
+    exact_panel_certificate: dict[str, object]
+    exact_panel_certificate_digest: str
+    exact_panel_supported: bool
+    expected_effect_certificate: dict[str, object]
+    expected_effect_certificate_digest: str
+    expected_effect_supported_under_independence_assumption: bool
+    randomness_protocol: str
+    randomness_schedule_digest: str
+    randomness_independence_assumption: str
+    randomness_assumption_verified: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -225,7 +268,7 @@ def build_generalization_axis_dual_authority(
     except ValueError as exc:
         raise GeneralizationDualError("unknown generalization axis") from exc
     row = _axis_registry_row(registry, axis)
-    manifest = _axis_manifest(Path(repository_root), row)
+    _axis_manifest(Path(repository_root), row)
     roles = _role_map(registry)
     tasks = tuple(sorted({item.task_id for item in bundle.results}))
     policy_ids = tuple(sorted(set(roles.values())))
@@ -247,26 +290,26 @@ def build_generalization_axis_dual_authority(
         "estimand": AXIS_ESTIMAND,
     }))
     paired = _flat_evidence(bundle, roles, paired_panel_digest)
-    qmargin = float(row["quality_noninferiority_margin"])
-    cmargin = float(row["catastrophic_noninferiority_margin"])
+    qmargin = _float("quality_noninferiority_margin", row["quality_noninferiority_margin"])
+    cmargin = _float("catastrophic_noninferiority_margin", row["catastrophic_noninferiority_margin"])
     exact = certify_exact_finite_panel(
         paired,
         quality_noninferiority_margin=qmargin,
         catastrophic_noninferiority_margin=cmargin,
     )
     exact_doc = asdict(exact)
-    alpha_axis = float(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES)
+    alpha_axis = _float("generalization_familywise_alpha", registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES)
     expected = certify_multi_baseline_empirical_bernstein(
         paired,
         alpha=alpha_axis,
         quality_noninferiority_margin=qmargin,
         catastrophic_noninferiority_margin=cmargin,
     )
-    if not math.isclose(expected.per_metric_delta, float(registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
+    if not math.isclose(expected.per_metric_delta, _float("per_claim_alpha", registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationDualError("G1-G5 empirical-Bernstein multiplicity differs from preregistration")
     expected_doc = asdict(expected)
     expected_digest = sha256_bytes(canonical_json_bytes(expected_doc))
-    payload = {
+    payload: _AxisDualPayload = {
         "axis": axis.value,
         "registry_digest": bundle.registry_digest,
         "evaluation_manifest_digest": bundle.evaluation_manifest_digest,
@@ -393,18 +436,21 @@ def build_generalization_dual_authority(
     axis_digests = tuple(sorted(
         (str(row["axis"]), _sha("axis authority_digest", row.get("authority_digest"))) for row in rows
     ))
+    registry_digest = _sha("registry_digest", registry.get("registry_digest"))
+    p9_digest = _sha("P9 scientific V2 authority_digest", p9.get("authority_digest"))
+    frozen_dgc_policy_digest = _sha("frozen_dgc_policy_digest", registry.get("frozen_dgc_policy_digest"))
     payload = {
-        "registry_digest": _sha("registry_digest", registry.get("registry_digest")),
-        "p9_scientific_v2_authority_digest": _sha("P9 scientific V2 authority_digest", p9.get("authority_digest")),
-        "frozen_dgc_policy_digest": _sha("frozen_dgc_policy_digest", registry.get("frozen_dgc_policy_digest")),
+        "registry_digest": registry_digest,
+        "p9_scientific_v2_authority_digest": p9_digest,
+        "frozen_dgc_policy_digest": frozen_dgc_policy_digest,
         "axis_authority_digests": [list(row) for row in axis_digests],
         "exact_g1_g5_supported": exact,
         "expected_g1_g5_supported_under_independence_assumption": conditional,
     }
     return GeneralizationDualAuthority(
-        registry_digest=payload["registry_digest"],
-        p9_scientific_v2_authority_digest=payload["p9_scientific_v2_authority_digest"],
-        frozen_dgc_policy_digest=payload["frozen_dgc_policy_digest"],
+        registry_digest=registry_digest,
+        p9_scientific_v2_authority_digest=p9_digest,
+        frozen_dgc_policy_digest=frozen_dgc_policy_digest,
         axis_authority_digests=axis_digests,
         exact_g1_g5_supported=exact,
         expected_g1_g5_supported_under_independence_assumption=conditional,

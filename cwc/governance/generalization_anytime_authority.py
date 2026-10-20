@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
@@ -18,17 +19,20 @@ from cwc.governance.average_conditional_mean_cs import (
 )
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.generalization_execution_authority import (
+    VerifiedGeneralizationAxisBundle,
     build_generalization_axis_authority,
     verify_generalization_axis_bundle,
 )
 from cwc.governance.generalization_registry import (
     DGC_ROLE,
-    GeneralizationAxis,
     REQUIRED_AXES,
     REQUIRED_BASELINE_ROLES,
+    GeneralizationAxis,
     verify_generalization_registry_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
@@ -42,6 +46,13 @@ CLAIM_SCOPE = "EXACT_G1_G5_PLUS_EXACT_HOWARD_STITCHING_ACM_V3"
 
 class GeneralizationAnytimeError(RuntimeError):
     pass
+
+
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _sha(name: str, value: object) -> str:
@@ -72,7 +83,9 @@ def _axis_row(registry: Mapping[str, object], axis: GeneralizationAxis) -> Mappi
     return matches[0]
 
 
-def _paired_evidence(bundle, *, roles: Mapping[str, str], axis: GeneralizationAxis) -> tuple[PairedBaselineEvidence, ...]:
+def _paired_evidence(
+    bundle: VerifiedGeneralizationAxisBundle, *, roles: Mapping[str, str], axis: GeneralizationAxis
+) -> tuple[PairedBaselineEvidence, ...]:
     by_unit = {(row.task_id, row.policy_id, row.replicate): row for row in bundle.results}
     tasks = tuple(sorted({row.task_id for row in bundle.results}))
     dgc_policy = roles[DGC_ROLE]
@@ -161,6 +174,35 @@ class GeneralizationAxisAnytimeAuthority:
         }
 
 
+class _GeneralizationAxisAnytimeAuthorityPayload(TypedDict):
+    axis: str
+    registry_digest: str
+    evaluation_manifest_digest: str
+    task_population_digest: str
+    execution_bundle_digest: str
+    metric_population_digest: str
+    physical_cost_population_digest: str
+    replicates: int
+    paired_observations_per_baseline: int
+    lineage_v1_axis_authority_digest: str
+    exact_panel_certificate: dict[str, object]
+    exact_panel_certificate_digest: str
+    exact_panel_supported: bool
+    anytime_certificate: dict[str, object]
+    anytime_certificate_digest: str
+    anytime_average_conditional_mean_supported: bool
+    anytime_method: str
+    anytime_boundary_method: str
+    anytime_claim_target: str
+    anytime_assumption_boundary: str
+    sequence_order_rule: str
+    predictor_rule: str
+    confseq_reference_commit: str
+    legacy_task_aggregated_hoeffding_certificate_digest: str | None
+    legacy_task_aggregated_hoeffding_supported: bool
+    axis_supported_without_iid_assumption: bool
+
+
 def build_generalization_axis_anytime_authority(
     bundle_root: Path,
     *,
@@ -192,21 +234,21 @@ def build_generalization_axis_anytime_authority(
     row = _axis_row(registry, axis)
     roles = _role_map(registry)
     paired = _paired_evidence(bundle, roles=roles, axis=axis)
-    qmargin = float(row["quality_noninferiority_margin"])
-    cmargin = float(row["catastrophic_noninferiority_margin"])
+    qmargin = _float_value(row["quality_noninferiority_margin"])
+    cmargin = _float_value(row["catastrophic_noninferiority_margin"])
     exact = certify_exact_finite_panel(
         paired,
         quality_noninferiority_margin=qmargin,
         catastrophic_noninferiority_margin=cmargin,
     )
-    alpha_axis = float(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES)
+    alpha_axis = _float_value(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES)
     anytime = certify_multi_baseline_anytime_valid(
         paired,
         alpha=alpha_axis,
         quality_noninferiority_margin=qmargin,
         catastrophic_noninferiority_margin=cmargin,
     )
-    if not math.isclose(anytime.per_metric_alpha, float(registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
+    if not math.isclose(anytime.per_metric_alpha, _float_value(registry["per_claim_alpha"]), rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationAnytimeError("G1-G5 anytime-valid multiplicity differs from preregistration")
     if not all((
         anytime.method == METHOD,
@@ -225,7 +267,7 @@ def build_generalization_axis_anytime_authority(
     exact_supported = bool(exact.all_baselines_observed)
     anytime_supported = bool(anytime.all_baselines_certified)
     supported = exact_supported and anytime_supported
-    payload = {
+    payload: _GeneralizationAxisAnytimeAuthorityPayload = {
         "axis": axis.value,
         "registry_digest": bundle.registry_digest,
         "evaluation_manifest_digest": bundle.evaluation_manifest_digest,
@@ -414,10 +456,13 @@ def build_generalization_anytime_authority(
         (str(row["axis"]), _sha("axis authority_digest", row.get("authority_digest"))) for row in rows
     ))
     theorem_digest = _theorem_identity_digest()
+    registry_digest = _sha("registry_digest", registry.get("registry_digest"))
+    p9_authority_digest = _sha("P9 scientific V3 authority_digest", p9.get("authority_digest"))
+    frozen_dgc_policy_digest = _sha("frozen_dgc_policy_digest", registry.get("frozen_dgc_policy_digest"))
     payload = {
-        "registry_digest": _sha("registry_digest", registry.get("registry_digest")),
-        "p9_scientific_v3_authority_digest": _sha("P9 scientific V3 authority_digest", p9.get("authority_digest")),
-        "frozen_dgc_policy_digest": _sha("frozen_dgc_policy_digest", registry.get("frozen_dgc_policy_digest")),
+        "registry_digest": registry_digest,
+        "p9_scientific_v3_authority_digest": p9_authority_digest,
+        "frozen_dgc_policy_digest": frozen_dgc_policy_digest,
         "theorem_identity_digest": theorem_digest,
         "axis_authority_digests": [list(row) for row in axis_digests],
         "exact_g1_g5_supported": exact,
@@ -426,9 +471,9 @@ def build_generalization_anytime_authority(
         "independent_replication_evaluation_authorized": supported,
     }
     return GeneralizationAnytimeAuthority(
-        registry_digest=payload["registry_digest"],
-        p9_scientific_v3_authority_digest=payload["p9_scientific_v3_authority_digest"],
-        frozen_dgc_policy_digest=payload["frozen_dgc_policy_digest"],
+        registry_digest=registry_digest,
+        p9_scientific_v3_authority_digest=p9_authority_digest,
+        frozen_dgc_policy_digest=frozen_dgc_policy_digest,
         theorem_identity_digest=theorem_digest,
         axis_authority_digests=axis_digests,
         exact_g1_g5_supported=exact,

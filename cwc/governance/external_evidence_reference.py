@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.external_materialization import (
     parse_terminal_dataset_manifest,
@@ -38,6 +39,15 @@ _REQUIRED_FAMILIES = frozenset({"SWE_BENCH_VERIFIED", "TERMINAL_BENCH_2_1"})
 
 class ExternalEvidenceError(RuntimeError):
     """Raised when an external evidence generation cannot be imported safely."""
+
+
+def _int_value(value: object) -> int:
+    """``int(value)`` restricted to operands ``int()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(
+        f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}"
+    )
 
 
 def _sha(name: str, value: object) -> str:
@@ -77,8 +87,8 @@ def _manifest_rows(rows: object) -> tuple[tuple[str, str, int, int, str], ...]:
         path = str(row.get("path", ""))
         object_type = str(row.get("type", ""))
         try:
-            mode = int(row.get("mode"))
-            size = int(row.get("bytes"))
+            mode = _int_value(row.get("mode"))
+            size = _int_value(row.get("bytes"))
         except (TypeError, ValueError) as exc:
             raise ExternalEvidenceError("generation manifest mode/bytes must be integers") from exc
         digest = _sha("generation file sha256", row.get("sha256"))
@@ -231,13 +241,13 @@ def _verify_swe_family(
             parquet,
             expected_sha256=_sha("SWE parquet_sha256", identity.get("parquet_sha256")),
             expected_bytes=None,
-            expected_count=int(identity.get("expected_task_count")),
+            expected_count=_int_value(identity.get("expected_task_count")),
         )
         seal = seal_materialized_workload(
             family_id="SWE_BENCH_VERIFIED",
             root=root / "SWE_BENCH_VERIFIED",
             task_ids=verified.instance_ids,
-            expected_task_count=int(identity.get("expected_task_count")),
+            expected_task_count=_int_value(identity.get("expected_task_count")),
         )
     except (OSError, TypeError, ValueError, RuntimeError) as exc:
         raise ExternalEvidenceError("SWE payload semantic verification failed") from exc
@@ -306,14 +316,14 @@ def _verify_terminal_family(
     try:
         manifest = parse_terminal_dataset_manifest(
             dataset.read_text(encoding="utf-8"),
-            expected_count=int(identity.get("expected_task_count")),
+            expected_count=_int_value(identity.get("expected_task_count")),
         )
         task_ids = tuple(name for name, _ in manifest.tasks)
         seal = seal_materialized_workload(
             family_id="TERMINAL_BENCH_2_1",
             root=tasks,
             task_ids=task_ids,
-            expected_task_count=int(identity.get("expected_task_count")),
+            expected_task_count=_int_value(identity.get("expected_task_count")),
         )
     except (OSError, UnicodeError, TypeError, ValueError, RuntimeError) as exc:
         raise ExternalEvidenceError("Terminal task semantic verification failed") from exc

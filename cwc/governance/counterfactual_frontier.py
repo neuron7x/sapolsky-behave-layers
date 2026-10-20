@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Mapping, Sequence
 
 
 def _require_nonnegative_int(name: str, value: int) -> int:
@@ -118,9 +118,7 @@ def _within_limits(
         return False
     if max_latency_units is not None and latency_units > max_latency_units:
         return False
-    if max_risk_units is not None and risk_units > max_risk_units:
-        return False
-    return True
+    return not (max_risk_units is not None and risk_units > max_risk_units)
 
 
 def _dominates(left: AllocationState, right: AllocationState) -> bool:
@@ -197,7 +195,7 @@ def exact_counterfactual_frontier(
                         value_units=state.value_units + option.value_units,
                         latency_units=latency,
                         risk_units=risk,
-                        selections=state.selections + ((task_id, option.option_id),),
+                        selections=(*state.selections, (task_id, option.option_id)),
                     )
                 )
         if not candidates:

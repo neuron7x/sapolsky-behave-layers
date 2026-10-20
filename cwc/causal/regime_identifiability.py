@@ -7,6 +7,7 @@ from enum import Enum
 from statistics import NormalDist
 
 import numpy as np
+import numpy.typing as npt
 
 
 class AssumptionClass(str, Enum):
@@ -59,11 +60,11 @@ class RegimeIVDecision:
     unresolved_assumption_debt: tuple[str, ...]
 
 
-def _center(x: np.ndarray) -> np.ndarray:
+def _center(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return np.asarray(x, dtype=np.float64) - float(np.mean(x))
 
 
-def _mean_se(values: np.ndarray) -> float:
+def _mean_se(values: npt.NDArray[np.float64]) -> float:
     values = np.asarray(values, dtype=np.float64)
     if len(values) < 3:
         raise ValueError("at least three samples required")
@@ -72,7 +73,7 @@ def _mean_se(values: np.ndarray) -> float:
 
 def evaluate_regime_iv(
     *,
-    regimes: np.ndarray,
+    regimes: npt.ArrayLike,
     treatment: Sequence[float],
     outcome: Sequence[float],
     negative_control: Sequence[float],
@@ -112,7 +113,7 @@ def evaluate_regime_iv(
     zcrit = NormalDist().inv_cdf(1.0 - alpha / (2.0 * family_tests))
 
     moments: list[InstrumentMoment] = []
-    influence: list[np.ndarray | None] = []
+    influence: list[npt.NDArray[np.float64] | None] = []
     relevant: list[int] = []
     neg_violations: list[int] = []
 
@@ -132,17 +133,17 @@ def evaluate_regime_iv(
             ry = float(np.mean(r * Yc))
             beta = ry / cov_rx
             psi = r * (Yc - beta * Xc) / cov_rx
-            beta_se = _mean_se(psi)
+            moment_beta_se = _mean_se(psi)
             relevant.append(j)
             influence.append(psi)
         else:
             beta = math.nan
-            beta_se = math.inf
+            moment_beta_se = math.inf
             influence.append(None)
 
         if neg_z > zcrit:
             neg_violations.append(j)
-        moments.append(InstrumentMoment(j, cov_rx, relevance_z, float(beta), float(beta_se), neg_z))
+        moments.append(InstrumentMoment(j, cov_rx, relevance_z, float(beta), float(moment_beta_se), neg_z))
 
     overid_zs: list[float] = []
     for a_pos, a in enumerate(relevant):

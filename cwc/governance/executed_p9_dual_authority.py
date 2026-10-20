@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.executed_p9_finite_panel_authority import (
@@ -31,6 +34,26 @@ def _sha(name: str, value: object) -> str:
     return text
 
 
+def _float(value: object) -> float:
+    # Mirrors the TypeError float() already raises for a non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"expected a number, got {type(value).__name__}")
+    return float(value)
+
+
+def _floats(value: object) -> tuple[float, ...]:
+    if not isinstance(value, Iterable):
+        raise TypeError(f"expected a numeric sequence, got {type(value).__name__}")
+    return tuple(_float(x) for x in value)
+
+
+def _support(value: object) -> tuple[float, float]:
+    bounds = _floats(value)
+    if len(bounds) != 2:
+        raise ValueError("gain support must be a (lower, upper) pair")
+    return (bounds[0], bounds[1])
+
+
 def _paired_rows(base: FinitePanelP9Authority) -> tuple[PairedBaselineEvidence, ...]:
     result: list[PairedBaselineEvidence] = []
     for raw in base.paired_evidence:
@@ -38,15 +61,13 @@ def _paired_rows(base: FinitePanelP9Authority) -> tuple[PairedBaselineEvidence, 
             result.append(PairedBaselineEvidence(
                 baseline_id=str(raw["baseline_id"]),
                 paired_task_digest=str(raw["paired_task_digest"]),
-                coverage=float(raw["coverage"]),
-                baseline_minus_dgc_cost=tuple(float(x) for x in raw["baseline_minus_dgc_cost"]),
-                dgc_minus_baseline_quality=tuple(float(x) for x in raw["dgc_minus_baseline_quality"]),
-                baseline_minus_dgc_catastrophic_regret=tuple(
-                    float(x) for x in raw["baseline_minus_dgc_catastrophic_regret"]
-                ),
-                cost_gain_support=tuple(float(x) for x in raw["cost_gain_support"]),
-                quality_gain_support=tuple(float(x) for x in raw["quality_gain_support"]),
-                catastrophic_gain_support=tuple(float(x) for x in raw["catastrophic_gain_support"]),
+                coverage=_float(raw["coverage"]),
+                baseline_minus_dgc_cost=_floats(raw["baseline_minus_dgc_cost"]),
+                dgc_minus_baseline_quality=_floats(raw["dgc_minus_baseline_quality"]),
+                baseline_minus_dgc_catastrophic_regret=_floats(raw["baseline_minus_dgc_catastrophic_regret"]),
+                cost_gain_support=_support(raw["cost_gain_support"]),
+                quality_gain_support=_support(raw["quality_gain_support"]),
+                catastrophic_gain_support=_support(raw["catastrophic_gain_support"]),
             ))
         except (KeyError, TypeError, ValueError) as exc:
             raise DualP9AuthorityError("finite-panel paired evidence cannot be reconstructed") from exc
@@ -114,8 +135,8 @@ def build_dual_p9_authority(
     paired = _paired_rows(base)
     conditional = base.p9_certificate
     try:
-        qmargin = float(conditional["quality_noninferiority_margin"])
-        cmargin = float(conditional["catastrophic_noninferiority_margin"])
+        qmargin = _float(conditional["quality_noninferiority_margin"])
+        cmargin = _float(conditional["catastrophic_noninferiority_margin"])
     except (KeyError, TypeError, ValueError) as exc:
         raise DualP9AuthorityError("conditional P9 certificate margins missing") from exc
     exact = certify_exact_finite_panel(
@@ -128,7 +149,7 @@ def build_dual_p9_authority(
     exact_supported = bool(exact.all_baselines_observed)
     conditional_supported = bool(base.p9_supported_under_protocol_assumption)
     scientific_supported = exact_supported and conditional_supported
-    payload = {
+    payload: dict[str, object] = {
         "family_id": base.family_id,
         "finite_panel_v3_authority_digest": base.authority_digest,
         "execution_authority_digest": base.execution_authority_digest,
@@ -154,7 +175,29 @@ def build_dual_p9_authority(
         "generalization_evaluation_authorized": scientific_supported,
     }
     return DualP9Authority(
-        **payload,
+        family_id=base.family_id,
+        finite_panel_v3_authority_digest=base.authority_digest,
+        execution_authority_digest=base.execution_authority_digest,
+        execution_population_digest=base.execution_population_digest,
+        execution_bundle_digest=base.execution_bundle_digest,
+        physical_cost_bundle_digest=base.physical_cost_bundle_digest,
+        physical_cost_population_digest=base.physical_cost_population_digest,
+        harness_freeze_digest=base.harness_freeze_digest,
+        confirmatory_task_manifest_digest=base.confirmatory_task_manifest_digest,
+        statistical_plan_digest=base.statistical_plan_digest,
+        paired_panel_digest=base.paired_panel_digest,
+        exact_panel_certificate=exact_doc,
+        exact_panel_certificate_digest=exact_digest,
+        exact_panel_supported=exact_supported,
+        expected_effect_certificate_digest=base.p9_certificate_digest,
+        expected_effect_supported_under_independence_assumption=conditional_supported,
+        randomness_protocol=base.randomness_protocol,
+        randomness_schedule_digest=base.randomness_schedule_digest,
+        randomness_independence_assumption=base.randomness_independence_assumption,
+        randomness_assumption_verified=base.randomness_assumption_verified,
+        claim_scope=CLAIM_SCOPE,
+        p9_supported_under_frozen_assumptions=scientific_supported,
+        generalization_evaluation_authorized=scientific_supported,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 

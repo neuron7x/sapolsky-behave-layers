@@ -4,6 +4,7 @@ import hashlib
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import canonical_json_bytes
 
@@ -38,6 +39,8 @@ def _real_directory(path: Path, *, label: str) -> Path:
 
 
 def _finite_nonnegative(name: str, value: object) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise TerminalObservationError(f"{name} must be numeric")
     try:
         parsed = float(value)
     except (TypeError, ValueError) as exc:
@@ -49,6 +52,8 @@ def _finite_nonnegative(name: str, value: object) -> float:
 
 def _nonnegative_int(name: str, value: object) -> int:
     if isinstance(value, bool):
+        raise TerminalObservationError(f"{name} must be an integer")
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
         raise TerminalObservationError(f"{name} must be an integer")
     try:
         parsed = int(value)
@@ -122,7 +127,7 @@ def extract_terminal_task_observations(
     environment = _real_directory(root / "environment", label="environment")
     env_rows, env_total = _environment_manifest(environment)
 
-    observations = {
+    observations: dict[str, object] = {
         "budget_remaining": _finite_nonnegative("budget_remaining", budget_remaining),
         "environment_file_count": len(env_rows),
         "environment_total_bytes": env_total,

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import TypedDict
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY,
@@ -21,14 +22,19 @@ from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_
 from cwc.governance.distributed_eval_control import DistributedEvalSpec, WorkUnitId
 from cwc.governance.exact_finite_panel_pareto import (
     certificate_digest as exact_certificate_digest,
+)
+from cwc.governance.exact_finite_panel_pareto import (
     certify_exact_finite_panel,
 )
 from cwc.governance.executed_p9_authority import build_executed_p9_authority
-from cwc.governance.execution_evidence_bundle import verify_execution_bundle
+from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle
 from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.pareto import PairedBaselineEvidence
-from cwc.governance.physical_execution_cost_bundle import verify_physical_execution_cost_bundle
+from cwc.governance.physical_execution_cost_bundle import (
+    VerifiedPhysicalExecutionCostBundle,
+    verify_physical_execution_cost_bundle,
+)
 
 SCHEMA = "DGC_EXECUTED_P9_ANYTIME_AUTHORITY_V8"
 CLAIM_SCOPE = "EXACT_FROZEN_PANEL_PLUS_EXACT_HOWARD_STITCHING_ACM_V3"
@@ -62,8 +68,8 @@ def _task_digest(task_ids: tuple[str, ...]) -> str:
 
 def _micro_paired_evidence(
     *,
-    execution_bundle,
-    physical_cost_bundle,
+    execution_bundle: VerifiedExecutionBundle,
+    physical_cost_bundle: VerifiedPhysicalExecutionCostBundle,
     spec: DistributedEvalSpec,
     roles: Mapping[str, str],
     confirmatory_task_digest: str,
@@ -164,6 +170,39 @@ class AnytimeP9Authority:
             "legacy_statistics_promotion_authorized": False,
             "product_promotion_authorized": False,
         }
+
+
+class _AnytimeP9AuthorityPayload(TypedDict):
+    family_id: str
+    lineage_v2_authority_digest: str
+    execution_authority_digest: str
+    execution_population_digest: str
+    execution_bundle_digest: str
+    physical_cost_bundle_digest: str
+    physical_cost_population_digest: str
+    harness_freeze_digest: str
+    confirmatory_task_manifest_digest: str
+    statistical_plan_digest: str
+    paired_panel_digest: str
+    paired_evidence_population_digest: str
+    paired_observations_per_baseline: int
+    exact_panel_certificate: dict[str, object]
+    exact_panel_certificate_digest: str
+    exact_panel_supported: bool
+    anytime_certificate: dict[str, object]
+    anytime_certificate_digest: str
+    anytime_average_conditional_mean_supported: bool
+    anytime_method: str
+    anytime_boundary_method: str
+    anytime_claim_target: str
+    anytime_assumption_boundary: str
+    sequence_order_rule: str
+    predictor_rule: str
+    confseq_reference_commit: str
+    legacy_task_aggregated_hoeffding_certificate_digest: str
+    legacy_task_aggregated_hoeffding_supported: bool
+    p9_supported_without_iid_assumption: bool
+    generalization_evaluation_authorized: bool
 
 
 def build_anytime_p9_authority(
@@ -268,7 +307,7 @@ def build_anytime_p9_authority(
     exact_supported = bool(exact.all_baselines_observed)
     anytime_supported = bool(anytime.all_baselines_certified)
     scientific_supported = exact_supported and anytime_supported
-    payload = {
+    payload: _AnytimeP9AuthorityPayload = {
         "family_id": lineage.family_id,
         "lineage_v2_authority_digest": lineage.authority_digest,
         "execution_authority_digest": lineage.execution_authority_digest,

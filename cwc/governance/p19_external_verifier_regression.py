@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_python_runtime import (
@@ -158,8 +158,7 @@ def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
     try:
         result = subprocess.run(
             ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=False,
         )
     except OSError as exc:
@@ -248,7 +247,13 @@ class P19ExternalVerifierRegressionReceipt:
 
     @property
     def document(self) -> dict[str, object]:
-        return {"schema": SCHEMA, **asdict(self), "activation_authorized": False}
+        payload = asdict(self)
+        # Match the canonical JSON shape before hashing, signing or comparing receipts.
+        # dataclasses.asdict retains tuple containers, while JSON serializes them as lists.
+        payload["canonical_command_argv"] = list(self.canonical_command_argv)
+        payload["runtime_manifest"] = [dict(row) for row in self.runtime_manifest]
+        payload["test_manifest"] = [dict(row) for row in self.test_manifest]
+        return {"schema": SCHEMA, **payload, "activation_authorized": False}
 
 
 def build_p19_external_verifier_regression_receipt(
@@ -292,6 +297,8 @@ def build_p19_external_verifier_regression_receipt(
         test_rows=list(tests),
         require_same_checkout=True,
     )
+    stdout_bytes = stdout.stat().st_size
+    stderr_bytes = stderr.stat().st_size
     payload: dict[str, object] = {
         "regression_generation": REGRESSION_GENERATION,
         "source_commit": observed_commit,
@@ -306,10 +313,10 @@ def build_p19_external_verifier_regression_receipt(
         "method_map_digest": method_map_digest(),
         "stdout_path": stdout_rel,
         "stdout_sha256": sha256_file(stdout),
-        "stdout_bytes": stdout.stat().st_size,
+        "stdout_bytes": stdout_bytes,
         "stderr_path": stderr_rel,
         "stderr_sha256": sha256_file(stderr),
-        "stderr_bytes": stderr.stat().st_size,
+        "stderr_bytes": stderr_bytes,
         "exit_code": 0,
         "all_regression_tests_passed": True,
         "execution_provenance_scope": EXECUTION_PROVENANCE_SCOPE,
@@ -329,10 +336,10 @@ def build_p19_external_verifier_regression_receipt(
         method_map_digest=str(payload["method_map_digest"]),
         stdout_path=stdout_rel,
         stdout_sha256=str(payload["stdout_sha256"]),
-        stdout_bytes=int(payload["stdout_bytes"]),
+        stdout_bytes=stdout_bytes,
         stderr_path=stderr_rel,
         stderr_sha256=str(payload["stderr_sha256"]),
-        stderr_bytes=int(payload["stderr_bytes"]),
+        stderr_bytes=stderr_bytes,
         exit_code=0,
         all_regression_tests_passed=True,
         execution_provenance_scope=EXECUTION_PROVENANCE_SCOPE,

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_contract import (
@@ -111,14 +111,18 @@ def _current_core(root: Path) -> dict[str, object]:
         repository_root=root,
         implemented_check_ids=tuple(sorted(REQUIRED_CHECKS)),
     )
+    dependencies = v4["verifier_dependencies"]
+    contracts = v4["check_contracts"]
+    if not isinstance(dependencies, Iterable) or not isinstance(contracts, Iterable):
+        raise P19ExternalVerificationPlanV5Error("current Plan V4 dependency/check populations are not iterable")
     return {
         "verifier_entrypoint_path": str(v4["verifier_entrypoint_path"]),
         "verifier_entrypoint_sha256": _sha("verifier_entrypoint_sha256", v4["verifier_entrypoint_sha256"]),
         "verifier_dependency_manifest_digest": _sha(
             "verifier_dependency_manifest_digest", v4["verifier_dependency_manifest_digest"]
         ),
-        "verifier_dependencies": list(v4["verifier_dependencies"]),
-        "check_contracts": list(v4["check_contracts"]),
+        "verifier_dependencies": list(dependencies),
+        "check_contracts": list(contracts),
         "all_check_implementations_complete": True,
     }
 
@@ -273,6 +277,15 @@ def load_p19_external_verification_plan_v5(
     if require_active and not active:
         raise P19ExternalVerificationPlanV5Error("Plan V5 is not activated")
     activation = _activation_payload(root, Path(str(doc["activation_authority_path"]))) if active else _empty_activation()
+    activation_principals: tuple[str, ...] = ()
+    activation_key_digests: tuple[str, ...] = ()
+    if active:
+        raw_principals = activation["activation_verifier_principals"]
+        raw_key_digests = activation["activation_signer_key_digests"]
+        if not isinstance(raw_principals, list) or not isinstance(raw_key_digests, list):
+            raise P19ExternalVerificationPlanV5Error("portable activation lacks distinct verifier/key population")
+        activation_principals = tuple(str(v) for v in raw_principals)
+        activation_key_digests = tuple(str(v) for v in raw_key_digests)
     return P19ExternalVerificationPlanV5(
         plan_generation=PLAN_GENERATION,
         frozen_pre_outcome=True,
@@ -290,8 +303,8 @@ def load_p19_external_verification_plan_v5(
         activation_trust_policy_path=(str(activation["activation_trust_policy_path"]) if active else None),
         activation_trust_policy_digest=(str(activation["activation_trust_policy_digest"]) if active else None),
         activation_allowed_signers_sha256=(str(activation["activation_allowed_signers_sha256"]) if active else None),
-        activation_verifier_principals=(tuple(str(v) for v in activation["activation_verifier_principals"]) if active else ()),
-        activation_signer_key_digests=(tuple(str(v) for v in activation["activation_signer_key_digests"]) if active else ()),
+        activation_verifier_principals=activation_principals,
+        activation_signer_key_digests=activation_key_digests,
         activation_regression_receipt_path=(str(activation["activation_regression_receipt_path"]) if active else None),
         activation_regression_receipt_sha256=(str(activation["activation_regression_receipt_sha256"]) if active else None),
         activation_regression_receipt_digest=(str(activation["activation_regression_receipt_digest"]) if active else None),

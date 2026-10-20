@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.cost_accounting import ProviderRateCard
@@ -44,8 +45,23 @@ def _req(name: str, value: object) -> str:
     return text
 
 
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise ExecutionEvidenceError(f"{name} must be an integer")
+    return int(value)
+
+
+def _float_value(value: object) -> float:
+    # Mirrors the TypeError float() already raises for a missing/non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"expected a number, got {type(value).__name__}")
+    return float(value)
+
+
 def _nonnegative_int(name: str, value: object) -> int:
     try:
+        if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+            raise TypeError(f"{name} is not integer-convertible")
         result = int(value)
     except (TypeError, ValueError) as exc:
         raise ExecutionEvidenceError(f"{name} must be an integer") from exc
@@ -56,6 +72,8 @@ def _nonnegative_int(name: str, value: object) -> int:
 
 def _finite(name: str, value: object, *, lower: float | None = None, upper: float | None = None) -> float:
     try:
+        if not isinstance(value, (str, bytes, bytearray, SupportsFloat, SupportsIndex)):
+            raise TypeError(f"{name} is not float-convertible")
         result = float(value)
     except (TypeError, ValueError) as exc:
         raise ExecutionEvidenceError(f"{name} must be numeric") from exc
@@ -379,8 +397,8 @@ def _verify_unit_evidence(
             _req("provider trace model", raw.get("model")),
             model_version,
         )
-        card = rate_cards.get(identity)
-        if card is None:
+        trace_card = rate_cards.get(identity)
+        if trace_card is None:
             raise ExecutionEvidenceError("provider trace has no embedded frozen rate card")
         try:
             provider_trace = ProviderUsageTrace(
@@ -404,13 +422,13 @@ def _verify_unit_evidence(
             raise ExecutionEvidenceError("confirmatory provider trace is not PROVIDER_LIVE")
         if provider_trace.decision_id != unit.stable_id or provider_trace.policy_id != unit.policy_id:
             raise ExecutionEvidenceError("provider trace decision/policy identity mismatch")
-        if provider_trace.rate_card_digest != card.digest:
+        if provider_trace.rate_card_digest != trace_card.digest:
             raise ExecutionEvidenceError("provider trace rate-card digest mismatch")
         request_id = str(provider_trace.provider_request_id)
         if request_id in request_ids:
             raise ExecutionEvidenceError("duplicate provider request id")
         request_ids.add(request_id)
-        metered = provider_trace.meter(card)
+        metered = provider_trace.meter(trace_card)
         model_usd_rows.append(metered.model_token_usd)
         expected_trace_docs.append({
             "trace_digest": provider_trace.digest,
@@ -461,7 +479,7 @@ def _verify_unit_evidence(
                 raise ExecutionEvidenceError("physical cost certificate component identity mismatch")
             cost_evidence[component] = CostComponentEvidence(
                 component=component,
-                value_usd=float(row.get("value_usd")),
+                value_usd=_float_value(row.get("value_usd")),
                 authority=CostAuthority(str(row.get("authority"))),
                 source_digest=_sha(
                     f"physical cost source digest {component}", row.get("source_digest")
@@ -664,11 +682,11 @@ def _verify_result(
     ]
     if len(commit_matches) != 1:
         raise ExecutionEvidenceError("result cannot be bound to exactly one coordinator commit audit event")
-    commit_sequence = int(commit_matches[0]["sequence"])
+    commit_sequence = _int("commit audit event sequence", commit_matches[0]["sequence"])
     lease_before_commit = any(
         event["kind"] == "LEASE_GRANTED"
         and event["unit_id"] == unit.stable_id
-        and int(event["sequence"]) < commit_sequence
+        and _int("lease audit event sequence", event["sequence"]) < commit_sequence
         for event in audit_events
     )
     if not lease_before_commit:
@@ -835,7 +853,7 @@ def verify_execution_bundle(
     if _sha("bundle_digest", manifest.get("bundle_digest")) != bundle_digest:
         raise ExecutionEvidenceError("execution bundle digest mismatch")
     for key in ("expected_units", "committed_units"):
-        if int(manifest.get(key, -1)) != int(manifest_payload[key]):
+        if _int(f"execution bundle {key}", manifest.get(key, -1)) != _int(key, manifest_payload[key]):
             raise ExecutionEvidenceError(f"execution bundle {key} mismatch")
     for key in ("audit_root_digest", "result_population_digest"):
         if manifest.get(key) != manifest_payload[key]:

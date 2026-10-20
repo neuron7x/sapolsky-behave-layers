@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.cost_accounting import ProviderRateCard
 from cwc.governance.distributed_eval_control import CompletionCertificate, DistributedEvalSpec, WorkUnitId
+from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.mechanism_execution_authority import verify_mechanism_execution_authority_document
 from cwc.governance.mechanism_execution_freeze import (
     verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
 )
-from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
-from cwc.governance.mechanism_execution_authority import verify_mechanism_execution_authority_document
 from cwc.governance.physical_cost_evidence import (
     PRODUCT_COST_COMPONENTS,
     CostAuthority,
@@ -38,6 +39,20 @@ class MechanismExecutionBundleError(RuntimeError):
     pass
 
 
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
 def _sha(name: str, value: object) -> str:
     text = str(value).strip().lower()
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
@@ -60,7 +75,7 @@ def _finite(
     upper: float | None = None,
 ) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise MechanismExecutionBundleError(f"{name} must be numeric") from exc
     if not math.isfinite(result):
@@ -356,8 +371,8 @@ def _verify_cost_evidence(
             _req("model", raw.get("model")),
             version,
         )
-        card = cards.get(identity)
-        if card is None:
+        trace_card = cards.get(identity)
+        if trace_card is None:
             raise MechanismExecutionBundleError("provider trace lacks frozen rate card")
         try:
             authority = TraceAuthority(str(raw["authority"]))
@@ -424,9 +439,9 @@ def _verify_cost_evidence(
         if source_id in source_ids:
             raise MechanismExecutionBundleError("duplicate live usage source identity")
         source_ids.add(source_id)
-        if trace_obj.rate_card_digest != card.digest:
+        if trace_obj.rate_card_digest != trace_card.digest:
             raise MechanismExecutionBundleError("provider trace rate-card digest mismatch")
-        metered = trace_obj.meter(card)
+        metered = trace_obj.meter(trace_card)
         model_costs.append(metered.model_token_usd)
         trace_doc = {
             "trace_digest": trace_obj.digest,
@@ -480,7 +495,7 @@ def _verify_cost_evidence(
                 raise MechanismExecutionBundleError("physical cost component identity mismatch")
             evidence[component] = CostComponentEvidence(
                 component=component,
-                value_usd=float(raw.get("value_usd")),
+                value_usd=_float_arg(raw.get("value_usd")),
                 authority=CostAuthority(str(raw.get("authority"))),
                 source_digest=_sha(
                     f"physical cost source digest {component}",
@@ -613,8 +628,8 @@ def _verify_result(
     if unit not in set(spec.units()):
         raise MechanismExecutionBundleError("result unit outside frozen mechanism population")
     try:
-        attempt = int(doc.get("attempt"))
-        committed_tick = int(doc.get("committed_tick"))
+        attempt = _int_arg(doc.get("attempt"))
+        committed_tick = _int_arg(doc.get("committed_tick"))
     except (TypeError, ValueError) as exc:
         raise MechanismExecutionBundleError("invalid mechanism result integer field") from exc
     if attempt <= 0 or committed_tick < 0:
@@ -690,11 +705,11 @@ def _verify_result(
         raise MechanismExecutionBundleError(
             "mechanism result cannot bind exactly one coordinator commit"
         )
-    commit_sequence = int(matches[0]["sequence"])
+    commit_sequence = _int_arg(matches[0]["sequence"])
     if not any(
         event.get("kind") == "LEASE_GRANTED"
         and event.get("unit_id") == unit.stable_id
-        and int(event.get("sequence", -1)) < commit_sequence
+        and _int_arg(event.get("sequence", -1)) < commit_sequence
         for event in audit_events
     ):
         raise MechanismExecutionBundleError("mechanism result lacks preceding lease")
@@ -848,8 +863,8 @@ def verify_mechanism_execution_bundle(
     bundle_digest = sha256_bytes(canonical_json_bytes(manifest_payload))
     if _sha("bundle_digest", manifest.get("bundle_digest")) != bundle_digest:
         raise MechanismExecutionBundleError("mechanism bundle digest mismatch")
-    for key in ("expected_units", "committed_units"):
-        if int(manifest.get(key, -1)) != int(manifest_payload[key]):
+    for key, frozen_count in (("expected_units", len(expected_units)), ("committed_units", len(results))):
+        if _int_arg(manifest.get(key, -1)) != frozen_count:
             raise MechanismExecutionBundleError(f"mechanism bundle {key} mismatch")
     for key in ("audit_root_digest", "result_population_digest"):
         if manifest.get(key) != manifest_payload[key]:

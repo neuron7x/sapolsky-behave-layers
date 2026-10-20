@@ -4,9 +4,10 @@ import hashlib
 import json
 import os
 import subprocess
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.execution_manifest_freeze import (
     POLICY_PROTOCOL,
@@ -23,6 +24,13 @@ NETWORK_ISOLATOR = ("unshare", "--net", "--")
 
 class FrozenPolicyRuntimeError(RuntimeError):
     pass
+
+
+def _float_value(value: object) -> float:
+    # Mirrors the TypeError float() already raises for a missing/non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"expected a number, got {type(value).__name__}")
+    return float(value)
 
 
 def _sha(name: str, value: object) -> str:
@@ -160,6 +168,8 @@ def invoke_frozen_policy(
     observation_fields = config_doc.get("observation_fields")
     action_digest = policy_action_catalog_digest(action_ids)
     observation_digest = policy_observation_contract_digest(observation_fields)
+    if not isinstance(action_ids, list) or not isinstance(observation_fields, list):
+        raise FrozenPolicyRuntimeError("policy action/observation catalog malformed")
     if action_digest != _sha("policy action catalog digest", manifest.get("action_catalog_digest")):
         raise FrozenPolicyRuntimeError("policy action catalog differs from manifest")
     if observation_digest != _sha("policy observation contract digest", manifest.get("observation_contract_digest")):
@@ -203,8 +213,8 @@ def invoke_frozen_policy(
     if not isinstance(frozen_argv, list) or list(argv) != frozen_argv:
         raise FrozenPolicyRuntimeError("policy argv differs from execution freeze")
     try:
-        timeout = float(manifest.get("timeout_seconds"))
-        frozen_timeout = float(frozen_policy.get("timeout_seconds"))
+        timeout = _float_value(manifest.get("timeout_seconds"))
+        frozen_timeout = _float_value(frozen_policy.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenPolicyRuntimeError("policy timeout malformed") from exc
     if timeout <= 0 or abs(timeout - frozen_timeout) > 1e-12:
@@ -222,8 +232,7 @@ def invoke_frozen_policy(
             cwd=root,
             env=env,
             input=raw_request,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             timeout=timeout,
             check=False,
         )

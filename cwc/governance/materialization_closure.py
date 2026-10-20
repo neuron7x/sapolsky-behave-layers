@@ -29,8 +29,7 @@ def _assert_repository_identity(ledger: EvidenceClosureLedger) -> None:
             proc = subprocess.run(
                 ["git", "-C", str(ledger.repository_root), *args],
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
             )
         except (OSError, subprocess.CalledProcessError) as exc:

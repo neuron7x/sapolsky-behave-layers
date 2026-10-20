@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 SCHEMA = "DGC_COUNTERFACTUAL_ORACLE_SPEC_V1"
 AGGREGATION = "REPLICATE_WISE_TASK_FRONTIER_V1"
@@ -11,6 +12,20 @@ ROUNDING = "CEIL_RESOURCES_FLOOR_VALUE_V1"
 
 class CounterfactualOracleSpecError(ValueError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _req(name: str, value: object) -> str:
@@ -29,7 +44,7 @@ def _sha(name: str, value: object) -> str:
 
 def _positive(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise CounterfactualOracleSpecError(f"{name} must be numeric") from exc
     if not math.isfinite(result) or result <= 0:
@@ -41,7 +56,7 @@ def _positive_int(name: str, value: object) -> int:
     if isinstance(value, bool):
         raise CounterfactualOracleSpecError(f"{name} must be an integer")
     try:
-        result = int(value)
+        result = _int_arg(value)
     except (TypeError, ValueError) as exc:
         raise CounterfactualOracleSpecError(f"{name} must be an integer") from exc
     if result <= 0:

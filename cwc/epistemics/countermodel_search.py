@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
+import numpy.typing as npt
 
 ELIGIBLE_CANDIDATE_STATE = "CAUSAL_CANDIDATE_UNDER_ASSUMPTIONS"
 
@@ -112,7 +113,7 @@ class CountermodelSearchDecision:
 
 def fit_reduced_form(
     *,
-    regimes: np.ndarray,
+    regimes: npt.ArrayLike,
     treatment: Sequence[float],
     outcome: Sequence[float],
 ) -> ReducedFormGaussian:
@@ -221,7 +222,7 @@ def construct_exact_countermodel(
     reduced_form: ReducedFormGaussian,
     beta: float,
     reference_beta: float,
-    regimes: np.ndarray | None = None,
+    regimes: npt.ArrayLike | None = None,
     treatment: Sequence[float] | None = None,
     outcome: Sequence[float] | None = None,
     bounds: StructuralAssumptionBounds | None = None,
@@ -322,7 +323,7 @@ def pareto_frontier(models: Sequence[LinearGaussianCountermodel]) -> tuple[Linea
 
 def search_countermodels(
     *,
-    regimes: np.ndarray,
+    regimes: npt.ArrayLike,
     treatment: Sequence[float],
     outcome: Sequence[float],
     reference_beta: float,

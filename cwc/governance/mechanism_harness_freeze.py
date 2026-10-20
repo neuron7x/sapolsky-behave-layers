@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.baseline_panel import (
     BaselineKind,
@@ -150,7 +150,7 @@ def build_mechanism_harness_freeze(
     if not isinstance(baseline_ids, Mapping):
         raise MechanismHarnessFreezeError("baseline_policy_ids mapping required")
     required_kinds = {kind.value for kind in BaselineKind}
-    if set(str(key) for key in baseline_ids) != required_kinds:
+    if {str(key) for key in baseline_ids} != required_kinds:
         raise MechanismHarnessFreezeError("baseline_policy_ids must map exact B0-B3")
     mapped = {str(key): str(value).strip() for key, value in baseline_ids.items()}
     if any(not value for value in mapped.values()) or len(set(mapped.values())) != 4:
@@ -210,7 +210,7 @@ def build_mechanism_harness_freeze(
         MechanismPolicyRoleBinding(role=role, policy_id=role_map[role])
         for role in sorted(role_map)
     )
-    serialized_specs = tuple({
+    serialized_specs: tuple[dict[str, object], ...] = tuple({
         "kind": row.kind.value,
         "implementation_version": row.implementation_version,
         "feature_schema_digest": row.feature_schema_digest,

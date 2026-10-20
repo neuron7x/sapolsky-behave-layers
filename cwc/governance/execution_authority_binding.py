@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from cwc.governance.confirmatory_generation import (
-    ConfirmatoryCompletionCertificate,
-    ConfirmatoryGenerationRoot,
-)
+from typing import Protocol
+
+from cwc.governance.confirmatory_generation import ConfirmatoryCompletionCertificate
 from cwc.governance.external_source_authority import (
     ExternalSourceAuthority,
     ExternalSourceStage,
@@ -11,10 +10,19 @@ from cwc.governance.external_source_authority import (
 )
 
 
+class _ExecutionRoot(Protocol):
+    @property
+    def family_id(self) -> str: ...
+    @property
+    def source_authority_digest(self) -> str: ...
+    @property
+    def root_digest(self) -> str: ...
+
+
 def promote_executed_from_confirmatory(
     source_authority: ExternalSourceAuthority,
     *,
-    root: ConfirmatoryGenerationRoot,
+    root: _ExecutionRoot,
     completion: ConfirmatoryCompletionCertificate,
 ) -> ExternalSourceAuthority:
     if source_authority.stage is not ExternalSourceStage.MATERIALIZED_VERIFIED:

@@ -6,12 +6,19 @@ from pathlib import Path
 
 from cwc.governance.global_product_qualification import (
     GLOBAL_STATISTICAL_COMPOSITION_RULE,
-    FamilyP19VerificationInput as V3FamilyP19VerificationInput,
     P19AttestationVerifier,
+)
+from cwc.governance.global_product_qualification import (
+    FamilyP19VerificationInput as V3FamilyP19VerificationInput,
+)
+from cwc.governance.global_product_qualification import (
     build_global_product_qualification_authority as build_v3_global_authority,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
-from cwc.governance.p19_verification_attestation import verify_ssh_signed_p19_verification_attestation
+from cwc.governance.p19_verification_attestation import (
+    P19VerificationSignatureReceipt,
+    verify_ssh_signed_p19_verification_attestation,
+)
 from cwc.governance.p19_verifier_policy import (
     CANONICAL_POLICY_PATH,
     load_p19_verifier_trust_policy,
@@ -99,20 +106,40 @@ def build_global_product_qualification_authority_v4(
 
     # Canonical V2 verification must re-hash raw transcript subjects against the explicit
     # repository root. Custom injected verifiers retain the narrower V3 callable contract.
+    def root_bound_verifier(
+        *,
+        attestation_path: Path,
+        verification_report_path: Path,
+        signature_path: Path,
+        allowed_signers_path: Path,
+    ) -> tuple[dict[str, object], P19VerificationSignatureReceipt]:
+        return verify_ssh_signed_p19_verification_attestation(
+            repository_root=root,
+            attestation_path=attestation_path,
+            verification_report_path=verification_report_path,
+            signature_path=signature_path,
+            allowed_signers_path=allowed_signers_path,
+        )
+
+    effective_verifier: P19AttestationVerifier
     if p19_attestation_verifier is verify_ssh_signed_p19_verification_attestation:
-        def effective_verifier(**kwargs):
-            return verify_ssh_signed_p19_verification_attestation(repository_root=root, **kwargs)
+        effective_verifier = root_bound_verifier
     else:
         effective_verifier = p19_attestation_verifier
 
-    v3_inputs = tuple(
-        V3FamilyP19VerificationInput(
+    def v3_input(item: FamilyP19VerificationInputV4) -> V3FamilyP19VerificationInput:
+        return V3FamilyP19VerificationInput(
             attestation_path=Path(item.attestation_path),
             verification_report_path=Path(item.verification_report_path),
             signature_path=Path(item.signature_path),
             allowed_signers_path=allowed_signers,
         )
-        for item in family_p19_verification_inputs
+
+    if len(family_p19_verification_inputs) != 2:
+        raise GlobalProductQualificationV4Error("V4 requires exactly two family P19 verification inputs")
+    v3_inputs = (
+        v3_input(family_p19_verification_inputs[0]),
+        v3_input(family_p19_verification_inputs[1]),
     )
     try:
         v3 = build_v3_global_authority(
@@ -145,12 +172,15 @@ def build_global_product_qualification_authority_v4(
     if not qualified:
         raise GlobalProductQualificationV4Error("V4 qualification conditions are incomplete")
 
-    payload = {
+    v3_authority_digest = _sha("v3_authority_digest", v3.authority_digest)
+    verifier_trust_policy_digest = _sha("verifier_trust_policy_digest", policy.policy_digest)
+    allowed_signers_sha256 = _sha("allowed_signers_sha256", policy.allowed_signers_sha256)
+    payload: dict[str, object] = {
         "canonical_family_ids": list(v3.canonical_family_ids),
         "family_p19_digests": [list(row) for row in v3.family_p19_digests],
-        "v3_authority_digest": _sha("v3_authority_digest", v3.authority_digest),
-        "verifier_trust_policy_digest": _sha("verifier_trust_policy_digest", policy.policy_digest),
-        "allowed_signers_sha256": _sha("allowed_signers_sha256", policy.allowed_signers_sha256),
+        "v3_authority_digest": v3_authority_digest,
+        "verifier_trust_policy_digest": verifier_trust_policy_digest,
+        "allowed_signers_sha256": allowed_signers_sha256,
         "verifier_principals": list(principals),
         "distinct_verifier_count": distinct,
         "minimum_distinct_verifiers": policy.minimum_distinct_verifiers,
@@ -169,9 +199,9 @@ def build_global_product_qualification_authority_v4(
     return GlobalProductQualificationAuthorityV4(
         canonical_family_ids=tuple(v3.canonical_family_ids),
         family_p19_digests=tuple(v3.family_p19_digests),
-        v3_authority_digest=payload["v3_authority_digest"],
-        verifier_trust_policy_digest=payload["verifier_trust_policy_digest"],
-        allowed_signers_sha256=payload["allowed_signers_sha256"],
+        v3_authority_digest=v3_authority_digest,
+        verifier_trust_policy_digest=verifier_trust_policy_digest,
+        allowed_signers_sha256=allowed_signers_sha256,
         verifier_principals=principals,
         distinct_verifier_count=distinct,
         minimum_distinct_verifiers=policy.minimum_distinct_verifiers,

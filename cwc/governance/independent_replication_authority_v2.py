@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
+from typing import TypedDict
 
 from cwc.governance.ccf_oracle_audit_authority import (
     build_ccf_oracle_audit_authority,
@@ -80,6 +81,34 @@ class IndependentReplicationAuthorityV2:
             **asdict(self),
             "product_promotion_authorized": False,
         }
+
+
+class _IndependentReplicationAuthorityV2Payload(TypedDict):
+    replication_scope: str
+    replication_package_digest: str
+    primary_p9_scientific_authority_digest: str
+    primary_generalization_scientific_authority_digest: str
+    replica_p9_scientific_authority_digest: str
+    primary_execution_population_digest: str
+    replica_execution_population_digest: str
+    primary_execution_bundle_digest: str
+    replica_execution_bundle_digest: str
+    primary_physical_cost_population_digest: str
+    replica_physical_cost_population_digest: str
+    primary_ccf_evidence_population_digest: str
+    replica_ccf_evidence_population_digest: str
+    harness_freeze_digest: str
+    confirmatory_task_manifest_digest: str
+    statistical_plan_digest: str
+    frozen_dgc_policy_digest: str
+    methodology_identity_matched: bool
+    fresh_execution_verified: bool
+    replica_p9_supported_under_frozen_assumptions: bool
+    replication_signature_receipt_digest: str
+    replicator_principal: str
+    signed_independence_attested: bool
+    social_independence_machine_proven: bool
+    independent_replication_supported: bool
 
 
 def _replication_package_digest(
@@ -243,7 +272,7 @@ def build_independent_replication_authority_v2(
     if not signature_receipt.signature_verified:
         raise IndependentReplicationAuthorityError("replicator signature is not verified")
 
-    payload = {
+    payload: _IndependentReplicationAuthorityV2Payload = {
         "replication_scope": SCOPE,
         "replication_package_digest": package_digest,
         "primary_p9_scientific_authority_digest": _sha("primary P9 authority", primary_p9.get("authority_digest")),

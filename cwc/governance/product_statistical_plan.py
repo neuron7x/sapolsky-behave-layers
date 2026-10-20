@@ -3,17 +3,29 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
 from statistics import NormalDist
-from typing import Iterable
 
 from cwc.governance.average_conditional_mean_cs import (
     ASSUMPTION_BOUNDARY as PRIMARY_ASSUMPTION_BOUNDARY,
+)
+from cwc.governance.average_conditional_mean_cs import (
     BOUNDARY_METHOD as PRIMARY_BOUNDARY_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
     CLAIM_TARGET as PRIMARY_CLAIM_TARGET,
+)
+from cwc.governance.average_conditional_mean_cs import (
     CONFSEQ_REFERENCE_COMMIT,
+)
+from cwc.governance.average_conditional_mean_cs import (
     METHOD as PRIMARY_INFERENCE_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
     PREDICTOR_RULE as PRIMARY_PREDICTOR_RULE,
+)
+from cwc.governance.average_conditional_mean_cs import (
     SEQUENCE_ORDER_RULE as PRIMARY_SEQUENCE_ORDER,
 )
 
@@ -143,8 +155,8 @@ def deterministic_three_way_task_split(
         raise ValueError("calibration + G1 holdout must leave >50% for confirmatory tasks")
 
     n_total = len(ranked)
-    n_cal = max(1, int(math.floor(n_total * calibration_fraction)))
-    n_g1 = max(1, int(math.floor(n_total * generalization_holdout_fraction)))
+    n_cal = max(1, math.floor(n_total * calibration_fraction))
+    n_g1 = max(1, math.floor(n_total * generalization_holdout_fraction))
     if n_cal + n_g1 >= n_total - 1:
         raise ValueError("three-way partition leaves too few confirmatory tasks")
 
@@ -172,7 +184,7 @@ def deterministic_task_split(
         tasks,
         key=lambda task: hashlib.sha256(("DGC-SPLIT-V1:" + task).encode("utf-8")).digest(),
     )
-    n_cal = max(1, int(math.floor(len(ranked) * calibration_fraction)))
+    n_cal = max(1, math.floor(len(ranked) * calibration_fraction))
     calibration = tuple(sorted(ranked[:n_cal]))
     confirmatory = tuple(sorted(ranked[n_cal:]))
     if set(calibration) & set(confirmatory) or len(calibration) + len(confirmatory) != len(tasks):
@@ -275,7 +287,7 @@ def approximate_required_trials_per_task(
     z_alpha = NormalDist().inv_cdf(1.0 - plan.per_claim_alpha)
     z_power = NormalDist().inv_cdf(plan.target_power)
     total_required = ((z_alpha + z_power) * sigma / effect) ** 2
-    per_task = max(plan.min_trials_per_task, int(math.ceil(total_required / confirmatory_task_count)))
+    per_task = max(plan.min_trials_per_task, math.ceil(total_required / confirmatory_task_count))
     if per_task > plan.max_trials_per_task:
         raise RuntimeError(
             f"UNDERPOWERED: required_trials_per_task={per_task} exceeds cap={plan.max_trials_per_task}"

@@ -77,8 +77,8 @@ class DistributedEvalSpec:
     def __post_init__(self) -> None:
         if not self.experiment_id.strip():
             raise ValueError("experiment_id required")
-        tasks = tuple(sorted(set(x.strip() for x in self.task_ids if x.strip())))
-        policies = tuple(sorted(set(x.strip() for x in self.policy_ids if x.strip())))
+        tasks = tuple(sorted({x.strip() for x in self.task_ids if x.strip()}))
+        policies = tuple(sorted({x.strip() for x in self.policy_ids if x.strip()}))
         if len(tasks) != len(self.task_ids) or not tasks:
             raise ValueError("task_ids must be non-empty and unique")
         if len(policies) != len(self.policy_ids) or not policies:

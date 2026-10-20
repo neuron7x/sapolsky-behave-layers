@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,9 +36,9 @@ def certify_weighted_l1_transport_geometry(*, feature_weights: Mapping[str, floa
     lips = tuple(float(coordinate_lipschitz[n]) for n in names)
     if any(not math.isfinite(w) or w <= 0.0 for w in weights):
         raise ValueError("feature weights must be finite and >0")
-    if any(not math.isfinite(l) or l < 0.0 for l in lips):
+    if any(not math.isfinite(lip) or lip < 0.0 for lip in lips):
         raise ValueError("coordinate Lipschitz constants must be finite and >=0")
-    k = max((l/w for l,w in zip(lips,weights,strict=True)), default=0.0)
+    k = max((lip/w for lip,w in zip(lips,weights,strict=True)), default=0.0)
     payload = {"features": list(names), "weights": list(weights), "coordinate_lipschitz": list(lips), "feature_authority_digest": feature_authority_digest}
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return WeightedL1TransportGeometry(names, weights, lips, k, feature_authority_digest, digest)

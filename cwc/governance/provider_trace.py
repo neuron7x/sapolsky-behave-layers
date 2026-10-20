@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping
 
 from cwc.governance.cost_accounting import MeteredDecisionCost, ProviderRateCard
 
@@ -216,10 +216,11 @@ def verify_client_evidence(
     point_savings = 1.0 - dgc_cost / base_cost
 
     q_pairs = [(g[baseline_policy].quality_score, g[dgc_policy].quality_score) for g in pairs]
-    if any(a is None or b is None for a, b in q_pairs):
+    scored_pairs = [(a, b) for a, b in q_pairs if a is not None and b is not None]
+    if len(scored_pairs) != len(q_pairs):
         point_quality = float("nan")
     else:
-        point_quality = sum(float(b) - float(a) for a, b in q_pairs) / len(q_pairs)
+        point_quality = sum(float(b) - float(a) for a, b in scored_pairs) / len(q_pairs)
 
     if savings_lower_bound is None or quality_delta_lower_bound is None:
         return ClientVerificationCertificate(workload_id, len(pairs), baseline_policy, dgc_policy, point_savings, float("-inf"), point_quality, float("-inf"), coverage_equal, all_client, all_bound, False, "PREREGISTERED_BOUNDS_MISSING")

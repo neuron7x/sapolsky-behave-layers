@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import TypedDict
 
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.generalization_registry import verify_generalization_registry_document
@@ -81,7 +82,7 @@ def load_fault_spec(path: Path) -> dict[str, object]:
     if classes != REQUIRED_FAULT_CLASSES:
         raise FaultInjectionSpecError("fault spec must contain exact required fault-class population")
     invariants = doc.get("global_invariants")
-    if not isinstance(invariants, list) or set(str(value) for value in invariants) != REQUIRED_GLOBAL_INVARIANTS:
+    if not isinstance(invariants, list) or {str(value) for value in invariants} != REQUIRED_GLOBAL_INVARIANTS:
         raise FaultInjectionSpecError("fault spec global invariant population mismatch")
     return doc
 
@@ -94,6 +95,18 @@ def semantic_fault_spec_digest(doc: Mapping[str, object]) -> str:
         "outcomes_observed": doc["outcomes_observed"],
     }
     return sha256_bytes(canonical_json_bytes(payload))
+
+
+class _FaultInjectionSpecPayload(TypedDict):
+    family_id: str
+    repository_commit: str
+    repository_tree: str
+    execution_manifest_freeze_digest: str
+    generalization_registry_digest: str
+    fault_spec_path: str
+    fault_spec_sha256: str
+    fault_spec_semantic_digest: str
+    case_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,7 +149,10 @@ def build_fault_injection_spec_authority(
         raise FaultInjectionSpecError("fault preregistration upstream family mismatch")
     if generalization.get("execution_manifest_freeze_digest") != execution.get("freeze_digest"):
         raise FaultInjectionSpecError("fault preregistration lost execution/generalization lineage")
-    payload = {
+    cases = spec["cases"]
+    if not isinstance(cases, list):
+        raise FaultInjectionSpecError("fault spec requires cases")
+    payload: _FaultInjectionSpecPayload = {
         "family_id": str(execution["family_id"]),
         "repository_commit": str(execution["repository_commit"]),
         "repository_tree": str(execution["repository_tree"]),
@@ -145,7 +161,7 @@ def build_fault_injection_spec_authority(
         "fault_spec_path": rel,
         "fault_spec_sha256": sha256_file(spec_path),
         "fault_spec_semantic_digest": semantic_fault_spec_digest(spec),
-        "case_count": len(spec["cases"]),
+        "case_count": len(cases),
     }
     return FaultInjectionSpecAuthority(
         **payload,

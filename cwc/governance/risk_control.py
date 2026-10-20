@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import itertools
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,7 +52,7 @@ def conformal_risk_control(
     grid = [float(x) for x in thresholds]
     if any(not math.isfinite(x) for x in grid):
         raise ValueError("thresholds must be finite")
-    if any(b <= a for a, b in zip(grid, grid[1:])):
+    if any(b <= a for a, b in itertools.pairwise(grid)):
         raise ValueError("thresholds must be strictly increasing")
     alpha = float(risk_limit)
     B = float(loss_upper_bound)
@@ -67,7 +68,7 @@ def conformal_risk_control(
         row = [float(x) for x in raw_row]
         if any(not math.isfinite(x) or x < 0.0 or x > B for x in row):
             raise ValueError("loss outside declared [0,B] support")
-        if any(next_loss > loss + 1e-12 for loss, next_loss in zip(row, row[1:])):
+        if any(next_loss > loss + 1e-12 for loss, next_loss in itertools.pairwise(row)):
             raise ValueError("loss must be non-increasing in threshold")
         if row[-1] > alpha + 1e-12:
             raise ValueError("most conservative threshold must satisfy per-row risk limit")

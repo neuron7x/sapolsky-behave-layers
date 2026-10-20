@@ -4,9 +4,9 @@ import hashlib
 import json
 import shutil
 import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Callable, Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verification_contract import CANONICAL_REGRESSION_COMMAND
@@ -329,7 +329,7 @@ def build_p19_external_verifier_activation_authority(
     if len(set(key_digests)) < policy.minimum_distinct_signer_keys:
         raise P19ExternalVerifierActivationError("regression activation signer keys are not sufficiently distinct")
 
-    ordered = sorted(zip(principals, key_digests, attestation_rels, signature_rels, signature_receipts), key=lambda row: row[0])
+    ordered = sorted(zip(principals, key_digests, attestation_rels, signature_rels, signature_receipts, strict=True), key=lambda row: row[0])
     principals_t = tuple(row[0] for row in ordered)
     keys_t = tuple(row[1] for row in ordered)
     attest_t = tuple(row[2] for row in ordered)
@@ -424,6 +424,6 @@ def verify_p19_external_verifier_activation_authority_document(
     )
     if rebuilt.authority_digest != _sha("authority_digest", doc.get("authority_digest")):
         raise P19ExternalVerifierActivationError("verifier activation authority differs from raw signature replay")
-    if rebuilt.document != doc:
+    if canonical_json_bytes(rebuilt.document) + b"\n" != raw:
         raise P19ExternalVerifierActivationError("verifier activation authority document differs from recomputation")
     return doc

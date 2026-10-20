@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.external_materialization import parse_terminal_dataset_manifest
 from cwc.governance.materialization_transaction import (
@@ -40,6 +41,13 @@ class TerminalSandboxBuildError(RuntimeError):
 class TerminalSandboxBuildResult:
     population: SandboxImagePopulation
     receipts: tuple[SandboxImageBuildReceipt, ...]
+
+
+def _int_value(value: object) -> int:
+    # Mirrors the TypeError int() already raises for a missing/non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise TypeError(f"expected an integer, got {type(value).__name__}")
+    return int(value)
 
 
 def _tree_digest(root: Path) -> str:
@@ -131,7 +139,7 @@ def build_terminal_sandbox_population(
         Path(materialization_reference_path)
     )
     try:
-        expected_count = int(binding.get("expected_task_count"))
+        expected_count = _int_value(binding.get("expected_task_count"))
     except (TypeError, ValueError) as exc:
         raise TerminalSandboxBuildError(
             "materialization expected_task_count malformed"

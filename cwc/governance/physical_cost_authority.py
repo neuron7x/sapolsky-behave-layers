@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.physical_cost_evidence import (
+    PRODUCT_COST_COMPONENTS,
     CostAuthority,
     CostComponentEvidence,
-    PRODUCT_COST_COMPONENTS,
     PhysicalCostCertificate,
     certify_physical_trial_cost,
 )
@@ -21,6 +22,13 @@ SOURCE_SCHEMA = "DGC_PHYSICAL_COST_SOURCE_V1"
 
 class PhysicalCostAuthorityError(RuntimeError):
     pass
+
+
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _sha(name: str, value: object) -> str:
@@ -39,7 +47,7 @@ def _req(name: str, value: object) -> str:
 
 def _finite_nonnegative(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_value(value)
     except (TypeError, ValueError) as exc:
         raise PhysicalCostAuthorityError(f"{name} must be numeric") from exc
     if not math.isfinite(result) or result < 0.0:

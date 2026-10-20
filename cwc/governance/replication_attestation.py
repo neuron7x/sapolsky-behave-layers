@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import shutil
 import subprocess
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import subprocess
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping
+from typing import TypedDict
 
 from cwc.governance.evidence_packaging_authority import (
     ALLOWED_ADDED_PREFIXES,
@@ -13,7 +14,10 @@ from cwc.governance.evidence_packaging_authority import (
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
-from cwc.governance.p19_external_verification_plan import load_p19_external_verification_plan
+from cwc.governance.p19_external_verification_plan import (
+    P19ExternalVerificationPlan,
+    load_p19_external_verification_plan,
+)
 from cwc.governance.p19_external_verifier_activation import (
     verify_p19_external_verifier_activation_authority_document,
 )
@@ -41,8 +45,7 @@ def _git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
         return subprocess.run(
             ["git", "-C", str(root), *args],
             check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except (OSError, subprocess.CalledProcessError) as exc:
@@ -155,7 +158,7 @@ def _collect_p19_paths(root: Path, p19_rel: str) -> set[str]:
     return collected
 
 
-def _collect_activation_paths(root: Path, plan) -> set[str]:
+def _collect_activation_paths(root: Path, plan: P19ExternalVerificationPlan) -> set[str]:
     if not plan.activation_authority_path:
         raise QualifiedEvidenceBundleError("active Plan V4 lacks activation-authority locator")
     activation_rel = _safe_rel(plan.activation_authority_path, label="P19 verifier activation authority")
@@ -255,6 +258,15 @@ def _collect_verification_transcript_paths(root: Path, report_rel: str) -> tuple
     return collected, empty_allowed
 
 
+class _QualifiedBundleFilePayload(TypedDict):
+    path: str
+    role: str
+    sha256: str
+    bytes: int
+    git_mode: str
+    git_blob_oid: str
+
+
 @dataclass(frozen=True, slots=True)
 class QualifiedBundleFile:
     path: str
@@ -346,6 +358,12 @@ def build_qualified_evidence_bundle_authority(
         pkg_entry = _tree_entry(root, packaging.packaging_commit, rel)
         if pkg_entry is None:
             raise QualifiedEvidenceBundleError(f"required qualification subject is not tracked in T_pkg: {rel}")
+        # The record hashes working-tree bytes but binds the T_pkg blob OID, so both must denote
+        # the same object: the path must still be in the index and its bytes must hash to that blob.
+        if not _git(root, "ls-files", "--cached", "--", rel).stdout.strip():
+            raise QualifiedEvidenceBundleError(f"required qualification subject is not tracked in T_pkg index: {rel}")
+        if _git(root, "hash-object", "--no-filters", "--", rel).stdout.strip() != pkg_entry[1]:
+            raise QualifiedEvidenceBundleError(f"working-tree bytes differ from T_pkg blob: {rel}")
         if rel in ALLOWED_MUTABLE_EXACT:
             role = ROLE_PACKAGING_EVIDENCE
         elif exec_entry is not None:
@@ -359,7 +377,7 @@ def build_qualified_evidence_bundle_authority(
                 )
             role = ROLE_PACKAGING_EVIDENCE
         mode, blob_oid = pkg_entry
-        payload = {
+        record_payload: _QualifiedBundleFilePayload = {
             "path": rel,
             "role": role,
             "sha256": sha256_file(path),
@@ -367,7 +385,9 @@ def build_qualified_evidence_bundle_authority(
             "git_mode": mode,
             "git_blob_oid": blob_oid,
         }
-        records.append(QualifiedBundleFile(**payload, record_digest=sha256_bytes(canonical_json_bytes(payload))))
+        records.append(
+            QualifiedBundleFile(**record_payload, record_digest=sha256_bytes(canonical_json_bytes(record_payload)))
+        )
 
     ordered = tuple(records)
     manifest_rows = [asdict(row) for row in ordered]

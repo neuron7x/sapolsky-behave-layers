@@ -57,10 +57,7 @@ def test_receipt_symlink_is_rejected(tmp_path: Path):
     target = tmp_path / "artifacts/dgc-product-v1/generated/check/real.json"
     target.write_bytes(canonical_receipt_bytes(doc))
     link = tmp_path / "artifacts/dgc-product-v1/generated/check/receipt.json"
-    try:
-        link.symlink_to(target.name)
-    except OSError:
-        pytest.skip("symlink unavailable")
+    link.symlink_to(target.name)
     with pytest.raises(P19VerificationCheckReceiptError, match="non-symlink"):
         load_check_receipt(link, repository_root=tmp_path)
 
@@ -71,7 +68,20 @@ def test_receipt_detects_raw_evidence_mutation(tmp_path: Path):
     path.write_bytes(canonical_receipt_bytes(doc))
     evidence = tmp_path / str(doc["evidence_path"])
     evidence.write_bytes(b'{"verified":false}\n')
-    with pytest.raises(P19VerificationCheckReceiptError, match="bytes differ"):
+    with pytest.raises(P19VerificationCheckReceiptError, match="byte count mismatch"):
+        load_check_receipt(path, repository_root=tmp_path)
+
+
+def test_receipt_detects_same_length_raw_evidence_mutation(tmp_path: Path):
+    doc = _document(tmp_path)
+    path = tmp_path / "artifacts/dgc-product-v1/generated/check/receipt.json"
+    path.write_bytes(canonical_receipt_bytes(doc))
+    evidence = tmp_path / str(doc["evidence_path"])
+    original = evidence.read_bytes()
+    mutated = bytes([original[0] ^ 0x01]) + original[1:]
+    assert len(mutated) == len(original) and mutated != original
+    evidence.write_bytes(mutated)
+    with pytest.raises(P19VerificationCheckReceiptError, match="evidence bytes differ from receipt"):
         load_check_receipt(path, repository_root=tmp_path)
 
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 from cwc.governance.ccf_oracle_audit_authority import (
     build_ccf_oracle_audit_authority,
@@ -250,14 +250,27 @@ def build_independent_replication_authority_v3(
     if not signature_receipt.signature_verified:
         raise IndependentReplicationAuthorityV3Error("replicator signature is not verified")
 
-    payload = {
+    primary_p9_scientific_authority_digest = _sha("primary P9 authority", primary_p9.get("authority_digest"))
+    primary_anytime_p9_authority_digest = _sha("primary anytime P9 authority", primary_anytime.get("authority_digest"))
+    primary_generalization_authority_digest = _sha("primary G1-G5 authority", primary_generalization.get("authority_digest"))
+    replica_p9_scientific_authority_digest = _sha("replica P9 authority", declared_replica_p9.get("authority_digest"))
+    replica_anytime_p9_authority_digest = _sha("replica anytime P9 authority", declared_replica_anytime.get("authority_digest"))
+    harness_freeze_digest = _sha("harness_freeze_digest", primary_p9.get("harness_freeze_digest"))
+    confirmatory_task_manifest_digest = _sha("confirmatory_task_manifest_digest", primary_p9.get("confirmatory_task_manifest_digest"))
+    statistical_plan_digest = _sha("statistical_plan_digest", primary_anytime.get("statistical_plan_digest"))
+    frozen_dgc_policy_digest = _sha("frozen_dgc_policy_digest", primary_generalization.get("frozen_dgc_policy_digest"))
+    replica_exact_panel_supported = declared_replica_anytime.get("exact_panel_supported") is True
+    replica_anytime_average_conditional_mean_supported = declared_replica_anytime.get("anytime_average_conditional_mean_supported") is True
+    replica_scientific_p9_supported = declared_replica_p9.get("scientific_p9_supported") is True
+    replicator_principal = str(attestation["replicator_principal"])
+    payload: dict[str, object] = {
         "replication_scope": SCOPE,
         "replication_package_digest": package_digest,
-        "primary_p9_scientific_authority_digest": _sha("primary P9 authority", primary_p9.get("authority_digest")),
-        "primary_anytime_p9_authority_digest": _sha("primary anytime P9 authority", primary_anytime.get("authority_digest")),
-        "primary_generalization_authority_digest": _sha("primary G1-G5 authority", primary_generalization.get("authority_digest")),
-        "replica_p9_scientific_authority_digest": _sha("replica P9 authority", declared_replica_p9.get("authority_digest")),
-        "replica_anytime_p9_authority_digest": _sha("replica anytime P9 authority", declared_replica_anytime.get("authority_digest")),
+        "primary_p9_scientific_authority_digest": primary_p9_scientific_authority_digest,
+        "primary_anytime_p9_authority_digest": primary_anytime_p9_authority_digest,
+        "primary_generalization_authority_digest": primary_generalization_authority_digest,
+        "replica_p9_scientific_authority_digest": replica_p9_scientific_authority_digest,
+        "replica_anytime_p9_authority_digest": replica_anytime_p9_authority_digest,
         "primary_execution_population_digest": primary_exec_pop,
         "replica_execution_population_digest": replica_exec_pop,
         "primary_execution_bundle_digest": primary_exec_bundle,
@@ -266,23 +279,51 @@ def build_independent_replication_authority_v3(
         "replica_physical_cost_population_digest": replica_cost_pop,
         "primary_ccf_evidence_population_digest": primary_ccf_pop,
         "replica_ccf_evidence_population_digest": replica_ccf_pop,
-        "harness_freeze_digest": _sha("harness_freeze_digest", primary_p9.get("harness_freeze_digest")),
-        "confirmatory_task_manifest_digest": _sha("confirmatory_task_manifest_digest", primary_p9.get("confirmatory_task_manifest_digest")),
-        "statistical_plan_digest": _sha("statistical_plan_digest", primary_anytime.get("statistical_plan_digest")),
-        "frozen_dgc_policy_digest": _sha("frozen_dgc_policy_digest", primary_generalization.get("frozen_dgc_policy_digest")),
+        "harness_freeze_digest": harness_freeze_digest,
+        "confirmatory_task_manifest_digest": confirmatory_task_manifest_digest,
+        "statistical_plan_digest": statistical_plan_digest,
+        "frozen_dgc_policy_digest": frozen_dgc_policy_digest,
         "methodology_identity_matched": methodology_matched,
         "fresh_execution_verified": fresh,
-        "replica_exact_panel_supported": declared_replica_anytime.get("exact_panel_supported") is True,
-        "replica_anytime_average_conditional_mean_supported": declared_replica_anytime.get("anytime_average_conditional_mean_supported") is True,
-        "replica_scientific_p9_supported": declared_replica_p9.get("scientific_p9_supported") is True,
+        "replica_exact_panel_supported": replica_exact_panel_supported,
+        "replica_anytime_average_conditional_mean_supported": replica_anytime_average_conditional_mean_supported,
+        "replica_scientific_p9_supported": replica_scientific_p9_supported,
         "replication_signature_receipt_digest": signature_receipt.digest,
-        "replicator_principal": str(attestation["replicator_principal"]),
+        "replicator_principal": replicator_principal,
         "signed_independence_attested": True,
         "social_independence_machine_proven": False,
         "independent_replication_supported": True,
     }
     return IndependentReplicationAuthorityV3(
-        **payload,
+        replication_scope=SCOPE,
+        replication_package_digest=package_digest,
+        primary_p9_scientific_authority_digest=primary_p9_scientific_authority_digest,
+        primary_anytime_p9_authority_digest=primary_anytime_p9_authority_digest,
+        primary_generalization_authority_digest=primary_generalization_authority_digest,
+        replica_p9_scientific_authority_digest=replica_p9_scientific_authority_digest,
+        replica_anytime_p9_authority_digest=replica_anytime_p9_authority_digest,
+        primary_execution_population_digest=primary_exec_pop,
+        replica_execution_population_digest=replica_exec_pop,
+        primary_execution_bundle_digest=primary_exec_bundle,
+        replica_execution_bundle_digest=replica_exec_bundle,
+        primary_physical_cost_population_digest=primary_cost_pop,
+        replica_physical_cost_population_digest=replica_cost_pop,
+        primary_ccf_evidence_population_digest=primary_ccf_pop,
+        replica_ccf_evidence_population_digest=replica_ccf_pop,
+        harness_freeze_digest=harness_freeze_digest,
+        confirmatory_task_manifest_digest=confirmatory_task_manifest_digest,
+        statistical_plan_digest=statistical_plan_digest,
+        frozen_dgc_policy_digest=frozen_dgc_policy_digest,
+        methodology_identity_matched=methodology_matched,
+        fresh_execution_verified=fresh,
+        replica_exact_panel_supported=replica_exact_panel_supported,
+        replica_anytime_average_conditional_mean_supported=replica_anytime_average_conditional_mean_supported,
+        replica_scientific_p9_supported=replica_scientific_p9_supported,
+        replication_signature_receipt_digest=signature_receipt.digest,
+        replicator_principal=replicator_principal,
+        signed_independence_attested=True,
+        social_independence_machine_proven=False,
+        independent_replication_supported=True,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 

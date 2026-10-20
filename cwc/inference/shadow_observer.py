@@ -65,7 +65,7 @@ def run_shadow_observed_generate_batch(
     uncertainty_state: str = "OBSERVATIONAL_ONLY",
     abstention_reason: str = "SHADOW_NO_CAUSAL_AUTHORITY",
     **generation_kwargs: Any,
-):
+) -> object:
     """Delegate to the base engine first; observer failure cannot alter base output."""
     started = time.perf_counter()
     result = engine.generate_batch(prompt_tokens, **generation_kwargs)

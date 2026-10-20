@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.b2_fit_authority import verify_b2_fit_authority_document
 from cwc.governance.calibration_variance import CalibrationObservation
@@ -27,6 +29,18 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise TrialSizingAuthorityError(f"{name} must be lowercase SHA-256")
     return text
+
+
+def _int_arg(value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not int-convertible")
+    return int(value)
+
+
+def _iterable_arg(name: str, value: object) -> Iterable[object]:
+    if not isinstance(value, Iterable):
+        raise TypeError(f"{name} of type {type(value).__name__} is not iterable")
+    return value
 
 
 def _json(path: Path, *, schema: str) -> dict[str, object]:
@@ -69,6 +83,21 @@ class TrialSizingAuthority:
         }
 
 
+class _TrialSizingAuthorityPayload(TypedDict):
+    family_id: str
+    execution_manifest_freeze_digest: str
+    b2_fit_authority_digest: str
+    harness_freeze_digest: str
+    task_partition_receipt_digest: str
+    sizing_input_sha256: str
+    sizing_receipt_sha256: str
+    plan_digest: str
+    calibration_design_digest: str
+    confirmatory_task_count: int
+    required_trials_per_task: int
+    comparison_count: int
+
+
 def authorize_trial_sizing(
     *,
     execution_manifest_freeze_path: Path,
@@ -103,7 +132,10 @@ def authorize_trial_sizing(
         raise TrialSizingAuthorityError("trial-sizing family lineage mismatch")
 
     try:
-        plan = ProductStatisticalPlan(**dict(sizing_input.get("plan", {})))
+        raw_plan = sizing_input.get("plan", {})
+        if not isinstance(raw_plan, Iterable):
+            raise TypeError("trial-sizing plan is not a mapping or pair iterable")
+        plan = ProductStatisticalPlan(**dict(raw_plan))
     except (TypeError, ValueError) as exc:
         raise TrialSizingAuthorityError("invalid trial-sizing statistical plan") from exc
     if plan.digest != execution.get("statistical_plan_digest"):
@@ -112,6 +144,9 @@ def authorize_trial_sizing(
         raise TrialSizingAuthorityError("task partition plan differs from sizing plan")
 
     try:
+        observation_rows = sizing_input["observations"]
+        if not isinstance(observation_rows, Iterable):
+            raise TypeError("trial-sizing observations are not iterable")
         observations = tuple(
             CalibrationObservation(
                 comparison_id=row["comparison_id"],
@@ -119,15 +154,18 @@ def authorize_trial_sizing(
                 replicate=int(row["replicate"]),
                 value=float(row["value"]),
             )
-            for row in sizing_input["observations"]
+            for row in observation_rows
         )
-        effects = {str(key): float(value) for key, value in sizing_input["effects_of_interest"].items()}
-        confirmatory_task_count = int(sizing_input["confirmatory_task_count"])
+        raw_effects = sizing_input["effects_of_interest"]
+        if not isinstance(raw_effects, Mapping):
+            raise TypeError("trial-sizing effects_of_interest is not a mapping")
+        effects = {str(key): float(value) for key, value in raw_effects.items()}
+        confirmatory_task_count = _int_arg(sizing_input["confirmatory_task_count"])
     except (KeyError, TypeError, ValueError) as exc:
         raise TrialSizingAuthorityError("malformed trial-sizing input") from exc
 
-    calibration = tuple(sorted(str(x) for x in partition["calibration_task_ids"]))
-    confirmatory = tuple(sorted(str(x) for x in partition["confirmatory_task_ids"]))
+    calibration = tuple(sorted(str(x) for x in _iterable_arg("calibration_task_ids", partition["calibration_task_ids"])))
+    confirmatory = tuple(sorted(str(x) for x in _iterable_arg("confirmatory_task_ids", partition["confirmatory_task_ids"])))
     if confirmatory_task_count != len(confirmatory):
         raise TrialSizingAuthorityError("confirmatory_task_count must equal frozen confirmatory partition size")
     comparison_ids = tuple(sorted({row.comparison_id for row in observations}))
@@ -151,12 +189,16 @@ def authorize_trial_sizing(
         )
     except (TypeError, ValueError, RuntimeError) as exc:
         raise TrialSizingAuthorityError("cluster-aware trial sizing failed") from exc
-    if asdict(recomputed) != declared_receipt:
+    # Compare in the JSON domain the declared receipt lives in: asdict() keeps
+    # ``comparisons`` as a tuple while the parsed file holds a list, so a raw
+    # dict comparison rejected every genuine receipt. Canonical bytes also keep
+    # 1 / 1.0 / true distinct, which Python ``==`` would conflate.
+    if canonical_json_bytes(asdict(recomputed)) != canonical_json_bytes(declared_receipt):
         raise TrialSizingAuthorityError("declared trial-sizing receipt does not equal deterministic recomputation")
     if recomputed.plan_digest != plan.digest:
         raise TrialSizingAuthorityError("trial-sizing receipt plan digest mismatch")
 
-    payload = {
+    payload: _TrialSizingAuthorityPayload = {
         "family_id": family,
         "execution_manifest_freeze_digest": execution_digest,
         "b2_fit_authority_digest": b2_digest,
@@ -193,10 +235,10 @@ def verify_trial_sizing_authority_document(path: Path) -> dict[str, object]:
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise TrialSizingAuthorityError("trial-sizing authority digest mismatch")
-    if int(doc.get("confirmatory_task_count", 0)) <= 1:
+    if _int_arg(doc.get("confirmatory_task_count", 0)) <= 1:
         raise TrialSizingAuthorityError("confirmatory_task_count must be > 1")
-    if int(doc.get("required_trials_per_task", 0)) <= 0:
+    if _int_arg(doc.get("required_trials_per_task", 0)) <= 0:
         raise TrialSizingAuthorityError("required_trials_per_task must be > 0")
-    if int(doc.get("comparison_count", 0)) <= 0:
+    if _int_arg(doc.get("comparison_count", 0)) <= 0:
         raise TrialSizingAuthorityError("comparison_count must be > 0")
     return doc

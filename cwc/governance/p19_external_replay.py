@@ -1,27 +1,34 @@
 from __future__ import annotations
 
-import json
 import subprocess
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path, PurePosixPath
-from typing import Callable, Mapping
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.ccf_oracle_audit_authority import build_ccf_oracle_audit_authority
 from cwc.governance.executed_p9_anytime_authority import build_anytime_p9_authority
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
-from cwc.governance.fault_tolerance_authority import build_fault_tolerance_authority, verify_fault_tolerance_authority_document
+from cwc.governance.fault_tolerance_authority import (
+    build_fault_tolerance_authority,
+    verify_fault_tolerance_authority_document,
+)
 from cwc.governance.generalization_anytime_authority import (
     build_generalization_anytime_authority,
     build_generalization_axis_anytime_authority,
     verify_generalization_anytime_authority_document,
     verify_generalization_axis_anytime_authority_document,
 )
-from cwc.governance.generalization_registry import GeneralizationAxis, REQUIRED_AXES
+from cwc.governance.generalization_registry import REQUIRED_AXES, GeneralizationAxis
 from cwc.governance.generalization_source_guard import verify_generalization_source_binding
 from cwc.governance.independent_replication_authority_v4 import (
     build_independent_replication_authority_v4,
     verify_independent_replication_authority_v4_document,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
+from cwc.governance.p9_scientific_authority_v3 import (
+    build_p9_scientific_authority_v3,
+    verify_p9_scientific_authority_v3_document,
+)
 from cwc.governance.p19_evidence_root import (
     METHODOLOGY_ANCHORS,
     REQUIRED_EXTERNAL_REPLAY_INPUTS,
@@ -30,16 +37,18 @@ from cwc.governance.p19_evidence_root import (
     verify_family_p19_evidence_root_document,
 )
 from cwc.governance.p19_external_verification_contract import CHECK_METHOD_IDS
-from cwc.governance.p9_scientific_authority_v3 import (
-    build_p9_scientific_authority_v3,
-    verify_p9_scientific_authority_v3_document,
-)
 
 EVIDENCE_SCHEMA = "DGC_P19_EXTERNAL_CHECK_EVIDENCE_V1"
 
 
 class P19ExternalReplayError(RuntimeError):
     pass
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise P19ExternalReplayError(f"{name} must be an integer")
+    return int(value)
 
 
 def _canonical_rel(value: object, *, label: str) -> str:
@@ -128,9 +137,9 @@ def _subject_root(root: Path, p19: Mapping[str, object], label: str, *, rehash: 
         ]
         if files != row.get("files"):
             raise P19ExternalReplayError(f"subject root {label} file population changed")
-        if len(manifest) != int(row.get("file_count", -1)):
+        if len(manifest) != _int(f"subject root {label} file_count", row.get("file_count", -1)):
             raise P19ExternalReplayError(f"subject root {label} file count changed")
-        if sum(int(item[3]) for item in manifest) != int(row.get("total_bytes", -1)):
+        if sum(int(item[3]) for item in manifest) != _int(f"subject root {label} total_bytes", row.get("total_bytes", -1)):
             raise P19ExternalReplayError(f"subject root {label} byte count changed")
         if sha256_bytes(canonical_json_bytes(manifest)) != row.get("manifest_sha256"):
             raise P19ExternalReplayError(f"subject root {label} manifest digest changed")
@@ -150,7 +159,7 @@ def _replay_row(p19: Mapping[str, object], label: str) -> Mapping[str, object]:
 def _replay_file(root: Path, p19: Mapping[str, object], label: str) -> Path:
     row = _replay_row(p19, label)
     path = _repo_file(root, row.get("path"), label=f"external replay input {label}")
-    if sha256_file(path) != row.get("sha256") or path.stat().st_size != int(row.get("bytes", -1)):
+    if sha256_file(path) != row.get("sha256") or path.stat().st_size != _int(f"external replay input {label} bytes", row.get("bytes", -1)):
         raise P19ExternalReplayError(f"external replay input {label} changed after P19 seal")
     return path
 
@@ -180,8 +189,7 @@ def _git(root: Path, *args: str) -> str:
         proc = subprocess.run(
             ["git", "-C", str(root), *args],
             check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except OSError as exc:
@@ -202,8 +210,7 @@ def replay_repository_identity(root: Path, p19: Mapping[str, object]) -> dict[st
         proc = subprocess.run(
             ["git", "-C", str(root), "merge-base", "--is-ancestor", commit, head],
             check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
         )
     except OSError as exc:
         raise P19ExternalReplayError("git executable unavailable") from exc
@@ -267,7 +274,10 @@ P19_PAYLOAD_KEYS = (
 def replay_p19_seal(root: Path, p19: Mapping[str, object]) -> dict[str, object]:
     replay_theorem_and_plan_identity(root, p19)
     replay_subject_roots(root, p19)
-    for stage in p19.get("stage_evidence", []):
+    stages = p19.get("stage_evidence", [])
+    if not isinstance(stages, Iterable):
+        raise P19ExternalReplayError("P19 stage evidence malformed")
+    for stage in stages:
         if not isinstance(stage, Mapping):
             raise P19ExternalReplayError("P19 stage evidence malformed")
         _stage_path(root, p19, str(stage.get("stage", "")))

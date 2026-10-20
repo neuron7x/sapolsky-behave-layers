@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 
@@ -15,6 +16,13 @@ _OCI_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 class SandboxImagePopulationError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
 
 
 def _sha(name: str, value: object) -> str:
@@ -160,7 +168,7 @@ def freeze_sandbox_image_population(
     runtime: str,
     materialization_reference_digest: str,
     task_manifest_sha256: str,
-    expected_task_count: int,
+    expected_task_count: object,
     bindings: Sequence[Mapping[str, object] | SandboxImageBinding],
 ) -> SandboxImagePopulation:
     family = _required("family_id", family_id)
@@ -172,7 +180,7 @@ def freeze_sandbox_image_population(
     if isinstance(expected_task_count, bool):
         raise SandboxImagePopulationError("expected_task_count must be an integer")
     try:
-        expected = int(expected_task_count)
+        expected = _int_arg(expected_task_count)
     except (TypeError, ValueError) as exc:
         raise SandboxImagePopulationError("expected_task_count must be an integer") from exc
     if expected <= 0:

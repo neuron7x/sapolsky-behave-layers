@@ -1,21 +1,22 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
+from cwc.governance.harness_freeze import DGC_ROLE
+from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
+from cwc.governance.mechanism_evidence_plan import MechanismStatisticalPlan
 from cwc.governance.mechanism_execution_freeze import (
     verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
 )
-from cwc.governance.harness_freeze import DGC_ROLE
 from cwc.governance.mechanism_harness_freeze import (
     verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
 )
-from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.mechanism_evidence_plan import MechanismStatisticalPlan
 from cwc.governance.mechanism_trial_sizing import verify_mechanism_trial_sizing_document
 from cwc.governance.task_partition import verify_task_partition_document
 
@@ -24,6 +25,27 @@ SCHEMA = "DGC_MECHANISM_EXECUTION_AUTHORITY_V1"
 
 class MechanismExecutionAuthorityError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
+def _iter_arg(value: object) -> Iterable[object]:
+    """Iteration over an untyped decoded value; non-iterables raise the TypeError iteration would raise."""
+    if isinstance(value, Iterable):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not iterable")
 
 
 def _sha(name: str, value: object) -> str:
@@ -70,6 +92,23 @@ def _json_repo_subject(
 
 def _task_digest(task_ids: tuple[str, ...]) -> str:
     return sha256_bytes(canonical_json_bytes(tuple(sorted(task_ids))))
+
+
+class _MechanismExecutionPayload(TypedDict):
+    family_id: str
+    execution_manifest_freeze_digest: str
+    harness_freeze_digest: str
+    task_partition_receipt_digest: str
+    mechanism_plan_digest: str
+    mechanism_sizing_receipt_digest: str
+    confirmatory_task_digest: str
+    confirmatory_task_count: int
+    policy_role_bindings: tuple[tuple[str, str], ...]
+    required_trials_per_task: int
+    max_cost_per_unit_usd: float
+    global_budget_usd: float
+    distributed_spec: dict[str, object]
+    distributed_spec_digest: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,7 +184,7 @@ def build_mechanism_execution_authority(
             "task partition full population differs from execution freeze"
         )
 
-    confirmatory_ids = tuple(sorted(str(x) for x in partition.get("confirmatory_task_ids", ())))
+    confirmatory_ids = tuple(sorted(str(x) for x in _iter_arg(partition.get("confirmatory_task_ids", ()))))
     if not confirmatory_ids or len(set(confirmatory_ids)) != len(confirmatory_ids):
         raise MechanismExecutionAuthorityError("confirmatory task population malformed")
     confirmatory_digest = _task_digest(confirmatory_ids)
@@ -160,7 +199,7 @@ def build_mechanism_execution_authority(
         raise MechanismExecutionAuthorityError(
             "mechanism execution tasks differ from final frozen harness"
         )
-    if int(sizing.get("confirmatory_task_count", -1)) != len(confirmatory_ids):
+    if _int_arg(sizing.get("confirmatory_task_count", -1)) != len(confirmatory_ids):
         raise MechanismExecutionAuthorityError(
             "mechanism sizing confirmatory count differs from frozen task population"
         )
@@ -197,14 +236,14 @@ def build_mechanism_execution_authority(
         expected_schema="DGC_BUDGET_MANIFEST_V1",
     )
     try:
-        max_cost = float(budget.get("max_cost_usd"))
+        max_cost = _float_arg(budget.get("max_cost_usd"))
     except (TypeError, ValueError) as exc:
         raise MechanismExecutionAuthorityError("frozen max_cost_usd is invalid") from exc
     if not (max_cost > 0):
         raise MechanismExecutionAuthorityError("frozen max_cost_usd must be > 0")
 
     try:
-        repeats = int(sizing.get("required_trials_per_task"))
+        repeats = _int_arg(sizing.get("required_trials_per_task"))
     except (TypeError, ValueError) as exc:
         raise MechanismExecutionAuthorityError("mechanism repeat count is invalid") from exc
     if not plan.min_trials_per_task <= repeats <= plan.max_trials_per_task:
@@ -224,7 +263,7 @@ def build_mechanism_execution_authority(
         harness_digest=_sha("comparison_frame_digest", harness.get("comparison_frame_digest")),
         statistical_plan_digest=plan.digest,
     )
-    spec_payload = {
+    spec_payload: dict[str, object] = {
         "experiment_id": spec.experiment_id,
         "task_ids": list(spec.task_ids),
         "policy_ids": list(spec.policy_ids),
@@ -236,7 +275,7 @@ def build_mechanism_execution_authority(
         "harness_digest": spec.harness_digest,
         "statistical_plan_digest": spec.statistical_plan_digest,
     }
-    payload = {
+    payload: _MechanismExecutionPayload = {
         "family_id": family,
         "execution_manifest_freeze_digest": execution_digest,
         "harness_freeze_digest": harness_digest,

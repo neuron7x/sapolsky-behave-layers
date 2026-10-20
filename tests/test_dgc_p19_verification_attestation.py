@@ -33,7 +33,8 @@ from cwc.governance.p19_verification_attestation import (
     make_p19_verification_attestation,
     verify_ssh_signed_p19_verification_attestation,
 )
-from cwc.governance.p19_verification_report import CHECK_RECEIPT_SCHEMA, build_p19_verification_report, report_bytes
+from cwc.governance.p19_verification_check_receipt import SCHEMA as CHECK_RECEIPT_SCHEMA
+from cwc.governance.p19_verification_report import build_p19_verification_report, report_bytes
 
 
 def _p19() -> dict[str, object]:
@@ -283,7 +284,7 @@ def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path:
         called = True
         raise AssertionError("SSH verifier must not run after transcript tamper")
 
-    with pytest.raises(P19VerificationAttestationError, match="bytes differ"):
+    with pytest.raises(P19VerificationAttestationError, match="byte count mismatch"):
         verify_ssh_signed_p19_verification_attestation(
             attestation_path=attestation,
             verification_report_path=report,

@@ -35,7 +35,7 @@ truth-gate:
 
 workflow-lint:
 	docker run --rm --user "$$(id -u):$$(id -g)" \
-		-v "$$(pwd):/repo" -w /repo rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
+		-v "$$(pwd):/repo" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
 		-color .github/workflows/*.yml
 
 secret-scan:
@@ -176,11 +176,14 @@ technical-quality-gate:
 # Coverage gate. The canonical GPU-capable floor remains 95%. A hermetic CPU
 # runner may explicitly set 91 because CUDA/NVML-only branches are unreachable;
 # its observed baseline is 91.04%, leaving essentially no regression margin.
+# The measured subject is the packages these suites own; the rest of cwc/ (governance,
+# replay, research_ops, ...) is gated by its own suites and must not dilute this ratio.
+COVERAGE_SUBJECT = --cov=cwc/instrumentation --cov=cwc/plasticity --cov=cwc/evidence --cov=cwc/assurance
 coverage:
 	$(PY) -m pytest -q -m "not slow and not mutation" \
 		tests/test_instrumentation_*.py tests/test_data_asset_audit.py tests/test_readiness_oracle.py \
 		experiments/wp3_plasticity_v1/tests/ \
-		--cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=$(COVERAGE_FAIL_UNDER)
+		$(COVERAGE_SUBJECT) --cov-branch --cov-report=term-missing --cov-fail-under=$(COVERAGE_FAIL_UNDER)
 
 properties:
 	$(PY) -m pytest -q tests/test_instrumentation_properties.py
@@ -205,8 +208,14 @@ reproduce-mechanism:
 # GLOB, not a hard-coded list: every bundle carrying a SHA256SUMS is checked, so an evidence
 # bundle can never be silently left unverified (this closed the wp4-end-to-end-v4 omission).
 verify-evidence:
-	@find artifacts -name SHA256SUMS -not -path '*/.git/*' -printf '%h\n' | sort | while read d; do \
-		echo "checking $$d"; (cd $$d && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; done
+	@find artifacts -name SHA256SUMS -not -path '*/.git/*' -printf '%h\n' | sort | while IFS= read -r d; do \
+		echo "checking $$d"; \
+		if grep -Eq '^[[:xdigit:]]{64} [ *]artifacts/' "$$d/SHA256SUMS"; then \
+			sha256sum -c "$$d/SHA256SUMS" >/dev/null && echo "  OK" || exit 1; \
+		else \
+			(cd "$$d" && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; \
+		fi; \
+	done
 
 validate-evidence:
 	PYTHONPATH=. $(PY) scripts/validate_evidence.py
@@ -225,73 +234,73 @@ install-dev:
 	VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
 
 rd03-gate:
-	python scripts/rd03_gate.py --self-test
-	python scripts/rd03_gate.py
+	$(PY) scripts/rd03_gate.py --self-test
+	$(PY) scripts/rd03_gate.py
 
 
 csca03r-gate:
-	python scripts/csca03r_gate.py --self-test
-	python scripts/csca03r_gate.py
+	$(PY) scripts/csca03r_gate.py --self-test
+	$(PY) scripts/csca03r_gate.py
 
 
 csca04-gate:
-	python scripts/csca04_gate.py
+	$(PY) scripts/csca04_gate.py
 
 csca05-gate:
-	python scripts/csca05_gate.py
+	$(PY) scripts/csca05_gate.py
 
 csca06a-gate:
-	python scripts/csca06a_gate.py
+	$(PY) scripts/csca06a_gate.py
 
 csca06a-r1-gate:
-	python scripts/csca06a_r1_gate.py
+	$(PY) scripts/csca06a_r1_gate.py
 
 
 csca06-info-gate:
-	python scripts/csca06_information_bound_gate.py
+	$(PY) scripts/csca06_information_bound_gate.py
 
 
 csca06b-gate:
-	python scripts/csca06b_gate.py
+	$(PY) scripts/csca06b_gate.py
 
 csca06c-gate:
-	python scripts/csca06c_gate.py
+	$(PY) scripts/csca06c_gate.py
 
 
 csca07-gate:
-	python scripts/csca07_gate.py --self-test
-	python scripts/csca07_gate.py
+	$(PY) scripts/csca07_gate.py --self-test
+	$(PY) scripts/csca07_gate.py
 
 csca08-gate:
-	python scripts/csca08_gate.py --self-test
-	python scripts/csca08_gate.py
+	$(PY) scripts/csca08_gate.py --self-test
+	$(PY) scripts/csca08_gate.py
 
 cog-countermodel01-gate:
-	python scripts/cog_countermodel01_gate.py --self-test
-	python scripts/cog_countermodel01_gate.py
+	$(PY) scripts/cog_countermodel01_gate.py --self-test
+	$(PY) scripts/cog_countermodel01_gate.py
 
 
 cog-epistemic01r-gate:
-	python scripts/cog_epistemic01r_gate.py --self-test
-	python scripts/cog_epistemic01r_gate.py
+	$(PY) scripts/cog_epistemic01r_gate.py --self-test
+	$(PY) scripts/cog_epistemic01r_gate.py
 
 
 cog-memory01-gate:
-	python scripts/cog_memory01_gate.py --self-test
-	python scripts/cog_memory01_gate.py
+	$(PY) scripts/cog_memory01_gate.py --self-test
+	$(PY) scripts/cog_memory01_gate.py
 
 
 cog-plan01-gate:
-	python scripts/cog_plan01_gate.py --self-test
-	python scripts/cog_plan01_gate.py
+	$(PY) scripts/cog_plan01_gate.py --self-test
+	$(PY) scripts/cog_plan01_gate.py
 
 cab01-q1-gate:
-	python scripts/cab01_q1_gate.py --self-test
-	python scripts/cab01_q1_gate.py
+	$(PY) scripts/cab01_q1_gate.py --self-test
+	$(PY) scripts/cab01_q1_gate.py
 
 cab01-q1-r1-gate:
-	python scripts/cab01_q1_r1_gate.py --self-test
-	python scripts/cab01_q1_r1_gate.py
+	$(PY) scripts/cab01_q1_r1_gate.py --self-test
+	$(PY) scripts/cab01_q1_r1_gate.py
 
 
 cog-self01-gate:

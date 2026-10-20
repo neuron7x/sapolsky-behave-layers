@@ -66,7 +66,7 @@ class BudgetLedger:
             and gpu_ok
         )
 
-    def spend(self, *, tokens: float = 0, money: float = 0, time: float = 0, gpu: float = 0, emergency: bool = False) -> "BudgetLedger":
+    def spend(self, *, tokens: float = 0, money: float = 0, time: float = 0, gpu: float = 0, emergency: bool = False) -> BudgetLedger:
         if not self.can_spend(tokens=tokens, money=money, time=time, gpu=gpu, emergency=emergency):
             raise RuntimeError("HARD_BUDGET_EXCEEDED")
         return BudgetLedger(

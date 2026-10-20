@@ -1687,21 +1687,21 @@
       "version": "4.61.1"
     },
     {
-      "bom-ref": "pkg:pypi/fsspec@2025.3.0",
+      "bom-ref": "pkg:pypi/fsspec@2026.9.0",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "A935FD1EA872591F2B5148907D103488FC523295E6C64B835CFAD8C3ECA44972"
+          "content": "0F08147951C8CB31D844C3547D631053B127863B60BE04CF06E121333EE0E2FE"
         },
         {
           "alg": "SHA-256",
-          "content": "EFB87AF3EFA9103F94CA91A7F8CB7A4DF91AF9F74FC106C9C7EA0EFD7277C1B3"
+          "content": "8DD6E646E99EA382BD85F97A45E6B526A442D79423A7DC673F1E2756D05FCB5F"
         }
       ],
       "name": "fsspec",
-      "purl": "pkg:pypi/fsspec@2025.3.0",
+      "purl": "pkg:pypi/fsspec@2026.9.0",
       "type": "library",
-      "version": "2025.3.0"
+      "version": "2026.9.0"
     },
     {
       "bom-ref": "pkg:pypi/gitdb@4.0.12",
@@ -1721,21 +1721,21 @@
       "version": "4.0.12"
     },
     {
-      "bom-ref": "pkg:pypi/gitpython@3.1.56",
+      "bom-ref": "pkg:pypi/gitpython@3.2.1",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "127ADF5C73F1A822E368301C4D5FFA5D305CE611ECCAB76F3336F9380A78AD0B"
+          "content": "0F1229EC5C057BDABDEEDA8BDA4F17BDA679AB33DBCCC00F24E6A480553C8613"
         },
         {
           "alg": "SHA-256",
-          "content": "BEDFFDC4BDD2E3CF21B328711A552B0529751F08BFF6591339D18492291AD035"
+          "content": "D66B0832AA8755C1A84892937282DF0BEFB16C97E5A64AEEBD68BE9C5E323F53"
         }
       ],
       "name": "gitpython",
-      "purl": "pkg:pypi/gitpython@3.1.56",
+      "purl": "pkg:pypi/gitpython@3.2.1",
       "type": "library",
-      "version": "3.1.56"
+      "version": "3.2.1"
     },
     {
       "bom-ref": "pkg:pypi/hf-xet@1.1.9",
@@ -6691,21 +6691,21 @@
       "version": "0.4.1"
     },
     {
-      "bom-ref": "pkg:pypi/urllib3@2.7.0",
+      "bom-ref": "pkg:pypi/urllib3@2.8.0",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "231E0EC3B63CEB14667C67BE60F2F2C40A518CB38B03AF60ABC813DA26505F4C"
+          "content": "0CF3CAE568D36AA9576B28DFB35F11328F1CB974CA7647D9475EBB86C75AC6E3"
         },
         {
           "alg": "SHA-256",
-          "content": "9FB4C81EBBB1CE9531CCE37674BBC6F1360472BC18CA9A553EDE278EF7276897"
+          "content": "63BF2EAD4C879426EBF22EF2A781EEB4AA3B4AE798A0435506F8687FD5BB9B63"
         }
       ],
       "name": "urllib3",
-      "purl": "pkg:pypi/urllib3@2.7.0",
+      "purl": "pkg:pypi/urllib3@2.8.0",
       "type": "library",
-      "version": "2.7.0"
+      "version": "2.8.0"
     },
     {
       "bom-ref": "pkg:pypi/wandb@0.21.3",
@@ -6784,11 +6784,11 @@
     "properties": [
       {
         "name": "cwc:uv-lock-sha256",
-        "value": "8fa16613c12a5d9f40f53e22e24610c05165b90c4c38bbed0f0b7975404d0669"
+        "value": "7a09d88c9632b36635082e855ec069618ec38e6117b19bce6d5473dabed2c655"
       }
     ]
   },
-  "serialNumber": "urn:uuid:e10b74ba-3565-5ed0-843f-af3cfa431dc6",
+  "serialNumber": "urn:uuid:ebb309cc-fdc1-58e2-8202-21f061202ba1",
   "specVersion": "1.5",
   "version": 1
 }

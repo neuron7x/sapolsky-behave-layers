@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
-from cwc.governance.mechanism_b2_fit_receipt import SCHEMA as RECEIPT_SCHEMA, fit_mechanism_b2_with_receipt
+from cwc.governance.mechanism_b2_fit_receipt import SCHEMA as RECEIPT_SCHEMA
+from cwc.governance.mechanism_b2_fit_receipt import fit_mechanism_b2_with_receipt
 from cwc.governance.mechanism_execution_freeze import verify_mechanism_execution_freeze_document
 from cwc.governance.mechanism_learned_baseline import MechanismCalibrationExample, MechanismLearnedRouterConfig
 from cwc.governance.task_partition import verify_task_partition_document
@@ -16,6 +19,34 @@ FIT_INPUT_SCHEMA = "DGC_MECHANISM_B2_FIT_INPUT_V1"
 
 class MechanismB2FitAuthorityError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
+def _iter_arg(value: object) -> Iterable[object]:
+    """Iteration over an untyped decoded value; non-iterables raise the TypeError iteration would raise."""
+    if isinstance(value, Iterable):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not iterable")
+
+
+def _mapping_arg(value: object) -> Mapping[str, object]:
+    """Key access on an untyped decoded value; non-mappings raise the TypeError subscripting would raise."""
+    if isinstance(value, Mapping):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not subscriptable by key")
 
 
 def _sha(name: str, value: object) -> str:
@@ -36,6 +67,21 @@ def _json(path: Path, schema: str) -> dict[str, object]:
     if not isinstance(doc, dict) or doc.get("schema") != schema:
         raise MechanismB2FitAuthorityError(f"unexpected schema for {candidate}")
     return doc
+
+
+class _MechanismB2FitPayload(TypedDict):
+    family_id: str
+    execution_manifest_freeze_digest: str
+    task_partition_receipt_digest: str
+    fit_input_sha256: str
+    fit_receipt_sha256: str
+    feature_schema_digest: str
+    training_algorithm_digest: str
+    calibration_task_digest: str
+    confirmatory_task_digest: str
+    generalization_task_digest: str
+    fitted_model_digest: str
+    calibration_task_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,28 +135,34 @@ def authorize_mechanism_b2_fit(
     if forbidden_keys.intersection(fit_input):
         raise MechanismB2FitAuthorityError("mechanism B2 fit input contains forbidden risk field")
     try:
-        config = MechanismLearnedRouterConfig(**fit_input["config"])
+        config_doc = fit_input["config"]
+        if not isinstance(config_doc, Mapping):
+            raise TypeError("mechanism B2 router config must be a mapping")
+        # MechanismLearnedRouterConfig.__post_init__ normalizes and validates every field.
+        config = MechanismLearnedRouterConfig(**config_doc)
         examples = [
             MechanismCalibrationExample(
                 task_id=str(row["task_id"]),
                 action_id=str(row["action_id"]),
-                features=tuple(row["features"]),
-                quality=float(row["quality"]),
-                cost_usd=float(row["cost_usd"]),
+                features=tuple(_float_arg(x) for x in _iter_arg(row["features"])),
+                quality=_float_arg(row["quality"]),
+                cost_usd=_float_arg(row["cost_usd"]),
             )
-            for row in fit_input["examples"]
+            for row in map(_mapping_arg, _iter_arg(fit_input["examples"]))
         ]
-        if any(forbidden_keys.intersection(row) for row in fit_input["examples"] if isinstance(row, dict)):
+        if any(forbidden_keys.intersection(row) for row in _iter_arg(fit_input["examples"]) if isinstance(row, dict)):
             raise MechanismB2FitAuthorityError("mechanism B2 example contains forbidden risk field")
-        forbidden = tuple(sorted(str(x).strip() for x in fit_input["forbidden_task_ids"] if str(x).strip()))
+        forbidden = tuple(
+            sorted(str(x).strip() for x in _iter_arg(fit_input["forbidden_task_ids"]) if str(x).strip())
+        )
     except MechanismB2FitAuthorityError:
         raise
     except (KeyError, TypeError, ValueError) as exc:
         raise MechanismB2FitAuthorityError("malformed mechanism B2 fit input") from exc
 
-    calibration = tuple(sorted(str(x) for x in partition["calibration_task_ids"]))
-    confirmatory = tuple(sorted(str(x) for x in partition["confirmatory_task_ids"]))
-    generalization = tuple(sorted(str(x) for x in partition["generalization_task_ids"]))
+    calibration = tuple(sorted(str(x) for x in _iter_arg(partition["calibration_task_ids"])))
+    confirmatory = tuple(sorted(str(x) for x in _iter_arg(partition["confirmatory_task_ids"])))
+    generalization = tuple(sorted(str(x) for x in _iter_arg(partition["generalization_task_ids"])))
     if tuple(sorted({row.task_id for row in examples})) != calibration:
         raise MechanismB2FitAuthorityError("mechanism B2 examples must cover exact calibration tasks")
     if forbidden != tuple(sorted(set(confirmatory) | set(generalization))):
@@ -132,8 +184,11 @@ def authorize_mechanism_b2_fit(
         raise MechanismB2FitAuthorityError("declared mechanism B2 receipt differs from deterministic recomputation")
     if recomputed.calibration_task_digest != partition.get("calibration_task_digest"):
         raise MechanismB2FitAuthorityError("mechanism B2 calibration digest differs from partition")
-    payload = {
-        "family_id": execution["family_id"],
+    family_id = execution["family_id"]
+    if not isinstance(family_id, str):
+        raise MechanismB2FitAuthorityError("mechanism B2 execution family_id must be a string")
+    payload: _MechanismB2FitPayload = {
+        "family_id": family_id,
         "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
         "task_partition_receipt_digest": _sha("partition receipt_digest", partition.get("receipt_digest")),
         "fit_input_sha256": sha256_file(Path(fit_input_path)),
@@ -172,6 +227,6 @@ def verify_mechanism_b2_fit_authority_document(path: Path) -> dict[str, object]:
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise MechanismB2FitAuthorityError("mechanism B2 authority digest mismatch")
-    if int(doc.get("calibration_task_count", 0)) <= 0:
+    if _int_arg(doc.get("calibration_task_count", 0)) <= 0:
         raise MechanismB2FitAuthorityError("mechanism B2 calibration_task_count must be > 0")
     return doc

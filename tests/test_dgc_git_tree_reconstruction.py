@@ -26,7 +26,6 @@ def _git(*args: str, cwd: Path) -> str:
     return proc.stdout.strip()
 
 
-@pytest.mark.skipif(shutil.which("git") is None, reason="git executable unavailable")
 def test_reconstructed_tree_matches_git_for_modes_symlinks_and_nested_directories(tmp_path: Path):
     repo = tmp_path / "repo"
     _git("init", "-q", str(repo), cwd=tmp_path)

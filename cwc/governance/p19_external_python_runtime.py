@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -18,6 +19,13 @@ class P19ExternalPythonRuntimeError(RuntimeError):
     pass
 
 
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
 def _sha(name: str, value: object) -> str:
     text = str(value).strip().lower()
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
@@ -27,7 +35,7 @@ def _sha(name: str, value: object) -> str:
 
 def _version_int(name: str, value: object) -> int:
     try:
-        result = int(value)
+        result = _int_arg(value)
     except (TypeError, ValueError) as exc:
         raise P19ExternalPythonRuntimeError(f"{name} must be an integer") from exc
     if result < 0:
@@ -54,7 +62,20 @@ class P19ExternalPythonRuntimeIdentity:
         return {"schema": SCHEMA, **asdict(self)}
 
 
-def _payload_from_mapping(doc: Mapping[str, object]) -> dict[str, object]:
+class _RuntimePayload(TypedDict):
+    implementation: str
+    version_major: int
+    version_minor: int
+    version_micro: int
+    releaselevel: str
+    serial: int
+    cache_tag: str
+    executable_path: str
+    executable_sha256: str
+    executable_bytes: int
+
+
+def _payload_from_mapping(doc: Mapping[str, object]) -> _RuntimePayload:
     implementation = str(doc.get("implementation", "")).strip().lower()
     if implementation != REQUIRED_IMPLEMENTATION:
         raise P19ExternalPythonRuntimeError("external verifier regression requires CPython")
@@ -128,8 +149,7 @@ def inspect_python_runtime(executable: Path) -> P19ExternalPythonRuntimeIdentity
     try:
         result = subprocess.run(
             [str(resolved), "-c", probe],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=False,
             text=True,
         )

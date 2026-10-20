@@ -3,9 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 SCHEMA = "DGC_TERMINAL_BENCH_ADMISSION_V1"
 
@@ -45,6 +46,8 @@ def _nonnegative_int(name: str, value: object) -> int:
     if isinstance(value, bool):
         raise TerminalBenchAdmissionError(f"{name} must be an integer")
     try:
+        if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+            raise TypeError(f"{name} is not int-convertible")
         parsed = int(value)
     except (TypeError, ValueError) as exc:
         raise TerminalBenchAdmissionError(f"{name} must be an integer") from exc
@@ -55,6 +58,8 @@ def _nonnegative_int(name: str, value: object) -> int:
 
 def _finite_nonnegative(name: str, value: object) -> float:
     try:
+        if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+            raise TypeError(f"{name} is not float-convertible")
         parsed = float(value)
     except (TypeError, ValueError) as exc:
         raise TerminalBenchAdmissionError(f"{name} must be numeric") from exc

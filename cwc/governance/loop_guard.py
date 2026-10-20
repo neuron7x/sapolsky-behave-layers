@@ -18,7 +18,7 @@ class LoopGuard:
     def exhausted(self) -> bool:
         return self.step >= self.max_steps
 
-    def advance(self) -> "LoopGuard":
+    def advance(self) -> LoopGuard:
         if self.exhausted:
             raise RuntimeError("DGC_MAX_STEPS_EXHAUSTED")
         return LoopGuard(max_steps=self.max_steps, step=self.step + 1)

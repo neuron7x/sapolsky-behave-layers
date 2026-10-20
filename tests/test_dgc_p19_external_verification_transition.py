@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from cwc.governance.p19_external_verification_plan import CANONICAL_PLAN_PATH
+from cwc.governance.p19_external_verification_plan_v5 import CANONICAL_PLAN_PATH
 from cwc.governance.p19_external_verification_transition import (
     ACTIVATED_PLAN_DEFAULT_PATH,
     P19ExternalVerificationTransitionError,

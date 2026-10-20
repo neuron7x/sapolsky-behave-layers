@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import math
 import re
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
@@ -49,6 +50,22 @@ class ExecutionManifestError(RuntimeError):
     pass
 
 
+def _int_value(value: object) -> int:
+    """``int(value)`` restricted to operands ``int()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(
+        f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}"
+    )
+
+
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
 def _sha(name: str, value: object) -> str:
     text = str(value).strip().lower()
     if _SHA256_RE.fullmatch(text) is None:
@@ -65,7 +82,7 @@ def _req(name: str, value: object) -> str:
 
 def _finite_nonnegative(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_value(value)
     except (TypeError, ValueError) as exc:
         raise ExecutionManifestError(f"{name} must be numeric") from exc
     if not math.isfinite(result) or result < 0:
@@ -173,8 +190,8 @@ def _validate_action_catalog(payload: Mapping[str, object]) -> None:
         _req("action.harbor_agent_argument", row.get("harbor_agent_argument"))
         _req("action.harbor_model_argument", row.get("harbor_model_argument"))
         agent_version = _req("action.agent_version", row.get("agent_version"))
-        provider = _req("action.provider", row.get("provider"))
-        model_id = _req("action.model_id", row.get("model_id"))
+        _req("action.provider", row.get("provider"))
+        _req("action.model_id", row.get("model_id"))
         model_version = _req("action.model_version", row.get("model_version"))
         if agent_version.lower() in _MUTABLE_VERSION_ALIASES:
             raise ExecutionManifestError("mutable agent version alias is prohibited")
@@ -323,7 +340,7 @@ def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
         isinstance(x, str) and x.strip() for x in source_fields
     ):
         raise ExecutionManifestError("risk endpoint source_fields must be a non-empty string list")
-    if [x.strip() for x in source_fields] != sorted(set(x.strip() for x in source_fields)):
+    if [x.strip() for x in source_fields] != sorted({x.strip() for x in source_fields}):
         raise ExecutionManifestError("risk endpoint source_fields must be sorted and unique")
     if payload.get("policy_outcome_independent_definition") is not True:
         raise ExecutionManifestError("risk endpoint definition must be frozen independently of policy outcomes")
@@ -567,6 +584,65 @@ def _family_binding(reference: Mapping[str, object], family_id: str) -> Mapping[
     return matches[0]
 
 
+def _statistical_plan(payload: Mapping[str, object]) -> ProductStatisticalPlan:
+    """Typed ``ProductStatisticalPlan(**payload)``: unknown or mistyped fields raise ``TypeError``."""
+    unknown = sorted(set(payload) - {item.name for item in fields(ProductStatisticalPlan)})
+    if unknown:
+        raise TypeError(f"unexpected statistical plan field: {unknown[0]!r}")
+    defaults = ProductStatisticalPlan()
+
+    def integer(name: str, default: int) -> int:
+        value = payload.get(name, default)
+        if not isinstance(value, int):
+            raise TypeError(f"statistical plan field {name} must be an integer")
+        return value
+
+    def real(name: str, default: float) -> float:
+        value = payload.get(name, default)
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"statistical plan field {name} must be a real number")
+        return value
+
+    def text(name: str, default: str) -> str:
+        value = payload.get(name, default)
+        if not isinstance(value, str):
+            raise TypeError(f"statistical plan field {name} must be a string")
+        return value
+
+    plan = ProductStatisticalPlan(
+        family_count=integer("family_count", defaults.family_count),
+        baseline_count=integer("baseline_count", defaults.baseline_count),
+        endpoint_count=integer("endpoint_count", defaults.endpoint_count),
+        familywise_alpha=real("familywise_alpha", defaults.familywise_alpha),
+        quality_noninferiority_margin=real("quality_noninferiority_margin", defaults.quality_noninferiority_margin),
+        catastrophic_regret_noninferiority_margin=real(
+            "catastrophic_regret_noninferiority_margin", defaults.catastrophic_regret_noninferiority_margin
+        ),
+        minimum_cost_effect_of_interest=real(
+            "minimum_cost_effect_of_interest", defaults.minimum_cost_effect_of_interest
+        ),
+        calibration_fraction=real("calibration_fraction", defaults.calibration_fraction),
+        generalization_holdout_fraction=real(
+            "generalization_holdout_fraction", defaults.generalization_holdout_fraction
+        ),
+        target_power=real("target_power", defaults.target_power),
+        min_trials_per_task=integer("min_trials_per_task", defaults.min_trials_per_task),
+        max_trials_per_task=integer("max_trials_per_task", defaults.max_trials_per_task),
+        primary_inference_method=text("primary_inference_method", defaults.primary_inference_method),
+        primary_boundary_method=text("primary_boundary_method", defaults.primary_boundary_method),
+        primary_claim_target=text("primary_claim_target", defaults.primary_claim_target),
+        primary_assumption_boundary=text("primary_assumption_boundary", defaults.primary_assumption_boundary),
+        primary_sequence_order=text("primary_sequence_order", defaults.primary_sequence_order),
+        primary_predictor_rule=text("primary_predictor_rule", defaults.primary_predictor_rule),
+        confseq_reference_commit=text("confseq_reference_commit", defaults.confseq_reference_commit),
+        method=text("method", defaults.method),
+    )
+    constructed = asdict(plan)
+    if any(constructed[name] != value for name, value in payload.items()):
+        raise TypeError("statistical plan field was not carried into the constructed plan")
+    return plan
+
+
 def freeze_execution_manifests(
     *,
     repository_root: Path,
@@ -620,7 +696,8 @@ def freeze_execution_manifests(
             entrypoint, entrypoint_rel = _repo_file(root, payload["entrypoint_path"])
             if sha256_file(entrypoint) != _sha("executor.entrypoint_sha256", payload.get("entrypoint_sha256")):
                 raise ExecutionManifestError("executor entrypoint bytes differ from frozen SHA-256")
-            if entrypoint_rel not in payload.get("argv", []):
+            argv = payload.get("argv", [])
+            if not isinstance(argv, list) or entrypoint_rel not in argv:
                 raise ExecutionManifestError("executor argv entrypoint is not canonical repository-relative path")
         if component == "observation_provider_manifest":
             implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
@@ -630,7 +707,8 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("observation provider implementation bytes differ from frozen SHA-256")
             if implementation_rel != str(payload.get("implementation_path")):
                 raise ExecutionManifestError("observation provider implementation path is non-canonical")
-            if implementation_rel not in payload.get("argv", []):
+            argv = payload.get("argv", [])
+            if not isinstance(argv, list) or implementation_rel not in argv:
                 raise ExecutionManifestError(
                     "observation provider argv implementation is not canonical repository-relative path"
                 )
@@ -642,7 +720,8 @@ def freeze_execution_manifests(
                 raise ExecutionManifestError("risk endpoint implementation bytes differ from frozen SHA-256")
             if implementation_rel != str(payload.get("implementation_path")):
                 raise ExecutionManifestError("risk endpoint implementation path is non-canonical")
-            if implementation_rel not in payload.get("argv", []):
+            argv = payload.get("argv", [])
+            if not isinstance(argv, list) or implementation_rel not in argv:
                 raise ExecutionManifestError("risk endpoint argv implementation is not canonical repository-relative path")
         components.append(FrozenComponent(
             component=component,
@@ -682,7 +761,7 @@ def freeze_execution_manifests(
                 f"Terminal sandbox environment authority replay failed: {exc}"
             ) from exc
         try:
-            expected_task_count = int(
+            expected_task_count = _int_value(
                 binding.get("expected_task_count")
             )
         except (TypeError, ValueError) as exc:
@@ -833,7 +912,7 @@ def freeze_execution_manifests(
         )
 
     try:
-        plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
+        plan = _statistical_plan(statistical_plan_payload or {})
     except (TypeError, ValueError) as exc:
         raise ExecutionManifestError("invalid frozen product statistical plan") from exc
     plan_payload = asdict(plan)

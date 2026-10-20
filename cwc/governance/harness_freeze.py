@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.b2_fit_authority import verify_b2_fit_authority_document
 from cwc.governance.baseline_panel import (
@@ -210,7 +210,7 @@ def build_harness_freeze(
     if not isinstance(baseline_policy_ids, Mapping):
         raise HarnessFreezeError("baseline_policy_ids mapping required")
     required_kinds = {kind.value for kind in BaselineKind}
-    if set(str(key) for key in baseline_policy_ids) != required_kinds:
+    if {str(key) for key in baseline_policy_ids} != required_kinds:
         raise HarnessFreezeError("baseline_policy_ids must map exactly all B0-B3 kinds")
     mapped_ids = {str(key): str(value).strip() for key, value in baseline_policy_ids.items()}
     if any(not value for value in mapped_ids.values()) or len(set(mapped_ids.values())) != 4:
@@ -282,7 +282,7 @@ def build_harness_freeze(
         raise HarnessFreezeError("policy harnesses do not share one frozen controlled-comparison frame")
     comparison_frame = next(iter(comparison_frames))
 
-    serialized_specs = tuple({
+    serialized_specs: tuple[dict[str, object], ...] = tuple({
         "kind": spec.kind.value,
         "implementation_version": spec.implementation_version,
         "feature_schema_digest": spec.feature_schema_digest,

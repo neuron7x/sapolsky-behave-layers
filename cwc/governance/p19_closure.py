@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
-from cwc.governance.evidence_closure import ClosureError, EvidenceArtifact, EvidenceClosureLedger, StageExecution, sha256_file
+from cwc.governance.evidence_closure import (
+    ClosureError,
+    EvidenceArtifact,
+    EvidenceClosureLedger,
+    StageExecution,
+    sha256_file,
+)
 from cwc.governance.global_product_qualification_v4 import FamilyP19VerificationInputV4
 from cwc.governance.global_product_qualification_v5 import (
     build_global_product_qualification_authority_v5,
@@ -39,6 +45,7 @@ def close_p19_sealed(
     primary_anytime_p9_authority_path: Path,
     primary_ccf_oracle_audit_authority_path: Path,
     subject_roots: Mapping[str, Path],
+    external_replay_inputs: Mapping[str, Path],
     identity_checker: RepositoryIdentityChecker = _assert_repository_identity,
 ) -> dict[str, object]:
     identity_checker(ledger)
@@ -52,6 +59,7 @@ def close_p19_sealed(
             primary_anytime_p9_authority_path=Path(primary_anytime_p9_authority_path),
             primary_ccf_oracle_audit_authority_path=Path(primary_ccf_oracle_audit_authority_path),
             subject_roots=subject_roots,
+            external_replay_inputs=external_replay_inputs,
         )
     except RuntimeError as exc:
         raise ClosureError("family P19 raw-subject replay failed") from exc

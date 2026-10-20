@@ -5,14 +5,16 @@ from pathlib import Path
 
 import pytest
 
+from cwc.governance.b2_fit_authority import SCHEMA as B2_AUTHORITY_SCHEMA
 from cwc.governance.baseline_panel import BaselineKind
+from cwc.governance.generalization_registry import GeneralizationAxis, SCHEMA as GENERALIZATION_SCHEMA
 from cwc.governance.harness_freeze import (
     DGC_ROLE,
     HarnessFreezeError,
     build_harness_freeze,
     verify_harness_freeze_document,
 )
-from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
+from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
 
 def h(char: str) -> str:
@@ -101,14 +103,16 @@ def b2_doc(path: Path, *, execution_digest: str, feature=h("e"), algorithm=h("f"
         "training_algorithm_digest": algorithm,
         "calibration_task_digest": h("4"),
         "confirmatory_task_digest": h("5"),
+        "generalization_task_digest": h("7"),
         "fitted_model_digest": h("6"),
         "calibration_task_count": 100,
     }
     doc = {
-        "schema": "DGC_B2_FIT_AUTHORITY_V1",
+        "schema": B2_AUTHORITY_SCHEMA,
         **payload,
         "authority_digest": sha256_bytes(canonical_json_bytes(payload)),
         "confirmatory_execution_authorized": False,
+        "generalization_execution_authorized": False,
         "product_promotion_authorized": False,
     }
     return write(path, doc)
@@ -139,12 +143,78 @@ def baseline_input(path: Path, *, b2_feature=h("e"), b2_algorithm=h("f")) -> Pat
     })
 
 
+def generalization_doc(
+    path: Path, *, execution_path: Path, b2_path: Path, baseline_path: Path
+) -> Path:
+    """Create a non-promoting, digest-bound G1-G5 registry fixture for the V3 harness."""
+    execution = json.loads(execution_path.read_text(encoding="utf-8"))
+    b2 = json.loads(b2_path.read_text(encoding="utf-8"))
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    roles = {**baseline["baseline_policy_ids"], "DGC": baseline["dgc_policy_id"]}
+    dgc_digest = next(
+        row["sha256"] for row in execution["governance_policies"]
+        if row["policy_id"] == roles["DGC"]
+    )
+    axes = [
+        {
+            "axis": axis.value,
+            "manifest_path": f"generalization/{axis.value}.json",
+            "manifest_sha256": h("a"),
+            "evaluation_manifest_digest": h(str(index + 1)),
+            "source_family_id": execution["family_id"],
+            "source_authority_digest": h("d"),
+            "task_population_digest": b2["generalization_task_digest"],
+            "base_task_population_digest": b2["generalization_task_digest"],
+            "model_manifest_digest": h("4"),
+            "pricing_snapshot_digest": h("5"),
+            "scorer_digest": h("6"),
+            "perturbation_manifest_digest": h("0"),
+            "reference_baseline_roles": sorted(baseline["baseline_policy_ids"]),
+            "quality_noninferiority_margin": 0.01,
+            "catastrophic_noninferiority_margin": 0.01,
+            "cost_effect_direction": "BASELINE_MINUS_DGC_POSITIVE",
+        }
+        for index, axis in enumerate(GeneralizationAxis)
+    ]
+    payload = {
+        "family_id": execution["family_id"],
+        "execution_manifest_freeze_digest": execution["freeze_digest"],
+        "task_partition_path": "eval_bundle/task-partition.json",
+        "task_partition_sha256": h("9"),
+        "task_partition_receipt_digest": h("8"),
+        "baseline_panel_input_path": "eval_bundle/baselines.json",
+        "baseline_panel_input_sha256": sha256_file(baseline_path),
+        "primary_confirmatory_task_digest": b2["confirmatory_task_digest"],
+        "g1_holdout_task_digest": b2["generalization_task_digest"],
+        "policy_role_bindings": [list(pair) for pair in sorted(roles.items())],
+        "frozen_dgc_policy_digest": dgc_digest,
+        "generalization_familywise_alpha": 0.05,
+        "per_claim_alpha": 0.05 / (5 * 4 * 3),
+        "axes": axes,
+    }
+    return write(path, {
+        "schema": GENERALIZATION_SCHEMA,
+        **payload,
+        "registry_digest": sha256_bytes(canonical_json_bytes(payload)),
+        "frozen_pre_outcome": True,
+        "policy_retuning_allowed": False,
+        "generalization_execution_authorized": False,
+        "product_promotion_authorized": False,
+    })
+
+
 def fixture(tmp_path: Path, *, collide=False, policy_ids=("B0", "B1", "B2", "B3", "DGC")):
     execution = execution_doc(tmp_path / "execution.json", collide=collide, policy_ids=policy_ids)
     execution_payload = json.loads(execution.read_text())
     ccf = ccf_doc(tmp_path / "ccf-authority.json", execution_digest=execution_payload["freeze_digest"])
     b2 = b2_doc(tmp_path / "b2.json", execution_digest=execution_payload["freeze_digest"])
     baselines = baseline_input(tmp_path / "baselines.json")
+    generalization_doc(
+        tmp_path / "generalization.json",
+        execution_path=execution,
+        b2_path=b2,
+        baseline_path=baselines,
+    )
     return execution, ccf, b2, baselines
 
 
@@ -154,6 +224,7 @@ def build(tmp_path: Path, *, collide=False, policy_ids=("B0", "B1", "B2", "B3", 
         execution_manifest_freeze_path=execution,
         ccf_spec_authority_path=ccf,
         b2_fit_authority_path=b2,
+        generalization_registry_path=execution.with_name("generalization.json"),
         baseline_panel_input_path=baselines,
     ), execution, ccf, b2, baselines
 
@@ -188,6 +259,7 @@ def test_harness_freeze_rejects_b2_schema_mismatch(tmp_path: Path):
             execution_manifest_freeze_path=execution,
             ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
+        generalization_registry_path=execution.with_name("generalization.json"),
             baseline_panel_input_path=baselines,
         )
 
@@ -199,6 +271,7 @@ def test_harness_freeze_rejects_missing_policy_arm(tmp_path: Path):
             execution_manifest_freeze_path=execution,
             ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
+        generalization_registry_path=execution.with_name("generalization.json"),
             baseline_panel_input_path=baselines,
         )
 
@@ -210,6 +283,7 @@ def test_harness_freeze_rejects_governance_digest_collision(tmp_path: Path):
             execution_manifest_freeze_path=execution,
             ccf_spec_authority_path=ccf,
             b2_fit_authority_path=b2,
+        generalization_registry_path=execution.with_name("generalization.json"),
             baseline_panel_input_path=baselines,
         )
 

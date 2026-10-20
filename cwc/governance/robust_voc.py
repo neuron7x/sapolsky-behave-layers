@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cwc.governance.compute_value import ValueOfComputationEstimate
 
 
 def _finite_nonnegative(name: str, value: float) -> float:
@@ -116,14 +120,17 @@ def robust_voc_lower_bound(
 
 
 def robustify_voc_estimate(
-    estimate: "ValueOfComputationEstimate",
+    estimate: ValueOfComputationEstimate,
     *,
     gross_lower_support: float,
     gross_upper_support: float,
     budget: RobustnessBudget,
-) -> "ValueOfComputationEstimate":
+) -> ValueOfComputationEstimate:
     """Return a governor-compatible estimate with an ambiguity-robust LCB."""
-    from cwc.governance.compute_value import VOCAuthority, ValueOfComputationEstimate
+    from cwc.governance.compute_value import ValueOfComputationEstimate, VOCAuthority
+
+    if estimate.authority is VOCAuthority.ROBUST_AMBIGUITY_BOUND:
+        raise ValueError("estimate is already ambiguity-robust")
 
     robust = robust_voc_lower_bound(
         nominal_gross_lower=estimate.lower_bound + estimate.total_cost,

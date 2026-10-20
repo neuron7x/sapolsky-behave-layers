@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import TypedDict
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document
@@ -12,13 +13,16 @@ from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_
 from cwc.governance.distributed_eval_control import DistributedEvalSpec, WorkUnitId
 from cwc.governance.empirical_bernstein_pareto import certify_multi_baseline_empirical_bernstein
 from cwc.governance.executed_p9_authority import build_executed_p9_authority
-from cwc.governance.execution_evidence_bundle import verify_execution_bundle
+from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.paired_randomness_protocol import verify_paired_randomness_protocol
 from cwc.governance.pareto import PairedBaselineEvidence
-from cwc.governance.physical_execution_cost_bundle import verify_physical_execution_cost_bundle
+from cwc.governance.physical_execution_cost_bundle import (
+    VerifiedPhysicalExecutionCostBundle,
+    verify_physical_execution_cost_bundle,
+)
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
 
 SCHEMA = "DGC_EXECUTED_P9_FINITE_PANEL_AUTHORITY_V3"
@@ -67,8 +71,8 @@ def _plan(execution_freeze: Mapping[str, object]) -> ProductStatisticalPlan:
 
 def _flat_paired_evidence(
     *,
-    execution_bundle,
-    physical_cost_bundle,
+    execution_bundle: VerifiedExecutionBundle,
+    physical_cost_bundle: VerifiedPhysicalExecutionCostBundle,
     spec: DistributedEvalSpec,
     roles: Mapping[str, str],
     paired_panel_digest: str,
@@ -135,7 +139,7 @@ class FinitePanelP9Authority:
     per_metric_delta: float
     paired_panel_digest: str
     paired_evidence_population_digest: str
-    paired_evidence: tuple[dict[str, object], ...]
+    paired_evidence: list[dict[str, object]]
     p9_certificate: dict[str, object]
     p9_certificate_digest: str
     p9_supported_under_protocol_assumption: bool
@@ -152,6 +156,36 @@ class FinitePanelP9Authority:
             "generalization_authorized": self.p9_supported_under_protocol_assumption,
             "product_promotion_authorized": False,
         }
+
+
+class _FinitePanelP9AuthorityPayload(TypedDict):
+    family_id: str
+    legacy_v2_authority_digest: str
+    execution_authority_digest: str
+    execution_population_digest: str
+    execution_bundle_digest: str
+    physical_cost_bundle_digest: str
+    physical_cost_population_digest: str
+    harness_freeze_digest: str
+    confirmatory_task_manifest_digest: str
+    statistical_plan_digest: str
+    replicates: int
+    paired_observations_per_baseline: int
+    estimand: str
+    inference_method: str
+    randomness_protocol: str
+    randomness_schedule_digest: str
+    randomness_independence_assumption: str
+    randomness_assumption_verified: bool
+    family_alpha: float
+    per_metric_delta: float
+    paired_panel_digest: str
+    paired_evidence_population_digest: str
+    paired_evidence: list[dict[str, object]]
+    p9_certificate: dict[str, object]
+    p9_certificate_digest: str
+    p9_supported_under_protocol_assumption: bool
+    net_cost_superiority_supported_under_protocol_assumption: bool
 
 
 def build_finite_panel_p9_authority(
@@ -251,7 +285,7 @@ def build_finite_panel_p9_authority(
     certificate_doc = asdict(certificate)
     certificate_digest = sha256_bytes(canonical_json_bytes(certificate_doc))
     supported = bool(certificate.all_baselines_certified)
-    payload = {
+    payload: _FinitePanelP9AuthorityPayload = {
         "family_id": str(execution_authority["family_id"]),
         "legacy_v2_authority_digest": legacy.authority_digest,
         "execution_authority_digest": _sha("execution authority_digest", execution_authority.get("authority_digest")),

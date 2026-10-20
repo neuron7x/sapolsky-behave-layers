@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -29,7 +30,15 @@ def _required_text(name: str, value: object) -> str:
     return text
 
 
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise FaultInjectionEvidenceError(f"{name} must be an integer")
+    return int(value)
+
+
 def _finite(name: str, value: object, *, nonnegative: bool = False) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise FaultInjectionEvidenceError(f"{name} must be numeric")
     try:
         result = float(value)
     except (TypeError, ValueError) as exc:
@@ -65,7 +74,7 @@ def _verify_observations(fault_class: str, observations: Mapping[str, object]) -
             raise FaultInjectionEvidenceError("provider timeout evidence does not cross frozen timeout boundary")
     elif fault_class == "PROVIDER_RATE_LIMIT":
         _required_text("request_id", observations.get("request_id"))
-        if int(observations.get("http_status", 0)) != 429:
+        if _int("http_status", observations.get("http_status", 0)) != 429:
             raise FaultInjectionEvidenceError("provider rate-limit evidence requires HTTP 429")
     elif fault_class == "MALFORMED_MODEL_OUTPUT":
         _sha("payload_sha256", observations.get("payload_sha256"))
@@ -79,7 +88,7 @@ def _verify_observations(fault_class: str, observations: Mapping[str, object]) -
             raise FaultInjectionEvidenceError("tool timeout evidence does not establish timeout termination")
     elif fault_class == "TOOL_NONZERO_EXIT":
         _required_text("process_id", observations.get("process_id"))
-        if int(observations.get("exit_code", 0)) == 0:
+        if _int("exit_code", observations.get("exit_code", 0)) == 0:
             raise FaultInjectionEvidenceError("tool nonzero-exit evidence requires a nonzero exit code")
     elif fault_class == "SCORER_UNAVAILABLE":
         if observations.get("availability_probe_failed") is not True or observations.get("scoring_rejected") is not True:
@@ -107,9 +116,9 @@ def _verify_observations(fault_class: str, observations: Mapping[str, object]) -
         if expected == observed or observations.get("verification_rejected") is not True:
             raise FaultInjectionEvidenceError("digest-corruption evidence must show unequal digests and rejection")
     elif fault_class == "PARTIAL_EXECUTION_POPULATION":
-        expected = int(observations.get("expected_units", -1))
-        committed = int(observations.get("committed_units", -1))
-        if expected <= 0 or committed < 0 or committed >= expected or observations.get("completion_rejected") is not True:
+        expected_units = _int("expected_units", observations.get("expected_units", -1))
+        committed_units = _int("committed_units", observations.get("committed_units", -1))
+        if expected_units <= 0 or committed_units < 0 or committed_units >= expected_units or observations.get("completion_rejected") is not True:
             raise FaultInjectionEvidenceError("partial-population evidence must show incomplete execution and rejected completion")
     else:
         raise FaultInjectionEvidenceError(f"unsupported fault class: {fault_class}")

@@ -215,16 +215,19 @@ def minimum_cost_separating_design(
     )
 
 
-def _svd_rank_tolerance(matrix: np.ndarray, singular_values: np.ndarray) -> float:
+def _svd_rank_tolerance(
+    matrix: np.ndarray[tuple[int, ...], np.dtype[np.float64]],
+    singular_values: np.ndarray[tuple[int, ...], np.dtype[np.float64]],
+) -> float:
     if singular_values.size == 0:
         return 0.0
     return float(max(matrix.shape) * np.finfo(np.float64).eps * singular_values[0])
 
 
 def local_first_order_identifiability(
-    jacobian: Sequence[Sequence[float]] | np.ndarray,
+    jacobian: Sequence[Sequence[float]] | np.ndarray[tuple[int, ...], np.dtype[np.generic]],
     *,
-    covariance: Sequence[Sequence[float]] | np.ndarray | None = None,
+    covariance: Sequence[Sequence[float]] | np.ndarray[tuple[int, ...], np.dtype[np.generic]] | None = None,
     rank_tolerance: float | None = None,
 ) -> LocalIdentifiabilityCertificate:
     J = np.asarray(jacobian, dtype=np.float64)

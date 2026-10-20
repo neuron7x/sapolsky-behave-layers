@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Mapping
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.p19_evidence_root import REQUIRED_SUBJECT_ROOTS, verify_family_p19_evidence_root_document
@@ -51,6 +52,26 @@ class FamilyP19VerificationRecord:
     semantic_replay_attested: bool
     social_independence_machine_proven: bool
     record_digest: str
+
+
+class _FamilyP19VerificationRecordPayload(TypedDict):
+    family_id: str
+    p19_digest: str
+    verifier_principal: str
+    attestation_sha256: str
+    verification_report_sha256: str
+    signature_sha256: str
+    allowed_signers_sha256: str
+    signature_receipt_digest: str
+    semantic_replay_attested: bool
+    social_independence_machine_proven: bool
+
+
+def _float_value(value: object) -> float:
+    """``float(value)`` restricted to operands ``float()`` accepts; identical ``TypeError`` otherwise."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _sha(name: str, value: object) -> str:
@@ -176,8 +197,8 @@ def _verify_family_generalization_error_budget(doc: Mapping[str, object], *, rep
     if str(registry.get("family_id", "")) != str(doc.get("family_id", "")):
         raise GlobalProductQualificationError("P19/generalization registry family mismatch")
     try:
-        family_alpha = float(registry.get("generalization_familywise_alpha"))
-        per_claim = float(registry.get("per_claim_alpha"))
+        family_alpha = _float_value(registry.get("generalization_familywise_alpha"))
+        per_claim = _float_value(registry.get("per_claim_alpha"))
     except (TypeError, ValueError) as exc:
         raise GlobalProductQualificationError("generalization error budget malformed") from exc
     expected_per_claim = GENERALIZATION_PER_FAMILY_FWER / GENERALIZATION_CLAIM_COUNT_PER_FAMILY
@@ -205,7 +226,7 @@ def _verify_external_p19_attestation(
         raise GlobalProductQualificationError("external P19 semantic-verification attestation failed") from exc
     if not receipt.signature_verified:
         raise GlobalProductQualificationError("external P19 verification signature is not verified")
-    payload = {
+    payload: _FamilyP19VerificationRecordPayload = {
         "family_id": str(p19["family_id"]),
         "p19_digest": _sha("p19_digest", p19["p19_digest"]),
         "verifier_principal": str(attestation["verifier_principal"]),
@@ -325,23 +346,29 @@ def build_global_product_qualification_authority(
         (str(doc["family_id"]), _sha("p19_digest", doc["p19_digest"])) for doc in docs
     ))
     ordered_verification = tuple(sorted(verification_rows, key=lambda row: row.family_id))
+    repository_commit = next(iter(commits))
+    repository_tree = next(iter(trees))
+    statistical_plan_digest = next(iter(plans))
+    theorem_identity_digest = next(iter(theorems))
+    methodology_anchor_digest = next(iter(methods))
+    product_evidence_record = asdict(record)
     payload = {
         "canonical_family_ids": list(canonical_ids),
         "source_registry_sha256": registry_digest,
         "family_p19_digests": [list(row) for row in family_digests],
         "family_p19_verification_records": [asdict(row) for row in ordered_verification],
-        "repository_commit": next(iter(commits)),
-        "repository_tree": next(iter(trees)),
-        "statistical_plan_digest": next(iter(plans)),
-        "theorem_identity_digest": next(iter(theorems)),
-        "methodology_anchor_digest": next(iter(methods)),
+        "repository_commit": repository_commit,
+        "repository_tree": repository_tree,
+        "statistical_plan_digest": statistical_plan_digest,
+        "theorem_identity_digest": theorem_identity_digest,
+        "methodology_anchor_digest": methodology_anchor_digest,
         "family_count": 2,
         "generalization_claim_count_per_family": GENERALIZATION_CLAIM_COUNT_PER_FAMILY,
         "generalization_per_family_fwer": GENERALIZATION_PER_FAMILY_FWER,
         "global_statistical_composition_rule": GLOBAL_STATISTICAL_COMPOSITION_RULE,
         "all_family_p19_complete": True,
         "all_family_p19_externally_verified": True,
-        "product_evidence_record": asdict(record),
+        "product_evidence_record": product_evidence_record,
         "product_qualified": True,
         "production_control_authorized": False,
     }
@@ -350,18 +377,18 @@ def build_global_product_qualification_authority(
         source_registry_sha256=registry_digest,
         family_p19_digests=family_digests,
         family_p19_verification_records=ordered_verification,
-        repository_commit=payload["repository_commit"],
-        repository_tree=payload["repository_tree"],
-        statistical_plan_digest=payload["statistical_plan_digest"],
-        theorem_identity_digest=payload["theorem_identity_digest"],
-        methodology_anchor_digest=payload["methodology_anchor_digest"],
+        repository_commit=repository_commit,
+        repository_tree=repository_tree,
+        statistical_plan_digest=statistical_plan_digest,
+        theorem_identity_digest=theorem_identity_digest,
+        methodology_anchor_digest=methodology_anchor_digest,
         family_count=2,
         generalization_claim_count_per_family=GENERALIZATION_CLAIM_COUNT_PER_FAMILY,
         generalization_per_family_fwer=GENERALIZATION_PER_FAMILY_FWER,
         global_statistical_composition_rule=GLOBAL_STATISTICAL_COMPOSITION_RULE,
         all_family_p19_complete=True,
         all_family_p19_externally_verified=True,
-        product_evidence_record=payload["product_evidence_record"],
+        product_evidence_record=product_evidence_record,
         product_qualified=True,
         production_control_authorized=False,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
@@ -412,7 +439,7 @@ def verify_global_product_qualification_authority_document(path: Path) -> dict[s
     if int(doc.get("generalization_claim_count_per_family", 0)) != GENERALIZATION_CLAIM_COUNT_PER_FAMILY:
         raise GlobalProductQualificationError("global generalization claim count is not 5x4x3 per family")
     try:
-        family_fwer = float(doc.get("generalization_per_family_fwer"))
+        family_fwer = _float_value(doc.get("generalization_per_family_fwer"))
     except (TypeError, ValueError) as exc:
         raise GlobalProductQualificationError("global generalization familywise alpha invalid") from exc
     if not math.isclose(family_fwer, GENERALIZATION_PER_FAMILY_FWER, rel_tol=0.0, abs_tol=1e-15):

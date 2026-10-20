@@ -169,7 +169,7 @@ class AR1MixtureEProcess:
         }
 
 
-def simulate_ar1(law: AR1Law, *, transitions: int, seed: int) -> np.ndarray:
+def simulate_ar1(law: AR1Law, *, transitions: int, seed: int) -> np.ndarray[tuple[int], np.dtype[np.float64]]:
     if transitions < 1:
         raise ValueError("transitions must be positive")
     rng = np.random.default_rng(seed)

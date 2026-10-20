@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from cwc.governance.external_evidence_reference import REFERENCE_SCHEMA
 from cwc.governance.generalization_registry import GeneralizationAxis, verify_generalization_registry_document

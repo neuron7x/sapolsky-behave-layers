@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from cwc.governance.generalization_dual_authority import verify_generalization_dual_authority_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
@@ -20,6 +21,17 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise GeneralizationScientificV3Error(f"{name} must be lowercase SHA-256")
     return text
+
+
+class _GeneralizationScientificV3Payload(TypedDict):
+    generalization_dual_authority_digest: str
+    registry_digest: str
+    p9_scientific_authority_digest: str
+    frozen_dgc_policy_digest: str
+    exact_g1_g5_supported: bool
+    expected_g1_g5_supported_under_independence_assumption: bool
+    generalization_supported_under_frozen_assumptions: bool
+    independent_replication_evaluation_authorized: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,7 +63,7 @@ def build_generalization_scientific_authority_v3(
     exact = dual.get("exact_g1_g5_supported") is True
     conditional = dual.get("expected_g1_g5_supported_under_independence_assumption") is True
     supported = exact and conditional
-    payload = {
+    payload: _GeneralizationScientificV3Payload = {
         "generalization_dual_authority_digest": _sha(
             "generalization dual authority_digest", dual.get("authority_digest")
         ),

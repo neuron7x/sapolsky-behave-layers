@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Callable, Mapping, Protocol, Sequence
+from typing import Protocol, TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p19_external_verifier_activation import (
-    AUTHORITY_SCHEMA as V1_AUTHORITY_SCHEMA,
     NAMESPACE,
     P19ExternalVerifierActivationAuthority,
+    Runner,
     build_p19_external_verifier_activation_authority,
 )
 from cwc.governance.p19_verifier_policy import CANONICAL_POLICY_PATH
@@ -22,6 +23,11 @@ class P19ExternalVerifierActivationV2Error(RuntimeError):
     pass
 
 
+class V1BuilderOptions(TypedDict, total=False):
+    runner: Runner
+    executable: str | None
+
+
 class V1Builder(Protocol):
     def __call__(
         self,
@@ -31,7 +37,8 @@ class V1Builder(Protocol):
         trust_policy_path: Path,
         attestation_paths: Sequence[Path],
         signature_paths: Sequence[Path],
-        **kwargs: object,
+        runner: Runner = ...,
+        executable: str | None = ...,
     ) -> P19ExternalVerifierActivationAuthority: ...
 
 
@@ -97,6 +104,18 @@ class StableRegressionSignatureRecord:
     record_digest: str
 
 
+class _StableRegressionSignatureRecordPayload(TypedDict):
+    verifier_principal: str
+    signer_key_digest: str
+    attestation_path: str
+    attestation_sha256: str
+    signature_path: str
+    signature_sha256: str
+    allowed_signers_sha256: str
+    namespace: str
+    signature_verified: bool
+
+
 @dataclass(frozen=True, slots=True)
 class P19ExternalVerifierActivationAuthorityV2:
     regression_receipt_path: str
@@ -154,7 +173,7 @@ def _stable_records(
     ):
         attestation, normalized_att = _safe_rel(root, att_rel, label="regression attestation")
         signature, normalized_sig = _safe_rel(root, sig_rel, label="regression signature")
-        payload = {
+        payload: _StableRegressionSignatureRecordPayload = {
             "verifier_principal": str(principal),
             "signer_key_digest": _sha("signer_key_digest", key_digest),
             "attestation_path": normalized_att,
@@ -184,11 +203,11 @@ def build_p19_external_verifier_activation_authority_v2(
     attestation_paths: Sequence[Path],
     signature_paths: Sequence[Path],
     v1_builder: V1Builder = build_p19_external_verifier_activation_authority,
-    v1_builder_kwargs: Mapping[str, object] | None = None,
+    v1_builder_kwargs: V1BuilderOptions | None = None,
 ) -> P19ExternalVerifierActivationAuthorityV2:
     root = Path(repository_root).resolve()
     canonical_policy = root / CANONICAL_POLICY_PATH
-    kwargs = dict(v1_builder_kwargs or {})
+    kwargs: V1BuilderOptions = {**(v1_builder_kwargs or {})}
     try:
         v1 = v1_builder(
             repository_root=root,
@@ -263,7 +282,7 @@ def verify_p19_external_verifier_activation_authority_v2_document(
     *,
     repository_root: Path,
     v1_builder: V1Builder = build_p19_external_verifier_activation_authority,
-    v1_builder_kwargs: Mapping[str, object] | None = None,
+    v1_builder_kwargs: V1BuilderOptions | None = None,
 ) -> dict[str, object]:
     root = Path(repository_root).resolve()
     source, _ = _safe_rel(root, path, label="portable verifier activation authority")
@@ -317,6 +336,6 @@ def verify_p19_external_verifier_activation_authority_v2_document(
     )
     if rebuilt.authority_digest != _sha("authority_digest", doc.get("authority_digest")):
         raise P19ExternalVerifierActivationV2Error("portable activation authority differs from raw signature replay")
-    if rebuilt.document != doc:
+    if canonical_json_bytes(rebuilt.document) + b"\n" != raw:
         raise P19ExternalVerifierActivationV2Error("portable activation document differs from recomputation")
     return doc

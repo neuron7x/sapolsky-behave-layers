@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import NormalDist
-from typing import Iterable, Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.calibration_variance import (
     CalibrationObservation,
@@ -19,6 +20,20 @@ SCHEMA = "DGC_MECHANISM_TRIAL_SIZING_RECEIPT_V1"
 
 class MechanismTrialSizingError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -199,7 +214,12 @@ def freeze_mechanism_trial_sizing(
         "required_trials_per_task": required,
     }
     return MechanismTrialSizingReceipt(
-        **payload,
+        plan_digest=mechanism_plan.digest,
+        calibration_evidence_digest=calibration_digest,
+        confirmatory_task_count=int(confirmatory_task_count),
+        calibration_design_digest=calibration_design_digest,
+        comparisons=ordered,
+        required_trials_per_task=required,
         receipt_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 
@@ -238,8 +258,8 @@ def verify_mechanism_trial_sizing_document(
             "mechanism sizing calibration evidence digest malformed"
         )
     try:
-        confirmatory_count = int(doc.get("confirmatory_task_count"))
-        required = int(doc.get("required_trials_per_task"))
+        confirmatory_count = _int_arg(doc.get("confirmatory_task_count"))
+        required = _int_arg(doc.get("required_trials_per_task"))
     except (TypeError, ValueError) as exc:
         raise MechanismTrialSizingError("invalid mechanism sizing integer field") from exc
     if confirmatory_count <= 1 or not (
@@ -260,21 +280,21 @@ def verify_mechanism_trial_sizing_document(
         if not isinstance(row, Mapping):
             raise MechanismTrialSizingError("invalid mechanism sizing comparison row")
         if not math.isclose(
-            float(row.get("per_claim_alpha")),
+            _float_arg(row.get("per_claim_alpha")),
             mechanism_plan.per_claim_alpha,
             rel_tol=0.0,
             abs_tol=1e-15,
         ):
             raise MechanismTrialSizingError("mechanism sizing alpha differs from frozen plan")
         if not math.isclose(
-            float(row.get("target_power")),
+            _float_arg(row.get("target_power")),
             mechanism_plan.target_power,
             rel_tol=0.0,
             abs_tol=1e-15,
         ):
             raise MechanismTrialSizingError("mechanism sizing power differs from frozen plan")
         try:
-            row_required = int(row.get("required_trials_per_task"))
+            row_required = _int_arg(row.get("required_trials_per_task"))
         except (TypeError, ValueError) as exc:
             raise MechanismTrialSizingError("invalid comparison repeat count") from exc
         required_rows.append(row_required)

@@ -37,12 +37,18 @@ def _subjects(root: Path) -> tuple[Path, tuple[Path, Path], tuple[Path, Path]]:
 def _fake_v1(*, local_provenance: str):
     def builder(**kwargs):
         root = Path(kwargs["repository_root"])
-        attestations = tuple(Path(value) for value in kwargs["attestation_paths"])
-        signatures = tuple(Path(value) for value in kwargs["signature_paths"])
+
+        def absolute(value):
+            # Mirror V1 _repo_file: absolute paths are used as-is, relative ones are repo-relative.
+            path = Path(value)
+            return path if path.is_absolute() else root / path
+
+        attestations = tuple(absolute(value) for value in kwargs["attestation_paths"])
+        signatures = tuple(absolute(value) for value in kwargs["signature_paths"])
         return SimpleNamespace(
             activation_authorized=True,
             all_signatures_verified=True,
-            regression_receipt_path=Path(kwargs["regression_receipt_path"]).relative_to(root).as_posix(),
+            regression_receipt_path=absolute(kwargs["regression_receipt_path"]).relative_to(root).as_posix(),
             regression_receipt_sha256="1" * 64,
             regression_receipt_digest="2" * 64,
             source_commit="3" * 40,

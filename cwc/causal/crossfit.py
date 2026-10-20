@@ -26,7 +26,7 @@ def grouped_kfold(
 
     shuffled = unique[:]
     random.Random(seed).shuffle(shuffled)
-    fold_groups = [set() for _ in range(n_splits)]
+    fold_groups: list[set[str]] = [set() for _ in range(n_splits)]
     for i, group in enumerate(shuffled):
         fold_groups[i % n_splits].add(group)
 

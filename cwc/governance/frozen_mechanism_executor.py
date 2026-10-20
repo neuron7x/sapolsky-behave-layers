@@ -4,15 +4,12 @@ import hashlib
 import os
 import shutil
 import tempfile
+from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
-from typing import Mapping
 
-from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec
+from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec, Lease
 from cwc.governance.execution_manifest_freeze import EXECUTOR_REQUEST_SCHEMA
-from cwc.governance.mechanism_execution_freeze import (
-    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
-)
 from cwc.governance.external_evidence_reference import verify_materialization_generation
 from cwc.governance.frozen_panel_executor import (
     FrozenPanelExecutionError,
@@ -22,14 +19,11 @@ from cwc.governance.frozen_panel_executor import (
     _finite_probability,
     _invoke,
     _physical_cost_certificate,
+    _policy_subject,
     _pricing_rate_cards,
     _provider_model_meter,
-    _policy_subject,
     _runtime_env,
     _write_json,
-)
-from cwc.governance.mechanism_harness_freeze import (
-    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
 )
 from cwc.governance.materialization_transaction import (
     canonical_json_bytes,
@@ -47,8 +41,14 @@ from cwc.governance.mechanism_execution_bundle import (
     canonical_mechanism_result_digest,
     verify_mechanism_execution_bundle,
 )
-from cwc.governance.provider_trace import TraceAuthority
+from cwc.governance.mechanism_execution_freeze import (
+    verify_mechanism_execution_freeze_document as verify_execution_manifest_freeze_document,
+)
+from cwc.governance.mechanism_harness_freeze import (
+    verify_mechanism_harness_freeze_document as verify_harness_freeze_document,
+)
 from cwc.governance.physical_cost_evidence import CostAuthority
+from cwc.governance.provider_trace import TraceAuthority
 
 _FORBIDDEN_RISK_FIELDS = frozenset({
     "catastrophic_regret",
@@ -74,7 +74,7 @@ def _mechanism_request(
     repository_root: Path,
     execution: Mapping[str, object],
     authority: Mapping[str, object],
-    lease,
+    lease: Lease,
 ) -> dict[str, object]:
     components = execution.get("components")
     if not isinstance(components, list):
@@ -216,6 +216,8 @@ def execute_frozen_mechanism_panel(
             if lease is None:
                 snapshot = coordinator.snapshot(tick=tick)
                 counts = snapshot["counts"]
+                if not isinstance(counts, Mapping):
+                    raise FrozenMechanismExecutionError("coordinator snapshot counts malformed")
                 if counts.get("COMMITTED") == len(spec.units()):
                     break
                 raise FrozenMechanismExecutionError(
@@ -229,7 +231,7 @@ def execute_frozen_mechanism_panel(
                 lease=lease,
             )
             attempt_id = hashlib.sha256(
-                f"{lease.unit.stable_id}::{lease.attempt}".encode("utf-8")
+                f"{lease.unit.stable_id}::{lease.attempt}".encode()
             ).hexdigest()[:24]
             transcript_dir = staging / "transcripts" / attempt_id
             transcript_dir.mkdir(parents=True, exist_ok=True)
@@ -303,13 +305,18 @@ def execute_frozen_mechanism_panel(
 
             evidence_rel = f"evidence/{result_index:08d}.json"
             evidence_path = staging / evidence_rel
+            frozen_components = execution["components"]
+            if not isinstance(frozen_components, list):
+                raise FrozenMechanismExecutionError(
+                    "frozen execution component population missing"
+                )
             evidence_doc = {
                 "schema": EVIDENCE_SCHEMA,
                 "request": request,
                 "response": response,
                 "executor_manifest_sha256": next(
                     row["sha256"]
-                    for row in execution["components"]
+                    for row in frozen_components
                     if isinstance(row, Mapping)
                     and row.get("component") == "executor_manifest"
                 ),

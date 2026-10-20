@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
+from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.external_materialization import parse_terminal_dataset_manifest, verify_swe_parquet
 from cwc.governance.git_tree_reconstruction import git_blob_oid_path
@@ -17,6 +18,27 @@ REGISTRY_SCHEMA = "DGC_EXTERNAL_SOURCE_AUTHORITY_REGISTRY_V1"
 
 class TaskPartitionError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
+def _iter_arg(value: object) -> Iterable[object]:
+    """Iteration over an untyped decoded value; non-iterables raise the TypeError iteration would raise."""
+    if isinstance(value, Iterable):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not iterable")
 
 
 def _sha(name: str, value: object) -> str:
@@ -78,7 +100,7 @@ def _extract_task_ids(
                 root / family_id / rel,
                 expected_sha256=_sha("SWE parquet_sha256", identity.get("parquet_sha256")),
                 expected_bytes=None,
-                expected_count=int(identity.get("expected_task_count")),
+                expected_count=_int_arg(identity.get("expected_task_count")),
             )
         except (OSError, TypeError, ValueError, RuntimeError) as exc:
             raise TaskPartitionError("SWE task population cannot be reverified") from exc
@@ -91,12 +113,28 @@ def _extract_task_ids(
         try:
             manifest = parse_terminal_dataset_manifest(
                 dataset.read_text(encoding="utf-8"),
-                expected_count=int(identity.get("expected_task_count")),
+                expected_count=_int_arg(identity.get("expected_task_count")),
             )
         except (OSError, UnicodeError, TypeError, ValueError) as exc:
             raise TaskPartitionError("Terminal task population cannot be reverified") from exc
         return tuple(sorted(name for name, _ in manifest.tasks))
     raise TaskPartitionError("unsupported external workload family")
+
+
+class _TaskPartitionPayload(TypedDict):
+    family_id: str
+    materialization_reference_digest: str
+    task_manifest_digest: str
+    task_count: int
+    calibration_task_ids: tuple[str, ...]
+    confirmatory_task_ids: tuple[str, ...]
+    generalization_task_ids: tuple[str, ...]
+    calibration_task_digest: str
+    confirmatory_task_digest: str
+    generalization_task_digest: str
+    statistical_plan_digest: str
+    calibration_fraction: float
+    generalization_holdout_fraction: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,7 +199,7 @@ def freeze_task_partition(
     calibration_digest = _task_digest(calibration)
     confirmatory_digest = _task_digest(confirmatory)
     generalization_digest = _task_digest(generalization)
-    payload = {
+    payload: _TaskPartitionPayload = {
         "family_id": family_id,
         "materialization_reference_digest": reference_digest,
         "task_manifest_digest": observed_task_digest,
@@ -193,15 +231,15 @@ def verify_task_partition_document(path: Path) -> dict[str, object]:
     ):
         raise TaskPartitionError("task partition illegally grants downstream authority")
 
-    calibration = tuple(str(x) for x in doc.get("calibration_task_ids", ()))
-    confirmatory = tuple(str(x) for x in doc.get("confirmatory_task_ids", ()))
-    generalization = tuple(str(x) for x in doc.get("generalization_task_ids", ()))
+    calibration = tuple(str(x) for x in _iter_arg(doc.get("calibration_task_ids", ())))
+    confirmatory = tuple(str(x) for x in _iter_arg(doc.get("confirmatory_task_ids", ())))
+    generalization = tuple(str(x) for x in _iter_arg(doc.get("generalization_task_ids", ())))
     if not calibration or not confirmatory or not generalization:
         raise TaskPartitionError("all three frozen task populations must be non-empty")
     sets = (set(calibration), set(confirmatory), set(generalization))
     if any(sets[i] & sets[j] for i in range(3) for j in range(i + 1, 3)):
         raise TaskPartitionError("calibration/confirmatory/generalization populations overlap")
-    if len(calibration) + len(confirmatory) + len(generalization) != int(doc.get("task_count", -1)):
+    if len(calibration) + len(confirmatory) + len(generalization) != _int_arg(doc.get("task_count", -1)):
         raise TaskPartitionError("three-way task partition count mismatch")
 
     all_tasks = tuple(sorted(sets[0] | sets[1] | sets[2]))
@@ -210,8 +248,8 @@ def verify_task_partition_document(path: Path) -> dict[str, object]:
     try:
         expected_calibration, expected_confirmatory, expected_generalization = deterministic_three_way_task_split(
             all_tasks,
-            calibration_fraction=float(doc.get("calibration_fraction")),
-            generalization_holdout_fraction=float(doc.get("generalization_holdout_fraction")),
+            calibration_fraction=_float_arg(doc.get("calibration_fraction")),
+            generalization_holdout_fraction=_float_arg(doc.get("generalization_holdout_fraction")),
         )
     except (TypeError, ValueError, RuntimeError) as exc:
         raise TaskPartitionError("task partition split rule cannot be replayed") from exc

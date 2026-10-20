@@ -65,6 +65,7 @@ def test_missing_baseline_endpoint_comparison_is_rejected():
             observations=_observations(comparisons=7),
             effects_of_interest=_effects(comparisons=7),
             confirmatory_task_count=40,
+            calibration_evidence_digest="e" * 64,
             plan=plan,
         )
 
@@ -81,6 +82,7 @@ def test_comparison_design_mismatch_is_rejected():
             observations=rows,
             effects_of_interest=_effects(),
             confirmatory_task_count=40,
+            calibration_evidence_digest="e" * 64,
             plan=plan,
         )
 
@@ -94,6 +96,7 @@ def test_effect_population_must_match_exactly():
             observations=_observations(),
             effects_of_interest=effects,
             confirmatory_task_count=40,
+            calibration_evidence_digest="e" * 64,
             plan=plan,
         )
 

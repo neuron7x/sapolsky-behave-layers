@@ -4,6 +4,7 @@ import itertools
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from typing import TypedDict
 
 
 def normal_logpdf(y: float, mean: float, sd: float) -> float:
@@ -157,6 +158,13 @@ def separation_rate_per_cost(
     return kl / design.cost
 
 
+class DesignRow(TypedDict):
+    counts: dict[str, int]
+    cost: float
+    min_separation_rate_per_cost: float
+    mean_separation_rate_per_cost: float
+
+
 def optimize_minimax_design(
     *,
     actions: Sequence[float],
@@ -166,11 +174,11 @@ def optimize_minimax_design(
     nuisance: NuisanceEnvelope,
     max_samples: int,
     min_distinct_actions: int = 2,
-) -> tuple[InterventionDesign, list[dict[str, float | dict[str, int]]]]:
+) -> tuple[InterventionDesign, list[DesignRow]]:
     if max_samples < 1:
         raise ValueError("max_samples must be positive")
     actions = tuple(float(a) for a in actions)
-    rows: list[dict[str, float | dict[str, int]]] = []
+    rows: list[DesignRow] = []
     best: InterventionDesign | None = None
     best_score = -1.0
     for counts in itertools.product(range(max_samples + 1), repeat=len(actions)):
@@ -364,7 +372,7 @@ class FixedCheckpointCompositeEValue:
         self.actions: list[float] = []
         self.cost = 0.0
         self.rejected = False
-        self.checked: list[dict[str, float | bool]] = []
+        self.checked: list[dict[str, float | bool | None]] = []
 
     @property
     def checkpoint_alpha(self) -> float:
@@ -402,7 +410,7 @@ class FixedCheckpointCompositeEValue:
         fit = profile_gaussian_null(self.outcomes, self.actions, model_slope=self.model_slope, nuisance=self.nuisance)
         log_e = self._alternative_log_density() - fit.log_likelihood
         self.rejected = log_e >= self.threshold_log_e
-        record = {
+        record: dict[str, float | bool | None] = {
             "cost": float(self.cost),
             "checkpoint": True,
             "log_e": float(log_e),

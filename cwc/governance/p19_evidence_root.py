@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Mapping
 
+from cwc.governance.average_conditional_mean_cs import ASSUMPTION_BOUNDARY as PRIMARY_ASSUMPTION_BOUNDARY
+from cwc.governance.average_conditional_mean_cs import BOUNDARY_METHOD as PRIMARY_BOUNDARY_METHOD
+from cwc.governance.average_conditional_mean_cs import CLAIM_TARGET as PRIMARY_CLAIM_TARGET
+from cwc.governance.average_conditional_mean_cs import CONFSEQ_REFERENCE_COMMIT
+from cwc.governance.average_conditional_mean_cs import METHOD as PRIMARY_INFERENCE_METHOD
+from cwc.governance.average_conditional_mean_cs import PREDICTOR_RULE as PRIMARY_PREDICTOR_RULE
+from cwc.governance.average_conditional_mean_cs import SEQUENCE_ORDER_RULE as PRIMARY_SEQUENCE_ORDER
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
-from cwc.governance.evidence_closure import EvidenceClosureLedger, RECEIPT_SCHEMA, STAGES, sha256_file
+from cwc.governance.evidence_closure import RECEIPT_SCHEMA, STAGES, EvidenceClosureLedger, sha256_file
 from cwc.governance.executed_p9_anytime_authority import verify_anytime_p9_authority_document
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.fault_tolerance_authority import verify_fault_tolerance_authority_document
@@ -14,16 +21,7 @@ from cwc.governance.generalization_anytime_authority import verify_generalizatio
 from cwc.governance.independent_replication_authority_v4 import verify_independent_replication_authority_v4_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes
 from cwc.governance.p9_scientific_authority_v3 import verify_p9_scientific_authority_v3_document
-from cwc.governance.product_statistical_plan import (
-    CONFSEQ_REFERENCE_COMMIT,
-    PLAN_METHOD,
-    PRIMARY_ASSUMPTION_BOUNDARY,
-    PRIMARY_BOUNDARY_METHOD,
-    PRIMARY_CLAIM_TARGET,
-    PRIMARY_INFERENCE_METHOD,
-    PRIMARY_PREDICTOR_RULE,
-    PRIMARY_SEQUENCE_ORDER,
-)
+from cwc.governance.product_statistical_plan import PLAN_METHOD
 
 SCHEMA = "DGC_FAMILY_P19_EVIDENCE_ROOT_V3"
 

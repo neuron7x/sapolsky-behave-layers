@@ -10,9 +10,11 @@ import tempfile
 import zipfile
 from collections import deque
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import torch
+if TYPE_CHECKING:
+    import torch
+
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -42,6 +44,9 @@ def exact_edges_global1(n: int, w: int) -> int:
 
 
 def undirected_diameter(mask: torch.Tensor) -> int | None:
+    # Keep pure topology-formula tests CPU-only; this runtime path still requires PyTorch.
+    import torch
+
     adjacency = (mask | mask.T).cpu()
     n = int(adjacency.shape[0])
     max_distance = 0

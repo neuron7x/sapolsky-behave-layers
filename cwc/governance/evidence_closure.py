@@ -5,9 +5,9 @@ import json
 import os
 import re
 import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Sequence
 
 SCHEMA = "DGC_EVIDENCE_CLOSURE_LEDGER_V3"
 RECEIPT_SCHEMA = "DGC_EVIDENCE_CLOSURE_RECEIPT_V3"
@@ -104,8 +104,7 @@ def _default_runner(argv: Sequence[str], cwd: Path, env: Mapping[str, str]) -> s
         cwd=cwd,
         env=dict(env),
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 
@@ -159,6 +158,8 @@ class EvidenceClosureLedger:
         if not self.ledger_path.exists():
             return self._empty_state()
         data = json.loads(self.ledger_path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ClosureError("ledger must be a JSON object")
         expected_identity = {
             "schema": SCHEMA,
             "generation_id": self.generation_id,
@@ -259,7 +260,10 @@ class EvidenceClosureLedger:
 
         evidence = self._verify_artifacts(execution.evidence)
         state = self.load()
-        receipts = list(state["receipts"])
+        state_receipts = state["receipts"]
+        if not isinstance(state_receipts, list):
+            raise ClosureError("ledger stage/receipt arrays are malformed")
+        receipts = list(state_receipts)
         prior_digest = receipts[-1]["receipt_digest"] if receipts else None
         receipt_payload: dict[str, object] = {
             "schema": RECEIPT_SCHEMA,
@@ -274,7 +278,10 @@ class EvidenceClosureLedger:
         receipt = dict(receipt_payload)
         receipt["receipt_digest"] = _sha256_bytes(_canonical_json(receipt_payload))
         receipts.append(receipt)
-        completed = list(state["completed_stages"])
+        state_completed = state["completed_stages"]
+        if not isinstance(state_completed, list):
+            raise ClosureError("ledger stage/receipt arrays are malformed")
+        completed = list(state_completed)
         completed.append(execution.stage)
         new_state = {
             "schema": SCHEMA,

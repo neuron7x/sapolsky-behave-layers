@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
-from typing import Mapping, Sequence
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.p19_external_verification_plan import (
@@ -18,8 +18,9 @@ from cwc.governance.p19_verification_attestation import (
 )
 from cwc.governance.p19_verification_check_receipt import (
     REQUIRED_CHECKS,
-    SCHEMA as CHECK_RECEIPT_SCHEMA,
     P19VerificationCheckReceiptError,
+)
+from cwc.governance.p19_verification_check_receipt import (
     load_check_receipt as load_verified_check_receipt,
 )
 
@@ -109,11 +110,16 @@ def build_p19_verification_report(
 
     ordered = sorted(rows, key=lambda row: str(row["check_id"]))
     for row in ordered:
+        command_argv = row["command_argv"]
+        if not isinstance(command_argv, (list, tuple)):
+            raise P19VerificationReportError(
+                f"verification command differs from frozen plan: {row['check_id']}"
+            )
         try:
             verify_command_against_plan(
                 plan,
                 check_id=str(row["check_id"]),
-                command_argv=row["command_argv"],
+                command_argv=command_argv,
                 p19_path=p19_rel,
                 evidence_path=str(row["evidence_path"]),
             )
@@ -140,7 +146,7 @@ def build_p19_verification_report(
         }
         for row in ordered
     ]
-    doc = {
+    doc: dict[str, object] = {
         "schema": REPORT_SCHEMA,
         "verification_protocol": VERIFICATION_PROTOCOL,
         "verification_plan_path": plan_rel,

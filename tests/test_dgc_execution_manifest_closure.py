@@ -8,6 +8,7 @@ import pytest
 from cwc.governance.evidence_closure import (
     ClosureError,
     EvidenceArtifact,
+    STAGES,
     EvidenceClosureLedger,
     StageExecution,
     sha256_file,
@@ -88,7 +89,14 @@ def test_execution_manifest_freeze_advances_only_from_exact_materialization_subj
         identity_checker=lambda _: None,
     )
     assert receipt["stage"] == "EXECUTION_MANIFESTS_FROZEN"
-    assert ledger.next_stage() == "B2_FITTED"
+    # 366643c inserted CCF_SPEC_FROZEN (then G1-G5 registry and fault-injection
+    # freezes) between the execution freeze and B2 so that oracle semantics are
+    # frozen before any B2 outcome; the successor is pinned to that contract.
+    assert STAGES[STAGES.index("EXECUTION_MANIFESTS_FROZEN") + 1] == "CCF_SPEC_FROZEN"
+    assert ledger.next_stage() == "CCF_SPEC_FROZEN"
+    assert ledger.load()["completed_stages"] == [
+        "SOURCE_VERIFIED", "MATERIALIZED_VERIFIED", "EXECUTION_MANIFESTS_FROZEN",
+    ]
 
 
 def test_execution_freeze_cannot_rebind_to_another_materialization_reference(tmp_path: Path):
@@ -104,12 +112,26 @@ def test_execution_freeze_cannot_rebind_to_another_materialization_reference(tmp
     assert ledger.next_stage() == "EXECUTION_MANIFESTS_FROZEN"
 
 
-def test_prior_materialization_reference_tamper_blocks_next_stage(tmp_path: Path):
+@pytest.mark.parametrize(
+    "tamper",
+    [
+        pytest.param(lambda text: "tampered", id="unparseable-bytes"),
+        # Semantically identical JSON (same schema and reference_digest) with
+        # different bytes: only the receipt sha256 binding can reject it.
+        pytest.param(lambda text: json.dumps(json.loads(text), indent=2), id="reformatted-same-json"),
+    ],
+)
+def test_prior_materialization_reference_tamper_blocks_next_stage(tmp_path: Path, tamper):
     repo = tmp_path / "repo"
     repo.mkdir()
     ledger, reference, reference_digest = _ledger(repo)
-    reference.write_text("tampered", encoding="utf-8")
-    with pytest.raises(ClosureError, match="prior materialization reference"):
+    original = reference.read_text(encoding="utf-8")
+    tampered = tamper(original)
+    assert tampered.encode("utf-8") != original.encode("utf-8")
+    reference.write_text(tampered, encoding="utf-8")
+    # af6c9e4 moved the prior-evidence byte binding into the shared
+    # _stage_evidence_file check, which now runs before the reference is parsed.
+    with pytest.raises(ClosureError, match=r"^MATERIALIZED_VERIFIED evidence bytes changed after stage closure$"):
         close_execution_manifests_frozen(
             ledger,
             freeze_path=_freeze(repo, reference_digest),
