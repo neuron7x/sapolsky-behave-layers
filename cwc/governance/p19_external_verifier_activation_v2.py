@@ -336,6 +336,6 @@ def verify_p19_external_verifier_activation_authority_v2_document(
     )
     if rebuilt.authority_digest != _sha("authority_digest", doc.get("authority_digest")):
         raise P19ExternalVerifierActivationV2Error("portable activation authority differs from raw signature replay")
-    if rebuilt.document != doc:
+    if canonical_json_bytes(rebuilt.document) + b"\n" != raw:
         raise P19ExternalVerifierActivationV2Error("portable activation document differs from recomputation")
     return doc
