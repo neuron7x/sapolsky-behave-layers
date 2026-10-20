@@ -28,7 +28,7 @@ def config():
 def population():
     return [
         MechanismCalibrationExample("t1", "STANDARD", (0.0,), 0.75, 0.10),
-        MechanismCalibrationExample("t1", "DEEP", (0.0,), 0.80, 0.40),
+        MechanismCalibrationExample("t1", "DEEP", (0.0,), 0.70, 0.40),
         MechanismCalibrationExample("t2", "STANDARD", (1.0,), 0.35, 0.10),
         MechanismCalibrationExample("t2", "DEEP", (1.0,), 0.95, 0.40),
     ]

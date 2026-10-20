@@ -392,9 +392,10 @@ def _provider_traces(
             raise TerminalHarborAdapterError(
                 "custom Harbor provider telemetry must be PROVIDER_LIVE"
             )
-        request_id = str(row.get("provider_request_id", "")).strip()
-        if not request_id:
+        raw_request_id = row.get("provider_request_id")
+        if not isinstance(raw_request_id, str) or not raw_request_id.strip():
             raise TerminalHarborAdapterError("provider trace requires real provider_request_id")
+        request_id = raw_request_id.strip()
         if request_id in request_ids:
             raise TerminalHarborAdapterError("duplicate provider_request_id in Harbor telemetry")
         request_ids.add(request_id)

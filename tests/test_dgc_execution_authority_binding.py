@@ -30,6 +30,7 @@ def fixture():
         repo_tree_oid="b" * 40,
         source_authority_digest=authority.digest,
         materialized_tree_sha256="c" * 64,
+        materialized_task_manifest_sha256="d" * 64,
         task_manifest_sha256="d" * 64,
         comparison_frame_digest="e" * 64,
         baseline_panel_digest="f" * 64,

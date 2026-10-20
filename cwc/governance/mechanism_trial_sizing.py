@@ -199,7 +199,12 @@ def freeze_mechanism_trial_sizing(
         "required_trials_per_task": required,
     }
     return MechanismTrialSizingReceipt(
-        **payload,
+        plan_digest=mechanism_plan.digest,
+        calibration_evidence_digest=calibration_digest,
+        confirmatory_task_count=int(confirmatory_task_count),
+        calibration_design_digest=calibration_design_digest,
+        comparisons=ordered,
+        required_trials_per_task=required,
         receipt_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 
