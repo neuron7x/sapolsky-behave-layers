@@ -57,10 +57,7 @@ def test_receipt_symlink_is_rejected(tmp_path: Path):
     target = tmp_path / "artifacts/dgc-product-v1/generated/check/real.json"
     target.write_bytes(canonical_receipt_bytes(doc))
     link = tmp_path / "artifacts/dgc-product-v1/generated/check/receipt.json"
-    try:
-        link.symlink_to(target.name)
-    except OSError:
-        pytest.skip("symlink unavailable")
+    link.symlink_to(target.name)
     with pytest.raises(P19VerificationCheckReceiptError, match="non-symlink"):
         load_check_receipt(link, repository_root=tmp_path)
 

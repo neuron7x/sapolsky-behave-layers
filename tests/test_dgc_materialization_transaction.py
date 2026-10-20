@@ -92,8 +92,6 @@ def test_symlink_target_content_change_does_not_change_generation_payload_digest
 
 
 def test_fifo_is_rejected_as_unrepresentable_evidence(tmp_path: Path):
-    if not hasattr(os, "mkfifo"):
-        pytest.skip("mkfifo unavailable")
     final = tmp_path / "gen-fifo"
     with pytest.raises(ValueError, match="unsupported evidence filesystem object"):
         with AtomicEvidenceGeneration(final) as tx:

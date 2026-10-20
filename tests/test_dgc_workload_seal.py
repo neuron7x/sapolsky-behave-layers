@@ -95,8 +95,6 @@ def test_file_mode_change_changes_tree_digest(tmp_path):
 
 
 def test_fifo_is_rejected(tmp_path):
-    if not hasattr(os, "mkfifo"):
-        pytest.skip("mkfifo unavailable")
     os.mkfifo(tmp_path / "pipe")
     with pytest.raises(ValueError, match="unsupported evidence filesystem object"):
         seal_materialized_workload(family_id="F", root=tmp_path, task_ids=("t1",), expected_task_count=1)
