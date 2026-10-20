@@ -137,7 +137,7 @@ def verify_swe_parquet(
     if digest != expected_sha256:
         raise ValueError(f"SWE parquet SHA-256 mismatch: expected {expected_sha256}, observed {digest}")
     try:
-        import pyarrow.parquet as pq  # type: ignore[import-not-found]
+        import pyarrow.parquet as pq
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "pyarrow is required to verify SWE row count and instance_id manifest; refusing MATERIALIZED_VERIFIED"

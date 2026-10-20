@@ -5,8 +5,8 @@ import itertools
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-import numpy as np  # type: ignore[import-not-found, unused-ignore]
-import numpy.typing as npt  # type: ignore[import-not-found, unused-ignore]
+import numpy as np
+import numpy.typing as npt
 
 CANDIDATES = ("A", "C", "D", "B")
 

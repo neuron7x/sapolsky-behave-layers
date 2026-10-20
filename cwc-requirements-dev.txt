@@ -3,6 +3,9 @@
 # Install: VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
 pytest-cov==7.1.0
 hypothesis==6.156.6
+# numpy is a runtime dependency of cwc/{causal,counterfactual,epistemics,replay};
+# pinned to the uv.lock version so mypy --strict checks against its real stubs.
+numpy==1.26.4
 mypy==2.3.0
 ruff==0.15.21
 mutmut==3.6.0

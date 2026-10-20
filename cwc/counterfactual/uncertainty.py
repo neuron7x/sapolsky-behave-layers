@@ -4,7 +4,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-import numpy as np  # type: ignore[import-not-found, unused-ignore]
+import numpy as np
 
 from .adequacy import AdequacyMetrics
 from .model import CANDIDATES, FittedCounterfactualModel

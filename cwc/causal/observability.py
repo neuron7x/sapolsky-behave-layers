@@ -5,7 +5,7 @@ from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import combinations
 
-import numpy as np  # type: ignore[import-not-found, unused-ignore]
+import numpy as np
 
 ModelName = str
 ActionName = str

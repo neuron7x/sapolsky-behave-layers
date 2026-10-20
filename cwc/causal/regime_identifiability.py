@@ -7,6 +7,7 @@ from enum import Enum
 from statistics import NormalDist
 
 import numpy as np
+import numpy.typing as npt
 
 
 class AssumptionClass(str, Enum):
@@ -59,11 +60,11 @@ class RegimeIVDecision:
     unresolved_assumption_debt: tuple[str, ...]
 
 
-def _center(x: np.ndarray) -> np.ndarray:
+def _center(x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     return np.asarray(x, dtype=np.float64) - float(np.mean(x))
 
 
-def _mean_se(values: np.ndarray) -> float:
+def _mean_se(values: npt.NDArray[np.float64]) -> float:
     values = np.asarray(values, dtype=np.float64)
     if len(values) < 3:
         raise ValueError("at least three samples required")
@@ -72,7 +73,7 @@ def _mean_se(values: np.ndarray) -> float:
 
 def evaluate_regime_iv(
     *,
-    regimes: np.ndarray,
+    regimes: npt.ArrayLike,
     treatment: Sequence[float],
     outcome: Sequence[float],
     negative_control: Sequence[float],
@@ -112,7 +113,7 @@ def evaluate_regime_iv(
     zcrit = NormalDist().inv_cdf(1.0 - alpha / (2.0 * family_tests))
 
     moments: list[InstrumentMoment] = []
-    influence: list[np.ndarray | None] = []
+    influence: list[npt.NDArray[np.float64] | None] = []
     relevant: list[int] = []
     neg_violations: list[int] = []
 

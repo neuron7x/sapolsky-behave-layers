@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-import numpy as np  # type: ignore[import-not-found, unused-ignore]
+import numpy as np
 
 from .model import CANDIDATES, FittedCounterfactualModel
 

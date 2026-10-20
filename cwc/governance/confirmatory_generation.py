@@ -40,57 +40,98 @@ def _canonical_task_manifest(task_ids: tuple[str, ...]) -> str:
 
 
 class _SourceAuthority(Protocol):
-    family_id: str
-    stage: object
-    digest: str
-    materialized_tree_sha256: str | None
-    materialized_task_manifest_sha256: str | None
+    @property
+    def family_id(self) -> str: ...
+    @property
+    def stage(self) -> object: ...
+    @property
+    def digest(self) -> str: ...
+    @property
+    def materialized_tree_sha256(self) -> str | None: ...
+    @property
+    def materialized_task_manifest_sha256(self) -> str | None: ...
 
 
 class _Harness(Protocol):
-    task_manifest_digest: str
-    statistical_plan_digest: str
-    baseline_panel_digest: str
-    governance_policy_digest: str
-    comparison_frame_digest: str
-    full_digest: str
+    @property
+    def task_manifest_digest(self) -> str: ...
+    @property
+    def statistical_plan_digest(self) -> str: ...
+    @property
+    def baseline_panel_digest(self) -> str: ...
+    @property
+    def governance_policy_digest(self) -> str: ...
+    @property
+    def comparison_frame_digest(self) -> str: ...
+    @property
+    def full_digest(self) -> str: ...
 
 
 class _BaselinePanel(Protocol):
-    executable_frozen: bool
-    digest: str
+    @property
+    def executable_frozen(self) -> bool: ...
+    @property
+    def digest(self) -> str: ...
 
 
 class _StatisticalPlan(Protocol):
-    digest: str
-    per_claim_alpha: float
-    target_power: float
+    @property
+    def digest(self) -> str: ...
+    @property
+    def per_claim_alpha(self) -> float: ...
+    @property
+    def target_power(self) -> float: ...
 
 
 class _TrialSizing(Protocol):
-    required_trials_per_task: int
-    per_claim_alpha: float
-    target_power: float
+    @property
+    def required_trials_per_task(self) -> int: ...
+    @property
+    def per_claim_alpha(self) -> float: ...
+    @property
+    def target_power(self) -> float: ...
 
 
 class _DistributedSpec(Protocol):
-    task_ids: tuple[str, ...]
-    policy_ids: tuple[str, ...]
-    replicates: int
-    harness_digest: str
-    statistical_plan_digest: str
-    digest: str
+    @property
+    def task_ids(self) -> tuple[str, ...]: ...
+    @property
+    def policy_ids(self) -> tuple[str, ...]: ...
+    @property
+    def replicates(self) -> int: ...
+    @property
+    def harness_digest(self) -> str: ...
+    @property
+    def statistical_plan_digest(self) -> str: ...
+    @property
+    def digest(self) -> str: ...
 
 
 class _Completion(Protocol):
-    spec_digest: str
-    expected_units: int
-    committed_units: int
-    total_cost_usd: float
-    audit_root_digest: str
-    result_population_digest: str
-    complete: bool
+    @property
+    def spec_digest(self) -> str: ...
+    @property
+    def expected_units(self) -> int: ...
+    @property
+    def committed_units(self) -> int: ...
+    @property
+    def total_cost_usd(self) -> float: ...
+    @property
+    def audit_root_digest(self) -> str: ...
+    @property
+    def result_population_digest(self) -> str: ...
+    @property
+    def complete(self) -> bool: ...
 
+
+
+class _CompletionRoot(Protocol):
+    @property
+    def distributed_spec_digest(self) -> str: ...
+    @property
+    def expected_work_units(self) -> int: ...
+    @property
+    def root_digest(self) -> str: ...
 
 @dataclass(frozen=True, slots=True)
 class PolicyHarnessBinding:
@@ -315,7 +356,7 @@ def freeze_confirmatory_generation(
 
 
 def certify_confirmatory_completion(
-    root: ConfirmatoryGenerationRoot,
+    root: _CompletionRoot,
     completion: _Completion,
 ) -> ConfirmatoryCompletionCertificate:
     if _sha256("completion.spec_digest", completion.spec_digest) != root.distributed_spec_digest:
