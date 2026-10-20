@@ -150,7 +150,7 @@ def authorize_b2_fit(
         )
     except (TypeError, ValueError, RuntimeError) as exc:
         raise B2FitAuthorityError("B2 fit cannot be deterministically recomputed") from exc
-    if asdict(recomputed) != declared_receipt:
+    if canonical_json_bytes(asdict(recomputed)) != canonical_json_bytes(declared_receipt):
         raise B2FitAuthorityError("declared B2 fit receipt does not equal deterministic recomputation")
     if recomputed.calibration_task_digest != partition.get("calibration_task_digest"):
         raise B2FitAuthorityError("B2 fitted calibration task digest differs from frozen partition")
