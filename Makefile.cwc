@@ -205,8 +205,14 @@ reproduce-mechanism:
 # GLOB, not a hard-coded list: every bundle carrying a SHA256SUMS is checked, so an evidence
 # bundle can never be silently left unverified (this closed the wp4-end-to-end-v4 omission).
 verify-evidence:
-	@find artifacts -name SHA256SUMS -not -path '*/.git/*' -printf '%h\n' | sort | while read d; do \
-		echo "checking $$d"; (cd $$d && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; done
+	@find artifacts -name SHA256SUMS -not -path '*/.git/*' -printf '%h\n' | sort | while IFS= read -r d; do \
+		echo "checking $d"; \
+		if grep -Eq '^[[:xdigit:]]{64} [ *]artifacts/' "$d/SHA256SUMS"; then \
+			sha256sum -c "$d/SHA256SUMS" >/dev/null && echo "  OK" || exit 1; \
+		else \
+			(cd "$d" && sha256sum -c SHA256SUMS >/dev/null && echo "  OK") || exit 1; \
+		fi; \
+	done
 
 validate-evidence:
 	PYTHONPATH=. $(PY) scripts/validate_evidence.py
