@@ -23,7 +23,8 @@ class AnytimeAdaptiveRiskCertificate:
 
 
 def certify_anytime_adaptive_risk(
-    loss_samples: Sequence[AdaptiveImportanceSample], *,
+    loss_samples: Sequence[AdaptiveImportanceSample],
+    *,
     sampling_policy: RestrictedAdaptiveSamplingPolicy,
     sampling_trace_digest: str,
     risk_threshold: float,
@@ -42,7 +43,8 @@ def certify_anytime_adaptive_risk(
     are bounded by policy, and lambda_t must be predictable. This does not claim
     arbitrary adaptive-labeling or nonstationary-population risk control.
     """
-    r = float(risk_threshold); alpha = float(alpha)
+    r = float(risk_threshold)
+    alpha = float(alpha)
     if not 0.0 <= r <= 1.0 or not 0.0 < alpha < 1.0:
         raise ValueError("risk_threshold in [0,1] and alpha in (0,1) required")
     if not predictable_lambda_attested:
@@ -57,7 +59,7 @@ def certify_anytime_adaptive_risk(
         loss = float(sample.value)
         if not math.isfinite(loss) or loss < 0.0 or loss > 1.0:
             raise ValueError("loss must lie in [0,1]")
-        safety.append(AdaptiveImportanceSample(sample.item_id, 1.0-loss, sample.selection_probability))
+        safety.append(AdaptiveImportanceSample(sample.item_id, 1.0 - loss, sample.selection_probability))
     ep = adaptive_importance_mean_eprocess(
         safety,
         target_distribution=target,
@@ -66,9 +68,9 @@ def certify_anytime_adaptive_risk(
         alpha=alpha,
         lambdas=predictable_lambdas,
         max_importance_weight=sampling_policy.max_importance_weight,
-        null_mean=1.0-r,
+        null_mean=1.0 - r,
     )
-    risk_ucb = min(1.0, max(0.0, 1.0-ep.lower_confidence_bound))
+    risk_ucb = min(1.0, max(0.0, 1.0 - ep.lower_confidence_bound))
     return AnytimeAdaptiveRiskCertificate(
         n=len(safety),
         risk_threshold=r,
