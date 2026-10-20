@@ -234,73 +234,73 @@ install-dev:
 	VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
 
 rd03-gate:
-	python scripts/rd03_gate.py --self-test
-	python scripts/rd03_gate.py
+	$(PY) scripts/rd03_gate.py --self-test
+	$(PY) scripts/rd03_gate.py
 
 
 csca03r-gate:
-	python scripts/csca03r_gate.py --self-test
-	python scripts/csca03r_gate.py
+	$(PY) scripts/csca03r_gate.py --self-test
+	$(PY) scripts/csca03r_gate.py
 
 
 csca04-gate:
-	python scripts/csca04_gate.py
+	$(PY) scripts/csca04_gate.py
 
 csca05-gate:
-	python scripts/csca05_gate.py
+	$(PY) scripts/csca05_gate.py
 
 csca06a-gate:
-	python scripts/csca06a_gate.py
+	$(PY) scripts/csca06a_gate.py
 
 csca06a-r1-gate:
-	python scripts/csca06a_r1_gate.py
+	$(PY) scripts/csca06a_r1_gate.py
 
 
 csca06-info-gate:
-	python scripts/csca06_information_bound_gate.py
+	$(PY) scripts/csca06_information_bound_gate.py
 
 
 csca06b-gate:
-	python scripts/csca06b_gate.py
+	$(PY) scripts/csca06b_gate.py
 
 csca06c-gate:
-	python scripts/csca06c_gate.py
+	$(PY) scripts/csca06c_gate.py
 
 
 csca07-gate:
-	python scripts/csca07_gate.py --self-test
-	python scripts/csca07_gate.py
+	$(PY) scripts/csca07_gate.py --self-test
+	$(PY) scripts/csca07_gate.py
 
 csca08-gate:
-	python scripts/csca08_gate.py --self-test
-	python scripts/csca08_gate.py
+	$(PY) scripts/csca08_gate.py --self-test
+	$(PY) scripts/csca08_gate.py
 
 cog-countermodel01-gate:
-	python scripts/cog_countermodel01_gate.py --self-test
-	python scripts/cog_countermodel01_gate.py
+	$(PY) scripts/cog_countermodel01_gate.py --self-test
+	$(PY) scripts/cog_countermodel01_gate.py
 
 
 cog-epistemic01r-gate:
-	python scripts/cog_epistemic01r_gate.py --self-test
-	python scripts/cog_epistemic01r_gate.py
+	$(PY) scripts/cog_epistemic01r_gate.py --self-test
+	$(PY) scripts/cog_epistemic01r_gate.py
 
 
 cog-memory01-gate:
-	python scripts/cog_memory01_gate.py --self-test
-	python scripts/cog_memory01_gate.py
+	$(PY) scripts/cog_memory01_gate.py --self-test
+	$(PY) scripts/cog_memory01_gate.py
 
 
 cog-plan01-gate:
-	python scripts/cog_plan01_gate.py --self-test
-	python scripts/cog_plan01_gate.py
+	$(PY) scripts/cog_plan01_gate.py --self-test
+	$(PY) scripts/cog_plan01_gate.py
 
 cab01-q1-gate:
-	python scripts/cab01_q1_gate.py --self-test
-	python scripts/cab01_q1_gate.py
+	$(PY) scripts/cab01_q1_gate.py --self-test
+	$(PY) scripts/cab01_q1_gate.py
 
 cab01-q1-r1-gate:
-	python scripts/cab01_q1_r1_gate.py --self-test
-	python scripts/cab01_q1_r1_gate.py
+	$(PY) scripts/cab01_q1_r1_gate.py --self-test
+	$(PY) scripts/cab01_q1_r1_gate.py
 
 
 cog-self01-gate:
