@@ -17,7 +17,11 @@ from cwc.governance.p19_external_verification_plan import (
     build_inactive_p19_external_verification_plan_document,
 )
 from cwc.governance.p19_external_verifier_regression import current_runtime_digest, current_test_manifest_digest
-from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS, load_p19_verification_report
+from cwc.governance.p19_verification_attestation import (
+    REQUIRED_CHECKS,
+    P19VerificationAttestationError,
+    load_p19_verification_report,
+)
 from cwc.governance.p19_verification_check_receipt import SCHEMA as CHECK_RECEIPT_SCHEMA
 from cwc.governance.p19_verification_report import (
     P19VerificationReportError,
@@ -238,7 +242,7 @@ def test_raw_transcript_mutation_fails_report_rehash(tmp_path: Path, monkeypatch
     path.write_bytes(report_bytes(report))
     evidence_rel = str(report["checks"][0]["evidence_path"])
     (tmp_path / evidence_rel).write_bytes(b"mutated\n")
-    with pytest.raises(Exception, match="bytes differ|byte count mismatch"):
+    with pytest.raises(Exception, match="byte count mismatch"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
@@ -248,8 +252,9 @@ def test_verifier_dependency_mutation_fails_report_replay(tmp_path: Path, monkey
     path.write_bytes(report_bytes(report))
     dependency = tmp_path / VERIFIER_RUNTIME_DEPENDENCIES[0]
     dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
-    with pytest.raises(Exception, match="dependency bytes differ|frozen verification plan replay failed"):
+    with pytest.raises(P19VerificationAttestationError, match=r"^P19 frozen verification plan replay failed$") as caught:
         load_p19_verification_report(path, repository_root=tmp_path)
+    assert "dependency bytes differ" in str(caught.value.__cause__)
 
 
 def test_activation_authority_mutation_fails_report_replay(tmp_path: Path, monkeypatch):

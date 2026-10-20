@@ -284,7 +284,7 @@ def test_raw_transcript_substitution_fails_before_signature_acceptance(tmp_path:
         called = True
         raise AssertionError("SSH verifier must not run after transcript tamper")
 
-    with pytest.raises(P19VerificationAttestationError, match="bytes differ|byte count mismatch"):
+    with pytest.raises(P19VerificationAttestationError, match="byte count mismatch"):
         verify_ssh_signed_p19_verification_attestation(
             attestation_path=attestation,
             verification_report_path=report,
