@@ -4,6 +4,7 @@ import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.product_qualification_pointer import VerifiedProductQualificationPointer
@@ -115,6 +116,15 @@ def _tree_entry(root: Path, commit: str, path: str, *, runner: Runner) -> tuple[
         )
     _oid("blob oid", oid)
     return mode, oid
+
+
+class _DeltaRowPayload(TypedDict):
+    status: str
+    path: str
+    execution_mode: str | None
+    execution_blob_oid: str | None
+    packaging_mode: str
+    packaging_blob_oid: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -231,7 +241,7 @@ def build_evidence_packaging_authority(
         packaging_mode, packaging_blob = _tree_entry(root, current_commit, path, runner=runner)
         if execution_mode is not None and execution_mode != packaging_mode:
             raise EvidencePackagingAuthorityError(f"approved mutable path changed Git mode: {path}")
-        payload = {
+        row_payload: _DeltaRowPayload = {
             "status": status,
             "path": path,
             "execution_mode": execution_mode,
@@ -240,8 +250,8 @@ def build_evidence_packaging_authority(
             "packaging_blob_oid": packaging_blob,
         }
         verified.append(PackagingDeltaRow(
-            **payload,
-            row_digest=sha256_bytes(canonical_json_bytes(payload)),
+            **row_payload,
+            row_digest=sha256_bytes(canonical_json_bytes(row_payload)),
         ))
 
     ordered = tuple(sorted(verified, key=lambda row: row.path))
@@ -258,15 +268,18 @@ def build_evidence_packaging_authority(
         for row in ordered
     ]
     delta_digest = sha256_bytes(canonical_json_bytes(delta_payload))
+    qualification_pointer_digest = _sha("qualification pointer digest", qualification.pointer_digest)
+    global_v5_authority_digest = _sha("global V5 authority digest", qualification.global_v5_authority_digest)
+    terminal_ledger_tip_receipt_digest = _sha(
+        "terminal ledger tip receipt digest", qualification.ledger_tip_receipt_digest
+    )
     payload = {
         "qualified_generation_id": qualification.generation_id,
         "qualified_execution_commit": execution_commit,
         "qualified_execution_tree": execution_tree,
-        "qualification_pointer_digest": _sha("qualification pointer digest", qualification.pointer_digest),
-        "global_v5_authority_digest": _sha("global V5 authority digest", qualification.global_v5_authority_digest),
-        "terminal_ledger_tip_receipt_digest": _sha(
-            "terminal ledger tip receipt digest", qualification.ledger_tip_receipt_digest
-        ),
+        "qualification_pointer_digest": qualification_pointer_digest,
+        "global_v5_authority_digest": global_v5_authority_digest,
+        "terminal_ledger_tip_receipt_digest": terminal_ledger_tip_receipt_digest,
         "packaging_commit": current_commit,
         "packaging_tree": packaging_tree,
         "delta_policy": DELTA_POLICY,
@@ -283,9 +296,9 @@ def build_evidence_packaging_authority(
         qualified_generation_id=qualification.generation_id,
         qualified_execution_commit=execution_commit,
         qualified_execution_tree=execution_tree,
-        qualification_pointer_digest=payload["qualification_pointer_digest"],
-        global_v5_authority_digest=payload["global_v5_authority_digest"],
-        terminal_ledger_tip_receipt_digest=payload["terminal_ledger_tip_receipt_digest"],
+        qualification_pointer_digest=qualification_pointer_digest,
+        global_v5_authority_digest=global_v5_authority_digest,
+        terminal_ledger_tip_receipt_digest=terminal_ledger_tip_receipt_digest,
         packaging_commit=current_commit,
         packaging_tree=packaging_tree,
         delta_policy=DELTA_POLICY,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 from cwc.governance.p19_external_replay import CHECK_HANDLERS
@@ -59,6 +60,22 @@ def _tracked_clean(root: Path, rel: str) -> None:
         raise P19ExternalVerifierFreezeReadinessError(
             f"verifier freeze subject is dirty: {rel}"
         )
+
+
+class _ReadinessPayload(TypedDict):
+    source_commit: str
+    source_tree: str
+    candidate_plan_digest: str
+    runtime_manifest_digest: str
+    test_manifest_digest: str
+    method_map_digest: str
+    runtime_dependency_count: int
+    regression_test_count: int
+    exact_check_count: int
+    all_freeze_subjects_tracked_clean: bool
+    canonical_plan_present: bool
+    canonical_plan_matches_candidate: bool
+    ready_to_freeze: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,7 +152,7 @@ def build_p19_external_verifier_freeze_readiness(
                 "canonical Plan V4 exists but differs from current inactive candidate"
             )
 
-    payload = {
+    payload: _ReadinessPayload = {
         "source_commit": source_commit,
         "source_tree": source_tree,
         "candidate_plan_digest": str(candidate["plan_digest"]),

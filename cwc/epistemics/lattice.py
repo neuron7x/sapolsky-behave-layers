@@ -508,11 +508,12 @@ class EpistemicMachine:
                 raise IllegalTransition("terminal capability has non-terminal target")
             target = capability.target_state
         else:
-            target = expected.get((record.state, capability.capability_type))
-            if target is None or target is not capability.target_state:
+            expected_target = expected.get((record.state, capability.capability_type))
+            if expected_target is None or expected_target is not capability.target_state:
                 raise IllegalTransition(
                     f"{record.state.value} cannot consume {capability.capability_type.value} -> {capability.target_state.value}"
                 )
+            target = expected_target
 
         evidence = tuple(record.evidence) + tuple(capability.evidence)
         assumption_ids = record.assumption_ids

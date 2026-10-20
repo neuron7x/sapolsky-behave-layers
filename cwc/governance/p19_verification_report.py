@@ -110,11 +110,16 @@ def build_p19_verification_report(
 
     ordered = sorted(rows, key=lambda row: str(row["check_id"]))
     for row in ordered:
+        command_argv = row["command_argv"]
+        if not isinstance(command_argv, (list, tuple)):
+            raise P19VerificationReportError(
+                f"verification command differs from frozen plan: {row['check_id']}"
+            )
         try:
             verify_command_against_plan(
                 plan,
                 check_id=str(row["check_id"]),
-                command_argv=row["command_argv"],
+                command_argv=command_argv,
                 p19_path=p19_rel,
                 evidence_path=str(row["evidence_path"]),
             )
@@ -141,7 +146,7 @@ def build_p19_verification_report(
         }
         for row in ordered
     ]
-    doc = {
+    doc: dict[str, object] = {
         "schema": REPORT_SCHEMA,
         "verification_protocol": VERIFICATION_PROTOCOL,
         "verification_plan_path": plan_rel,

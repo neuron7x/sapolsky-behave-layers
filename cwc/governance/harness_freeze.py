@@ -282,7 +282,7 @@ def build_harness_freeze(
         raise HarnessFreezeError("policy harnesses do not share one frozen controlled-comparison frame")
     comparison_frame = next(iter(comparison_frames))
 
-    serialized_specs = tuple({
+    serialized_specs: tuple[dict[str, object], ...] = tuple({
         "kind": spec.kind.value,
         "implementation_version": spec.implementation_version,
         "feature_schema_digest": spec.feature_schema_digest,

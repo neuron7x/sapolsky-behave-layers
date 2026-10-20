@@ -5,6 +5,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.fault_injection_evidence import (
@@ -32,6 +33,12 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise FaultToleranceError(f"{name} must be lowercase SHA-256")
     return text
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise FaultToleranceError(f"{name} must be an integer")
+    return int(value)
 
 
 def _safe_file(root: Path, value: object) -> tuple[Path, str]:
@@ -86,7 +93,10 @@ def _budget_cap(repository_root: Path, execution: Mapping[str, object]) -> float
         raise FaultToleranceError("frozen budget manifest bytes unavailable or changed")
     budget = _json(path, schema="DGC_BUDGET_MANIFEST_V1")
     try:
-        cap = float(budget["max_cost_usd"])
+        raw_cap = budget["max_cost_usd"]
+        if not isinstance(raw_cap, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+            raise TypeError("max_cost_usd is not float-convertible")
+        cap = float(raw_cap)
     except (KeyError, TypeError, ValueError) as exc:
         raise FaultToleranceError("frozen budget max_cost_usd invalid") from exc
     if not math.isfinite(cap) or cap < 0.0:
@@ -206,7 +216,10 @@ def build_fault_tolerance_authority(
 
     spec_path = repo / str(authority["fault_spec_path"])
     spec = load_fault_spec(spec_path)
-    spec_cases = {str(row["case_id"]): row for row in spec["cases"]}
+    raw_cases = spec["cases"]
+    if not isinstance(raw_cases, list):
+        raise FaultToleranceError("fault spec requires cases")
+    spec_cases = {str(row["case_id"]): row for row in raw_cases}
 
     supplied = Path(bundle_root)
     if supplied.is_symlink() or not supplied.is_dir():
@@ -279,7 +292,10 @@ def build_fault_tolerance_authority(
         if terminal not in {str(x) for x in frozen["expected_terminal_actions"]}:
             raise FaultToleranceError("fault trace ended outside preregistered safe terminal actions")
         try:
-            observed_cost = float(trace.get("observed_cost_usd"))
+            raw_cost = trace.get("observed_cost_usd")
+            if not isinstance(raw_cost, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+                raise TypeError("observed_cost_usd is not float-convertible")
+            observed_cost = float(raw_cost)
         except (TypeError, ValueError) as exc:
             raise FaultToleranceError("fault trace observed cost invalid") from exc
         if not math.isfinite(observed_cost) or observed_cost < 0.0 or observed_cost > cap + 1e-12:
@@ -288,7 +304,7 @@ def build_fault_tolerance_authority(
             "unauthorized_promotion_count", "budget_limit_bypass_count",
             "duplicate_side_effect_commit_count", "unverified_output_promotion_count",
         )
-        if any(int(trace.get(field, -1)) != 0 for field in count_fields):
+        if any(_int(field, trace.get(field, -1)) != 0 for field in count_fields):
             raise FaultToleranceError("fault trace violates fail-closed safety invariant")
         record_payload = {
             "case_id": case_id,
@@ -347,11 +363,15 @@ def build_fault_tolerance_authority(
     if manifest.get("bundle_digest") != bundle_digest:
         raise FaultToleranceError("fault evidence bundle digest mismatch")
 
+    family_id = str(authority["family_id"])
+    fault_spec_authority_digest = str(authority["authority_digest"])
+    execution_manifest_freeze_digest = str(execution["freeze_digest"])
+    harness_freeze_digest = str(harness["harness_freeze_digest"])
     payload = {
-        "family_id": str(authority["family_id"]),
-        "fault_spec_authority_digest": str(authority["authority_digest"]),
-        "execution_manifest_freeze_digest": str(execution["freeze_digest"]),
-        "harness_freeze_digest": str(harness["harness_freeze_digest"]),
+        "family_id": family_id,
+        "fault_spec_authority_digest": fault_spec_authority_digest,
+        "execution_manifest_freeze_digest": execution_manifest_freeze_digest,
+        "harness_freeze_digest": harness_freeze_digest,
         "dgc_policy_id": dgc_policy,
         "frozen_max_cost_usd": cap,
         "evidence_bundle_digest": bundle_digest,
@@ -361,10 +381,10 @@ def build_fault_tolerance_authority(
         "all_required_cases_supported": True,
     }
     return FaultToleranceAuthority(
-        family_id=payload["family_id"],
-        fault_spec_authority_digest=payload["fault_spec_authority_digest"],
-        execution_manifest_freeze_digest=payload["execution_manifest_freeze_digest"],
-        harness_freeze_digest=payload["harness_freeze_digest"],
+        family_id=family_id,
+        fault_spec_authority_digest=fault_spec_authority_digest,
+        execution_manifest_freeze_digest=execution_manifest_freeze_digest,
+        harness_freeze_digest=harness_freeze_digest,
         dgc_policy_id=dgc_policy,
         frozen_max_cost_usd=cap,
         evidence_bundle_digest=bundle_digest,

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path, PurePosixPath
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.ccf_oracle_audit_authority import build_ccf_oracle_audit_authority
 from cwc.governance.executed_p9_anytime_authority import build_anytime_p9_authority
@@ -42,6 +43,12 @@ EVIDENCE_SCHEMA = "DGC_P19_EXTERNAL_CHECK_EVIDENCE_V1"
 
 class P19ExternalReplayError(RuntimeError):
     pass
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise P19ExternalReplayError(f"{name} must be an integer")
+    return int(value)
 
 
 def _canonical_rel(value: object, *, label: str) -> str:
@@ -130,9 +137,9 @@ def _subject_root(root: Path, p19: Mapping[str, object], label: str, *, rehash: 
         ]
         if files != row.get("files"):
             raise P19ExternalReplayError(f"subject root {label} file population changed")
-        if len(manifest) != int(row.get("file_count", -1)):
+        if len(manifest) != _int(f"subject root {label} file_count", row.get("file_count", -1)):
             raise P19ExternalReplayError(f"subject root {label} file count changed")
-        if sum(int(item[3]) for item in manifest) != int(row.get("total_bytes", -1)):
+        if sum(int(item[3]) for item in manifest) != _int(f"subject root {label} total_bytes", row.get("total_bytes", -1)):
             raise P19ExternalReplayError(f"subject root {label} byte count changed")
         if sha256_bytes(canonical_json_bytes(manifest)) != row.get("manifest_sha256"):
             raise P19ExternalReplayError(f"subject root {label} manifest digest changed")
@@ -152,7 +159,7 @@ def _replay_row(p19: Mapping[str, object], label: str) -> Mapping[str, object]:
 def _replay_file(root: Path, p19: Mapping[str, object], label: str) -> Path:
     row = _replay_row(p19, label)
     path = _repo_file(root, row.get("path"), label=f"external replay input {label}")
-    if sha256_file(path) != row.get("sha256") or path.stat().st_size != int(row.get("bytes", -1)):
+    if sha256_file(path) != row.get("sha256") or path.stat().st_size != _int(f"external replay input {label} bytes", row.get("bytes", -1)):
         raise P19ExternalReplayError(f"external replay input {label} changed after P19 seal")
     return path
 
@@ -267,7 +274,10 @@ P19_PAYLOAD_KEYS = (
 def replay_p19_seal(root: Path, p19: Mapping[str, object]) -> dict[str, object]:
     replay_theorem_and_plan_identity(root, p19)
     replay_subject_roots(root, p19)
-    for stage in p19.get("stage_evidence", []):
+    stages = p19.get("stage_evidence", [])
+    if not isinstance(stages, Iterable):
+        raise P19ExternalReplayError("P19 stage evidence malformed")
+    for stage in stages:
         if not isinstance(stage, Mapping):
             raise P19ExternalReplayError("P19 stage evidence malformed")
         _stage_path(root, p19, str(stage.get("stage", "")))

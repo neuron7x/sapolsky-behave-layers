@@ -9,6 +9,8 @@ import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import TracebackType
+from typing import Literal
 
 
 def canonical_json_bytes(payload: object) -> bytes:
@@ -211,7 +213,12 @@ class AtomicEvidenceGeneration:
             file_count=len(publication_rows),
         )
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> Literal[False]:
         if self.staging_root is not None:
             shutil.rmtree(self.staging_root, ignore_errors=True)
             self.staging_root = None

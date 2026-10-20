@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.execution_manifest_freeze import (
     _VALIDATORS,
@@ -43,6 +44,76 @@ COMPONENT_SCHEMAS_MECHANISM = {
 
 class MechanismExecutionFreezeError(RuntimeError):
     pass
+
+
+_PLAN_INT_FIELDS = frozenset({
+    "family_count", "baseline_count", "endpoint_count", "min_trials_per_task", "max_trials_per_task",
+})
+_PLAN_FLOAT_FIELDS = frozenset({
+    "familywise_alpha", "quality_noninferiority_margin", "catastrophic_regret_noninferiority_margin",
+    "minimum_cost_effect_of_interest", "calibration_fraction", "generalization_holdout_fraction",
+    "target_power",
+})
+_PLAN_STR_FIELDS = frozenset({
+    "primary_inference_method", "primary_boundary_method", "primary_claim_target",
+    "primary_assumption_boundary", "primary_sequence_order", "primary_predictor_rule",
+    "confseq_reference_commit", "method",
+})
+
+
+def _product_statistical_plan(payload: Mapping[str, object]) -> ProductStatisticalPlan:
+    """Rebuild a ProductStatisticalPlan with every supplied value narrowed to its declared type.
+
+    Raises TypeError (as the dataclass constructor would) for unknown fields or mistyped values.
+    """
+    declared = {field.name for field in fields(ProductStatisticalPlan)}
+    if declared != _PLAN_INT_FIELDS | _PLAN_FLOAT_FIELDS | _PLAN_STR_FIELDS:
+        raise TypeError("ProductStatisticalPlan field set differs from the typed reconstruction map")
+    unknown = sorted(set(payload) - declared)
+    if unknown:
+        raise TypeError(f"unexpected statistical plan fields: {unknown}")
+    default = ProductStatisticalPlan()
+
+    def as_int(name: str) -> int:
+        value = payload.get(name, getattr(default, name))
+        if not isinstance(value, int):
+            raise TypeError(f"statistical plan {name} must be an integer")
+        return value
+
+    def as_float(name: str) -> float:
+        value = payload.get(name, getattr(default, name))
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"statistical plan {name} must be numeric")
+        return value
+
+    def as_str(name: str) -> str:
+        value = payload.get(name, getattr(default, name))
+        if not isinstance(value, str):
+            raise TypeError(f"statistical plan {name} must be a string")
+        return value
+
+    return ProductStatisticalPlan(
+        family_count=as_int("family_count"),
+        baseline_count=as_int("baseline_count"),
+        endpoint_count=as_int("endpoint_count"),
+        familywise_alpha=as_float("familywise_alpha"),
+        quality_noninferiority_margin=as_float("quality_noninferiority_margin"),
+        catastrophic_regret_noninferiority_margin=as_float("catastrophic_regret_noninferiority_margin"),
+        minimum_cost_effect_of_interest=as_float("minimum_cost_effect_of_interest"),
+        calibration_fraction=as_float("calibration_fraction"),
+        generalization_holdout_fraction=as_float("generalization_holdout_fraction"),
+        target_power=as_float("target_power"),
+        min_trials_per_task=as_int("min_trials_per_task"),
+        max_trials_per_task=as_int("max_trials_per_task"),
+        primary_inference_method=as_str("primary_inference_method"),
+        primary_boundary_method=as_str("primary_boundary_method"),
+        primary_claim_target=as_str("primary_claim_target"),
+        primary_assumption_boundary=as_str("primary_assumption_boundary"),
+        primary_sequence_order=as_str("primary_sequence_order"),
+        primary_predictor_rule=as_str("primary_predictor_rule"),
+        confseq_reference_commit=as_str("confseq_reference_commit"),
+        method=as_str("method"),
+    )
 
 
 def _translate(exc: Exception) -> MechanismExecutionFreezeError:
@@ -150,7 +221,8 @@ def freeze_mechanism_execution_manifests(
                     "executor.entrypoint_sha256", payload.get("entrypoint_sha256")
                 ):
                     raise MechanismExecutionFreezeError("executor entrypoint bytes differ from frozen SHA-256")
-                if entrypoint_rel not in payload.get("argv", []):
+                executor_argv = payload.get("argv", [])
+                if not isinstance(executor_argv, list) or entrypoint_rel not in executor_argv:
                     raise MechanismExecutionFreezeError("executor argv entrypoint is non-canonical")
             if component == "observation_provider_manifest":
                 implementation, implementation_rel = _repo_file(root, payload["implementation_path"])
@@ -161,7 +233,8 @@ def freeze_mechanism_execution_manifests(
                     raise MechanismExecutionFreezeError(
                         "observation provider implementation bytes differ from frozen SHA-256"
                     )
-                if implementation_rel not in payload.get("argv", []):
+                provider_argv = payload.get("argv", [])
+                if not isinstance(provider_argv, list) or implementation_rel not in provider_argv:
                     raise MechanismExecutionFreezeError(
                         "observation provider argv implementation is non-canonical"
                     )
@@ -201,7 +274,10 @@ def freeze_mechanism_execution_manifests(
                 f"Terminal sandbox authority replay failed: {exc}"
             ) from exc
         try:
-            expected_count = int(binding.get("expected_task_count"))
+            raw_expected_count = binding.get("expected_task_count")
+            if not isinstance(raw_expected_count, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+                raise TypeError("expected_task_count is not int-convertible")
+            expected_count = int(raw_expected_count)
         except (TypeError, ValueError) as exc:
             raise MechanismExecutionFreezeError("materialization expected_task_count malformed") from exc
         if population.expected_task_count != expected_count:
@@ -349,7 +425,7 @@ def freeze_mechanism_execution_manifests(
         )
 
     try:
-        statistical_plan = ProductStatisticalPlan(**dict(statistical_plan_payload or {}))
+        statistical_plan = _product_statistical_plan(statistical_plan_payload or {})
     except (TypeError, ValueError) as exc:
         raise MechanismExecutionFreezeError("invalid partition statistical plan") from exc
     mechanism = mechanism_plan or MechanismStatisticalPlan()

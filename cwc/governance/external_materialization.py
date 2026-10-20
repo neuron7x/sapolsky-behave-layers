@@ -4,12 +4,13 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:  # Python 3.10 compatibility for the canonical product CI.
+else:  # Python 3.10 compatibility for the canonical product CI.
     import tomli as tomllib
 
 _SHA256_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
@@ -136,7 +137,7 @@ def verify_swe_parquet(
     if digest != expected_sha256:
         raise ValueError(f"SWE parquet SHA-256 mismatch: expected {expected_sha256}, observed {digest}")
     try:
-        import pyarrow.parquet as pq
+        import pyarrow.parquet as pq  # type: ignore[import-not-found]
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "pyarrow is required to verify SWE row count and instance_id manifest; refusing MATERIALIZED_VERIFIED"

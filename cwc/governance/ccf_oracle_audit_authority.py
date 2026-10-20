@@ -5,6 +5,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.ccf_quantizer import RawCounterfactualOption, quantize_counterfactual_option
 from cwc.governance.ccf_spec_authority import (
@@ -13,10 +14,18 @@ from cwc.governance.ccf_spec_authority import (
 )
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
-from cwc.governance.counterfactual_frontier import PolicyOracleAudit, audit_policy_against_counterfactual_oracle
-from cwc.governance.counterfactual_oracle_spec import parse_counterfactual_oracle_spec
+from cwc.governance.counterfactual_frontier import (
+    CounterfactualOption,
+    PolicyOracleAudit,
+    audit_policy_against_counterfactual_oracle,
+)
+from cwc.governance.counterfactual_oracle_spec import CounterfactualOracleSpec, parse_counterfactual_oracle_spec
 from cwc.governance.distributed_eval_control import DistributedEvalSpec, WorkUnitId
-from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle
+from cwc.governance.execution_evidence_bundle import (
+    VerifiedExecutionBundle,
+    VerifiedExecutionResult,
+    verify_execution_bundle,
+)
 from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
 from cwc.governance.materialization_transaction import canonical_json_bytes, file_manifest, sha256_bytes, sha256_file
 from cwc.governance.physical_execution_cost_bundle import (
@@ -40,6 +49,8 @@ def _sha(name: str, value: object) -> str:
 
 
 def _finite(name: str, value: object, *, lower: float | None = None, upper: float | None = None) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise CCFOracleAuditError(f"{name} must be numeric")
     try:
         result = float(value)
     except (TypeError, ValueError) as exc:
@@ -51,6 +62,12 @@ def _finite(name: str, value: object, *, lower: float | None = None, upper: floa
     if upper is not None and result > upper:
         raise CCFOracleAuditError(f"{name} above upper bound")
     return result
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise CCFOracleAuditError(f"{name} must be an integer")
+    return int(value)
 
 
 def _json(path: Path, *, schema: str) -> dict[str, object]:
@@ -95,7 +112,7 @@ def _policy_roles(harness: Mapping[str, object]) -> dict[str, str]:
 def _load_frozen_spec(
     repository_root: Path,
     ccf_authority: Mapping[str, object],
-):
+) -> CounterfactualOracleSpec:
     root = Path(repository_root).resolve()
     spec_path = root / str(ccf_authority.get("ccf_spec_path", ""))
     quantizer_path = root / str(ccf_authority.get("quantizer_source_path", ""))
@@ -110,7 +127,7 @@ def _load_frozen_spec(
         raise CCFOracleAuditError("CCF spec cannot be reconstructed") from exc
 
 
-def _execution_index(bundle: VerifiedExecutionBundle) -> dict[WorkUnitId, object]:
+def _execution_index(bundle: VerifiedExecutionBundle) -> dict[WorkUnitId, VerifiedExecutionResult]:
     return {row.unit: row for row in bundle.results}
 
 
@@ -260,7 +277,7 @@ def build_ccf_oracle_audit_authority(
     if not isinstance(rows, list) or len(rows) != len(dgc_units):
         raise CCFOracleAuditError("CCF evidence requires exactly one row per DGC work unit")
     seen: set[str] = set()
-    options_by_rep_task: dict[tuple[int, str], tuple] = {}
+    options_by_rep_task: dict[tuple[int, str], tuple[CounterfactualOption, ...]] = {}
     selections_by_rep: dict[int, dict[str, str]] = {}
     evidence_population_rows = []
     for row in rows:
@@ -333,7 +350,7 @@ def build_ccf_oracle_audit_authority(
     task_count = len(distributed.task_ids)
     audits: list[ReplicateHeadroomAudit] = []
     for replicate in range(distributed.replicates):
-        options = []
+        options: list[CounterfactualOption] = []
         for task in distributed.task_ids:
             try:
                 options.extend(options_by_rep_task[(replicate, task)])
@@ -387,20 +404,27 @@ def build_ccf_oracle_audit_authority(
     total_avoidable = sum(row.avoidable_cost_units for row in audits_tuple)
     max_regret = max(row.value_regret_units for row in audits_tuple)
     max_avoidable = max(row.avoidable_cost_units for row in audits_tuple)
+    family_id = str(execution_authority["family_id"])
+    ccf_spec_authority_digest = str(ccf_authority["authority_digest"])
+    ccf_spec_digest = str(ccf_authority["ccf_spec_digest"])
+    execution_authority_digest = str(execution_authority["authority_digest"])
+    execution_population_digest = str(execution_authority["execution_population_digest"])
+    harness_freeze_digest = str(harness["harness_freeze_digest"])
+    confirmatory_task_manifest_digest = str(harness["confirmatory_task_manifest_digest"])
     payload = {
-        "family_id": str(execution_authority["family_id"]),
-        "ccf_spec_authority_digest": str(ccf_authority["authority_digest"]),
-        "ccf_spec_digest": str(ccf_authority["ccf_spec_digest"]),
-        "execution_authority_digest": str(execution_authority["authority_digest"]),
-        "execution_population_digest": str(execution_authority["execution_population_digest"]),
+        "family_id": family_id,
+        "ccf_spec_authority_digest": ccf_spec_authority_digest,
+        "ccf_spec_digest": ccf_spec_digest,
+        "execution_authority_digest": execution_authority_digest,
+        "execution_population_digest": execution_population_digest,
         "execution_bundle_digest": execution_bundle.bundle_digest,
         "physical_cost_bundle_digest": physical_bundle.bundle_digest,
         "physical_cost_population_digest": physical_bundle.physical_cost_population_digest,
-        "harness_freeze_digest": str(harness["harness_freeze_digest"]),
+        "harness_freeze_digest": harness_freeze_digest,
         "ccf_evidence_bundle_digest": ccf_bundle_digest,
         "ccf_evidence_population_digest": evidence_population_digest,
         "dgc_policy_id": dgc_policy,
-        "confirmatory_task_manifest_digest": str(harness["confirmatory_task_manifest_digest"]),
+        "confirmatory_task_manifest_digest": confirmatory_task_manifest_digest,
         "replicate_audits": [asdict(row) for row in audits_tuple],
         "total_value_regret_units": total_regret,
         "total_avoidable_cost_units": total_avoidable,
@@ -409,19 +433,19 @@ def build_ccf_oracle_audit_authority(
         "headroom_audit_complete": True,
     }
     return CCFOracleAuditAuthority(
-        family_id=payload["family_id"],
-        ccf_spec_authority_digest=payload["ccf_spec_authority_digest"],
-        ccf_spec_digest=payload["ccf_spec_digest"],
-        execution_authority_digest=payload["execution_authority_digest"],
-        execution_population_digest=payload["execution_population_digest"],
-        execution_bundle_digest=payload["execution_bundle_digest"],
-        physical_cost_bundle_digest=payload["physical_cost_bundle_digest"],
-        physical_cost_population_digest=payload["physical_cost_population_digest"],
-        harness_freeze_digest=payload["harness_freeze_digest"],
-        ccf_evidence_bundle_digest=payload["ccf_evidence_bundle_digest"],
-        ccf_evidence_population_digest=payload["ccf_evidence_population_digest"],
+        family_id=family_id,
+        ccf_spec_authority_digest=ccf_spec_authority_digest,
+        ccf_spec_digest=ccf_spec_digest,
+        execution_authority_digest=execution_authority_digest,
+        execution_population_digest=execution_population_digest,
+        execution_bundle_digest=execution_bundle.bundle_digest,
+        physical_cost_bundle_digest=physical_bundle.bundle_digest,
+        physical_cost_population_digest=physical_bundle.physical_cost_population_digest,
+        harness_freeze_digest=harness_freeze_digest,
+        ccf_evidence_bundle_digest=ccf_bundle_digest,
+        ccf_evidence_population_digest=evidence_population_digest,
         dgc_policy_id=dgc_policy,
-        confirmatory_task_manifest_digest=payload["confirmatory_task_manifest_digest"],
+        confirmatory_task_manifest_digest=confirmatory_task_manifest_digest,
         replicate_audits=audits_tuple,
         total_value_regret_units=total_regret,
         total_avoidable_cost_units=total_avoidable,
@@ -462,12 +486,12 @@ def verify_ccf_oracle_audit_authority_document(path: Path) -> dict[str, object]:
     audits = doc.get("replicate_audits")
     if not isinstance(audits, list) or not audits:
         raise CCFOracleAuditError("CCF oracle audit authority requires replicate audits")
-    if sum(int(row["value_regret_units"]) for row in audits) != int(doc["total_value_regret_units"]):
+    if sum(int(row["value_regret_units"]) for row in audits) != _int("total_value_regret_units", doc["total_value_regret_units"]):
         raise CCFOracleAuditError("CCF total value regret mismatch")
-    if sum(int(row["avoidable_cost_units"]) for row in audits) != int(doc["total_avoidable_cost_units"]):
+    if sum(int(row["avoidable_cost_units"]) for row in audits) != _int("total_avoidable_cost_units", doc["total_avoidable_cost_units"]):
         raise CCFOracleAuditError("CCF total avoidable cost mismatch")
-    if max(int(row["value_regret_units"]) for row in audits) != int(doc["max_value_regret_units"]):
+    if max(int(row["value_regret_units"]) for row in audits) != _int("max_value_regret_units", doc["max_value_regret_units"]):
         raise CCFOracleAuditError("CCF max value regret mismatch")
-    if max(int(row["avoidable_cost_units"]) for row in audits) != int(doc["max_avoidable_cost_units"]):
+    if max(int(row["avoidable_cost_units"]) for row in audits) != _int("max_avoidable_cost_units", doc["max_avoidable_cost_units"]):
         raise CCFOracleAuditError("CCF max avoidable cost mismatch")
     return doc
