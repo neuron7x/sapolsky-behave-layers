@@ -262,6 +262,14 @@ def test_untracked_activation_signature_blocks_bundle(tmp_path: Path, monkeypatc
         build_qualified_evidence_bundle_authority(repository_root=root)
 
 
+def test_working_tree_drift_from_t_pkg_blob_blocks_bundle(tmp_path: Path, monkeypatch):
+    root, _, _, activation = _fixture(tmp_path, monkeypatch)
+    signature_rel = str(activation["signature_paths"][0])
+    (root / signature_rel).write_text("substituted signature\n", encoding="utf-8")
+    with pytest.raises(QualifiedEvidenceBundleError, match="working-tree bytes differ from T_pkg blob"):
+        build_qualified_evidence_bundle_authority(repository_root=root)
+
+
 def test_untracked_raw_subject_cannot_hide_behind_p19(tmp_path: Path, monkeypatch):
     root, _, _, _ = _fixture(tmp_path, monkeypatch)
     untracked = _write(root, "artifacts/dgc-product-v1/generated/raw/swe/untracked.json", "{}\n")

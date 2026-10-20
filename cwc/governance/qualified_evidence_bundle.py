@@ -358,6 +358,12 @@ def build_qualified_evidence_bundle_authority(
         pkg_entry = _tree_entry(root, packaging.packaging_commit, rel)
         if pkg_entry is None:
             raise QualifiedEvidenceBundleError(f"required qualification subject is not tracked in T_pkg: {rel}")
+        # The record hashes working-tree bytes but binds the T_pkg blob OID, so both must denote
+        # the same object: the path must still be in the index and its bytes must hash to that blob.
+        if not _git(root, "ls-files", "--cached", "--", rel).stdout.strip():
+            raise QualifiedEvidenceBundleError(f"required qualification subject is not tracked in T_pkg index: {rel}")
+        if _git(root, "hash-object", "--no-filters", "--", rel).stdout.strip() != pkg_entry[1]:
+            raise QualifiedEvidenceBundleError(f"working-tree bytes differ from T_pkg blob: {rel}")
         if rel in ALLOWED_MUTABLE_EXACT:
             role = ROLE_PACKAGING_EVIDENCE
         elif exec_entry is not None:
