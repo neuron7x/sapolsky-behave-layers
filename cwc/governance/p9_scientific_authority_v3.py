@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
 from cwc.governance.executed_p9_anytime_authority import verify_anytime_p9_authority_document
@@ -14,6 +15,12 @@ CLAIM_SCOPE = "EXACT_PANEL_PLUS_ANYTIME_VALID_ACM_PLUS_CCF_V1"
 
 class P9ScientificV3Error(RuntimeError):
     pass
+
+
+def _int(name: str, value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise P9ScientificV3Error(f"{name} must be an integer")
+    return int(value)
 
 
 def _sha(name: str, value: object) -> str:
@@ -80,35 +87,71 @@ def build_p9_scientific_authority_v3(
     anytime = p9.get("anytime_average_conditional_mean_supported") is True
     ccf_complete = ccf.get("headroom_audit_complete") is True
     scientific = exact and anytime and ccf_complete
-    payload = {
-        "family_id": str(p9["family_id"]),
-        "anytime_p9_authority_digest": _sha("anytime P9 authority_digest", p9.get("authority_digest")),
-        "ccf_oracle_audit_authority_digest": _sha("CCF authority_digest", ccf.get("authority_digest")),
-        "execution_authority_digest": _sha("execution_authority_digest", p9.get("execution_authority_digest")),
-        "execution_population_digest": _sha("execution_population_digest", p9.get("execution_population_digest")),
-        "execution_bundle_digest": _sha("execution_bundle_digest", p9.get("execution_bundle_digest")),
-        "physical_cost_bundle_digest": _sha("physical_cost_bundle_digest", p9.get("physical_cost_bundle_digest")),
-        "physical_cost_population_digest": _sha("physical_cost_population_digest", p9.get("physical_cost_population_digest")),
-        "harness_freeze_digest": _sha("harness_freeze_digest", p9.get("harness_freeze_digest")),
-        "confirmatory_task_manifest_digest": _sha(
-            "confirmatory_task_manifest_digest", p9.get("confirmatory_task_manifest_digest")
-        ),
-        "exact_panel_certificate_digest": _sha(
-            "exact_panel_certificate_digest", p9.get("exact_panel_certificate_digest")
-        ),
+    family_id = str(p9["family_id"])
+    anytime_p9_authority_digest = _sha("anytime P9 authority_digest", p9.get("authority_digest"))
+    ccf_oracle_audit_authority_digest = _sha("CCF authority_digest", ccf.get("authority_digest"))
+    execution_authority_digest = _sha("execution_authority_digest", p9.get("execution_authority_digest"))
+    execution_population_digest = _sha("execution_population_digest", p9.get("execution_population_digest"))
+    execution_bundle_digest = _sha("execution_bundle_digest", p9.get("execution_bundle_digest"))
+    physical_cost_bundle_digest = _sha("physical_cost_bundle_digest", p9.get("physical_cost_bundle_digest"))
+    physical_cost_population_digest = _sha("physical_cost_population_digest", p9.get("physical_cost_population_digest"))
+    harness_freeze_digest = _sha("harness_freeze_digest", p9.get("harness_freeze_digest"))
+    confirmatory_task_manifest_digest = _sha(
+        "confirmatory_task_manifest_digest", p9.get("confirmatory_task_manifest_digest")
+    )
+    exact_panel_certificate_digest = _sha(
+        "exact_panel_certificate_digest", p9.get("exact_panel_certificate_digest")
+    )
+    anytime_certificate_digest = _sha("anytime_certificate_digest", p9.get("anytime_certificate_digest"))
+    ccf_total_value_regret_units = _int("CCF total_value_regret_units", ccf["total_value_regret_units"])
+    ccf_total_avoidable_cost_units = _int("CCF total_avoidable_cost_units", ccf["total_avoidable_cost_units"])
+    ccf_max_value_regret_units = _int("CCF max_value_regret_units", ccf["max_value_regret_units"])
+    ccf_max_avoidable_cost_units = _int("CCF max_avoidable_cost_units", ccf["max_avoidable_cost_units"])
+    payload: dict[str, object] = {
+        "family_id": family_id,
+        "anytime_p9_authority_digest": anytime_p9_authority_digest,
+        "ccf_oracle_audit_authority_digest": ccf_oracle_audit_authority_digest,
+        "execution_authority_digest": execution_authority_digest,
+        "execution_population_digest": execution_population_digest,
+        "execution_bundle_digest": execution_bundle_digest,
+        "physical_cost_bundle_digest": physical_cost_bundle_digest,
+        "physical_cost_population_digest": physical_cost_population_digest,
+        "harness_freeze_digest": harness_freeze_digest,
+        "confirmatory_task_manifest_digest": confirmatory_task_manifest_digest,
+        "exact_panel_certificate_digest": exact_panel_certificate_digest,
         "exact_panel_supported": exact,
-        "anytime_certificate_digest": _sha("anytime_certificate_digest", p9.get("anytime_certificate_digest")),
+        "anytime_certificate_digest": anytime_certificate_digest,
         "anytime_average_conditional_mean_supported": anytime,
         "ccf_headroom_audit_complete": ccf_complete,
-        "ccf_total_value_regret_units": int(ccf["total_value_regret_units"]),
-        "ccf_total_avoidable_cost_units": int(ccf["total_avoidable_cost_units"]),
-        "ccf_max_value_regret_units": int(ccf["max_value_regret_units"]),
-        "ccf_max_avoidable_cost_units": int(ccf["max_avoidable_cost_units"]),
+        "ccf_total_value_regret_units": ccf_total_value_regret_units,
+        "ccf_total_avoidable_cost_units": ccf_total_avoidable_cost_units,
+        "ccf_max_value_regret_units": ccf_max_value_regret_units,
+        "ccf_max_avoidable_cost_units": ccf_max_avoidable_cost_units,
         "scientific_p9_supported": scientific,
         "generalization_evaluation_authorized": scientific,
     }
     return P9ScientificAuthorityV3(
-        **payload,
+        family_id=family_id,
+        anytime_p9_authority_digest=anytime_p9_authority_digest,
+        ccf_oracle_audit_authority_digest=ccf_oracle_audit_authority_digest,
+        execution_authority_digest=execution_authority_digest,
+        execution_population_digest=execution_population_digest,
+        execution_bundle_digest=execution_bundle_digest,
+        physical_cost_bundle_digest=physical_cost_bundle_digest,
+        physical_cost_population_digest=physical_cost_population_digest,
+        harness_freeze_digest=harness_freeze_digest,
+        confirmatory_task_manifest_digest=confirmatory_task_manifest_digest,
+        exact_panel_certificate_digest=exact_panel_certificate_digest,
+        exact_panel_supported=exact,
+        anytime_certificate_digest=anytime_certificate_digest,
+        anytime_average_conditional_mean_supported=anytime,
+        ccf_headroom_audit_complete=ccf_complete,
+        ccf_total_value_regret_units=ccf_total_value_regret_units,
+        ccf_total_avoidable_cost_units=ccf_total_avoidable_cost_units,
+        ccf_max_value_regret_units=ccf_max_value_regret_units,
+        ccf_max_avoidable_cost_units=ccf_max_avoidable_cost_units,
+        scientific_p9_supported=scientific,
+        generalization_evaluation_authorized=scientific,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 

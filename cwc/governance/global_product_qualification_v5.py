@@ -13,6 +13,7 @@ from cwc.governance.materialization_transaction import canonical_json_bytes, sha
 from cwc.governance.p19_evidence_root import verify_family_p19_evidence_root_document
 from cwc.governance.p19_verification_attestation import (
     NAMESPACE,
+    P19VerificationSignatureReceipt,
     bind_attestation_to_p19,
     verify_ssh_signed_p19_verification_attestation,
 )
@@ -101,25 +102,44 @@ def _oid(name: str, value: object) -> str:
     return text
 
 
-def _stable_record(*, p19: dict[str, object], attestation: dict[str, object], receipt) -> StableFamilyVerificationRecord:
+def _stable_record(
+    *, p19: dict[str, object], attestation: dict[str, object], receipt: P19VerificationSignatureReceipt
+) -> StableFamilyVerificationRecord:
     bind_attestation_to_p19(attestation, p19)
     if not receipt.signature_verified:
         raise GlobalProductQualificationV5Error("P19 signature verification did not PASS")
-    payload = {
-        "family_id": str(p19["family_id"]),
-        "p19_digest": _sha("p19_digest", p19["p19_digest"]),
-        "verifier_principal": str(attestation["verifier_principal"]),
-        "attestation_sha256": _sha("attestation_sha256", receipt.attestation_sha256),
-        "verification_report_sha256": _sha("verification_report_sha256", receipt.verification_report_sha256),
-        "signature_sha256": _sha("signature_sha256", receipt.signature_sha256),
-        "allowed_signers_sha256": _sha("allowed_signers_sha256", receipt.allowed_signers_sha256),
+    family_id = str(p19["family_id"])
+    p19_digest = _sha("p19_digest", p19["p19_digest"])
+    verifier_principal = str(attestation["verifier_principal"])
+    attestation_sha256 = _sha("attestation_sha256", receipt.attestation_sha256)
+    verification_report_sha256 = _sha("verification_report_sha256", receipt.verification_report_sha256)
+    signature_sha256 = _sha("signature_sha256", receipt.signature_sha256)
+    allowed_signers_sha256 = _sha("allowed_signers_sha256", receipt.allowed_signers_sha256)
+    payload: dict[str, object] = {
+        "family_id": family_id,
+        "p19_digest": p19_digest,
+        "verifier_principal": verifier_principal,
+        "attestation_sha256": attestation_sha256,
+        "verification_report_sha256": verification_report_sha256,
+        "signature_sha256": signature_sha256,
+        "allowed_signers_sha256": allowed_signers_sha256,
         "namespace": NAMESPACE,
         "signature_verified": True,
         "semantic_replay_attested": True,
         "social_independence_machine_proven": False,
     }
     return StableFamilyVerificationRecord(
-        **payload,
+        family_id=family_id,
+        p19_digest=p19_digest,
+        verifier_principal=verifier_principal,
+        attestation_sha256=attestation_sha256,
+        verification_report_sha256=verification_report_sha256,
+        signature_sha256=signature_sha256,
+        allowed_signers_sha256=allowed_signers_sha256,
+        namespace=NAMESPACE,
+        signature_verified=True,
+        semantic_replay_attested=True,
+        social_independence_machine_proven=False,
         record_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 
@@ -171,14 +191,17 @@ def build_global_product_qualification_authority_v5(
     if any(row.allowed_signers_sha256 != policy.allowed_signers_sha256 for row in ordered):
         raise GlobalProductQualificationV5Error("V5 signature semantics did not use frozen trust store")
 
-    payload = {
+    verifier_trust_policy_digest = _sha("verifier_trust_policy_digest", policy.policy_digest)
+    allowed_signers_sha256 = _sha("allowed_signers_sha256", policy.allowed_signers_sha256)
+    distinct_verifier_count = len(set(principals))
+    payload: dict[str, object] = {
         "canonical_family_ids": list(validated.canonical_family_ids),
         "family_p19_digests": [list(row) for row in validated.family_p19_digests],
         "stable_family_verification_records": [asdict(row) for row in ordered],
-        "verifier_trust_policy_digest": _sha("verifier_trust_policy_digest", policy.policy_digest),
-        "allowed_signers_sha256": _sha("allowed_signers_sha256", policy.allowed_signers_sha256),
+        "verifier_trust_policy_digest": verifier_trust_policy_digest,
+        "allowed_signers_sha256": allowed_signers_sha256,
         "verifier_principals": list(principals),
-        "distinct_verifier_count": len(set(principals)),
+        "distinct_verifier_count": distinct_verifier_count,
         "minimum_distinct_verifiers": policy.minimum_distinct_verifiers,
         "repository_commit": validated.repository_commit,
         "repository_tree": validated.repository_tree,
@@ -197,10 +220,10 @@ def build_global_product_qualification_authority_v5(
         canonical_family_ids=tuple(validated.canonical_family_ids),
         family_p19_digests=tuple(validated.family_p19_digests),
         stable_family_verification_records=ordered,
-        verifier_trust_policy_digest=payload["verifier_trust_policy_digest"],
-        allowed_signers_sha256=payload["allowed_signers_sha256"],
+        verifier_trust_policy_digest=verifier_trust_policy_digest,
+        allowed_signers_sha256=allowed_signers_sha256,
         verifier_principals=principals,
-        distinct_verifier_count=payload["distinct_verifier_count"],
+        distinct_verifier_count=distinct_verifier_count,
         minimum_distinct_verifiers=policy.minimum_distinct_verifiers,
         repository_commit=validated.repository_commit,
         repository_tree=validated.repository_tree,

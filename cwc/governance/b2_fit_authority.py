@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.b2_fit_receipt import fit_b2_with_receipt
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
@@ -37,6 +39,12 @@ def _json(path: Path, *, schema: str) -> dict[str, object]:
     if not isinstance(doc, dict) or doc.get("schema") != schema:
         raise B2FitAuthorityError(f"unexpected schema for {candidate}")
     return doc
+
+
+def _sorted_task_ids(value: object) -> tuple[str, ...]:
+    if not isinstance(value, Iterable):
+        raise B2FitAuthorityError("B2 partition task population must be iterable")
+    return tuple(sorted(str(x) for x in value))
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,25 +96,37 @@ def authorize_b2_fit(
         raise B2FitAuthorityError("B2 partition statistical plan differs from execution freeze")
 
     try:
-        config = LearnedRouterConfig(**fit_input["config"])
-        examples = [
-            CalibrationExample(
-                task_id=row["task_id"],
-                action_id=row["action_id"],
-                features=tuple(row["features"]),
-                quality=float(row["quality"]),
-                cost_usd=float(row["cost_usd"]),
-                catastrophic_regret=float(row["catastrophic_regret"]),
+        config_payload = fit_input["config"]
+        if not isinstance(config_payload, Mapping):
+            raise TypeError("B2 fit config must be a mapping")
+        config = LearnedRouterConfig(**config_payload)
+        example_rows = fit_input["examples"]
+        if not isinstance(example_rows, Iterable):
+            raise TypeError("B2 fit examples must be iterable")
+        examples: list[CalibrationExample] = []
+        for row in example_rows:
+            if not isinstance(row, Mapping):
+                raise TypeError("B2 fit example must be a mapping")
+            examples.append(
+                CalibrationExample(
+                    task_id=row["task_id"],
+                    action_id=row["action_id"],
+                    features=tuple(row["features"]),
+                    quality=float(row["quality"]),
+                    cost_usd=float(row["cost_usd"]),
+                    catastrophic_regret=float(row["catastrophic_regret"]),
+                )
             )
-            for row in fit_input["examples"]
-        ]
-        forbidden = tuple(sorted(str(x).strip() for x in fit_input["forbidden_task_ids"] if str(x).strip()))
+        forbidden_rows = fit_input["forbidden_task_ids"]
+        if not isinstance(forbidden_rows, Iterable):
+            raise TypeError("B2 forbidden_task_ids must be iterable")
+        forbidden = tuple(sorted(str(x).strip() for x in forbidden_rows if str(x).strip()))
     except (KeyError, TypeError, ValueError) as exc:
         raise B2FitAuthorityError("malformed B2 fit input") from exc
 
-    calibration = tuple(sorted(str(x) for x in partition["calibration_task_ids"]))
-    confirmatory = tuple(sorted(str(x) for x in partition["confirmatory_task_ids"]))
-    generalization = tuple(sorted(str(x) for x in partition["generalization_task_ids"]))
+    calibration = _sorted_task_ids(partition["calibration_task_ids"])
+    confirmatory = _sorted_task_ids(partition["confirmatory_task_ids"])
+    generalization = _sorted_task_ids(partition["generalization_task_ids"])
     observed_tasks = tuple(sorted({example.task_id for example in examples}))
     if observed_tasks != calibration:
         raise B2FitAuthorityError("B2 examples must cover the exact frozen calibration task population")
@@ -137,22 +157,42 @@ def authorize_b2_fit(
     if recomputed.calibration_task_count != len(calibration):
         raise B2FitAuthorityError("B2 fitted calibration task count differs from frozen partition")
 
-    payload = {
-        "family_id": execution["family_id"],
-        "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
-        "task_partition_receipt_digest": _sha("task partition receipt_digest", partition.get("receipt_digest")),
-        "fit_input_sha256": sha256_file(Path(fit_input_path)),
-        "fit_receipt_sha256": sha256_file(Path(fit_receipt_path)),
+    family_id = execution["family_id"]
+    if not isinstance(family_id, str):
+        raise B2FitAuthorityError("B2 execution family_id must be a string")
+    execution_freeze_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
+    task_partition_receipt_digest = _sha("task partition receipt_digest", partition.get("receipt_digest"))
+    fit_input_sha256 = sha256_file(Path(fit_input_path))
+    fit_receipt_sha256 = sha256_file(Path(fit_receipt_path))
+    confirmatory_task_digest = _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest"))
+    generalization_task_digest = _sha("generalization_task_digest", partition.get("generalization_task_digest"))
+    payload: dict[str, object] = {
+        "family_id": family_id,
+        "execution_manifest_freeze_digest": execution_freeze_digest,
+        "task_partition_receipt_digest": task_partition_receipt_digest,
+        "fit_input_sha256": fit_input_sha256,
+        "fit_receipt_sha256": fit_receipt_sha256,
         "feature_schema_digest": recomputed.feature_schema_digest,
         "training_algorithm_digest": recomputed.training_algorithm_digest,
         "calibration_task_digest": recomputed.calibration_task_digest,
-        "confirmatory_task_digest": _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest")),
-        "generalization_task_digest": _sha("generalization_task_digest", partition.get("generalization_task_digest")),
+        "confirmatory_task_digest": confirmatory_task_digest,
+        "generalization_task_digest": generalization_task_digest,
         "fitted_model_digest": recomputed.fitted_model_digest,
         "calibration_task_count": recomputed.calibration_task_count,
     }
     return B2FitAuthority(
-        **payload,
+        family_id=family_id,
+        execution_manifest_freeze_digest=execution_freeze_digest,
+        task_partition_receipt_digest=task_partition_receipt_digest,
+        fit_input_sha256=fit_input_sha256,
+        fit_receipt_sha256=fit_receipt_sha256,
+        feature_schema_digest=recomputed.feature_schema_digest,
+        training_algorithm_digest=recomputed.training_algorithm_digest,
+        calibration_task_digest=recomputed.calibration_task_digest,
+        confirmatory_task_digest=confirmatory_task_digest,
+        generalization_task_digest=generalization_task_digest,
+        fitted_model_digest=recomputed.fitted_model_digest,
+        calibration_task_count=recomputed.calibration_task_count,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 
@@ -176,7 +216,10 @@ def verify_b2_fit_authority_document(path: Path) -> dict[str, object]:
     }
     if sha256_bytes(canonical_json_bytes(payload)) != _sha("authority_digest", doc.get("authority_digest")):
         raise B2FitAuthorityError("B2 fit authority digest mismatch")
-    if int(doc.get("calibration_task_count", 0)) <= 0:
+    calibration_task_count = doc.get("calibration_task_count", 0)
+    if not isinstance(calibration_task_count, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise B2FitAuthorityError("B2 calibration_task_count must be numeric")
+    if int(calibration_task_count) <= 0:
         raise B2FitAuthorityError("B2 calibration_task_count must be > 0")
     if doc.get("confirmatory_task_digest") == doc.get("generalization_task_digest"):
         raise B2FitAuthorityError("confirmatory and G1 holdout identities must differ")

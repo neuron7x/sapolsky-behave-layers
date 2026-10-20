@@ -38,7 +38,7 @@ class B2FitReceipt:
     calibration_task_count: int
     calibration_input_digest: str
     forbidden_task_manifest_digest: str
-    model_rows: tuple[dict, ...]
+    model_rows: tuple[dict[str, object], ...]
     receipt_digest: str
     confirmatory_execution_authorized: bool = False
 
@@ -76,7 +76,7 @@ def fit_b2_with_receipt(
     calibration_input_digest = _digest(input_rows)
     forbidden_digest = _digest(forbidden)
     fitted = fit_learned_router(config, list(rows), forbidden_task_ids=forbidden)
-    models = tuple(
+    models: tuple[dict[str, object], ...] = tuple(
         {
             "action_id": model.action_id,
             "intercept": model.intercept,
@@ -84,8 +84,9 @@ def fit_b2_with_receipt(
         }
         for model in fitted.models
     )
-    payload = {
-        "schema": "DGC_B2_FIT_RECEIPT_V1",
+    receipt_schema = "DGC_B2_FIT_RECEIPT_V1"
+    payload: dict[str, object] = {
+        "schema": receipt_schema,
         "feature_schema_digest": schema,
         "training_algorithm_digest": algorithm,
         "calibration_task_digest": fitted.calibration_task_digest,
@@ -97,7 +98,7 @@ def fit_b2_with_receipt(
         "confirmatory_execution_authorized": False,
     }
     return B2FitReceipt(
-        schema=payload["schema"],
+        schema=receipt_schema,
         feature_schema_digest=schema,
         training_algorithm_digest=algorithm,
         calibration_task_digest=fitted.calibration_task_digest,

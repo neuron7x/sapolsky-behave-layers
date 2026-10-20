@@ -158,6 +158,8 @@ class EvidenceClosureLedger:
         if not self.ledger_path.exists():
             return self._empty_state()
         data = json.loads(self.ledger_path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ClosureError("ledger must be a JSON object")
         expected_identity = {
             "schema": SCHEMA,
             "generation_id": self.generation_id,
@@ -258,7 +260,10 @@ class EvidenceClosureLedger:
 
         evidence = self._verify_artifacts(execution.evidence)
         state = self.load()
-        receipts = list(state["receipts"])
+        state_receipts = state["receipts"]
+        if not isinstance(state_receipts, list):
+            raise ClosureError("ledger stage/receipt arrays are malformed")
+        receipts = list(state_receipts)
         prior_digest = receipts[-1]["receipt_digest"] if receipts else None
         receipt_payload: dict[str, object] = {
             "schema": RECEIPT_SCHEMA,
@@ -273,7 +278,10 @@ class EvidenceClosureLedger:
         receipt = dict(receipt_payload)
         receipt["receipt_digest"] = _sha256_bytes(_canonical_json(receipt_payload))
         receipts.append(receipt)
-        completed = list(state["completed_stages"])
+        state_completed = state["completed_stages"]
+        if not isinstance(state_completed, list):
+            raise ClosureError("ledger stage/receipt arrays are malformed")
+        completed = list(state_completed)
         completed.append(execution.stage)
         new_state = {
             "schema": SCHEMA,

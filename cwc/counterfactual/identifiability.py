@@ -4,7 +4,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-import numpy as np
+import numpy as np  # type: ignore[import-not-found, unused-ignore]
 
 from cwc.causal.observability import LocalIdentifiabilityCertificate, local_first_order_identifiability
 from cwc.counterfactual.model import counterfactual_design_matrix, counterfactual_terms

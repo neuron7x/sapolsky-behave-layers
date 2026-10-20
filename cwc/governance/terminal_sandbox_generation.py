@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt
 
 from cwc.governance.materialization_transaction import (
     AtomicEvidenceGeneration,
@@ -44,6 +45,13 @@ class VerifiedTerminalSandboxGeneration:
     generation_digest: str
 
 
+def _int_value(value: object) -> int:
+    # Mirrors the TypeError int() already raises for a missing/non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise TypeError(f"expected an integer, got {type(value).__name__}")
+    return int(value)
+
+
 def _read_json(path: Path, *, schema: str) -> dict[str, object]:
     if path.is_symlink() or not path.is_file():
         raise TerminalSandboxGenerationError(
@@ -79,8 +87,8 @@ def _manifest_rows(
         path = str(row.get("path", ""))
         object_type = str(row.get("type", ""))
         try:
-            mode = int(row.get("mode"))
-            size = int(row.get("bytes"))
+            mode = _int_value(row.get("mode"))
+            size = _int_value(row.get("bytes"))
         except (TypeError, ValueError) as exc:
             raise TerminalSandboxGenerationError(
                 "manifest mode/bytes malformed"

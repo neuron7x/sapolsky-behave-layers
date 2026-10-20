@@ -26,8 +26,8 @@ def _validate_dag(nodes: Sequence[str], edges: Sequence[Edge]) -> tuple[tuple[st
         if (u, v) not in seen:
             seen.add((u, v))
             clean.append((u, v))
-    parents = {n: set() for n in ns}
-    children = {n: set() for n in ns}
+    parents: dict[str, set[str]] = {n: set() for n in ns}
+    children: dict[str, set[str]] = {n: set() for n in ns}
     for u, v in clean:
         parents[v].add(u)
         children[u].add(v)
@@ -83,11 +83,11 @@ def d_separated(
         raise ValueError("query node outside DAG")
     if X & Y or X & Z or Y & Z:
         raise ValueError("X, Y and conditioned sets must be disjoint")
-    parents = {n: set() for n in ns}
+    parents: dict[str, set[str]] = {n: set() for n in ns}
     for u, v in es:
         parents[v].add(u)
     anc = _ancestors(X | Y | Z, parents)
-    adj = {n: set() for n in anc}
+    adj: dict[str, set[str]] = {n: set() for n in anc}
     for u, v in es:
         if u in anc and v in anc:
             adj[u].add(v)
@@ -169,7 +169,7 @@ def certify_s_admissible_transport(
         clean_selection.append((s, v))
     if not selection_nodes:
         raise ValueError("at least one selection node required")
-    children = {n: set() for n in c_nodes}
+    children: dict[str, set[str]] = {n: set() for n in c_nodes}
     for u, v in c_edges:
         children[u].add(v)
     pre_treatment = not bool(Z & _descendants(X, children))
@@ -214,7 +214,7 @@ def find_minimal_s_admissible_adjustments(
     """Exhaust all legal pre-treatment Z subsets and return inclusion-minimal certificates."""
     c_nodes, c_edges = _validate_dag(causal_nodes, causal_edges)
     X, Y = set(_clean_nodes(treatment)), set(_clean_nodes(outcome))
-    children = {n: set() for n in c_nodes}
+    children: dict[str, set[str]] = {n: set() for n in c_nodes}
     for u, v in c_edges:
         children[u].add(v)
     forbidden = X | Y | _descendants(X, children)

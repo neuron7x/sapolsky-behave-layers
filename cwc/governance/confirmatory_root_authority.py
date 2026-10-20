@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.baseline_panel import BaselineKind, BaselinePanelSeal, BaselinePolicySpec
 from cwc.governance.confirmatory_generation import freeze_confirmatory_generation
@@ -48,6 +49,20 @@ def _json(path: Path, schema: str) -> dict[str, object]:
     if not isinstance(doc, dict) or doc.get("schema") != schema:
         raise ConfirmatoryRootAuthorityError(f"unexpected schema for {candidate}")
     return doc
+
+
+def _int_value(value: object) -> int:
+    # Mirrors the TypeError int() already raises for a non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise TypeError(f"expected an integer, got {type(value).__name__}")
+    return int(value)
+
+
+def _float_value(value: object) -> float:
+    # Mirrors the TypeError float() already raises for a non-numeric value.
+    if not isinstance(value, (str, bytes, bytearray, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"expected a number, got {type(value).__name__}")
+    return float(value)
 
 
 def _source_authority(registry_row: Mapping[str, object]) -> ExternalSourceAuthority:
@@ -214,14 +229,20 @@ def build_confirmatory_root_authority(
     materialized = _materialized_authority(reference=reference, registry=registry, family_id=family)
 
     panel = _baseline_panel(harness)
+    plan_payload = execution.get("statistical_plan", {})
     try:
-        plan = ProductStatisticalPlan(**dict(execution.get("statistical_plan", {})))
+        if not isinstance(plan_payload, Mapping):
+            raise TypeError("frozen statistical_plan must be a mapping")
+        plan = ProductStatisticalPlan(**dict(plan_payload))
     except (TypeError, ValueError) as exc:
         raise ConfirmatoryRootAuthorityError("frozen product statistical plan cannot be reconstructed") from exc
     if plan.digest != execution.get("statistical_plan_digest") or sizing.get("plan_digest") != plan.digest:
         raise ConfirmatoryRootAuthorityError("statistical plan lineage mismatch")
 
-    confirmatory_tasks = tuple(sorted(str(x) for x in partition.get("confirmatory_task_ids", ())))
+    confirmatory_rows = partition.get("confirmatory_task_ids", ())
+    if not isinstance(confirmatory_rows, Iterable):
+        raise ConfirmatoryRootAuthorityError("confirmatory task population malformed")
+    confirmatory_tasks = tuple(sorted(str(x) for x in confirmatory_rows))
     if not confirmatory_tasks:
         raise ConfirmatoryRootAuthorityError("empty confirmatory task population")
     confirmatory_digest = _sha("confirmatory_task_digest", partition.get("confirmatory_task_digest"))
@@ -248,8 +269,11 @@ def build_confirmatory_root_authority(
         for row in policy_rows
         if isinstance(row, Mapping)
     }
+    required_trials = sizing["required_trials_per_task"]
+    if not isinstance(required_trials, (str, bytes, bytearray, SupportsInt, SupportsIndex)):
+        raise ConfirmatoryRootAuthorityError("required_trials_per_task must be numeric")
     sizing_adapter = _SizingAdapter(
-        required_trials_per_task=int(sizing["required_trials_per_task"]),
+        required_trials_per_task=int(required_trials),
         per_claim_alpha=plan.per_claim_alpha,
         target_power=plan.target_power,
     )
@@ -261,10 +285,10 @@ def build_confirmatory_root_authority(
             task_ids=confirmatory_tasks,
             policy_ids=policy_ids,
             replicates=sizing_adapter.required_trials_per_task,
-            max_attempts_per_unit=int(root_input["max_attempts_per_unit"]),
-            lease_ttl_ticks=int(root_input["lease_ttl_ticks"]),
-            max_cost_per_unit_usd=float(root_input["max_cost_per_unit_usd"]),
-            global_budget_usd=float(root_input["global_budget_usd"]),
+            max_attempts_per_unit=_int_value(root_input["max_attempts_per_unit"]),
+            lease_ttl_ticks=_int_value(root_input["lease_ttl_ticks"]),
+            max_cost_per_unit_usd=_float_value(root_input["max_cost_per_unit_usd"]),
+            global_budget_usd=_float_value(root_input["global_budget_usd"]),
             harness_digest=str(harness["comparison_frame_digest"]),
             statistical_plan_digest=plan.digest,
         )
@@ -293,7 +317,7 @@ def build_confirmatory_root_authority(
 
     root_doc = asdict(root)
     spec_doc = asdict(spec)
-    payload = {
+    payload: dict[str, object] = {
         "family_id": family,
         "generation_id": generation_id,
         "execution_manifest_freeze_digest": execution_digest,
@@ -307,7 +331,17 @@ def build_confirmatory_root_authority(
         "root_digest": root.root_digest,
     }
     return ConfirmatoryRootAuthority(
-        **payload,
+        family_id=family,
+        generation_id=generation_id,
+        execution_manifest_freeze_digest=execution_digest,
+        harness_freeze_digest=harness_digest,
+        trial_sizing_authority_digest=sizing_digest,
+        task_partition_receipt_digest=partition_digest,
+        materialized_source_authority_digest=materialized.digest,
+        distributed_spec_digest=spec.digest,
+        distributed_spec=spec_doc,
+        root=root_doc,
+        root_digest=root.root_digest,
         authority_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 

@@ -22,7 +22,11 @@ from cwc.governance.confirmatory_root_authority import (
 )
 from cwc.governance.distributed_eval_control import DistributedEvalSpec
 from cwc.governance.executed_p9 import ExecutedP9Certificate, ExecutedPairedBaselineEvidence, certify_executed_p9
-from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, verify_execution_bundle
+from cwc.governance.execution_evidence_bundle import (
+    VerifiedExecutionBundle,
+    VerifiedExecutionResult,
+    verify_execution_bundle,
+)
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
 from cwc.governance.external_source_authority import promote_executed
 from cwc.governance.harness_freeze import DGC_ROLE, verify_harness_freeze_document
@@ -88,7 +92,7 @@ def _paired_evidence(
     confirmatory_task_digest: str,
     execution_population_digest: str,
 ) -> tuple[ExecutedPairedBaselineEvidence, ...]:
-    by_task_policy: dict[tuple[str, str], list] = {}
+    by_task_policy: dict[tuple[str, str], list[VerifiedExecutionResult]] = {}
     for row in execution_bundle.results:
         by_task_policy.setdefault((row.unit.task_id, row.unit.policy_id), []).append(row)
     physical_costs = physical_cost_bundle.cost_by_unit()
@@ -317,18 +321,23 @@ def build_executed_p9_authority(
     paired_digest = sha256_bytes(canonical_json_bytes(list(paired_docs)))
     certificate_doc = asdict(certificate)
     supported = bool(certificate.pareto.all_baselines_certified)
-    payload = {
-        "family_id": str(execution_authority["family_id"]),
-        "execution_authority_digest": _sha("execution authority_digest", execution_authority.get("authority_digest")),
+    family_id = str(execution_authority["family_id"])
+    execution_authority_digest = _sha("execution authority_digest", execution_authority.get("authority_digest"))
+    execution_population_digest = str(execution_authority["execution_population_digest"])
+    metric_population_digest = str(execution_authority["metric_population_digest"])
+    harness_freeze_digest = _sha("harness_freeze_digest", harness.get("harness_freeze_digest"))
+    payload: dict[str, object] = {
+        "family_id": family_id,
+        "execution_authority_digest": execution_authority_digest,
         "executed_source_authority_digest": executed.digest,
-        "execution_population_digest": str(execution_authority["execution_population_digest"]),
+        "execution_population_digest": execution_population_digest,
         "execution_bundle_digest": execution_bundle.bundle_digest,
-        "metric_population_digest": str(execution_authority["metric_population_digest"]),
+        "metric_population_digest": metric_population_digest,
         "physical_cost_bundle_digest": physical_cost_bundle.bundle_digest,
         "physical_cost_population_digest": physical_cost_bundle.physical_cost_population_digest,
         "physical_cost_accounting_verified": True,
         "cost_measure": COST_MEASURE,
-        "harness_freeze_digest": _sha("harness_freeze_digest", harness.get("harness_freeze_digest")),
+        "harness_freeze_digest": harness_freeze_digest,
         "confirmatory_task_manifest_digest": confirmatory_digest,
         "statistical_plan_digest": plan.digest,
         "family_alpha": family_alpha,
@@ -343,19 +352,19 @@ def build_executed_p9_authority(
         "net_cost_superiority_supported": supported,
     }
     return ExecutedP9Authority(
-        family_id=payload["family_id"],
-        execution_authority_digest=payload["execution_authority_digest"],
-        executed_source_authority_digest=payload["executed_source_authority_digest"],
-        execution_population_digest=payload["execution_population_digest"],
-        execution_bundle_digest=payload["execution_bundle_digest"],
-        metric_population_digest=payload["metric_population_digest"],
-        physical_cost_bundle_digest=payload["physical_cost_bundle_digest"],
-        physical_cost_population_digest=payload["physical_cost_population_digest"],
+        family_id=family_id,
+        execution_authority_digest=execution_authority_digest,
+        executed_source_authority_digest=executed.digest,
+        execution_population_digest=execution_population_digest,
+        execution_bundle_digest=execution_bundle.bundle_digest,
+        metric_population_digest=metric_population_digest,
+        physical_cost_bundle_digest=physical_cost_bundle.bundle_digest,
+        physical_cost_population_digest=physical_cost_bundle.physical_cost_population_digest,
         physical_cost_accounting_verified=True,
         cost_measure=COST_MEASURE,
-        harness_freeze_digest=payload["harness_freeze_digest"],
-        confirmatory_task_manifest_digest=payload["confirmatory_task_manifest_digest"],
-        statistical_plan_digest=payload["statistical_plan_digest"],
+        harness_freeze_digest=harness_freeze_digest,
+        confirmatory_task_manifest_digest=confirmatory_digest,
+        statistical_plan_digest=plan.digest,
         family_alpha=family_alpha,
         per_metric_delta=certificate.pareto.per_metric_delta,
         quality_noninferiority_margin=plan.quality_noninferiority_margin,

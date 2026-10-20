@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
 
-from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec
+from cwc.governance.distributed_eval_control import DistributedEvalCoordinator, DistributedEvalSpec, Lease
 from cwc.governance.execution_manifest_freeze import EXECUTOR_REQUEST_SCHEMA
 from cwc.governance.external_evidence_reference import verify_materialization_generation
 from cwc.governance.frozen_panel_executor import (
@@ -74,7 +74,7 @@ def _mechanism_request(
     repository_root: Path,
     execution: Mapping[str, object],
     authority: Mapping[str, object],
-    lease,
+    lease: Lease,
 ) -> dict[str, object]:
     components = execution.get("components")
     if not isinstance(components, list):
@@ -216,6 +216,8 @@ def execute_frozen_mechanism_panel(
             if lease is None:
                 snapshot = coordinator.snapshot(tick=tick)
                 counts = snapshot["counts"]
+                if not isinstance(counts, Mapping):
+                    raise FrozenMechanismExecutionError("coordinator snapshot counts malformed")
                 if counts.get("COMMITTED") == len(spec.units()):
                     break
                 raise FrozenMechanismExecutionError(
@@ -303,13 +305,18 @@ def execute_frozen_mechanism_panel(
 
             evidence_rel = f"evidence/{result_index:08d}.json"
             evidence_path = staging / evidence_rel
+            frozen_components = execution["components"]
+            if not isinstance(frozen_components, list):
+                raise FrozenMechanismExecutionError(
+                    "frozen execution component population missing"
+                )
             evidence_doc = {
                 "schema": EVIDENCE_SCHEMA,
                 "request": request,
                 "response": response,
                 "executor_manifest_sha256": next(
                     row["sha256"]
-                    for row in execution["components"]
+                    for row in frozen_components
                     if isinstance(row, Mapping)
                     and row.get("component") == "executor_manifest"
                 ),
