@@ -380,7 +380,19 @@ def freeze_mechanism_execution_manifests(
         "prebaseline_comparison_digest": prebaseline,
     }
     return MechanismExecutionFreeze(
-        **payload,
+        family_id=family,
+        repository_commit=repository_commit,
+        repository_tree=repository_tree,
+        materialization_reference_path=reference_rel,
+        materialization_reference_digest=reference_digest,
+        materialized_tree_sha256=materialized_tree,
+        task_manifest_digest=task_manifest,
+        statistical_plan_digest=statistical_plan.digest,
+        statistical_plan=asdict(statistical_plan),
+        mechanism_plan_digest=mechanism.digest,
+        components=tuple(components),
+        governance_policies=tuple(policies),
+        prebaseline_comparison_digest=prebaseline,
         freeze_digest=sha256_bytes(canonical_json_bytes(payload)),
     )
 

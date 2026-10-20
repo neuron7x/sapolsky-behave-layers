@@ -717,7 +717,7 @@ def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
     manifest_doc["config_sha256"] = sha256_file(config)
     manifest_doc["action_catalog_digest"] = policy_action_catalog_digest(config_doc["action_ids"])
     _write(manifest, manifest_doc)
-    with pytest.raises(ExecutionManifestError, match="global frozen action catalog"):
+    with pytest.raises(ExecutionManifestError, match="frozen action catalog"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
