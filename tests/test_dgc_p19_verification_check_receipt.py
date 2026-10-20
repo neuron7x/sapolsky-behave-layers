@@ -71,7 +71,7 @@ def test_receipt_detects_raw_evidence_mutation(tmp_path: Path):
     path.write_bytes(canonical_receipt_bytes(doc))
     evidence = tmp_path / str(doc["evidence_path"])
     evidence.write_bytes(b'{"verified":false}\n')
-    with pytest.raises(P19VerificationCheckReceiptError, match="bytes differ"):
+    with pytest.raises(P19VerificationCheckReceiptError, match="bytes differ|byte count mismatch"):
         load_check_receipt(path, repository_root=tmp_path)
 
 

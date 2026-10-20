@@ -248,7 +248,13 @@ class P19ExternalVerifierRegressionReceipt:
 
     @property
     def document(self) -> dict[str, object]:
-        return {"schema": SCHEMA, **asdict(self), "activation_authorized": False}
+        payload = asdict(self)
+        # Match the canonical JSON shape before hashing, signing or comparing receipts.
+        # dataclasses.asdict retains tuple containers, while JSON serializes them as lists.
+        payload["canonical_command_argv"] = list(self.canonical_command_argv)
+        payload["runtime_manifest"] = [dict(row) for row in self.runtime_manifest]
+        payload["test_manifest"] = [dict(row) for row in self.test_manifest]
+        return {"schema": SCHEMA, **payload, "activation_authorized": False}
 
 
 def build_p19_external_verifier_regression_receipt(

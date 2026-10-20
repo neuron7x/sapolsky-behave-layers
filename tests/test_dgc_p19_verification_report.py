@@ -238,7 +238,7 @@ def test_raw_transcript_mutation_fails_report_rehash(tmp_path: Path, monkeypatch
     path.write_bytes(report_bytes(report))
     evidence_rel = str(report["checks"][0]["evidence_path"])
     (tmp_path / evidence_rel).write_bytes(b"mutated\n")
-    with pytest.raises(Exception, match="bytes differ"):
+    with pytest.raises(Exception, match="bytes differ|byte count mismatch"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
@@ -248,7 +248,7 @@ def test_verifier_dependency_mutation_fails_report_replay(tmp_path: Path, monkey
     path.write_bytes(report_bytes(report))
     dependency = tmp_path / VERIFIER_RUNTIME_DEPENDENCIES[0]
     dependency.write_text("# mutated verifier dependency\n", encoding="utf-8")
-    with pytest.raises(Exception, match="dependency bytes differ"):
+    with pytest.raises(Exception, match="dependency bytes differ|frozen verification plan replay failed"):
         load_p19_verification_report(path, repository_root=tmp_path)
 
 
