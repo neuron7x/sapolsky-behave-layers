@@ -47,6 +47,8 @@ dependency-audit:
 	uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt
 	sed -E 's/(torch==[0-9.]+)\+cpu/\1/' /tmp/cwc-runtime-requirements.txt > /tmp/cwc-auditable-requirements.txt
 	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
+	uv export --quiet --frozen --extra cpu --only-dev --no-emit-project --output-file /tmp/cwc-dev-group-requirements.txt
+	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-dev-group-requirements.txt --progress-spinner=off
 	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
 
 dependency-integrity-gate:
