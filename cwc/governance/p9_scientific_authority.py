@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.ccf_oracle_audit_authority import verify_ccf_oracle_audit_authority_document
 from cwc.governance.executed_p9_authority import verify_executed_p9_authority_document
@@ -20,6 +21,12 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise P9ScientificAuthorityError(f"{name} must be lowercase SHA-256")
     return text
+
+
+def _int_arg(value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not int-convertible")
+    return int(value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,6 +82,29 @@ class P9ScientificAuthority:
         }
 
 
+class _P9ScientificAuthorityPayload(TypedDict):
+    family_id: str
+    executed_p9_authority_digest: str
+    ccf_oracle_audit_authority_digest: str
+    execution_authority_digest: str
+    execution_population_digest: str
+    execution_bundle_digest: str
+    physical_cost_bundle_digest: str
+    physical_cost_population_digest: str
+    harness_freeze_digest: str
+    confirmatory_task_manifest_digest: str
+    p9_certificate_digest: str
+    p9_supported: bool
+    physical_cost_accounting_verified: bool
+    net_cost_superiority_supported: bool
+    ccf_headroom_audit_complete: bool
+    ccf_total_value_regret_units: int
+    ccf_total_avoidable_cost_units: int
+    ccf_max_value_regret_units: int
+    ccf_max_avoidable_cost_units: int
+    generalization_authorized: bool
+
+
 def build_p9_scientific_authority(
     *,
     executed_p9_authority_path: Path,
@@ -96,7 +126,7 @@ def build_p9_scientific_authority(
     net_cost = p9.get("net_cost_superiority_supported") is True
     ccf_complete = ccf.get("headroom_audit_complete") is True
     generalization = p9_supported and physical and net_cost and ccf_complete
-    payload = {
+    payload: _P9ScientificAuthorityPayload = {
         "family_id": str(p9["family_id"]),
         "executed_p9_authority_digest": _sha("executed P9 authority_digest", p9.get("authority_digest")),
         "ccf_oracle_audit_authority_digest": _sha("CCF authority_digest", ccf.get("authority_digest")),
@@ -114,10 +144,10 @@ def build_p9_scientific_authority(
         "physical_cost_accounting_verified": physical,
         "net_cost_superiority_supported": net_cost,
         "ccf_headroom_audit_complete": ccf_complete,
-        "ccf_total_value_regret_units": int(ccf["total_value_regret_units"]),
-        "ccf_total_avoidable_cost_units": int(ccf["total_avoidable_cost_units"]),
-        "ccf_max_value_regret_units": int(ccf["max_value_regret_units"]),
-        "ccf_max_avoidable_cost_units": int(ccf["max_avoidable_cost_units"]),
+        "ccf_total_value_regret_units": _int_arg(ccf["total_value_regret_units"]),
+        "ccf_total_avoidable_cost_units": _int_arg(ccf["total_avoidable_cost_units"]),
+        "ccf_max_value_regret_units": _int_arg(ccf["max_value_regret_units"]),
+        "ccf_max_avoidable_cost_units": _int_arg(ccf["max_avoidable_cost_units"]),
         "generalization_authorized": generalization,
     }
     return P9ScientificAuthority(

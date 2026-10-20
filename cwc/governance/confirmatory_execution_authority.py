@@ -5,6 +5,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.confirmatory_generation import certify_confirmatory_completion
 from cwc.governance.confirmatory_root_authority import (
@@ -36,6 +37,8 @@ def _sha(name: str, value: object) -> str:
 
 def _finite_nonnegative(name: str, value: object) -> float:
     try:
+        if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+            raise TypeError(f"{name} is not float-convertible")
         result = float(value)
     except (TypeError, ValueError) as exc:
         raise ConfirmatoryExecutionAuthorityError(f"{name} must be numeric") from exc
@@ -102,6 +105,27 @@ class ConfirmatoryExecutionAuthority:
             "p9_evaluation_authorized": True,
             "product_promotion_authorized": False,
         }
+
+
+class _ConfirmatoryExecutionAuthorityPayload(TypedDict):
+    family_id: str
+    root_authority_digest: str
+    root_digest: str
+    distributed_spec_digest: str
+    execution_bundle_digest: str
+    execution_bundle_payload_manifest_sha256: str
+    materialized_source_authority_digest: str
+    executed_source_authority_digest: str
+    execution_population_digest: str
+    result_population_digest: str
+    audit_root_digest: str
+    unit_evidence_population_digest: str
+    metric_population_digest: str
+    expected_work_units: int
+    committed_work_units: int
+    total_cost_usd: float
+    completion_certificate: dict[str, object]
+    confirmatory_completion_certificate: dict[str, object]
 
 
 def _root_adapter(root_authority: Mapping[str, object]) -> _RootAdapter:
@@ -195,7 +219,7 @@ def build_confirmatory_execution_authority(
     evidence_population_digest, metric_population_digest = _population_digests(bundle)
     completion_doc = asdict(bundle.completion)
     confirmatory_doc = asdict(completion)
-    payload = {
+    payload: _ConfirmatoryExecutionAuthorityPayload = {
         "family_id": root.family_id,
         "root_authority_digest": root_authority_digest,
         "root_digest": root.root_digest,

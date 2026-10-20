@@ -108,8 +108,9 @@ def freeze_cluster_aware_trial_sizing(
             )
         )
     ordered = tuple(sorted(receipts, key=lambda row: row.comparison_id))
+    schema = "DGC_CLUSTER_AWARE_TRIAL_SIZING_RECEIPT_V1"
     payload = {
-        "schema": "DGC_CLUSTER_AWARE_TRIAL_SIZING_RECEIPT_V1",
+        "schema": schema,
         "plan_digest": plan.digest,
         "confirmatory_task_count": int(confirmatory_task_count),
         "calibration_design_digest": calibration_design_digest,
@@ -118,7 +119,7 @@ def freeze_cluster_aware_trial_sizing(
         "planning_only": True,
     }
     return TrialSizingReceipt(
-        schema=payload["schema"],
+        schema=schema,
         plan_digest=plan.digest,
         confirmatory_task_count=int(confirmatory_task_count),
         calibration_design_digest=calibration_design_digest,

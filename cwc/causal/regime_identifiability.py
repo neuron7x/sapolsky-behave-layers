@@ -132,17 +132,17 @@ def evaluate_regime_iv(
             ry = float(np.mean(r * Yc))
             beta = ry / cov_rx
             psi = r * (Yc - beta * Xc) / cov_rx
-            beta_se = _mean_se(psi)
+            moment_beta_se = _mean_se(psi)
             relevant.append(j)
             influence.append(psi)
         else:
             beta = math.nan
-            beta_se = math.inf
+            moment_beta_se = math.inf
             influence.append(None)
 
         if neg_z > zcrit:
             neg_violations.append(j)
-        moments.append(InstrumentMoment(j, cov_rx, relevance_z, float(beta), float(beta_se), neg_z))
+        moments.append(InstrumentMoment(j, cov_rx, relevance_z, float(beta), float(moment_beta_se), neg_z))
 
     overid_zs: list[float] = []
     for a_pos, a in enumerate(relevant):

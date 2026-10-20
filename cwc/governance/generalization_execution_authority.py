@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import fmean
+from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
 
 from cwc.governance.generalization_registry import (
     AXIS_SCHEMA,
@@ -47,6 +48,18 @@ def _sha(name: str, value: object) -> str:
     return text
 
 
+def _int_arg(value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not int-convertible")
+    return int(value)
+
+
+def _float_arg(value: object) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not float-convertible")
+    return float(value)
+
+
 def _req(name: str, value: object) -> str:
     text = str(value).strip()
     if not text:
@@ -56,7 +69,7 @@ def _req(name: str, value: object) -> str:
 
 def _finite(name: str, value: object, *, lower: float | None = None, upper: float | None = None) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise GeneralizationExecutionError(f"{name} must be numeric") from exc
     if not math.isfinite(result):
@@ -182,7 +195,7 @@ def _verify_cost_components(
             authority = CostAuthority(str(item.get("authority")))
             evidence = CostComponentEvidence(
                 component=component,
-                value_usd=float(item.get("value_usd")),
+                value_usd=_float_arg(item.get("value_usd")),
                 authority=authority,
                 source_digest=source_digest,
             )
@@ -274,8 +287,8 @@ def verify_generalization_axis_bundle(
     sizing_digest = _sha("trial sizing authority_digest", sizing.get("authority_digest"))
     if manifest.get("trial_sizing_authority_digest") != sizing_digest:
         raise GeneralizationExecutionError("axis execution uses a different trial-sizing authority")
-    replicates = int(sizing.get("required_trials_per_task", 0))
-    if replicates <= 0 or int(manifest.get("replicates", -1)) != replicates:
+    replicates = _int_arg(sizing.get("required_trials_per_task", 0))
+    if replicates <= 0 or _int_arg(manifest.get("replicates", -1)) != replicates:
         raise GeneralizationExecutionError("axis execution replicate count differs from frozen primary trial sizing")
     if manifest.get("policy_retuned") is not False or manifest.get("product_promotion_authorized") is not False:
         raise GeneralizationExecutionError("axis execution must preserve frozen policy and cannot authorize product promotion")
@@ -298,7 +311,7 @@ def verify_generalization_axis_bundle(
         task_id = _req("task_id", raw.get("task_id"))
         policy_id = _req("policy_id", raw.get("policy_id"))
         try:
-            replicate = int(raw.get("replicate"))
+            replicate = _int_arg(raw.get("replicate"))
         except (TypeError, ValueError) as exc:
             raise GeneralizationExecutionError("replicate must be an integer") from exc
         if replicate < 0 or replicate >= replicates:
@@ -415,8 +428,8 @@ def _paired_evidence(
     role_map: Mapping[str, str],
 ) -> tuple[PairedBaselineEvidence, ...]:
     by_task_policy: dict[tuple[str, str], list[VerifiedGeneralizationResult]] = {}
-    for result in bundle.results:
-        by_task_policy.setdefault((result.task_id, result.policy_id), []).append(result)
+    for unit_result in bundle.results:
+        by_task_policy.setdefault((unit_result.task_id, unit_result.policy_id), []).append(unit_result)
     tasks = tuple(sorted({row.task_id for row in bundle.results}))
     means: dict[tuple[str, str], tuple[float, float, float, bool]] = {}
     for task in tasks:
@@ -485,6 +498,23 @@ class GeneralizationAxisAuthority:
         }
 
 
+class _GeneralizationAxisAuthorityPayload(TypedDict):
+    axis: str
+    registry_digest: str
+    evaluation_manifest_digest: str
+    task_population_digest: str
+    frozen_dgc_policy_digest: str
+    trial_sizing_authority_digest: str
+    execution_bundle_digest: str
+    metric_population_digest: str
+    physical_cost_population_digest: str
+    replicates: int
+    certificate: dict[str, object] | None
+    certificate_digest: str | None
+    supported: bool
+    reason_code: str
+
+
 def build_generalization_axis_authority(
     bundle_root: Path,
     *,
@@ -511,15 +541,15 @@ def build_generalization_axis_authority(
         try:
             certificate = certify_multi_baseline_pareto_improvement(
                 paired,
-                alpha=float(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES),
-                quality_noninferiority_margin=float(axis_row["quality_noninferiority_margin"]),
-                catastrophic_noninferiority_margin=float(axis_row["catastrophic_noninferiority_margin"]),
+                alpha=_float_arg(registry["generalization_familywise_alpha"]) / len(REQUIRED_AXES),
+                quality_noninferiority_margin=_float_arg(axis_row["quality_noninferiority_margin"]),
+                catastrophic_noninferiority_margin=_float_arg(axis_row["catastrophic_noninferiority_margin"]),
             )
         except (TypeError, ValueError) as exc:
             raise GeneralizationExecutionError("generalization paired statistics cannot be certified") from exc
         if not math.isclose(
             certificate.per_metric_delta,
-            float(registry["per_claim_alpha"]),
+            _float_arg(registry["per_claim_alpha"]),
             rel_tol=0.0,
             abs_tol=1e-15,
         ):
@@ -529,7 +559,7 @@ def build_generalization_axis_authority(
             reason = "PARETO_OR_NONINFERIORITY_GATE_FAILED"
     certificate_doc = None if certificate is None else asdict(certificate)
     certificate_digest = None if certificate_doc is None else sha256_bytes(canonical_json_bytes(certificate_doc))
-    payload = {
+    payload: _GeneralizationAxisAuthorityPayload = {
         "axis": bundle.axis,
         "registry_digest": bundle.registry_digest,
         "evaluation_manifest_digest": bundle.evaluation_manifest_digest,
@@ -574,7 +604,7 @@ def verify_generalization_axis_authority_document(path: Path) -> dict[str, objec
         "metric_population_digest", "physical_cost_population_digest",
     ):
         _sha(name, doc.get(name))
-    if int(doc.get("replicates", 0)) <= 0:
+    if _int_arg(doc.get("replicates", 0)) <= 0:
         raise GeneralizationExecutionError("axis authority replicate count must be > 0")
     if doc.get("supported") is True:
         cert = doc.get("certificate")
@@ -649,9 +679,10 @@ def build_generalization_authority(
     bundle_digests = tuple(
         sorted((str(row["axis"]), _sha("execution_bundle_digest", row.get("execution_bundle_digest"))) for row in axis_rows)
     )
+    p9_scientific_digest = _sha("P9 scientific authority_digest", p9.get("authority_digest"))
     payload = {
         "registry_digest": registry_digest,
-        "p9_scientific_authority_digest": _sha("P9 scientific authority_digest", p9.get("authority_digest")),
+        "p9_scientific_authority_digest": p9_scientific_digest,
         "frozen_dgc_policy_digest": dgc_digest,
         "axis_authority_digests": [list(row) for row in axis_authority_digests],
         "axis_execution_bundle_digests": [list(row) for row in bundle_digests],
@@ -659,7 +690,7 @@ def build_generalization_authority(
     }
     return GeneralizationAuthority(
         registry_digest=registry_digest,
-        p9_scientific_authority_digest=payload["p9_scientific_authority_digest"],
+        p9_scientific_authority_digest=p9_scientific_digest,
         frozen_dgc_policy_digest=dgc_digest,
         axis_authority_digests=axis_authority_digests,
         axis_execution_bundle_digests=bundle_digests,

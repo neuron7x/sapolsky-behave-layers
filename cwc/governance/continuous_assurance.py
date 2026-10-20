@@ -40,7 +40,7 @@ class MonitoringSpec:
     human_validation_required: tuple[MonitoringCategory, ...]
     max_warn_risk_sum: float
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if len(self.deployment_digest.strip()) < 16:
             raise ValueError("deployment_digest must be non-trivial")
         categories = tuple(sorted(set(self.required_categories), key=lambda x: x.value))
@@ -90,7 +90,7 @@ class MonitoringObservation:
     source_id: str
     human_validated: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.metric_id.strip() or not self.source_id.strip():
             raise ValueError("metric_id and source_id required")
         if self.tick < 0:
@@ -103,7 +103,7 @@ class MonitoringObservation:
             raise ValueError("deployment/evidence digests must be non-trivial")
 
     @property
-    def key(self):
+    def key(self) -> tuple[MonitoringCategory, str, int, str]:
         return (self.category, self.metric_id, self.tick, self.source_id)
 
 
@@ -121,7 +121,7 @@ class AssuranceCertificate:
 class ContinuousAssuranceMonitor:
     def __init__(self, spec: MonitoringSpec):
         self.spec = spec
-        self._observations: dict[tuple, MonitoringObservation] = {}
+        self._observations: dict[tuple[MonitoringCategory, str, int, str], MonitoringObservation] = {}
 
     def ingest(self, observation: MonitoringObservation) -> None:
         if observation.deployment_digest != self.spec.deployment_digest:
@@ -182,7 +182,7 @@ class ContinuousAssuranceMonitor:
             hold = True
 
         decision = AssuranceDecision.ROLLBACK if rollback else AssuranceDecision.HOLD if hold else AssuranceDecision.CONTINUE
-        rows = sorted((o.category.value, o.metric_id, o.tick, o.status.value, o.risk_score, o.evidence_digest, o.source_id, o.human_validated) for o in self._observations.values() if o.tick <= as_of_tick)
+        population_rows = sorted((o.category.value, o.metric_id, o.tick, o.status.value, o.risk_score, o.evidence_digest, o.source_id, o.human_validated) for o in self._observations.values() if o.tick <= as_of_tick)
         return AssuranceCertificate(
             deployment_digest=self.spec.deployment_digest,
             spec_digest=self.spec.digest,
@@ -190,5 +190,5 @@ class ContinuousAssuranceMonitor:
             decision=decision,
             reasons=tuple(reasons),
             category_status=tuple(category_status),
-            observation_population_digest=_digest(rows),
+            observation_population_digest=_digest(population_rows),
         )

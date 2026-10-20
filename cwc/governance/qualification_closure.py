@@ -37,6 +37,8 @@ def _repo_relative(root: Path, value: Path) -> tuple[Path, str]:
 def _stage_evidence_file(ledger: EvidenceClosureLedger, *, stage: str) -> tuple[Path, str, dict[str, object]]:
     state = ledger.load()
     receipts = state["receipts"]
+    if not isinstance(receipts, list):
+        raise ClosureError("ledger stage/receipt arrays are malformed")
     matches = [receipt for receipt in receipts if isinstance(receipt, dict) and receipt.get("stage") == stage]
     if len(matches) != 1:
         raise ClosureError(f"closure ledger must contain exactly one {stage} receipt")

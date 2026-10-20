@@ -5,6 +5,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.confirmatory_execution_authority import verify_confirmatory_execution_authority_document
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
@@ -18,6 +19,12 @@ SCHEMA = "DGC_PHYSICAL_EXECUTION_COST_BUNDLE_V1"
 
 class PhysicalExecutionCostBundleError(RuntimeError):
     pass
+
+
+def _float_arg(value: object) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not float-convertible")
+    return float(value)
 
 
 def _sha(name: str, value: object) -> str:
@@ -144,7 +151,7 @@ def verify_physical_execution_cost_bundle(
     per_unit_cap = float(spec.max_cost_per_unit_usd)
     if not math.isfinite(per_unit_cap) or per_unit_cap <= 0:
         raise PhysicalExecutionCostBundleError("frozen per-unit cost cap invalid")
-    declared_cap = float(manifest.get("per_unit_cost_cap_usd", -1))
+    declared_cap = _float_arg(manifest.get("per_unit_cost_cap_usd", -1))
     if not math.isclose(declared_cap, per_unit_cap, rel_tol=0.0, abs_tol=1e-12):
         raise PhysicalExecutionCostBundleError("physical cost bundle cap differs from frozen distributed spec")
 
@@ -208,7 +215,7 @@ def verify_physical_execution_cost_bundle(
     total = math.fsum(row.total_operational_usd for row in ordered)
     if manifest.get("physical_cost_population_digest") != population_digest:
         raise PhysicalExecutionCostBundleError("physical cost population digest mismatch")
-    if not math.isclose(float(manifest.get("total_operational_usd", -1)), total, rel_tol=0.0, abs_tol=1e-12):
+    if not math.isclose(_float_arg(manifest.get("total_operational_usd", -1)), total, rel_tol=0.0, abs_tol=1e-12):
         raise PhysicalExecutionCostBundleError("physical cost bundle total mismatch")
 
     manifest_payload = {

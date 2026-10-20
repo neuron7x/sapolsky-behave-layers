@@ -3,21 +3,34 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import TypedDict
 
+from cwc.governance.average_conditional_mean_cs import (
+    ASSUMPTION_BOUNDARY as PRIMARY_ASSUMPTION_BOUNDARY,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    BOUNDARY_METHOD as PRIMARY_BOUNDARY_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    CLAIM_TARGET as PRIMARY_CLAIM_TARGET,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    CONFSEQ_REFERENCE_COMMIT,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    METHOD as PRIMARY_INFERENCE_METHOD,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    PREDICTOR_RULE as PRIMARY_PREDICTOR_RULE,
+)
+from cwc.governance.average_conditional_mean_cs import (
+    SEQUENCE_ORDER_RULE as PRIMARY_SEQUENCE_ORDER,
+)
 from cwc.governance.independent_replication_authority_v3 import (
     AttestationVerifier,
     build_independent_replication_authority_v3,
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
-from cwc.governance.product_statistical_plan import (
-    CONFSEQ_REFERENCE_COMMIT,
-    PRIMARY_ASSUMPTION_BOUNDARY,
-    PRIMARY_BOUNDARY_METHOD,
-    PRIMARY_CLAIM_TARGET,
-    PRIMARY_INFERENCE_METHOD,
-    PRIMARY_PREDICTOR_RULE,
-    PRIMARY_SEQUENCE_ORDER,
-)
 from cwc.governance.replication_attestation import verify_ssh_signed_replication_attestation
 
 SCHEMA = "DGC_INDEPENDENT_REPLICATION_AUTHORITY_V4"
@@ -80,6 +93,27 @@ class IndependentReplicationAuthorityV4:
         }
 
 
+class _IndependentReplicationAuthorityV4Payload(TypedDict):
+    replication_scope: str
+    v3_raw_replication_authority_digest: str
+    replication_package_digest: str
+    primary_p9_scientific_authority_digest: str
+    primary_anytime_p9_authority_digest: str
+    primary_generalization_authority_digest: str
+    replica_p9_scientific_authority_digest: str
+    replica_anytime_p9_authority_digest: str
+    statistical_plan_digest: str
+    theorem_identity_digest: str
+    methodology_identity_matched: bool
+    fresh_execution_verified: bool
+    replica_exact_panel_supported: bool
+    replica_anytime_average_conditional_mean_supported: bool
+    replica_scientific_p9_supported: bool
+    signed_independence_attested: bool
+    social_independence_machine_proven: bool
+    independent_replication_supported: bool
+
+
 def build_independent_replication_authority_v4(
     *,
     primary_p9_scientific_authority_path: Path,
@@ -132,7 +166,7 @@ def build_independent_replication_authority_v4(
     if not v3.independent_replication_supported:
         raise IndependentReplicationAuthorityV4Error("V3 raw/signature replication evidence is unsupported")
     theorem_digest = theorem_identity_digest()
-    payload = {
+    payload: _IndependentReplicationAuthorityV4Payload = {
         "replication_scope": SCOPE,
         "v3_raw_replication_authority_digest": v3.authority_digest,
         "replication_package_digest": v3.replication_package_digest,

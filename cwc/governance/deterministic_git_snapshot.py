@@ -7,6 +7,7 @@ import subprocess
 import tarfile
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
+from typing import TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -28,7 +29,10 @@ def _run(root: Path, *args: str, text: bool = False) -> bytes | str:
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise DeterministicGitSnapshotError(f"git command failed: {' '.join(args)}") from exc
-    return proc.stdout
+    stdout = proc.stdout
+    if not isinstance(stdout, (bytes, str)):
+        raise DeterministicGitSnapshotError(f"git command produced no output stream: {' '.join(args)}")
+    return stdout
 
 
 def _oid(name: str, value: str) -> str:
@@ -75,6 +79,14 @@ class GitSnapshotEntry:
     bytes: int
     symlink: bool
     entry_digest: str
+
+
+class _GitSnapshotEntryPayload(TypedDict):
+    path: str
+    mode: str
+    blob_oid: str
+    bytes: int
+    symlink: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,7 +175,7 @@ def create_deterministic_git_snapshot(
                 info.mode = 0o755 if mode == "100755" else 0o644
                 info.size = len(blob)
                 archive.addfile(info, io.BytesIO(blob))
-            payload = {
+            payload: _GitSnapshotEntryPayload = {
                 "path": path,
                 "mode": mode,
                 "blob_oid": blob_oid,

@@ -159,18 +159,24 @@ class SelfFalsificationDecision:
             raise TypeError("invalid self-falsification mint seal")
         memories = tuple(sorted((str(a), str(b)) for a, b in load_bearing_memory_bindings))
         worlds = tuple(sorted((str(a), str(b)) for a, b in world_bindings))
+        norm_cross_decision_world_ids = _norm(tuple(cross_decision_world_ids))
+        norm_ignored_same_decision_world_ids = _norm(tuple(ignored_same_decision_world_ids))
+        norm_load_bearing_assumption_ids = _norm(tuple(load_bearing_assumption_ids))
+        norm_selected_target_world_ids = _norm(tuple(selected_target_world_ids))
+        norm_selected_target_memory_ids = _norm(tuple(selected_target_memory_ids))
+        norm_selected_target_assumption_ids = _norm(tuple(selected_target_assumption_ids))
         payload = {
             "state": state.value,
             "attack_id": attack_id,
             "candidate_world_id": candidate_world_id,
             "candidate_decision": candidate_decision,
-            "cross_decision_world_ids": list(_norm(tuple(cross_decision_world_ids))),
-            "ignored_same_decision_world_ids": list(_norm(tuple(ignored_same_decision_world_ids))),
+            "cross_decision_world_ids": list(norm_cross_decision_world_ids),
+            "ignored_same_decision_world_ids": list(norm_ignored_same_decision_world_ids),
             "load_bearing_memory_bindings": [list(x) for x in memories],
-            "load_bearing_assumption_ids": list(_norm(tuple(load_bearing_assumption_ids))),
-            "selected_target_world_ids": list(_norm(tuple(selected_target_world_ids))),
-            "selected_target_memory_ids": list(_norm(tuple(selected_target_memory_ids))),
-            "selected_target_assumption_ids": list(_norm(tuple(selected_target_assumption_ids))),
+            "load_bearing_assumption_ids": list(norm_load_bearing_assumption_ids),
+            "selected_target_world_ids": list(norm_selected_target_world_ids),
+            "selected_target_memory_ids": list(norm_selected_target_memory_ids),
+            "selected_target_assumption_ids": list(norm_selected_target_assumption_ids),
             "necessary_cost_lower_bound": necessary_cost_lower_bound,
             "information_state": information_state,
             "plan_certificate_digest": plan_certificate_digest,
@@ -183,13 +189,13 @@ class SelfFalsificationDecision:
             "attack_id": attack_id,
             "candidate_world_id": candidate_world_id,
             "candidate_decision": candidate_decision,
-            "cross_decision_world_ids": tuple(payload["cross_decision_world_ids"]),
-            "ignored_same_decision_world_ids": tuple(payload["ignored_same_decision_world_ids"]),
+            "cross_decision_world_ids": tuple(norm_cross_decision_world_ids),
+            "ignored_same_decision_world_ids": tuple(norm_ignored_same_decision_world_ids),
             "load_bearing_memory_bindings": memories,
-            "load_bearing_assumption_ids": tuple(payload["load_bearing_assumption_ids"]),
-            "selected_target_world_ids": tuple(payload["selected_target_world_ids"]),
-            "selected_target_memory_ids": tuple(payload["selected_target_memory_ids"]),
-            "selected_target_assumption_ids": tuple(payload["selected_target_assumption_ids"]),
+            "load_bearing_assumption_ids": tuple(norm_load_bearing_assumption_ids),
+            "selected_target_world_ids": tuple(norm_selected_target_world_ids),
+            "selected_target_memory_ids": tuple(norm_selected_target_memory_ids),
+            "selected_target_assumption_ids": tuple(norm_selected_target_assumption_ids),
             "necessary_cost_lower_bound": necessary_cost_lower_bound,
             "information_state": information_state,
             "plan_certificate_digest": plan_certificate_digest,

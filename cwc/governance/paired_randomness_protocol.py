@@ -3,8 +3,9 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import SupportsIndex, SupportsInt
 
-from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle
+from cwc.governance.execution_evidence_bundle import VerifiedExecutionBundle, VerifiedExecutionResult
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes
 
 PROTOCOL = "DGC_PAIRED_COMMON_RANDOM_NUMBERS_V1"
@@ -13,6 +14,12 @@ INDEPENDENCE_ASSUMPTION = "CROSS_TASK_REPLICATE_PROVIDER_REQUESTS_CONDITIONALLY_
 
 class RandomnessProtocolError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise TypeError(f"replicate_seed of type {type(value).__name__} is not int-convertible")
+    return int(value)
 
 
 def paired_seed(*, root_digest: str, task_id: str, replicate: int) -> int:
@@ -42,13 +49,13 @@ def verify_paired_randomness_protocol(
 ) -> RandomnessProtocolAuthority:
     request_ids: set[str] = set()
     schedule_rows: list[tuple[str, int, int, tuple[str, ...]]] = []
-    by_pair: dict[tuple[str, int], list] = {}
+    by_pair: dict[tuple[str, int], list[VerifiedExecutionResult]] = {}
     for result in bundle.results:
         payload = result.result_payload
         if payload.get("randomness_protocol") != PROTOCOL:
             raise RandomnessProtocolError("execution result lacks frozen paired randomness protocol")
         try:
-            seed = int(payload["replicate_seed"])
+            seed = _int_arg(payload["replicate_seed"])
         except (KeyError, TypeError, ValueError) as exc:
             raise RandomnessProtocolError("execution result replicate_seed missing or malformed") from exc
         expected = paired_seed(
@@ -71,12 +78,12 @@ def verify_paired_randomness_protocol(
         if len(policies) != len(set(policies)):
             raise RandomnessProtocolError("duplicate policy within paired task/replicate")
         expected_seed = paired_seed(root_digest=root_digest, task_id=task_id, replicate=replicate)
-        if any(int(row.result_payload["replicate_seed"]) != expected_seed for row in rows):
+        if any(_int_arg(row.result_payload["replicate_seed"]) != expected_seed for row in rows):
             raise RandomnessProtocolError("policies within a pair do not share the precommitted seed")
         schedule_rows.append((task_id, replicate, expected_seed, policies))
 
     schedule_digest = sha256_bytes(canonical_json_bytes(schedule_rows))
-    payload: Mapping[str, object] = {
+    authority_payload: Mapping[str, object] = {
         "root_digest": root_digest,
         "execution_bundle_digest": bundle.bundle_digest,
         "protocol": PROTOCOL,
@@ -94,6 +101,6 @@ def verify_paired_randomness_protocol(
         task_replicate_pairs=len(schedule_rows),
         provider_requests=len(request_ids),
         schedule_digest=schedule_digest,
-        authority_digest=sha256_bytes(canonical_json_bytes(payload)),
+        authority_digest=sha256_bytes(canonical_json_bytes(authority_payload)),
         assumption_verified=False,
     )

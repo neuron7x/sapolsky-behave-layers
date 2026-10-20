@@ -8,10 +8,11 @@ import subprocess
 import time
 from collections.abc import Mapping
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.benchmark_runtime import verify_benchmark_runtime
 from cwc.governance.cost_accounting import ProviderRateCard
-from cwc.governance.frozen_action_catalog import load_frozen_action_catalog
+from cwc.governance.frozen_action_catalog import FrozenActionSpec, load_frozen_action_catalog
 from cwc.governance.frozen_observation_runtime import invoke_frozen_observation_provider
 from cwc.governance.frozen_policy_runtime import invoke_frozen_policy
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
@@ -20,8 +21,12 @@ from cwc.governance.runtime_cost_contract import (
     parse_runtime_cost_contract,
     runtime_physical_cost_evidence,
 )
-from cwc.governance.sandbox_image_population import SandboxImagePopulationError
-from cwc.governance.terminal_bench_admission import admit_terminal_bench_trial
+from cwc.governance.sandbox_image_population import (
+    SandboxImageBinding,
+    SandboxImagePopulation,
+    SandboxImagePopulationError,
+)
+from cwc.governance.terminal_bench_admission import TerminalBenchAdmission, admit_terminal_bench_trial
 from cwc.governance.terminal_sandbox_authority import (
     TerminalSandboxAuthorityError,
     verify_terminal_sandbox_environment,
@@ -38,6 +43,18 @@ RESPONSE_SCHEMA = "DGC_UNIT_EXECUTION_RESPONSE_V1"
 
 class TerminalHarborAdapterError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not int-convertible")
+    return int(value)
+
+
+def _float_arg(value: object) -> float:
+    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        raise TypeError(f"value of type {type(value).__name__} is not float-convertible")
+    return float(value)
 
 
 def _sha(name: str, value: object) -> str:
@@ -100,7 +117,7 @@ def _sandbox_image_binding(
     repository_root: Path,
     execution_freeze: Mapping[str, object],
     task_id: str,
-):
+) -> tuple[dict[str, object], SandboxImagePopulation, SandboxImageBinding]:
     environment = _component_json(
         repository_root=repository_root,
         execution_freeze=execution_freeze,
@@ -126,7 +143,7 @@ def _sandbox_image_binding(
 
 def _finite_positive(name: str, value: object) -> float:
     try:
-        parsed = float(value)
+        parsed = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise TerminalHarborAdapterError(f"{name} must be numeric") from exc
     if not math.isfinite(parsed) or parsed <= 0:
@@ -260,7 +277,7 @@ def _nonnegative_int(name: str, value: object) -> int:
     if isinstance(value, bool):
         raise TerminalHarborAdapterError(f"{name} must be an integer")
     try:
-        parsed = int(value)
+        parsed = _int_arg(value)
     except (TypeError, ValueError) as exc:
         raise TerminalHarborAdapterError(f"{name} must be an integer") from exc
     if parsed < 0:
@@ -271,8 +288,8 @@ def _nonnegative_int(name: str, value: object) -> int:
 def _native_runtime_trace(
     *,
     trial_dir: Path,
-    admitted,
-    action,
+    admitted: TerminalBenchAdmission,
+    action: FrozenActionSpec,
     policy_id: str,
     task_id: str,
     replicate: int,
@@ -436,8 +453,8 @@ def execute_terminal_harbor_unit(
     task_id = str(unit["task_id"]).strip()
     policy_id = str(unit["policy_id"]).strip()
     try:
-        replicate = int(unit["replicate"])
-        attempt = int(request.get("attempt"))
+        replicate = _int_arg(unit["replicate"])
+        attempt = _int_arg(request.get("attempt"))
     except (TypeError, ValueError) as exc:
         raise TerminalHarborAdapterError("replicate/attempt identity malformed") from exc
     if replicate < 0 or attempt <= 0:
@@ -639,11 +656,11 @@ def execute_terminal_harbor_unit(
                 "frozen runtime cost contract rejected"
             ) from exc
         model_usd = rate_card.token_cost_usd(
-            input_tokens=int(runtime_trace["input_tokens"]),
-            cached_input_tokens=int(runtime_trace["cached_input_tokens"]),
-            cache_write_tokens=int(runtime_trace["cache_write_tokens"]),
-            long_cache_write_tokens=int(runtime_trace["long_cache_write_tokens"]),
-            output_tokens=int(runtime_trace["output_tokens"]),
+            input_tokens=_int_arg(runtime_trace["input_tokens"]),
+            cached_input_tokens=_int_arg(runtime_trace["cached_input_tokens"]),
+            cache_write_tokens=_int_arg(runtime_trace["cache_write_tokens"]),
+            long_cache_write_tokens=_int_arg(runtime_trace["long_cache_write_tokens"]),
+            output_tokens=_int_arg(runtime_trace["output_tokens"]),
         )
         native_actual_cost = model_usd + infra_usd
         telemetry_authority = "RUNTIME_LIVE"
@@ -703,7 +720,7 @@ def execute_terminal_harbor_unit(
         response["actual_cost_usd"] = native_actual_cost
     elif "dgc_actual_cost_usd" in metadata:
         try:
-            declared = float(metadata["dgc_actual_cost_usd"])
+            declared = _float_arg(metadata["dgc_actual_cost_usd"])
         except (TypeError, ValueError) as exc:
             raise TerminalHarborAdapterError("dgc_actual_cost_usd must be numeric") from exc
         if not math.isfinite(declared) or declared < 0:
