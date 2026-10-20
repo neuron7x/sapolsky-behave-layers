@@ -23,7 +23,11 @@ from cwc.governance.sequential import (
     sequential_voc_decision,
     stitched_hoeffding_confidence_sequence,
 )
-from cwc.governance.statistical_authority import StatisticalScope, certify_statistical_inference_authority
+from cwc.governance.statistical_authority import (
+    StatisticalScope,
+    certify_statistical_inference_authority,
+    sign_statistical_inference_certificate,
+)
 from cwc.governance.telemetry import TelemetryLedger
 
 
@@ -184,10 +188,18 @@ def test_production_strict_math_requires_bound_statistical_authority() -> None:
         calibration_digest="c", drift_guard_digest="g",
         invalidated_by_drift=False,
     )
-    allowed = ComputeGovernor.select(
+    unsigned = ComputeGovernor.select(
         operations=[op], estimates={"strict": est}, budget=budget,
         decision_digest="d", production_strict_math=True,
         statistical_certificates={"strict": cert},
+    )
+    assert unsigned.directive is ComputeDirective.STOP
+    signed = sign_statistical_inference_certificate(cert, issuer_id="test-issuer", secret_key=b"t" * 32)
+    allowed = ComputeGovernor.select(
+        operations=[op], estimates={"strict": est}, budget=budget,
+        decision_digest="d", production_strict_math=True,
+        signed_statistical_certificates={"strict": signed},
+        trusted_statistical_issuer_id="test-issuer", trusted_statistical_secret=b"t" * 32,
     )
     assert allowed.operation_id == "strict"
     assert allowed.reason_code == "ADMIT_MAX_LOWER_BOUND_VOC_STRICT_MATH"
