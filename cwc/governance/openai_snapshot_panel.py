@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 
@@ -21,6 +22,13 @@ _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 class SnapshotPanelError(RuntimeError):
     pass
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _json(path: Path, schema: str) -> dict[str, object]:
@@ -42,12 +50,25 @@ def _json(path: Path, schema: str) -> dict[str, object]:
 
 def _finite_positive(name: str, value: object) -> float:
     try:
-        parsed = float(value)
+        parsed = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise SnapshotPanelError(f"{name} must be numeric") from exc
     if not math.isfinite(parsed) or parsed <= 0:
         raise SnapshotPanelError(f"{name} must be finite and > 0")
     return parsed
+
+
+class _SnapshotPanelPayload(TypedDict):
+    panel_id: str
+    agent: str
+    agent_version: str
+    action_ids: tuple[str, ...]
+    model_ids: tuple[str, ...]
+    model_manifest_sha256: str
+    action_catalog_sha256: str
+    pricing_snapshot_sha256: str
+    executable_evidence_observed: bool
+    product_promotion_authorized: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,7 +207,7 @@ def verify_openai_snapshot_panel(
         if not deep[field] > standard[field]:
             raise SnapshotPanelError("DEEP tier must be strictly more expensive than STANDARD")
 
-    payload = {
+    payload: _SnapshotPanelPayload = {
         "panel_id": PANEL_ID,
         "agent": "codex",
         "agent_version": next(iter(agent_versions)),

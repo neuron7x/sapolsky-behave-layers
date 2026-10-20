@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
@@ -22,6 +23,20 @@ DGC_ROLE = "DGC"
 
 class GeneralizationRegistryError(RuntimeError):
     pass
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
+def _iter_arg(value: object) -> Iterable[object]:
+    """Iteration over an untyped decoded value; non-iterables raise the TypeError iteration would raise."""
+    if isinstance(value, Iterable):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not iterable")
 
 
 class GeneralizationAxis(str, Enum):
@@ -53,7 +68,7 @@ def _req(name: str, value: object) -> str:
 
 def _finite(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise GeneralizationRegistryError(f"{name} must be numeric") from exc
     if not math.isfinite(result):
@@ -166,6 +181,39 @@ class FrozenGeneralizationAxis:
     cost_effect_direction: str
 
 
+class _NormalizedAxisManifest(TypedDict):
+    evaluation_manifest_digest: str
+    source_family_id: str
+    source_authority_digest: str
+    task_population_digest: str
+    base_task_population_digest: str
+    model_manifest_digest: str
+    pricing_snapshot_digest: str
+    scorer_digest: str
+    perturbation_manifest_digest: str
+    reference_baseline_roles: tuple[str, ...]
+    quality_noninferiority_margin: float
+    catastrophic_noninferiority_margin: float
+    cost_effect_direction: str
+
+
+class _RegistryPayload(TypedDict):
+    family_id: str
+    execution_manifest_freeze_digest: str
+    task_partition_path: str
+    task_partition_sha256: str
+    task_partition_receipt_digest: str
+    baseline_panel_input_path: str
+    baseline_panel_input_sha256: str
+    primary_confirmatory_task_digest: str
+    g1_holdout_task_digest: str
+    policy_role_bindings: list[list[str]]
+    frozen_dgc_policy_digest: str
+    generalization_familywise_alpha: float
+    per_claim_alpha: float
+    axes: list[dict[str, object]]
+
+
 @dataclass(frozen=True, slots=True)
 class GeneralizationRegistryAuthority:
     family_id: str
@@ -217,12 +265,12 @@ def _validate_axis_manifest(
     execution: Mapping[str, object],
     partition: Mapping[str, object],
     plan: ProductStatisticalPlan,
-) -> dict[str, object]:
+) -> _NormalizedAxisManifest:
     if doc.get("axis") != axis.value:
         raise GeneralizationRegistryError("axis manifest identity mismatch")
     if doc.get("outcomes_observed") is not False or doc.get("policy_retuning_allowed") is not False:
         raise GeneralizationRegistryError("generalization axis must be frozen pre-outcome with no retuning")
-    baseline_roles = tuple(str(x) for x in doc.get("reference_baseline_roles", ()))
+    baseline_roles = tuple(str(x) for x in _iter_arg(doc.get("reference_baseline_roles", ())))
     if baseline_roles != REQUIRED_BASELINE_ROLES:
         raise GeneralizationRegistryError("each generalization axis must preregister exact B0-B3 comparisons")
     quality_margin = _finite("quality_noninferiority_margin", doc.get("quality_noninferiority_margin"))
@@ -240,7 +288,7 @@ def _validate_axis_manifest(
     primary_scorer = _component_digest(execution, "scorer")
     g1_digest = _sha("generalization_task_digest", partition.get("generalization_task_digest"))
 
-    normalized = {
+    normalized: _NormalizedAxisManifest = {
         "evaluation_manifest_digest": _sha("evaluation_manifest_digest", doc.get("evaluation_manifest_digest")),
         "source_family_id": _req("source_family_id", doc.get("source_family_id")),
         "source_authority_digest": _sha("source_authority_digest", doc.get("source_authority_digest")),
@@ -349,7 +397,7 @@ def build_generalization_registry(
     per_claim_alpha = GENERALIZATION_FAMILYWISE_ALPHA / (
         len(REQUIRED_AXES) * len(REQUIRED_BASELINE_ROLES) * plan.endpoint_count
     )
-    payload = {
+    payload: _RegistryPayload = {
         "family_id": str(execution["family_id"]),
         "execution_manifest_freeze_digest": _sha("execution freeze_digest", execution.get("freeze_digest")),
         "task_partition_path": partition_rel,
@@ -431,7 +479,7 @@ def verify_generalization_registry_document(path: Path) -> dict[str, object]:
     expected_alpha = GENERALIZATION_FAMILYWISE_ALPHA / (
         len(REQUIRED_AXES) * len(REQUIRED_BASELINE_ROLES) * 3
     )
-    if not math.isclose(float(doc.get("per_claim_alpha", -1)), expected_alpha, rel_tol=0.0, abs_tol=1e-15):
+    if not math.isclose(_float_arg(doc.get("per_claim_alpha", -1)), expected_alpha, rel_tol=0.0, abs_tol=1e-15):
         raise GeneralizationRegistryError("generalization multiplicity allocation mismatch")
     return doc
 

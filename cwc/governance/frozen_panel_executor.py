@@ -7,9 +7,10 @@ import os
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex, SupportsInt
 
 from cwc.governance.confirmatory_root_authority import verify_confirmatory_root_authority_document
 from cwc.governance.cost_accounting import ProviderRateCard
@@ -61,6 +62,27 @@ EVIDENCE_SCHEMA = "DGC_UNIT_EXECUTION_EVIDENCE_V1"
 
 class FrozenPanelExecutionError(RuntimeError):
     pass
+
+
+def _int_arg(value: object) -> int:
+    """``int(value)`` for an untyped decoded value; non-convertible types raise ``int``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
+        return int(value)
+    raise TypeError(f"int() argument must be a string, a bytes-like object or a real number, not {type(value).__name__!r}")
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
+
+
+def _iter_arg(value: object) -> Iterable[object]:
+    """Iteration over an untyped decoded value; non-iterables raise the TypeError iteration would raise."""
+    if isinstance(value, Iterable):
+        return value
+    raise TypeError(f"{type(value).__name__!r} object is not iterable")
 
 
 def _json(path: Path, *, schema: str) -> dict[str, object]:
@@ -151,7 +173,7 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     if entrypoint_rel not in argv:
         raise FrozenPanelExecutionError("frozen executor argv lost entrypoint identity")
     try:
-        timeout = float(doc.get("timeout_seconds"))
+        timeout = _float_arg(doc.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("executor timeout is not numeric") from exc
     if not math.isfinite(timeout) or timeout <= 0:
@@ -327,7 +349,7 @@ def _provider_model_meter(
         source_ids.add(source_id)
 
         metered = trace.meter(card)
-        trace_doc = {
+        trace_doc: dict[str, object] = {
             "trace_digest": trace.digest,
             "trace_id": trace.trace_id,
             "decision_id": trace.decision_id,
@@ -365,7 +387,7 @@ def _provider_model_meter(
         metered_rows.append((trace.digest, model_version))
     population_digest = sha256_bytes(canonical_json_bytes(sorted(metered_rows)))
     return (
-        math.fsum([float(row["model_token_usd"]) for row in trace_docs]),
+        math.fsum([_float_arg(row["model_token_usd"]) for row in trace_docs]),
         population_digest,
         tuple(trace_docs),
         tuple(used_cards[key] for key in sorted(used_cards)),
@@ -411,7 +433,7 @@ def _risk_endpoint_manifest(
     if implementation_rel not in argv:
         raise FrozenPanelExecutionError("frozen risk endpoint argv lost implementation identity")
     try:
-        timeout = float(doc.get("timeout_seconds"))
+        timeout = _float_arg(doc.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("risk endpoint timeout is not numeric") from exc
     if not math.isfinite(timeout) or timeout <= 0:
@@ -429,7 +451,7 @@ def _runtime_env(root: Path, materialization_root: Path, executor: Mapping[str, 
         "DGC_REPOSITORY_ROOT": str(root),
         "DGC_MATERIALIZATION_ROOT": str(materialization_root),
     }
-    for raw in executor.get("allowed_environment_variables", []):
+    for raw in _iter_arg(executor.get("allowed_environment_variables", [])):
         name = str(raw)
         if name in os.environ:
             env[name] = os.environ[name]
@@ -499,7 +521,7 @@ def _invoke_risk_endpoint(
 
 def _finite_probability(name: str, value: object) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError(f"{name} must be numeric") from exc
     if not math.isfinite(result) or result < 0 or result > 1:
@@ -509,7 +531,7 @@ def _finite_probability(name: str, value: object) -> float:
 
 def _finite_cost(value: object, *, cap: float) -> float:
     try:
-        result = float(value)
+        result = _float_arg(value)
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("actual_cost_usd must be numeric") from exc
     if not math.isfinite(result) or result < 0 or result > cap + 1e-12:
@@ -552,7 +574,7 @@ def _physical_cost_certificate(
             authority = CostAuthority(str(row.get("authority")))
             evidence[component] = CostComponentEvidence(
                 component=component,
-                value_usd=float(row.get("value_usd")),
+                value_usd=_float_arg(row.get("value_usd")),
                 authority=authority,
                 source_digest=_sha(
                     f"physical cost source digest {component}", row.get("source_digest")
@@ -567,7 +589,7 @@ def _physical_cost_certificate(
     declared = response.get("actual_cost_usd")
     if declared is not None:
         try:
-            declared_value = float(declared)
+            declared_value = _float_arg(declared)
         except (TypeError, ValueError) as exc:
             raise FrozenPanelExecutionError("declared actual_cost_usd must be numeric") from exc
         if not math.isfinite(declared_value) or not math.isclose(
@@ -609,7 +631,7 @@ def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str)
     if not isinstance(argv, list) or not argv or not all(isinstance(x, str) and x.strip() for x in argv):
         raise FrozenPanelExecutionError("governance policy argv malformed")
     try:
-        timeout = float(manifest.get("timeout_seconds"))
+        timeout = _float_arg(manifest.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("governance policy timeout malformed") from exc
     if not math.isfinite(timeout) or timeout <= 0:
@@ -624,7 +646,7 @@ def _policy_subject(root: Path, execution: Mapping[str, object], policy_id: str)
     if not isinstance(frozen_argv, list) or frozen_argv != argv:
         raise FrozenPanelExecutionError("governance argv differs from execution freeze")
     try:
-        frozen_timeout = float(row.get("timeout_seconds"))
+        frozen_timeout = _float_arg(row.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("frozen governance timeout malformed") from exc
     if not math.isclose(frozen_timeout, timeout, rel_tol=0.0, abs_tol=1e-12):
@@ -710,7 +732,7 @@ def _invoke(
         raise FrozenPanelExecutionError("executor response schema mismatch")
     if response.get("unit") != request.get("unit"):
         raise FrozenPanelExecutionError("executor response unit differs from frozen request")
-    if int(response.get("attempt", -1)) != int(request.get("attempt", -2)):
+    if _int_arg(response.get("attempt", -1)) != _int_arg(request.get("attempt", -2)):
         raise FrozenPanelExecutionError("executor response attempt differs from lease")
     trace = response.get("trace")
     if not isinstance(trace, Mapping) or not trace:
@@ -781,7 +803,10 @@ def execute_frozen_panel(
     rate_cards, pricing_component_sha = _pricing_rate_cards(root, execution)
     risk_endpoint, risk_argv, risk_timeout, risk_component_sha = _risk_endpoint_manifest(root, execution)
     try:
-        spec = DistributedEvalSpec(**dict(authority["distributed_spec"]))
+        spec_doc = authority["distributed_spec"]
+        if not isinstance(spec_doc, Mapping):
+            raise TypeError("distributed spec must be a mapping")
+        spec = DistributedEvalSpec(**dict(spec_doc))
     except (KeyError, TypeError, ValueError) as exc:
         raise FrozenPanelExecutionError("distributed spec cannot be reconstructed") from exc
     if spec.digest != authority.get("distributed_spec_digest"):
@@ -805,6 +830,8 @@ def execute_frozen_panel(
             if lease is None:
                 snapshot = coordinator.snapshot(tick=tick)
                 counts = snapshot["counts"]
+                if not isinstance(counts, Mapping):
+                    raise FrozenPanelExecutionError("coordinator snapshot counts malformed")
                 if counts.get("COMMITTED") == len(spec.units()):
                     break
                 raise FrozenPanelExecutionError(f"executor cannot claim remaining frozen units: {counts}")
@@ -883,7 +910,7 @@ def execute_frozen_panel(
                 "request": request,
                 "response": response,
                 "executor_manifest_sha256": next(
-                    row["sha256"] for row in execution["components"]
+                    row["sha256"] for row in _iter_arg(execution["components"])
                     if isinstance(row, Mapping) and row.get("component") == "executor_manifest"
                 ),
                 "executor_entrypoint_sha256": executor["entrypoint_sha256"],

@@ -7,6 +7,7 @@ import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import SupportsFloat, SupportsIndex
 
 from cwc.governance.execution_manifest_freeze import (
     OBSERVATION_PROVIDER_PROTOCOL,
@@ -20,6 +21,13 @@ NETWORK_ISOLATOR = ("unshare", "--net", "--")
 
 class FrozenObservationRuntimeError(RuntimeError):
     pass
+
+
+def _float_arg(value: object) -> float:
+    """``float(value)`` for an untyped decoded value; non-convertible types raise ``float``'s own TypeError."""
+    if isinstance(value, (str, bytes, bytearray, memoryview, SupportsFloat, SupportsIndex)):
+        return float(value)
+    raise TypeError(f"float() argument must be a string or a real number, not {type(value).__name__!r}")
 
 
 def _sha(name: str, value: object) -> str:
@@ -170,7 +178,7 @@ def invoke_frozen_observation_provider(
             "observation provider argv lost implementation identity"
         )
     try:
-        timeout = float(manifest.get("timeout_seconds"))
+        timeout = _float_arg(manifest.get("timeout_seconds"))
     except (TypeError, ValueError) as exc:
         raise FrozenObservationRuntimeError("observation provider timeout malformed") from exc
     if timeout <= 0:

@@ -5,7 +5,8 @@ import itertools
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-import numpy as np
+import numpy as np  # type: ignore[import-not-found, unused-ignore]
+import numpy.typing as npt  # type: ignore[import-not-found, unused-ignore]
 
 CANDIDATES = ("A", "C", "D", "B")
 
@@ -37,9 +38,10 @@ class FittedCounterfactualModel:
     def predict_one(self, row: Mapping[str, float]) -> float:
         return float(sum(c * t.evaluate(row) for c, t in zip(self.coefficients, self.terms, strict=True)))
 
-    def predict(self, rows: Sequence[Mapping[str, float]]) -> np.ndarray:
+    def predict(self, rows: Sequence[Mapping[str, float]]) -> npt.NDArray[np.float64]:
         matrix = _design(rows, self.terms)
-        return matrix @ np.asarray(self.coefficients, dtype=float)
+        predicted: npt.NDArray[np.float64] = matrix @ np.asarray(self.coefficients, dtype=float)
+        return predicted
 
     def exact_shapley_one(self, row: Mapping[str, float]) -> dict[str, float]:
         """Exact Shapley under independent symmetric {-1,+1} candidate baselines.
@@ -85,7 +87,7 @@ class FittedCounterfactualModel:
         minus[candidate] = -1.0
         return 0.5 * (self.predict_one(plus) - self.predict_one(minus))
 
-    def intervention_effects(self, rows: Sequence[Mapping[str, float]], candidates: Sequence[str]) -> np.ndarray:
+    def intervention_effects(self, rows: Sequence[Mapping[str, float]], candidates: Sequence[str]) -> npt.NDArray[np.float64]:
         if len(rows) != len(candidates):
             raise ValueError("rows/candidates length mismatch")
         out = np.zeros(len(rows), dtype=float)
@@ -128,7 +130,7 @@ def _terms(family: str) -> tuple[FeatureTerm, ...]:
     return tuple(base)
 
 
-def _design(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -> np.ndarray:
+def _design(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -> npt.NDArray[np.float64]:
     return np.asarray([[term.evaluate(row) for term in terms] for row in rows], dtype=float)
 
 
@@ -137,7 +139,7 @@ def counterfactual_terms(family: str) -> tuple[FeatureTerm, ...]:
     return _terms(family)
 
 
-def counterfactual_design_matrix(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -> np.ndarray:
+def counterfactual_design_matrix(rows: Sequence[Mapping[str, float]], terms: Sequence[FeatureTerm]) -> npt.NDArray[np.float64]:
     """Public design matrix; does not fit coefficients or grant model authority."""
     return _design(rows, terms)
 

@@ -297,6 +297,8 @@ def build_p19_external_verifier_regression_receipt(
         test_rows=list(tests),
         require_same_checkout=True,
     )
+    stdout_bytes = stdout.stat().st_size
+    stderr_bytes = stderr.stat().st_size
     payload: dict[str, object] = {
         "regression_generation": REGRESSION_GENERATION,
         "source_commit": observed_commit,
@@ -311,10 +313,10 @@ def build_p19_external_verifier_regression_receipt(
         "method_map_digest": method_map_digest(),
         "stdout_path": stdout_rel,
         "stdout_sha256": sha256_file(stdout),
-        "stdout_bytes": stdout.stat().st_size,
+        "stdout_bytes": stdout_bytes,
         "stderr_path": stderr_rel,
         "stderr_sha256": sha256_file(stderr),
-        "stderr_bytes": stderr.stat().st_size,
+        "stderr_bytes": stderr_bytes,
         "exit_code": 0,
         "all_regression_tests_passed": True,
         "execution_provenance_scope": EXECUTION_PROVENANCE_SCOPE,
@@ -334,10 +336,10 @@ def build_p19_external_verifier_regression_receipt(
         method_map_digest=str(payload["method_map_digest"]),
         stdout_path=stdout_rel,
         stdout_sha256=str(payload["stdout_sha256"]),
-        stdout_bytes=int(payload["stdout_bytes"]),
+        stdout_bytes=stdout_bytes,
         stderr_path=stderr_rel,
         stderr_sha256=str(payload["stderr_sha256"]),
-        stderr_bytes=int(payload["stderr_bytes"]),
+        stderr_bytes=stderr_bytes,
         exit_code=0,
         all_regression_tests_passed=True,
         execution_provenance_scope=EXECUTION_PROVENANCE_SCOPE,
