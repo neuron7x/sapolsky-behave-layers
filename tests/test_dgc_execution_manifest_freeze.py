@@ -703,7 +703,7 @@ def test_mutable_action_agent_version_is_rejected(tmp_path: Path):
         )
 
 
-def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
+def test_policy_action_catalogs_must_be_shared(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
     reference = _reference(repo)
@@ -717,7 +717,31 @@ def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
     manifest_doc["config_sha256"] = sha256_file(config)
     manifest_doc["action_catalog_digest"] = policy_action_catalog_digest(config_doc["action_ids"])
     _write(manifest, manifest_doc)
-    with pytest.raises(ExecutionManifestError, match="frozen action catalog"):
+    with pytest.raises(ExecutionManifestError, match="all governance policies must share one frozen action catalog"):
+        freeze_execution_manifests(
+            repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
+            family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
+            component_paths=components, governance_policy_paths=policies,
+        )
+
+
+def test_policy_action_catalog_must_equal_global_catalog(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    reference = _reference(repo)
+    components, policies = _manifests(repo)
+    action_ids = ["DEEP", "STANDARD", "ULTRA"]
+    for policy_rel in policies.values():
+        manifest = repo / policy_rel
+        manifest_doc = json.loads(manifest.read_text())
+        config = repo / manifest_doc["config_path"]
+        config_doc = json.loads(config.read_text())
+        config_doc["action_ids"] = action_ids
+        _write(config, config_doc)
+        manifest_doc["config_sha256"] = sha256_file(config)
+        manifest_doc["action_catalog_digest"] = policy_action_catalog_digest(action_ids)
+        _write(manifest, manifest_doc)
+    with pytest.raises(ExecutionManifestError, match="governance policy action catalog differs from global frozen action catalog"):
         freeze_execution_manifests(
             repository_root=repo, repository_commit=COMMIT, repository_tree=TREE,
             family_id=FAMILY, materialization_reference_path=reference.relative_to(repo),
