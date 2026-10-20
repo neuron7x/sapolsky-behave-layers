@@ -85,6 +85,7 @@ jobs:
             tests/test_dgc_execution_authority_binding.py \
             tests/test_dgc_executed_p9.py \
             tests/test_dgc_paired_randomness_protocol.py \
+            tests/test_dgc_generalization_call_population.py \
             tests/test_dgc_continuous_assurance.py \
             tests/test_dgc_combinatorial_coverage.py \
             tests/test_dgc_release_builder.py

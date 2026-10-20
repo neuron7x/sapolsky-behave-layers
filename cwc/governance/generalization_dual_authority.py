@@ -5,13 +5,14 @@ import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import SupportsFloat, SupportsIndex, SupportsInt, TypedDict
+from typing import SupportsFloat, SupportsIndex, TypedDict
 
 from cwc.governance.empirical_bernstein_pareto import certify_multi_baseline_empirical_bernstein
 from cwc.governance.exact_finite_panel_pareto import certificate_digest as exact_certificate_digest
 from cwc.governance.exact_finite_panel_pareto import certify_exact_finite_panel
 from cwc.governance.generalization_execution_authority import (
     VerifiedGeneralizationAxisBundle,
+    VerifiedGeneralizationResult,
     verify_generalization_axis_bundle,
 )
 from cwc.governance.generalization_registry import (
@@ -40,12 +41,6 @@ def _sha(name: str, value: object) -> str:
     if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
         raise GeneralizationDualError(f"{name} must be lowercase SHA-256")
     return text
-
-
-def _int(name: str, value: object) -> int:
-    if not isinstance(value, (str, bytes, bytearray, memoryview, SupportsInt, SupportsIndex)):
-        raise GeneralizationDualError(f"{name} must be an integer")
-    return int(value)
 
 
 def _float(name: str, value: object) -> float:
@@ -134,61 +129,53 @@ def _flat_evidence(
 
 
 def _verify_axis_randomness(
-    bundle_root: Path,
+    bundle: VerifiedGeneralizationAxisBundle,
     *,
     axis: GeneralizationAxis,
-    registry_digest: str,
-    evaluation_manifest_digest: str,
     task_ids: tuple[str, ...],
     policy_ids: tuple[str, ...],
-    replicates: int,
 ) -> tuple[str, int]:
-    path = Path(bundle_root) / "AXIS_EXECUTION.json"
-    try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise GeneralizationDualError("axis execution JSON unavailable for randomness replay") from exc
-    rows = doc.get("results") if isinstance(doc, Mapping) else None
-    if not isinstance(rows, list):
-        raise GeneralizationDualError("axis execution result population missing")
+    """Replay the paired schedule from the verified (record-digest-bound) results.
+
+    AXIS_EXECUTION.json is never re-read here: every field consumed below is
+    inside the authenticated record_payload of verify_generalization_axis_bundle.
+    """
     schedule_root = sha256_bytes(canonical_json_bytes({
         "axis": axis.value,
-        "registry_digest": registry_digest,
-        "evaluation_manifest_digest": evaluation_manifest_digest,
+        "registry_digest": bundle.registry_digest,
+        "evaluation_manifest_digest": bundle.evaluation_manifest_digest,
         "protocol": PROTOCOL,
     }))
-    seen_requests: set[str] = set()
+    seen_source_ids: set[str] = set()
     schedule: list[tuple[str, int, int, tuple[str, ...]]] = []
-    indexed: dict[tuple[str, int], list[Mapping[str, object]]] = {}
-    for raw in rows:
-        if not isinstance(raw, Mapping):
-            raise GeneralizationDualError("malformed axis result during randomness replay")
-        if raw.get("randomness_protocol") != PROTOCOL:
-            raise GeneralizationDualError("axis result lacks preregistered randomness protocol")
-        task = str(raw.get("task_id", ""))
-        replicate = int(raw.get("replicate", -1))
-        expected_seed = paired_seed(root_digest=schedule_root, task_id=task, replicate=replicate)
-        if int(raw.get("replicate_seed", -1)) != expected_seed:
-            raise GeneralizationDualError("axis result seed differs from frozen paired schedule")
-        request_id = str(raw.get("provider_request_id", "")).strip()
-        if not request_id or request_id in seen_requests:
-            raise GeneralizationDualError("provider_request_id must be non-empty and unique per work unit")
-        seen_requests.add(request_id)
-        indexed.setdefault((task, replicate), []).append(raw)
-    expected_pairs = {(task, rep) for task in task_ids for rep in range(replicates)}
+    indexed: dict[tuple[str, int], list[VerifiedGeneralizationResult]] = {}
+    for result in bundle.results:
+        expected_seed = paired_seed(
+            root_digest=schedule_root, task_id=result.task_id, replicate=result.replicate
+        )
+        if result.replicate_seed != expected_seed:
+            raise GeneralizationDualError("verified replicate seed differs from frozen paired schedule")
+        if not result.live_source_ids:
+            raise GeneralizationDualError("verified live source population missing")
+        for source_id in result.live_source_ids:
+            if source_id in seen_source_ids:
+                raise GeneralizationDualError("live source identity reused across G1-G5 work units")
+            seen_source_ids.add(source_id)
+        indexed.setdefault((result.task_id, result.replicate), []).append(result)
+    expected_pairs = {(task, rep) for task in task_ids for rep in range(bundle.replicates)}
     if set(indexed) != expected_pairs:
         raise GeneralizationDualError("axis randomness schedule pair population mismatch")
     for pair in sorted(expected_pairs):
         task, replicate = pair
         rows_for_pair = indexed[pair]
-        policies = tuple(sorted(str(row.get("policy_id", "")) for row in rows_for_pair))
+        policies = tuple(sorted(row.policy_id for row in rows_for_pair))
         if policies != tuple(sorted(policy_ids)):
             raise GeneralizationDualError("axis paired randomness policy population mismatch")
         seed = paired_seed(root_digest=schedule_root, task_id=task, replicate=replicate)
-        if any(_int("replicate_seed", row.get("replicate_seed", -1)) != seed for row in rows_for_pair):
+        if any(row.replicate_seed != seed for row in rows_for_pair):
             raise GeneralizationDualError("axis policies do not share paired seed")
         schedule.append((task, replicate, seed, policies))
-    return sha256_bytes(canonical_json_bytes(schedule)), len(seen_requests)
+    return sha256_bytes(canonical_json_bytes(schedule)), len(seen_source_ids)
 
 
 class _AxisDualPayload(TypedDict):
@@ -273,13 +260,10 @@ def build_generalization_axis_dual_authority(
     tasks = tuple(sorted({item.task_id for item in bundle.results}))
     policy_ids = tuple(sorted(set(roles.values())))
     schedule_digest, _ = _verify_axis_randomness(
-        Path(bundle_root),
+        bundle,
         axis=axis,
-        registry_digest=bundle.registry_digest,
-        evaluation_manifest_digest=bundle.evaluation_manifest_digest,
         task_ids=tasks,
         policy_ids=policy_ids,
-        replicates=bundle.replicates,
     )
     paired_panel_digest = sha256_bytes(canonical_json_bytes({
         "axis": axis.value,

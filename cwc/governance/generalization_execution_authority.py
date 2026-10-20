@@ -18,6 +18,8 @@ from cwc.governance.generalization_registry import (
 )
 from cwc.governance.materialization_transaction import canonical_json_bytes, sha256_bytes, sha256_file
 from cwc.governance.p9_scientific_authority import verify_p9_scientific_authority_document
+from cwc.governance.paired_randomness_protocol import PROTOCOL as RANDOMNESS_PROTOCOL
+from cwc.governance.paired_randomness_protocol import paired_seed
 from cwc.governance.pareto import (
     MultiBaselineParetoCertificate,
     PairedBaselineEvidence,
@@ -167,6 +169,41 @@ def _axis_manifest(root: Path, row: Mapping[str, object]) -> dict[str, object]:
     return doc
 
 
+def _is_sha256(value: str) -> bool:
+    return len(value) == 64 and all(ch in "0123456789abcdef" for ch in value)
+
+
+def _live_source_population(raw: object) -> tuple[str, ...]:
+    """Parse one unit's authority-typed live call identities.
+
+    Accepted forms are exactly the main-line source_id formula
+    (frozen_panel_executor / mechanism_execution_bundle):
+    ``provider:<request_id>`` or ``runtime:<call_id>:<artifact_sha256>``.
+    """
+    if not isinstance(raw, list) or not raw:
+        raise GeneralizationExecutionError("live_source_ids must be a non-empty list")
+    seen: set[str] = set()
+    for value in raw:
+        if not isinstance(value, str) or value != value.strip():
+            raise GeneralizationExecutionError("live source identity must be a trimmed string")
+        authority, _, rest = value.partition(":")
+        if authority == "provider":
+            valid = bool(rest.strip())
+        elif authority == "runtime":
+            call_id, _, artifact = rest.rpartition(":")
+            valid = bool(call_id.strip()) and _is_sha256(artifact)
+        else:
+            valid = False
+        if not valid:
+            raise GeneralizationExecutionError(
+                "live source identity must be provider:<request_id> or runtime:<call_id>:<sha256>"
+            )
+        if value in seen:
+            raise GeneralizationExecutionError("duplicate live source identity within work unit")
+        seen.add(value)
+    return tuple(sorted(seen))
+
+
 def _verify_cost_components(
     *,
     bundle_root: Path,
@@ -227,6 +264,7 @@ class VerifiedGeneralizationResult:
     task_id: str
     policy_id: str
     replicate: int
+    replicate_seed: int
     quality: float
     catastrophic_regret: float
     covered: bool
@@ -234,6 +272,7 @@ class VerifiedGeneralizationResult:
     physical_cost_certificate_digest: str
     metric_evidence_path: str
     metric_evidence_digest: str
+    live_source_ids: tuple[str, ...]
     record_digest: str
 
 
@@ -303,8 +342,15 @@ def verify_generalization_axis_bundle(
     raw_rows = manifest.get("results")
     if not isinstance(raw_rows, list) or not raw_rows:
         raise GeneralizationExecutionError("axis execution requires a non-empty result population")
+    schedule_root = sha256_bytes(canonical_json_bytes({
+        "axis": axis.value,
+        "registry_digest": registry_digest,
+        "evaluation_manifest_digest": evaluation_digest,
+        "protocol": RANDOMNESS_PROTOCOL,
+    }))
     results: list[VerifiedGeneralizationResult] = []
     seen_units: set[tuple[str, str, int]] = set()
+    seen_source_ids: set[str] = set()
     for raw in raw_rows:
         if not isinstance(raw, Mapping):
             raise GeneralizationExecutionError("malformed generalization result row")
@@ -316,6 +362,13 @@ def verify_generalization_axis_bundle(
             raise GeneralizationExecutionError("replicate must be an integer") from exc
         if replicate < 0 or replicate >= replicates:
             raise GeneralizationExecutionError("replicate outside frozen range")
+        if raw.get("randomness_protocol") != RANDOMNESS_PROTOCOL:
+            raise GeneralizationExecutionError("result lacks frozen paired randomness protocol")
+        raw_seed = raw.get("replicate_seed")
+        if not isinstance(raw_seed, int) or isinstance(raw_seed, bool):
+            raise GeneralizationExecutionError("replicate_seed must be an integer")
+        if raw_seed != paired_seed(root_digest=schedule_root, task_id=task_id, replicate=replicate):
+            raise GeneralizationExecutionError("replicate_seed differs from frozen paired schedule")
         if policy_id not in expected_policies:
             raise GeneralizationExecutionError("result policy outside frozen five-arm population")
         unit = (task_id, policy_id, replicate)
@@ -325,6 +378,11 @@ def verify_generalization_axis_bundle(
         quality = _finite("quality", raw.get("quality"), lower=0.0, upper=1.0)
         regret = _finite("catastrophic_regret", raw.get("catastrophic_regret"), lower=0.0, upper=1.0)
         covered = raw.get("covered") is True
+        live_source_ids = _live_source_population(raw.get("live_source_ids"))
+        for source_id in live_source_ids:
+            if source_id in seen_source_ids:
+                raise GeneralizationExecutionError("live source identity reused across work units")
+            seen_source_ids.add(source_id)
         evidence_path, evidence_rel = _safe_file(root, raw.get("metric_evidence_path"))
         evidence_digest = sha256_file(evidence_path)
         if evidence_digest != _sha("metric_evidence_sha256", raw.get("metric_evidence_sha256")):
@@ -344,11 +402,14 @@ def verify_generalization_axis_bundle(
             "task_id": task_id,
             "policy_id": policy_id,
             "replicate": replicate,
+            "randomness_protocol": RANDOMNESS_PROTOCOL,
+            "replicate_seed": raw_seed,
             "quality": quality,
             "catastrophic_regret": regret,
             "covered": covered,
             "metric_evidence_path": evidence_rel,
             "metric_evidence_sha256": evidence_digest,
+            "live_source_ids": list(live_source_ids),
             "physical_cost_components": list(normalized_components),
             "physical_cost_certificate_digest": cost_certificate_digest,
         }
@@ -359,6 +420,7 @@ def verify_generalization_axis_bundle(
             task_id=task_id,
             policy_id=policy_id,
             replicate=replicate,
+            replicate_seed=raw_seed,
             quality=quality,
             catastrophic_regret=regret,
             covered=covered,
@@ -366,6 +428,7 @@ def verify_generalization_axis_bundle(
             physical_cost_certificate_digest=cost_certificate_digest,
             metric_evidence_path=evidence_rel,
             metric_evidence_digest=evidence_digest,
+            live_source_ids=live_source_ids,
             record_digest=record_digest,
         ))
 
