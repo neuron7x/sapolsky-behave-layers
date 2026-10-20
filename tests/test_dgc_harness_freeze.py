@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from cwc.governance.b2_fit_authority import SCHEMA as B2_AUTHORITY_SCHEMA
 from cwc.governance.baseline_panel import BaselineKind
 from cwc.governance.generalization_registry import GeneralizationAxis, SCHEMA as GENERALIZATION_SCHEMA
 from cwc.governance.harness_freeze import (
@@ -107,10 +108,11 @@ def b2_doc(path: Path, *, execution_digest: str, feature=h("e"), algorithm=h("f"
         "calibration_task_count": 100,
     }
     doc = {
-        "schema": "DGC_B2_FIT_AUTHORITY_V1",
+        "schema": B2_AUTHORITY_SCHEMA,
         **payload,
         "authority_digest": sha256_bytes(canonical_json_bytes(payload)),
         "confirmatory_execution_authorized": False,
+        "generalization_execution_authorized": False,
         "product_promotion_authorized": False,
     }
     return write(path, doc)

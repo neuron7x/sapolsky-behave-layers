@@ -10,7 +10,10 @@ import tempfile
 import zipfile
 from collections import deque
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import torch
 
 import yaml
 
