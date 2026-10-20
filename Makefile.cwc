@@ -176,11 +176,14 @@ technical-quality-gate:
 # Coverage gate. The canonical GPU-capable floor remains 95%. A hermetic CPU
 # runner may explicitly set 91 because CUDA/NVML-only branches are unreachable;
 # its observed baseline is 91.04%, leaving essentially no regression margin.
+# The measured subject is the packages these suites own; the rest of cwc/ (governance,
+# replay, research_ops, ...) is gated by its own suites and must not dilute this ratio.
+COVERAGE_SUBJECT = --cov=cwc/instrumentation --cov=cwc/plasticity --cov=cwc/evidence --cov=cwc/assurance
 coverage:
 	$(PY) -m pytest -q -m "not slow and not mutation" \
 		tests/test_instrumentation_*.py tests/test_data_asset_audit.py tests/test_readiness_oracle.py \
 		experiments/wp3_plasticity_v1/tests/ \
-		--cov=cwc --cov-branch --cov-report=term-missing --cov-fail-under=$(COVERAGE_FAIL_UNDER)
+		$(COVERAGE_SUBJECT) --cov-branch --cov-report=term-missing --cov-fail-under=$(COVERAGE_FAIL_UNDER)
 
 properties:
 	$(PY) -m pytest -q tests/test_instrumentation_properties.py
