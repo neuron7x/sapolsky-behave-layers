@@ -18,8 +18,8 @@ from cwc.governance.p19_external_verification_plan import (
 )
 from cwc.governance.p19_external_verifier_regression import current_runtime_digest, current_test_manifest_digest
 from cwc.governance.p19_verification_attestation import REQUIRED_CHECKS, load_p19_verification_report
+from cwc.governance.p19_verification_check_receipt import SCHEMA as CHECK_RECEIPT_SCHEMA
 from cwc.governance.p19_verification_report import (
-    CHECK_RECEIPT_SCHEMA,
     P19VerificationReportError,
     build_p19_verification_report,
     report_bytes,

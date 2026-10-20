@@ -33,7 +33,8 @@ from cwc.governance.p19_verification_attestation import (
     make_p19_verification_attestation,
     verify_ssh_signed_p19_verification_attestation,
 )
-from cwc.governance.p19_verification_report import CHECK_RECEIPT_SCHEMA, build_p19_verification_report, report_bytes
+from cwc.governance.p19_verification_check_receipt import SCHEMA as CHECK_RECEIPT_SCHEMA
+from cwc.governance.p19_verification_report import build_p19_verification_report, report_bytes
 
 
 def _p19() -> dict[str, object]:
