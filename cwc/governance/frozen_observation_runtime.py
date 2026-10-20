@@ -209,8 +209,7 @@ def invoke_frozen_observation_provider(
             cwd=root,
             env=env,
             input=raw_request,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             timeout=timeout,
             check=False,
         )

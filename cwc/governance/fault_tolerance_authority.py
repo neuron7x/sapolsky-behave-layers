@@ -276,7 +276,7 @@ def build_fault_tolerance_authority(
         if trace.get("audit_root_digest") != audit_root:
             raise FaultToleranceError("fault trace audit root mismatch")
         terminal = str(trace.get("terminal_action", "")).strip()
-        if terminal not in set(str(x) for x in frozen["expected_terminal_actions"]):
+        if terminal not in {str(x) for x in frozen["expected_terminal_actions"]}:
             raise FaultToleranceError("fault trace ended outside preregistered safe terminal actions")
         try:
             observed_cost = float(trace.get("observed_cost_usd"))

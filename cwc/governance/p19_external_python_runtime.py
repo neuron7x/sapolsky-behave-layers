@@ -128,8 +128,7 @@ def inspect_python_runtime(executable: Path) -> P19ExternalPythonRuntimeIdentity
     try:
         result = subprocess.run(
             [str(resolved), "-c", probe],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=False,
             text=True,
         )

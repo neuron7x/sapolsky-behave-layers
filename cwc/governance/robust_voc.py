@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cwc.governance.compute_value import ValueOfComputationEstimate
 
 
 def _finite_nonnegative(name: str, value: float) -> float:

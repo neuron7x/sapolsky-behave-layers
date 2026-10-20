@@ -404,7 +404,7 @@ def load_p19_external_verification_plan(
         if sha256_file(authority_path) != _sha("activation authority sha256", doc.get("activation_authority_sha256")):
             raise P19ExternalVerificationPlanError("activation authority bytes differ from plan")
         try:
-            authority = verify_p19_external_verifier_activation_authority_document(authority_path, repository_root=root)
+            verify_p19_external_verifier_activation_authority_document(authority_path, repository_root=root)
         except RuntimeError as exc:
             raise P19ExternalVerificationPlanError("activation authority signature replay failed") from exc
         expected = _activation_payload(root, authority_path)

@@ -134,7 +134,7 @@ def _baseline_role_map(baseline_input: Mapping[str, object]) -> dict[str, str]:
     if not isinstance(raw, Mapping):
         raise GeneralizationRegistryError("baseline panel input lacks baseline_policy_ids")
     required = {kind.value for kind in BaselineKind}
-    if set(str(key) for key in raw) != required:
+    if {str(key) for key in raw} != required:
         raise GeneralizationRegistryError("baseline panel input must bind exact B0-B3 roles")
     role_map = {str(key): _req(f"baseline policy {key}", value) for key, value in raw.items()}
     dgc_policy_id = _req("dgc_policy_id", baseline_input.get("dgc_policy_id"))

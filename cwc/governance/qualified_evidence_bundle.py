@@ -41,8 +41,7 @@ def _git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
         return subprocess.run(
             ["git", "-C", str(root), *args],
             check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except (OSError, subprocess.CalledProcessError) as exc:

@@ -88,7 +88,7 @@ def parse_runtime_cost_contract(value: object) -> RuntimeCostContract:
     raw_clauses = value.get("zero_by_contract")
     if not isinstance(raw_clauses, Mapping):
         raise RuntimeCostContractError("zero_by_contract must be an object")
-    if set(str(key) for key in raw_clauses) != set(ZERO_COMPONENTS):
+    if {str(key) for key in raw_clauses} != set(ZERO_COMPONENTS):
         raise RuntimeCostContractError(
             "runtime zero-by-contract component population mismatch"
         )

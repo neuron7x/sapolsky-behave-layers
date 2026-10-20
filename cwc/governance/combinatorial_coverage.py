@@ -119,7 +119,7 @@ def certify_t_way_coverage(
     for factor_subset in itertools.combinations(schema.factors, strength):
         names = tuple(factor.name for factor in factor_subset)
         for values in itertools.product(*(factor.values for factor in factor_subset)):
-            universe.add(tuple(zip(names, values)))
+            universe.add(tuple(zip(names, values, strict=True)))
         for case in cases:
             mapping = case.mapping
             covered.add(tuple((name, mapping[name]) for name in names))

@@ -84,10 +84,7 @@ def certify_drift_detection_sensitivity(
             raise ValueError("downward alternative must be below null boundary")
         threshold = b - tol - width * normalized_margin
         separation = threshold - alt
-    if separation <= 0:
-        power = 0.0
-    else:
-        power = max(0.0, min(1.0, 1.0 - math.exp(-2.0 * n * (separation / width) ** 2)))
+    power = 0.0 if separation <= 0 else max(0.0, min(1.0, 1.0 - math.exp(-2.0 * n * (separation / width) ** 2)))
     return DriftSensitivityCertificate(
         direction, n, b, tol, alt, lam, threshold, power, min_power, power + 1e-15 >= min_power, alpha
     )

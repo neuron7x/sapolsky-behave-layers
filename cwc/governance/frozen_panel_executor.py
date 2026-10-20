@@ -107,8 +107,7 @@ def _capture_git(root: Path, *args: str) -> str:
         proc = subprocess.run(
             ["git", "-C", str(root), *args],
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except (OSError, subprocess.CalledProcessError) as exc:
@@ -161,7 +160,7 @@ def _executor_manifest(root: Path, execution: Mapping[str, object]) -> tuple[dic
     if (
         not isinstance(allowed, list)
         or not all(isinstance(x, str) and x.strip() and "=" not in x for x in allowed)
-        or [x.strip() for x in allowed] != sorted(set(x.strip() for x in allowed))
+        or [x.strip() for x in allowed] != sorted({x.strip() for x in allowed})
     ):
         raise FrozenPanelExecutionError("executor environment allow-list malformed")
     return doc, tuple(argv), timeout
@@ -473,8 +472,7 @@ def _invoke_risk_endpoint(
             cwd=root,
             env=dict(env),
             input=raw_request,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             timeout=timeout,
             check=False,
         )
@@ -532,7 +530,7 @@ def _physical_cost_certificate(
     if not isinstance(raw, Mapping):
         raise FrozenPanelExecutionError("executor response requires physical_cost_evidence")
     adapter_components = set(PRODUCT_COST_COMPONENTS) - {"model_usd"}
-    if set(str(key) for key in raw) != adapter_components:
+    if {str(key) for key in raw} != adapter_components:
         raise FrozenPanelExecutionError(
             "physical_cost_evidence must cover exact non-model product cost components"
         )
@@ -692,8 +690,7 @@ def _invoke(
             cwd=root,
             env=dict(env),
             input=raw_request,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             timeout=timeout,
             check=False,
         )

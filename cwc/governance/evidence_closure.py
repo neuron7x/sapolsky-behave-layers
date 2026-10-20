@@ -104,8 +104,7 @@ def _default_runner(argv: Sequence[str], cwd: Path, env: Mapping[str, str]) -> s
         cwd=cwd,
         env=dict(env),
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
 

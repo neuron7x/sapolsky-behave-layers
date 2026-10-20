@@ -550,8 +550,7 @@ def execute_terminal_harbor_unit(
             command,
             cwd=Path(runtime.runtime_root),
             env=dict(os.environ),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             timeout=max_wall,
             check=False,
         )

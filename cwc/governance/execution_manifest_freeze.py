@@ -173,8 +173,8 @@ def _validate_action_catalog(payload: Mapping[str, object]) -> None:
         _req("action.harbor_agent_argument", row.get("harbor_agent_argument"))
         _req("action.harbor_model_argument", row.get("harbor_model_argument"))
         agent_version = _req("action.agent_version", row.get("agent_version"))
-        provider = _req("action.provider", row.get("provider"))
-        model_id = _req("action.model_id", row.get("model_id"))
+        _req("action.provider", row.get("provider"))
+        _req("action.model_id", row.get("model_id"))
         model_version = _req("action.model_version", row.get("model_version"))
         if agent_version.lower() in _MUTABLE_VERSION_ALIASES:
             raise ExecutionManifestError("mutable agent version alias is prohibited")
@@ -323,7 +323,7 @@ def _validate_risk_endpoint(payload: Mapping[str, object]) -> None:
         isinstance(x, str) and x.strip() for x in source_fields
     ):
         raise ExecutionManifestError("risk endpoint source_fields must be a non-empty string list")
-    if [x.strip() for x in source_fields] != sorted(set(x.strip() for x in source_fields)):
+    if [x.strip() for x in source_fields] != sorted({x.strip() for x in source_fields}):
         raise ExecutionManifestError("risk endpoint source_fields must be sorted and unique")
     if payload.get("policy_outcome_independent_definition") is not True:
         raise ExecutionManifestError("risk endpoint definition must be frozen independently of policy outcomes")

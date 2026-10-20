@@ -143,7 +143,7 @@ class FittedLearnedRouter:
 
 def _solve_linear_system(matrix: list[list[float]], vector: list[float]) -> list[float]:
     n = len(vector)
-    augmented = [list(matrix[i]) + [vector[i]] for i in range(n)]
+    augmented = [[*list(matrix[i]), vector[i]] for i in range(n)]
     for col in range(n):
         pivot = max(range(col, n), key=lambda row: abs(augmented[row][col]))
         if abs(augmented[pivot][col]) <= 1e-14:
@@ -167,7 +167,7 @@ def _fit_ridge(rows: list[tuple[tuple[float, ...], float]], ridge_lambda: float)
     xtx = [[0.0 for _ in range(dim)] for _ in range(dim)]
     xty = [0.0 for _ in range(dim)]
     for features, target in rows:
-        design = (1.0,) + features
+        design = (1.0, *features)
         for i in range(dim):
             xty[i] += design[i] * target
             for j in range(dim):

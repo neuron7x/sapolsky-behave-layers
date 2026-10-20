@@ -81,7 +81,7 @@ def load_fault_spec(path: Path) -> dict[str, object]:
     if classes != REQUIRED_FAULT_CLASSES:
         raise FaultInjectionSpecError("fault spec must contain exact required fault-class population")
     invariants = doc.get("global_invariants")
-    if not isinstance(invariants, list) or set(str(value) for value in invariants) != REQUIRED_GLOBAL_INVARIANTS:
+    if not isinstance(invariants, list) or {str(value) for value in invariants} != REQUIRED_GLOBAL_INVARIANTS:
         raise FaultInjectionSpecError("fault spec global invariant population mismatch")
     return doc
 

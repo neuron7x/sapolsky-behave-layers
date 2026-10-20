@@ -146,7 +146,6 @@ def _verify_axis_randomness(
         if raw.get("randomness_protocol") != PROTOCOL:
             raise GeneralizationDualError("axis result lacks preregistered randomness protocol")
         task = str(raw.get("task_id", ""))
-        policy = str(raw.get("policy_id", ""))
         replicate = int(raw.get("replicate", -1))
         expected_seed = paired_seed(root_digest=schedule_root, task_id=task, replicate=replicate)
         if int(raw.get("replicate_seed", -1)) != expected_seed:
@@ -226,7 +225,7 @@ def build_generalization_axis_dual_authority(
     except ValueError as exc:
         raise GeneralizationDualError("unknown generalization axis") from exc
     row = _axis_registry_row(registry, axis)
-    manifest = _axis_manifest(Path(repository_root), row)
+    _axis_manifest(Path(repository_root), row)
     roles = _role_map(registry)
     tasks = tuple(sorted({item.task_id for item in bundle.results}))
     policy_ids = tuple(sorted(set(roles.values())))

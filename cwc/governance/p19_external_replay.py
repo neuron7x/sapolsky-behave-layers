@@ -182,8 +182,7 @@ def _git(root: Path, *args: str) -> str:
         proc = subprocess.run(
             ["git", "-C", str(root), *args],
             check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     except OSError as exc:
@@ -204,8 +203,7 @@ def replay_repository_identity(root: Path, p19: Mapping[str, object]) -> dict[st
         proc = subprocess.run(
             ["git", "-C", str(root), "merge-base", "--is-ancestor", commit, head],
             check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
         )
     except OSError as exc:
         raise P19ExternalReplayError("git executable unavailable") from exc

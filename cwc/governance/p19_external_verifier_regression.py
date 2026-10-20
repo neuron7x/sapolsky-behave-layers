@@ -158,8 +158,7 @@ def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
     try:
         result = subprocess.run(
             ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=False,
         )
     except OSError as exc:

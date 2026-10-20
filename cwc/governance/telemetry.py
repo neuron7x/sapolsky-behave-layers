@@ -56,7 +56,7 @@ class TelemetryLedger:
             "budget_before": budget_before,
             "budget_after": budget_after,
             "decision_digest": decision_digest,
-            "evidence_ids": sorted(set(str(x) for x in evidence_ids)),
+            "evidence_ids": sorted({str(x) for x in evidence_ids}),
             "previous_event_digest": previous,
         }
         event = GovernanceEvent(
@@ -73,7 +73,7 @@ class TelemetryLedger:
             previous_event_digest=str(payload["previous_event_digest"]),
             event_digest=_digest(payload),
         )
-        return TelemetryLedger(self.events + (event,))
+        return TelemetryLedger((*self.events, event))
 
     def verify(self) -> bool:
         previous = "GENESIS"

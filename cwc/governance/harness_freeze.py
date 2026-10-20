@@ -210,7 +210,7 @@ def build_harness_freeze(
     if not isinstance(baseline_policy_ids, Mapping):
         raise HarnessFreezeError("baseline_policy_ids mapping required")
     required_kinds = {kind.value for kind in BaselineKind}
-    if set(str(key) for key in baseline_policy_ids) != required_kinds:
+    if {str(key) for key in baseline_policy_ids} != required_kinds:
         raise HarnessFreezeError("baseline_policy_ids must map exactly all B0-B3 kinds")
     mapped_ids = {str(key): str(value).strip() for key, value in baseline_policy_ids.items()}
     if any(not value for value in mapped_ids.values()) or len(set(mapped_ids.values())) != 4:

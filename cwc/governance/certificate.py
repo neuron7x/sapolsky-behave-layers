@@ -55,7 +55,7 @@ class DGCExecutionCertificate:
         spent = {str(k): float(v) for k, v in self.compute_spent.items()}
         if any(v < 0 for v in spent.values()):
             raise ValueError("compute_spent values must be >= 0")
-        evidence = tuple(sorted(set(str(x).strip() for x in self.evidence_ids if str(x).strip())))
+        evidence = tuple(sorted({str(x).strip() for x in self.evidence_ids if str(x).strip()}))
         object.__setattr__(self, "compute_spent", MappingProxyType(spent))
         object.__setattr__(self, "evidence_ids", evidence)
         if self.certificate_digest is None:

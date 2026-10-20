@@ -329,7 +329,7 @@ def build_p19_external_verifier_activation_authority(
     if len(set(key_digests)) < policy.minimum_distinct_signer_keys:
         raise P19ExternalVerifierActivationError("regression activation signer keys are not sufficiently distinct")
 
-    ordered = sorted(zip(principals, key_digests, attestation_rels, signature_rels, signature_receipts), key=lambda row: row[0])
+    ordered = sorted(zip(principals, key_digests, attestation_rels, signature_rels, signature_receipts, strict=True), key=lambda row: row[0])
     principals_t = tuple(row[0] for row in ordered)
     keys_t = tuple(row[1] for row in ordered)
     attest_t = tuple(row[2] for row in ordered)

@@ -35,8 +35,8 @@ def _validate_probability_box(lower: Sequence[float], upper: Sequence[float]) ->
         raise ValueError("equal non-empty probability bounds required")
     lo = [float(x) for x in lower]
     hi = [float(x) for x in upper]
-    for l, u in zip(lo, hi, strict=True):
-        if not math.isfinite(l) or not math.isfinite(u) or l < 0.0 or u > 1.0 or l > u:
+    for lo_i, hi_i in zip(lo, hi, strict=True):
+        if not math.isfinite(lo_i) or not math.isfinite(hi_i) or lo_i < 0.0 or hi_i > 1.0 or lo_i > hi_i:
             raise ValueError("invalid probability interval")
     if math.fsum(lo) > 1.0 + 1e-12 or math.fsum(hi) < 1.0 - 1e-12:
         raise ValueError("probability box has empty simplex intersection")
