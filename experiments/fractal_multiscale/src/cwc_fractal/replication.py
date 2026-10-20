@@ -154,12 +154,15 @@ def cross_seed_pair_diagnostics(
         ns: list[int] = []
         by_seed: dict[str, float | None] = {}
         for seed in sorted(indexed):
-            report = indexed[seed].get(key)
-            r = None if report is None else report.get("residual_spearman")
+            row = indexed[seed].get(key)
+            if row is None:
+                by_seed[seed] = None
+                continue
+            r = row.get("residual_spearman")
             by_seed[seed] = None if r is None else float(r)
             if r is not None:
                 values.append(float(r))
-                ns.append(int(report.get("n", 0)))
+                ns.append(int(row.get("n", 0)))
         if not values:
             output.append(
                 {

@@ -1,0 +1,54 @@
+# Temporary maintenance workflow. Must be deleted before merge.
+# Execution restricted to the disposable CI recovery branch and its own path.
+name: Temporary safe Ruff and lock remediation
+
+on:
+  push:
+    branches:
+      - ci/verified-recovery-20261020
+    paths:
+      - .github/workflows/ci-repair-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  safe-repair:
+    if: github.repository == 'neuron7x/sapolsky-behave-layers' && github.ref == 'refs/heads/ci/verified-recovery-20261020'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Install pinned repair tools
+        run: |
+          python -m pip install --disable-pip-version-check ruff==0.15.21
+          pipx install uv==0.10.12
+      - name: Apply only Ruff's safe code fixes
+        run: |
+          python -m ruff check . --fix --exit-zero
+          git diff --check
+      - name: Commit safe lint changes for independent gate re-evaluation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u -- cwc tests scripts experiments
+          if ! git diff --cached --quiet; then
+            git commit -m "style: apply Ruff deterministic safe-only fixes"
+            git push origin HEAD:refs/heads/ci/verified-recovery-20261020
+          fi
+      - name: Upgrade vulnerable transitive package locks
+        run: |
+          uv lock --upgrade-package fsspec --upgrade-package gitpython --upgrade-package urllib3
+          uv lock --check
+          git diff --check
+      - name: Commit renewed lock for independent security auditing
+        run: |
+          git add -- uv.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "security: renew locked fsspec, GitPython and urllib3"
+            git push origin HEAD:refs/heads/ci/verified-recovery-20261020
+          fi
