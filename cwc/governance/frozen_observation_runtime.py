@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import subprocess
 from collections.abc import Mapping
@@ -262,6 +263,10 @@ def invoke_frozen_observation_provider(
     if not isinstance(observations, Mapping):
         raise FrozenObservationRuntimeError("observation provider observations missing")
     observed = {str(k): v for k, v in observations.items()}
+    # json.loads accepts NaN/Infinity; such values are not valid JSON evidence and must not
+    # reach the policy runtime.
+    if any(isinstance(v, float) and not math.isfinite(v) for v in observed.values()):
+        raise FrozenObservationRuntimeError("observation provider returned a non-finite value")
     if tuple(sorted(observed)) != fields:
         raise FrozenObservationRuntimeError(
             "observation provider response fields differ from frozen manifest"

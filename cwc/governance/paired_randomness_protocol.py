@@ -47,7 +47,10 @@ def verify_paired_randomness_protocol(
     *,
     root_digest: str,
 ) -> RandomnessProtocolAuthority:
-    request_ids: set[str] = set()
+    # Population of verified, authority-typed live call identities replayed from
+    # unit evidence (VerifiedExecutionResult.live_source_ids). The free-form
+    # result_payload is never consulted for call identity.
+    source_ids: set[str] = set()
     schedule_rows: list[tuple[str, int, int, tuple[str, ...]]] = []
     by_pair: dict[tuple[str, int], list[VerifiedExecutionResult]] = {}
     for result in bundle.results:
@@ -65,12 +68,14 @@ def verify_paired_randomness_protocol(
         )
         if seed != expected:
             raise RandomnessProtocolError("execution result seed differs from precommitted paired schedule")
-        request_id = str(payload.get("provider_request_id", "")).strip()
-        if not request_id:
-            raise RandomnessProtocolError("provider_request_id required for randomness protocol")
-        if request_id in request_ids:
-            raise RandomnessProtocolError("provider_request_id reused across execution units")
-        request_ids.add(request_id)
+        if not result.live_source_ids:
+            raise RandomnessProtocolError(
+                "verified live source population required for randomness protocol"
+            )
+        for source_id in result.live_source_ids:
+            if source_id in source_ids:
+                raise RandomnessProtocolError("live usage source identity reused across execution units")
+            source_ids.add(source_id)
         by_pair.setdefault((result.unit.task_id, result.unit.replicate), []).append(result)
 
     for (task_id, replicate), rows in sorted(by_pair.items()):
@@ -89,7 +94,7 @@ def verify_paired_randomness_protocol(
         "protocol": PROTOCOL,
         "independence_assumption": INDEPENDENCE_ASSUMPTION,
         "task_replicate_pairs": len(schedule_rows),
-        "provider_requests": len(request_ids),
+        "provider_requests": len(source_ids),
         "schedule_digest": schedule_digest,
         "assumption_verified": False,
     }
@@ -99,7 +104,7 @@ def verify_paired_randomness_protocol(
         protocol=PROTOCOL,
         independence_assumption=INDEPENDENCE_ASSUMPTION,
         task_replicate_pairs=len(schedule_rows),
-        provider_requests=len(request_ids),
+        provider_requests=len(source_ids),
         schedule_digest=schedule_digest,
         authority_digest=sha256_bytes(canonical_json_bytes(authority_payload)),
         assumption_verified=False,

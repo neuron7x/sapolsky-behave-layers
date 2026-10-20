@@ -158,6 +158,40 @@ def test_extra_response_field_is_rejected(
         )
 
 
+@pytest.mark.parametrize("token", ["NaN", "Infinity", "-Infinity"])
+def test_nonfinite_observation_value_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, token: str
+):
+    repo, _, _, execution, materialization = _fixture(tmp_path)
+
+    def run(command, **kwargs):
+        req = json.loads(kwargs["input"].decode("utf-8"))
+        response = {
+            "schema": "DGC_PREOUTCOME_OBSERVATION_RESPONSE_V1",
+            "family_id": req["family_id"],
+            "task_id": req["task_id"],
+            "observations": {"budget_remaining": "__NONFINITE__", "step_index": 0},
+            "output_fields": ["budget_remaining", "step_index"],
+            "source_manifest_digest": "c" * 64,
+            "confirmatory_label_access": False,
+            "post_outcome_access": False,
+        }
+        stdout = json.dumps(response).replace('"__NONFINITE__"', token).encode()
+        return SimpleNamespace(returncode=0, stdout=stdout, stderr=b"")
+
+    monkeypatch.setattr(runtime.subprocess, "run", run)
+    with pytest.raises(FrozenObservationRuntimeError, match="non-finite value"):
+        invoke_frozen_observation_provider(
+            repository_root=repo,
+            execution_freeze=execution,
+            materialization_root=materialization,
+            family_id="TERMINAL_BENCH_2_1",
+            task_id="task-a",
+            budget_remaining=1.0,
+            step_index=0,
+        )
+
+
 def test_response_identity_substitution_is_rejected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

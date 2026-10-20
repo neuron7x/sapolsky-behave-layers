@@ -38,7 +38,12 @@ def _write(path: Path, payload: dict) -> Path:
     return path
 
 
-def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def _fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    task_ids: tuple[str, ...] = ("task-a",),
+):
     repo = tmp_path / "repo"
     repo.mkdir()
     manifests = repo / "manifests"
@@ -82,13 +87,13 @@ def _fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     }
     spec = DistributedEvalSpec(
         experiment_id="mechanism-fixture",
-        task_ids=("task-a",),
+        task_ids=task_ids,
         policy_ids=("DGC",),
         replicates=1,
         max_attempts_per_unit=1,
         lease_ttl_ticks=4,
         max_cost_per_unit_usd=2.0,
-        global_budget_usd=2.0,
+        global_budget_usd=2.0 * len(task_ids),
         harness_digest=h("2"),
         statistical_plan_digest=h("3"),
     )
@@ -130,14 +135,53 @@ def _build_bundle(
     inject_risk: bool = False,
     null_request_id: bool = False,
     runtime_live: bool = False,
+    source_tokens: tuple[str, ...] = ("1",),
 ):
-    repo, card, spec, authority = _fixture(tmp_path, monkeypatch)
+    repo, card, spec, authority = _fixture(
+        tmp_path,
+        monkeypatch,
+        task_ids=tuple(f"task-{chr(ord('a') + index)}" for index in range(len(source_tokens))),
+    )
     root = tmp_path / "bundle"
     root.mkdir()
+    coordinator = DistributedEvalCoordinator(spec)
+    result_paths: list[str] = []
+    for index, unit in enumerate(spec.units()):
+        result_paths.append(_build_unit(
+            root,
+            repo=repo,
+            card=card,
+            spec=spec,
+            authority=authority,
+            coordinator=coordinator,
+            unit=unit,
+            index=index,
+            source_token=source_tokens[index],
+            inject_risk=inject_risk,
+            null_request_id=null_request_id,
+            runtime_live=runtime_live,
+        ))
+    _seal(root, spec=spec, authority=authority, coordinator=coordinator, result_paths=result_paths)
+    return root, repo
 
-    unit = spec.units()[0]
+
+def _build_unit(
+    root: Path,
+    *,
+    repo: Path,
+    card: ProviderRateCard,
+    spec: DistributedEvalSpec,
+    authority: dict,
+    coordinator: DistributedEvalCoordinator,
+    unit,
+    index: int,
+    source_token: str,
+    inject_risk: bool,
+    null_request_id: bool,
+    runtime_live: bool,
+) -> str:
     trace = ProviderUsageTrace(
-        trace_id="trace-1",
+        trace_id=f"trace-{index + 1}",
         decision_id=unit.stable_id,
         policy_id=unit.policy_id,
         authority=(
@@ -153,8 +197,10 @@ def _build_bundle(
         cache_write_tokens=0,
         long_cache_write_tokens=0,
         output_tokens=0,
-        provider_request_id=None if runtime_live else "req-1",
-        runtime_call_id="harbor-atif:session-1:aggregate" if runtime_live else None,
+        provider_request_id=None if runtime_live else f"req-{source_token}",
+        runtime_call_id=(
+            f"harbor-atif:session-{source_token}:aggregate" if runtime_live else None
+        ),
         source_artifact_digest=h("6") if runtime_live else None,
     )
     model_cost = trace.meter(card).model_token_usd
@@ -286,7 +332,7 @@ def _build_bundle(
         "provider_trace_population_digest": population_digest,
         "physical_cost_certificate": certificate_doc,
     }
-    evidence_path = _write(root / "evidence" / "00000000.json", evidence_doc)
+    evidence_path = _write(root / "evidence" / f"{index:08d}.json", evidence_doc)
     evidence_digest = sha256_file(evidence_path)
 
     result_payload = {
@@ -297,12 +343,11 @@ def _build_bundle(
         "provider_trace_population_digest": population_digest,
         "physical_cost_certificate_digest": certificate.digest,
     }
-    coordinator = DistributedEvalCoordinator(spec)
-    lease = coordinator.claim("worker-1", tick=0)
-    assert lease is not None
+    lease = coordinator.claim(f"worker-{index + 1}", tick=2 * index)
+    assert lease is not None and lease.unit == unit
     record = coordinator.commit(
         lease,
-        tick=1,
+        tick=2 * index + 1,
         result_payload=result_payload,
         evidence_digest=evidence_digest,
         actual_cost_usd=certificate.cost.total_operational_usd,
@@ -325,8 +370,18 @@ def _build_bundle(
         **result_record_payload,
         "record_digest": sha256_bytes(canonical_json_bytes(result_record_payload)),
     }
-    result_path = _write(root / "records" / "00000000.json", result_doc)
+    result_path = _write(root / "records" / f"{index:08d}.json", result_doc)
+    return result_path.relative_to(root).as_posix()
 
+
+def _seal(
+    root: Path,
+    *,
+    spec: DistributedEvalSpec,
+    authority: dict,
+    coordinator: DistributedEvalCoordinator,
+    result_paths: list[str],
+) -> None:
     events = [asdict(event) for event in coordinator.audit_events()]
     audit_root = events[-1]["event_digest"]
     audit_payload = {
@@ -339,7 +394,7 @@ def _build_bundle(
         **audit_payload,
         "audit_log_digest": sha256_bytes(canonical_json_bytes(audit_payload)),
     })
-    completion = coordinator.completion_certificate(tick=1)
+    completion = coordinator.completion_certificate(tick=2 * len(result_paths) - 1)
     payload_rows = file_manifest(
         root,
         excluded_names=frozenset({"MECHANISM_EXECUTION_BUNDLE.json"}),
@@ -351,7 +406,7 @@ def _build_bundle(
         "distributed_spec_digest": spec.digest,
         "payload_manifest_sha256": payload_digest,
         "audit_log_path": "AUDIT_LOG.json",
-        "result_paths": [result_path.relative_to(root).as_posix()],
+        "result_paths": result_paths,
         "expected_units": completion.expected_units,
         "committed_units": completion.committed_units,
         "audit_root_digest": completion.audit_root_digest,
@@ -366,7 +421,6 @@ def _build_bundle(
         **manifest_payload,
         "bundle_digest": sha256_bytes(canonical_json_bytes(manifest_payload)),
     })
-    return root, repo
 
 
 def test_mechanism_bundle_replays_full_cost_quality_population(
@@ -461,3 +515,43 @@ def test_result_population_loss_is_rejected(
             execution_manifest_freeze_path=tmp_path / "execution.json",
             repository_root=repo,
         )
+
+
+def _verify(root: Path, repo: Path, tmp_path: Path):
+    return verify_mechanism_execution_bundle(
+        root,
+        mechanism_authority_path=tmp_path / "authority.json",
+        execution_manifest_freeze_path=tmp_path / "execution.json",
+        repository_root=repo,
+    )
+
+
+@pytest.mark.parametrize("runtime_live", [False, True])
+def test_distinct_live_sources_across_mechanism_units_replay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, runtime_live: bool
+):
+    root, repo = _build_bundle(
+        tmp_path, monkeypatch, runtime_live=runtime_live, source_tokens=("1", "2")
+    )
+    verified = _verify(root, repo, tmp_path)
+    assert verified.completion.committed_units == 2
+    prefix = "runtime:" if runtime_live else "provider:"
+    observed = [source for row in verified.results for source in row.live_source_ids]
+    assert len(observed) == len(set(observed)) == 2
+    assert all(source.startswith(prefix) for source in observed)
+
+
+@pytest.mark.parametrize("runtime_live", [False, True])
+def test_live_source_identity_reused_across_mechanism_units_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, runtime_live: bool
+):
+    # Each unit is individually self-consistent (distinct trace ids, one call per
+    # unit); only the cross-unit population check can see the replayed call.
+    root, repo = _build_bundle(
+        tmp_path, monkeypatch, runtime_live=runtime_live, source_tokens=("1", "1")
+    )
+    with pytest.raises(
+        MechanismExecutionBundleError,
+        match="live usage source identity reused across mechanism work units",
+    ):
+        _verify(root, repo, tmp_path)

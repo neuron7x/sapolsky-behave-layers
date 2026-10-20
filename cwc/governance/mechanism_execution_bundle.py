@@ -170,6 +170,9 @@ class VerifiedMechanismResult:
     evidence_digest: str
     record_digest: str
     commit_event_sequence: int
+    # Authority-typed live call identities ("provider:<request_id>" or
+    # "runtime:<call_id>:<artifact_sha>") replayed from the verified evidence.
+    live_source_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,7 +282,7 @@ def _verify_cost_evidence(
     unit: WorkUnitId,
     expected_pricing_sha: str,
     expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard],
-) -> None:
+) -> tuple[str, ...]:
     response = doc.get("response")
     if not isinstance(response, Mapping):
         raise MechanismExecutionBundleError("mechanism evidence missing adapter response")
@@ -561,6 +564,7 @@ def _verify_cost_evidence(
         abs_tol=1e-12,
     ):
         raise MechanismExecutionBundleError("actual cost differs from physical cost certificate")
+    return tuple(sorted(source_ids))
 
 
 def _verify_audit(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
@@ -661,7 +665,7 @@ def _verify_result(
     evidence_doc = _json(evidence_path, schema=EVIDENCE_SCHEMA)
     if any(field in evidence_doc for field in _FORBIDDEN_RISK_FIELDS):
         raise MechanismExecutionBundleError("mechanism evidence contains forbidden risk field")
-    _verify_cost_evidence(
+    live_source_ids = _verify_cost_evidence(
         evidence_doc,
         result_payload=result_payload,
         actual_cost_usd=cost,
@@ -727,6 +731,7 @@ def _verify_result(
         evidence_digest=evidence_digest,
         record_digest=record_digest,
         commit_event_sequence=commit_sequence,
+        live_source_ids=live_source_ids,
     )
 
 
@@ -816,6 +821,14 @@ def verify_mechanism_execution_bundle(
         raise MechanismExecutionBundleError(
             "mechanism commit audit population differs from result population"
         )
+    seen_source_ids: set[str] = set()
+    for row in results:
+        for source_id in row.live_source_ids:
+            if source_id in seen_source_ids:
+                raise MechanismExecutionBundleError(
+                    "live usage source identity reused across mechanism work units"
+                )
+            seen_source_ids.add(source_id)
 
     by_commit = sorted(results, key=lambda row: row.commit_event_sequence)
     spent = math.fsum(row.actual_cost_usd for row in by_commit)

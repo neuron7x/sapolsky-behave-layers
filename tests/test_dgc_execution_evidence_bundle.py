@@ -98,7 +98,7 @@ def seal_manifest(root: Path, *, authority: dict, spec: DistributedEvalSpec, res
     })
 
 
-def make_bundle(tmp_path: Path):
+def make_bundle(tmp_path: Path, *, request_ids: dict[str, str] | None = None):
     spec = DistributedEvalSpec(
         experiment_id="exp-1",
         task_ids=("t1",),
@@ -147,7 +147,7 @@ def make_bundle(tmp_path: Path):
         assert lease is not None
         tick += 1
         actual_cost = 0.6 - 0.2 * index
-        provider_request_id = f"req-{policy}"
+        provider_request_id = (request_ids or {}).get(policy, f"req-{policy}")
         raw_provider_trace = {
             "trace_id": f"trace-{lease.unit.stable_id}",
             "decision_id": lease.unit.stable_id,
@@ -445,4 +445,32 @@ def test_parent_symlink_alias_for_evidence_is_rejected(tmp_path: Path, monkeypat
         coordinator=coordinator,
     )
     with pytest.raises(ExecutionEvidenceError, match="execution evidence symlink rejected"):
+        verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+
+
+def test_verified_results_expose_typed_live_source_population(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root, authority, _, _ = make_bundle(tmp_path)
+    patch_root(monkeypatch, authority)
+    verified = verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")
+    assert sorted(row.live_source_ids for row in verified.results) == [
+        ("provider:req-B0",),
+        ("provider:req-DGC",),
+    ]
+
+
+def test_provider_request_reused_across_work_units_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # Both units are individually self-consistent (distinct trace ids, one call
+    # each, digests rebuilt from the shared id); only the cross-unit population
+    # check can see that one provider call is billed to two work units.
+    root, authority, _, _ = make_bundle(
+        tmp_path, request_ids={"B0": "req-shared", "DGC": "req-shared"}
+    )
+    patch_root(monkeypatch, authority)
+    with pytest.raises(
+        ExecutionEvidenceError, match="live usage source identity reused across work units"
+    ):
         verify_execution_bundle(root, confirmatory_root_authority_path=tmp_path / "root.json")

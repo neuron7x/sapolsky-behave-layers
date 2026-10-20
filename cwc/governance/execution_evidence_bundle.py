@@ -150,6 +150,9 @@ class VerifiedExecutionResult:
     evidence_digest: str
     record_digest: str
     commit_event_sequence: int
+    # Authority-typed live call identities ("provider:<request_id>") replayed from
+    # the verified evidence, never from result_payload fields.
+    live_source_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -267,7 +270,7 @@ def _verify_unit_evidence(
     expected_pricing_sha: str | None = None,
     expected_risk_sha: str | None = None,
     expected_rate_cards: Mapping[tuple[str, str, str], ProviderRateCard] | None = None,
-) -> None:
+) -> tuple[str, ...]:
     doc = _json(path, schema=EVIDENCE_SCHEMA)
 
     response = doc.get("response")
@@ -386,7 +389,7 @@ def _verify_unit_evidence(
         raise ExecutionEvidenceError("provider usage population missing or inconsistent")
     expected_trace_docs: list[dict[str, object]] = []
     metered_rows: list[tuple[str, str]] = []
-    request_ids: set[str] = set()
+    source_ids: set[str] = set()
     model_usd_rows: list[float] = []
     for raw in raw_provider_rows:
         if not isinstance(raw, Mapping):
@@ -424,10 +427,10 @@ def _verify_unit_evidence(
             raise ExecutionEvidenceError("provider trace decision/policy identity mismatch")
         if provider_trace.rate_card_digest != trace_card.digest:
             raise ExecutionEvidenceError("provider trace rate-card digest mismatch")
-        request_id = str(provider_trace.provider_request_id)
-        if request_id in request_ids:
+        source_id = f"provider:{provider_trace.provider_request_id}"
+        if source_id in source_ids:
             raise ExecutionEvidenceError("duplicate provider request id")
-        request_ids.add(request_id)
+        source_ids.add(source_id)
         metered = provider_trace.meter(trace_card)
         model_usd_rows.append(metered.model_token_usd)
         expected_trace_docs.append({
@@ -532,6 +535,7 @@ def _verify_unit_evidence(
         abs_tol=1e-12,
     ):
         raise ExecutionEvidenceError("result actual cost differs from physical cost certificate")
+    return tuple(sorted(source_ids))
 
 
 def _verify_audit_log(path: Path, *, spec_digest: str) -> tuple[list[dict[str, object]], str]:
@@ -638,7 +642,7 @@ def _verify_result(
         raise ExecutionEvidenceError("empty execution evidence artifact is not accepted")
     if _sha("evidence_sha256", doc.get("evidence_sha256")) != evidence_digest:
         raise ExecutionEvidenceError("execution evidence digest mismatch")
-    _verify_unit_evidence(
+    live_source_ids = _verify_unit_evidence(
         evidence_path,
         result_payload=result_payload,
         actual_cost_usd=cost,
@@ -706,6 +710,7 @@ def _verify_result(
         evidence_digest=evidence_digest,
         record_digest=record_digest,
         commit_event_sequence=commit_sequence,
+        live_source_ids=live_source_ids,
     )
 
 
@@ -801,6 +806,12 @@ def verify_execution_bundle(
     commit_events = [event for event in audit_events if event["kind"] == "RESULT_COMMITTED"]
     if len(commit_events) != len(results):
         raise ExecutionEvidenceError("audit RESULT_COMMITTED population differs from result population")
+    seen_source_ids: set[str] = set()
+    for row in results:
+        for source_id in row.live_source_ids:
+            if source_id in seen_source_ids:
+                raise ExecutionEvidenceError("live usage source identity reused across work units")
+            seen_source_ids.add(source_id)
 
     # Reproduce coordinator completion ordering: spend accumulates in commit-event order;
     # result_population_digest is sorted by WorkUnitId.
