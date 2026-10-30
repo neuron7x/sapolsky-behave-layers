@@ -6,6 +6,17 @@
 PY ?= .venv/bin/python
 COVERAGE_FAIL_UNDER ?= 95
 
+.PHONY: dual-sided-verifier-gate
+# Additive admission: preserves all existing scientific/release gates. Reject-all,
+# accept-all, contradiction promotion and verifier crashes must be killed first.
+verify pr-fast: dual-sided-verifier-gate
+
+dual-sided-verifier-gate:
+	$(PY) -m ruff check cwc/governance/verifier_qualification.py cwc/governance/planner_admission.py scripts/dual_sided_verifier_gate.py tests/test_dual_sided_verifier.py
+	$(PY) -m mypy --config-file mypy.ini --follow-imports=silent cwc/governance/verifier_qualification.py cwc/governance/planner_admission.py scripts/dual_sided_verifier_gate.py
+	PYTHONPATH=. $(PY) -m pytest -q tests/test_dual_sided_verifier.py tests/test_proof_carrying_planner.py --cov=cwc.governance.verifier_qualification --cov=cwc.governance.planner_admission --cov-branch --cov-report=term-missing --cov-fail-under=100
+	PYTHONPATH=. $(PY) scripts/dual_sided_verifier_gate.py --output-dir assurance-build/dual-sided-verifier
+
 .PHONY: verify lint typecheck test inference-integrity data-intake-test readiness-test technical-quality-gate coverage properties mutation determinism clean-pyc install-dev experiment-tests reproduce-mechanism verify-evidence validate-evidence reproduce-primary make-release doc-gate bib-gate docs-regen pr-fast pr-security pr-full truth-gate workflow-lint secret-scan dependency-audit dependency-integrity-gate architecture-gate hermeticity-gate complexity-gate sbom-gate inference-integrity-gate assurance-attack assurance-report engineering-assurance verdict-binding formal-identifiability-gate causal-debt-gate research-ingestion-gate research-execution-gate research-ops-gate rd03-gate csca03r-gate csca04-gate csca05-gate csca06a-gate csca06a-r1-gate csca06-info-gate csca06b-gate csca06c-gate csca07-gate csca08-gate cog-countermodel01-gate cog-epistemic01r-gate cog-memory01-gate cog-plan01-gate cab01-q1-gate cab01-q1-r1-gate cog-self01-gate current-prereg-gate dgc-gate dgc-financial-gate formal-identifiability-gate
 
 # The full gate, ordered cheapest-first so a fast failure surfaces first.
