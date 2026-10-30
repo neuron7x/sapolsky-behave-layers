@@ -1,0 +1,205 @@
+{
+  "schema": "CWC_FROZEN_PLANNER_FIXTURES_V1",
+  "fixtures": [
+    {
+      "fixture_id": "canonical-valid",
+      "category": "CANONICAL_VALID",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "SUBMIT",
+        "selected_action": "A"
+      }
+    },
+    {
+      "fixture_id": "variant-reordered",
+      "category": "VALID_VARIANT",
+      "payload": "{\n  \"schema\": \"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\n  \"context_scope\": [\n    \"CTX\"\n  ],\n  \"worlds\": [\n    {\n      \"world_id\": \"CM\",\n      \"utilities\": {\n        \"B\": 0.25,\n        \"A\": 0.75\n      },\n      \"provenance\": \"frozen-fixture-v1\"\n    },\n    {\n      \"world_id\": \"BASE\",\n      \"utilities\": {\n        \"B\": 0.5,\n        \"A\": 1.0\n      },\n      \"provenance\": \"frozen-fixture-v1\"\n    }\n  ],\n  \"certificate\": {\n    \"plan_id\": \"dual-sided-fixture\",\n    \"context_scope\": [\n      \"CTX\"\n    ],\n    \"decision_state\": \"ROBUST_ACTION\",\n    \"selected_action\": \"A\",\n    \"memory_bindings\": [],\n    \"world_bindings\": [\n      [\n        \"BASE\",\n        \"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"\n      ],\n      [\n        \"CM\",\n        \"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"\n      ]\n    ],\n    \"robust_margin\": 0.25,\n    \"information_state\": null,\n    \"information_action_id\": null,\n    \"necessary_information_cost\": null,\n    \"reason\": \"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\n    \"certificate_digest\": \"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\"\n  }\n}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "SUBMIT",
+        "selected_action": "A"
+      }
+    },
+    {
+      "fixture_id": "variant-redundant-world",
+      "category": "VALID_VARIANT",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"1b5a1ca84b0f5458f13e5261a1f9d33c1fad2cf7f3211b8c57cac99ae119db1a\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"],[\"REDUNDANT\",\"6b80b1ff0a168d42177e616b73a71702df7abb9fa804483f3377e5852dc55660\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"REDUNDANT\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "SUBMIT",
+        "selected_action": "A"
+      }
+    },
+    {
+      "fixture_id": "variant-utility-translation",
+      "category": "VALID_VARIANT",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"52a5ec1a56dd2e458fa951fcd8247a57cf53bd1de0d31d9830672b8178f92960\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"d11510e4d940aa4ccada01bae3c5e513e4400b6e46a5fc437bbac17662ef90ff\"],[\"CM\",\"60373a0a0e081534e25946f087def0612528005d5b858380f8641ff68e6fe497\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":9.0,\"B\":8.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":8.75,\"B\":8.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "SUBMIT",
+        "selected_action": "A"
+      }
+    },
+    {
+      "fixture_id": "boundary-exact-margin",
+      "category": "BOUNDARY",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"13c857387e419057d196ceec9b06b992f63c0a38e0337976856d60e5843da817\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"f5b84c9b0077aa98375bbebfa56236f98aa26ddf959de1ac49be6a70b7961973\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.75},\"world_id\":\"BASE\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "SUBMIT",
+        "selected_action": "A"
+      }
+    },
+    {
+      "fixture_id": "boundary-below-margin",
+      "category": "BOUNDARY",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"df2c9dc1c89dfc9cbd2d71090feb70611291b2700368e9d3eee280f18593ccb3\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ABSTAIN_NO_UNIQUE_ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"nominal top action is shared but at least one world fails the frozen robust-margin requirement\",\"robust_margin\":0.25,\"selected_action\":null,\"world_bindings\":[[\"BASE\",\"7e2ec3c906862230e09091aaa208a864c763ffaf3b21743f47cab9c7086d836f\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.875},\"world_id\":\"BASE\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "boundary-tie",
+      "category": "BOUNDARY",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"231cff78b9e96748ccf2a854d530962fcebeb66fab738b18daa014b10464a437\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ABSTAIN_NO_UNIQUE_ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"nominal top action is shared but at least one world fails the frozen robust-margin requirement\",\"robust_margin\":0.25,\"selected_action\":null,\"world_bindings\":[[\"BASE\",\"e714fd3e4d56817b087c4107e52b58b44a5a11f0c08b74b1f2764cf53a281a30\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":1.0},\"world_id\":\"BASE\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "boundary-mixed-tie",
+      "category": "BOUNDARY",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"3c47ba52849c05480ab641e0fccc2f6cdf9616ce13c9dedd66eda22268368604\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ABSTAIN_WORLD_DISAGREEMENT\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"admitted worlds disagree and no certified identifying information action is available\",\"robust_margin\":0.25,\"selected_action\":null,\"world_bindings\":[[\"BASE\",\"e714fd3e4d56817b087c4107e52b58b44a5a11f0c08b74b1f2764cf53a281a30\"],[\"CM\",\"2ca44f8e2a33ad5838170a40d2e1a6394eb500739320e5ad717b6add652b2e0b\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":1.0},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.0,\"B\":1.0},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "ESCALATE",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "incompatible-worlds",
+      "category": "CONTRADICTION",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"0daf39b2ba4bb04f8f30721fb6be6ae5f770892a50ac8e65054870937b205440\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ABSTAIN_WORLD_DISAGREEMENT\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"admitted worlds disagree and no certified identifying information action is available\",\"robust_margin\":0.25,\"selected_action\":null,\"world_bindings\":[[\"BASE\",\"13bfcad089b67de457c62c528811dcda92d7503108d2420b15e3f59c6b59de42\"],[\"CM\",\"2ca44f8e2a33ad5838170a40d2e1a6394eb500739320e5ad717b6add652b2e0b\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.0},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.0,\"B\":1.0},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "PASS",
+        "action": "ESCALATE",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "malformed-json",
+      "category": "INVALID",
+      "payload": "{",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "extra-top-field",
+      "category": "INVALID",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"unexpected\":true,\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "boolean-is-not-margin",
+      "category": "INVALID",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":true,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "unknown-schema",
+      "category": "UNKNOWN",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V999\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "UNKNOWN",
+        "action": "UNRESOLVED",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "unavailable-memory",
+      "category": "UNKNOWN",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"1a845c5bfdadb76d91fdb502ef5dc81fd8c0769971b4b835b58954ed660da085\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[[\"unavailable-memory\",\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "UNKNOWN",
+        "action": "UNRESOLVED",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "self-rehashed-wrong-action",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"64ab5232a6df7692b67ed3060feab706f7468447955cb5612b465f91857da802\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"B\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "dropped-world",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "changed-world",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":4.0},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "duplicate-json-key",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"injected\",\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "nonfinite-utility",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"c2d11a85f922177ccf455e5516814e8219fa9ea9bd96c4fd3fc7636cf8d0ff58\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"e2f0bc9c3ae95409bb4dbeda4168eac7044dcc0d22f377691be7ae13e7d03962\"],[\"CM\",\"d75e4a1a7dcc72a4b1c155cb0beed8c4eaa1b15feac9ee07ea601d57f26725ba\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":NaN,\"B\":0.5},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.75,\"B\":0.25},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    },
+    {
+      "fixture_id": "self-rehashed-contradiction-promotion",
+      "category": "ATTACK",
+      "payload": "{\"certificate\":{\"certificate_digest\":\"63aa6c2ea698748ab2caf521e88504c0f380027a41859c4011f696fd695dfb74\",\"context_scope\":[\"CTX\"],\"decision_state\":\"ROBUST_ACTION\",\"information_action_id\":null,\"information_state\":null,\"memory_bindings\":[],\"necessary_information_cost\":null,\"plan_id\":\"dual-sided-fixture\",\"reason\":\"same action uniquely dominates by the frozen margin in every admitted world; no world averaging used\",\"robust_margin\":0.25,\"selected_action\":\"A\",\"world_bindings\":[[\"BASE\",\"13bfcad089b67de457c62c528811dcda92d7503108d2420b15e3f59c6b59de42\"],[\"CM\",\"2ca44f8e2a33ad5838170a40d2e1a6394eb500739320e5ad717b6add652b2e0b\"]]},\"context_scope\":[\"CTX\"],\"schema\":\"CWC_MEMORY_FREE_PLAN_ADMISSION_V1\",\"worlds\":[{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":1.0,\"B\":0.0},\"world_id\":\"BASE\"},{\"provenance\":\"frozen-fixture-v1\",\"utilities\":{\"A\":0.0,\"B\":1.0},\"world_id\":\"CM\"}]}",
+      "expected": {
+        "artifact_quality": "FAIL",
+        "action": "STOP",
+        "selected_action": null
+      }
+    }
+  ]
+}
