@@ -2,7 +2,7 @@
 # Pinned into the exact audited torch==2.13.0 environment resolved from uv.lock.
 # Install: VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
 pytest-cov==7.1.0
-hypothesis==6.165.2
+hypothesis==6.168.5
 # numpy is a runtime dependency of cwc/{causal,counterfactual,epistemics,replay};
 # pinned to the uv.lock version so mypy --strict checks against its real stubs.
 numpy==1.26.4
