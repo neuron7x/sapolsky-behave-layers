@@ -10,4 +10,4 @@ mypy==2.3.0
 ruff==0.16.2
 mutmut==3.7.0
 coverage==7.15.4
-tomli==2.4.1
+tomli==2.5.0
