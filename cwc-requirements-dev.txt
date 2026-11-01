@@ -5,7 +5,7 @@ pytest-cov==7.1.0
 hypothesis==6.165.2
 # numpy is a runtime dependency of cwc/{causal,counterfactual,epistemics,replay};
 # pinned to the uv.lock version so mypy --strict checks against its real stubs.
-numpy==1.26.4
+numpy==2.2.6
 mypy==2.3.0
 ruff==0.16.2
 mutmut==3.7.0
