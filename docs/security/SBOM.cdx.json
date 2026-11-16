@@ -53,21 +53,21 @@
       "version": "3.0.1"
     },
     {
-      "bom-ref": "pkg:pypi/certifi@2025.8.3",
+      "bom-ref": "pkg:pypi/certifi@2026.10.19",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "E564105F78DED564E3AE7C923924435E1DAA7463FAEAB5BB932BC53FFAE63407"
+          "content": "035C1E85572B141BF1C3A3EFF0E33A8EB74917522F2559075FF8D2FEA780A1AE"
         },
         {
           "alg": "SHA-256",
-          "content": "F6C12493CFB1B06BA2FF328595AF9350C65D6644968E5D3A2FFD78699AF217A5"
+          "content": "42D35340CC5B9BA78E818DDBFF0C5B1C2B779DE448A340FD1B989F5FA8670E1B"
         }
       ],
       "name": "certifi",
-      "purl": "pkg:pypi/certifi@2025.8.3",
+      "purl": "pkg:pypi/certifi@2026.10.19",
       "type": "library",
-      "version": "2025.8.3"
+      "version": "2026.10.19"
     },
     {
       "bom-ref": "pkg:pypi/cffi@2.0.0",
@@ -90,10 +90,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "0CF2D91ECC3FCC0625C2C530FE004F82C110405F101548512CCE44322FA8AC44"
-        },
-        {
-          "alg": "SHA-256",
           "content": "12873CA6CB9B0F0D3A0DA705D6086FE911591737A59F28B7936BDFED27C0D47C"
         },
         {
@@ -103,10 +99,6 @@
         {
           "alg": "SHA-256",
           "content": "1E3A615586F05FC4065A8B22B8152F0C1B00CDBC60596D187C2A74F9E3036E4E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1F72FB8906754AC8A2CC3F9F5AAA298070652A0FFAE577E0EA9BD480DC3C931A"
         },
         {
           "alg": "SHA-256",
@@ -154,10 +146,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "3E837E369566884707DDAF85FC1744B47575005C0A229DE3327F8F9A20F4EFEB"
-        },
-        {
-          "alg": "SHA-256",
           "content": "44D1B5909021139FE36001AE048DBDDE8214AFA20200EDA0F64C068CAC5D5529"
         },
         {
@@ -167,14 +155,6 @@
         {
           "alg": "SHA-256",
           "content": "4671D9DD5EC934CB9A73E7EE9676F9362ABA54F7F34910956B84D727B0D73FB6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "53F77CBE57044E88BBD5ED26AC1D0514D2ACF0591DD6BB02A3AE37F76811B80C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5EDA85D6D1879E692D546A078B44251CDD08DD1CFB98DFB77B670C97CEE49EA0"
         },
         {
           "alg": "SHA-256",
@@ -234,19 +214,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "8EA985900C5C95CE9DB1745F7933EEEF5D314F0565B27625D9A10EC9881E1BFB"
-        },
-        {
-          "alg": "SHA-256",
           "content": "8ECA2A813C1CB7AD4FB74D368C2FFBBB4789D377EE5BB8DF98373C2CC0DEE76C"
         },
         {
           "alg": "SHA-256",
           "content": "92B68146A71DF78564E4EF48AF17551A5DDD142E5190CDF2C5624D0C3FF5B2E8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9332088D75DC3241C702D852D4671613136D90FA6881DA7D770A483FD05248B4"
         },
         {
           "alg": "SHA-256",
@@ -267,10 +239,6 @@
         {
           "alg": "SHA-256",
           "content": "AFB8DB5439B81CF9C9D0C80404B60C3CC9C3ADD93E114DCAE767F1477CB53775"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B18A3ED7D5B3BD8D9EF7A8CB226502C6BF8308DF1525E1CC676C3680E7176739"
         },
         {
           "alg": "SHA-256",
@@ -306,10 +274,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "CF364028C016C03078A23B503F02058F1814320A56AD535686F90565636A9495"
-        },
-        {
-          "alg": "SHA-256",
           "content": "D48A880098C96020B02D5A1F7D9251308510CE8858940E6FA99ECE33F610838B"
         },
         {
@@ -342,23 +306,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "E11E82B744887154B182FD3E7E8512418446501191994DBF9C9FC1F32CC8EFD5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F73B96C41E3B2ADEDC34A7356E64C8EB96E03A3782B535E043A986276CE12A49"
-        },
-        {
-          "alg": "SHA-256",
           "content": "F93FD8E5C8C0A4AA1F424D6173F14A892044054871C771F8566E4008EAA359D2"
         },
         {
           "alg": "SHA-256",
           "content": "FC33C5141B55ED366CFAAD382DF24FE7DCBC686DE5BE719B207BB248E3053DC5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FC7DE24BEFAEAE77BA923797C7C87834C73648A05A4BDE34B3B7E5588973A453"
         }
       ],
       "name": "cffi",
@@ -375,15 +327,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "02425242E96BCF29A49711B0CA9F37E451DA7C70562BC10E8ED992A5A7A25CC0"
-        },
-        {
-          "alg": "SHA-256",
           "content": "027B776C26D38B7F15B26A5DA1044F376455FB3766DF8FC38563B4EFBC515154"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "07A0EAE9E2787B586E129FDCBE1AF6997F8D0E5ABAA0BC98C0E20E124D67E601"
         },
         {
           "alg": "SHA-256",
@@ -463,10 +407,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "4CA4C094DE7771A98D7FBD67D9E5DBF1EB73EFA4F744A730437D8A3A5CF994F0"
-        },
-        {
-          "alg": "SHA-256",
           "content": "53CD68B185D98DDE4AD8990E56A58DEA83A4162161B1EA9272E5C9182CE415E0"
         },
         {
@@ -492,14 +432,6 @@
         {
           "alg": "SHA-256",
           "content": "73DC19B562516FC9BCF6E5D6E596DF0B4EB98D87E4F79F3AE71840E6ED21361C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "74D77E25ADDA8581FFC1C720F1C81CA082921329452EBA58B16233AB1842141C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "78DEBA4D8F9590FE4DAE384AEFF04082510A709957E968753FF3C48399F6F92A"
         },
         {
           "alg": "SHA-256",
@@ -535,23 +467,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "C6E490913A46FA054E03699C70019AB869E990270597018CEF1D8562132C2669"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C6F162AABE9A91A309510D74EEB6507FAB5FFF92337A15ACBE77753D88D9DCF0"
-        },
-        {
-          "alg": "SHA-256",
           "content": "C6FD51128A41297F5409DEAB284FECBE5305EBD7E5A1F959BEE1C054622B7018"
         },
         {
           "alg": "SHA-256",
           "content": "CC34F233C9E71701040D772AA7490318673AA7164A0EFE3172B2981218C26D93"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CC9370A2DA1AC13F0153780040F465839E6CCCB4A1E44810124B4E22483C93FE"
         },
         {
           "alg": "SHA-256",
@@ -567,15 +487,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "D0E909868420B7049DAFD3A31D45125B31143EEC59235311FC4C57EA26A4ACD2"
-        },
-        {
-          "alg": "SHA-256",
           "content": "D716A916938E03231E86E43782CA7878FB602A125A91E7ACB8B5112E2E96AC16"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D79C198E27580C8E958906F803E63CDDB77653731BE08851C7DF0B1A14A8FC0F"
         },
         {
           "alg": "SHA-256",
@@ -584,10 +496,6 @@
         {
           "alg": "SHA-256",
           "content": "FB6FECFD65564F208CBF0FBA07F107FB661BCD1A7C389EDBCED3F7A493F70E37"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FB7F67A1BFA6E40B438170EBDC8158B78DC465A5A67B6DDE178A46987B244A72"
         },
         {
           "alg": "SHA-256",
@@ -653,243 +561,6 @@
       "purl": "pkg:pypi/comm@0.2.3",
       "type": "library",
       "version": "0.2.3"
-    },
-    {
-      "bom-ref": "pkg:pypi/contourpy@1.3.2",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "0475B1F6604896BC7C53BB070E355E9321E1BC0D381735421A2D2068EC56531F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "106FAB697AF11456FCBA3E352AD50EFFE493A90F893FCA6C2CA5C033820CEA92"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "107BA8A6A7EEC58BB475329E6D3B95DEBA9440667C4D62B9B6063942B61D7F16"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "15CE6AB60957CA74CFF444FE66D9045C1FD3E92C8936894EBD1F3EEF2FFF075F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1C48188778D4D2F3D48E4643FB15D8608B1D01E4B4D6B0548D9B336C28FC9B6F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3859783AEFA2B8355697F16642695A5B9792E7A46AB86DA1118A4A23A51A33D7"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3D80B2C0300583228AC98D0A927A1BA6A2BA6B8A742463C564F1D419EE5B211E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3F9E896F447C5C8618F1EDB2BAFA9A4030F22A575EC418AD70611450720B5B08"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "434F0ADF84911C924519D2B08FC10491DD282B20BDD3FA8F60FD816EA0B48841"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "49B65A95D642D4EFA8F64BA12558FCB83407E58A2DFBA9D796D77B63CCFCAFF5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4CAF2BCD2969402BF77EDC4CB6034C7DD7C0803213B3523F111EB7460A51B8D2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "532FD26E715560721BB0D5FC7610FCE279B3699B018600AB999D1BE895B09415"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5EBAC872BA09CB8F2131C46B8739A7FF71DE28A24C869BCAD554477EB089A878"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5F5964CDAD279256C084B69C3F412B7801E15356B16EFA9D78AA974041903DA0"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "65A887A6E8C4CD0897507D814B14C54A8C2E2AA4AC9F7686292F9769FCF9A6AB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6A37A2FB93D4DF3FC4C0E363EA4D16F83195FC09C891BC8CE072B9D084853445"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "70771A461AAEB335DF14DEB6C97439973D253AE70660CA085EEC25241137EF43"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "71E2BD4A1C4188F5C2B8D274DA78FAAB884B59DF20DF63C34F74AA1813C4427C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "745B57DB7758F3FFC05A10254EDD3182A2A83402A89C00957A8E8A22F5582823"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "78E9253C3DE756B3F6A5174D024C4835ACD59EB3F8E2CA13E775DBFFE1558F69"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "82199CB78276249796419FE36B7386BD8D2CC3F28B3BC19FE2454FE2E26C4C15"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8B7FC0CD78BA2F4695FD0A6AD81A19E7E3AB825C31B577F384AA9D7817DC3BEF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8C5ACB8DDDB0752BF252E01A3035B21443158910AC16A3B0D20E7FED7D534CE5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8C942A01D9163E2E5CFB05CB66110121B8D07AD438A17F9E766317BCB62ABF73"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8D2E74ACBCBA3BFDB6D9D8384CDC4F9260CAE86ED9BEEE8BD5F54FEE49A430B9"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "90DF94C89A91B7362E1142CBEE7568F86514412AB8A2C0D0FCA72D7E91B62912"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "970E9173DBD7EBA9B4E01AAB19215A48EE5DD3F43CEF736EEBDE064A171F89A5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "977E98A0E0480D3FE292246417239D2D45435904AFD6D7332D8455981C408B85"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9BE002B31C558D1DDF1B9B415B162C603405414BACD6932D031C5B5A8B757F0D"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AD687A04BC802CBE8B9C399C07162A3C35E227E2DACCF1668EB1F278CB698631"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B4F54D6A2DEFE9F257327B0F243612DD051CC43825587520B1BF74A31E2F6EF2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B6945942715A034C671B7FC54F9588126B0B8BF23DB2696E3CA8328F3FF0AB54"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B7CD50C38F500BBCC9B6A46643A40E0913673F869315D8E70DE0438817CB7773"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BA38E3F9F330AF820C4B27CEB4B9C7FEEE5FE0493EA53A8720F4792667465934"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C440093BBC8FC21C637C03BAFCBEF95CCD963BC6E0514AD887932C18CA2A759A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C49F73E61F1F774650A55D221803B101D966CA0C5A2D6D5E4320EC3997489441"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C66C4906CDBC50E9CBA65978823E6E00B45682EB09ADBB78C9775B74EB222422"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C6C4639A9C22230276B7BFFB6A850DFC8258A2521305E1FAEFE804D006B2E532"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C85BB486E9BE652314BB5B9E2E3B0D1B2E643D5EEC4992C0FBE8AC71775DA739"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CC829960F34BA36AAD4302E78EABF3EF16A3A100863F0D4EEDDF30E8A485A03B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CDD22595308F53EF2F891040AB2B93D79192513FFCCBD7FE19BE7AA773A5E09F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D0E589AE0D55204991450BB5C23F571C64FE43ADAA53F93FC902A84C96F52FE1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D14F12932A8D620E307F715857107B1D1845CC44FDB5DA2BC8E850F5CEBA9F87"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D32530B534E986374FC19EAA77FCB87E8A99E5431499949B828312BDCD20AC52"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D6658CCC7251A4433EEBD89ED2672C2ED96FBA367FD25CA9512AA92A4B46C4F1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D91A3CCC7FEA94CA0ACAB82CEB77F396D50A1F67412EFE4C526F5D20264E6ECD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DC41BA0714AA2968D1F8674EC97504A8F7E334F48EEACEBCAA6256213ACB0989"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DE39DB2604AE755316CB5967728F4BEA92685884B1E767B7C24E983EF5F771CB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DE425AF81B6CEA33101AE95ECE1F696AF39446DB9682A0B56DAAA48CFC29F38F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DED1706ED0C1049224531B81128EFBD5084598F18D8A2D9EFAE833EDBD2B40AD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E1578F7EAFCE927B168752ED7E22646DAD6CD9BCA673C60BFF55889FA236EBF9"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E259BCED5549AC64410162ADC973C5E2FB77F04DF4A439D00B478E57A0E65512"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E298E7E70CF4EB179CC1077BE1C725B5FD131EBC81181BF0C03525C8ABC297FD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EAB0F6DB315FA4D70F1D8AB514E527F0366EC021FF853D7ED6A2D33605CF4B83"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F26B383144CF2D2C29F01A1E8170F50DACF0EAC02D64139DCD709A8AC4EB3CFE"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F939A054192DDC596E031E50BB13B657CE318CF13D264F095CE9DB7DC6AE81C0"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FD93CC7F3139B6DD7AAB2F26A90DDE0AA9FC264DBF70F6740D498A70B860B82C"
-        }
-      ],
-      "name": "contourpy",
-      "purl": "pkg:pypi/contourpy@1.3.2",
-      "type": "library",
-      "version": "1.3.2"
     },
     {
       "bom-ref": "pkg:pypi/contourpy@1.3.3",
@@ -1197,10 +868,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "120FCC53D57903DF529C3486962C56528CBA5B7D6C57C99537320ED9922C8B86"
-        },
-        {
-          "alg": "SHA-256",
           "content": "18C8C167C8907B8F02531CA810534315C458DABEF31F7965095619BF647B9202"
         },
         {
@@ -1229,19 +896,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "9851B0CAA8BFD3BC6FA054EAF57BEA7C8E9C3A62DB2D2621224677F49F3C53D0"
-        },
-        {
-          "alg": "SHA-256",
           "content": "9EFB21C1EE64981E184B9E0BA5EB3179E5BA3D4B51665A6CB52B8EF3D01A7CBF"
         },
         {
           "alg": "SHA-256",
           "content": "B134DD8C5C66AE4C4AD814F7AEE88FD215353C077010CBC47E3B55ED35EC9EFF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C0C4B1A995098C46695C24257A342DC97D6E6D3F3050B944C9F43BD26D734051"
         },
         {
           "alg": "SHA-256",
@@ -1329,10 +988,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "327CB28C3AD9E17BC925EFC7F7018195FD4787C2FE4B7AF1EEC11F1D19BDEC62"
-        },
-        {
-          "alg": "SHA-256",
           "content": "360FFD231A780ABBC414BA0F005DAD409E71C78637EFE8F2BD75837132A41D38"
         },
         {
@@ -1369,10 +1024,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B7DD275CF2C99E53ADB9654F5AE015F70415BBE2BACBE24CFEE30D54B6AA03C5"
-        },
-        {
-          "alg": "SHA-256",
           "content": "BCCB1540A49CDE77EDC7CE7D9D075C1DBEB2414751BC0048C7A11E1B597A4C2E"
         },
         {
@@ -1389,19 +1040,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "E24B1652A1DF1AB04D81E7EAD446A91C226DE704FF5DDE6BD0A0DBAAB07AA3F2"
-        },
-        {
-          "alg": "SHA-256",
           "content": "E9C68D9A382EC754DC05ED1D1B4ED5BD824B9F7C1A8CD1083ADB84B3C93501DE"
         },
         {
           "alg": "SHA-256",
           "content": "EEA7E5987445AB0B5ED258093722D5ECB8BB72217C5C9B1E21F64EFE23DDEBDB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FCE6DA15D73BE5935B4438435C53ADB512326A3E11E4F90793EA87CD9F018254"
         }
       ],
       "name": "debugpy",
@@ -1427,23 +1070,6 @@
       "version": "5.2.1"
     },
     {
-      "bom-ref": "pkg:pypi/exceptiongroup@1.3.0",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "4D111E6E0C13D0644CAD6DDAA7ED0261A0B36971F6D23E7EC9B4B9097DA78A10"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B241F5885F560BC56A59EE63CA4C6A8BFA46AE4AD651AF316D4E81817BB9FD88"
-        }
-      ],
-      "name": "exceptiongroup",
-      "purl": "pkg:pypi/exceptiongroup@1.3.0",
-      "type": "library",
-      "version": "1.3.0"
-    },
-    {
       "bom-ref": "pkg:pypi/executing@2.2.1",
       "hashes": [
         {
@@ -1461,21 +1087,21 @@
       "version": "2.2.1"
     },
     {
-      "bom-ref": "pkg:pypi/filelock@3.32.0",
+      "bom-ref": "pkg:pypi/filelock@4.2.1",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "7BE2AD23A14607CCC71808E68FE30848AEACE7058ACE17852F68E2A68E310402"
+          "content": "7BE2662E9E826B9BBA28AFC0F843A123280D799A2EA44BB5D35CCEC67905AE44"
         },
         {
           "alg": "SHA-256",
-          "content": "D396BEA984AF47333EF05E50EAE7EFF88C84256DE6112AEA0EC48A233C064FE3"
+          "content": "C4C937CCAC2A813CEE448E662A56366CFB374C0F8702E75F295C412CC1C5D5A3"
         }
       ],
       "name": "filelock",
-      "purl": "pkg:pypi/filelock@3.32.0",
+      "purl": "pkg:pypi/filelock@4.2.1",
       "type": "library",
-      "version": "3.32.0"
+      "version": "4.2.1"
     },
     {
       "bom-ref": "pkg:pypi/fonttools@4.61.1",
@@ -1546,10 +1172,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "5FE9FD43882620017ADD5EABB781EBFBC6998EE49B35BD7F8F79AF1F9F99A958"
-        },
-        {
-          "alg": "SHA-256",
           "content": "64102CA87E84261419C3747A0D20F396EB024BDBEB04C2BFB37E2891F5FADCB5"
         },
         {
@@ -1574,14 +1196,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "78A7D3AB09DC47AC1A363A493E6112D8CABED7BA7CAAD5F54DBE2F08676D1B47"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "7C7DB70D57E5E1089A274CBB2B1FD635C9A24DE809A231B154965D415D6C6D24"
-        },
-        {
-          "alg": "SHA-256",
           "content": "8C56C488AB471628FF3BFA80964372FC13504ECE601E0D97A78EE74126B2045C"
         },
         {
@@ -1598,15 +1212,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "A13FC8AEB24BAD755EEA8F7F9D409438EB94E82CF86B08FE77A03FBC8F6A96B1"
-        },
-        {
-          "alg": "SHA-256",
           "content": "A75C301F96DB737E1C5ED5FD7D77D9C34466DE16095A266509E13DA09751BD19"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A76D4CB80F41BA94A6691264BE76435E5F72F2CB3CAB0B092A6212855F71C2F6"
         },
         {
           "alg": "SHA-256",
@@ -1622,10 +1228,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B846A1FCF8BEADEB9EA4F44EC5BDDE393E2F1569E17D700BFC49CD69BDE75881"
-        },
-        {
-          "alg": "SHA-256",
           "content": "B931AE8F62DB78861B0FF1AC017851764602288575D65B8E8FF1963FED419063"
         },
         {
@@ -1635,10 +1237,6 @@
         {
           "alg": "SHA-256",
           "content": "C6604B735BB12FEF8E0EFD5578C9FB5D3D8532D5001EA13A19CDDF295673EE09"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D8DB08051FC9E7D8BC622F2112511B8107D8F27CD89E2F64EC45E9825E8288DA"
         },
         {
           "alg": "SHA-256",
@@ -1655,10 +1253,6 @@
         {
           "alg": "SHA-256",
           "content": "E76CE097E3C57C4BCB67C5AA24A0ECDBD9F74EA9219997A707A4061FBE2707AA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EFF1AC3CC66C2AC7CDA1E64B4E2F3FFEF474B7335F92FC3833FC632D595FCEE6"
         },
         {
           "alg": "SHA-256",
@@ -1847,23 +1441,6 @@
       "version": "7.1.0"
     },
     {
-      "bom-ref": "pkg:pypi/ipython@8.37.0",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "CA815841E1A41A1E6B73A0B08F3038AF9B2252564D01FC405356D34033012216"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "ED87326596B878932DBCB171E3E698845434D8C61B8D8CD474BF663041A9DCF2"
-        }
-      ],
-      "name": "ipython",
-      "purl": "pkg:pypi/ipython@8.37.0",
-      "type": "library",
-      "version": "8.37.0"
-    },
-    {
       "bom-ref": "pkg:pypi/ipython@9.8.0",
       "hashes": [
         {
@@ -1999,10 +1576,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "0A590506F303F512DFF6B7F75FD2FD18E16943EFEE932008FE7140E5FA91D80E"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0AB74E19F6A2B027EA4F845A78827969AF45CE790E6CB3E1EBAB71BDF9F215FF"
         },
         {
@@ -2095,15 +1668,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "4D1D9E582AD4D63062D34077A9A1E9F3C34088A2EC5135B1F7190C07CF366527"
-        },
-        {
-          "alg": "SHA-256",
           "content": "52A15B0F35DAD39862D376DF10C5230155243A2C1A436E39EB55623CCBD68185"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "540C7C72324D864406A009D72F5D6856F49693DB95D1FBB46CF86FEBEF873634"
         },
         {
           "alg": "SHA-256",
@@ -2147,15 +1712,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "7B4DA0D01AC866A57DD61AC258C5607B4CD677F63ABAEC7B148354D2B2CDD536"
-        },
-        {
-          "alg": "SHA-256",
           "content": "7CF974DD4E35FA315563AC99D6287A1024E4DC2077B8A7D7CD3D2FB65D283134"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "84FD60810829C27AE375114CD379DA1FA65E6918E1DA405F356A775D49A62BCF"
         },
         {
           "alg": "SHA-256",
@@ -2175,14 +1732,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "8FDCA1DEF57A2E88EF339DE1737A1449D6DBF5FAB184C54A1FCA01D541317154"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "90F47E70293FC3688B71271100A1A5453AA9944A81D27FF779C108372CF5567B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "92A2F997387A1B79A75E7803AA7DED2CFBE2823852CCF1BA3BCF613B62AE3197"
         },
         {
@@ -2192,10 +1741,6 @@
         {
           "alg": "SHA-256",
           "content": "9AF39D6551F97D31A4DEEBEAC6F45B156F9755DDC59C07B402C148F5DBB6482A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9CF554F21BE770F5111A1690D42313E140355E687E05CF82CB23D0A721A64A48"
         },
         {
           "alg": "SHA-256",
@@ -2227,15 +1772,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B4B4D74BDA2B8EBF4DA5BD42AF11D02D04428B2C32846E4C2C93219DF8A7987B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "B67E6EFBF68E077DD71D1A6B37E43E1A99D0BFF1A3D51867D45EE8908B931098"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B78EFA4C6E804ECDF727E580DBB9CBA85624D2E1C6B5CB059C66290063BD99A9"
         },
         {
           "alg": "SHA-256",
@@ -2263,19 +1800,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "C9E7CDF45D594EE04D5BE1B24DD9D49F3D1590959B2271FB30B5CA2B262C00FB"
-        },
-        {
-          "alg": "SHA-256",
           "content": "CB27E7B78D716C591E88E0A09A2139C6577865D7F2E152488C2CC6257F460872"
         },
         {
           "alg": "SHA-256",
           "content": "CC9617B46837C6468197B5945E196EE9CA43057BB7D9D1AE688101E4E1DDDF64"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CCD09F20CCDBBD341B21A67AB50A119B64A403B09288C27481575105283C1586"
         },
         {
           "alg": "SHA-256",
@@ -2288,10 +1817,6 @@
         {
           "alg": "SHA-256",
           "content": "D4188E73AF84CA82468F09CADC5AC4DB578109E52ACB4518D8154698D3A87CA2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D4EFEC7BCF21671DB6A3294FF301D2FC861C31FAA3C8740D1A94689234D1B415"
         },
         {
           "alg": "SHA-256",
@@ -2327,14 +1852,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "DEED0C7258CEB4C44AD5EC7D9918F9F14FD05B2BE86378D86CF50E63D1E7B771"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E09C2279A4D01F099F52D5C4B3D9E208E91EDCBD1A175C9662A8B16E000FECE9"
-        },
-        {
-          "alg": "SHA-256",
           "content": "E2EA9F7AB7FBF18FFFB1B5434CE7C69A07582F7ACC7717720F1D69F3E806F90C"
         },
         {
@@ -2348,10 +1865,6 @@
         {
           "alg": "SHA-256",
           "content": "ED0FECD28CC62C54B262E3736F8BB2512D8DCFDC2BCF08BE5F47F96BF405B145"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EDE8C6D533BC6601A47AD4046080D36B8FC99F81E6F1C17B0AC3C2DC91AC7611"
         },
         {
           "alg": "SHA-256",
@@ -2379,15 +1892,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "FB3B8132019EA572F4611D770991000D7F58127560C4889729248EB5852A102F"
-        },
-        {
-          "alg": "SHA-256",
           "content": "FB940820C63A9590D31D88B815E7A3AA5915CAD3CE735AB45F0C730B39547DE1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FC1795AC5CD0510207482C3D1D3ED781143383B8CFD36F5C645F3897CE066220"
         }
       ],
       "name": "kiwisolver",
@@ -2432,14 +1937,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "3809EDE931876F5B2EC92EEF964286840ED3540DADF803DD570C3B7E13141A3B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "38A9EF736C01FCCDD6600705B09DC574584B89BEA478200C5FBF112A6B0D5579"
-        },
-        {
-          "alg": "SHA-256",
           "content": "3D79D162E7BE8F996986C064D1C7C817F6DF3A77FE3D6859F6F9E7BE4B8C213A"
         },
         {
@@ -2460,10 +1957,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "57CB5A3CF367AEB1D316576250F65EDEC5BB3BE939E9247AE594B4BCBC317DFB"
-        },
-        {
-          "alg": "SHA-256",
           "content": "5B02FB34468B6AAA40DFC198D813A641E3A63B98C2B05A16B9F80B7EC314185E"
         },
         {
@@ -2472,19 +1965,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "6AF100E168AA82A50E186C82875A5893C5597A0C1CCDB0D8B40240B1F28B969A"
-        },
-        {
-          "alg": "SHA-256",
           "content": "6C89876F41DA747C8D3677A2B540FB32EF5715F97B66EEB0C6B66F5E3EF6F59D"
         },
         {
           "alg": "SHA-256",
           "content": "70A87B411535CCAD5EF2F1DF5136506A10775D267E197E4CF531CED10537BD6B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "7E94C425039CDE14257288FD61DCFB01963E658EFBC0FF54F5306B06054700F8"
         },
         {
           "alg": "SHA-256",
@@ -2512,10 +1997,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "9E2D922824181480953426608B81967DE705C3CEF4D1AF983AF849D7BD619158"
-        },
-        {
-          "alg": "SHA-256",
           "content": "A123E330EF0853C6E822384873BEF7507557D8E4A082961E1DEFA947AA59BA84"
         },
         {
@@ -2528,10 +2009,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B424C77B206D63D500BCB69FA55ED8D0E6A3774056BDC4839FC9298A7EDCA171"
-        },
-        {
-          "alg": "SHA-256",
           "content": "B5A6B3ADA725CEA8A5E634536B1B01C30BCDCD7F9C6FFF4151548D5BF6B3A36C"
         },
         {
@@ -2541,10 +2018,6 @@
         {
           "alg": "SHA-256",
           "content": "BA9527CDD4C926ED0760BC301F6728EF34D841F405ABF9D4F959C478421E4EFD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BBCB445FA71794DA8F178F0F6D66789A28D7319071AF7A496D4D507ED566270D"
         },
         {
           "alg": "SHA-256",
@@ -2572,10 +2045,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "E07C3764494E3776C602C1E78E298937C3315CCC9043EAD7E685B7F2B8D47B3C"
-        },
-        {
-          "alg": "SHA-256",
           "content": "E17C96C14E19278594AA4841EC148115F9C7615A47382ECB6B82BD8FEA3AB0C8"
         },
         {
@@ -2597,10 +2066,6 @@
         {
           "alg": "SHA-256",
           "content": "F8B3D067F2E40FE93E1CCDD6B2E1D16C43140E76F02FB1319A05CF2B79D99430"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FCABF5FF6EEA076F859677F5F0B6B5C1A51E70A376B0579E0EADEF8DB48C6B50"
         }
       ],
       "name": "markupsafe",
@@ -2613,19 +2078,11 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "00270D217D6B20D14B584C521F810D60C5C78406DC289859776550DF837DCDA7"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0A33DEB84C15EDE243AEAD39F77E990469FFF93AD1521163305095B77B72CE4A"
         },
         {
           "alg": "SHA-256",
           "content": "113BB52413EA508CE954A02C10FFD0D565F9C3BC7F2EDDC27DFE1731E71C7B5F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "12D90DF9183093FCD479F4172AC26B322B1248B15729CB57F42F71F24C7E37A3"
         },
         {
           "alg": "SHA-256",
@@ -2666,10 +2123,6 @@
         {
           "alg": "SHA-256",
           "content": "32F8DCE744BE5569BEBE789E46727946041199030DB8AEB2954D26013A0EB26B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "37B3C1CC42AA184B3F738CFA18C1C1D72FD496D85467A6CF7B807936D39AA656"
         },
         {
           "alg": "SHA-256",
@@ -2753,10 +2206,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "A48F2B74020919552EA25D222D5CC6AF9CA3F4EB43A93E14D068457F545C2A17"
-        },
-        {
-          "alg": "SHA-256",
           "content": "AD3D9833A64CF48CC4300F2B406C3D0F4F4724A91C0BD5640678A6BA7C102077"
         },
         {
@@ -2805,31 +2254,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "EE40C27C795BDA6A5292E9CFF9890189D32F7E3A0BF04E0E3C9430C4A00C37DF"
-        },
-        {
-          "alg": "SHA-256",
           "content": "EFB30E3BAAEA72CE5928E32BAB719AB4770099079D66726A62B11B1EF7273BE4"
         },
         {
           "alg": "SHA-256",
-          "content": "F254D118D14A7F99D616271D6C3C27922C092DAC11112670B157798B89BF4933"
-        },
-        {
-          "alg": "SHA-256",
           "content": "F89C151AAB2E2E23CB3FE0ACAD1E8B82841FD265379C4CECD0F3FCB34C15E0F6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F97AEB209C3D2511443F8797E3E5A569AEBB040D4F8BC79AA3EE78A8FB9E3DD8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F9B587C9C7274C1613A30AFABF65A272114CD6CDBE67B3406F818C79D7AB2E2A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FB061F596DAD3A0F52B60DC6A5DEC4A0C300DEC41E058A7EFE09256188D170B7"
         }
       ],
       "name": "matplotlib",
@@ -2896,23 +2325,6 @@
       "version": "1.6.0"
     },
     {
-      "bom-ref": "pkg:pypi/networkx@3.4.2",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "307C3669428C5362AAB27C8A1260AA8F47C4E91D3891F48BE0141738D8D053E1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DF5D4365B724CF81B8C6A7312509D0C22386097011AD1ABE274AFD5E9D3BBC5F"
-        }
-      ],
-      "name": "networkx",
-      "purl": "pkg:pypi/networkx@3.4.2",
-      "type": "library",
-      "version": "3.4.2"
-    },
-    {
       "bom-ref": "pkg:pypi/networkx@3.5",
       "hashes": [
         {
@@ -2954,10 +2366,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "2E4EE3380D6DE9C9EC04745830FD9E2ECCB3E6CF790D39D7B98FFD19B0DD754A"
-        },
-        {
-          "alg": "SHA-256",
           "content": "4C66707FABE114439DB9068EE468C26BBDF909CAC0FB58686A42A24DE1760C71"
         },
         {
@@ -2967,10 +2375,6 @@
         {
           "alg": "SHA-256",
           "content": "60DEDBB91AFCBFDC9BC0B1F3F402804070DEED7392C23EB7A7F07FA857868E8A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "62B8E4B1E28009EF2846B4C7852046736BAB361F7AEADEB6A5B89EBEC3C7055A"
         },
         {
           "alg": "SHA-256",
@@ -2994,14 +2398,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "9FF0F4F29C51E2803569D7A51C2304DE5554655A60C5D776E35B4A41413830D0"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A4ABB4F9001AD2858E7AC189089C42178FCCE737E4169DC61321660F1A96C7D2"
-        },
-        {
-          "alg": "SHA-256",
           "content": "AB47DBE5CC8210F55AA58E4805FE224DAC469CDE56B9F731A4C098B91917159A"
         },
         {
@@ -3010,27 +2406,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B97FE8060236EDF3662ADFC2C633F56A08AE30560C56310562CB4F95500022D5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BFE25ACF8B437EB2A8B2D49D443800A5F18508CD811FEA3181723922A8A82B07"
-        },
-        {
-          "alg": "SHA-256",
           "content": "CD25BCECC4974D09257FFCD1F098EE778F7834C3AD767FE5DB785BE9A4AA9CB2"
         },
         {
           "alg": "SHA-256",
-          "content": "D209D8969599B27AD20994C8E41936EE0964E6DA07478D6C35016BC386B66AD4"
-        },
-        {
-          "alg": "SHA-256",
           "content": "EDD8B5FE47DAB091176D21BB6DE568ACDD906D1887A4584A15A9A96A1DCA06EF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FFA75AF20B44F8DBA823498024771D5AC50620E6915ABAC414251BD971B4529F"
         }
       ],
       "name": "numpy",
@@ -3408,363 +2788,6 @@
       "purl": "pkg:pypi/pexpect@4.9.0",
       "type": "library",
       "version": "4.9.0"
-    },
-    {
-      "bom-ref": "pkg:pypi/pillow@12.3.0",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "00808C5E14EF63AC5161091D242999076604FF74B883423A11E5D7BBB38BF756"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "04F01D28A6AAFF387BF842A13BE313DF23BA0597A44F1A976C9FEB3C6FF4711A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "06FF022112BC9CBF83B60F8E028D94AD87B60621706487E65F673DE61610AB59"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0740A512DC522224C77D9AA5A8D70D8B7D73FB91F2C21125D8D025D3B8990E45"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0847A763AFEFB695BC912D7C131E7E0632D4EDC1D8698F58DDABEC8E46B8B6D3"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0DD2064CBC55AAEC028EF5FBB60FA47BB6C3E7918E07FF17935284B227A9D2DF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0FEB2E9D6AD6C9E3C06EFFE9D00F3F1E618A6643273576B016F591E9315A7139"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "10E41F0FBF1EEC8CFD234B8FE17A4CAAC7C9D0DB4C204D3C173A8F9F6EF3232B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1182D52BC2D5E5D7D0949503AA7E36D12F42205DC287E4883F407B1988820D39"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "164B31CD1A0490AB6EFAE01AA5DF49DA7061BE0AF1B30E035B6E9A1BFE34EE6E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1657923D2D45AFB66526E5B933E5B3052E6BDEA196C90D3ABB2424E18C77DAE8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "186941B6AEF820AD110FB01FB06EB925374DC3A21B17E37EC9A53B250C6FE2D1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1CCA606CD25738DF4ED873D5AD46BBDB3D83B5CBCA291F6B4FF13A4DF6B0BBE8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "21900CE7BA264168CD50DEFAE43CD75D25C833AD4AD6E73FFC5596D12E25AC89"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "236FF70B9312FB68943C703AA842CA6A758ABFA45AC187A5E7C1452E96EF72B5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "23ACEAA007D6172B02C277F0CD359C79492BBB14F7072B4EDE9FBCAF20648130"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "23D27A3E0307EC2244CC51E7287B919AA68D097504EBE19DF4E76A98A3EEA5BD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "24870B09B224F7AE3C39ED07D10E819D06F8720BC551847B1D623832B5B0E28D"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "251BF95B67017E27B13D82F5B326234CA62D70F9CF4C2B9032DE2358A3B12C7B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "25B9B82BB22E6E2B3CD07B39C68B7B862001226CB3DFF7130D1CB914121B39ED"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "28CE87C5AB450A9DD970B52E5ACA5FE63ED432D18A2EADDD1979A00A1BA24ACE"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "300557495EB45EBB8AEC96C2DA9C4BE642FBF7CD937278B4013BA894EA8EB0EB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "30F2AA603C41533CC25C05ACD0DA21636E84A315768FEB631C937177DB558931"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "331B624368D4F1D069149002F25F44BC61C8919CE8DDB3C45BDAD8F6E2D89510"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "37D6D0A00072FD2948EB22BCE7E1475F34569D90C87C59F7A2EC59541B77F7A6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "37DC8F7BBB66EFE481BB60DEFACEF820C950C24713FB44962ED6AA2A50966DE1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3B8182A766685EAA002637E28B4EC8D6B18819A0C71F579BF0DBAA5830297CCE"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3EDCE1D53195DB527E0191F84B71D02022DE0540BF43A16ED734ED7537B07385"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "446C34DCC4324B084A53B705127DC15717B22C5E140AE0A3C38349D4EFEC071E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4998562BF62A445225F22E07C896BB04B35B1B1F2EB6D760584C9C51D7A5F78C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4B0A7FE987B14C31EBDA6083F74F22B561FD3739BC0AC51E019622E3D72668C7"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4E8C2A84D977F50B9DAED6EEAF3BAEF67D00D5D74D932288F02CB94518EE3ACE"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4F883547D4B7F0495EBE7056B0CC2AEA76094E7A4ABC8E933540F3271DF27D9C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "514435A37670E3E5E08F3945B68718B6ED329BB84367777E16F9F4DFE1E61A0F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "53AA02D20D10C3D814D536AA4E5AC9B84CA0FF5A88377963B085AD6822F93E64"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5594FC43D548A7ED94949D139AA1341B270F1863F11CFD37F5A6C8B778A6B67F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "571B9FCB07B97EF3A492028FB3D2DC0993CA23A06138B0315286566D29EF718A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "57B3D78C95BA9059768B10E28B813002261D3F3DFC55CC48B0C988F625175827"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5AFB51D599EA772B8365AE807AE557F18BCCFE46AB261FD1C2A9ED700FC6EB17"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6B02AFB9B97F65FBCA5F31DB6A2A3BA21AA93030225F150FA3F249717E938FB4"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6C0016E7B354317C4E9E525B937AC8596C38D2D232B419529B9CD7A1CD46E39A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "71D6097B330EEA8FD15097780C8E89CB1A8CE7838669F48C5BACD6F663DD4701"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "756C768D0C9C2955FEB7A56C37EA24AEA2E369F8D36A88DA270B6A9F19E62B5E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "78CB2C6865A35AB8FF8B75FD122F6033B92A62C82801110E48DDD6C936A45D91"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "7A743FF716F746FC19A9557F60DAB1600D4613255F8A7AEB3CDDE4DB7EB15A66"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "85F998EA1848BC6757289E739CFBDDA3A04ADFD58B02FC018CE54D754A5CE468"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8728F216DCDB6E6D555CF971CB34076139AD74B31FC2C14DA4FAFC741C5F6217"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "877C3F311FF35410F690861C4409E7CCBF0CD2F878E50628A28E5A0BB689E658"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8CD2F7BDDA092D99C9FC2FB7391354F306D01443D22785D0CBFAFA2E2C8BB418"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8E95E1385E4998AE9694EEAA4730BA5457FF61185B3A55E2E7BEA0880AEF452A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "962864DC93511324D51DDBB5B9F8731BF71675B93CA612A07441896F4688FB8C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9CF95FE4D0F84C82D282745D9BB08AD9F926EFA00BE4697E767B814CE40D4330"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9E881FCA225083806662A5C43D627D215F258FF43C890F831966C7D7BA9C7402"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A2B55DD6B2A4C4B7D87FFA56BDB33FDC5FDB9A462173861A7BC097F17D91CB09"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A45650E8CE7FAFFFD731DB8550230DB6B0D306D181A90B67D3E6BCA2F1990930"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A876864214E136F0EB367788DBD7DF045F4806801518E2CFE9E13229CFE06D8F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AE26D61DFA7A47BEFDC7572B521024E8745F3D809BD95CA9505A7BBA9EF849EC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AF8D94B0DB561CF68B88A267C5C44B49E134F525D0DC2CB7ED413A66BC23559A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B343699E8308BDC51978310E1C959C584E7869CC8C40780058C87DA7781A1E94"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B3C777E849237620B022F7F297DD67705F9F5CF1685F09F02E46F93E92725468"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B629DE27FDA84B42CDE7EDEF0D85F13B958B47F6E9BBCBBA9B673C562A89BD8B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BA09209FBE443B4ACCCEBE845D8A138B89A8F4FBAEEDD44953490B5315D5E965"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BA54CFEBE86920A559A7C4D6B9050791C20513650A1952EBE3368C7DC70306F8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BCB46E2F9FEFF8D06323983BD83ED00C201FDCAB3D74973E7072A889B3979FCD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BCC33FEACFAEFCE60C12FD500A277533BDC02B10A19F7F6D348763D8140BBBA7"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BF16BA1B4D0B6B7C8E534936632270CF70EB00DBE09005BC345B2677B726855C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CF1845D02AD822A369A49F2BB9345B1614744267682E7A03527DC3BF6EEA1777"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D69141514CC30B774CEEA5E3ED3A6635C8D8A96EDF664689B890F4089111FB35"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D9C7F76C0673154F044E9D78C8655FB4213F6CA31A836DF48B40FE5D187717B9"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DBCE0B29841537A2FA4A214C2BBF14DE3587C9680CAA9B4E217568472490B28F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DC624F6BC473DACDF7EF7EB8678D0D08EDF15CD94FAD6AE5C7D6CC67A4E4902F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E158CB00350DC278F3B91551101AA7D12415A66EBF2C91D8D5AC14E56DDD3AD0"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E491916B378FBA47242221BB9EAD245211B70D504F495D105D17B14A24B4907C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E795B7EB908249C4E43C7C99FAC7C2C75DAB0C43566E37DB472A355F63693D71"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E7E480451B9FA137494BCCD3A7D69ADBE8AC65A87D97BE61E11F1B1050A5BAC3"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E91206EE562682B51B98EF4B26A6EF48FD84E15FD4C4BC5EC768EB641D206838"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E9871B1FFBFA9656B60AEEE92ED5136A5742696006FA322B29EA3D8DA0ECC9CF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E9AEB04D6AEF139DE265B29683E119B638208F88CF73CDD1658AA07221165321"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EBAEA975E03D3141D9D3A507DF75C9B3EC90FA9D2FFD07567B3A978D9D790B26"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F0606C8BF2CDEFEA14A43530F7657CBBB7ECF1C4222512492EF4A4434A9501EC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F13C32A3ABD6079A66D9526E18DAD9B6D280384D49D7C54040CD57B6424041D9"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F7401AEBD7F581D7F83A439D87D474999317EE099218E5AD25D125290990BA65"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FA4ECEA169A355BE7A3ADE2C783E2ED12F0E40D2C5621CDA8B3297FAF7FBB9F5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FBD139C8447D25DD750AB79EE274CC5E1FE80FC56340AB10B18A195E1B6ECA3E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FDAFC9CCE40277E0F7A0FEABCE0EE50DD2FA1800F3B38015E51296B5E814048D"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FE3CCA2E4E8A592BE0F269A1CA4835C25199D9F3CE815C8491048F785B0A0198"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FFD0C5368496F41B0944BE820FCB7A838AA6E623D250B01ACF2643939C3F99D7"
-        }
-      ],
-      "name": "pillow",
-      "purl": "pkg:pypi/pillow@12.3.0",
-      "type": "library",
-      "version": "12.3.0"
     },
     {
       "bom-ref": "pkg:pypi/pillow@13.0.0",
@@ -4363,10 +3386,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "5FB2D837960F1DF7F679FF9F1A55065E306347D379E0768CEBF14781254D6194"
-        },
-        {
-          "alg": "SHA-256",
           "content": "6F4812BFBF11CA7D8FAF59EB8FFF8BF4DD25CE3A38B62BAA010CC17A0926D1B2"
         },
         {
@@ -4383,19 +3402,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "7D6DA02FFC7A3A9BDA3B7DED4CC2A27FF73969AB37153F3AFD46BBBC1BA4F0F7"
-        },
-        {
-          "alg": "SHA-256",
           "content": "8831A3BA52FA7CDB78D368D968B1DCD06171E6DFF5461E16D90DE91D371E47BC"
         },
         {
           "alg": "SHA-256",
           "content": "AC5DFEEE59F9CEB4D45BA76E83B026C38C24334135BB329D8274BAA49CEC3C62"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "ADD690FEAFA0953C443CDBA9E9E87F5EAA198F1EA2E43A3B146EA83F202262D0"
         },
         {
           "alg": "SHA-256",
@@ -4407,10 +3418,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B72D943FF4E10FEC8D48AEDB23322D8F6EA8BC2D698B81DB37E73730F69E4862"
-        },
-        {
-          "alg": "SHA-256",
           "content": "B8AF8CEEDF0C9C160FD2B63440F2D205B9404DB85866C1217BFEA601DE7CFB50"
         },
         {
@@ -4419,19 +3426,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "CE0CA222802087B9A8CB031A6468442CB6B67C290A45A601CAC64753D34954D3"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D293E9959B29A24C82D936D04AB2B7FD8B8D334030DE2E56A99ABA94F008AD7A"
-        },
-        {
-          "alg": "SHA-256",
           "content": "D2D697008B5EC06D75952EF260C2E9A8A0F6CCFCE24266C04C9C8ADE927CB3B4"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DBF9FA5D4BDE73B1CC16377DCAAA010F971E6FA7F5083F5D44F34B50BC1D74AF"
         },
         {
           "alg": "SHA-256",
@@ -4498,35 +3493,11 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0069C9ACC3F3981B9FF4CDFAF088E98D83440A4C7EA1BC07460AF3D4DC22E72D"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "031C57D67CA86902726E0FAE2214CE6770BBE2F710DC33063187A68744A5ECAC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0405262705A123B7CE9F0B92F123334D67B70FD1F20A9372B907CE1080C7BA02"
-        },
-        {
-          "alg": "SHA-256",
           "content": "04A1A413977AB517154EEBB2D326DA71638271477D6AD87A769102F7C2488C56"
         },
         {
           "alg": "SHA-256",
-          "content": "0A39979DCBB70998B0E505FB1556A1D550A0781463CE84EBF915BA293CCB7E22"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0A9F2C9DD19656823CB8250B0724EE9C60A82F3CDF68A080979D13092A3B0FEF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0E03262AB796D986F978F79C943FC5F620381BE7287148B8010B4097F79A39EC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0E5B2671F05BA48B94CB90CE55D8BDCAAEDB8BA00CC5359F6810FC918713983D"
         },
         {
           "alg": "SHA-256",
@@ -4538,10 +3509,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "1A8695A8D00C73E50BFF9DFDA4D540B7DEE29FF9B8053E38380426A85EF10052"
-        },
-        {
-          "alg": "SHA-256",
           "content": "1E063337EF9E9820C77ACC768546325EBE04EE38B08703244C1309CCCC4F1BAB"
         },
         {
@@ -4550,19 +3517,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "2058A32994F1FDE4CA0480AB9D1E75A0E8C87C22B53A3AE66554F9AF78F2FE8C"
-        },
-        {
-          "alg": "SHA-256",
           "content": "235F45E5DBCCCF6BD99F9F472858849F73D11120D76EA8707115415F8E5EBEBF"
         },
         {
           "alg": "SHA-256",
           "content": "2B0A451C263B01ACEBE51895BFB0E1CC842A5C666EFE06CDF13846C7418CAA9A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "2B3D326AAEF0C0399D9AFFFEB6367D5E26DDC24D351DBC9C636840AC355DC5D8"
         },
         {
           "alg": "SHA-256",
@@ -4586,10 +3545,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "4B25D91E288E2C4E0662B8038A28C6A07EAAC3E196CFC4FF69DE4EA3DB992A1B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "4C5B0A576FB381EDD6D27F0A85915C6DAF2F8138DC5C267A57C08A62900758C7"
         },
         {
@@ -4603,10 +3558,6 @@
         {
           "alg": "SHA-256",
           "content": "572C7E6C8BB4774D2AC88929E3D1F12BC45714AE5EE6D9A788A9FB35E60BB04B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5C4AA4E82353F65E548C476B37E64189783AA5384903BFEA4F41580F255FDDFA"
         },
         {
           "alg": "SHA-256",
@@ -4638,14 +3589,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "6BDFE4B3789761F3BCB4B1DDF33355A71079858958E3A552F16D5AF19768FEF2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "73662EDF539E72A9440129F231ED3757FAAB89630D291B784CA99237FB94DB2B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "73CF6373C21BC80B2E0DC88444F41AE60B2F070ED02095754EB5A01DF12256DE"
         },
         {
@@ -4655,10 +3598,6 @@
         {
           "alg": "SHA-256",
           "content": "82F68293F055F51B51EA42FAFC74B6AAD03E70E191799430B90C13D643059EBB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "87B31B6846E361EF83FEDB187BB5B4372D0DA3F7E28D85415EFA92D6125D6E6D"
         },
         {
           "alg": "SHA-256",
@@ -4686,23 +3625,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "A11C8D26A50BFAB49002947D3D237ABE4D9E4B5BDC8846A63537B6488E197808"
-        },
-        {
-          "alg": "SHA-256",
           "content": "A144D4F717285C6D9234A66778059F33A89096DFB9B39117663FD8413D582DCC"
         },
         {
           "alg": "SHA-256",
           "content": "A7EC89DC587667F22B6A0B6579C249FCA9026CE7C333FC142BA42411FA243CDC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AA9D91B338F2DF0508606F7009FDE642391425189BBA6D8C653AFD80FD6BB64E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B0379A2B24882FEF529EC3B4987CB5D003B9CDA32256024E6FE1586AC45FC640"
         },
         {
           "alg": "SHA-256",
@@ -4734,15 +3661,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "D53B22F2032C42EAAF025F7C40C2E3B94568AE077A606F006D206A463BC69572"
-        },
-        {
-          "alg": "SHA-256",
           "content": "D87C561733F66531DCED0DA6E864F44EBF89A8FBA55F31407B00C2F7F9449593"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D946C8BF0D5C24BF4FE333AF284C59A19358AA3EC18CB3DC4370080DA1E8AD29"
         },
         {
           "alg": "SHA-256",
@@ -4774,10 +3693,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "EFEC8DB3266B76EF9607C2C4C419BDB06BF335AE433B80816089EA7585816F6A"
-        },
-        {
-          "alg": "SHA-256",
           "content": "F517CA031DFC037A9C07E748CEFD8D96235088B83B4F4BA8939105D20FA1DCD6"
         },
         {
@@ -4786,15 +3701,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "F8DE619080E944347F5F20DE29A975C2D815D9DDD8BE9B9B7268E2E3EF68605A"
-        },
-        {
-          "alg": "SHA-256",
           "content": "F941635F2A3D96B2973E867144FDE513665C87F13FE0E193C158AC51BFAAA7B2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FA754D1850735A0B0E03BCFFD9D4B4343EB417E47196E4485D9CCA326073A42C"
         },
         {
           "alg": "SHA-256",
@@ -4904,10 +3811,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "0A9A2848A5B7FEAC301353437EB7D5957887EDBF81D56E903999A75A3D743086"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0FFE8360BAB4910EF1B9E87FB812D8BC0A308B0D0EEF8C8F44E0254AB3B07133"
         },
         {
@@ -4925,18 +3828,6 @@
         {
           "alg": "SHA-256",
           "content": "1F71EA527786DE97D1A0CC0EACD1DEFC0985DCF6B3F17BB77DCFC8C34BEC4DC5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "23502F431948090F597378482B4812B0CAAE32C22213AECF3B55325E049A6C68"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "29717114E51C84DDFBA879543FB232A6ED60086602313CA38CCE623C1D62CFBF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "2E99C6826FFA974FE6E27CDB5ED0021786B03FC98E5EE3C5BFE1FD5015F42B99"
         },
         {
           "alg": "SHA-256",
@@ -4972,10 +3863,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "7C36280E6FB8385E520936C3CB3B8042851904EBA0E58D277DCA80A5CFED590B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "7E7401D0DE89A9A855C839BC697C079A4AF81CF878373ABD7DC625847D25CBD8"
         },
         {
@@ -4988,23 +3875,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "8824B5A04A04A047E72EEA5CEC3BC266DB09E35DE6BDFE34C9436AC5EE27D237"
-        },
-        {
-          "alg": "SHA-256",
           "content": "8B9C7197F7CB2738065C481A0461E50AD02F18C78CD75775628AFB4D7137FB3B"
         },
         {
           "alg": "SHA-256",
-          "content": "936D68689298C36B53B29F23C6DBB74DE12B4AC12CA6CFE0E047BEDCEEA56180"
-        },
-        {
-          "alg": "SHA-256",
           "content": "9B22676E8097E9E22E36D6B7BDA33190D0D400F345F23D4065D48F4CA7AE0425"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A4D3091415F010369AE4ED1FC6B79DEF9416358877534CAF6A0FDD2146C87A3E"
         },
         {
           "alg": "SHA-256",
@@ -5029,10 +3904,6 @@
         {
           "alg": "SHA-256",
           "content": "E10CE637B18CAEA04431CE14FABCF5C64A1C61EC9C56B071A4B7CA131CA52D44"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EC031D5D2FEB36D1D1A24380E4DB6D43695F3748343D99434E6F5F9156AAA2ED"
         },
         {
           "alg": "SHA-256",
@@ -5061,23 +3932,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "03FF0B279B40D687691A6217C12242EE71F0FBA28BF8626FF50E3EF0F4410E1E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "05B12F2D32112BF8C95EF2E74EC4F1D4BEB01F8B5E703B38537F8849F92CB9BA"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0790A0161C281CA9723F804871B4027F2E8B5A528D357C8952D08CD1A9C15581"
         },
         {
           "alg": "SHA-256",
           "content": "08363B2011DEC81C354D694BDECAEF4770E0AE96B9AFEA70B3F47B973655CC05"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "08E90BB4B57603B84EAB1D0CA05B3BBB10F60C1839DC471FC1C9E1507BEF3386"
         },
         {
           "alg": "SHA-256",
@@ -5129,19 +3988,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "448F9CB54EB0CEE4732B46584F2710C8BC178B0E5371D9E4FC8125201E413A74"
-        },
-        {
-          "alg": "SHA-256",
           "content": "452631B640340C928FA343801B0D07EB0C3789A5FFA843F6E1A9CEE0BA4EB4FC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "507B6F430BDCF0EE48C0D30E734EA89CE5567FD7B8A0F0044A369C176AA44556"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "508E23EC9BC44C0005C4946EA013D9317AE00AC67778BD47519FDF5A0E930FF4"
         },
         {
           "alg": "SHA-256",
@@ -5154,10 +4001,6 @@
         {
           "alg": "SHA-256",
           "content": "5BBF8D3630BF96550B3BE8E1FC0FEA5CBDC8D5466C1192887BD94869DA17A63E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "677E744FEE605753EAC48198B15A2124016C009A11056F93807000AB11CE6526"
         },
         {
           "alg": "SHA-256",
@@ -5201,19 +4044,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "9A916F76C2AB8D045B19F2286851A38E9AC94EA91FAF65BD64735924522A8B32"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9C1790386614232E1B3A40A958454BDD42C6D1811837B15DDBB052A032A43F62"
-        },
-        {
-          "alg": "SHA-256",
           "content": "9CE490CF1D2CA2AD84733AA1D69CE6855372CB5CE9223802450C9B2A7CBA0CCF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A5B42D7A0658B515319148875FCB782BBF118DD41C671B62DAE33666C2213BDA"
         },
         {
           "alg": "SHA-256",
@@ -5230,18 +4061,6 @@
         {
           "alg": "SHA-256",
           "content": "BAFCB3DD171B4AE9F19EE6380DFC71CE0390FEFAF26B504C0E5F628D7C8C54F2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "BF7B38F9FD7B81CB6D9391B2946382C8237FD814075C6AA9C3B746D53076023B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C0BB87227430EE3AEFCC0ADE2088100E528D5D3298A0A715A64F3D04C60BA02F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C17E03CBC9312BEE223864F1A2B13A99522E0DC9F7C5DF0177CD45210AC286E6"
         },
         {
           "alg": "SHA-256",
@@ -5277,10 +4096,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "DD2FEC2B13137416A1C5648B7009499BCC8FEA78154CD888855FA32514F3DAD1"
-        },
-        {
-          "alg": "SHA-256",
           "content": "E343D067F7B151CFE4EB3BB796A7752C9D369EED007B91231E817071D2C2FEC7"
         },
         {
@@ -5294,10 +4109,6 @@
         {
           "alg": "SHA-256",
           "content": "F30F395A9E6FBCA195400CE833C731E7B64C3919AA481AF4D88C3759E0CB7496"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F328D01128373CB6763823B2B4E7F73BDF767834268C565151EACB3B7A392F90"
         },
         {
           "alg": "SHA-256",
@@ -5326,15 +4137,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "113D5AA950F428FAF46FD77D452DF62EBB4CC6531CB619F6CC30A369D326BFBD"
-        },
-        {
-          "alg": "SHA-256",
           "content": "1E978E5A35B293EA43F140C92A3269B6AB13FE0A2BF8A881F7AC740F5A6ADE85"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1EC2BD3BDF0F73F7E9F48DCA550BA7D973692D5E5E9A90AC42CC5F16C4432D8B"
         },
         {
           "alg": "SHA-256",
@@ -5366,10 +4169,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "4BCDFF370509164B67A6C8EC23C9FB40797B72A014766FDC159BB809BD74F7D8"
-        },
-        {
-          "alg": "SHA-256",
           "content": "4CF09903E72411F4BF3AC1EDDD624ECFD423F14B2E4BF1C8B547B72F248B7BF7"
         },
         {
@@ -5390,10 +4189,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "5C3B96ED0223B32DBDC53A83149B6DE7CA3ACD5ACD9C8E64B42A166228ABE29C"
-        },
-        {
-          "alg": "SHA-256",
           "content": "645E88A73861C64C1AF558DD12294FB4E67B5C1EAE0096A60D7D8A2143A611C7"
         },
         {
@@ -5403,10 +4198,6 @@
         {
           "alg": "SHA-256",
           "content": "67A0295A3C31D675A9EE0238D20238FF10A9A2FDB7A1323C798FC7029578B15C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "67A74456F410FE5E869239EE7A5423510FE5121549AF133809D9591A8075893F"
         },
         {
           "alg": "SHA-256",
@@ -5426,10 +4217,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "7383EFDF6E8E8C61D85E00CFB2E2E18DA1A621B8BFB4B0F1C2747DB57B942B8F"
-        },
-        {
-          "alg": "SHA-256",
           "content": "74DF7C74A63ADCAD314426B1F4EA6054A5AB25D05B0244F0C07FF9CE640FA597"
         },
         {
@@ -5446,10 +4233,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "8C2FF5C01D5E47AD5FC9D31BCD61E78C2FA0068ED00CAB86B7320214446DA766"
-        },
-        {
-          "alg": "SHA-256",
           "content": "8E3F6E3C5A5A1ADC3F7EA1B5AEC89ABFC2F4FBFBA55DAFB4343CD1D084F715B2"
         },
         {
@@ -5458,15 +4241,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "94533E32DC0065ECA43912EE6649C90EA0681D59F56D43C45B5BCDA9A740B3DD"
-        },
-        {
-          "alg": "SHA-256",
           "content": "94F6CFF6F7E2149C7E6499A6ECD4695379EEDA8CCBCCB9726E8149F2FE382E92"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9627E887116C4E9C0986D5C3B4F52BCFE3DF09850B704F62EC3CBF177A0AE374"
         },
         {
           "alg": "SHA-256",
@@ -5479,10 +4254,6 @@
         {
           "alg": "SHA-256",
           "content": "A32291ADD816961AAB472F4FAD344C92871A2EE33C6C219B6598E98C1F0108F2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A874A61BB580D48642FFD338570EE24AB13FA023779190513FCACAD104A6E251"
         },
         {
           "alg": "SHA-256",
@@ -5518,10 +4289,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "C5AA2A6A73BF218515484B36A0D20C6AD9DC63F6339FF6224147B0E2C095EE55"
-        },
-        {
-          "alg": "SHA-256",
           "content": "C905D925D194C83A63F92422AF7544EC188301451B292C8B487F0543726107CA"
         },
         {
@@ -5546,19 +4313,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "D49DC84E796B666181DE8A9973284CAD6616335F01B52BF099643253094920FC"
-        },
-        {
-          "alg": "SHA-256",
           "content": "D89F1BBBBBC0885E1C230F7770D5E98F4F00B0EE85688C871D10DF8B184A6323"
         },
         {
           "alg": "SHA-256",
           "content": "D936A1DB208BDCA0ECA1F2BB2C1BA1D8370B226785C1E6DB76E32A228FFD0AD5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D9914FE1040874F83C15FCEA86D94EA54091B0666EAB330AAAB69E30D106AABE"
         },
         {
           "alg": "SHA-256",
@@ -5571,10 +4330,6 @@
         {
           "alg": "SHA-256",
           "content": "E5BCF112B09BFD3646E4DB6BF2E598534A17D502B0C01EA6550BA4ECA780C5E6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E71BCEB3947362EC5EABD2CA0870BB78EAE4EDFC60C6C21495133C01B6CD2DF4"
         },
         {
           "alg": "SHA-256",
@@ -5599,10 +4354,6 @@
         {
           "alg": "SHA-256",
           "content": "F46D525934871EA772930E997D577D48C6983E50F206FF7B66D4AC5F8941E993"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FCDEB38DE4F7F3D69D798F4F371189061446792A84E7C92B50054C87AAE9C07C"
         }
       ],
       "name": "regex",
@@ -5644,19 +4395,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "15F2E126A2B9FDE264598F9317B1EC7F20ED3CF1E49CAE081F7D6B7C1064655C"
-        },
-        {
-          "alg": "SHA-256",
           "content": "18765F62AC579A9FF9E89C611F9C9B9E46BD1ADDE9BE3F59C00B6EB4E1F28B3A"
         },
         {
           "alg": "SHA-256",
           "content": "2B0B77591C9E836DF41AD0B30BE9EC519A708C477CBF82EEDAF839E7A9B10101"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "34DC37F2771517813B70BE47E26D5861BA69298F299DFD24409882E76BD1CCAD"
         },
         {
           "alg": "SHA-256",
@@ -5685,10 +4428,6 @@
         {
           "alg": "SHA-256",
           "content": "92A0186ED815CCEC376CCA23C4BC5F209F6C67EFEB101C1C935345CD63CC9EEA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9B92FF475C37A2B10391614C10AB2DEB923BB029A8288E11E77618D5E5FCDC0E"
         },
         {
           "alg": "SHA-256",
@@ -5732,19 +4471,11 @@
         },
         {
           "alg": "SHA-256",
-          "content": "D4E7543962C932C3DCC29F5A02855AD613E9B05BC93C898FB99E4C7928598C7B"
-        },
-        {
-          "alg": "SHA-256",
           "content": "DFF3FFB6F05576A27732D2013F044EC6F137BC7BCE6773A5E134CFC0C24DCC82"
         },
         {
           "alg": "SHA-256",
           "content": "E0C9216F9E38558F0939F6E34CC78D5517D7A02026C1A35B271CA82E9B522539"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F7E90DA31CE2708481C6B2169D9B8072917D7DEEFAE4FB91CF25655DEDAC6AFA"
         },
         {
           "alg": "SHA-256",
@@ -5755,199 +4486,6 @@
       "purl": "pkg:pypi/rustbpe@0.1.0",
       "type": "library",
       "version": "0.1.0"
-    },
-    {
-      "bom-ref": "pkg:pypi/scipy@1.15.3",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "05DC6ABCD105E1A29F95EADA46D4A3F251743CFD7D3AE8DDB4088047F24EA477"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "06EFCBA926324DF1696931A57A176C80848CCD67CE6AD020C810736BFD58EB1C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0A769105537AA07A69468A0EEFCD121BE52006DB61CDD8CAC8A0E68980BBB723"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0BDD905264C0C9CFA74A4772CDB2070171790381A5C4D312C973382FC6EAF730"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0FF17C0BB1CB32952C09217D8D1EED9B53D1463E5F1DD6052C7857F83127D539"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "14ED70039D182F411FFC74789A16DF3835E05DC469B898233A245CDFD7F162CB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "185CD3D6D05CA4B44A8F1595AF87F9C372BB6ACF9C808E99AA3E9AA03BD98CF6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "18AAACB735AB38B38DB42CB01F6B92A2D0D4B6AABEFEB07F02849E47F8FB3594"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "1C832E1BD78DEA67D5C16F786681B28DD695A8CB1FB90AF2E27580D3D0967E92"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "263961F658CE2165BBD7B99FA5135195C3A12D9BEF045345016B8B50C315CB82"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "271E3713E645149EA5EA3E97B57FDAB61CE61333F97CFAE392C28BA786F9BB49"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "2C620736BCC334782E24D173C0FDBB7590A0A436D2FDF39310A8902505008759"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "34716E281F181A02341DDEAAD584205BD2FD3C242063BD3423D61AC259CA7EBA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "39CB9C62E471B1BB3750066ECC3A3F3052B37751C7C3DFD0FD7E48900ED52982"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3AC07623267FEB3AE308487C260AC684B32EA35FD81E12845039952F558047B8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3B0334816AFB8B91DAB859281B1B9786934392AA3D527CD847E41BB6F45BEE65"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "40E54D5C7E7EBF1AA596C374C49FA3135F04648A0CAABCB66C52884B943F02B4"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "50F9E62461C95D933D5C5EF4A1F2EBF9A2B4E83B0DB374CB3F1DE104D935922E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "52092BC0472CFD17DF49FF17E70624345EFECE4E1A12B23783A1AC59A1B728ED"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5380741E53DF2C566F4D234B100A484B420AF85DEB39EA35A1CC1BE84FF53A5C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "5E721FED53187E71D0CCF382B6BF977644C533E506C4D33C3FB24DE89F5C3ED5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6487AA99C2A3D509A5227D9A5E889FF05830A06B2CE08EC30DF6D79DB5FCD5C5"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6AC6310FDBFB7AA6612408BD2F07295BCBD3FDA00D2D702178434751FE48E019"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6CFD56FC1A8E53F6E89BA3A7A7251F7396412D655BCA2AA5611C8EC9A6784A1E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6DB907C7368E3092E24919B5E31C76998B0CE1684D51A90943CB0ED1B4FFD6C1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "721D6B4EF5DC82CA8968C25B111E307083D7CA9091BC38163FB89243E85E3889"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "76AD1FB5F8752EABF0FA02E4CC0336B4E8F021E2D5F061ED37D6D264DB35E3CA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "79167BBA085C31F38603E11A267D862957CBB3CE018D8B38F79AC043BC92D825"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "795C46999BAE845966368A3C013E0E00947932D68E235702B5C3F6EA799AA8C9"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "7E11270A000969409D37ED399585EE530B9EF6AA99D50C019DE4CB01E8E54E62"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8C9ED3BA2C8A2CE098163A9BDB26F891746D02136995DF25227A20E71C396EBB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "993439CE220D25E3696D1B23B233DD010169B62F6456488567E830654EE37A6B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9D61E97B186A57350F6D6FD72640F9E99D5A4A2B8FBF4B9EE9A841EAB327DC13"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9DB984639887E3DFFB3928D118145FFE40EFF2FA40CB241A306EC57C219EBBBB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9E2ABC762B0811E09A0D3258ABEE2D98E0C703EEE49464CE0069590846F31D40"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A345928C86D535060C9C2B25E71E87C39AB2F22FC96E9636BD74D1DBF9DE448C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AD3432CB0F9ED87477A8D97F03B763FD1D57709F1BBDE3C9369B1DFF5503B253"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AE48A786A28412D744C62FD7816A4118EF97E5BE0BEE968CE8F0A2FBA7ACF3BB"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AEF683A9AE6EB00728A542B796F52A5477B78252EDEDE72B8327A886AB63293F"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B90AB29D0C37EC9BF55424C064312930CA5F4BDE15EE8619EE44E69319AAB163"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C05045D8B9BFD807EE1B9F38761993297B10B245F012B11B13B91BA8945F7E45"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C9DEABD6D547AEE2C9A81DEE6CC96C6D7E9A9B1953F74850C179F91FDC729CB7"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DDE4FC32993071AC0C7DD2D82569E544F0BDAFF66269CB475E0F369ADAD13F11"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EAE3CF522BC7DF64B42CAD3925C876E1B0B6C35C1337C93E12C0F366F55B0EAF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "ED7284B21A7A0C8F1B6E5977AC05396C0D008B89E05498C8B7E8F4A1423BBA0E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F77F853D584E72E874D87357AD70F44B437331507D1C311457BED8ED2B956126"
-        }
-      ],
-      "name": "scipy",
-      "purl": "pkg:pypi/scipy@1.15.3",
-      "type": "library",
-      "version": "1.15.3"
     },
     {
       "bom-ref": "pkg:pypi/scipy@1.17.1",
@@ -6220,21 +4758,21 @@
       "version": "2.35.2"
     },
     {
-      "bom-ref": "pkg:pypi/setuptools@83.0.0",
+      "bom-ref": "pkg:pypi/setuptools@84.1.0",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "025BCCBBF0FA05B6192BC64AE1E7B16E001FD6D6D4D5DE03C97B1C1ADE523BEF"
+          "content": "23657205B63D4D31395AB917815247F694AAFAD28CD21316BF5FD45A51048EA0"
         },
         {
           "alg": "SHA-256",
-          "content": "29B23C360F22F414DC7336BB39178CC7BCBF6021ED2733CDE173F09DBA19ABB3"
+          "content": "5231689C6AC8156CD155CFB98C3FD6FB252C3E7E9BD3D78B64D3C55F132624C9"
         }
       ],
       "name": "setuptools",
-      "purl": "pkg:pypi/setuptools@83.0.0",
+      "purl": "pkg:pypi/setuptools@84.1.0",
       "type": "library",
-      "version": "83.0.0"
+      "version": "84.1.0"
     },
     {
       "bom-ref": "pkg:pypi/six@1.17.0",
@@ -6309,14 +4847,6 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "10331D08B5ECF7A780B4FE4D0281328B23AB22CDB4FF65E68D56CAEDA9940ECC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "195D84BEC46169AF3B1349A1495C151D37A0FF4CBA73FD08282736BE7F92CC6C"
-        },
-        {
-          "alg": "SHA-256",
           "content": "2130127471E293D385179C1F3F9CD445070C0772BE73CDAFB7CEC9A3684C0458"
         },
         {
@@ -6373,10 +4903,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "8A9B517D6331D7103F8BEF29EF93B3CCA95FA766E293147FE7BACDDF310D5917"
-        },
-        {
-          "alg": "SHA-256",
           "content": "94F984C9831FD32688AEF4348803B0905D4AE9C432303087BAE370DC1381A2B8"
         },
         {
@@ -6389,166 +4915,17 @@
         },
         {
           "alg": "SHA-256",
-          "content": "B062C82300341DC87E0258C69F79BED725F87E753C21887AEA90D272816BE882"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B4DDB1849E6BF0AFA6CC1C5D809FB980CA240A5FFFE585A04E119519758788C0"
-        },
-        {
-          "alg": "SHA-256",
           "content": "ECE6B76BFEEB61A125C44BBEFDFCCC279B5288E6007FBEDC0D32BFEC602DF2F2"
         },
         {
           "alg": "SHA-256",
           "content": "FD9E6B23E860973CF9526544E220B223C60BADF5B62E80A33509D6D40E6C8F5D"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "FE91581B0ECDD8783CE8CB6E3178F2260A3912E8724D2F2D49552B98714641A1"
         }
       ],
       "name": "tiktoken",
       "purl": "pkg:pypi/tiktoken@0.11.0",
       "type": "library",
       "version": "0.11.0"
-    },
-    {
-      "bom-ref": "pkg:pypi/tomli@2.2.1",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "023AA114DD824ADE0100497EB2318602AF309E5A55595F76B626D6D9F3B7B0A6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "02ABE224DE6AE62C19F090F68DA4E27B10AF2B93213D36CF44E6E1C5ABD19FDD"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "286F0CA2FFEEB5B9BD4FCC8D6C330534323EC51B2F52DA063B11C502DA16F30C"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "2D0F2FDD22B02C6D81637A3C95F8CD77F995846AF7414C5C4B8D0545AFA1BC4B"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "33580BCCAB0338D00994D7F16F4C4EC25B776AF3FFAAC1ED74E0B3FC95E885A8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "400E720FE168C0F8521520190686EF8EF033FB19FC493DA09779E592861B78C6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "40741994320B232529C802F8BC86DA4E1AA9F413DB394617B9A256AE0F9A7F77"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "465AF0E0875402F1D226519C9904F37254B3045FC5084697CEFB9BDDE1FF99FF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4A8F6E44DE52D5E6C657C9FE83B562F5F4256D8EBBFE4FF922C495620A7F6CEA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "4E340144AD7AE1533CB897D406382B4B6FEDE8890A03738FF1683AF800D54192"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "678E4FA69E4575EB77D103DE3DF8A895E1591B48E740211BD1067378C69E8249"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "6972CA9C9CC9F0ACAA56A8CA1FF51E7AF152A9F87FB64623E31D5C83700080EE"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "7FC04E92E1D624A4A63C76474610238576942D6B8950A2D7F908A340494E67E4"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "889F80EF92701B9DBB224E49EC87C645CE5DF3FA2CC548664EB8A25E03127A98"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8D57CA8095A641B8237D5B079147646153D22552F1C637FD3BA7F4B0B29167A8"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "8DD28B3E155B80F4D54BEB40A441D366ADCFE740969820CAF156C019FB5C7EC4"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "9316DC65BED1684C9A98EE68759CEAED29D229E985297003E494AA825EBB0281"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A198F10C4D1B1375D7687BC25294306E551BF1ABFA4EACE6650070A5C1AE2744"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A38AA0308E754B0E3C67E344754DFF64999FF9B513E691D0E786265C93583C69"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "A92EF1A44547E894E2A17D24E7557A5E85A9E1D0048B0B5E7541F76C5032CB13"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "AC065718DB92CA818F8D6141B5F66369833D4A80A9D74435A268C52BDFA73140"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "B82EBCCC8C8A36F2094E969560A1B836758481F3DC360CE9A3277C65F374285E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C954D2250168D28797DD4E3AC5CF812A406CD5A92674EE4C8F123C889786AA8E"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CB55C73C5F4408779D0CF3EEF9F762B9C9F147A77DE7B258BEF0A5628ADC85CC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "CD45E1DC79C835CE60F7404EC8119F2EB06D38B1DEBA146F07CED3BBC44505FF"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D3F5614314D758649AB2AB3A62D4F2004C825922F9E370B29416484086B264EC"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "D920F33822747519673EE656A4B6AC33E382ECA9D331C87770FAA3EEF562AEB2"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "DB2B95F9DE79181805DF90BEDC5A5AB4C165E6EC3FE99F970D0E302F384AD222"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E59E304978767A54663AF13C07B3D1AF22DDEE3BB2FB0618CA1593E4F593A106"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "E85E99945E688E32D5A35C1FF38ED0B3F41F43FAD8DF0BDF79F72B2BA7BC5272"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "ECE47D672DB52AC607A3D9599A9D48DCB2F2F735C6C2D1F34130085BB12B112A"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F4039B9CBC3048B2416CC57AB3BDA989A6FCF9B36CF8937F01A6E731B64F80D7"
-        }
-      ],
-      "name": "tomli",
-      "purl": "pkg:pypi/tomli@2.2.1",
-      "type": "library",
-      "version": "2.2.1"
     },
     {
       "bom-ref": "pkg:pypi/torch@2.13.0",
@@ -6563,15 +4940,7 @@
         },
         {
           "alg": "SHA-256",
-          "content": "0AB4B69F3EE03A62A002CFBF77B1CA5E88ACEB4EA64CB4388BB28F638DDBB045"
-        },
-        {
-          "alg": "SHA-256",
           "content": "1E09D6A722504957C694FACECA843ACDE562786DF1144EBCC5A74075EC7F6005"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "2BD30B6B730D987FA386CE3898933762C5CB8CC82EB0535211D787CC3CE2DFEB"
         },
         {
           "alg": "SHA-256",
@@ -6611,10 +4980,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "94F0DE129916F77B8DC2C7A8EFF644CFEDDFE59E39C9F55E9F6E17543410281D"
-        },
-        {
-          "alg": "SHA-256",
           "content": "A0D8B11F16A48D60E2015D8213AA0390744CBEBB98E58B62B3514DDDC656E330"
         },
         {
@@ -6632,10 +4997,6 @@
         {
           "alg": "SHA-256",
           "content": "C28DEF70706C2F9ECC752574766E8AE4DA9B810AB6676B611166761A78A9F1E1"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "C78B7B4D04461855A764CF01BAE9A462BB88BC93DEFCFA11235CBC8FDF3E12C4"
         },
         {
           "alg": "SHA-256",
@@ -6660,10 +5021,6 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0555FDE6108CA90247AE33D4E1237CBAE475C86A223BB2F0F91D9ADDF1F611BD"
-        },
-        {
-          "alg": "SHA-256",
           "content": "0B8F7D0423027AE8B90C7977C627F3379F325363A08224DFFAD9B4B2D684A83D"
         },
         {
@@ -6681,10 +5038,6 @@
         {
           "alg": "SHA-256",
           "content": "2B3D093ABD919AD934C43D47E73BA63CEBA7CBD7269FC2E9C1E4FC29E8FE45FA"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "3BBB357161E8DB43BA7CDCC7E03561EBA0C449392F2F27D3566887198FCB4EAD"
         },
         {
           "alg": "SHA-256",
@@ -6768,14 +5121,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "F028E428BDDEE95CDB86E2470254E95C9AF629362488550C200ED4793125A817"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "F5CBB61180A9793D9E12FE115A2310D2600BD449DFB9A01EC5640E21359FA5EA"
-        },
-        {
-          "alg": "SHA-256",
           "content": "FA0762705B933624D59F6823DB9CE7EC2E35B3E1E9C319C9DB51FBEECFC3E319"
         },
         {
@@ -6793,11 +5138,39 @@
       "hashes": [
         {
           "alg": "SHA-256",
+          "content": "0AD188CDFA7A5CCC67366C8E80269D32B45EBFFC759C282D121516922405662A"
+        },
+        {
+          "alg": "SHA-256",
           "content": "2EFAB1E83604CA628C6D85B9E188C153690980498D1297081A9DAD704919303C"
         },
         {
           "alg": "SHA-256",
+          "content": "38FBA3D5E731D7C8916F90B2AE3BD972CA1790DB02970B9EB0940743CDA5BC96"
+        },
+        {
+          "alg": "SHA-256",
           "content": "45E97BD9BC0416F4F4190B5098C55119A389FA5A7C8BBF2639F08F1D04E0A0DC"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "4ACF984B81A9E17C0E1D7CD47ACD603EB03B484BFEDD116271FA778DD34E25A2"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "4BBC72EFD1E9C38E3910626514275CC0DE694BBBBA81CF03A14E0F1F8B01AC10"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "590B2A2B53EF295DCFCD703DF17929BD579705BB0E42D9E43C462FE0F0B1E088"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5A7FE6CCFA0F17AB9E072E11D88EDF6D7C8B7E5323DAEAABCCDF78DD4D50F8D2"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5E18FF87B8D29DE21F8E49B9BDFFE020B8AA7E8349EDE49490D847A61CB534C7"
         },
         {
           "alg": "SHA-256",
@@ -6809,11 +5182,15 @@
         },
         {
           "alg": "SHA-256",
-          "content": "83767298109148F10DE124287B392BC58D74F9938E9430F26F9FD669EFB8AF9C"
+          "content": "8DB7338E6895C3D4BD89A02FF4209507D1F0CF2FFEB3B898538B5A07D1EA8C1E"
         },
         {
           "alg": "SHA-256",
-          "content": "8DB7338E6895C3D4BD89A02FF4209507D1F0CF2FFEB3B898538B5A07D1EA8C1E"
+          "content": "95BDBAD2F0786BD448932E4B72A6404AA22290DB6EC954E24EDFA6D33C833C8F"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "9612D7BA74C7CB590B028D9C95EF619FCC1C903A5FF19E277B84807466C34CDD"
         },
         {
           "alg": "SHA-256",
@@ -6821,11 +5198,19 @@
         },
         {
           "alg": "SHA-256",
-          "content": "CD11E8876FCE3CBC941C576C9F87730F0FF2CA96A9D3E1AA6913BF48304C8BCB"
+          "content": "BDDF05E9306EE873AE31A616A494C41E2C213406F76B60E5076C68555F27831C"
         },
         {
           "alg": "SHA-256",
-          "content": "E85D18B0C51744B25FAB85DBF590A4F00644DA432AF0E9D03C62ACBD2F96EA94"
+          "content": "CEC113FB60F0FE9D2C04D8061D560DDAE3F8BF782984C1E7B993083608D70B91"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "CF23236E9DEED7D3510D14D9B9592D75D272EF7B35BBFEE31A02BEA339C73971"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "E231302A457298D0236F7BDE31082568F6CD0613B66B4EB46849E8AD53C2E38D"
         }
       ],
       "name": "torch",
@@ -6834,53 +5219,185 @@
       "version": "2.13.0+cu130"
     },
     {
-      "bom-ref": "pkg:pypi/tornado@6.5.10",
+      "bom-ref": "pkg:pypi/tornado@6.6.1",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "302EB1E0E3E159314EB591920529FDEA80ACCA92DF5510A2CEC5BBD4F099EC72"
+          "content": "01DC73E3697EB94D78C42E03931AB621DA97D12FDFB6339E64FF5A934B220FCF"
         },
         {
           "alg": "SHA-256",
-          "content": "37AE8F150CECFDBF747FC4E12F5E9A97ECD8CF1D4CDB3F119E2DE84B11196918"
+          "content": "0223E827CEDF4E35EBB035E57A0D9974563CD043E3A53F8BB72A859B6F53777E"
         },
         {
           "alg": "SHA-256",
-          "content": "4BD192B959F9128FB99B8898148070BA4574C9589B78BCE42D1851131FE85828"
+          "content": "065BC741478B168DF9BAF754956A3010C04D1330BB45A84833D807C29E11B257"
         },
         {
           "alg": "SHA-256",
-          "content": "66AAA3F57D30C6E6BECEE83FF28055D5930AC724214BDE99393EEFDA83D5E015"
+          "content": "08B808E8D3312C268F9FE1FFEBFCFAAF342E7FE4AC40D219A7E1B58BAC547D6F"
         },
         {
           "alg": "SHA-256",
-          "content": "69ACCA6501EED74582B76DBBCEEE2A91613F54728E3E418346000D7103101676"
+          "content": "0F0F596A0DAB6826AA21D103C7BC242E3FB7CFC99C5C3D44A35BA8C83ABBDCA4"
         },
         {
           "alg": "SHA-256",
-          "content": "83E6CF438B106C6B3852D70960967BB1B70C87438050DCA0981E4B9AA751A4C1"
+          "content": "15443805D6B7AA11610CC6C5BE7E71B4A93369AEB2CA5A13C2DEF53A3AF5BA45"
         },
         {
           "alg": "SHA-256",
-          "content": "9261783640E23258694A9FF0795DF430A5A7B0A651D3DD53DD0969AD6BE16DA7"
+          "content": "1B6FF57CC69B339F8FEB9E7B567B0E0EACB16BFAF234159496623EF7A67BA640"
         },
         {
           "alg": "SHA-256",
-          "content": "A6B1CCD08C04B4A06FB5AEB381BE99DE5AD1E5375C1785E31D78C880FEB57687"
+          "content": "25B2619274BCA77D0EB7B4D96DCF2D1142BB9BF172AD6A7491A1E1F82E6E48FA"
         },
         {
           "alg": "SHA-256",
-          "content": "BDF942448169E5336451D0494D7E3D81CFA726D5AA312AFFDC4682DD62A62F6D"
+          "content": "28E6311402AF59C8B02E3FA0F5E7D8EB465B25081381803B127D97E6A4395D5A"
         },
         {
           "alg": "SHA-256",
-          "content": "CE045D3C298FDDD30E89A2777F97039D1B641EB9518AC7B26A4721903539C694"
+          "content": "29BCE3190C2973FCD2171C95EEAB8BF06D2F7A7EB107455CE3E4662C704AECDB"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "2FBFD2510B6163B189773155A8246C025CB260CCC7CD12AD18C36C54F5617BB9"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3298FCE72C35F836EAB4C4DB8B960104FF1EA718033A6B5E236F04EFE3A1B6E1"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "3C35091ADD5863FEB9CF651851BB1B23592F1F9551B5DFED72837C83EA4E5B85"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "4BC6C60FAF86162DF25BA2FF5611D27B6EF8226DE9D61C07A0FAB53C169630A5"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "510C7261ED986ECD6F74EDC1A13412759E7ABC2E8BE3A6C85E15F6C53E1F3C84"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "533185C89BE3FFB01656C9425DA4FF42587A3AF784B37D39FE762E8FCE3B2DBE"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "54C80F9BED0BF1533ECF5A90DC59651645622D62B0BCFFA2692D108A1F794917"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "58D2F47E7B54FDED3407DBBBE4E59D29CA627F85BF6C0F21F0B151C6C7FC9C53"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "5CB82CA38596E1350FCEAF994F287847F82F7B8436380D36BA0937A03107D0EE"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "60AAD449DBCEBAA8D69BFF50C6BA39858FAB8D256E779A99BB30EBF6724B9B48"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "6596F3E939962F13099CE8D1A96B83226E908CA369B193370A6EFA84585A1601"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "71C16B382B22D3234913A3F74A1EA84BEDE197D11EB03871DF17BB123088DFA5"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "77DD6E0C659FDC45824E0746988AC5C060C2A9FEE9B8CBBCDB999B3F29D3CD10"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "872249311539281C1E8A5D8D6F27F478BF705A9BD931BF374B6B31B05177DFDA"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "8CAE3D8F2585BE01670DA9FD5010C61724C51B61ECD4C06820E95874739DAF7C"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "8CD28B2CACBE63D53E28A38546A3492B488417EEB3F7ECF10954476FC2508882"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "8D475F4053C693B5C1483EB4845824129B0B51C65712E736B3C2EA1C8F6080CD"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "95BD4751357BEF52AA655E236B9667FF054885DE4B118E4CE9BA5C06E12EF5D0"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A72F70B1AA630FA2106D39A025E2BE75C272B7EC8233DA94E2F407EA754CC32D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "A8D3E6ACDE5A80D13B13B5E4C7C226CA682F31D0A62B6C33CEA038714BC2DE1B"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "B62FDED687E55ACAF9E36C1230B006066A35B3F6DF093BA1FD3B2FF592070E1D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "B777FBE0BDB2C4DC764AADF5F70E9B23B2E536C339D61C799D3EA1B575A7C285"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "B77AB23D1520C807D11E703E79B020D3BC3676A0F5EBC8531F46D3FAC8AECB2F"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "B9CE0D6548BD73B1329075B247D3FDC61538922F558EE42059E08F5DF53FC197"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "CA95E762DF1CA761F330E3F2A034C15AC144569844B52527A5A9ECA9F524C0F1"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "CE5A18654F5D56D11400AB5D87103660E14DECEAB41818A06A42ACC8DBBE427D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "D83BAC141BD9360D8E995EC512097BE19EAD2E9213C3E7088510A036F3192B8D"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "DA6CE2DA215810D56539FA6CAC77D9E27F4D8139C6868C53436B2FE933F43C79"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "E923E75C9D641CDB8BBAC60070A2DCCDB684FC555AF2BFF48B0EADED0F88C2DC"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "EB67BA2CBF598E842F14684EAB029A5A4BA7AB587E8C4E40940A77ED0596B31E"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "ECEF88054D8A77878F61061FF67DFC5E1C17D1F7334890AB508B310E8E68EE46"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "ED0BC5A1A9F6346E7BDADC106FA2D4C6E79D71D8B2DF4366260AB3BAF36A8399"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "FBAA022A49A27B65668592CF43B898FF3978CBE4E6926FDFE24DBEF59053BD26"
         }
       ],
       "name": "tornado",
-      "purl": "pkg:pypi/tornado@6.5.10",
+      "purl": "pkg:pypi/tornado@6.6.1",
       "type": "library",
-      "version": "6.5.10"
+      "version": "6.6.1"
     },
     {
       "bom-ref": "pkg:pypi/tqdm@4.67.1",
@@ -6929,10 +5446,6 @@
         },
         {
           "alg": "SHA-256",
-          "content": "3DAF64305D6CEA88D3334C65EBC9BCD0C64C9564A977084366AA768D57CBCF64"
-        },
-        {
-          "alg": "SHA-256",
           "content": "58C0E131DA05134A2A4788CCBCC0C1105CF0F54C8E98F19E34CD465396DC15EB"
         },
         {
@@ -6958,10 +5471,6 @@
         {
           "alg": "SHA-256",
           "content": "D4A0E1CD4C4A76370ED74A8432A53CEA28716827D19E40FFC732233E35CEB3F6"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "EE89FBF782EC2AD50391DD1CF26CBEA4F4467154C37F4773026DA8FC31C0F58E"
         },
         {
           "alg": "SHA-256",
@@ -7101,11 +5610,11 @@
     "properties": [
       {
         "name": "cwc:uv-lock-sha256",
-        "value": "e2843c56fc1a3883233dac63d42c6b17604107f9aec6191b1644fcb8cd2f7a2b"
+        "value": "a02d5b370255d697d7a67860ca8472d8e30b1a6974fceafe94943d1d55fa9339"
       }
     ]
   },
-  "serialNumber": "urn:uuid:8a0dd8d9-731d-5893-bc20-8da1274a68d3",
+  "serialNumber": "urn:uuid:8f90d6fa-9122-51fb-9d79-1dc0769b9842",
   "specVersion": "1.5",
   "version": 1
 }
