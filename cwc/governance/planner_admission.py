@@ -11,9 +11,8 @@ import math
 from collections.abc import Callable
 from typing import Any, TypeVar
 
+from cwc.epistemics.memory_free_plan_replay import replay_memory_free_plan
 from cwc.governance.verifier_qualification import Action, VerificationDecision, canonical_bytes, digest
-from cwc.memory.epistemic_store import EpistemicMemoryLedger
-from cwc.planning.proof_carrying import PlanState, WorldBranch, plan_counterfactual
 
 SCHEMA = "CWC_MEMORY_FREE_PLAN_ADMISSION_V1"
 MAX_INPUT_BYTES = 1 << 20
@@ -122,23 +121,19 @@ def verify_planner_document(raw: bytes) -> VerificationDecision:
         if not _in_scope(doc):
             return _UNKNOWN
         cert = doc["certificate"]
-        worlds = [WorldBranch(w["world_id"], w["utilities"], w["provenance"]) for w in doc["worlds"]]
-        result = plan_counterfactual(
-            ledger=EpistemicMemoryLedger(),
+        expected, state, selected_action = replay_memory_free_plan(
             plan_id=cert["plan_id"],
             context_scope=doc["context_scope"],
-            required_memories=(),
-            worlds=worlds,
+            worlds=[(w["world_id"], w["utilities"], w["provenance"]) for w in doc["worlds"]],
             robust_margin=cert["robust_margin"],
         )
-        expected = {**result.certificate.payload(), "certificate_digest": result.certificate.certificate_digest}
         # Byte-normalized comparison keeps True distinct from 1 and preserves the
         # native certificate's explicit numeric representation.
         if canonical_bytes(cert) != canonical_bytes(expected):
             return _REJECT
-        if result.state is PlanState.ROBUST_ACTION:
-            return VerificationDecision("PASS", "SUBMIT", result.selected_action)
-        if result.state is PlanState.ABSTAIN_WORLD_DISAGREEMENT:
+        if state == "ROBUST_ACTION":
+            return VerificationDecision("PASS", "SUBMIT", selected_action)
+        if state == "ABSTAIN_WORLD_DISAGREEMENT":
             return VerificationDecision("PASS", "ESCALATE")
         return VerificationDecision("PASS", "STOP")
     except (ValueError, TypeError, KeyError, OverflowError, RecursionError, UnicodeError):

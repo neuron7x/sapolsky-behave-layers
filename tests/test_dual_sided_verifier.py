@@ -6,6 +6,7 @@ from dataclasses import replace
 
 import pytest
 
+from cwc.epistemics import memory_free_plan_replay as replay
 from cwc.governance.planner_admission import (
     MAX_INPUT_BYTES,
     AdmissionBlocked,
@@ -27,8 +28,8 @@ from scripts.dual_sided_verifier_gate import load_fixtures, mutation_controls, r
 FIXTURES = load_fixtures()
 
 
-@pytest.mark.parametrize("relative", ["uv.lock", ".python-version"])
-def test_source_identity_binds_runtime_inputs(tmp_path, monkeypatch, relative):
+@pytest.mark.parametrize("relative", ["uv.lock", ".python-version", "cwc/epistemics/memory_free_plan_replay.py"])
+def test_source_identity_binds_runtime_and_replay_inputs(tmp_path, monkeypatch, relative):
     original_root = gate.ROOT
     for item in gate.source_identity()["manifest"]:
         target = tmp_path / item["path"]
@@ -197,6 +198,83 @@ def test_critic_disagreement_blocks_executor(monkeypatch):
     with pytest.raises(AdmissionBlocked):
         execute_verified_plan(raw, expected_input_sha256=digest(raw), executor=calls.append)
     assert calls == []
+
+
+@pytest.mark.parametrize("fault", ["certificate", "state", "action", "missing_action"])
+def test_replay_disagreement_never_reaches_executor(monkeypatch, fault):
+    def corrupted_replay(**kwargs):
+        certificate, state, selected_action = replay.replay_memory_free_plan(**kwargs)
+        if fault == "certificate":
+            certificate["certificate_digest"] = "0" * 64
+        elif fault == "state":
+            state = "ABSTAIN_WORLD_DISAGREEMENT"
+        elif fault == "action":
+            selected_action = "B"
+        else:
+            selected_action = None
+        return certificate, state, selected_action
+
+    monkeypatch.setattr("cwc.governance.planner_admission.replay_memory_free_plan", corrupted_replay)
+    raw = FIXTURES[0].payload
+    calls = []
+    assert critic_planner_document(raw) == FIXTURES[0].expected
+    with pytest.raises(AdmissionBlocked):
+        execute_verified_plan(raw, expected_input_sha256=digest(raw), executor=calls.append)
+    assert calls == []
+
+
+@pytest.mark.parametrize("error", [ValueError, RuntimeError])
+def test_native_replay_failure_preserves_critic_independence_and_exception_policy(monkeypatch, error):
+    def failed_native(**kwargs):
+        raise error("native replay unavailable")
+
+    monkeypatch.setattr(replay, "plan_counterfactual", failed_native)
+    raw = FIXTURES[0].payload
+    calls = []
+    assert critic_planner_document(raw) == FIXTURES[0].expected
+    if error is ValueError:
+        assert verify_planner_document(raw) == VerificationDecision("FAIL", "STOP")
+        with pytest.raises(AdmissionBlocked):
+            execute_verified_plan(raw, expected_input_sha256=digest(raw), executor=calls.append)
+    else:
+        with pytest.raises(RuntimeError, match="native replay unavailable"):
+            verify_planner_document(raw)
+        with pytest.raises(RuntimeError, match="native replay unavailable"):
+            execute_verified_plan(raw, expected_input_sha256=digest(raw), executor=calls.append)
+    assert calls == []
+
+
+def test_each_replay_has_fresh_empty_authority_and_detached_certificate(monkeypatch):
+    ledgers, native_results = [], []
+
+    def observed_native(**kwargs):
+        ledger = kwargs["ledger"]
+        assert ledger.memory_ids == ledger.events == ledger.invalidated_assumptions == ()
+        assert kwargs["required_memories"] == kwargs["information_actions"] == ()
+        ledgers.append(ledger)
+        result = plan_counterfactual(**kwargs)
+        native_results.append(result)
+        return result
+
+    monkeypatch.setattr(replay, "plan_counterfactual", observed_native)
+    doc = json.loads(FIXTURES[0].payload)
+    kwargs = {
+        "plan_id": doc["certificate"]["plan_id"],
+        "context_scope": doc["context_scope"],
+        "worlds": [(w["world_id"], w["utilities"], w["provenance"]) for w in doc["worlds"]],
+        "robust_margin": doc["certificate"]["robust_margin"],
+    }
+    certificate, state, action = replay.replay_memory_free_plan(**kwargs)
+    assert certificate == doc["certificate"]
+    assert (state, action) == ("ROBUST_ACTION", FIXTURES[0].expected.selected_action)
+    certificate["context_scope"].append("MUTATED")
+    certificate["world_bindings"][0][1] = "0" * 64
+    second, second_state, second_action = replay.replay_memory_free_plan(**kwargs)
+    assert second == doc["certificate"]
+    assert (second_state, second_action) == (state, action)
+    assert len(ledgers) == 2
+    assert ledgers[0] is not ledgers[1]
+    assert native_results[0].certificate.payload() == native_results[1].certificate.payload()
 
 
 @pytest.mark.parametrize("raw", [b"", b"\xff", b"[]", b"null", b"x" * (MAX_INPUT_BYTES + 1), b"[" * 2000])
