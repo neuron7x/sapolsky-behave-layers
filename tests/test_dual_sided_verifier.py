@@ -21,9 +21,30 @@ from cwc.governance.verifier_qualification import (
 )
 from cwc.memory.epistemic_store import EpistemicMemoryLedger
 from cwc.planning.proof_carrying import WorldBranch, plan_counterfactual
+from scripts import dual_sided_verifier_gate as gate
 from scripts.dual_sided_verifier_gate import load_fixtures, mutation_controls, replay_report
 
 FIXTURES = load_fixtures()
+
+
+@pytest.mark.parametrize("relative", ["uv.lock", ".python-version"])
+def test_source_identity_binds_runtime_inputs(tmp_path, monkeypatch, relative):
+    original_root = gate.ROOT
+    for item in gate.source_identity()["manifest"]:
+        target = tmp_path / item["path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((original_root / item["path"]).read_bytes())
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    # Keep commit, tree and dirty state identical: bytes must carry the change.
+    monkeypatch.setattr(gate.subprocess, "check_output", lambda *args, **kwargs: "unchanged")
+    before = gate.source_identity()
+    assert relative in {item["path"] for item in before["manifest"]}
+    target = tmp_path / relative
+    target.write_bytes(target.read_bytes() + b"\n# changed during measurement\n")
+    after = gate.source_identity()
+    assert before["source_commit"] == after["source_commit"]
+    assert before["tracked_worktree_dirty"] == after["tracked_worktree_dirty"]
+    assert before["worktree_content_sha256"] != after["worktree_content_sha256"]
 
 
 @pytest.mark.parametrize("fixture", FIXTURES, ids=lambda f: f.fixture_id)

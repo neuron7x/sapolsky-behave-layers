@@ -92,7 +92,9 @@ def source_identity() -> dict[str, object]:
             "tests/test_dual_sided_verifier.py",
             "tests/fixtures/dual_sided_planner.json",
             "Makefile.cwc",
+            ".python-version",
             "pyproject.toml",
+            "uv.lock",
             "cwc-requirements-dev.txt",
         }
     )
