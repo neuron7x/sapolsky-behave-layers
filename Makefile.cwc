@@ -50,9 +50,16 @@ workflow-lint:
 		-color .github/workflows/*.yml
 
 secret-scan:
-	docker run --rm --user "$$(id -u):$$(id -g)" \
-		-v "$$(pwd):/repo" -w /repo zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
-		git --redact --no-banner --exit-code 1 --log-opts=--all
+	@set -eu; \
+		git_common_dir="$$(git rev-parse --path-format=absolute --git-common-dir)"; \
+		expected_head="$$(git rev-parse --verify HEAD)"; \
+		docker run --rm --user "$$(id -u):$$(id -g)" --entrypoint sh \
+		-v "$$(pwd):/repo:ro" -v "$$git_common_dir:$$git_common_dir:ro" -w /repo \
+		zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
+		-euc 'test "$$(git rev-parse --verify HEAD)" = "$$1"; \
+		commits="$$(git rev-list --count --all)"; test "$$commits" -gt 0; \
+		printf "SECRET-SCAN-GIT-PREFLIGHT: %s commits\\n" "$$commits"; \
+		exec gitleaks git --redact --no-banner --exit-code 1 --log-opts=--all' -- "$$expected_head"
 
 dependency-audit:
 	uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt
@@ -63,6 +70,7 @@ dependency-audit:
 	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
 
 dependency-integrity-gate:
+	PYTHONPATH=. $(PY) -m pytest -q tests/test_dependency_integrity_gate.py
 	PYTHONPATH=. $(PY) scripts/dependency_integrity_gate.py --self-test
 	PYTHONPATH=. $(PY) scripts/dependency_integrity_gate.py
 
@@ -96,7 +104,7 @@ engineering-assurance: architecture-gate hermeticity-gate complexity-gate depend
 # DGC P0 governance gate: executable invariants, oracle semantics, injected faults,
 # and non-promoting development evidence integrity.
 dgc-gate:
-	PYTHONPATH=. $(PY) -m pytest -q tests/test_dgc_core.py tests/test_dgc_governance_v2.py tests/test_dgc_oracle_experiment.py
+	PYTHONPATH=. $(PY) -m pytest -q tests/test_dgc_core.py tests/test_dgc_governance_v2.py tests/test_dgc_oracle_experiment.py tests/test_dgc_private_evidence.py
 	PYTHONPATH=. $(PY) scripts/dgc_verification_gate.py
 
 # Financial DGC gate: validates both non-promoting development evidence and the
