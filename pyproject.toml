@@ -3,9 +3,9 @@ name = "nanochat"
 version = "0.1.0"
 description = "the minimal full-stack ChatGPT clone"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-    "filelock>=3.19.0",
+    "filelock>=4.2.1",
     "kernels>=0.11.7",
     "numpy>=1.26.0",
     "nvidia-ml-py>=13.610.0",
@@ -22,8 +22,8 @@ dependencies = [
 dev = [
     "ipykernel>=7.1.0",
     "matplotlib>=3.10.8",
-    "pytest>=8.0.0",
-    "python-dotenv>=1.2.1",
+    "pytest>=9.0.3",
+    "python-dotenv>=1.2.2",
 ]
 
 [tool.pytest.ini_options]
@@ -56,7 +56,7 @@ explicit = true
 
 [project.optional-dependencies]
 cpu = [
-    "setuptools>=65.0.0",
+    "setuptools>=84.1.0",
     "torch==2.13.0",
 ]
 gpu = [

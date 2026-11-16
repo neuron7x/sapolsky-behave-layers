@@ -1,15 +1,14 @@
 """Offline dependency-integrity gate for the frozen runtime supply chain.
 
 This gate proves only local invariants that can be checked without a vulnerability
-feed: lock/source origin, canonical-Python artifact hashes, direct dependency
-presence, exact dev-tool pins, and SBOM/lock equivalence. It deliberately does
+feed: lock/source origin, all artifact hashes, direct dependency presence,
+exact dev-tool pins, dev/runtime version agreement, and SBOM/lock equivalence. It deliberately does
 NOT claim that dependencies are free of known vulnerabilities; `dependency-audit`
 remains the authoritative CVE gate.
 """
 from __future__ import annotations
 
 import argparse
-import copy
 import hashlib
 import json
 import re
@@ -32,7 +31,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 REQ_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)")
 EXACT_REQ = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9_.-]*(?:\[[A-Za-z0-9_,.-]+\])?==[^\s;]+(?:\s*;\s*.+)?$"
+    r"^[A-Za-z0-9][A-Za-z0-9_.-]*(?:\[[A-Za-z0-9_,.-]+\])?=="
+    # Require one PEP 440 version literal, preserving environment markers.
+    r"v?(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*"
+    r"(?:[-_.]?(?:alpha|a|beta|b|preview|pre|c|rc)[-_.]?[0-9]*)?"
+    r"(?:-[0-9]+|[-_.]?(?:post|rev|r)[-_.]?[0-9]*)?"
+    r"(?:[-_.]?dev[-_.]?[0-9]*)?"
+    r"(?:\+[a-z0-9]+(?:[-_.][a-z0-9]+)*)?"
+    r"(?:\s*;\s*.+)?$",
+    re.IGNORECASE,
 )
 PYTHON_PIN = re.compile(r"^(\d+)\.(\d+)(?:\.\d+)?$")
 
@@ -51,9 +58,13 @@ class IntegrityReport:
         return not self.errors
 
 
+def _normalize_name(value: str) -> str:
+    return re.sub(r"[-_.]+", "-", value).lower()
+
+
 def _name(value: str) -> str:
     match = REQ_NAME.match(value)
-    return match.group(1).lower().replace("_", "-") if match else ""
+    return _normalize_name(match.group(1)) if match else ""
 
 
 def _safe_https_host(url: str, allowed_hosts: frozenset[str]) -> tuple[bool, str]:
@@ -72,9 +83,8 @@ def _artifact_is_canonical_python(artifact: dict[str, Any], major: int, minor: i
     """Return whether an artifact is relevant to the pinned canonical interpreter.
 
     sdists are always relevant. Wheels are relevant if they are CPython-specific for
-    the canonical version or generic Python 3 wheels. This is intentionally narrower
-    than the project's declared Python range: hash debt outside the pinned interpreter
-    is surfaced as a warning rather than silently promoted to canonical integrity.
+    the canonical version or generic Python 3 wheels. This classification labels
+    metrics and diagnostics; every artifact requires a hash regardless of its tag.
     """
     url = urllib.parse.unquote(str(artifact.get("url", ""))).lower()
     if not url.endswith(".whl"):
@@ -136,7 +146,7 @@ def audit(root: Path = ROOT) -> IntegrityReport:
     metrics["direct_runtime_dependencies"] = len(direct_names)
 
     locked_names = {
-        str(pkg.get("name", "")).lower().replace("_", "-")
+        _normalize_name(str(pkg.get("name", "")))
         for pkg in packages
         if isinstance(pkg, dict)
     }
@@ -155,7 +165,7 @@ def audit(root: Path = ROOT) -> IntegrityReport:
         versions = {
             str(pkg.get("version", ""))
             for pkg in packages
-            if str(pkg.get("name", "")).lower().replace("_", "-") == name
+            if isinstance(pkg, dict) and _normalize_name(str(pkg.get("name", ""))) == name
         }
         if not versions:
             continue
@@ -194,7 +204,7 @@ def audit(root: Path = ROOT) -> IntegrityReport:
         elif source_type == "virtual":
             # Only the root project may be virtual; transitive path/VCS sources are
             # forbidden by omission from this allowlist.
-            if name != str(project.get("project", {}).get("name", "")):
+            if _normalize_name(name) != _normalize_name(str(project.get("project", {}).get("name", ""))):
                 errors.append(f"uv.lock:{name}=={version}: unexpected virtual dependency")
         else:
             errors.append(f"uv.lock:{name}=={version}: forbidden source type {source_type!r}")
@@ -245,11 +255,8 @@ def audit(root: Path = ROOT) -> IntegrityReport:
     )
     for item in canonical_hashless:
         errors.append(f"canonical artifact missing SHA-256: {item}")
-    if noncanonical_hashless:
-        warnings.append(
-            "declared Python/platform matrix contains unhashed noncanonical artifacts: "
-            f"{len(noncanonical_hashless)} (canonical {metrics.get('canonical_python', 'UNKNOWN')} remains hash-complete)"
-        )
+    for item in noncanonical_hashless:
+        errors.append(f"noncanonical artifact missing SHA-256: {item}")
 
     dev_lines = [
         line.strip()
@@ -260,6 +267,23 @@ def audit(root: Path = ROOT) -> IntegrityReport:
     for line in dev_lines:
         if not EXACT_REQ.fullmatch(line):
             errors.append(f"cwc-requirements-dev.txt: requirement is not exact-pinned: {line}")
+            continue
+        lhs, rhs = line.split("==", 1)
+        name = _name(lhs)
+        if name not in locked_names:
+            continue
+        expected = rhs.split(";", 1)[0].strip()
+        versions = {
+            str(pkg.get("version", ""))
+            for pkg in packages
+            if isinstance(pkg, dict) and _normalize_name(str(pkg.get("name", ""))) == name
+        }
+        mismatches = sorted(version for version in versions if version.split("+", 1)[0] != expected)
+        if mismatches:
+            errors.append(
+                f"cwc-requirements-dev.txt: runtime pin {name}=={expected} "
+                f"mismatches uv.lock versions: {mismatches}"
+            )
 
     sbom_errors = build_sbom.validate(root)
     errors.extend(f"SBOM: {error}" for error in sbom_errors)
@@ -288,15 +312,19 @@ def _copy_controls(src: Path, dst: Path) -> None:
 
 
 def run_self_test(root: Path = ROOT) -> dict[str, bool]:
-    """Inject five supply-chain faults; each must make the gate fail closed."""
+    """Inject supply-chain faults and require the intended guard to reject each."""
+    if not audit(root).passed:
+        raise RuntimeError("self-test requires passing unmodified dependency controls")
     attacks: dict[str, bool] = {}
 
-    def attack(name: str, mutate) -> None:  # type: ignore[no-untyped-def]
+    def attack(name: str, mutate, diagnostic: str) -> None:  # type: ignore[no-untyped-def]
         with tempfile.TemporaryDirectory(prefix="cwc-dep-integrity-") as tmp:
             sandbox = Path(tmp)
             _copy_controls(root, sandbox)
             mutate(sandbox)
-            attacks[name] = not audit(sandbox).passed
+            # Lock mutations also invalidate the SBOM. That collateral failure
+            # cannot establish that the origin/hash/dependency guard is alive.
+            attacks[name] = any(diagnostic in error for error in audit(sandbox).errors)
 
     def bad_registry(sandbox: Path) -> None:
         path = sandbox / "uv.lock"
@@ -312,19 +340,14 @@ def run_self_test(root: Path = ROOT) -> dict[str, bool]:
 
     def remove_direct_dependency(sandbox: Path) -> None:
         path = sandbox / "uv.lock"
-        payload = _read_toml(path)
         target = _name(str(_read_toml(sandbox / "pyproject.toml")["project"]["dependencies"][0]))
-        payload["package"] = [
-            pkg
-            for pkg in payload["package"]
-            if str(pkg.get("name", "")).lower().replace("_", "-") != target
-        ]
-        # tomllib has no writer; remove the first full package table textually.
+        # tomllib has no writer; remove matching package tables textually.
         original = path.read_text(encoding="utf-8")
         chunks = original.split("[[package]]")
         kept = [chunks[0]]
         for chunk in chunks[1:]:
-            if re.search(rf'\nname = "{re.escape(target)}"\n', "\n" + chunk, flags=re.IGNORECASE):
+            name_match = re.search(r'\nname = "([^"]+)"\n', "\n" + chunk)
+            if name_match and _normalize_name(name_match.group(1)) == target:
                 continue
             kept.append("[[package]]" + chunk)
         path.write_text("".join(kept), encoding="utf-8")
@@ -338,19 +361,70 @@ def run_self_test(root: Path = ROOT) -> dict[str, bool]:
     def remove_canonical_hash(sandbox: Path) -> None:
         path = sandbox / "uv.lock"
         text = path.read_text(encoding="utf-8")
+        pin = (sandbox / ".python-version").read_text(encoding="utf-8").strip()
+        match = PYTHON_PIN.fullmatch(pin)
+        if match is None:
+            raise RuntimeError("self-test requires an exact canonical Python pin")
+        tag = f"cp{match.group(1)}{match.group(2)}"
         pattern = re.compile(
-            r'(url = "[^"]*-cp310-cp310-[^"]+\.whl", )hash = "sha256:[0-9a-f]{64}", '
+            rf'(url = "[^"]*-{tag}-[^"]+\.whl", )hash = "sha256:[0-9a-f]{{64}}", '
         )
         mutated, count = pattern.subn(r"\1", text, count=1)
         if count != 1:
-            raise RuntimeError("self-test could not locate canonical CPython 3.10 wheel hash")
+            raise RuntimeError(f"self-test could not locate canonical CPython {pin} wheel hash")
         path.write_text(mutated, encoding="utf-8")
 
-    attack("unapproved_registry_origin", bad_registry)
-    attack("unapproved_artifact_origin", bad_artifact_host)
-    attack("missing_direct_dependency", remove_direct_dependency)
-    attack("unpinned_dev_tool", loosen_dev_pin)
-    attack("canonical_artifact_hash_removed", remove_canonical_hash)
+    def tamper_sbom(sandbox: Path) -> None:
+        path = sandbox / "docs/security/SBOM.cdx.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["serialNumber"] = "urn:uuid:00000000-0000-0000-0000-000000000000"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    def remove_noncanonical_hash(sandbox: Path) -> None:
+        pin = (sandbox / ".python-version").read_text(encoding="utf-8").strip()
+        match = PYTHON_PIN.fullmatch(pin)
+        if match is None:
+            raise RuntimeError("self-test requires an exact canonical Python pin")
+        major, minor = int(match.group(1)), int(match.group(2))
+        path = sandbox / "uv.lock"
+        for package in _read_toml(path)["package"]:
+            for wheel in package.get("wheels", []):
+                if _artifact_is_canonical_python(wheel, major, minor):
+                    continue
+                pattern = re.compile(
+                    rf'(url = "{re.escape(wheel["url"])}", )hash = "sha256:[0-9a-f]{{64}}", '
+                )
+                mutated, count = pattern.subn(r"\1", path.read_text(encoding="utf-8"), count=1)
+                if count == 1:
+                    path.write_text(mutated, encoding="utf-8")
+                    return
+        raise RuntimeError("self-test could not locate a noncanonical wheel hash")
+
+    def drift_dev_runtime_pin(sandbox: Path) -> None:
+        locked_names = {
+            _normalize_name(str(package["name"])) for package in _read_toml(sandbox / "uv.lock")["package"]
+        }
+        path = sandbox / "cwc-requirements-dev.txt"
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            if not EXACT_REQ.fullmatch(line) or _name(line) not in locked_names:
+                continue
+            lhs, rhs = line.split("==", 1)
+            expected, separator, marker = rhs.partition(";")
+            replacement = "0.0.1" if expected.strip() == "0.0.0" else "0.0.0"
+            lines[index] = f"{lhs}=={replacement}{separator}{marker}"
+            path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            return
+        raise RuntimeError("self-test could not locate a dev/runtime exact pin")
+
+    attack("unapproved_registry_origin", bad_registry, "unapproved host evil.invalid")
+    attack("unapproved_artifact_origin", bad_artifact_host, "unapproved host evil.invalid")
+    attack("missing_direct_dependency", remove_direct_dependency, "uv.lock: direct dependency missing:")
+    attack("unpinned_dev_tool", loosen_dev_pin, "requirement is not exact-pinned:")
+    attack("canonical_artifact_hash_removed", remove_canonical_hash, "canonical artifact missing SHA-256:")
+    attack("sbom_lock_equivalence", tamper_sbom, "SBOM: docs/security/SBOM.cdx.json: SBOM does not exactly match")
+    attack("noncanonical_artifact_hash_removed", remove_noncanonical_hash, "noncanonical artifact missing SHA-256:")
+    attack("dev_runtime_version_drift", drift_dev_runtime_pin, "cwc-requirements-dev.txt: runtime pin ")
     return attacks
 
 

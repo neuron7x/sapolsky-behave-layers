@@ -36,7 +36,7 @@ def main() -> int:
         if output.exists():
             raise FileExistsError("admission output is immutable")
         output.parent.mkdir(parents=True, exist_ok=True)
-        fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         try:
             with os.fdopen(fd, "wb") as handle:
                 handle.write(data)
