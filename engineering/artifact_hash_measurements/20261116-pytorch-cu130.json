@@ -1,0 +1,128 @@
+{
+  "artifacts": [
+    {
+      "ended_at": "2026-11-16T17:00:43.373909+00:00",
+      "etag": "\"d7d7e0b69e4e9d14a615ead0aa5f97f9-51\"",
+      "last_modified": "Wed, 08 Jul 2026 11:47:11 GMT",
+      "sha256": "cec113fb60f0fe9d2c04d8061d560ddae3f8bf782984c1e7b993083608d70b91",
+      "size": 427084472,
+      "started_at": "2026-11-16T16:57:59.818223+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp313-cp313-manylinux_2_28_aarch64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:00:34.529724+00:00",
+      "etag": "\"31c994f211c3525a81ce4411d58b2f96-63\"",
+      "last_modified": "Wed, 08 Jul 2026 11:47:22 GMT",
+      "sha256": "95bdbad2f0786bd448932e4b72a6404aa22290db6ec954e24edfa6d33c833c8f",
+      "size": 526479353,
+      "started_at": "2026-11-16T16:57:59.819046+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp313-cp313-manylinux_2_28_x86_64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:06:47.045235+00:00",
+      "etag": "\"eecd4de5fc8acaeadcd5806a3eaa5f35-229\"",
+      "last_modified": "Wed, 08 Jul 2026 11:47:49 GMT",
+      "sha256": "cf23236e9deed7d3510d14d9b9592d75d272ef7b35bbfee31a02bea339c73971",
+      "size": 1915517499,
+      "started_at": "2026-11-16T16:57:59.819579+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp313-cp313-win_amd64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:03:11.982678+00:00",
+      "etag": "\"1776ed22d648c469e0070a27378d5b08-51\"",
+      "last_modified": "Wed, 08 Jul 2026 11:47:59 GMT",
+      "sha256": "0ad188cdfa7a5ccc67366c8e80269d32b45ebffc759c282d121516922405662a",
+      "size": 427097771,
+      "started_at": "2026-11-16T17:00:34.529827+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314-manylinux_2_28_aarch64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:03:12.706865+00:00",
+      "etag": "\"2965eca3fd935bf77a09f24a242a295a-63\"",
+      "last_modified": "Wed, 08 Jul 2026 11:48:10 GMT",
+      "sha256": "e231302a457298d0236f7bde31082568f6cd0613b66b4eb46849e8ad53c2e38d",
+      "size": 526491534,
+      "started_at": "2026-11-16T17:00:43.374007+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314-manylinux_2_28_x86_64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:11:39.356946+00:00",
+      "etag": "\"b5de64fd6e5a9b2d08aa25f0c6313530-230\"",
+      "last_modified": "Wed, 08 Jul 2026 11:48:38 GMT",
+      "sha256": "590b2a2b53ef295dcfcd703df17929bd579705bb0e42d9e43c462fe0f0b1e088",
+      "size": 1922599627,
+      "started_at": "2026-11-16T17:03:11.982796+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314-win_amd64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:05:33.442134+00:00",
+      "etag": "\"97c0f7cb1b31e405a550eb31596ff95d-51\"",
+      "last_modified": "Wed, 08 Jul 2026 11:48:47 GMT",
+      "sha256": "bddf05e9306ee873ae31a616a494c41e2c213406f76b60e5076c68555f27831c",
+      "size": 427091233,
+      "started_at": "2026-11-16T17:03:12.706961+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314t-manylinux_2_28_aarch64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:08:19.514696+00:00",
+      "etag": "\"912035a0277a22e1047101a6b0b98617-63\"",
+      "last_modified": "Wed, 08 Jul 2026 11:48:58 GMT",
+      "sha256": "4acf984b81a9e17c0e1d7cd47acd603eb03b484bfedd116271fa778dd34e25a2",
+      "size": 526448344,
+      "started_at": "2026-11-16T17:05:33.442328+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314t-manylinux_2_28_x86_64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:15:30.026832+00:00",
+      "etag": "\"5bd09af5cbf5be737bfe21f97a58fd10-230\"",
+      "last_modified": "Wed, 08 Jul 2026 11:49:26 GMT",
+      "sha256": "9612d7ba74c7cb590b028d9c95ef619fcc1c903a5ff19e277b84807466c34cdd",
+      "size": 1923024465,
+      "started_at": "2026-11-16T17:06:47.045356+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp314-cp314t-win_amd64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:10:51.138651+00:00",
+      "etag": "\"edcb8be06b35eadf796ee23e22d32ef2-51\"",
+      "last_modified": "Wed, 08 Jul 2026 11:49:35 GMT",
+      "sha256": "5e18ff87b8d29de21f8e49b9bdffe020b8aa7e8349ede49490d847a61cb534c7",
+      "size": 427100784,
+      "started_at": "2026-11-16T17:08:19.515240+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp315-cp315-manylinux_2_28_aarch64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:13:54.671186+00:00",
+      "etag": "\"db8bb2ed33c3a27067650676a35bce81-63\"",
+      "last_modified": "Wed, 08 Jul 2026 11:49:46 GMT",
+      "sha256": "38fba3d5e731d7c8916f90b2ae3bd972ca1790db02970b9eb0940743cda5bc96",
+      "size": 526492093,
+      "started_at": "2026-11-16T17:10:51.138750+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp315-cp315-manylinux_2_28_x86_64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:13:54.548759+00:00",
+      "etag": "\"72b5bd5cae7478a291a3c4349f0513cb-51\"",
+      "last_modified": "Wed, 08 Jul 2026 11:49:56 GMT",
+      "sha256": "4bbc72efd1e9c38e3910626514275cc0de694bbbba81cf03a14e0f1f8b01ac10",
+      "size": 427155179,
+      "started_at": "2026-11-16T17:11:39.357213+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp315-cp315t-manylinux_2_28_aarch64.whl"
+    },
+    {
+      "ended_at": "2026-11-16T17:15:17.767720+00:00",
+      "etag": "\"68a4b6f8bddd6fa032f605ac54cdff09-63\"",
+      "last_modified": "Wed, 08 Jul 2026 11:50:07 GMT",
+      "sha256": "5a7fe6ccfa0f17ab9e072e11d88edf6d7c8b7e5323daeaabccdf78dd4d50f8d2",
+      "size": 526521950,
+      "started_at": "2026-11-16T17:13:54.548948+00:00",
+      "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.13.0%2Bcu130-cp315-cp315t-manylinux_2_28_x86_64.whl"
+    }
+  ],
+  "measurement_script_sha256": "b262efc2d0af4078d6bcfda6b2b184e1d770edbea492d18f6b767a3075198d31",
+  "method": "SHA256 over complete HTTPS response bodies, with If-Match, HTTP 200, exact Content-Length, unchanged ETag and identity encoding required. These are measured hashes, not upstream-published checksums.",
+  "purpose": "Close missing PyTorch CUDA wheel hashes without narrowing the platform matrix.",
+  "receipt_sha256": "59e6f0af7e631fc39edd9889eb8953c9803ffc30e701994801b347bca2947066",
+  "schema": "measured-artifact-sha256-v1",
+  "started_at": "2026-11-16T16:57:59.816843+00:00",
+  "total_verified_bytes": 10529104304
+}

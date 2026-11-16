@@ -64,7 +64,7 @@ def main() -> int:
     output = _runtime_output(Path(args.output))
     output.parent.mkdir(parents=True, exist_ok=True)
     data = reference_bytes(reference)
-    fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)

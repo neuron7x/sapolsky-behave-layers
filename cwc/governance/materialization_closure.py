@@ -65,7 +65,7 @@ def _write_immutable(path: Path, data: bytes) -> None:
         if path.is_symlink() or not path.is_file() or path.read_bytes() != data:
             raise ClosureError("existing runtime evidence reference conflicts with verified subject")
         return
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)
