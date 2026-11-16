@@ -31,7 +31,7 @@ def _write_immutable(path: Path, data: bytes, *, allow_empty: bool) -> None:
     if not allow_empty and not data:
         raise RuntimeError(f"refusing to write empty required regression subject: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)
