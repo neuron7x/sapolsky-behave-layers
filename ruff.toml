@@ -12,7 +12,10 @@ include = [
     "scripts/instrumentation_overhead.py",
     "scripts/instrumentation_audit.py",
     "scripts/export_cwc_instrumentation_bundle.py",
+    "scripts/dependency_integrity_gate.py",
     "tests/test_instrumentation_*.py",
+    "tests/test_dependency_integrity_gate.py",
+    "tests/test_dgc_private_evidence.py",
 ]
 
 [lint]
