@@ -52,7 +52,8 @@ def test_dependency_self_test_calibrates_sbom_independently(monkeypatch: pytest.
 
     attacks = dependency_integrity_gate.run_self_test(ROOT)
 
-    assert attacks.pop("sbom_lock_equivalence") is False
+    sbom_guard_killed = attacks.pop("sbom_lock_equivalence")
+    assert sbom_guard_killed is False
     assert attacks["noncanonical_artifact_hash_removed"] is True
     assert attacks["dev_runtime_version_drift"] is True
     assert all(attacks.values()), attacks
@@ -63,8 +64,10 @@ def test_dependency_self_test_rejects_disabled_hash_guard(monkeypatch: pytest.Mo
 
     attacks = dependency_integrity_gate.run_self_test(ROOT)
 
-    assert attacks.pop("canonical_artifact_hash_removed") is False
-    assert attacks.pop("noncanonical_artifact_hash_removed") is False
+    canonical_guard_killed = attacks.pop("canonical_artifact_hash_removed")
+    noncanonical_guard_killed = attacks.pop("noncanonical_artifact_hash_removed")
+    assert canonical_guard_killed is False
+    assert noncanonical_guard_killed is False
     assert all(attacks.values()), attacks
 
 
