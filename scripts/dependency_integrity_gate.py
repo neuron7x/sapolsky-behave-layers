@@ -31,7 +31,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 REQ_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)")
 EXACT_REQ = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9_.-]*(?:\[[A-Za-z0-9_,.-]+\])?==[^\s;]+(?:\s*;\s*.+)?$"
+    r"^[A-Za-z0-9][A-Za-z0-9_.-]*(?:\[[A-Za-z0-9_,.-]+\])?=="
+    # Require one PEP 440 version literal, preserving environment markers.
+    r"v?(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*"
+    r"(?:[-_.]?(?:alpha|a|beta|b|preview|pre|c|rc)[-_.]?[0-9]*)?"
+    r"(?:-[0-9]+|[-_.]?(?:post|rev|r)[-_.]?[0-9]*)?"
+    r"(?:[-_.]?dev[-_.]?[0-9]*)?"
+    r"(?:\+[a-z0-9]+(?:[-_.][a-z0-9]+)*)?"
+    r"(?:\s*;\s*.+)?$",
+    re.IGNORECASE,
 )
 PYTHON_PIN = re.compile(r"^(\d+)\.(\d+)(?:\.\d+)?$")
 

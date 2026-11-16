@@ -107,6 +107,56 @@ def _write_controls_fixture(tmp_path: Path, pin: str = "3.11") -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "requirement",
+    [
+        "ruff==0.*",
+        "ruff==0.16.*",
+        "ruff==0.16.2,!=0.16.3",
+        "ruff==0.16.2,<1",
+        "ruff==0.16.2,==0.16.2",
+        "ruff==0.16.2>=0.16.1",
+        "ruff===0.16.2",
+        'ruff==0.*; python_version < "3.13"',
+        "ruff==not-a-version",
+    ],
+)
+def test_dev_requirement_must_pin_one_version(tmp_path: Path, requirement: str) -> None:
+    _write_controls_fixture(tmp_path)
+    dev = tmp_path / "cwc-requirements-dev.txt"
+    dev.write_text(dev.read_text(encoding="utf-8") + requirement + "\n", encoding="utf-8")
+    assert dependency_integrity_gate.build_sbom.validate(tmp_path) == []
+
+    report = dependency_integrity_gate.audit(tmp_path)
+
+    assert report.errors == (f"cwc-requirements-dev.txt: requirement is not exact-pinned: {requirement}",)
+
+
+@pytest.mark.parametrize(
+    "requirement",
+    [
+        "ruff==0.16.2",
+        "ruff==1!2.0.0",
+        "ruff==2.13.0+cu130",
+        "ruff==1.0rc1",
+        "ruff==v1.0-2",
+        "ruff==1.0.post1.dev2+local.1",
+        "ruff==1.0a",
+        "ruff==1.0_rev",
+        "ruff==1.0DEV",
+        "ruff==1.0+linux_x86-64",
+        'ruff[format,test]==0.16.2; python_version < "3.13"',
+        'ruff==0.16.2 ; python_version in "3.10, 3.11"',
+    ],
+)
+def test_exact_dev_versions_and_markers_remain_valid(tmp_path: Path, requirement: str) -> None:
+    _write_controls_fixture(tmp_path)
+    dev = tmp_path / "cwc-requirements-dev.txt"
+    dev.write_text(dev.read_text(encoding="utf-8") + requirement + "\n", encoding="utf-8")
+
+    assert dependency_integrity_gate.audit(tmp_path).errors == ()
+
+
 @pytest.mark.parametrize("pin", ["3.10", "3.11", "3.12.1"])
 def test_dependency_self_test_uses_pinned_python_wheel(tmp_path: Path, pin: str) -> None:
     _write_controls_fixture(tmp_path, pin)
