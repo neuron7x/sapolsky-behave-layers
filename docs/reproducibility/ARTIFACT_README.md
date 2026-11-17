@@ -12,9 +12,13 @@ Scale Pareto, energy efficiency, autonomous routing, independent replication,
 deployment-readiness — see README §"What CWC does NOT claim".
 
 ## Hardware / software
-Python 3.10 is selected by `.python-version`. The frozen runtime lock resolves PyTorch 2.13.0,
+Python 3.11 is selected by `.python-version`. The frozen runtime lock resolves PyTorch 2.13.0,
 with CPU (`2.13.0+cpu`) or CUDA 13.0 (`2.13.0+cu130`) selected by the uv extra.
 Verification-only tooling is separately exact-pinned in `cwc-requirements-dev.txt`.
+
+Python 3.11 is required by the patched filelock, Pillow and Tornado releases.
+The isolated, pure-Python P19 external verifier retains its versioned CPython 3.10
+contract; its historical receipts and scientific evidence are not migrated.
 
 ## Install & smoke test
 ```bash

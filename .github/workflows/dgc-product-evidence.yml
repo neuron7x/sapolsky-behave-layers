@@ -27,7 +27,7 @@ on:
       - ".github/workflows/dgc-product-evidence.yml"
 
 concurrency:
-  group: dgc-product-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: dgc-product-${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:

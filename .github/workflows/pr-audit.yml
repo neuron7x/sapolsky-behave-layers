@@ -43,13 +43,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run Gitleaks with redacted output
-        run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -v "$PWD:/repo" \
-            -w /repo \
-            zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
-            git --redact --no-banner --exit-code 1 --log-opts=--all
+        run: make -f Makefile.cwc secret-scan
 
   dependency-audit:
     name: Audit Python tooling dependencies
