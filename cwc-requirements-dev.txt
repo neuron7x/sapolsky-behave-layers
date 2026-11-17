@@ -7,7 +7,7 @@ hypothesis==6.165.2
 # pinned to the uv.lock version so mypy --strict checks against its real stubs.
 numpy==1.26.4
 mypy==2.3.0
-ruff==0.16.2
+ruff==0.17.3
 mutmut==3.7.0
 coverage==7.15.4
 tomli==2.4.1
