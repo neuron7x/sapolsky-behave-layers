@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'experiments/cneh_exp_03/**'
-      - 'tests/test_cneh_exp_03.py'
+      - 'tests/test_cneh_exp_03*.py'
       - '.github/workflows/cneh-exp-03.yml'
       - 'experiments/cneh_exp_01/bnsyn_adapter.py'
       - 'experiments/cneh_exp_01/bnsyn_integration_contract.json'
@@ -45,7 +45,7 @@ jobs:
           /tmp/cneh03-env/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock --report /tmp/cneh03-install.json
       - name: Structural mask, leakage and evidence falsifiers
         run: |
-          /tmp/cneh03-env/bin/python -m unittest discover -s tests -p test_cneh_exp_03.py -v
+          /tmp/cneh03-env/bin/python -m unittest discover -s tests -p 'test_cneh_exp_03*.py' -v
       - name: Execute all eight frozen paired worlds
         run: |
           /tmp/cneh03-env/bin/python -m experiments.cneh_exp_03.run --source .cneh-inputs/bnsyn --out /tmp/cneh03-evidence
@@ -53,6 +53,17 @@ jobs:
         run: |
           /tmp/cneh03-env/bin/python -m experiments.cneh_exp_03.run --source .cneh-inputs/bnsyn --out /tmp/cneh03-evidence --verify
           (cd /tmp/cneh03-evidence && sha256sum --strict -c SHA256SUMS)
+      - name: Independent post-primary temporal reduction and mean-free probe reference
+        run: |
+          /tmp/cneh03-env/bin/python -m experiments.cneh_exp_03.post_primary_audit --source .cneh-inputs/bnsyn --primary /tmp/cneh03-evidence --out /tmp/cneh03-temporal
+          (cd /tmp/cneh03-temporal && sha256sum --strict -c SHA256SUMS)
+      - name: Archive separate post-primary diagnostics
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-03-post-primary-temporal
+          path: /tmp/cneh03-temporal/
+          if-no-files-found: error
+          retention-days: 90
       - name: Archive all outcomes including nulls
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
