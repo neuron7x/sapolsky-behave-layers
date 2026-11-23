@@ -66,12 +66,12 @@ class CNEHPreflightTests(unittest.TestCase):
             target = next(row for row in rows if row["arm"] == "A_ONLY")
             target["success"] = str(1 - int(target["success"]))
             with csv_path.open("w", encoding="utf-8", newline="") as fh:
-                writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\\n")
+                writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
                 writer.writeheader()
                 writer.writerows(rows)
             manifest = sorted(p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS")
             (out / "SHA256SUMS").write_text(
-                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\\n" for p in manifest),
+                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\n" for p in manifest),
                 encoding="ascii",
             )
             with self.assertRaisesRegex(ValueError, "raw trajectory"):
@@ -86,7 +86,7 @@ class CNEHPreflightTests(unittest.TestCase):
             (out / "protocol.json").write_bytes(mod.canonical(protocol))
             manifest = sorted(p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS")
             (out / "SHA256SUMS").write_text(
-                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\\n" for p in manifest),
+                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\n" for p in manifest),
                 encoding="ascii",
             )
             with self.assertRaisesRegex(ValueError, "resigned protocol"):
