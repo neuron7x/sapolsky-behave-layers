@@ -5,7 +5,6 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import contextlib
 import copy
-import importlib.util
 import io
 import json
 from pathlib import Path
@@ -13,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import types
 import unittest
 from unittest.mock import Mock, patch
 
@@ -61,9 +61,15 @@ class AcceptanceTests(unittest.TestCase):
     def test_original_false_pass_remains_reproducible(self):
         self.git_fixture()
         self.assertEqual(gate.sha(OLD.read_bytes()), "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1")
-        spec = importlib.util.spec_from_file_location("historical_acceptance", OLD)
-        original = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(original)
+        before = {str(p.relative_to(OLD.parent)): gate.sha(p.read_bytes())
+                  for p in OLD.parent.rglob("*") if p.is_file()}
+        original = types.ModuleType("historical_acceptance")
+        original.__file__ = str(OLD)
+        # Loading frozen evidence must not create a bytecode sidecar in its bundle.
+        exec(compile(OLD.read_bytes(), str(OLD), "exec"), original.__dict__)
+        after = {str(p.relative_to(OLD.parent)): gate.sha(p.read_bytes())
+                 for p in OLD.parent.rglob("*") if p.is_file()}
+        self.assertEqual(before, after)
         out = self.base / "forged-old"
         self.forge(out, original)
         audit = original.Audit(self.args(out, refresh=True))
