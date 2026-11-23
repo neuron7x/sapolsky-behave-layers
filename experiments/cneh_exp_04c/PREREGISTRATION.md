@@ -1,0 +1,17 @@
+# CNEH-EXP-04C — bounded-observation identifiability qualification
+
+**Prospective analytic qualification only.** This does not alter EXP04B's frozen exact-observation cohort. The model is its engineered two-group inhibitory route family (00, 01, 10, 11). No new neural observations or efficacy evidence are claimed. Frozen before implementing or running these qualification fixtures.
+
+## Assumptions and exact feasible support
+
+All B receivers share the same incoming route coefficient and source spike-count sum. The known decay is d=exp(-0.1/6), source weight 0.5 nS. Each observed source bit is 0, 1, or erased; each group has four source neurons. A group count therefore belongs to the closed integer range from observed ones to observed ones plus erasures. All 16 B conductances are observed with error bounded in magnitude by epsilon=0.01 nS; no probability distribution, independence or estimator of unknown noise is assumed. For the observed transition residual r_i=y_i(t+1)-d*y_i(t), its discrepancy from the true common arrival d*0.5*k is bounded by R=(1+d)*epsilon+1e-12. The integer k sums the active groups' source counts.
+
+For each candidate mask compute the integer arrival-count range implied by the observed bits and retain the candidate iff there exists **one common integer k** in this range satisfying |r_i-d*0.5*k|<=R for every receiver i. Do not replace the union of separated discrete bands by a convex hull; do not choose a separate k for each receiver. Intersect candidate sets over transitions within an assumed unchanged mode. This is a conservative outer approximation of trajectory-level feasibility because shared sensor noise across adjacent residuals is not coupled by the filter. A retained candidate is possible under this relaxation, not necessarily a globally feasible latent trajectory.
+
+With complete source counts, any unequal integer predicted arrivals have separation d*0.5>2R, so their bands cannot overlap. A singleton is sound conditional on the stated family, topology, weights, unchanged mode and error bounds; silence or erased evidence may remain ambiguous. Empty support means MODEL_SET_VIOLATION, not identification of a particular defect. This module is not an OOD detector for arbitrary changes, a probabilistic posterior, or a neural controller; its purpose is to qualify the estimator before any noisy neural cohort.
+
+## Frozen analytic controls
+
+Exhaustively enumerate each group's (known ones, known zeros, erased) counts, each possible actual completion, all four true modes, and residual noise extrema +/-R_without_numeric_slack. Verify true-mode containment, including common mixed-sign receiver errors. Also verify complete observation discrimination, all-erased ambiguity, shared-count consistency, discrete-band gaps, invalid values and multi-step candidate intersections. Include explicit false-PASS counterexamples for convex-hull relaxation and receiver-wise independent completion. Report actual enumerated counts, preserve null and ambiguous sets, and reject any false exclusion. Run deterministic Python 3.11/3.12 unit tests and generate a machine-readable qualification record, with byte replay in the same environment.
+
+Scientific promotion false; neural sensor qualification in actual stochastic data NOT_TESTED; external replication NOT_TESTED; physical energy INSTRUMENT_INVALID. A later independently preregistered experiment must measure actual sensor and spike-loss mechanisms and qualify coverage under those assumptions.
