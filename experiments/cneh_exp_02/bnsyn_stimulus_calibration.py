@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from experiments.cneh_exp_02.bnsyn_bridge import assert_bn_source,canon,sha
 
 CURRENTS_PA=(0.0,120.0,240.0,360.0,480.0)
