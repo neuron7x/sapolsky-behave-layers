@@ -1,0 +1,1 @@
+{"checks": {"action_responsiveness": true, "active_spiking": true, "all_arm_exact_replay": true, "emulator_exact_parity": true, "finite_trajectories": true, "source_verified": true}, "scientific_promotion_authorized": false, "status": "INTEGRATION_SMOKE_ONLY"}

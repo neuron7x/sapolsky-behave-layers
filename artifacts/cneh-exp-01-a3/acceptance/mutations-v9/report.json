@@ -1,0 +1,142 @@
+{
+  "source_commit": "b2b1262c5903955a3eabb7a32936967bd0964784",
+  "input_sha256": {
+    "experiments/cneh_exp_01/acceptance.py": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+    "experiments/cneh_exp_01/required_checks_manifest.json": "18ed6d542d38a6ad8ff64e181a5d6db2e6e9a9a178d7287647d027b044444d35",
+    "tests/test_cneh_exp_01_acceptance.py": "8add22f76f457bfb16c075407fbab4e61fa0b68ce06c7d1ae5c957a69a43ec45",
+    "artifacts/cneh-exp-01-a2/acceptance-auditor.py": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+    "docs/lab/EXPERIMENT_LEDGER.jsonl": "0de5306ccd5dfbac6a5d33b33fa62e8f6ef37ac736c45d8ae1e9a0edc70af593"
+  },
+  "source_unchanged": true,
+  "results": [
+    {
+      "name": "baseline",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import json,unittest; s=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01_acceptance.py');r=unittest.TextTestRunner(verbosity=2).run(s);print(json.dumps({'tests':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skips':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}));raise SystemExit(0 if r.wasSuccessful() and r.testsRun>=19 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)"
+      ],
+      "patch": {
+        "before": null,
+        "after": null
+      },
+      "patch_sha256": "32f2bc023ca3b4156e9afed8ba4e17d9bfaee922f1d60295ca9e5dfda325619e",
+      "exit_code": 0,
+      "classification": "PASS",
+      "counts": {
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0
+      },
+      "mutated_source_sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64"
+    },
+    {
+      "name": "fresh_output_reservation_removed",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import json,unittest; s=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01_acceptance.py');r=unittest.TextTestRunner(verbosity=2).run(s);print(json.dumps({'tests':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skips':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}));raise SystemExit(0 if r.wasSuccessful() and r.testsRun>=19 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)"
+      ],
+      "patch": {
+        "before": "self.out.mkdir(parents=True,exist_ok=False)",
+        "after": "self.out.mkdir(parents=True,exist_ok=True)"
+      },
+      "patch_sha256": "25e21466f86d0697c4ec20b39db407db50c841f30d623c5c23d50ab87b3546b4",
+      "exit_code": 1,
+      "classification": "KILLED_ASSERTION",
+      "counts": {
+        "tests": 20,
+        "failures": 4,
+        "errors": 0,
+        "skips": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0
+      },
+      "mutated_source_sha256": "847fff0e11b68dd63edaff0387c0473cc2da57a6d9a2392d646371fb6f735e82"
+    },
+    {
+      "name": "auditor_source_binding_removed",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import json,unittest; s=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01_acceptance.py');r=unittest.TextTestRunner(verbosity=2).run(s);print(json.dumps({'tests':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skips':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}));raise SystemExit(0 if r.wasSuccessful() and r.testsRun>=19 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)"
+      ],
+      "patch": {
+        "before": "if sha(raw)!=self.auditor_sha256 or sha(Path(__file__).read_bytes())!=self.auditor_sha256:",
+        "after": "if False:"
+      },
+      "patch_sha256": "6a5aa5cfc7f6315c9700e193f480c3f14c52fdcf94727b0526aa8148b3a29f2c",
+      "exit_code": 1,
+      "classification": "KILLED_ASSERTION",
+      "counts": {
+        "tests": 20,
+        "failures": 1,
+        "errors": 0,
+        "skips": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0
+      },
+      "mutated_source_sha256": "feeb0f62f3dba7bbfc4c6a42edf3d6b95a546c62628e77e82496ff6ff5d7e2da"
+    },
+    {
+      "name": "workflow_completion_guard_removed",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import json,unittest; s=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01_acceptance.py');r=unittest.TextTestRunner(verbosity=2).run(s);print(json.dumps({'tests':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skips':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}));raise SystemExit(0 if r.wasSuccessful() and r.testsRun>=19 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)"
+      ],
+      "patch": {
+        "before": "  if run.get('status')!='completed':pending=True\n  elif run.get('conclusion')!='success':errors.append('workflow did not succeed')",
+        "after": "  pass"
+      },
+      "patch_sha256": "041a3440dec5e4a6d34ad4086ab81e287a29f21160c3677ebe92162582dc72b6",
+      "exit_code": 1,
+      "classification": "KILLED_ASSERTION",
+      "counts": {
+        "tests": 20,
+        "failures": 4,
+        "errors": 0,
+        "skips": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0
+      },
+      "mutated_source_sha256": "4e00f7b29a89d29a5dad85c1c440b1bee9175f25dda7cd6fe79cf5a5cdb55708"
+    },
+    {
+      "name": "historical_row_preservation_removed",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import json,unittest; s=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01_acceptance.py');r=unittest.TextTestRunner(verbosity=2).run(s);print(json.dumps({'tests':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skips':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}));raise SystemExit(0 if r.wasSuccessful() and r.testsRun>=19 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)"
+      ],
+      "patch": {
+        "before": "if any(current.get(r['run_id'])!=canonical(r) for r in old_rows):raise ValueError('historical ledger row deleted or rewritten')",
+        "after": "if False:raise ValueError('historical ledger row deleted or rewritten')"
+      },
+      "patch_sha256": "c9d2be197bf77420511cb0c40cab71e8294bfc77ce54b9ed12f16cfe77db11d4",
+      "exit_code": 1,
+      "classification": "KILLED_ASSERTION",
+      "counts": {
+        "tests": 20,
+        "failures": 2,
+        "errors": 0,
+        "skips": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0
+      },
+      "mutated_source_sha256": "87e446f4a9d767cd292ed455d2bb23775869c4498071bbe45d55c7e6709a71c4"
+    }
+  ],
+  "killed": 4,
+  "total_mutants": 4,
+  "driver_sha256": "a246eebd00b23521f21aa5cf82230bb5eecebba3c3d038eb085f5796a99f11ee",
+  "status": "PASS"
+}

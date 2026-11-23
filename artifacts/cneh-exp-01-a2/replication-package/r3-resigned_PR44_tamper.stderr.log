@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-vkhl5_9q/cneh-exp-01-a2/replay.py", line 255, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-vkhl5_9q/cneh-exp-01-a2/replay.py", line 132, in main
+    metadata, authentication = verify_package(args.trusted_git)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-vkhl5_9q/cneh-exp-01-a2/replay.py", line 87, in verify_package
+    raise ValueError("pinned PR44 source mismatch")
+ValueError: pinned PR44 source mismatch

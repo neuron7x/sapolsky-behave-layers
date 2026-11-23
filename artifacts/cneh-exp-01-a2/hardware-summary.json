@@ -1,0 +1,98 @@
+{
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "hardware": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "cpu0_governor": "powersave",
+    "cpu_model": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "gpu_devices": [
+      {
+        "name": "card1",
+        "vendor": "0x8086"
+      },
+      {
+        "name": "card2",
+        "vendor": "0x10de"
+      }
+    ],
+    "gpu_execution": "NOT_USED",
+    "kernel": "6.8.0-149-lowlatency",
+    "logical_cpus": 16,
+    "machine": "x86_64",
+    "os": "Linux",
+    "power_state_status": "RECORDED",
+    "power_supplies": [
+      {
+        "capacity": "UNAVAILABLE",
+        "name": "ACAD",
+        "online": "1",
+        "status": "UNAVAILABLE",
+        "type": "Mains"
+      },
+      {
+        "capacity": "96",
+        "name": "BAT1",
+        "online": "UNAVAILABLE",
+        "status": "Charging",
+        "type": "Battery"
+      }
+    ]
+  },
+  "scope": {
+    "workers": 20,
+    "isolated_seed_batches": 80,
+    "inherited_timing_batches": 200,
+    "precision": "binary64",
+    "training": "fixed policies, no training"
+  },
+  "median_wall_ns_per_call_range": [
+    124049.75,
+    150502.25
+  ],
+  "peak_worker_rss_bytes": 32129024,
+  "paired_central_and_coupled": {
+    "CENTRAL_EMULATOR": {
+      "max_wall_ns_per_call": 157599.25,
+      "max_worker_peak_rss_bytes": 32129024,
+      "median_dispatch_residual_ns": 45310917.0,
+      "median_wall_ns_per_call": 139023.5,
+      "min_wall_ns_per_call": 134020.0,
+      "n_samples": 8,
+      "p95_wall_ns_per_call": 157599.25
+    },
+    "COUPLED": {
+      "max_wall_ns_per_call": 158991.75,
+      "max_worker_peak_rss_bytes": 32129024,
+      "median_dispatch_residual_ns": 45673274.0,
+      "median_wall_ns_per_call": 146994.875,
+      "min_wall_ns_per_call": 135258.5,
+      "n_samples": 8,
+      "p95_wall_ns_per_call": 158991.75
+    }
+  },
+  "resource_parity_verified": false,
+  "instruments": {
+    "electrical_joules": "INSTRUMENT_INVALID",
+    "hardware_flops": "INSTRUMENT_INVALID",
+    "network_transport_cost": "INSTRUMENT_INVALID"
+  },
+  "admission": "PASS",
+  "measured_report_sha256": "773aa1c8d611a7d9de70610366b7452722fd135f1bd32cfa58106b4e13b62350",
+  "limits": "Shared host; RSS includes interpreter/import/warmup; serialization fixture is not physical transport; no cost superiority inference."
+}

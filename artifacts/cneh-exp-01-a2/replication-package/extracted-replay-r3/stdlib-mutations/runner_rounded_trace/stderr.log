@@ -1,0 +1,55 @@
+test_ambiguous_json_is_rejected_even_when_resigned (test_cneh_exp_01.CNEHPreflightTests.test_ambiguous_json_is_rejected_even_when_resigned) ... ok
+test_authentic_negative_is_retained_but_cannot_qualify (test_cneh_exp_01.CNEHPreflightTests.test_authentic_negative_is_retained_but_cannot_qualify) ... FAIL
+test_budget_and_scrambled_traffic (test_cneh_exp_01.CNEHPreflightTests.test_budget_and_scrambled_traffic) ... ok
+test_common_mode_action_bound_violation_rejected_at_plant_boundary (test_cneh_exp_01.CNEHPreflightTests.test_common_mode_action_bound_violation_rejected_at_plant_boundary) ... ok
+test_concurrent_writers_cannot_overwrite_sealed_bundle (test_cneh_exp_01.CNEHPreflightTests.test_concurrent_writers_cannot_overwrite_sealed_bundle) ... ok
+test_exact_replay (test_cneh_exp_01.CNEHPreflightTests.test_exact_replay) ... ok
+test_extra_bundle_member_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_extra_bundle_member_is_rejected) ... ok
+test_faithful_centralized_emulator_parity (test_cneh_exp_01.CNEHPreflightTests.test_faithful_centralized_emulator_parity) ... ok
+test_hash_integrity_is_fail_closed (test_cneh_exp_01.CNEHPreflightTests.test_hash_integrity_is_fail_closed) ... ok
+test_initial_state_safety_is_part_of_whole_path (test_cneh_exp_01.CNEHPreflightTests.test_initial_state_safety_is_part_of_whole_path) ... ok
+test_invalid_cohort_or_protocol_leaves_no_bundle (test_cneh_exp_01.CNEHPreflightTests.test_invalid_cohort_or_protocol_leaves_no_bundle) ... ok
+test_invalid_world_seed_values_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_invalid_world_seed_values_are_rejected) ... ok
+test_memory_proxy_envelope_is_enforced (test_cneh_exp_01.CNEHPreflightTests.test_memory_proxy_envelope_is_enforced) ... ok
+test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) ... ok
+test_no_colliding_arms_or_world_seeds (test_cneh_exp_01.CNEHPreflightTests.test_no_colliding_arms_or_world_seeds) ... ok
+test_nonfinite_controller_action_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_nonfinite_controller_action_is_rejected) ... ok
+test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) ... ok
+test_resigned_protocol_drift_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_protocol_drift_is_rejected) ... ok
+test_resigned_raw_result_lie_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_raw_result_lie_is_rejected)
+A freshly rehashed forged non-primary CSV row must still fail. ... ok
+test_subdecimal_emulator_divergence_is_detected (test_cneh_exp_01.CNEHPreflightTests.test_subdecimal_emulator_divergence_is_detected) ... FAIL
+test_trace_hash_detects_one_ulp_and_signed_zero (test_cneh_exp_01.CNEHPreflightTests.test_trace_hash_detects_one_ulp_and_signed_zero) ... FAIL
+test_unsupported_replication_claim_forbidden (test_cneh_exp_01.CNEHPreflightTests.test_unsupported_replication_claim_forbidden) ... ok
+
+======================================================================
+FAIL: test_authentic_negative_is_retained_but_cannot_qualify (test_cneh_exp_01.CNEHPreflightTests.test_authentic_negative_is_retained_but_cannot_qualify)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-k8jfhmxt/tests/test_cneh_exp_01.py", line 273, in test_authentic_negative_is_retained_but_cannot_qualify
+    self.assertEqual(verdict["verdict"], "INVALID")
+AssertionError: 'REPLICATION_NOT_TESTED' != 'INVALID'
+- REPLICATION_NOT_TESTED
++ INVALID
+
+
+======================================================================
+FAIL: test_subdecimal_emulator_divergence_is_detected (test_cneh_exp_01.CNEHPreflightTests.test_subdecimal_emulator_divergence_is_detected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-k8jfhmxt/tests/test_cneh_exp_01.py", line 89, in test_subdecimal_emulator_divergence_is_detected
+    self.assertFalse(metrics["emulator_trace_parity"])
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_trace_hash_detects_one_ulp_and_signed_zero (test_cneh_exp_01.CNEHPreflightTests.test_trace_hash_detects_one_ulp_and_signed_zero)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-k8jfhmxt/tests/test_cneh_exp_01.py", line 75, in test_trace_hash_detects_one_ulp_and_signed_zero
+    self.assertNotEqual(mod.trace_digest([[1.0]]), mod.trace_digest([[next_float]]))
+AssertionError: '749e2344aaeb58968eec9d17a00d64bb996cee2949d3bc30f33b2e3588674b1c' == '749e2344aaeb58968eec9d17a00d64bb996cee2949d3bc30f33b2e3588674b1c'
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.268s
+
+FAILED (failures=3)

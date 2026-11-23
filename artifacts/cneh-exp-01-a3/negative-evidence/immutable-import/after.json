@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_cneh_exp_01_acceptance.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "source_sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+  "historical_extra_bytecode": []
+}

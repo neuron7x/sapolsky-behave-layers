@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/math_qualification.py
++++ experiments/cneh_exp_01/math_qualification.py
+@@ -251,7 +251,7 @@
+         laws["observe"][x, y] = laws["observe"].get((x, y), 0.0) + 0.5
+         for action in (0, 1):
+             x = action  # Intervention replaces X=U; Y equation remains unchanged.
+-            y = x if model == "causal" else u
++            y = u
+             law = laws[f"do_{action}"]
+             law[x, y] = law.get((x, y), 0.0) + 0.5
+             unit = f"{model}:u{u}:a{action}"

@@ -1,0 +1,100 @@
+{
+  "attack_target": "artifacts/cneh-exp-01-a2/acceptance-auditor.py",
+  "baseline_status": "PASS",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "clone",
+        "--no-hardlinks",
+        "--no-checkout",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+        "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "exit_code": 0,
+      "label": "production-clone",
+      "stderr_sha256": "277b18a3cac8ae6bbe03dce0a27bca24ec318ef65351f7a7be4978302d5fd1a0",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "--detach",
+        "b0f19fdbb4f3db26312ab18acb7cf8677ca9913a"
+      ],
+      "cwd": "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo",
+      "exit_code": 0,
+      "label": "production-checkout",
+      "stderr_sha256": "46592228877e0611c2f54e7dd156e96120e212fe63d5b81336a2456d17fae24d",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/scripts/cneh_history_guard.py",
+        "--repo",
+        "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo"
+      ],
+      "cwd": "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo",
+      "exit_code": 0,
+      "label": "production-baseline",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "9cef4fd669d4c9a78fec1b82ffbd81b328b66da8e9724230e2b325586eb05f52"
+    },
+    {
+      "command": [
+        "sha256sum",
+        "-c",
+        "SHA256SUMS"
+      ],
+      "cwd": "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo/artifacts/cneh-exp-01-a2",
+      "exit_code": 0,
+      "label": "production-forged-checksums",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "513136ee8830d6f57feb7a4865ddf684281787e5c100e58875e313c510d5e0a4"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/scripts/cneh_history_guard.py",
+        "--repo",
+        "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo"
+      ],
+      "cwd": "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo",
+      "exit_code": 1,
+      "label": "production-forged-history",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "cc0765ea7e9bbd6ad04d49fef8b955b8dfe7a73a593fc815589608c397c0e2fb"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--",
+        "artifacts/cneh-exp-01-a2"
+      ],
+      "cwd": "/home/neuro7/.cache/claude-tmp/cneh-history-production-attack-3i0x1qd7/repo",
+      "exit_code": 0,
+      "label": "production-attack-diff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1c35a7aa46ef44a0fdb0637c3877bc5a929a86bb7e6b0ce6dcc27287a04f669c"
+    }
+  ],
+  "current_manifest_check_exit_code": 0,
+  "forged_file_sha256": "a0a1d62facb34818571ab5aab9bde68feb4d0bc27ad0b049aca93a37bde5a776",
+  "forged_manifest_sha256": "551d8dea2e9a72be446288373e059b4b26145db7f740da9b84ee8389af805c86",
+  "guard_sha256": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8",
+  "historical_error": "historical byte mismatch: artifacts/cneh-exp-01-a2/SHA256SUMS; trusted=93772b17c379146878025a141fc819802cf7d2b9ca16b0be00ee0b292f7b31f3, actual=551d8dea2e9a72be446288373e059b4b26145db7f740da9b84ee8389af805c86",
+  "historical_guard_exit_code": 1,
+  "independent_replication": "NOT_TESTED",
+  "original_file_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+  "original_manifest_sha256": "93772b17c379146878025a141fc819802cf7d2b9ca16b0be00ee0b292f7b31f3",
+  "schema": "cneh-history-production-negative-v1",
+  "scientific_promotion_authorized": false,
+  "source_commit": "b0f19fdbb4f3db26312ab18acb7cf8677ca9913a",
+  "source_unchanged": true
+}

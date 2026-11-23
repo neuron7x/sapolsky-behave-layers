@@ -1,0 +1,20 @@
+{
+  "archive_sha256": "8aeeba898400297c67801986559d02d570b9bac64eebaad011bc27b8ad051a05",
+  "extracted_from_delivered_archive": true,
+  "command": [
+    "/usr/bin/python",
+    "/home/neuro7/.cache/claude-tmp/cneh-package-extraction-g256o6ff/cneh-exp-01-a2/replay.py",
+    "--python",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+    "--trusted-git",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "--out",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/replication-package-a2/extracted-replay",
+    "--full"
+  ],
+  "exit_code": 1,
+  "seconds": 24.075786620000144,
+  "runtime_policy": "Existing externally supplied locked Python3.12 venv; no runtime included in archive",
+  "independent_blind_replication": "REPLICATION_NOT_TESTED",
+  "scientific_promotion_authorized": false
+}

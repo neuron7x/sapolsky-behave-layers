@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/metrology.py",
+      "--out",
+      "/home/neuro7/.cache/claude-tmp/cneh-a2-independent-negative-74y6r8c2/forged-metrology",
+      "--verify"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "log_sha256": "83f7f90dd875093ac3b71e88a3b076b3a131c9dc2f3ec4b64a9425b72aab1755",
+    "name": "resigned-physical-authority",
+    "status": "REJECTED"
+  },
+  {
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+      "experiments/cneh_exp_01/math_qualification.py",
+      "--reference",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/pr44-linear-reference.py",
+      "--out",
+      "/home/neuro7/.cache/claude-tmp/cneh-a2-independent-negative-74y6r8c2/forged-math.json",
+      "--verify"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "log_sha256": "f80d2ba3ab42c8e0b8bcb7bfb6ff02963c5fda293231cea5d4287ca8aa1ffc68",
+    "name": "neural-causal-promotion",
+    "status": "REJECTED"
+  }
+]

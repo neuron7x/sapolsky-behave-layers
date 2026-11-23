@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../evidence/g4-a2-audit.py", line 134, in <module>
+    from experiments.cneh_exp_01 import replication
+ModuleNotFoundError: No module named 'experiments'

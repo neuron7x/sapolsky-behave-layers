@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "label": "original",
+      "results": [
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": true,
+          "mergeable_state": "clean",
+          "observed_status": "PASS"
+        },
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": false,
+          "mergeable_state": "dirty",
+          "observed_status": "PASS"
+        },
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": null,
+          "mergeable_state": "unknown",
+          "observed_status": "UNKNOWN"
+        }
+      ],
+      "source_sha256": "3861a5b452bc898bf139904e565e251893fa7b0d6162f42ab4f543a734460a37"
+    },
+    {
+      "label": "fixed",
+      "results": [
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": true,
+          "mergeable_state": "clean",
+          "observed_status": "PASS"
+        },
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": false,
+          "mergeable_state": "dirty",
+          "observed_status": "FAIL"
+        },
+        {
+          "base_is_ancestor": true,
+          "merge_tree_equals_final": true,
+          "mergeable": null,
+          "mergeable_state": "unknown",
+          "observed_status": "UNKNOWN"
+        }
+      ],
+      "source_sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64"
+    }
+  ],
+  "scope": "Actual isolated Git; mocked GitHub API/download boundaries and provenance collector; no live PR writes",
+  "source_commit": "0d362a42edecd9fd654ca476602ab51f3fdaa715",
+  "status": "REPRODUCED_THEN_FIXED"
+}

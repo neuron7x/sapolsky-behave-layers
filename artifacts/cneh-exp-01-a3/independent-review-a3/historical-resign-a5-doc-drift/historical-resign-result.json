@@ -1,0 +1,207 @@
+{
+  "after_sha256": "ff4e6b05eda31fb0b8c99cab1e0557c1587ea016580157ab7071cf7b034d7fbc",
+  "before_sha256": "9483ed7d5cb720ad982d70ad18d80c357385d5ac19f5c2d7cfa49ed40fa07841",
+  "candidate_acceptance_sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+  "components": {
+    "acceptance_unit_tests": 0,
+    "checksum_gate": 0,
+    "docs_diff_gate": 1,
+    "docs_regeneration": 0,
+    "frozen_git_blob_comparison": 1,
+    "semantic_validator": 0
+  },
+  "fixture_mutated_commit": "3432c4e8e24e09a106c139e2e8b2b607d5c99a47",
+  "mutation": "Remove unused import copy from immutable A2 g4 audit, update declared audit-script hash, recompute every A2 SHA256SUMS bottom-up; commit only in isolated clone",
+  "not_run": [
+    "full hosted CI",
+    "bibliography",
+    "CodeQL",
+    "full unrelated scientific suite"
+  ],
+  "records": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-hardlinks",
+        "--quiet",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-history-resign-5_a73_1v/repo"
+      ],
+      "exit_code": 0,
+      "label": "history-clone",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "experiments/cneh_exp_01/acceptance.py",
+        "experiments/cneh_exp_01/provenance.py",
+        "tests/test_cneh_exp_01_acceptance.py",
+        "tests/test_cneh_exp_01_provenance.py"
+      ],
+      "exit_code": 0,
+      "label": "history-add-candidate",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "user.name=Redteam fixture",
+        "-c",
+        "user.email=redteam@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "isolated reviewed A3 candidate"
+      ],
+      "exit_code": 0,
+      "label": "history-baseline-commit",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "exit_code": 0,
+      "label": "history-baseline-checksums",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "14751290c4adf17035042a0a1390d56a808e15a829e0a225e267591a4318b3b7"
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "artifacts/cneh-exp-01-a2"
+      ],
+      "exit_code": 0,
+      "label": "history-mutant-add",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "user.name=Redteam fixture",
+        "-c",
+        "user.email=redteam@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "isolated historical rewrite with recomputed manifests"
+      ],
+      "exit_code": 0,
+      "label": "history-mutant-commit",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "label": "history-mutant-head",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7b614a3b0aa1d3108ef253e594a1207038bb2b4789a6a4d30f5c2a8c95bdb792"
+    },
+    {
+      "argv": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "exit_code": 0,
+      "label": "history-resigned-checksums",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "14751290c4adf17035042a0a1390d56a808e15a829e0a225e267591a4318b3b7"
+    },
+    {
+      "argv": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv/bin/python",
+        "-B",
+        "scripts/validate_evidence.py"
+      ],
+      "exit_code": 0,
+      "label": "history-resigned-semantic",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a151d5f153b9c489546622fd71be1def56022b8e11c8671e0f86863878cbe400"
+    },
+    {
+      "argv": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "docs-regen",
+        "PY=/usr/bin/python"
+      ],
+      "exit_code": 0,
+      "label": "history-resigned-docs-regen",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "85fb23ddc060ab808ba955d9385ac3398b49ae70278b42716962c819424f3b0b"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code",
+        "docs/lab/EXPERIMENT_LEDGER.jsonl",
+        "docs/vnv/DOCUMENT_STATUS_REGISTER.csv"
+      ],
+      "exit_code": 1,
+      "label": "history-resigned-docs-diff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "54e0100fe3db22f57e6f8f2f61bdf2482632a0f64e82215e8e1216a93ff0b371"
+    },
+    {
+      "argv": [
+        "/usr/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_cneh_exp_01_acceptance.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "label": "history-resigned-acceptance-tests",
+      "stderr_sha256": "775c9fb59384d81887284f4fc9861661e6e219be37ad619e15422f75cdab938a",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code",
+        "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+        "HEAD",
+        "--",
+        "artifacts/cneh-exp-01-a2"
+      ],
+      "exit_code": 1,
+      "label": "history-gitblob-negative",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "56b007d168d250509a17c374f55043465b555325328f7f2bfb4de49f9d738624"
+    }
+  ],
+  "schema": "cneh-resigned-historical-evidence-negative-v1",
+  "scientific_promotion_authorized": false,
+  "source_commit": "d81fd4397e40e781f909a4cfcacadd613e6e0329",
+  "status": "PARTIAL_OR_FAILED_REPRODUCTION"
+}

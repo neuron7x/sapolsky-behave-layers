@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/hardware.py
++++ experiments/cneh_exp_01/hardware.py
+@@ -74,7 +74,7 @@
+                         "min_wall_ns_per_call": min(values), "max_wall_ns_per_call": max(values)}
+     source_files = [Path(__file__), Path(run.__file__), HERE / "protocol.json", HERE / "qualification_contract.json"]
+     return {"schema": "cneh-local-timing-v1", "status": "LOCAL_TIMING_ONLY",
+-            "cost_status": "COST_INSTRUMENT_INVALID", "scientific_promotion_authorized": False,
++            "cost_status": "COST_INSTRUMENT_VALID", "scientific_promotion_authorized": False,
+             "hardware": {"platform": platform.platform(), "machine": platform.machine(),
+                          "processor": platform.processor(), "python": sys.version,
+                          "implementation": platform.python_implementation()},

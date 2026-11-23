@@ -1,0 +1,1602 @@
+﻿2026-11-23T15:09:47.9089611Z Current runner version: '2.338.2'
+2026-11-23T15:09:47.9111937Z ##[group]Runner Image Provisioner
+2026-11-23T15:09:47.9112709Z Hosted Compute Agent
+2026-11-23T15:09:47.9113639Z Version: 20261111.635
+2026-11-23T15:09:47.9114243Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-23T15:09:47.9114835Z Build Date: 2026-11-11T01:49:01Z
+2026-11-23T15:09:47.9115371Z Worker ID: {b9562a24-3ae4-44ef-8010-1a444d4e0b11}
+2026-11-23T15:09:47.9116012Z Region: westus3
+2026-11-23T15:09:47.9116491Z Cloud: Azure
+2026-11-23T15:09:47.9116998Z ##[endgroup]
+2026-11-23T15:09:47.9118468Z ##[group]Operating System
+2026-11-23T15:09:47.9118965Z Ubuntu
+2026-11-23T15:09:47.9119467Z 26.04.1
+2026-11-23T15:09:47.9119893Z LTS
+2026-11-23T15:09:47.9120370Z ##[endgroup]
+2026-11-23T15:09:47.9120829Z ##[group]Runner Image
+2026-11-23T15:09:47.9121322Z Image: ubuntu-26.04
+2026-11-23T15:09:47.9121825Z Version: 20261116.202.1
+2026-11-23T15:09:47.9122870Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-23T15:09:47.9124467Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+2026-11-23T15:09:47.9125239Z ##[endgroup]
+2026-11-23T15:09:47.9126188Z ##[group]GITHUB_TOKEN Permissions
+2026-11-23T15:09:47.9127813Z Contents: read
+2026-11-23T15:09:47.9128408Z Metadata: read
+2026-11-23T15:09:47.9128873Z ##[endgroup]
+2026-11-23T15:09:47.9130712Z Secret source: Actions
+2026-11-23T15:09:47.9131477Z Cache mode: write
+2026-11-23T15:09:47.9132152Z Prepare workflow directory
+2026-11-23T15:09:47.9413818Z Prepare all required actions
+2026-11-23T15:09:47.9455989Z Getting action download info
+2026-11-23T15:09:48.2270680Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-23T15:09:48.4304813Z Download action repository 'actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0' (SHA:6d4fd22b20465ccc0f7354476588e8df7c9ca0e0)
+2026-11-23T15:09:48.5963566Z Complete job name: Full verification, validation, and falsification
+2026-11-23T15:09:48.6677698Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-23T15:09:48.6678513Z with:
+2026-11-23T15:09:48.6678862Z   fetch-depth: 0
+2026-11-23T15:09:48.6679259Z   repository: neuron7x/sapolsky-behave-layers
+2026-11-23T15:09:48.6682323Z   token: ***
+2026-11-23T15:09:48.6682672Z   ssh-strict: true
+2026-11-23T15:09:48.6683179Z   ssh-user: git
+2026-11-23T15:09:48.6683542Z   persist-credentials: true
+2026-11-23T15:09:48.6683931Z   clean: true
+2026-11-23T15:09:48.6684288Z   sparse-checkout-cone-mode: true
+2026-11-23T15:09:48.6684694Z   fetch-tags: false
+2026-11-23T15:09:48.6685045Z   show-progress: true
+2026-11-23T15:09:48.6685402Z   lfs: false
+2026-11-23T15:09:48.6685728Z   submodules: false
+2026-11-23T15:09:48.6686089Z   set-safe-directory: true
+2026-11-23T15:09:48.6686486Z   allow-unsafe-pr-checkout: false
+2026-11-23T15:09:48.6687055Z ##[endgroup]
+2026-11-23T15:09:49.0480978Z Syncing repository: neuron7x/sapolsky-behave-layers
+2026-11-23T15:09:49.0482532Z ##[group]Getting Git version info
+2026-11-23T15:09:49.0483508Z Working directory is '/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers'
+2026-11-23T15:09:49.0525669Z [command]/usr/bin/git version
+2026-11-23T15:09:49.0566677Z git version 2.56.1
+2026-11-23T15:09:49.0583119Z ##[endgroup]
+2026-11-23T15:09:49.0592369Z Temporarily overriding HOME='/home/runner/work/_temp/d4a0071a-3d51-48f0-8aad-77fc8eb7d7d1' before making global git config changes
+2026-11-23T15:09:49.0593723Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-23T15:09:49.0597129Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers
+2026-11-23T15:09:49.0660171Z Deleting the contents of '/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers'
+2026-11-23T15:09:49.0661953Z ##[group]Determining repository object format
+2026-11-23T15:09:49.0663255Z ##[endgroup]
+2026-11-23T15:09:49.0664581Z ##[group]Initializing the repository
+2026-11-23T15:09:49.0666752Z [command]/usr/bin/git init /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers
+2026-11-23T15:09:49.0845579Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-23T15:09:49.0846904Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-23T15:09:49.0848155Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-23T15:09:49.0849157Z hint: call:
+2026-11-23T15:09:49.0849741Z hint:
+2026-11-23T15:09:49.0850467Z hint: 	git config --global init.defaultBranch <name>
+2026-11-23T15:09:49.0851294Z hint:
+2026-11-23T15:09:49.0852081Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-23T15:09:49.0853468Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-23T15:09:49.0854460Z hint:
+2026-11-23T15:09:49.0855086Z hint: 	git branch -m <name>
+2026-11-23T15:09:49.0855751Z hint:
+2026-11-23T15:09:49.0856640Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-23T15:09:49.0858495Z Initialized empty Git repository in /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git/
+2026-11-23T15:09:49.0868769Z [command]/usr/bin/git remote add origin https://github.com/neuron7x/sapolsky-behave-layers
+2026-11-23T15:09:49.0922408Z ##[endgroup]
+2026-11-23T15:09:49.0923468Z ##[group]Disabling automatic garbage collection
+2026-11-23T15:09:49.0925085Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-23T15:09:49.0961041Z ##[endgroup]
+2026-11-23T15:09:49.0962329Z ##[group]Setting up auth
+2026-11-23T15:09:49.0963257Z Removing SSH command configuration
+2026-11-23T15:09:49.0966895Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-23T15:09:49.0997664Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-23T15:09:49.1429645Z Removing HTTP extra header
+2026-11-23T15:09:49.1434272Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-23T15:09:49.1463250Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-23T15:09:49.1701691Z Removing includeIf entries pointing to credentials config files
+2026-11-23T15:09:49.1707229Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-23T15:09:49.1737907Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-23T15:09:49.1975291Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-23T15:09:49.2009542Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git.path /home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:09:49.2036120Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:09:49.2066963Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:09:49.2230849Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:09:49.2260629Z ##[endgroup]
+2026-11-23T15:09:49.2261281Z ##[group]Fetching the repository
+2026-11-23T15:09:49.2268002Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +5d51792736a48f24ecaa93b7d89bf2ba2dd974fc:refs/remotes/pull/43/merge
+2026-11-23T15:09:51.2223528Z From https://github.com/neuron7x/sapolsky-behave-layers
+2026-11-23T15:09:51.2225578Z  * [new branch]      main                                     -> origin/main
+2026-11-23T15:09:51.2227389Z  * [new branch]      research/cneh-exp-01                     -> origin/research/cneh-exp-01
+2026-11-23T15:09:51.2229433Z  * [new branch]      research/cneh-exp-02                     -> origin/research/cneh-exp-02
+2026-11-23T15:09:51.2231585Z  * [new tag]         archive/ci/dependency-integration-20261020 -> archive/ci/dependency-integration-20261020
+2026-11-23T15:09:51.2234293Z  * [new tag]         archive/ci/verified-recovery-20261020    -> archive/ci/verified-recovery-20261020
+2026-11-23T15:09:51.2237217Z  * [new tag]         archive/dependabot/github_actions/actions/attest-4.2.2 -> archive/dependabot/github_actions/actions/attest-4.2.2
+2026-11-23T15:09:51.2240499Z  * [new tag]         archive/dependabot/github_actions/actions/checkout-7.0.1 -> archive/dependabot/github_actions/actions/checkout-7.0.1
+2026-11-23T15:09:51.2244288Z  * [new tag]         archive/dependabot/github_actions/actions/dependency-review-action-5.0.0 -> archive/dependabot/github_actions/actions/dependency-review-action-5.0.0
+2026-11-23T15:09:51.2247727Z  * [new tag]         archive/dependabot/github_actions/actions/setup-python-7.0.0 -> archive/dependabot/github_actions/actions/setup-python-7.0.0
+2026-11-23T15:09:51.2251249Z  * [new tag]         archive/dependabot/pip/coverage-7.15.4   -> archive/dependabot/pip/coverage-7.15.4
+2026-11-23T15:09:51.2253982Z  * [new tag]         archive/dependabot/pip/hypothesis-6.165.2 -> archive/dependabot/pip/hypothesis-6.165.2
+2026-11-23T15:09:51.2256444Z  * [new tag]         archive/dependabot/pip/mutmut-3.7.0      -> archive/dependabot/pip/mutmut-3.7.0
+2026-11-23T15:09:51.2259101Z  * [new tag]         archive/dependabot/pip/ruff-0.16.2       -> archive/dependabot/pip/ruff-0.16.2
+2026-11-23T15:09:51.2261435Z  * [new tag]         archive/dependabot/pip/tomli-2.4.1       -> archive/dependabot/pip/tomli-2.4.1
+2026-11-23T15:09:51.2264066Z  * [new tag]         archive/dgc/benchmark-runtime-manifest-v1 -> archive/dgc/benchmark-runtime-manifest-v1
+2026-11-23T15:09:51.2266705Z  * [new tag]         archive/dgc/common-observation-probe-v1  -> archive/dgc/common-observation-probe-v1
+2026-11-23T15:09:51.2269226Z  * [new tag]         archive/dgc/common-observation-probe-v2  -> archive/dgc/common-observation-probe-v2
+2026-11-23T15:09:51.2271965Z  * [new tag]         archive/dgc/decision-gradient-governance-v1 -> archive/dgc/decision-gradient-governance-v1
+2026-11-23T15:09:51.2274705Z  * [new tag]         archive/dgc/evidence-closure-executor-v1 -> archive/dgc/evidence-closure-executor-v1
+2026-11-23T15:09:51.2277443Z  * [new tag]         archive/dgc/freeze-gpt54-preoutcome-panel-v1 -> archive/dgc/freeze-gpt54-preoutcome-panel-v1
+2026-11-23T15:09:51.2281107Z  * [new tag]         archive/dgc/frozen-action-catalog-v1     -> archive/dgc/frozen-action-catalog-v1
+2026-11-23T15:09:51.2284887Z  * [new tag]         archive/dgc/frozen-panel-executor-v1     -> archive/dgc/frozen-panel-executor-v1
+2026-11-23T15:09:51.2288563Z  * [new tag]         archive/dgc/frozen-policy-runtime-v1     -> archive/dgc/frozen-policy-runtime-v1
+2026-11-23T15:09:51.2292220Z  * [new tag]         archive/dgc/harbor-action-cli-bindings-v1 -> archive/dgc/harbor-action-cli-bindings-v1
+2026-11-23T15:09:51.2295253Z  * [new tag]         archive/dgc/math-v2d-staging             -> archive/dgc/math-v2d-staging
+2026-11-23T15:09:51.2297500Z  * [new tag]         archive/dgc/math-v2e-staging             -> archive/dgc/math-v2e-staging
+2026-11-23T15:09:51.2300192Z  * [new tag]         archive/dgc/math-v2f-staging             -> archive/dgc/math-v2f-staging
+2026-11-23T15:09:51.2302828Z  * [new tag]         archive/dgc/mechanism-executor-v1        -> archive/dgc/mechanism-executor-v1
+2026-11-23T15:09:51.2305885Z  * [new tag]         archive/dgc/openai-snapshot-panel-v1     -> archive/dgc/openai-snapshot-panel-v1
+2026-11-23T15:09:51.2308575Z  * [new tag]         archive/dgc/postfit-governance-freeze-v2 -> archive/dgc/postfit-governance-freeze-v2
+2026-11-23T15:09:51.2311835Z  * [new tag]         archive/dgc/pre-inference-mechanism-lane-v1 -> archive/dgc/pre-inference-mechanism-lane-v1
+2026-11-23T15:09:51.2316188Z  * [new tag]         archive/dgc/provider-call-identity-v1    -> archive/dgc/provider-call-identity-v1
+2026-11-23T15:09:51.2320467Z  * [new tag]         archive/dgc/risk-free-mechanism-closure-v1 -> archive/dgc/risk-free-mechanism-closure-v1
+2026-11-23T15:09:51.2324805Z  * [new tag]         archive/dgc/runtime-live-telemetry-authority-v1 -> archive/dgc/runtime-live-telemetry-authority-v1
+2026-11-23T15:09:51.2328375Z  * [new tag]         archive/dgc/swe-bench-runtime-v1         -> archive/dgc/swe-bench-runtime-v1
+2026-11-23T15:09:51.2331134Z  * [new tag]         archive/dgc/task-sandbox-image-authority-v1 -> archive/dgc/task-sandbox-image-authority-v1
+2026-11-23T15:09:51.2334972Z  * [new tag]         archive/dgc/terminal-bench-admission-v1  -> archive/dgc/terminal-bench-admission-v1
+2026-11-23T15:09:51.2338048Z  * [new tag]         archive/dgc/terminal-bench-harbor-adapter-v1 -> archive/dgc/terminal-bench-harbor-adapter-v1
+2026-11-23T15:09:51.2340998Z  * [new tag]         archive/dgc/terminal-bench-runtime-v1    -> archive/dgc/terminal-bench-runtime-v1
+2026-11-23T15:09:51.2343981Z  * [new tag]         archive/dgc/terminal-harbor-adapter-v1   -> archive/dgc/terminal-harbor-adapter-v1
+2026-11-23T15:09:51.2347029Z  * [new tag]         archive/dgc/terminal-harbor-execution-adapter-v1 -> archive/dgc/terminal-harbor-execution-adapter-v1
+2026-11-23T15:09:51.2349963Z  * [new tag]         archive/packaging/dgc-full-874052d7      -> archive/packaging/dgc-full-874052d7
+2026-11-23T15:09:51.2352867Z  * [new tag]         archive/packaging/trigger-dgc-full-874052d7 -> archive/packaging/trigger-dgc-full-874052d7
+2026-11-23T15:09:51.2355482Z  * [new ref]         5d51792736a48f24ecaa93b7d89bf2ba2dd974fc -> pull/43/merge
+2026-11-23T15:09:51.2359247Z ##[endgroup]
+2026-11-23T15:09:51.2360871Z ##[group]Determining the checkout info
+2026-11-23T15:09:51.2362641Z ##[endgroup]
+2026-11-23T15:09:51.2363903Z [command]/usr/bin/git sparse-checkout disable
+2026-11-23T15:09:51.2366853Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-23T15:09:51.2370286Z ##[group]Checking out the ref
+2026-11-23T15:09:51.2371819Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/43/merge
+2026-11-23T15:09:51.4070194Z Note: switching to 'refs/remotes/pull/43/merge'.
+2026-11-23T15:09:51.4071165Z 
+2026-11-23T15:09:51.4072101Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-23T15:09:51.4074320Z changes and commit them, and you can discard any commits you make in this
+2026-11-23T15:09:51.4076337Z state without impacting any branches by switching back to a branch.
+2026-11-23T15:09:51.4077402Z 
+2026-11-23T15:09:51.4078262Z If you want to create a new branch to retain commits you create, you may
+2026-11-23T15:09:51.4080109Z do so (now or later) by using -c with the switch command. Example:
+2026-11-23T15:09:51.4081078Z 
+2026-11-23T15:09:51.4081629Z   git switch -c <new-branch-name>
+2026-11-23T15:09:51.4082314Z 
+2026-11-23T15:09:51.4082850Z Or undo this operation with:
+2026-11-23T15:09:51.4083565Z 
+2026-11-23T15:09:51.4084074Z   git switch -
+2026-11-23T15:09:51.4084556Z 
+2026-11-23T15:09:51.4085491Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-23T15:09:51.4086611Z 
+2026-11-23T15:09:51.4088060Z HEAD is now at 5d51792 Merge f030a12b145bd8b43876c9e2d8b268e820e92b87 into 95c78c588b83ded30d0d882ddcf0f8fa6502a109
+2026-11-23T15:09:51.4099800Z ##[endgroup]
+2026-11-23T15:09:51.4148040Z [command]/usr/bin/git log -1 --format=%H
+2026-11-23T15:09:51.4174011Z 5d51792736a48f24ecaa93b7d89bf2ba2dd974fc
+2026-11-23T15:09:51.4665820Z ##[group]Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+2026-11-23T15:09:51.4667599Z with:
+2026-11-23T15:09:51.4668546Z   python-version: 3.11
+2026-11-23T15:09:51.4669595Z   cache: pip
+2026-11-23T15:09:51.4670728Z   cache-dependency-path: cwc-requirements-dev.txt
+2026-11-23T15:09:51.4672166Z   check-latest: false
+2026-11-23T15:09:51.4682565Z   token: ***
+2026-11-23T15:09:51.4684085Z   mirror: https://raw.githubusercontent.com/actions/python-versions/main
+2026-11-23T15:09:51.4685874Z   update-environment: true
+2026-11-23T15:09:51.4687033Z   allow-prereleases: false
+2026-11-23T15:09:51.4688172Z   freethreaded: false
+2026-11-23T15:09:51.4689200Z ##[endgroup]
+2026-11-23T15:09:51.5653491Z ##[group]Installed versions
+2026-11-23T15:09:51.6374844Z Successfully set up CPython (3.11.18)
+2026-11-23T15:09:51.6376871Z ##[endgroup]
+2026-11-23T15:09:51.6747934Z [command]/opt/hostedtoolcache/Python/3.11.18/x64/bin/pip cache dir
+2026-11-23T15:09:51.9342146Z /home/runner/.cache/pip
+2026-11-23T15:09:52.1703256Z Cache hit for: setup-python-Linux-x64-26.04-Ubuntu-python-3.11.18-pip-7a85e88e9793876a152fd1335905e90fd57cf6351ba12b010eb0762b0988d158
+2026-11-23T15:09:53.4728452Z Received 33554432 of 87891297 (38.2%), 32.0 MBs/sec
+2026-11-23T15:09:53.8312850Z Received 87891297 of 87891297 (100.0%), 61.7 MBs/sec
+2026-11-23T15:09:53.8313807Z Cache Size: ~84 MB (87891297 B)
+2026-11-23T15:09:53.8408266Z [command]/usr/bin/tar -xf /home/runner/work/_temp/24b29366-9e3e-40c5-9f7f-cf3b55be42c2/cache.tzst -P -C /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers --use-compress-program unzstd
+2026-11-23T15:09:53.9699970Z Cache restored successfully
+2026-11-23T15:09:53.9738266Z Cache restored from key: setup-python-Linux-x64-26.04-Ubuntu-python-3.11.18-pip-7a85e88e9793876a152fd1335905e90fd57cf6351ba12b010eb0762b0988d158
+2026-11-23T15:09:53.9908168Z ##[group]Run pipx install uv==0.10.12
+2026-11-23T15:09:53.9908494Z [36;1mpipx install uv==0.10.12[0m
+2026-11-23T15:09:53.9944074Z shell: /usr/bin/bash -e {0}
+2026-11-23T15:09:53.9944331Z env:
+2026-11-23T15:09:53.9944577Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:53.9944954Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+2026-11-23T15:09:53.9945346Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:53.9945675Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:53.9945986Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:53.9946301Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+2026-11-23T15:09:53.9946569Z ##[endgroup]
+2026-11-23T15:09:54.3402434Z creating virtual environment...
+2026-11-23T15:09:54.5163419Z installing uv from spec 'uv==0.10.12'...
+2026-11-23T15:09:56.6860763Z done! ✨ 🌟 ✨
+2026-11-23T15:09:56.6862465Z   installed package uv 0.10.12, installed using Python 3.14.4
+2026-11-23T15:09:56.6862805Z   These apps are now available
+2026-11-23T15:09:56.6863221Z     - uv
+2026-11-23T15:09:56.6863484Z     - uvx
+2026-11-23T15:09:56.7101236Z ##[group]Run uv sync --frozen --extra cpu
+2026-11-23T15:09:56.7101564Z [36;1muv sync --frozen --extra cpu[0m
+2026-11-23T15:09:56.7101883Z [36;1mVIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt[0m
+2026-11-23T15:09:56.7133132Z shell: /usr/bin/bash -e {0}
+2026-11-23T15:09:56.7133399Z env:
+2026-11-23T15:09:56.7133661Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:56.7134014Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+2026-11-23T15:09:56.7134353Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:56.7134703Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:56.7135006Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:09:56.7135320Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+2026-11-23T15:09:56.7135583Z ##[endgroup]
+2026-11-23T15:09:56.7839338Z Using CPython 3.11.18 interpreter at: /opt/hostedtoolcache/Python/3.11.18/x64/bin/python3.11
+2026-11-23T15:09:56.7840149Z Creating virtual environment at: .venv
+2026-11-23T15:09:56.8346137Z Downloading torch (182.9MiB)
+2026-11-23T15:09:56.8451776Z Downloading sympy (6.0MiB)
+2026-11-23T15:09:56.8457158Z Downloading pydantic-core (1.9MiB)
+2026-11-23T15:09:56.8458433Z Downloading networkx (1.9MiB)
+2026-11-23T15:09:56.8459906Z Downloading wandb (18.7MiB)
+2026-11-23T15:09:56.8461667Z Downloading numpy (16.0MiB)
+2026-11-23T15:09:56.8465082Z Downloading scipy (33.7MiB)
+2026-11-23T15:09:56.8467494Z Downloading tiktoken (1.1MiB)
+2026-11-23T15:09:56.8470325Z Downloading hf-xet (3.0MiB)
+2026-11-23T15:09:56.8471934Z Downloading pyarrow (47.7MiB)
+2026-11-23T15:09:56.8473224Z Downloading rustbpe (1.0MiB)
+2026-11-23T15:09:57.0338634Z  Downloaded rustbpe
+2026-11-23T15:09:57.0451923Z  Downloaded tiktoken
+2026-11-23T15:09:57.1774408Z  Downloaded pydantic-core
+2026-11-23T15:09:57.3124106Z  Downloaded hf-xet
+2026-11-23T15:09:57.3381347Z  Downloaded networkx
+2026-11-23T15:09:57.9586027Z  Downloaded numpy
+2026-11-23T15:09:58.3667130Z  Downloaded wandb
+2026-11-23T15:09:58.3774922Z  Downloaded sympy
+2026-11-23T15:09:58.5180678Z  Downloaded scipy
+2026-11-23T15:09:58.5437597Z  Downloaded pyarrow
+2026-11-23T15:10:00.6792369Z  Downloaded torch
+2026-11-23T15:10:00.7132256Z Prepared 41 packages in 3.92s
+2026-11-23T15:10:01.4234180Z Installed 41 packages in 709ms
+2026-11-23T15:10:01.4234584Z  + annotated-types==0.7.0
+2026-11-23T15:10:01.4234890Z  + certifi==2026.10.19
+2026-11-23T15:10:01.4235174Z  + charset-normalizer==3.4.3
+2026-11-23T15:10:01.4235475Z  + click==8.4.2
+2026-11-23T15:10:01.4235723Z  + filelock==4.2.1
+2026-11-23T15:10:01.4235981Z  + fsspec==2026.9.0
+2026-11-23T15:10:01.4236310Z  + gitdb==4.0.12
+2026-11-23T15:10:01.4236647Z  + gitpython==3.2.1
+2026-11-23T15:10:01.4236951Z  + hf-xet==1.1.9
+2026-11-23T15:10:01.4237371Z  + huggingface-hub==0.34.4
+2026-11-23T15:10:01.4237629Z  + idna==3.18
+2026-11-23T15:10:01.4237972Z  + jinja2==3.1.6
+2026-11-23T15:10:01.4238318Z  + kernels==0.11.7
+2026-11-23T15:10:01.4238684Z  + markupsafe==3.0.2
+2026-11-23T15:10:01.4239006Z  + mpmath==1.3.0
+2026-11-23T15:10:01.4239350Z  + networkx==3.5
+2026-11-23T15:10:01.4239695Z  + numpy==2.2.6
+2026-11-23T15:10:01.4240005Z  + nvidia-ml-py==13.610.43
+2026-11-23T15:10:01.4240275Z  + packaging==25.0
+2026-11-23T15:10:01.4240640Z  + platformdirs==4.4.0
+2026-11-23T15:10:01.4240982Z  + protobuf==6.33.6
+2026-11-23T15:10:01.4241382Z  + psutil==7.1.0
+2026-11-23T15:10:01.4241690Z  + pyarrow==25.0.0
+2026-11-23T15:10:01.4242048Z  + pydantic==2.11.7
+2026-11-23T15:10:01.4242396Z  + pydantic-core==2.33.2
+2026-11-23T15:10:01.4242708Z  + pyyaml==6.0.2
+2026-11-23T15:10:01.4243230Z  + regex==2025.9.1
+2026-11-23T15:10:01.4243501Z  + requests==2.34.2
+2026-11-23T15:10:01.4243880Z  + rustbpe==0.1.0
+2026-11-23T15:10:01.4244213Z  + scipy==1.17.1
+2026-11-23T15:10:01.4244566Z  + sentry-sdk==2.35.2
+2026-11-23T15:10:01.4244924Z  + setuptools==84.1.0
+2026-11-23T15:10:01.4245294Z  + smmap==5.0.2
+2026-11-23T15:10:01.4245611Z  + sympy==1.14.0
+2026-11-23T15:10:01.4246422Z  + tiktoken==0.11.0
+2026-11-23T15:10:01.4246834Z  + torch==2.13.0+cpu
+2026-11-23T15:10:01.4247213Z  + tqdm==4.67.1
+2026-11-23T15:10:01.4247549Z  + typing-extensions==4.15.0
+2026-11-23T15:10:01.4247923Z  + typing-inspection==0.4.1
+2026-11-23T15:10:01.4248272Z  + urllib3==2.8.0
+2026-11-23T15:10:01.4248636Z  + wandb==0.21.3
+2026-11-23T15:10:01.8453459Z Resolved 30 packages in 371ms
+2026-11-23T15:10:01.8694929Z Downloading pygments (1.2MiB)
+2026-11-23T15:10:01.8700448Z Downloading ruff (10.1MiB)
+2026-11-23T15:10:01.8702441Z Downloading ast-serialize (1.3MiB)
+2026-11-23T15:10:01.8703756Z Downloading mypy (14.4MiB)
+2026-11-23T15:10:01.8705146Z Downloading hypothesis (1.1MiB)
+2026-11-23T15:10:01.8706296Z Downloading libcst (2.2MiB)
+2026-11-23T15:10:01.9835385Z  Downloaded ast-serialize
+2026-11-23T15:10:02.0948017Z  Downloaded ruff
+2026-11-23T15:10:02.1159713Z  Downloaded hypothesis
+2026-11-23T15:10:02.1513958Z  Downloaded libcst
+2026-11-23T15:10:02.1540126Z  Downloaded pygments
+2026-11-23T15:10:02.2633193Z  Downloaded mypy
+2026-11-23T15:10:02.2634748Z Prepared 24 packages in 417ms
+2026-11-23T15:10:02.3634930Z Installed 24 packages in 99ms
+2026-11-23T15:10:02.3635423Z  + ast-serialize==0.13.1
+2026-11-23T15:10:02.3635839Z  + coverage==7.16.2
+2026-11-23T15:10:02.3636110Z  + hypothesis==6.168.5
+2026-11-23T15:10:02.3643416Z  + iniconfig==2.3.1
+2026-11-23T15:10:02.3643799Z  + libcst==1.9.0
+2026-11-23T15:10:02.3644077Z  + librt==0.17.0
+2026-11-23T15:10:02.3644421Z  + linkify-it-py==2.2.0
+2026-11-23T15:10:02.3644796Z  + markdown-it-py==4.3.0
+2026-11-23T15:10:02.3645206Z  + mdit-py-plugins==0.7.0
+2026-11-23T15:10:02.3645558Z  + mdurl==0.1.2
+2026-11-23T15:10:02.3645850Z  + mutmut==3.7.0
+2026-11-23T15:10:02.3646158Z  + mypy==2.3.0
+2026-11-23T15:10:02.3646478Z  + mypy-extensions==1.2.0
+2026-11-23T15:10:02.3646864Z  + pathspec==1.1.1
+2026-11-23T15:10:02.3647190Z  + pluggy==1.7.0
+2026-11-23T15:10:02.3647578Z  + pygments==2.21.0
+2026-11-23T15:10:02.3647829Z  + pytest==9.2.0
+2026-11-23T15:10:02.3673685Z  + pytest-cov==7.1.0
+2026-11-23T15:10:02.3674161Z  + rich==15.0.0
+2026-11-23T15:10:02.3674553Z  + ruff==0.17.3
+2026-11-23T15:10:02.3675020Z  + setproctitle==1.3.8
+2026-11-23T15:10:02.3675327Z  + sortedcontainers==2.4.0
+2026-11-23T15:10:02.3675615Z  + textual==8.2.8
+2026-11-23T15:10:02.3675854Z  + tomli==2.5.0
+2026-11-23T15:10:02.4736043Z ##[group]Run make -f Makefile.cwc pr-full COVERAGE_FAIL_UNDER=91
+2026-11-23T15:10:02.4736428Z [36;1mmake -f Makefile.cwc pr-full COVERAGE_FAIL_UNDER=91[0m
+2026-11-23T15:10:02.4766021Z shell: /usr/bin/bash -e {0}
+2026-11-23T15:10:02.4766230Z env:
+2026-11-23T15:10:02.4766457Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:10:02.4766831Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib/pkgconfig
+2026-11-23T15:10:02.4767188Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:10:02.4767491Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:10:02.4767786Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.18/x64
+2026-11-23T15:10:02.4768113Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.18/x64/lib
+2026-11-23T15:10:02.4768375Z ##[endgroup]
+2026-11-23T15:10:02.4844054Z .venv/bin/python -m ruff check .
+2026-11-23T15:10:02.5594763Z All checks passed!
+2026-11-23T15:10:02.5606954Z .venv/bin/python -m mypy --config-file mypy.ini cwc/instrumentation/ nanochat/inference_contracts.py nanochat/model_integrity.py experiments/common/value_information.py experiments/common/adaptive_value_theory.py experiments/common/neuron_information_budget.py experiments/common/coherence_audit.py experiments/common/value_of_information_rate.py experiments/common/identifiability_inference.py scripts/instrumentation_smoke.py scripts/instrumentation_audit.py scripts/export_cwc_instrumentation_bundle.py scripts/mutation_probe.py scripts/verify_bibliography.py scripts/build_bibliography.py scripts/build_document_register.py scripts/data_asset_audit.py scripts/readiness_oracle.py scripts/technical_quality_gate.py scripts/architecture_gate.py scripts/hermeticity_gate.py scripts/complexity_gate.py scripts/inference_integrity_gate.py scripts/assurance_attack.py scripts/assurance_report.py scripts/verdict_binding_gate.py
+2026-11-23T15:10:04.2622476Z Success: no issues found in 40 source files
+2026-11-23T15:10:04.2689864Z .venv/bin/python -m pytest -q -m "not slow and not mutation" \
+2026-11-23T15:10:04.2690492Z 	tests/test_instrumentation_*.py tests/test_evidence_validation.py
+2026-11-23T15:10:12.7173982Z ..s....................................s.....................s......ssss [ 33%]
+2026-11-23T15:10:13.2835939Z sssss...............ss............................sss................... [ 67%]
+2026-11-23T15:10:16.9324367Z .....................................................ss..............    [100%]
+2026-11-23T15:10:16.9324862Z 194 passed, 19 skipped in 11.93s
+2026-11-23T15:10:17.5903774Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_inference_integrity.py tests/test_engine.py
+2026-11-23T15:10:19.9599275Z ............................                                             [100%]
+2026-11-23T15:10:19.9600180Z 28 passed in 2.04s
+2026-11-23T15:10:20.5691472Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_data_asset_audit.py
+2026-11-23T15:10:20.8658826Z .........                                                                [100%]
+2026-11-23T15:10:20.8659315Z 9 passed in 0.15s
+2026-11-23T15:10:20.8985945Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_readiness_oracle.py
+2026-11-23T15:10:21.2613195Z .................                                                        [100%]
+2026-11-23T15:10:21.2613654Z 17 passed in 0.22s
+2026-11-23T15:10:21.2920928Z PYTHONPATH=. .venv/bin/python scripts/technical_quality_gate.py
+2026-11-23T15:10:21.3121285Z TECHNICAL-QUALITY-GATE: PASS (100 stable tasks; every DONE task evidenced)
+2026-11-23T15:10:21.3152591Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_technical_quality_gate.py
+2026-11-23T15:10:21.6144887Z ....                                                                     [100%]
+2026-11-23T15:10:21.6145412Z 4 passed in 0.15s
+2026-11-23T15:10:21.6442007Z .venv/bin/python -m pytest -q -m "not slow and not mutation" \
+2026-11-23T15:10:21.6442668Z 	tests/test_instrumentation_*.py tests/test_data_asset_audit.py tests/test_readiness_oracle.py \
+2026-11-23T15:10:21.6443818Z 	experiments/wp3_plasticity_v1/tests/ \
+2026-11-23T15:10:21.6444622Z 	--cov=cwc/instrumentation --cov=cwc/plasticity --cov=cwc/evidence --cov=cwc/assurance --cov-branch --cov-report=term-missing --cov-fail-under=91
+2026-11-23T15:10:25.4909306Z ..s....................................s.....................s......ssss [ 29%]
+2026-11-23T15:10:25.9732224Z sssss...............ss............................sss................... [ 59%]
+2026-11-23T15:10:30.3986040Z .....................................................ss................. [ 89%]
+2026-11-23T15:10:31.1628935Z ..........................                                               [100%]
+2026-11-23T15:10:31.1629472Z ================================ tests coverage ================================
+2026-11-23T15:10:31.1629950Z _______________ coverage: platform linux, python 3.11.18-final-0 _______________
+2026-11-23T15:10:31.1648007Z 
+2026-11-23T15:10:31.1648265Z Name                                  Stmts   Miss Branch BrPart  Cover   Missing
+2026-11-23T15:10:31.1648779Z ---------------------------------------------------------------------------------
+2026-11-23T15:10:31.1649311Z cwc/assurance/__init__.py                 2      0      0      0   100%
+2026-11-23T15:10:31.1649809Z cwc/assurance/readiness.py               61      0     22      0   100%
+2026-11-23T15:10:31.1650297Z cwc/evidence/__init__.py                  2      0      0      0   100%
+2026-11-23T15:10:31.1650813Z cwc/evidence/intake.py                   97      0     36      2    98%   110->112, 127->129
+2026-11-23T15:10:31.1651364Z cwc/instrumentation/__init__.py           4      0      0      0   100%
+2026-11-23T15:10:31.1651946Z cwc/instrumentation/audit.py             57     12     26      4    73%   44, 55, 69-76, 103-104
+2026-11-23T15:10:31.1652634Z cwc/instrumentation/clock.py             40     17      8      2    52%   38-39, 42-43, 50-51, 62-74
+2026-11-23T15:10:31.1653399Z cwc/instrumentation/config.py            59      0     22      0   100%
+2026-11-23T15:10:31.1653989Z cwc/instrumentation/energy.py           144      3     34      1    98%   31-33, 237->239
+2026-11-23T15:10:31.1654408Z cwc/instrumentation/event_buffer.py      40      7      8      1    79%   36-44, 54, 70
+2026-11-23T15:10:31.1654806Z cwc/instrumentation/flops.py             84      0     20      0   100%
+2026-11-23T15:10:31.1655184Z cwc/instrumentation/manifest.py          50      6      2      1    87%   56-71
+2026-11-23T15:10:31.1655549Z cwc/instrumentation/noop.py              60      0      0      0   100%
+2026-11-23T15:10:31.1655890Z cwc/instrumentation/routing.py           81      0     12      0   100%
+2026-11-23T15:10:31.1656283Z cwc/instrumentation/run_meter.py         75      9     12      4    83%   53, 60-62, 81, 98-99, 123, 129
+2026-11-23T15:10:31.1656989Z cwc/instrumentation/stats.py             34      0     12      0   100%
+2026-11-23T15:10:31.1657335Z cwc/instrumentation/types.py            117      0      0      0   100%
+2026-11-23T15:10:31.1657702Z cwc/instrumentation/vram.py              22      5      4      2    73%   28-30, 35-37, 55
+2026-11-23T15:10:31.1658066Z cwc/instrumentation/writer.py            65      0     16      0   100%
+2026-11-23T15:10:31.1658413Z cwc/plasticity/__init__.py                0      0      0      0   100%
+2026-11-23T15:10:31.1658745Z cwc/plasticity/contracts.py              33      0      0      0   100%
+2026-11-23T15:10:31.1659240Z cwc/plasticity/importance.py            110     11     46     13    85%   111, 113-115, 122, 205, 208, 219->218, 224->227, 228, 273, 286->285, 291->294, 295, 336
+2026-11-23T15:10:31.1659749Z cwc/plasticity/optimizer.py              49      6     20      3    84%   81, 90-91, 94-96
+2026-11-23T15:10:31.1660134Z cwc/plasticity/registry.py               58      3     16      3    92%   57, 68, 115
+2026-11-23T15:10:31.1660496Z ---------------------------------------------------------------------------------
+2026-11-23T15:10:31.1660806Z TOTAL                                  1344     79    316     36    92%
+2026-11-23T15:10:31.1661263Z Required test coverage of 91% reached. Total coverage: 92.11%
+2026-11-23T15:10:31.1661551Z 223 passed, 19 skipped in 8.95s
+2026-11-23T15:10:31.7814413Z .venv/bin/python scripts/mutation_probe.py
+2026-11-23T15:11:02.2343489Z [01/12] killed    ✓  percentile interpolation weight sign flip
+2026-11-23T15:11:02.2344109Z [02/12] killed    ✓  percentile upper index off-by-one
+2026-11-23T15:11:02.2344683Z [03/12] killed    ✓  bootstrap CI tail probability wrong (one-sided)
+2026-11-23T15:11:02.2345243Z [04/12] killed    ✓  dense linear FLOPs drops the 2-MAC factor
+2026-11-23T15:11:02.2345602Z [05/12] killed    ✓  causal pair count off (n-1 instead of n+1)
+2026-11-23T15:11:02.2345939Z [06/12] killed    ✓  attention-core QK+AV factor halved
+2026-11-23T15:11:02.2346308Z [07/12] killed    ✓  MLP FLOPs missing the down-projection term
+2026-11-23T15:11:02.2346675Z [08/12] killed    ✓  sliding-window pair count off-by-one per query
+2026-11-23T15:11:02.2347033Z [09/12] killed    ✓  trapezoidal rule drops the 0.5 factor
+2026-11-23T15:11:02.2347390Z [10/12] killed    ✓  total-energy delta loses the negative clamp
+2026-11-23T15:11:02.2347733Z [11/12] killed    ✓  routing running-min computes max instead
+2026-11-23T15:11:02.2348081Z [12/12] killed    ✓  routing token-sum accumulates the wrong field
+2026-11-23T15:11:02.2348283Z 
+2026-11-23T15:11:02.2348379Z MUTATION KILL RATE: 12/12 = 100.0%
+2026-11-23T15:11:02.2348592Z ALL MUTANTS KILLED
+2026-11-23T15:11:02.2402501Z PYTHONPATH=. .venv/bin/python -m pytest -q $(find experiments -path '*/tests' -type d -not -path '*fractal_multiscale*' -not -path '*__pycache__*' | sort)
+2026-11-23T15:16:38.2008044Z ........................................................................ [ 17%]
+2026-11-23T15:16:46.8137560Z ........................................................................ [ 35%]
+2026-11-23T15:17:54.0300015Z ........................................................................ [ 53%]
+2026-11-23T15:17:54.7912258Z ........................................................................ [ 71%]
+2026-11-23T15:19:10.5931501Z ........................................................................ [ 88%]
+2026-11-23T15:19:15.9237717Z .............................................                            [100%]
+2026-11-23T15:19:15.9239274Z 405 passed in 493.25s (0:08:13)
+2026-11-23T15:19:16.5703791Z PYTHONPATH=. .venv/bin/python scripts/validate_evidence.py
+2026-11-23T15:19:19.4925400Z EVIDENCE-VALIDATION: PASS (JSON finite, seeds coherent, bundles complete, WP4 aggregate reproducible)
+2026-11-23T15:19:19.7298117Z PYTHONPATH=. .venv/bin/python scripts/verdict_binding_gate.py cwc/causal/observability.py scripts/formal_identifiability_gate.py --self-test
+2026-11-23T15:19:20.2635709Z VERDICT-BINDING SELF-TEST PASS: 4 injected defects detected, control clean
+2026-11-23T15:19:20.2693613Z PYTHONPATH=. .venv/bin/python scripts/verdict_binding_gate.py cwc/causal/observability.py scripts/formal_identifiability_gate.py
+2026-11-23T15:19:20.5055162Z VERDICT-BINDING PASS: 69 claims bound to sealed verdicts, 3 NOT_TESTED unbound by design, ladder rows resolve to the registry.
+2026-11-23T15:19:20.5115411Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_verdict_binding_gate.py
+2026-11-23T15:19:21.9304960Z .........                                                                [100%]
+2026-11-23T15:19:21.9305421Z 9 passed in 1.26s
+2026-11-23T15:19:21.9636744Z PYTHONPATH=. .venv/bin/python scripts/formal_identifiability_gate.py --self-test
+2026-11-23T15:19:22.0523965Z {
+2026-11-23T15:19:22.0563373Z   "kill_count": 6,
+2026-11-23T15:19:22.0593095Z   "killed": {
+2026-11-23T15:19:22.0620105Z     "duplicate_model": true,
+2026-11-23T15:19:22.0623564Z     "malformed_probability_law": true,
+2026-11-23T15:19:22.0623885Z     "non_pd_covariance": true,
+2026-11-23T15:19:22.0624250Z     "omitted_separating_intervention": true,
+2026-11-23T15:19:22.0624610Z     "rank_deficiency": true,
+2026-11-23T15:19:22.0624855Z     "zero_cost": true
+2026-11-23T15:19:22.0625031Z   },
+2026-11-23T15:19:22.0625264Z   "state": "PASS"
+2026-11-23T15:19:22.0625898Z }
+2026-11-23T15:19:22.0641519Z PYTHONPATH=. .venv/bin/python scripts/formal_identifiability_gate.py
+2026-11-23T15:19:22.1523481Z {
+2026-11-23T15:19:22.1553122Z   "interventional": {
+2026-11-23T15:19:22.1583152Z     "causal_authority_granted": false,
+2026-11-23T15:19:22.1586622Z     "minimum_pair_separation": 0.30000000000000004,
+2026-11-23T15:19:22.1587004Z     "pair_separations": [
+2026-11-23T15:19:22.1593477Z       {
+2026-11-23T15:19:22.1593736Z         "best_action": "do_z",
+2026-11-23T15:19:22.1594014Z         "max_total_variation": 0.30000000000000004,
+2026-11-23T15:19:22.1594260Z         "model_a": "alternate",
+2026-11-23T15:19:22.1594480Z         "model_b": "direct"
+2026-11-23T15:19:22.1594664Z       },
+2026-11-23T15:19:22.1594841Z       {
+2026-11-23T15:19:22.1594998Z         "best_action": "do_x",
+2026-11-23T15:19:22.1595213Z         "max_total_variation": 0.8,
+2026-11-23T15:19:22.1595435Z         "model_a": "alternate",
+2026-11-23T15:19:22.1595635Z         "model_b": "mediated"
+2026-11-23T15:19:22.1595832Z       },
+2026-11-23T15:19:22.1595981Z       {
+2026-11-23T15:19:22.1596149Z         "best_action": "do_x",
+2026-11-23T15:19:22.1596349Z         "max_total_variation": 0.8,
+2026-11-23T15:19:22.1596551Z         "model_a": "direct",
+2026-11-23T15:19:22.1596743Z         "model_b": "mediated"
+2026-11-23T15:19:22.1596927Z       }
+2026-11-23T15:19:22.1597070Z     ],
+2026-11-23T15:19:22.1597233Z     "selected_actions": [
+2026-11-23T15:19:22.1597446Z       "do_x",
+2026-11-23T15:19:22.1597603Z       "do_z"
+2026-11-23T15:19:22.1597751Z     ],
+2026-11-23T15:19:22.1597954Z     "state": "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+2026-11-23T15:19:22.1598214Z     "tolerance": 1e-12,
+2026-11-23T15:19:22.1598413Z     "unresolved_pairs": []
+2026-11-23T15:19:22.1598589Z   },
+2026-11-23T15:19:22.1598743Z   "local_full_rank": {
+2026-11-23T15:19:22.1598972Z     "causal_authority_granted": false,
+2026-11-23T15:19:22.1599201Z     "condition_number": 1.7320508075688772,
+2026-11-23T15:19:22.1599438Z     "information_condition_number": null,
+2026-11-23T15:19:22.1599669Z     "information_min_eigenvalue": null,
+2026-11-23T15:19:22.1599904Z     "nullspace_basis": [],
+2026-11-23T15:19:22.1600097Z     "numerical_rank": 2,
+2026-11-23T15:19:22.1600283Z     "observable_count": 3,
+2026-11-23T15:19:22.1600468Z     "parameter_count": 2,
+2026-11-23T15:19:22.1600674Z     "rank_tolerance": 1.1537776118301384e-15,
+2026-11-23T15:19:22.1600899Z     "singular_values": [
+2026-11-23T15:19:22.1601080Z       1.7320508075688772,
+2026-11-23T15:19:22.1601253Z       1.0
+2026-11-23T15:19:22.1601406Z     ],
+2026-11-23T15:19:22.1601568Z     "smallest_singular_value": 1.0,
+2026-11-23T15:19:22.1601795Z     "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+2026-11-23T15:19:22.1602342Z   },
+2026-11-23T15:19:22.1602501Z   "local_rank_deficient": {
+2026-11-23T15:19:22.1602712Z     "causal_authority_granted": false,
+2026-11-23T15:19:22.1603086Z     "condition_number": 4.8048573075471176e+16,
+2026-11-23T15:19:22.1603327Z     "information_condition_number": null,
+2026-11-23T15:19:22.1603564Z     "information_min_eigenvalue": null,
+2026-11-23T15:19:22.1603788Z     "nullspace_basis": [
+2026-11-23T15:19:22.1603966Z       [
+2026-11-23T15:19:22.1604125Z         -0.894427190999916,
+2026-11-23T15:19:22.1604303Z         0.447213595499958
+2026-11-23T15:19:22.1604480Z       ]
+2026-11-23T15:19:22.1604623Z     ],
+2026-11-23T15:19:22.1604831Z     "numerical_rank": 1,
+2026-11-23T15:19:22.1605083Z     "observable_count": 2,
+2026-11-23T15:19:22.1605339Z     "parameter_count": 2,
+2026-11-23T15:19:22.1605654Z     "rank_tolerance": 2.2204460492503135e-15,
+2026-11-23T15:19:22.1605977Z     "singular_values": [
+2026-11-23T15:19:22.1606290Z       5.000000000000001,
+2026-11-23T15:19:22.1606660Z       1.0406136290762199e-16
+2026-11-23T15:19:22.1606894Z     ],
+2026-11-23T15:19:22.1607170Z     "smallest_singular_value": 1.0406136290762199e-16,
+2026-11-23T15:19:22.1607611Z     "state": "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
+2026-11-23T15:19:22.1607966Z   },
+2026-11-23T15:19:22.1608416Z   "minimum_design": {
+2026-11-23T15:19:22.1608627Z     "actions": [
+2026-11-23T15:19:22.1608797Z       "do_x",
+2026-11-23T15:19:22.1608960Z       "do_z"
+2026-11-23T15:19:22.1609116Z     ],
+2026-11-23T15:19:22.1609279Z     "certificate": {
+2026-11-23T15:19:22.1609479Z       "causal_authority_granted": false,
+2026-11-23T15:19:22.1609725Z       "minimum_pair_separation": 0.30000000000000004,
+2026-11-23T15:19:22.1609966Z       "pair_separations": [
+2026-11-23T15:19:22.1610334Z         {
+2026-11-23T15:19:22.1610572Z           "best_action": "do_z",
+2026-11-23T15:19:22.1610857Z           "max_total_variation": 0.30000000000000004,
+2026-11-23T15:19:22.1611169Z           "model_a": "alternate",
+2026-11-23T15:19:22.1611446Z           "model_b": "direct"
+2026-11-23T15:19:22.1611709Z         },
+2026-11-23T15:19:22.1611909Z         {
+2026-11-23T15:19:22.1612115Z           "best_action": "do_x",
+2026-11-23T15:19:22.1612410Z           "max_total_variation": 0.8,
+2026-11-23T15:19:22.1612721Z           "model_a": "alternate",
+2026-11-23T15:19:22.1613149Z           "model_b": "mediated"
+2026-11-23T15:19:22.1613402Z         },
+2026-11-23T15:19:22.1613592Z         {
+2026-11-23T15:19:22.1613808Z           "best_action": "do_x",
+2026-11-23T15:19:22.1614118Z           "max_total_variation": 0.8,
+2026-11-23T15:19:22.1614462Z           "model_a": "direct",
+2026-11-23T15:19:22.1614711Z           "model_b": "mediated"
+2026-11-23T15:19:22.1614890Z         }
+2026-11-23T15:19:22.1615045Z       ],
+2026-11-23T15:19:22.1615207Z       "selected_actions": [
+2026-11-23T15:19:22.1615394Z         "do_x",
+2026-11-23T15:19:22.1615564Z         "do_z"
+2026-11-23T15:19:22.1615738Z       ],
+2026-11-23T15:19:22.1615945Z       "state": "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+2026-11-23T15:19:22.1616217Z       "tolerance": 1e-12,
+2026-11-23T15:19:22.1616423Z       "unresolved_pairs": []
+2026-11-23T15:19:22.1616611Z     },
+2026-11-23T15:19:22.1616814Z     "state": "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+2026-11-23T15:19:22.1617066Z     "total_cost": 3.0
+2026-11-23T15:19:22.1617243Z   },
+2026-11-23T15:19:22.1617398Z   "observational": {
+2026-11-23T15:19:22.1617593Z     "causal_authority_granted": false,
+2026-11-23T15:19:22.1617817Z     "minimum_pair_separation": 0.0,
+2026-11-23T15:19:22.1618032Z     "pair_separations": [
+2026-11-23T15:19:22.1618215Z       {
+2026-11-23T15:19:22.1618384Z         "best_action": null,
+2026-11-23T15:19:22.1618580Z         "max_total_variation": 0.0,
+2026-11-23T15:19:22.1618784Z         "model_a": "alternate",
+2026-11-23T15:19:22.1618975Z         "model_b": "direct"
+2026-11-23T15:19:22.1619153Z       },
+2026-11-23T15:19:22.1619307Z       {
+2026-11-23T15:19:22.1619463Z         "best_action": null,
+2026-11-23T15:19:22.1619662Z         "max_total_variation": 0.0,
+2026-11-23T15:19:22.1620028Z         "model_a": "alternate",
+2026-11-23T15:19:22.1620229Z         "model_b": "mediated"
+2026-11-23T15:19:22.1620411Z       },
+2026-11-23T15:19:22.1620561Z       {
+2026-11-23T15:19:22.1620716Z         "best_action": null,
+2026-11-23T15:19:22.1620921Z         "max_total_variation": 0.0,
+2026-11-23T15:19:22.1621121Z         "model_a": "direct",
+2026-11-23T15:19:22.1621310Z         "model_b": "mediated"
+2026-11-23T15:19:22.1621494Z       }
+2026-11-23T15:19:22.1621639Z     ],
+2026-11-23T15:19:22.1621804Z     "selected_actions": [
+2026-11-23T15:19:22.1621986Z       "observe"
+2026-11-23T15:19:22.1622146Z     ],
+2026-11-23T15:19:22.1622334Z     "state": "NOT_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+2026-11-23T15:19:22.1622588Z     "tolerance": 1e-12,
+2026-11-23T15:19:22.1622772Z     "unresolved_pairs": [
+2026-11-23T15:19:22.1623109Z       [
+2026-11-23T15:19:22.1623260Z         "alternate",
+2026-11-23T15:19:22.1623428Z         "direct"
+2026-11-23T15:19:22.1623596Z       ],
+2026-11-23T15:19:22.1623751Z       [
+2026-11-23T15:19:22.1623905Z         "alternate",
+2026-11-23T15:19:22.1624080Z         "mediated"
+2026-11-23T15:19:22.1624250Z       ],
+2026-11-23T15:19:22.1624401Z       [
+2026-11-23T15:19:22.1624551Z         "direct",
+2026-11-23T15:19:22.1624837Z         "mediated"
+2026-11-23T15:19:22.1625010Z       ]
+2026-11-23T15:19:22.1625158Z     ]
+2026-11-23T15:19:22.1625310Z   },
+2026-11-23T15:19:22.1625461Z   "predicates": {
+2026-11-23T15:19:22.1625646Z     "full_rank_local_passes": true,
+2026-11-23T15:19:22.1625889Z     "interventions_separate_family": true,
+2026-11-23T15:19:22.1626124Z     "minimum_design_exact": true,
+2026-11-23T15:19:22.1626367Z     "no_certificate_promotes_causal_authority": true,
+2026-11-23T15:19:22.1626626Z     "observation_only_rejected": true,
+2026-11-23T15:19:22.1626861Z     "rank_deficient_local_rejected": true
+2026-11-23T15:19:22.1627074Z   },
+2026-11-23T15:19:22.1627230Z   "state": "PASS"
+2026-11-23T15:19:22.1627399Z }
+2026-11-23T15:19:22.1627699Z PYTHONPATH=. .venv/bin/python scripts/counterfactual_basis_identifiability_gate.py
+2026-11-23T15:19:22.2533828Z {
+2026-11-23T15:19:22.2553136Z   "confounded_orthogonality": {
+2026-11-23T15:19:22.2593280Z     "CONTEXT": {
+2026-11-23T15:19:22.2623097Z       "columns": 10,
+2026-11-23T15:19:22.2629040Z       "expected_diagonal": 16.0,
+2026-11-23T15:19:22.2633565Z       "family": "CONTEXT",
+2026-11-23T15:19:22.2633913Z       "gram_condition_number": 5.961777047638985e+16,
+2026-11-23T15:19:22.2634312Z       "maximum_absolute_off_diagonal": 16.0,
+2026-11-23T15:19:22.2634664Z       "maximum_diagonal": 16.0,
+2026-11-23T15:19:22.2634964Z       "minimum_diagonal": 16.0,
+2026-11-23T15:19:22.2635267Z       "orthogonal_equal_norm": false,
+2026-11-23T15:19:22.2635487Z       "rows": 16
+2026-11-23T15:19:22.2635655Z     },
+2026-11-23T15:19:22.2635810Z     "LINEAR": {
+2026-11-23T15:19:22.2635972Z       "columns": 6,
+2026-11-23T15:19:22.2636163Z       "expected_diagonal": 16.0,
+2026-11-23T15:19:22.2636372Z       "family": "LINEAR",
+2026-11-23T15:19:22.2636604Z       "gram_condition_number": 5.961777047638985e+16,
+2026-11-23T15:19:22.2636854Z       "maximum_absolute_off_diagonal": 16.0,
+2026-11-23T15:19:22.2637086Z       "maximum_diagonal": 16.0,
+2026-11-23T15:19:22.2637287Z       "minimum_diagonal": 16.0,
+2026-11-23T15:19:22.2637491Z       "orthogonal_equal_norm": false,
+2026-11-23T15:19:22.2637694Z       "rows": 16
+2026-11-23T15:19:22.2637864Z     },
+2026-11-23T15:19:22.2638021Z     "NONLINEAR": {
+2026-11-23T15:19:22.2638196Z       "columns": 16,
+2026-11-23T15:19:22.2638383Z       "expected_diagonal": 16.0,
+2026-11-23T15:19:22.2638588Z       "family": "NONLINEAR",
+2026-11-23T15:19:22.2638812Z       "gram_condition_number": 1.1568581173894666e+17,
+2026-11-23T15:19:22.2639089Z       "maximum_absolute_off_diagonal": 16.0,
+2026-11-23T15:19:22.2639319Z       "maximum_diagonal": 16.0,
+2026-11-23T15:19:22.2639517Z       "minimum_diagonal": 16.0,
+2026-11-23T15:19:22.2639717Z       "orthogonal_equal_norm": false,
+2026-11-23T15:19:22.2640247Z       "rows": 16
+2026-11-23T15:19:22.2640508Z     }
+2026-11-23T15:19:22.2640656Z   },
+2026-11-23T15:19:22.2640815Z   "confounded_rows": 16,
+2026-11-23T15:19:22.2641014Z   "confounded_slice_C_equals_A": {
+2026-11-23T15:19:22.2641229Z     "CONTEXT": {
+2026-11-23T15:19:22.2641391Z       "certificate": {
+2026-11-23T15:19:22.2641590Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2641824Z         "condition_number": 2.0086745865723336e+16,
+2026-11-23T15:19:22.2642073Z         "information_condition_number": null,
+2026-11-23T15:19:22.2642308Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2642536Z         "nullspace_basis": [
+2026-11-23T15:19:22.2642727Z           [
+2026-11-23T15:19:22.2643040Z             -0.0,
+2026-11-23T15:19:22.2643219Z             0.6920782345913085,
+2026-11-23T15:19:22.2643414Z             -0.6920782345913086,
+2026-11-23T15:19:22.2643606Z             1.3480216335322313e-16,
+2026-11-23T15:19:22.2643817Z             3.551047718104693e-16,
+2026-11-23T15:19:22.2644033Z             4.0377362449317623e-16,
+2026-11-23T15:19:22.2644233Z             0.14500936936962908,
+2026-11-23T15:19:22.2644429Z             -0.14500936936962905,
+2026-11-23T15:19:22.2644630Z             -4.1235791950951226e-16,
+2026-11-23T15:19:22.2644855Z             -2.3259047134123046e-17
+2026-11-23T15:19:22.2645188Z           ],
+2026-11-23T15:19:22.2645353Z           [
+2026-11-23T15:19:22.2645506Z             0.0,
+2026-11-23T15:19:22.2645681Z             0.14500936936962902,
+2026-11-23T15:19:22.2645878Z             -0.14500936936962913,
+2026-11-23T15:19:22.2646100Z             4.956652834258879e-17,
+2026-11-23T15:19:22.2646299Z             -1.1933252675711116e-17,
+2026-11-23T15:19:22.2646509Z             4.8130305660025756e-17,
+2026-11-23T15:19:22.2646709Z             -0.6920782345913086,
+2026-11-23T15:19:22.2646908Z             0.6920782345913086,
+2026-11-23T15:19:22.2647100Z             -1.258943612855683e-16,
+2026-11-23T15:19:22.2647297Z             3.4274846207283074e-17
+2026-11-23T15:19:22.2647573Z           ]
+2026-11-23T15:19:22.2647773Z         ],
+2026-11-23T15:19:22.2648002Z         "numerical_rank": 8,
+2026-11-23T15:19:22.2648287Z         "observable_count": 16,
+2026-11-23T15:19:22.2648572Z         "parameter_count": 10,
+2026-11-23T15:19:22.2648851Z         "rank_tolerance": 2.0097183471152325e-14,
+2026-11-23T15:19:22.2649092Z         "singular_values": [
+2026-11-23T15:19:22.2649284Z           5.6568542494923815,
+2026-11-23T15:19:22.2649478Z           5.656854249492381,
+2026-11-23T15:19:22.2649655Z           4.0,
+2026-11-23T15:19:22.2649813Z           4.0,
+2026-11-23T15:19:22.2649968Z           4.0,
+2026-11-23T15:19:22.2650119Z           3.9999999999999996,
+2026-11-23T15:19:22.2650306Z           3.999999999999999,
+2026-11-23T15:19:22.2650481Z           3.999999999999999,
+2026-11-23T15:19:22.2650661Z           5.847492447309648e-16,
+2026-11-23T15:19:22.2650956Z           2.8162123856733896e-16
+2026-11-23T15:19:22.2651172Z         ],
+2026-11-23T15:19:22.2651368Z         "smallest_singular_value": 2.8162123856733896e-16,
+2026-11-23T15:19:22.2651651Z         "state": "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
+2026-11-23T15:19:22.2651886Z       },
+2026-11-23T15:19:22.2652051Z       "family": "CONTEXT",
+2026-11-23T15:19:22.2652233Z       "rows": 16,
+2026-11-23T15:19:22.2652401Z       "term_names": [
+2026-11-23T15:19:22.2652580Z         "intercept",
+2026-11-23T15:19:22.2652758Z         "A",
+2026-11-23T15:19:22.2653060Z         "C",
+2026-11-23T15:19:22.2653279Z         "D",
+2026-11-23T15:19:22.2653433Z         "B",
+2026-11-23T15:19:22.2653586Z         "context",
+2026-11-23T15:19:22.2653760Z         "A:context",
+2026-11-23T15:19:22.2653934Z         "C:context",
+2026-11-23T15:19:22.2654101Z         "D:context",
+2026-11-23T15:19:22.2654262Z         "B:context"
+2026-11-23T15:19:22.2654431Z       ]
+2026-11-23T15:19:22.2654584Z     },
+2026-11-23T15:19:22.2654737Z     "LINEAR": {
+2026-11-23T15:19:22.2654905Z       "certificate": {
+2026-11-23T15:19:22.2655106Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2655739Z         "condition_number": 9520233673814918.0,
+2026-11-23T15:19:22.2656057Z         "information_condition_number": null,
+2026-11-23T15:19:22.2656372Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2656688Z         "nullspace_basis": [
+2026-11-23T15:19:22.2656941Z           [
+2026-11-23T15:19:22.2657143Z             -0.0,
+2026-11-23T15:19:22.2657357Z             0.7071067811865475,
+2026-11-23T15:19:22.2657625Z             -0.7071067811865476,
+2026-11-23T15:19:22.2657897Z             9.591320376309966e-17,
+2026-11-23T15:19:22.2658164Z             -6.807479988090041e-17,
+2026-11-23T15:19:22.2658428Z             4.9626470047789594e-17
+2026-11-23T15:19:22.2658679Z           ]
+2026-11-23T15:19:22.2658891Z         ],
+2026-11-23T15:19:22.2659058Z         "numerical_rank": 5,
+2026-11-23T15:19:22.2659260Z         "observable_count": 16,
+2026-11-23T15:19:22.2659463Z         "parameter_count": 6,
+2026-11-23T15:19:22.2659678Z         "rank_tolerance": 2.0097183471152316e-14,
+2026-11-23T15:19:22.2659921Z         "singular_values": [
+2026-11-23T15:19:22.2660106Z           5.656854249492379,
+2026-11-23T15:19:22.2660279Z           4.000000000000001,
+2026-11-23T15:19:22.2660465Z           4.0,
+2026-11-23T15:19:22.2660637Z           3.9999999999999996,
+2026-11-23T15:19:22.2661217Z           3.9999999999999996,
+2026-11-23T15:19:22.2661421Z           5.941927943482486e-16
+2026-11-23T15:19:22.2661607Z         ],
+2026-11-23T15:19:22.2661805Z         "smallest_singular_value": 5.941927943482486e-16,
+2026-11-23T15:19:22.2662109Z         "state": "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
+2026-11-23T15:19:22.2662338Z       },
+2026-11-23T15:19:22.2662501Z       "family": "LINEAR",
+2026-11-23T15:19:22.2662688Z       "rows": 16,
+2026-11-23T15:19:22.2662855Z       "term_names": [
+2026-11-23T15:19:22.2663378Z         "intercept",
+2026-11-23T15:19:22.2663546Z         "A",
+2026-11-23T15:19:22.2663705Z         "C",
+2026-11-23T15:19:22.2663859Z         "D",
+2026-11-23T15:19:22.2664008Z         "B",
+2026-11-23T15:19:22.2664171Z         "context"
+2026-11-23T15:19:22.2664330Z       ]
+2026-11-23T15:19:22.2664485Z     },
+2026-11-23T15:19:22.2664649Z     "NONLINEAR": {
+2026-11-23T15:19:22.2664822Z       "certificate": {
+2026-11-23T15:19:22.2665015Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2665259Z         "condition_number": 1.3491862382771029e+17,
+2026-11-23T15:19:22.2665511Z         "information_condition_number": null,
+2026-11-23T15:19:22.2665745Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2665968Z         "nullspace_basis": [
+2026-11-23T15:19:22.2666152Z           [
+2026-11-23T15:19:22.2666320Z             -0.20884442766351194,
+2026-11-23T15:19:22.2666521Z             -0.4023657552905387,
+2026-11-23T15:19:22.2666712Z             0.40236575529053886,
+2026-11-23T15:19:22.2666900Z             4.549661211797502e-16,
+2026-11-23T15:19:22.2667103Z             5.630046095128857e-17,
+2026-11-23T15:19:22.2667297Z             -5.585332277297868e-16,
+2026-11-23T15:19:22.2667493Z             0.5100036356279977,
+2026-11-23T15:19:22.2667680Z             -0.5100036356279978,
+2026-11-23T15:19:22.2667883Z             -4.2061630134062143e-16,
+2026-11-23T15:19:22.2668082Z             2.4400598867363326e-16,
+2026-11-23T15:19:22.2668276Z             0.20884442766351197,
+2026-11-23T15:19:22.2668460Z             0.07889511332767749,
+2026-11-23T15:19:22.2668655Z             0.1678024336611713,
+2026-11-23T15:19:22.2668852Z             -0.07889511332767742,
+2026-11-23T15:19:22.2669044Z             -0.1678024336611711,
+2026-11-23T15:19:22.2669232Z             -3.970717508622318e-16
+2026-11-23T15:19:22.2669417Z           ],
+2026-11-23T15:19:22.2669579Z           [
+2026-11-23T15:19:22.2669731Z             -0.35166542164147163,
+2026-11-23T15:19:22.2669917Z             -0.3825714620211677,
+2026-11-23T15:19:22.2670099Z             0.38257146202116765,
+2026-11-23T15:19:22.2670290Z             3.572064133709263e-16,
+2026-11-23T15:19:22.2670473Z             1.217915831318477e-16,
+2026-11-23T15:19:22.2670663Z             5.3513389105810596e-17,
+2026-11-23T15:19:22.2670978Z             -0.355203465206967,
+2026-11-23T15:19:22.2671168Z             0.35520346520696683,
+2026-11-23T15:19:22.2671350Z             -2.625552349579066e-16,
+2026-11-23T15:19:22.2671540Z             1.9183865616253884e-16,
+2026-11-23T15:19:22.2671727Z             0.35166542164147147,
+2026-11-23T15:19:22.2671909Z             0.07865142531544965,
+2026-11-23T15:19:22.2672104Z             -0.31243392784639135,
+2026-11-23T15:19:22.2672294Z             -0.07865142531544918,
+2026-11-23T15:19:22.2672480Z             0.3124339278463912,
+2026-11-23T15:19:22.2672668Z             -9.491103625109794e-17
+2026-11-23T15:19:22.2672856Z           ],
+2026-11-23T15:19:22.2673219Z           [
+2026-11-23T15:19:22.2673381Z             -0.5199965894646092,
+2026-11-23T15:19:22.2673567Z             0.2468938744739459,
+2026-11-23T15:19:22.2673760Z             -0.2468938744739459,
+2026-11-23T15:19:22.2673945Z             1.9004214279233473e-16,
+2026-11-23T15:19:22.2674136Z             2.4877979792642047e-17,
+2026-11-23T15:19:22.2674331Z             -6.899486424514536e-17,
+2026-11-23T15:19:22.2674529Z             -0.0906727882971609,
+2026-11-23T15:19:22.2674712Z             0.09067278829716077,
+2026-11-23T15:19:22.2674895Z             -1.517672823741866e-16,
+2026-11-23T15:19:22.2675195Z             -1.54062733913362e-16,
+2026-11-23T15:19:22.2675391Z             0.5199965894646091,
+2026-11-23T15:19:22.2675576Z             -0.22944817270786474,
+2026-11-23T15:19:22.2675760Z             0.3282970350092405,
+2026-11-23T15:19:22.2675935Z             0.2294481727078647,
+2026-11-23T15:19:22.2676117Z             -0.32829703500924057,
+2026-11-23T15:19:22.2676315Z             -4.441220319866438e-17
+2026-11-23T15:19:22.2676497Z           ],
+2026-11-23T15:19:22.2676645Z           [
+2026-11-23T15:19:22.2676795Z             -0.23421275276012263,
+2026-11-23T15:19:22.2676985Z             0.33322487400856976,
+2026-11-23T15:19:22.2677168Z             -0.3332248740085697,
+2026-11-23T15:19:22.2677354Z             -3.934947328586759e-17,
+2026-11-23T15:19:22.2677544Z             1.4679918966632385e-16,
+2026-11-23T15:19:22.2677745Z             -1.5965472315590156e-16,
+2026-11-23T15:19:22.2677942Z             0.31252441807602305,
+2026-11-23T15:19:22.2678124Z             -0.31252441807602294,
+2026-11-23T15:19:22.2678313Z             -8.176394641329439e-17,
+2026-11-23T15:19:22.2678505Z             -6.759465320878815e-17,
+2026-11-23T15:19:22.2678709Z             0.23421275276012243,
+2026-11-23T15:19:22.2678980Z             0.07948713010334467,
+2026-11-23T15:19:22.2679258Z             -0.47970392331174017,
+2026-11-23T15:19:22.2679623Z             -0.0794871301033448,
+2026-11-23T15:19:22.2679949Z             0.47970392331174,
+2026-11-23T15:19:22.2680227Z             7.299093287192215e-18
+2026-11-23T15:19:22.2680579Z           ],
+2026-11-23T15:19:22.2680825Z           [
+2026-11-23T15:19:22.2681093Z             -0.08639079606836891,
+2026-11-23T15:19:22.2681421Z             0.14051858775862047,
+2026-11-23T15:19:22.2681715Z             -0.14051858775862053,
+2026-11-23T15:19:22.2691791Z             -4.852123710999354e-17,
+2026-11-23T15:19:22.2692037Z             1.353955914419713e-17,
+2026-11-23T15:19:22.2692253Z             2.2792220363078492e-17,
+2026-11-23T15:19:22.2692456Z             -0.08850832457938242,
+2026-11-23T15:19:22.2692676Z             0.08850832457938258,
+2026-11-23T15:19:22.2692871Z             3.6653128741754985e-17,
+2026-11-23T15:19:22.2693371Z             1.246908150477644e-16,
+2026-11-23T15:19:22.2693562Z             0.08639079606836886,
+2026-11-23T15:19:22.2693747Z             0.6546944681130406,
+2026-11-23T15:19:22.2693958Z             0.1906110876925314,
+2026-11-23T15:19:22.2694150Z             -0.6546944681130406,
+2026-11-23T15:19:22.2694341Z             -0.19061108769253152,
+2026-11-23T15:19:22.2694530Z             -1.3797489849290518e-16
+2026-11-23T15:19:22.2694718Z           ]
+2026-11-23T15:19:22.2694876Z         ],
+2026-11-23T15:19:22.2695038Z         "numerical_rank": 11,
+2026-11-23T15:19:22.2695245Z         "observable_count": 16,
+2026-11-23T15:19:22.2695625Z         "parameter_count": 16,
+2026-11-23T15:19:22.2695858Z         "rank_tolerance": 2.0097183471152322e-14,
+2026-11-23T15:19:22.2696095Z         "singular_values": [
+2026-11-23T15:19:22.2696291Z           5.656854249492381,
+2026-11-23T15:19:22.2696474Z           5.656854249492381,
+2026-11-23T15:19:22.2696650Z           5.656854249492381,
+2026-11-23T15:19:22.2696843Z           5.656854249492378,
+2026-11-23T15:19:22.2697024Z           5.656854249492378,
+2026-11-23T15:19:22.2697199Z           4.000000000000001,
+2026-11-23T15:19:22.2697373Z           4.0,
+2026-11-23T15:19:22.2697535Z           4.0,
+2026-11-23T15:19:22.2697682Z           4.0,
+2026-11-23T15:19:22.2697831Z           3.999999999999999,
+2026-11-23T15:19:22.2698005Z           3.999999999999998,
+2026-11-23T15:19:22.2698196Z           8.96104402113874e-16,
+2026-11-23T15:19:22.2698389Z           7.834955395680858e-16,
+2026-11-23T15:19:22.2698584Z           5.113494029891935e-16,
+2026-11-23T15:19:22.2698774Z           2.1843858810430627e-16,
+2026-11-23T15:19:22.2698965Z           4.192789763936613e-17
+2026-11-23T15:19:22.2699151Z         ],
+2026-11-23T15:19:22.2699346Z         "smallest_singular_value": 4.192789763936613e-17,
+2026-11-23T15:19:22.2699717Z         "state": "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
+2026-11-23T15:19:22.2699951Z       },
+2026-11-23T15:19:22.2700117Z       "family": "NONLINEAR",
+2026-11-23T15:19:22.2700302Z       "rows": 16,
+2026-11-23T15:19:22.2700468Z       "term_names": [
+2026-11-23T15:19:22.2700642Z         "intercept",
+2026-11-23T15:19:22.2700818Z         "A",
+2026-11-23T15:19:22.2700970Z         "C",
+2026-11-23T15:19:22.2701116Z         "D",
+2026-11-23T15:19:22.2701259Z         "B",
+2026-11-23T15:19:22.2701410Z         "context",
+2026-11-23T15:19:22.2701581Z         "A:context",
+2026-11-23T15:19:22.2701743Z         "C:context",
+2026-11-23T15:19:22.2701906Z         "D:context",
+2026-11-23T15:19:22.2702067Z         "B:context",
+2026-11-23T15:19:22.2702231Z         "A:C",
+2026-11-23T15:19:22.2702392Z         "A:D",
+2026-11-23T15:19:22.2702543Z         "A:B",
+2026-11-23T15:19:22.2702715Z         "C:D",
+2026-11-23T15:19:22.2702870Z         "C:B",
+2026-11-23T15:19:22.2703191Z         "D:B"
+2026-11-23T15:19:22.2703349Z       ]
+2026-11-23T15:19:22.2703491Z     }
+2026-11-23T15:19:22.2703644Z   },
+2026-11-23T15:19:22.2703813Z   "full_factorial": {
+2026-11-23T15:19:22.2703987Z     "CONTEXT": {
+2026-11-23T15:19:22.2704156Z       "certificate": {
+2026-11-23T15:19:22.2704356Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2704604Z         "condition_number": 1.0000000000000004,
+2026-11-23T15:19:22.2704844Z         "information_condition_number": null,
+2026-11-23T15:19:22.2705080Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2705304Z         "nullspace_basis": [],
+2026-11-23T15:19:22.2705516Z         "numerical_rank": 10,
+2026-11-23T15:19:22.2705714Z         "observable_count": 32,
+2026-11-23T15:19:22.2705913Z         "parameter_count": 10,
+2026-11-23T15:19:22.2706118Z         "rank_tolerance": 4.019436694230465e-14,
+2026-11-23T15:19:22.2706343Z         "singular_values": [
+2026-11-23T15:19:22.2706533Z           5.6568542494923815,
+2026-11-23T15:19:22.2706709Z           5.656854249492381,
+2026-11-23T15:19:22.2706883Z           5.656854249492381,
+2026-11-23T15:19:22.2707062Z           5.656854249492381,
+2026-11-23T15:19:22.2707244Z           5.656854249492381,
+2026-11-23T15:19:22.2707422Z           5.65685424949238,
+2026-11-23T15:19:22.2707600Z           5.65685424949238,
+2026-11-23T15:19:22.2707774Z           5.65685424949238,
+2026-11-23T15:19:22.2707958Z           5.656854249492379,
+2026-11-23T15:19:22.2708136Z           5.656854249492379
+2026-11-23T15:19:22.2708309Z         ],
+2026-11-23T15:19:22.2708491Z         "smallest_singular_value": 5.656854249492379,
+2026-11-23T15:19:22.2708755Z         "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+2026-11-23T15:19:22.2708972Z       },
+2026-11-23T15:19:22.2709131Z       "family": "CONTEXT",
+2026-11-23T15:19:22.2709309Z       "rows": 32,
+2026-11-23T15:19:22.2709586Z       "term_names": [
+2026-11-23T15:19:22.2709754Z         "intercept",
+2026-11-23T15:19:22.2709914Z         "A",
+2026-11-23T15:19:22.2710076Z         "C",
+2026-11-23T15:19:22.2710222Z         "D",
+2026-11-23T15:19:22.2710363Z         "B",
+2026-11-23T15:19:22.2710512Z         "context",
+2026-11-23T15:19:22.2710685Z         "A:context",
+2026-11-23T15:19:22.2710847Z         "C:context",
+2026-11-23T15:19:22.2711008Z         "D:context",
+2026-11-23T15:19:22.2711168Z         "B:context"
+2026-11-23T15:19:22.2711326Z       ]
+2026-11-23T15:19:22.2711477Z     },
+2026-11-23T15:19:22.2711625Z     "LINEAR": {
+2026-11-23T15:19:22.2711789Z       "certificate": {
+2026-11-23T15:19:22.2711980Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2712218Z         "condition_number": 1.0000000000000004,
+2026-11-23T15:19:22.2712452Z         "information_condition_number": null,
+2026-11-23T15:19:22.2712678Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2713033Z         "nullspace_basis": [],
+2026-11-23T15:19:22.2713298Z         "numerical_rank": 6,
+2026-11-23T15:19:22.2713489Z         "observable_count": 32,
+2026-11-23T15:19:22.2713687Z         "parameter_count": 6,
+2026-11-23T15:19:22.2713893Z         "rank_tolerance": 4.0194366942304644e-14,
+2026-11-23T15:19:22.2714232Z         "singular_values": [
+2026-11-23T15:19:22.2714418Z           5.656854249492381,
+2026-11-23T15:19:22.2714594Z           5.65685424949238,
+2026-11-23T15:19:22.2714765Z           5.65685424949238,
+2026-11-23T15:19:22.2714936Z           5.65685424949238,
+2026-11-23T15:19:22.2715110Z           5.656854249492379,
+2026-11-23T15:19:22.2715287Z           5.656854249492378
+2026-11-23T15:19:22.2715454Z         ],
+2026-11-23T15:19:22.2715629Z         "smallest_singular_value": 5.656854249492378,
+2026-11-23T15:19:22.2715884Z         "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+2026-11-23T15:19:22.2716091Z       },
+2026-11-23T15:19:22.2716240Z       "family": "LINEAR",
+2026-11-23T15:19:22.2716413Z       "rows": 32,
+2026-11-23T15:19:22.2716583Z       "term_names": [
+2026-11-23T15:19:22.2716751Z         "intercept",
+2026-11-23T15:19:22.2716912Z         "A",
+2026-11-23T15:19:22.2717058Z         "C",
+2026-11-23T15:19:22.2717206Z         "D",
+2026-11-23T15:19:22.2717360Z         "B",
+2026-11-23T15:19:22.2717513Z         "context"
+2026-11-23T15:19:22.2717681Z       ]
+2026-11-23T15:19:22.2717827Z     },
+2026-11-23T15:19:22.2717989Z     "NONLINEAR": {
+2026-11-23T15:19:22.2718160Z       "certificate": {
+2026-11-23T15:19:22.2718350Z         "causal_authority_granted": false,
+2026-11-23T15:19:22.2718577Z         "condition_number": 1.0000000000000007,
+2026-11-23T15:19:22.2718822Z         "information_condition_number": null,
+2026-11-23T15:19:22.2719054Z         "information_min_eigenvalue": null,
+2026-11-23T15:19:22.2719279Z         "nullspace_basis": [],
+2026-11-23T15:19:22.2719481Z         "numerical_rank": 16,
+2026-11-23T15:19:22.2719677Z         "observable_count": 32,
+2026-11-23T15:19:22.2719881Z         "parameter_count": 16,
+2026-11-23T15:19:22.2720090Z         "rank_tolerance": 4.019436694230466e-14,
+2026-11-23T15:19:22.2720311Z         "singular_values": [
+2026-11-23T15:19:22.2720496Z           5.656854249492382,
+2026-11-23T15:19:22.2720675Z           5.656854249492382,
+2026-11-23T15:19:22.2720866Z           5.6568542494923815,
+2026-11-23T15:19:22.2721059Z           5.6568542494923815,
+2026-11-23T15:19:22.2721242Z           5.6568542494923815,
+2026-11-23T15:19:22.2721428Z           5.6568542494923815,
+2026-11-23T15:19:22.2721602Z           5.656854249492381,
+2026-11-23T15:19:22.2721779Z           5.656854249492381,
+2026-11-23T15:19:22.2721952Z           5.656854249492381,
+2026-11-23T15:19:22.2722132Z           5.656854249492381,
+2026-11-23T15:19:22.2722308Z           5.656854249492381,
+2026-11-23T15:19:22.2722479Z           5.656854249492381,
+2026-11-23T15:19:22.2722652Z           5.65685424949238,
+2026-11-23T15:19:22.2722833Z           5.65685424949238,
+2026-11-23T15:19:22.2723165Z           5.65685424949238,
+2026-11-23T15:19:22.2723470Z           5.656854249492379
+2026-11-23T15:19:22.2723642Z         ],
+2026-11-23T15:19:22.2723827Z         "smallest_singular_value": 5.656854249492379,
+2026-11-23T15:19:22.2724090Z         "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+2026-11-23T15:19:22.2724313Z       },
+2026-11-23T15:19:22.2724482Z       "family": "NONLINEAR",
+2026-11-23T15:19:22.2724679Z       "rows": 32,
+2026-11-23T15:19:22.2724848Z       "term_names": [
+2026-11-23T15:19:22.2725020Z         "intercept",
+2026-11-23T15:19:22.2725183Z         "A",
+2026-11-23T15:19:22.2725339Z         "C",
+2026-11-23T15:19:22.2725488Z         "D",
+2026-11-23T15:19:22.2725644Z         "B",
+2026-11-23T15:19:22.2725794Z         "context",
+2026-11-23T15:19:22.2725956Z         "A:context",
+2026-11-23T15:19:22.2726119Z         "C:context",
+2026-11-23T15:19:22.2726286Z         "D:context",
+2026-11-23T15:19:22.2726445Z         "B:context",
+2026-11-23T15:19:22.2726602Z         "A:C",
+2026-11-23T15:19:22.2726760Z         "A:D",
+2026-11-23T15:19:22.2726912Z         "A:B",
+2026-11-23T15:19:22.2727072Z         "C:D",
+2026-11-23T15:19:22.2727223Z         "C:B",
+2026-11-23T15:19:22.2727372Z         "D:B"
+2026-11-23T15:19:22.2727527Z       ]
+2026-11-23T15:19:22.2727684Z     }
+2026-11-23T15:19:22.2727831Z   },
+2026-11-23T15:19:22.2728114Z   "full_factorial_orthogonality": {
+2026-11-23T15:19:22.2728323Z     "CONTEXT": {
+2026-11-23T15:19:22.2728498Z       "columns": 10,
+2026-11-23T15:19:22.2728679Z       "expected_diagonal": 32.0,
+2026-11-23T15:19:22.2728884Z       "family": "CONTEXT",
+2026-11-23T15:19:22.2729075Z       "gram_condition_number": 1.0,
+2026-11-23T15:19:22.2729291Z       "maximum_absolute_off_diagonal": 0.0,
+2026-11-23T15:19:22.2729524Z       "maximum_diagonal": 32.0,
+2026-11-23T15:19:22.2729724Z       "minimum_diagonal": 32.0,
+2026-11-23T15:19:22.2729918Z       "orthogonal_equal_norm": true,
+2026-11-23T15:19:22.2730123Z       "rows": 32
+2026-11-23T15:19:22.2730290Z     },
+2026-11-23T15:19:22.2730441Z     "LINEAR": {
+2026-11-23T15:19:22.2730604Z       "columns": 6,
+2026-11-23T15:19:22.2730781Z       "expected_diagonal": 32.0,
+2026-11-23T15:19:22.2730985Z       "family": "LINEAR",
+2026-11-23T15:19:22.2731176Z       "gram_condition_number": 1.0,
+2026-11-23T15:19:22.2731393Z       "maximum_absolute_off_diagonal": 0.0,
+2026-11-23T15:19:22.2731613Z       "maximum_diagonal": 32.0,
+2026-11-23T15:19:22.2731809Z       "minimum_diagonal": 32.0,
+2026-11-23T15:19:22.2732014Z       "orthogonal_equal_norm": true,
+2026-11-23T15:19:22.2732213Z       "rows": 32
+2026-11-23T15:19:22.2732371Z     },
+2026-11-23T15:19:22.2732521Z     "NONLINEAR": {
+2026-11-23T15:19:22.2732691Z       "columns": 16,
+2026-11-23T15:19:22.2732872Z       "expected_diagonal": 32.0,
+2026-11-23T15:19:22.2733236Z       "family": "NONLINEAR",
+2026-11-23T15:19:22.2733438Z       "gram_condition_number": 1.0,
+2026-11-23T15:19:22.2733658Z       "maximum_absolute_off_diagonal": 0.0,
+2026-11-23T15:19:22.2733877Z       "maximum_diagonal": 32.0,
+2026-11-23T15:19:22.2734066Z       "minimum_diagonal": 32.0,
+2026-11-23T15:19:22.2734260Z       "orthogonal_equal_norm": true,
+2026-11-23T15:19:22.2734464Z       "rows": 32
+2026-11-23T15:19:22.2734620Z     }
+2026-11-23T15:19:22.2734764Z   },
+2026-11-23T15:19:22.2734920Z   "full_factorial_rows": 32,
+2026-11-23T15:19:22.2735109Z   "predicates": {
+2026-11-23T15:19:22.2735316Z     "confounded_slice_all_rank_deficient": true,
+2026-11-23T15:19:22.2735570Z     "confounded_slice_returns_nullspace": true,
+2026-11-23T15:19:22.2735816Z     "confounding_breaks_orthogonality": true,
+2026-11-23T15:19:22.2736058Z     "full_factorial_all_identifiable": true,
+2026-11-23T15:19:22.2736297Z     "full_factorial_gram_is_32I": true,
+2026-11-23T15:19:22.2736562Z     "no_structural_certificate_grants_causal_authority": true
+2026-11-23T15:19:22.2736811Z   },
+2026-11-23T15:19:22.2736957Z   "state": "PASS"
+2026-11-23T15:19:22.2737128Z }
+2026-11-23T15:19:22.2737551Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_formal_identifiability.py tests/test_counterfactual_basis_identifiability.py
+2026-11-23T15:19:22.6906223Z .....................                                                    [100%]
+2026-11-23T15:19:22.6906707Z 21 passed in 0.26s
+2026-11-23T15:19:22.7316869Z PYTHONPATH=. .venv/bin/python scripts/causal_debt_gate.py
+2026-11-23T15:19:22.7580921Z CAUSAL-DEBT-GATE: PASS (V1 negative preserved; V2 synthetic control bounded; no ascension)
+2026-11-23T15:19:22.7618783Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/causal_debt
+2026-11-23T15:19:23.2246955Z ....................                                                     [100%]
+2026-11-23T15:19:23.2247429Z 20 passed in 0.31s
+2026-11-23T15:19:23.2659780Z PYTHONPATH=. .venv/bin/python scripts/research_ingestion_gate.py
+2026-11-23T15:19:23.2859551Z RESEARCH-INGESTION-GATE: PASS — 4 sources, 9 claims, 4 executable hypotheses; no architecture promotion
+2026-11-23T15:19:23.2889328Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_research_ingestion_gate.py
+2026-11-23T15:19:23.5844577Z ..                                                                       [100%]
+2026-11-23T15:19:23.5845104Z 2 passed in 0.14s
+2026-11-23T15:19:23.6188259Z PYTHONPATH=. .venv/bin/python scripts/research_execution_gate.py
+2026-11-23T15:19:23.6409598Z RESEARCH-EXECUTION-GATE: PASS — S01 narrow positives and S03 preregistered negative are checksum-bound; no promotion
+2026-11-23T15:19:23.6442286Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_research_execution_gate.py
+2026-11-23T15:19:23.9183505Z ...                                                                      [100%]
+2026-11-23T15:19:23.9183969Z 3 passed in 0.13s
+2026-11-23T15:19:23.9512297Z PYTHONPATH=. .venv/bin/python scripts/research_ops_gate.py
+2026-11-23T15:19:23.9958777Z RESEARCH-OPS-GATE: PASS sources=1 claims=3
+2026-11-23T15:19:24.0016854Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/research_ops tests/test_research_ops_gate.py
+2026-11-23T15:19:27.8402799Z ............................................                             [100%]
+2026-11-23T15:19:27.8403516Z 44 passed in 3.44s
+2026-11-23T15:19:28.4827945Z .venv/bin/python scripts/rd03_gate.py --self-test
+2026-11-23T15:19:28.5119674Z RD03-GATE SELF-TEST: PASS 4/4 semantic corruptions detected
+2026-11-23T15:19:28.5160719Z .venv/bin/python scripts/rd03_gate.py
+2026-11-23T15:19:28.5422736Z RD03-GATE: PASS scientific_verdict=UNCERTAINTY_MODEL_NOT_CAUSALLY_ADEQUATE authority=RESEARCH_ONLY primary=43/224 replication=45/224
+2026-11-23T15:19:28.5461928Z .venv/bin/python scripts/csca03r_gate.py --self-test
+2026-11-23T15:19:32.2866286Z CSCA03R-GATE SELF-TEST: PASS 5/5 semantic corruptions detected
+2026-11-23T15:19:32.2921786Z .venv/bin/python scripts/csca03r_gate.py
+2026-11-23T15:19:33.0662614Z CSCA03R-GATE: PASS fresh_primary=128 fresh_replication=128 valid_evals=49612032 shadow_authority=false
+2026-11-23T15:19:33.0724172Z .venv/bin/python scripts/csca04_gate.py
+2026-11-23T15:19:33.1034694Z CSCA04-GATE PASS: frozen thresholds, replicated structural qualification, no shadow promotion.
+2026-11-23T15:19:33.1074816Z .venv/bin/python scripts/csca05_gate.py
+2026-11-23T15:19:33.1360634Z CSCA05-GATE PASS: direct-intervention shadow path replicated; no broad/active promotion.
+2026-11-23T15:19:33.1397241Z .venv/bin/python scripts/csca06a_gate.py
+2026-11-23T15:19:33.1617355Z CSCA06A-GATE PASS: parent negative is sealed (PRIMARY S2=0.9375<0.95); no retrospective rescue or graph-truth promotion.
+2026-11-23T15:19:33.1651963Z .venv/bin/python scripts/csca06a_r1_gate.py
+2026-11-23T15:19:33.1876619Z CSCA06A-R1-GATE PASS: global fixed-checkpoint model-class falsification replicated; no graph-truth promotion.
+2026-11-23T15:19:33.1911661Z .venv/bin/python scripts/csca06_information_bound_gate.py
+2026-11-23T15:19:33.2118587Z CSCA06-INFO-GATE PASS: necessary information/cost converse bound; W1 vetoed, E0 unfalsifiable, no sufficiency or graph-truth claim.
+2026-11-23T15:19:33.2153518Z .venv/bin/python scripts/csca06b_gate.py
+2026-11-23T15:19:33.2360789Z CSCA06B-GATE PASS: operator-family robustness qualified, but all robust cases are A_RECENT; semantic/student promotion remains blocked.
+2026-11-23T15:19:33.2394153Z .venv/bin/python scripts/csca06c_gate.py
+2026-11-23T15:19:33.2604711Z CSCA06C-GATE PASS: content-specific credit not supported; position pattern exact on resolved cases but replication coverage blocks promotion.
+2026-11-23T15:19:33.2638305Z .venv/bin/python scripts/csca07_gate.py --self-test
+2026-11-23T15:19:33.2853055Z CSCA07-GATE SELF-TEST: 4/4 semantic authority mutations killed
+2026-11-23T15:19:33.2853953Z CSCA07-GATE PASS: passive predictive falsification qualified; observational equivalence, spectral/fiber insufficiency, and no-causal-promotion boundary sealed.
+2026-11-23T15:19:33.2886607Z .venv/bin/python scripts/csca07_gate.py
+2026-11-23T15:19:33.3097827Z CSCA07-GATE PASS: passive predictive falsification qualified; observational equivalence, spectral/fiber insufficiency, and no-causal-promotion boundary sealed.
+2026-11-23T15:19:33.3134033Z .venv/bin/python scripts/csca08_gate.py --self-test
+2026-11-23T15:19:33.3353417Z CSCA08-GATE SELF-TEST: 5/5 authority/identifiability mutations killed
+2026-11-23T15:19:33.3354451Z CSCA08-GATE PASS: synthetic regime identifying contract qualified narrowly; coordinated-exclusion equivalence keeps unconditional causal authority blocked.
+2026-11-23T15:19:33.3387599Z .venv/bin/python scripts/csca08_gate.py
+2026-11-23T15:19:33.3601037Z CSCA08-GATE PASS: synthetic regime identifying contract qualified narrowly; coordinated-exclusion equivalence keeps unconditional causal authority blocked.
+2026-11-23T15:19:33.3634584Z .venv/bin/python scripts/cog_countermodel01_gate.py --self-test
+2026-11-23T15:19:33.3855122Z COG-COUNTERMODEL01-GATE SELF-TEST: 5/5 authority/truth-selection mutations killed
+2026-11-23T15:19:33.3856063Z COG-COUNTERMODEL01-GATE PASS: parent failure preserved; R1 set-valued countermodel guard qualified narrowly with zero causal authority.
+2026-11-23T15:19:33.3889284Z .venv/bin/python scripts/cog_countermodel01_gate.py
+2026-11-23T15:19:33.4102668Z COG-COUNTERMODEL01-GATE PASS: parent failure preserved; R1 set-valued countermodel guard qualified narrowly with zero causal authority.
+2026-11-23T15:19:33.4137385Z .venv/bin/python scripts/cog_epistemic01r_gate.py --self-test
+2026-11-23T15:19:33.4374264Z COG-EPISTEMIC01-GATE SELF-TEST: 6/6 authority/type mutations killed
+2026-11-23T15:19:33.4375081Z COG-EPISTEMIC01-GATE PASS: typed capability-bound epistemic lattice blocks all frozen illegal promotions in PRIMARY and REPLICATION.
+2026-11-23T15:19:33.4412182Z .venv/bin/python scripts/cog_epistemic01r_gate.py
+2026-11-23T15:19:33.4624966Z COG-EPISTEMIC01-GATE PASS: typed capability-bound epistemic lattice blocks all frozen illegal promotions in PRIMARY and REPLICATION.
+2026-11-23T15:19:33.4659064Z .venv/bin/python scripts/cog_memory01_gate.py --self-test
+2026-11-23T15:19:33.4878009Z COG-MEMORY01-GATE SELF-TEST: 6/6 consolidation/retraction mutations killed
+2026-11-23T15:19:33.4878865Z COG-MEMORY01-GATE PASS: typed epistemic memory blocks false causal consolidation and propagates parent/assumption retractions transitively in both cohorts.
+2026-11-23T15:19:33.4912581Z .venv/bin/python scripts/cog_memory01_gate.py
+2026-11-23T15:19:33.5128305Z COG-MEMORY01-GATE PASS: typed epistemic memory blocks false causal consolidation and propagates parent/assumption retractions transitively in both cohorts.
+2026-11-23T15:19:33.5163183Z .venv/bin/python scripts/cog_plan01_gate.py --self-test
+2026-11-23T15:19:33.5389092Z COG-PLAN01-GATE SELF-TEST: 7/7 planning-authority mutations killed
+2026-11-23T15:19:33.5389925Z COG-PLAN01-GATE PASS: planner preserves admitted-world uncertainty, blocks hidden averaging/stale authority, and requests information only through the certified budget gate.
+2026-11-23T15:19:33.5425645Z .venv/bin/python scripts/cog_plan01_gate.py
+2026-11-23T15:19:33.5643891Z COG-PLAN01-GATE PASS: planner preserves admitted-world uncertainty, blocks hidden averaging/stale authority, and requests information only through the certified budget gate.
+2026-11-23T15:19:33.5678255Z .venv/bin/python scripts/cab01_q1_gate.py --self-test
+2026-11-23T15:19:33.5962271Z CAB01-Q1-GATE SELF-TEST: 7/7 semantic/authority mutations killed
+2026-11-23T15:19:33.5963174Z CAB01-Q1-GATE PASS: frozen NOT_QUALIFIED result and failure vector are checksum-bound; no in-place repair permitted.
+2026-11-23T15:19:33.6003200Z .venv/bin/python scripts/cab01_q1_gate.py
+2026-11-23T15:19:33.6280041Z CAB01-Q1-GATE PASS: frozen NOT_QUALIFIED result and failure vector are checksum-bound; no in-place repair permitted.
+2026-11-23T15:19:33.6317844Z .venv/bin/python scripts/cab01_q1_r1_gate.py --self-test
+2026-11-23T15:19:33.6604387Z CAB01-Q1-R1-GATE SELF-TEST: 8/8 mutations killed
+2026-11-23T15:19:33.6605120Z CAB01-Q1-R1-GATE PASS: synthetic benchmark qualification bound; flagship/model promotion remains forbidden.
+2026-11-23T15:19:33.6642560Z .venv/bin/python scripts/cab01_q1_r1_gate.py
+2026-11-23T15:19:33.6916616Z CAB01-Q1-R1-GATE PASS: synthetic benchmark qualification bound; flagship/model promotion remains forbidden.
+2026-11-23T15:19:33.6954495Z PYTHONPATH=. .venv/bin/python scripts/verify_bibliography.py
+2026-11-23T15:19:33.7202823Z BIB-GATE OK: 70 references, all machine-resolved (arxiv-api=36, doi-content-negotiation=30, http-head=2, openalex=1, openlibrary=1); 12 areas; every entry argued and claim-attached.
+2026-11-23T15:19:33.7242772Z PYTHONPATH=. .venv/bin/python scripts/current_prereg_integrity_gate.py --self-test
+2026-11-23T15:19:33.8014085Z CURRENT-PREREG-GATE SELF-TEST: PASS 8/8 decision mutations
+2026-11-23T15:19:33.8099737Z PYTHONPATH=. .venv/bin/python scripts/current_prereg_integrity_gate.py
+2026-11-23T15:19:34.9406545Z CURRENT-PREREG-GATE: PASS hypotheses=72 NOT_TESTED=3 NO_INDEPENDENT_PREREG=1 SAME_COMMIT_RETROSPECTIVE=8 SELF_AUDIT_SAME_COMMIT=1 STRICT_ANCESTOR=59
+2026-11-23T15:19:34.9495207Z PYTHONPATH=. .venv/bin/python scripts/doc_status_gate.py
+2026-11-23T15:19:35.3764274Z P0 docs present: 24/24 | claims: 72 | hypotheses: 72 | HEAD 5d51792
+2026-11-23T15:19:35.3764925Z DOC-GATE PASS: registry schema-valid, commit current, 0 orphans, artifacts exist.
+2026-11-23T15:19:35.3822567Z PYTHONPATH=. .venv/bin/python scripts/cog_self01_gate.py --self-test
+2026-11-23T15:19:35.4077822Z COG-SELF-01-GATE SELF-TEST: 8/8 mutations killed
+2026-11-23T15:19:35.4078615Z COG-SELF-01-GATE PASS: synthetic decision-relevant falsification primitive bound; promotion remains forbidden.
+2026-11-23T15:19:35.4116917Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_dgc_core.py tests/test_dgc_governance_v2.py tests/test_dgc_oracle_experiment.py tests/test_dgc_private_evidence.py
+2026-11-23T15:19:36.1971768Z ........................................................................ [ 52%]
+2026-11-23T15:19:36.3800318Z .................................................................        [100%]
+2026-11-23T15:19:36.3800812Z 137 passed in 0.80s
+2026-11-23T15:19:36.4316156Z PYTHONPATH=. .venv/bin/python scripts/dgc_verification_gate.py
+2026-11-23T15:19:36.5109043Z DGC-ATTACK: KILLED DGC_BUDGET_BYPASS
+2026-11-23T15:19:36.5109483Z DGC-ATTACK: KILLED DGC_CAUSAL_TEXT_ONLY
+2026-11-23T15:19:36.5109808Z DGC-ATTACK: KILLED DGC_COUNTERMODEL_DROP
+2026-11-23T15:19:36.5110101Z DGC-ATTACK: KILLED DGC_DECISION_DIGEST_TAMPER
+2026-11-23T15:19:36.5110346Z DGC-ATTACK: KILLED DGC_FAKE_COST
+2026-11-23T15:19:36.5110575Z DGC-ATTACK: KILLED DGC_FINANCIAL_OVERHEAD_HIDE
+2026-11-23T15:19:36.5110852Z DGC-ATTACK: KILLED DGC_FINANCIAL_QUALITY_GAMING
+2026-11-23T15:19:36.5111134Z DGC-ATTACK: KILLED DGC_INVALID_OPTIONAL_STOPPING
+2026-11-23T15:19:36.5111400Z DGC-ATTACK: KILLED DGC_PROVIDER_RETRY_STORM
+2026-11-23T15:19:36.5111638Z DGC-ATTACK: KILLED DGC_SCORE_NAN
+2026-11-23T15:19:36.5111865Z DGC-ATTACK: KILLED DGC_UNBOUNDED_RECURSION
+2026-11-23T15:19:36.5112110Z DGC-ATTACK: KILLED DGC_UTILITY_MUTATION
+2026-11-23T15:19:36.5112355Z DGC-ATTACK: KILLED DGC_V2D_DEGENERATE_GEOMETRY
+2026-11-23T15:19:36.5112626Z DGC-ATTACK: KILLED DGC_V2D_FAKE_META_UPPER_BOUND
+2026-11-23T15:19:36.5113054Z DGC-ATTACK: KILLED DGC_V2D_OUTCOME_DEPENDENT_LAMBDA
+2026-11-23T15:19:36.5113419Z DGC-ATTACK: KILLED DGC_V2D_POST_OUTCOME_PROPENSITY
+2026-11-23T15:19:36.5113686Z DGC-ATTACK: KILLED DGC_V2D_UNBOUNDED_SHIFT_WEIGHT
+2026-11-23T15:19:36.5114315Z DGC-GATE: PASS (17/17 injected faults killed; dev authority non-promoting)
+2026-11-23T15:19:36.5184179Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_dgc_financial_verification.py
+2026-11-23T15:19:37.1148117Z .......                                                                  [100%]
+2026-11-23T15:19:37.1148632Z 7 passed in 0.44s
+2026-11-23T15:19:37.1543226Z PYTHONPATH=. .venv/bin/python scripts/dgc_financial_gate.py
+2026-11-23T15:19:37.1770077Z DGC-FINANCE-GATE: PASS (dev LCB=0.461945; confirm savings=0.350465; confirm LCB=0.303934; quality_lcb=0.000000; client_verified=false; commercial_claim_allowed=false)
+2026-11-23T15:19:37.1808821Z .venv/bin/python -m ruff check cwc/governance/verifier_qualification.py cwc/governance/planner_admission.py cwc/epistemics/memory_free_plan_replay.py scripts/dual_sided_verifier_gate.py tests/test_dual_sided_verifier.py
+2026-11-23T15:19:37.2056879Z All checks passed!
+2026-11-23T15:19:37.2063669Z .venv/bin/python -m mypy --config-file mypy.ini --follow-imports=silent cwc/governance/verifier_qualification.py cwc/governance/planner_admission.py cwc/epistemics/memory_free_plan_replay.py scripts/dual_sided_verifier_gate.py
+2026-11-23T15:19:39.3218253Z Success: no issues found in 4 source files
+2026-11-23T15:19:39.3316486Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_dual_sided_verifier.py tests/test_proof_carrying_planner.py --cov=cwc.governance.verifier_qualification --cov=cwc.governance.planner_admission --cov=cwc.epistemics.memory_free_plan_replay --cov-branch --cov-report=term-missing --cov-fail-under=100
+2026-11-23T15:19:40.3021279Z ........................................................................ [ 62%]
+2026-11-23T15:19:41.0670676Z ...........................................                              [100%]
+2026-11-23T15:19:41.0671258Z ================================ tests coverage ================================
+2026-11-23T15:19:41.0671804Z _______________ coverage: platform linux, python 3.11.18-final-0 _______________
+2026-11-23T15:19:41.0672204Z 
+2026-11-23T15:19:41.0672416Z Name                                        Stmts   Miss Branch BrPart  Cover   Missing
+2026-11-23T15:19:41.0673157Z ---------------------------------------------------------------------------------------
+2026-11-23T15:19:41.0673761Z cwc/epistemics/memory_free_plan_replay.py       8      0      0      0   100%
+2026-11-23T15:19:41.0674358Z cwc/governance/planner_admission.py           129      0     60      0   100%
+2026-11-23T15:19:41.0674959Z cwc/governance/verifier_qualification.py       88      0     38      0   100%
+2026-11-23T15:19:41.0675550Z ---------------------------------------------------------------------------------------
+2026-11-23T15:19:41.0676056Z TOTAL                                         225      0     98      0   100%
+2026-11-23T15:19:41.0676526Z Required test coverage of 100% reached. Total coverage: 100.00%
+2026-11-23T15:19:41.0676935Z 115 passed in 1.47s
+2026-11-23T15:19:41.1245788Z PYTHONPATH=. .venv/bin/python scripts/dual_sided_verifier_gate.py --output-dir assurance-build/dual-sided-verifier
+2026-11-23T15:19:41.6879508Z DUAL-SIDED-VERIFIER-RECEIPT: assurance-build/dual-sided-verifier/da4667ab60bebb816aa28235f17fd2eb6fcc7d8e1fee29bb16a0164cfed5c2b1.json
+2026-11-23T15:19:41.6880400Z DUAL-SIDED-VERIFIER: PASS
+2026-11-23T15:19:41.6880990Z DUAL-SIDED-VERIFIER-EVIDENCE-SHA256: da4667ab60bebb816aa28235f17fd2eb6fcc7d8e1fee29bb16a0164cfed5c2b1
+2026-11-23T15:19:41.7054490Z CWC-VERIFY: ALL GATES PASSED
+2026-11-23T15:19:41.7113610Z checking artifacts/act-j-pilot
+2026-11-23T15:19:41.7149643Z   OK
+2026-11-23T15:19:41.7150457Z checking artifacts/act-j-pilot-decision
+2026-11-23T15:19:41.7184917Z   OK
+2026-11-23T15:19:41.7185830Z checking artifacts/cab-01-q1
+2026-11-23T15:19:41.7254572Z   OK
+2026-11-23T15:19:41.7255279Z checking artifacts/cab-01-q1-r1
+2026-11-23T15:19:41.7325525Z   OK
+2026-11-23T15:19:41.7326209Z checking artifacts/causal-debt-program
+2026-11-23T15:19:41.7361227Z   OK
+2026-11-23T15:19:41.7361929Z checking artifacts/causal-debt-v1
+2026-11-23T15:19:41.7399620Z   OK
+2026-11-23T15:19:41.7400397Z checking artifacts/causal-debt-v2
+2026-11-23T15:19:41.7437981Z   OK
+2026-11-23T15:19:41.7438756Z checking artifacts/causal-debt-v2-ablation
+2026-11-23T15:19:41.7473284Z   OK
+2026-11-23T15:19:41.7474145Z checking artifacts/causal-debt-v2-stress
+2026-11-23T15:19:41.7508123Z   OK
+2026-11-23T15:19:41.7509013Z checking artifacts/cneh-exp-01-a1
+2026-11-23T15:19:41.7606456Z   OK
+2026-11-23T15:19:41.7606787Z checking artifacts/cneh-exp-01-a1/bnsyn
+2026-11-23T15:19:41.7693120Z   OK
+2026-11-23T15:19:41.7693815Z checking artifacts/cneh-exp-01-a1/mutations
+2026-11-23T15:19:41.7736367Z   OK
+2026-11-23T15:19:41.7737337Z checking artifacts/cneh-exp-01-a1/primary
+2026-11-23T15:19:41.7773268Z   OK
+2026-11-23T15:19:41.7774252Z checking artifacts/cneh-exp-01-a2-ci
+2026-11-23T15:19:41.7808150Z   OK
+2026-11-23T15:19:41.7809082Z checking artifacts/cog-countermodel-01
+2026-11-23T15:19:41.7843206Z   OK
+2026-11-23T15:19:41.7843950Z checking artifacts/cog-countermodel-01r
+2026-11-23T15:19:41.7878727Z   OK
+2026-11-23T15:19:41.7879528Z checking artifacts/cog-epistemic-01
+2026-11-23T15:19:41.7914898Z   OK
+2026-11-23T15:19:41.7915841Z checking artifacts/cog-epistemic-01r
+2026-11-23T15:19:41.7952437Z   OK
+2026-11-23T15:19:41.7953804Z checking artifacts/cog-info-02
+2026-11-23T15:19:41.7991572Z   OK
+2026-11-23T15:19:41.7992390Z checking artifacts/cog-memory-01
+2026-11-23T15:19:41.8027205Z   OK
+2026-11-23T15:19:41.8028173Z checking artifacts/cog-plan-01
+2026-11-23T15:19:41.8063775Z   OK
+2026-11-23T15:19:41.8064499Z checking artifacts/cog-self-01
+2026-11-23T15:19:41.8109350Z   OK
+2026-11-23T15:19:41.8110124Z checking artifacts/csca-01
+2026-11-23T15:19:41.8149841Z   OK
+2026-11-23T15:19:41.8150825Z checking artifacts/csca-01a-model-adequacy
+2026-11-23T15:19:41.8183731Z   OK
+2026-11-23T15:19:41.8184609Z checking artifacts/csca-05-runtime
+2026-11-23T15:19:41.8248481Z   OK
+2026-11-23T15:19:41.8249431Z checking artifacts/csca-06a-falsifiability
+2026-11-23T15:19:41.8291745Z   OK
+2026-11-23T15:19:41.8292692Z checking artifacts/csca-06a-information-converse
+2026-11-23T15:19:41.8325465Z   OK
+2026-11-23T15:19:41.8326409Z checking artifacts/csca-06a-r1-global-evalue
+2026-11-23T15:19:41.8375509Z   OK
+2026-11-23T15:19:41.8376442Z checking artifacts/csca-06b-operator-robustness
+2026-11-23T15:19:41.8411194Z   OK
+2026-11-23T15:19:41.8412082Z checking artifacts/csca-06c-position-content
+2026-11-23T15:19:41.8450548Z   OK
+2026-11-23T15:19:41.8451470Z checking artifacts/csca-07-passive-replay
+2026-11-23T15:19:41.8485636Z   OK
+2026-11-23T15:19:41.8486668Z checking artifacts/csca-07-passive-replay-stress
+2026-11-23T15:19:41.8519621Z   OK
+2026-11-23T15:19:41.8520527Z checking artifacts/csca-08-regime-identifiability
+2026-11-23T15:19:41.8556966Z   OK
+2026-11-23T15:19:41.8557864Z checking artifacts/cwc-flagship-route-01
+2026-11-23T15:19:41.8631101Z   OK
+2026-11-23T15:19:41.8631841Z checking artifacts/cwc-flagship-route-02
+2026-11-23T15:19:41.8698480Z   OK
+2026-11-23T15:19:41.8698819Z checking artifacts/dgc-01-dev
+2026-11-23T15:19:41.8734206Z   OK
+2026-11-23T15:19:41.8735042Z checking artifacts/dgc-01-falsification
+2026-11-23T15:19:41.8768670Z   OK
+2026-11-23T15:19:41.8769620Z checking artifacts/dgc-02-finance-confirmatory
+2026-11-23T15:19:41.8803278Z   OK
+2026-11-23T15:19:41.8804182Z checking artifacts/dgc-02-finance-dev
+2026-11-23T15:19:41.8838194Z   OK
+2026-11-23T15:19:41.8839119Z checking artifacts/dgc-baseline-v1
+2026-11-23T15:19:41.8872364Z   OK
+2026-11-23T15:19:41.8873716Z checking artifacts/fractal-adversarial-v1
+2026-11-23T15:19:41.8922559Z   OK
+2026-11-23T15:19:41.8924223Z checking artifacts/history/cog-epistemic-01-initial-negative
+2026-11-23T15:19:41.8960755Z   OK
+2026-11-23T15:19:41.8961520Z checking artifacts/history/fractal
+2026-11-23T15:19:41.8995521Z   OK
+2026-11-23T15:19:41.8996313Z checking artifacts/history/wp1
+2026-11-23T15:19:41.9029438Z   OK
+2026-11-23T15:19:41.9030354Z checking artifacts/history/wp2-routing-collapse
+2026-11-23T15:19:41.9064709Z   OK
+2026-11-23T15:19:41.9065389Z checking artifacts/npi-01
+2026-11-23T15:19:41.9099365Z   OK
+2026-11-23T15:19:41.9100294Z checking artifacts/research-s01-ood-credit
+2026-11-23T15:19:41.9135444Z   OK
+2026-11-23T15:19:41.9136414Z checking artifacts/research-s01-skill-luck
+2026-11-23T15:19:41.9169218Z   OK
+2026-11-23T15:19:41.9170182Z checking artifacts/research-s03-latent-dynamics
+2026-11-23T15:19:41.9203778Z   OK
+2026-11-23T15:19:41.9204862Z checking artifacts/via-v1-attention-horizon-qualification
+2026-11-23T15:19:41.9237850Z   OK
+2026-11-23T15:19:41.9238697Z checking artifacts/via-v1-causal-surface
+2026-11-23T15:19:41.9272204Z   OK
+2026-11-23T15:19:41.9273319Z checking artifacts/via-v1-evidence-sufficiency
+2026-11-23T15:19:41.9306511Z   OK
+2026-11-23T15:19:41.9307364Z checking artifacts/wp1-release/sample_run/counters_cuda
+2026-11-23T15:19:41.9339722Z   OK
+2026-11-23T15:19:41.9340494Z checking artifacts/wp10-coherence
+2026-11-23T15:19:41.9373771Z   OK
+2026-11-23T15:19:41.9374678Z checking artifacts/wp11-pinsker
+2026-11-23T15:19:41.9407172Z   OK
+2026-11-23T15:19:41.9408099Z checking artifacts/wp12-prereg-integrity
+2026-11-23T15:19:41.9441149Z   OK
+2026-11-23T15:19:41.9442053Z checking artifacts/wp13-effect-size
+2026-11-23T15:19:41.9474738Z   OK
+2026-11-23T15:19:41.9475917Z checking artifacts/wp14-real-lm-contextual
+2026-11-23T15:19:41.9509890Z   OK
+2026-11-23T15:19:41.9510834Z checking artifacts/wp15-compute-pareto
+2026-11-23T15:19:41.9544709Z   OK
+2026-11-23T15:19:41.9545713Z checking artifacts/wp16-cleanroom-release
+2026-11-23T15:19:41.9578699Z   OK
+2026-11-23T15:19:41.9579506Z checking artifacts/wp17-metrology
+2026-11-23T15:19:41.9612613Z   OK
+2026-11-23T15:19:41.9613812Z checking artifacts/wp18-real-workload-pilot
+2026-11-23T15:19:41.9662129Z   OK
+2026-11-23T15:19:41.9663219Z checking artifacts/wp19-negative-robustness
+2026-11-23T15:19:41.9698028Z   OK
+2026-11-23T15:19:41.9698943Z checking artifacts/wp2-mechanism-v2
+2026-11-23T15:19:41.9742883Z   OK
+2026-11-23T15:19:41.9743937Z checking artifacts/wp2-mechanism-v2_1
+2026-11-23T15:19:41.9787648Z   OK
+2026-11-23T15:19:41.9788523Z checking artifacts/wp2-routing-v1
+2026-11-23T15:19:41.9825382Z   OK
+2026-11-23T15:19:41.9825955Z checking artifacts/wp2-routing-v1_1
+2026-11-23T15:19:41.9861754Z   OK
+2026-11-23T15:19:41.9862549Z checking artifacts/wp2-routing-v2
+2026-11-23T15:19:41.9899755Z   OK
+2026-11-23T15:19:41.9900584Z checking artifacts/wp2-routing-v3-r3c
+2026-11-23T15:19:41.9934593Z   OK
+2026-11-23T15:19:41.9935625Z checking artifacts/wp2-routing-v3-r3c-reinforce
+2026-11-23T15:19:41.9969410Z   OK
+2026-11-23T15:19:41.9970412Z checking artifacts/wp2-routing-v3-surface-matched
+2026-11-23T15:19:42.0006432Z   OK
+2026-11-23T15:19:42.0007219Z checking artifacts/wp3-plasticity-v1
+2026-11-23T15:19:42.0041165Z   OK
+2026-11-23T15:19:42.0042212Z checking artifacts/wp3-plasticity-v10-contexts
+2026-11-23T15:19:42.0075532Z   OK
+2026-11-23T15:19:42.0076431Z checking artifacts/wp3-plasticity-v11-ratebridge
+2026-11-23T15:19:42.0110128Z   OK
+2026-11-23T15:19:42.0111097Z checking artifacts/wp3-plasticity-v12-consistency
+2026-11-23T15:19:42.0145119Z   OK
+2026-11-23T15:19:42.0146113Z checking artifacts/wp3-plasticity-v13-killtest
+2026-11-23T15:19:42.0180087Z   OK
+2026-11-23T15:19:42.0181020Z checking artifacts/wp3-plasticity-v2-confirmatory
+2026-11-23T15:19:42.0216806Z   OK
+2026-11-23T15:19:42.0217329Z checking artifacts/wp3-plasticity-v3-governor
+2026-11-23T15:19:42.0251553Z   OK
+2026-11-23T15:19:42.0252486Z checking artifacts/wp3-plasticity-v4-inferred
+2026-11-23T15:19:42.0286393Z   OK
+2026-11-23T15:19:42.0287249Z checking artifacts/wp3-plasticity-v5-thinmargin
+2026-11-23T15:19:42.0320552Z   OK
+2026-11-23T15:19:42.0321450Z checking artifacts/wp3-plasticity-v6-scaling
+2026-11-23T15:19:42.0354969Z   OK
+2026-11-23T15:19:42.0355984Z checking artifacts/wp3-plasticity-v7-mechanism
+2026-11-23T15:19:42.0389245Z   OK
+2026-11-23T15:19:42.0390184Z checking artifacts/wp3-plasticity-v8-armscaling
+2026-11-23T15:19:42.0423345Z   OK
+2026-11-23T15:19:42.0424535Z checking artifacts/wp3-plasticity-v9-costrobust
+2026-11-23T15:19:42.0457230Z   OK
+2026-11-23T15:19:42.0457976Z checking artifacts/wp3-rcfr
+2026-11-23T15:19:42.0492519Z   OK
+2026-11-23T15:19:42.0493476Z checking artifacts/wp4-adaptive-depth
+2026-11-23T15:19:42.0527579Z   OK
+2026-11-23T15:19:42.0528429Z checking artifacts/wp4-adaptive-depth-v2
+2026-11-23T15:19:42.0562712Z   OK
+2026-11-23T15:19:42.0563717Z checking artifacts/wp4-end-to-end-v4
+2026-11-23T15:19:42.0599837Z   OK
+2026-11-23T15:19:42.0600677Z checking artifacts/wp4-exact-compute-pilot
+2026-11-23T15:19:42.0635092Z   OK
+2026-11-23T15:19:42.0635833Z checking artifacts/wp4-exact-compute-v3
+2026-11-23T15:19:42.0672592Z   OK
+2026-11-23T15:19:42.0673646Z checking artifacts/wp4-exact-compute-v31
+2026-11-23T15:19:42.0709366Z   OK
+2026-11-23T15:19:42.0710320Z checking artifacts/wp5-adaptive-compute-controller
+2026-11-23T15:19:42.0745137Z   OK
+2026-11-23T15:19:42.0746249Z checking artifacts/wp5-adaptive-compute-identifiability
+2026-11-23T15:19:42.0780487Z   OK
+2026-11-23T15:19:42.0781446Z checking artifacts/wp5-adaptive-compute-inferred
+2026-11-23T15:19:42.0814246Z   OK
+2026-11-23T15:19:42.0815229Z checking artifacts/wp5-adaptive-compute-ratebridge
+2026-11-23T15:19:42.0847839Z   OK
+2026-11-23T15:19:42.0848744Z checking artifacts/wp6-real-lm
+2026-11-23T15:19:42.0882849Z   OK
+2026-11-23T15:19:42.0884230Z checking artifacts/wp7-certificate-hardening
+2026-11-23T15:19:42.0916577Z   OK
+2026-11-23T15:19:42.0917562Z checking artifacts/wp8-family-wise-error
+2026-11-23T15:19:42.0950090Z   OK
+2026-11-23T15:19:42.0950982Z checking artifacts/wp9-independence
+2026-11-23T15:19:42.0983502Z   OK
+2026-11-23T15:19:42.0984480Z checking artifacts/wpr1-routability-spec
+2026-11-23T15:19:42.1018774Z   OK
+2026-11-23T15:19:42.1022181Z PYTHONPATH=. .venv/bin/python scripts/reproduce_primary.py
+2026-11-23T15:20:01.9788574Z [s0] uniform(K=4): gap=0.496 theory=0.495 | easy_skew(K=3): gap=0.340 theory=0.340 | hard_skew(K=6): gap=0.494 theory=0.494 | bimodal(K=5): gap=0.466 theory=0.466 | 
+2026-11-23T15:20:01.9789729Z [s1] uniform(K=5): gap=0.370 theory=0.370 | easy_skew(K=3): gap=0.324 theory=0.324 | hard_skew(K=6): gap=0.510 theory=0.510 | bimodal(K=5): gap=0.460 theory=0.460 | 
+2026-11-23T15:20:01.9790883Z [s2] uniform(K=5): gap=0.383 theory=0.383 | easy_skew(K=3): gap=0.317 theory=0.317 | hard_skew(K=6): gap=0.498 theory=0.498 | bimodal(K=5): gap=0.464 theory=0.464 | 
+2026-11-23T15:20:01.9791957Z [s3] uniform(K=4): gap=0.494 theory=0.494 | easy_skew(K=3): gap=0.332 theory=0.332 | hard_skew(K=6): gap=0.505 theory=0.504 | bimodal(K=4): gap=0.494 theory=0.494 | 
+2026-11-23T15:20:01.9793134Z [s4] uniform(K=4): gap=0.489 theory=0.489 | easy_skew(K=3): gap=0.335 theory=0.335 | hard_skew(K=6): gap=0.495 theory=0.495 | bimodal(K=4): gap=0.500 theory=0.501 | 
+2026-11-23T15:20:01.9794206Z [s5] uniform(K=5): gap=0.385 theory=0.385 | easy_skew(K=3): gap=0.327 theory=0.327 | hard_skew(K=6): gap=0.511 theory=0.511 | bimodal(K=5): gap=0.456 theory=0.456 | 
+2026-11-23T15:20:01.9795306Z [s6] uniform(K=5): gap=0.377 theory=0.377 | easy_skew(K=3): gap=0.340 theory=0.340 | hard_skew(K=6): gap=0.481 theory=0.481 | bimodal(K=5): gap=0.456 theory=0.456 | 
+2026-11-23T15:20:01.9796343Z [s7] uniform(K=4): gap=0.493 theory=0.493 | easy_skew(K=3): gap=0.321 theory=0.321 | hard_skew(K=6): gap=0.492 theory=0.491 | bimodal(K=4): gap=0.497 theory=0.496 | 
+2026-11-23T15:20:02.3658184Z VERDICT: SYNTHETIC_HALT_IDENTITY_VERIFIED | max|gap-theory| = 0.0
+2026-11-23T15:20:02.3658849Z   uniform   : gap=0.436 theory=0.436 err=0.0000 | adaptive=1.000 random=0.556 static=0.564 oracle=1.000
+2026-11-23T15:20:02.3659624Z   easy_skew : gap=0.329 theory=0.329 err=0.0000 | adaptive=1.000 random=0.615 static=0.671 oracle=1.000
+2026-11-23T15:20:02.3660311Z   hard_skew : gap=0.498 theory=0.498 err=0.0000 | adaptive=1.000 random=0.553 static=0.502 oracle=1.000
+2026-11-23T15:20:02.3661016Z   bimodal   : gap=0.474 theory=0.474 err=0.0000 | adaptive=1.000 random=0.569 static=0.526 oracle=1.000
+2026-11-23T15:20:02.3661882Z   gates: {'prediction_holds_err_lt_0.02': True, 'adaptive_beats_random': True, 'adaptive_matches_oracle': True, 'compute_matched': False}
+2026-11-23T15:20:02.3713643Z [reproduce-primary] running wp4 adaptive-depth in an isolated directory...
+2026-11-23T15:20:02.3714239Z [reproduce-primary] verdict = SYNTHETIC_HALT_IDENTITY_VERIFIED
+2026-11-23T15:20:02.3714944Z [reproduce-primary] PASS: isolated reproduction completed; canonical evidence was not modified
+2026-11-23T15:20:02.3776899Z CWC-VERIFY-FULL: reproduction spine complete (gates + checksums + primary reproduced)
+2026-11-23T15:20:02.3777599Z PYTHONPATH=. .venv/bin/python scripts/truth_gate.py
+2026-11-23T15:20:02.7677328Z TRUTH-GATE: PASS (>= 91 test files, >= 609 static tests, no unapproved skips/xfails/vacuous asserts, immutable CI refs)
+2026-11-23T15:20:02.7722801Z docker run --rm --user "$(id -u):$(id -g)" \
+2026-11-23T15:20:02.7723578Z 	-v "$(pwd):/repo" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+2026-11-23T15:20:02.7724051Z 	-color .github/workflows/*.yml
+2026-11-23T15:20:02.8659324Z Unable to find image 'rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667' locally
+2026-11-23T15:20:03.6361477Z docker.io/rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667: Pulling from rhysd/actionlint
+2026-11-23T15:20:03.8667724Z b6b4b7b0e257: Pulling fs layer
+2026-11-23T15:20:03.8668716Z c09af8888d6a: Pulling fs layer
+2026-11-23T15:20:03.8669331Z 4ccd7d76ca98: Pulling fs layer
+2026-11-23T15:20:03.8669803Z 589002ba0eae: Pulling fs layer
+2026-11-23T15:20:04.2687997Z b6b4b7b0e257: Download complete
+2026-11-23T15:20:04.2688535Z c09af8888d6a: Download complete
+2026-11-23T15:20:04.2691958Z 589002ba0eae: Download complete
+2026-11-23T15:20:04.2696340Z 4ccd7d76ca98: Download complete
+2026-11-23T15:20:04.2738761Z 589002ba0eae: Pull complete
+2026-11-23T15:20:04.3685232Z 402b0b0a10fa: Download complete
+2026-11-23T15:20:04.3705322Z c09af8888d6a: Pull complete
+2026-11-23T15:20:04.3715113Z 4ccd7d76ca98: Pull complete
+2026-11-23T15:20:04.6088901Z b6b4b7b0e257: Pull complete
+2026-11-23T15:20:04.6089660Z Digest: sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+2026-11-23T15:20:04.6091016Z Status: Downloaded newer image for rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+2026-11-23T15:20:05.5664129Z Unable to find image 'zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854' locally
+2026-11-23T15:20:06.2344705Z docker.io/zricethezav/gitleaks@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854: Pulling from zricethezav/gitleaks
+2026-11-23T15:20:06.4659779Z 91da3791a8e8: Pulling fs layer
+2026-11-23T15:20:06.4660210Z daed8b4062ea: Pulling fs layer
+2026-11-23T15:20:06.4660440Z e590f02e913a: Pulling fs layer
+2026-11-23T15:20:06.4660739Z 1747dece9491: Pulling fs layer
+2026-11-23T15:20:06.6687569Z 1747dece9491: Download complete
+2026-11-23T15:20:06.6688045Z 91da3791a8e8: Download complete
+2026-11-23T15:20:06.7689552Z daed8b4062ea: Download complete
+2026-11-23T15:20:06.8692881Z e590f02e913a: Download complete
+2026-11-23T15:20:06.9690723Z d2925ae08f8e: Download complete
+2026-11-23T15:20:06.9712162Z 1747dece9491: Pull complete
+2026-11-23T15:20:07.0717090Z daed8b4062ea: Pull complete
+2026-11-23T15:20:07.1046390Z 91da3791a8e8: Pull complete
+2026-11-23T15:20:07.1055135Z e590f02e913a: Pull complete
+2026-11-23T15:20:07.1055711Z Digest: sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854
+2026-11-23T15:20:07.1056649Z Status: Downloaded newer image for zricethezav/gitleaks@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854
+2026-11-23T15:20:08.2529184Z SECRET-SCAN-GIT-PREFLIGHT: 2138 commits
+2026-11-23T15:20:17.6582179Z 3:20PM INF 1991 commits scanned.
+2026-11-23T15:20:17.6582637Z 3:20PM INF scanned ~45272994 bytes (45.27 MB) in 9.39s
+2026-11-23T15:20:17.6583121Z 3:20PM INF no leaks found
+2026-11-23T15:20:17.7453384Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_dependency_integrity_gate.py
+2026-11-23T15:20:24.1061313Z ..........................................                               [100%]
+2026-11-23T15:20:24.1061837Z 42 passed in 6.21s
+2026-11-23T15:20:24.1487216Z PYTHONPATH=. .venv/bin/python scripts/dependency_integrity_gate.py --self-test
+2026-11-23T15:20:25.1471626Z DEPENDENCY-INTEGRITY-ATTACK unapproved_registry_origin: KILLED
+2026-11-23T15:20:25.1472242Z DEPENDENCY-INTEGRITY-ATTACK unapproved_artifact_origin: KILLED
+2026-11-23T15:20:25.1472789Z DEPENDENCY-INTEGRITY-ATTACK missing_direct_dependency: KILLED
+2026-11-23T15:20:25.1473461Z DEPENDENCY-INTEGRITY-ATTACK unpinned_dev_tool: KILLED
+2026-11-23T15:20:25.1473973Z DEPENDENCY-INTEGRITY-ATTACK canonical_artifact_hash_removed: KILLED
+2026-11-23T15:20:25.1474499Z DEPENDENCY-INTEGRITY-ATTACK sbom_lock_equivalence: KILLED
+2026-11-23T15:20:25.1475026Z DEPENDENCY-INTEGRITY-ATTACK noncanonical_artifact_hash_removed: KILLED
+2026-11-23T15:20:25.1475589Z DEPENDENCY-INTEGRITY-ATTACK dev_runtime_version_drift: KILLED
+2026-11-23T15:20:25.1476088Z DEPENDENCY-INTEGRITY SELF-TEST: PASS (8/8 attacks killed)
+2026-11-23T15:20:25.1559688Z PYTHONPATH=. .venv/bin/python scripts/dependency_integrity_gate.py
+2026-11-23T15:20:25.3246059Z DEPENDENCY-INTEGRITY: PASS (packages=105, artifacts=1195, hashed=1195, canonical_hashless=0, noncanonical_hashless=0, CVE=UNKNOWN_EXTERNAL_AUDIT_REQUIRED)
+2026-11-23T15:20:25.3326765Z uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt
+2026-11-23T15:20:25.3479608Z sed -E 's/(torch==[0-9.]+)\+cpu/\1/' /tmp/cwc-runtime-requirements.txt > /tmp/cwc-auditable-requirements.txt
+2026-11-23T15:20:25.3500279Z uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
+2026-11-23T15:20:25.6840977Z Downloading pip (1.9MiB)
+2026-11-23T15:20:25.7794758Z  Downloaded pip
+2026-11-23T15:20:25.7969688Z Installed 29 packages in 17ms
+2026-11-23T15:20:27.2947718Z No known vulnerabilities found
+2026-11-23T15:20:27.3464480Z uv export --quiet --frozen --extra cpu --only-dev --no-emit-project --output-file /tmp/cwc-dev-group-requirements.txt
+2026-11-23T15:20:27.3616812Z uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-dev-group-requirements.txt --progress-spinner=off
+2026-11-23T15:20:28.3189951Z No known vulnerabilities found
+2026-11-23T15:20:28.3630071Z uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
+2026-11-23T15:20:36.4284393Z No known vulnerabilities found
+2026-11-23T15:20:36.4776226Z PYTHONPATH=. .venv/bin/python scripts/architecture_gate.py
+2026-11-23T15:20:36.9400664Z ARCHITECTURE: PASS (declared package boundaries are preserved)
+2026-11-23T15:20:36.9456381Z PYTHONPATH=. .venv/bin/python scripts/hermeticity_gate.py
+2026-11-23T15:20:36.9750863Z HERMETICITY: PASS (canonical evidence path is offline and seed-locked)
+2026-11-23T15:20:36.9793396Z PYTHONPATH=. .venv/bin/python scripts/complexity_gate.py
+2026-11-23T15:20:37.0165174Z COMPLEXITY: PASS (critical-function budgets preserved)
+2026-11-23T15:20:37.0209212Z PYTHONPATH=. .venv/bin/python scripts/build_sbom.py --check
+2026-11-23T15:20:37.1315487Z SBOM: PASS (104 frozen components)
+2026-11-23T15:20:37.1379159Z PYTHONPATH=. .venv/bin/python scripts/inference_integrity_gate.py
+2026-11-23T15:20:37.1575082Z INFERENCE-INTEGRITY: PASS (request, cache, logits, weights, behaviour)
+2026-11-23T15:20:37.1606197Z PYTHONPATH=. .venv/bin/python scripts/assurance_attack.py
+2026-11-23T15:20:37.8101469Z ASSURANCE-ATTACK: KILLED cross_boundary_import
+2026-11-23T15:20:37.8101967Z ASSURANCE-ATTACK: KILLED network_dependency
+2026-11-23T15:20:37.8102381Z ASSURANCE-ATTACK: KILLED complexity_budget_regression
+2026-11-23T15:20:37.8102769Z ASSURANCE-ATTACK: KILLED sbom_tamper
+2026-11-23T15:20:37.8103292Z ASSURANCE-ATTACK: KILLED inference_validation_bypass
+2026-11-23T15:20:37.8103690Z ASSURANCE-ATTACK: KILLED dgc_score_nan
+2026-11-23T15:20:37.8104027Z ASSURANCE-ATTACK: KILLED dgc_budget_bypass
+2026-11-23T15:20:37.8104364Z ASSURANCE-ATTACK: KILLED dgc_fake_cost
+2026-11-23T15:20:37.8105067Z ASSURANCE-ATTACK: KILLED dgc_countermodel_drop
+2026-11-23T15:20:37.8105434Z ASSURANCE-ATTACK: KILLED dgc_causal_text_only
+2026-11-23T15:20:37.8105822Z ASSURANCE-ATTACK: KILLED dgc_invalid_optional_stopping
+2026-11-23T15:20:37.8106245Z ASSURANCE-ATTACK: KILLED dgc_decision_digest_tamper
+2026-11-23T15:20:37.8106611Z ASSURANCE-ATTACK: KILLED dgc_utility_mutation
+2026-11-23T15:20:37.8106975Z ASSURANCE-ATTACK: KILLED dgc_unbounded_recursion
+2026-11-23T15:20:37.8107348Z ASSURANCE-ATTACK: KILLED dgc_provider_retry_storm
+2026-11-23T15:20:37.8107750Z ASSURANCE-ATTACK: KILLED dgc_financial_quality_gaming
+2026-11-23T15:20:37.8108134Z ASSURANCE-ATTACK: KILLED dgc_financial_overhead_hide
+2026-11-23T15:20:37.8108562Z ASSURANCE-ATTACK: KILLED dgc_v2d_outcome_dependent_lambda
+2026-11-23T15:20:37.8109001Z ASSURANCE-ATTACK: KILLED dgc_v2d_post_outcome_propensity
+2026-11-23T15:20:37.8109427Z ASSURANCE-ATTACK: KILLED dgc_v2d_unbounded_shift_weight
+2026-11-23T15:20:37.8109836Z ASSURANCE-ATTACK: KILLED dgc_v2d_degenerate_geometry
+2026-11-23T15:20:37.8110254Z ASSURANCE-ATTACK: KILLED dgc_v2d_fake_meta_upper_bound
+2026-11-23T15:20:37.8110619Z ASSURANCE-ATTACK: PASS (22/22 attacks killed)
+2026-11-23T15:20:37.8217653Z PYTHONPATH=. .venv/bin/python scripts/assurance_report.py
+2026-11-23T15:20:39.2154927Z ASSURANCE-REPORT: PASS -> /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/assurance-build/ASSURANCE_REPORT.json
+2026-11-23T15:20:39.2276779Z CWC-ENGINEERING-ASSURANCE: ALL GATES PASSED
+2026-11-23T15:20:39.2277330Z PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_secret_scan_gate.py
+2026-11-23T15:20:39.6843194Z ...............                                                          [100%]
+2026-11-23T15:20:39.6843580Z 15 passed in 0.31s
+2026-11-23T15:20:39.7218348Z CWC-PR-SECURITY: ALL GATES PASSED
+2026-11-23T15:20:39.7224302Z CWC-PR-FULL: ALL GATES PASSED
+2026-11-23T15:20:39.7323467Z Post job cleanup.
+2026-11-23T15:20:39.8252453Z Cache hit occurred on the primary key setup-python-Linux-x64-26.04-Ubuntu-python-3.11.18-pip-7a85e88e9793876a152fd1335905e90fd57cf6351ba12b010eb0762b0988d158, not saving cache.
+2026-11-23T15:20:39.8392483Z Post job cleanup.
+2026-11-23T15:20:39.9084687Z [command]/usr/bin/git version
+2026-11-23T15:20:39.9153838Z git version 2.56.1
+2026-11-23T15:20:39.9181736Z Temporarily overriding HOME='/home/runner/work/_temp/46a175ec-efb7-43ab-b05e-d77be1ef6c9e' before making global git config changes
+2026-11-23T15:20:39.9182765Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-23T15:20:39.9186095Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers
+2026-11-23T15:20:39.9219346Z Removing SSH command configuration
+2026-11-23T15:20:39.9225149Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-23T15:20:39.9271994Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-23T15:20:39.9574548Z Removing HTTP extra header
+2026-11-23T15:20:39.9579855Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-23T15:20:39.9624348Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-23T15:20:39.9885239Z Removing includeIf entries pointing to credentials config files
+2026-11-23T15:20:39.9890933Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-23T15:20:39.9915422Z includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git.path
+2026-11-23T15:20:39.9916302Z includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git/worktrees/*.path
+2026-11-23T15:20:39.9917087Z includeif.gitdir:/github/workspace/.git.path
+2026-11-23T15:20:39.9918109Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-23T15:20:39.9923968Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git.path
+2026-11-23T15:20:39.9945348Z /home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:20:39.9953722Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-63d7bb48\-5b12\-4b36\-82a5\-3c30ee4d5128\.config
+2026-11-23T15:20:39.9993064Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git/worktrees/*.path
+2026-11-23T15:20:40.0014723Z /home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:20:40.0023186Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/sapolsky-behave-layers/sapolsky-behave-layers/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-63d7bb48\-5b12\-4b36\-82a5\-3c30ee4d5128\.config
+2026-11-23T15:20:40.0051241Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-23T15:20:40.0071418Z /github/runner_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:20:40.0077381Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-63d7bb48\-5b12\-4b36\-82a5\-3c30ee4d5128\.config
+2026-11-23T15:20:40.0106736Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-23T15:20:40.0127141Z /github/runner_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config
+2026-11-23T15:20:40.0133007Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-63d7bb48\-5b12\-4b36\-82a5\-3c30ee4d5128\.config
+2026-11-23T15:20:40.0164105Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-23T15:20:40.0410017Z Removing credentials config '/home/runner/work/_temp/git-credentials-63d7bb48-5b12-4b36-82a5-3c30ee4d5128.config'
+2026-11-23T15:20:40.0584650Z Cleaning up orphan processes

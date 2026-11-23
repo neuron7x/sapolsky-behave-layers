@@ -1,0 +1,17 @@
+{
+  "scanner_version": "8.28.0",
+  "expected_exit": 1,
+  "actual_exit": 1,
+  "detected_count": 1,
+  "same_file_path_as_adjudicated_false_positive": true,
+  "new_commit_not_suppressed": true,
+  "findings": [
+    {
+      "RuleID": "generic-api-key",
+      "File": "artifacts/cneh-exp-01-a1/bnsyn/report.json",
+      "StartLine": 1,
+      "Commit": "14b748ae565c7b3eb46237c1438ecac98d6a8a8c",
+      "Fingerprint": "14b748ae565c7b3eb46237c1438ecac98d6a8a8c:artifacts/cneh-exp-01-a1/bnsyn/report.json:generic-api-key:1"
+    }
+  ]
+}

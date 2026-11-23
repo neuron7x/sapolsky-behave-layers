@@ -1,0 +1,15 @@
+test_budget_and_scrambled_traffic (test_cneh_exp_01.CNEHPreflightTests.test_budget_and_scrambled_traffic) ... ok
+test_exact_replay (test_cneh_exp_01.CNEHPreflightTests.test_exact_replay) ... ok
+test_extra_bundle_member_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_extra_bundle_member_is_rejected) ... ok
+test_faithful_centralized_emulator_parity (test_cneh_exp_01.CNEHPreflightTests.test_faithful_centralized_emulator_parity) ... ok
+test_hash_integrity_is_fail_closed (test_cneh_exp_01.CNEHPreflightTests.test_hash_integrity_is_fail_closed) ... ok
+test_no_colliding_arms_or_world_seeds (test_cneh_exp_01.CNEHPreflightTests.test_no_colliding_arms_or_world_seeds) ... ok
+test_resigned_protocol_drift_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_protocol_drift_is_rejected) ... ok
+test_resigned_raw_result_lie_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_raw_result_lie_is_rejected)
+A freshly rehashed forged non-primary CSV row must still fail. ... ok
+test_unsupported_replication_claim_forbidden (test_cneh_exp_01.CNEHPreflightTests.test_unsupported_replication_claim_forbidden) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.033s
+
+OK

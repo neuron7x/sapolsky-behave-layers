@@ -1,0 +1,103 @@
+{
+  "schema": "codex-independent-pr43-a5-verification-v1",
+  "verdict": "PASS",
+  "commit": "6d9c00e987eee963b6b067c59c8a5af92d4691ef",
+  "head_after": "6d9c00e987eee963b6b067c59c8a5af92d4691ef",
+  "python": "3.12.3",
+  "umask": "022",
+  "source_files_sha256": {
+    "scripts/cneh_history_guard.py": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8",
+    "tests/test_cneh_history_guard.py": "4dc286678bbcbf303a13b33c176c8345141c4b8bd9ed454f96cabc6ea6f13433",
+    "Makefile.cwc": "94fd5e935272e571fed726f95b68bc73ab1eba2875512d23f2374970e2a57480",
+    ".github/workflows/cwc-doc-gates.yml": "bb9e91eea63f6cbbecd1d08b67e93bb7692035751a2a08bd20f2831a02e8cac6",
+    ".github/workflows/cwc-full-pr-gate.yml": "f1828154a2d2899c28db1b018539ad53fea4f49f786fff614634ce0223ddb51f"
+  },
+  "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "status_after": "",
+  "checks": [
+    {
+      "name": "verify-evidence",
+      "command": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 2.847,
+      "log": "final-6d9c00e-verify-evidence.log",
+      "log_sha256": "c5f95aac19fa0e03a578c99357bc8f63b8cb483b9b37f1040ed0c06ce085d88c"
+    },
+    {
+      "name": "bibliography",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/verify_bibliography.py"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.03,
+      "log": "final-6d9c00e-bibliography.log",
+      "log_sha256": "6a4ff2921b9310f0f22d416ef00978a711f6ed642ce02e65422398c71472cedd"
+    },
+    {
+      "name": "doc-status",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/doc_status_gate.py"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.681,
+      "log": "final-6d9c00e-doc-status.log",
+      "log_sha256": "5eaf6297fc8a3fde127afa4d5451f4db4a992bf2f366087ce2fb8c65d30054e9"
+    },
+    {
+      "name": "docs-regen",
+      "command": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "docs-regen",
+        "PY=python3 -B"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.527,
+      "log": "final-6d9c00e-docs-regen.log",
+      "log_sha256": "8de0189f5d3b3835565940c3de3b968e396c8ac824cf8a8597ee7779adb10274"
+    },
+    {
+      "name": "docs-diff",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "docs/lab/EXPERIMENT_LEDGER.jsonl",
+        "docs/vnv/DOCUMENT_STATUS_REGISTER.csv"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.007,
+      "log": "final-6d9c00e-docs-diff.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "rehashed-history-rejected",
+      "command": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "exit_code": 2,
+      "elapsed_s": 2.204,
+      "log": "final-6d9c00e-rehashed-history-rejected.log",
+      "log_sha256": "78bdd2a2b0c4f8306b53ea1cc9389df674f706fff8d3b6c42d2e29a9fb597868",
+      "expected_rejection": true
+    }
+  ],
+  "scope": "native evidence/doc gates plus rehashed historical-evidence negative control; isolated local clone",
+  "full_gate": "NOT_RUN",
+  "hosted_ci": "NOT_VERIFIED",
+  "scientific_promotion_authorized": false
+}

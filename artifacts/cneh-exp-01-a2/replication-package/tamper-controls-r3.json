@@ -1,0 +1,87 @@
+{
+  "archive_sha256": "df311241fe4b50c1d283c44b1cab902c50d45ee7c05656c2468dc8508eebe6ca",
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "controls": [
+    {
+      "name": "baseline",
+      "mutation": null,
+      "self_resigned": false,
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-hhj3cvhf/cneh-exp-01-a2/replay.py",
+        "--verify-only",
+        "--trusted-git",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "expected_error": null,
+      "pass": true
+    },
+    {
+      "name": "unsigned_source_tamper",
+      "mutation": "source/experiments/cneh_exp_01/run.py",
+      "self_resigned": false,
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-tpldcjzj/cneh-exp-01-a2/replay.py",
+        "--verify-only",
+        "--trusted-git",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "expected_error": "package hash or file-membership mismatch",
+      "pass": true
+    },
+    {
+      "name": "resigned_source_tamper",
+      "mutation": "source/experiments/cneh_exp_01/run.py",
+      "self_resigned": true,
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-5vnxz8k6/cneh-exp-01-a2/replay.py",
+        "--verify-only",
+        "--trusted-git",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "expected_error": "canonical Git source mismatch",
+      "pass": true
+    },
+    {
+      "name": "resigned_PR44_tamper",
+      "mutation": "external/pr44-linear-reference.py",
+      "self_resigned": true,
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-vkhl5_9q/cneh-exp-01-a2/replay.py",
+        "--verify-only",
+        "--trusted-git",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "expected_error": "pinned PR44 source mismatch",
+      "pass": true
+    },
+    {
+      "name": "resigned_BN_tamper",
+      "mutation": "external/bnsyn/src/bnsyn/simulation.py",
+      "self_resigned": true,
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "/home/neuro7/.cache/claude-tmp/cneh-package-r3-tamper-ckh6wryj/cneh-exp-01-a2/replay.py",
+        "--verify-only",
+        "--trusted-git",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "expected_error": "pinned BN-Syn 118-file source mismatch",
+      "pass": true
+    }
+  ],
+  "status": "PASS"
+}

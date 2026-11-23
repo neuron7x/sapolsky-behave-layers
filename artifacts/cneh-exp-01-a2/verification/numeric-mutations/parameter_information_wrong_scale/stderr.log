@@ -1,0 +1,38 @@
+test_actual_do_replacement_separates_observationally_equivalent_models (qualification_cases.ReusedMathQualificationTests.test_actual_do_replacement_separates_observationally_equivalent_models) ... ok
+test_cli_emits_finite_report_and_refuses_overwrite (qualification_cases.ReusedMathQualificationTests.test_cli_emits_finite_report_and_refuses_overwrite) ... FAIL
+test_covariance_rank_and_singular_certificate_are_distinct (qualification_cases.ReusedMathQualificationTests.test_covariance_rank_and_singular_certificate_are_distinct) ... ok
+test_dependency_version_drift_rejected (qualification_cases.ReusedMathQualificationTests.test_dependency_version_drift_rejected) ... ok
+test_existing_reference_is_actually_delegated_to (qualification_cases.ReusedMathQualificationTests.test_existing_reference_is_actually_delegated_to) ... ok
+test_finite_hankel_cancellation_cannot_destroy_small_singular_value (qualification_cases.ReusedMathQualificationTests.test_finite_hankel_cancellation_cannot_destroy_small_singular_value) ... ok
+test_frozen_oracles_pass_without_scientific_promotion (qualification_cases.ReusedMathQualificationTests.test_frozen_oracles_pass_without_scientific_promotion) ... FAIL
+test_full_rank_does_not_qualify_numerically_cancelled_fisher (qualification_cases.ReusedMathQualificationTests.test_full_rank_does_not_qualify_numerically_cancelled_fisher) ... ok
+test_gramian_domain_checks_reject_nonfinite_bool_shape_and_invalid_horizon (qualification_cases.ReusedMathQualificationTests.test_gramian_domain_checks_reject_nonfinite_bool_shape_and_invalid_horizon) ... ok
+test_known_raw_failures_remain_visible_and_wrapper_rejects_first (qualification_cases.ReusedMathQualificationTests.test_known_raw_failures_remain_visible_and_wrapper_rejects_first) ... ok
+test_leakage_and_nonfinite_trial_utility_are_rejected (qualification_cases.ReusedMathQualificationTests.test_leakage_and_nonfinite_trial_utility_are_rejected) ... ok
+test_observational_confounding_is_not_a_randomized_trial (qualification_cases.ReusedMathQualificationTests.test_observational_confounding_is_not_a_randomized_trial) ... ok
+test_source_tamper_and_symlink_rejected_before_execution (qualification_cases.ReusedMathQualificationTests.test_source_tamper_and_symlink_rejected_before_execution) ... ok
+test_zero_excitation_does_not_inherit_state_observability (qualification_cases.ReusedMathQualificationTests.test_zero_excitation_does_not_inherit_state_observability) ... ok
+
+======================================================================
+FAIL: test_cli_emits_finite_report_and_refuses_overwrite (qualification_cases.ReusedMathQualificationTests.test_cli_emits_finite_report_and_refuses_overwrite)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-math-mutation-xfngo2h0/tests/qualification_cases.py", line 201, in test_cli_emits_finite_report_and_refuses_overwrite
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 1 != 0 : 
+
+======================================================================
+FAIL: test_frozen_oracles_pass_without_scientific_promotion (qualification_cases.ReusedMathQualificationTests.test_frozen_oracles_pass_without_scientific_promotion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-math-mutation-xfngo2h0/tests/qualification_cases.py", line 36, in test_frozen_oracles_pass_without_scientific_promotion
+    self.assertEqual(report["status"], "PASS")
+AssertionError: 'FAIL' != 'PASS'
+- FAIL
++ PASS
+
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.282s
+
+FAILED (failures=2)

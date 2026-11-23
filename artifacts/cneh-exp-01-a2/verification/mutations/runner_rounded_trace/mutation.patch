@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/run.py
++++ experiments/cneh_exp_01/run.py
+@@ -62,7 +62,7 @@
+     """Exact binary64 values, including signed zero; no decimal rounding."""
+     if any(not math.isfinite(v) for row in actions_states for v in row):
+         raise ValueError("nonfinite action/state trace")
+-    return digest(canonical([[v.hex() for v in row] for row in actions_states]))
++    return digest(canonical([[round(v, 12) for v in row] for row in actions_states]))
+ 
+ 
+ def validate_seeds(seeds: list[int]) -> None:

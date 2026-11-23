@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-history-resign-zo6bfw7v/repo/scripts/validate_evidence.py", line 23, in <module>
+    from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v31 import analyze as analyze_wp4_v31
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-history-resign-zo6bfw7v/repo/experiments/wp4_adaptive_depth/src/analyze_exact_compute_v31.py", line 9, in <module>
+    from experiments.wp4_adaptive_depth.src.analyze_exact_compute_v3 import (
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-history-resign-zo6bfw7v/repo/experiments/wp4_adaptive_depth/src/analyze_exact_compute_v3.py", line 9, in <module>
+    from experiments.wp4_adaptive_depth.src.runner import DISTRIBUTIONS
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-history-resign-zo6bfw7v/repo/experiments/wp4_adaptive_depth/src/runner.py", line 15, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'

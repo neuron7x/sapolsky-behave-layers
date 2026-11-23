@@ -1,0 +1,39 @@
+{
+  "schema": "cneh-acceptance-a3-implementation-v1",
+  "head_commit": "3c0feee217e22647997b3888173f372dbeb2f01f",
+  "owned_files": [
+    "experiments/cneh_exp_01/acceptance.py",
+    "tests/test_cneh_exp_01_acceptance.py"
+  ],
+  "executed_source_sha256": {
+    "experiments/cneh_exp_01/acceptance.py": "3861a5b452bc898bf139904e565e251893fa7b0d6162f42ab4f543a734460a37",
+    "tests/test_cneh_exp_01_acceptance.py": "df03a63589360529f30e4db5d85310761712de8c724195eb33c3f29d10f572a2",
+    "experiments/cneh_exp_01/provenance.py": "1f4d22168bde79b38c6f7f71e6dbce4033b80243cd9cba5b760860668587916c",
+    "tests/test_cneh_exp_01_provenance.py": "75c39e6971b70d9f272d1eca1cab3e2cc4c289915bff9068ba25439965dae2ad"
+  },
+  "source_unchanged": true,
+  "owned_diff_sha256": "cf59a440c617db8b0a3a28db78cf86d0715b1c1fd218bd317d9ca55972b4800a",
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_cneh_exp_01*.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "seconds": 3.9175665650109295,
+  "umask": "022",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "d746c9dab85bf30ef4bc0d9ccd77824f2baf89c3d3bb60ce9b4a878665559cae",
+  "mutations_report": "mutations-v8/report.json",
+  "mutations_report_sha256": "9ad62b928ac02a5351fa4fa321066c21f2d3b97cb143812c48551982ad1ae4ef",
+  "original_false_pass_report_sha256": "a882d988363183e36782573ea8afc8444bab850e82d6231c0b3d6cdda0b98094",
+  "actual_final_sha_G1_G2_G3_G4": "NOT_RUN; requires parent final commit and fresh execution",
+  "scientific_promotion_authorized": false,
+  "external_replication": "NOT_TESTED"
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "cneh-linux-metrology-contract-v1",
+  "authority": "ENGINEERING_RESOURCE_CEILINGS_ONLY",
+  "scientific_promotion_authorized": false,
+  "reuse": ["hardware.measure", "run.simulate", "run.verify_bundle"],
+  "platform": "linux",
+  "precision": "CPython binary64 float; network-endian binary64 payload fixture",
+  "isolated": {
+    "seeds": [3001, 3002, 3003, 3004],
+    "repeats": 2,
+    "batch_calls_per_seed": 4,
+    "warmup_calls_per_arm": 1,
+    "order_seed": 90261124,
+    "memory_boundary": "Per-arm fresh process high-water resident set including interpreter, imports, warmup, simulator and profiling; not incremental controller allocation",
+    "profile_boundary": "Separate instrumented episode; Controller.act duration and fixture serialization measured separately; not production latency",
+    "payload_boundary": "Two binary64 scalar packets per coupled tick, one per one-way tick, no transport/header/network allocation; this does not prove physical communication parity"
+  },
+  "verification": {
+    "seeds": [3001, 3002],
+    "repeats": 3,
+    "boundary": "Complete existing bundle verifier; includes file reads, hashing and deterministic simulator replay"
+  },
+  "limits": {
+    "worker_timeout_seconds": 30.0,
+    "worker_stdout_bytes_max": 1048576,
+    "worker_peak_rss_bytes_max": 1073741824,
+    "parent_process_wall_ns_max": 30000000000,
+    "wall_ns_per_call_max": 1000000000,
+    "cpu_ns_per_call_max": 1000000000,
+    "profile_episode_wall_ns_max": 1000000000,
+    "controller_profile_ns_max": 1000000000,
+    "serialization_ns_max": 1000000000,
+    "payload_bytes_per_episode_max": 4096,
+    "verification_wall_ns_max": 10000000000,
+    "training_steps_max": 0
+  },
+  "unavailable_instruments": {
+    "electrical_joules": "INSTRUMENT_INVALID",
+    "hardware_flops": "INSTRUMENT_INVALID",
+    "network_transport_cost": "INSTRUMENT_INVALID"
+  },
+  "limits_policy": "Every included measured ceiling affects admission; satisfying ceilings does not establish paired resource parity.",
+  "timing_policy": "Record all observations; no outlier deletion, idle correction, post-hoc threshold tuning or profiler-overhead subtraction.",
+  "trust_boundary": "Source/runtime hashes and arithmetic consistency require an independently trusted code anchor; unsigned local timestamps and RSS are not external metrology authentication."
+}

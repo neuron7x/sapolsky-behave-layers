@@ -1,0 +1,7 @@
+Collecting uv==0.10.12 (from -r requirements/ci-uv.lock (line 5))
+  Using cached uv-0.10.12-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (23.5 MB)
+Installing collected packages: uv
+Successfully installed uv-0.10.12
+
+[notice] A new release of pip is available: 24.0 -> 26.3
+[notice] To update, run: /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/python -m pip install --upgrade pip

@@ -1,0 +1,119 @@
+{
+  "check": {
+    "id": 137774576095,
+    "name": "CodeQL",
+    "node_id": "CR_kwDOT2aCm88AAAAgFAEx3w",
+    "head_sha": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+    "external_id": "",
+    "url": "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/check-runs/137774576095",
+    "html_url": "https://github.com/neuron7x/sapolsky-behave-layers/runs/137774576095",
+    "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/runs/137774576095",
+    "status": "completed",
+    "conclusion": "failure",
+    "started_at": "2026-11-23T14:49:14Z",
+    "completed_at": "2026-11-23T14:49:24Z",
+    "output": {
+      "title": "2 new alerts including 1 high severity security vulnerability",
+      "summary": "### New alerts in code changed by this pull request\n\nSecurity Alerts:\n * 1 high\n\nOther Alerts:\n * 1 note\n\n_Alerts not introduced by this pull request might have been detected because the code changes were too large._\n\nSee annotations below for details.\n\n[View all branch alerts](/neuron7x/sapolsky-behave-layers/security/code-scanning?query=pr%3A43+tool%3ACodeQL+is%3Aopen).",
+      "text": null,
+      "annotations_count": 2,
+      "annotations_url": "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/check-runs/137774576095/annotations"
+    },
+    "check_suite": {
+      "id": 122308504504
+    },
+    "app": {
+      "id": 57789,
+      "client_id": "Iv1.4643383dd86f00de",
+      "slug": "github-advanced-security",
+      "node_id": "MDM6QXBwNTc3ODk=",
+      "owner": {
+        "login": "github",
+        "id": 9919,
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/github",
+        "html_url": "https://github.com/github",
+        "followers_url": "https://api.github.com/users/github/followers",
+        "following_url": "https://api.github.com/users/github/following{/other_user}",
+        "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+        "organizations_url": "https://api.github.com/users/github/orgs",
+        "repos_url": "https://api.github.com/users/github/repos",
+        "events_url": "https://api.github.com/users/github/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/github/received_events",
+        "type": "Organization",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "name": "GitHub Advanced Security",
+      "description": "",
+      "external_url": "https://github.com/features/security",
+      "html_url": "https://github.com/apps/github-advanced-security",
+      "created_at": "2020-03-17T21:25:09Z",
+      "updated_at": "2026-09-14T08:13:48Z",
+      "permissions": {
+        "actions": "read",
+        "checks": "write",
+        "contents": "read",
+        "copilot_requests": "write",
+        "metadata": "read",
+        "pull_requests": "read"
+      },
+      "events": []
+    },
+    "pull_requests": [
+      {
+        "url": "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/pulls/43",
+        "id": 5453565179,
+        "number": 43,
+        "head": {
+          "ref": "research/cneh-exp-01",
+          "sha": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+          "repo": {
+            "id": 1332118171,
+            "url": "https://api.github.com/repos/neuron7x/sapolsky-behave-layers",
+            "name": "sapolsky-behave-layers"
+          }
+        },
+        "base": {
+          "ref": "main",
+          "sha": "95c78c588b83ded30d0d882ddcf0f8fa6502a109",
+          "repo": {
+            "id": 1332118171,
+            "url": "https://api.github.com/repos/neuron7x/sapolsky-behave-layers",
+            "name": "sapolsky-behave-layers"
+          }
+        }
+      }
+    ]
+  },
+  "annotations": [
+    {
+      "path": "experiments/cneh_exp_01/replication.py",
+      "blob_href": "https://github.com/neuron7x/sapolsky-behave-layers/blob/a65ab49681bc748acb71cde9abe5bc99a4045ab3/experiments/cneh_exp_01/replication.py",
+      "start_line": 181,
+      "start_column": 18,
+      "end_line": 181,
+      "end_column": 75,
+      "annotation_level": "failure",
+      "title": "Overly permissive file permissions",
+      "message": "Overly permissive mask in open sets file to world readable.",
+      "raw_details": null
+    },
+    {
+      "path": "experiments/cneh_exp_01/mutation_check.py",
+      "blob_href": "https://github.com/neuron7x/sapolsky-behave-layers/blob/a65ab49681bc748acb71cde9abe5bc99a4045ab3/experiments/cneh_exp_01/mutation_check.py",
+      "start_line": 140,
+      "start_column": 9,
+      "end_line": 140,
+      "end_column": 35,
+      "annotation_level": "notice",
+      "title": "Empty except",
+      "message": "'except' clause does nothing but pass and there is no explanatory comment.",
+      "raw_details": null
+    }
+  ]
+}

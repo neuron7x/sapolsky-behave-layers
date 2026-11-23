@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/estimators.py
++++ experiments/cneh_exp_01/estimators.py
+@@ -95,7 +95,7 @@
+             s, y = tuple(key[i] for i in indices), key[2]
+             ps[s] = ps.get(s, 0.0) + v
+             psy[s, y] = psy.get((s, y), 0.0) + v
+-        iy = {y: math.fsum((v / py[y]) * math.log2((v / py[y]) / ps[s])
++        iy = {y: math.fsum((v / py[y]) * math.log((v / py[y]) / ps[s])
+                            for (s, yy), v in psy.items() if yy == y) for y in py}
+         return iy, math.fsum(py[y] * iy[y] for y in py)
+ 

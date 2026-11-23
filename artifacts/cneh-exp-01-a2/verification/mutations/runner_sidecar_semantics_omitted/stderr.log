@@ -1,0 +1,199 @@
+test_ambiguous_json_is_rejected_even_when_resigned (test_cneh_exp_01.CNEHPreflightTests.test_ambiguous_json_is_rejected_even_when_resigned) ... ok
+test_authentic_negative_is_retained_but_cannot_qualify (test_cneh_exp_01.CNEHPreflightTests.test_authentic_negative_is_retained_but_cannot_qualify) ... ok
+test_budget_and_scrambled_traffic (test_cneh_exp_01.CNEHPreflightTests.test_budget_and_scrambled_traffic) ... ok
+test_common_mode_action_bound_violation_rejected_at_plant_boundary (test_cneh_exp_01.CNEHPreflightTests.test_common_mode_action_bound_violation_rejected_at_plant_boundary) ... ok
+test_concurrent_writers_cannot_overwrite_sealed_bundle (test_cneh_exp_01.CNEHPreflightTests.test_concurrent_writers_cannot_overwrite_sealed_bundle) ... ok
+test_exact_replay (test_cneh_exp_01.CNEHPreflightTests.test_exact_replay) ... ok
+test_extra_bundle_member_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_extra_bundle_member_is_rejected) ... ok
+test_faithful_centralized_emulator_parity (test_cneh_exp_01.CNEHPreflightTests.test_faithful_centralized_emulator_parity) ... ok
+test_hash_integrity_is_fail_closed (test_cneh_exp_01.CNEHPreflightTests.test_hash_integrity_is_fail_closed) ... ok
+test_initial_state_safety_is_part_of_whole_path (test_cneh_exp_01.CNEHPreflightTests.test_initial_state_safety_is_part_of_whole_path) ... ok
+test_invalid_cohort_or_protocol_leaves_no_bundle (test_cneh_exp_01.CNEHPreflightTests.test_invalid_cohort_or_protocol_leaves_no_bundle) ... ok
+test_invalid_world_seed_values_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_invalid_world_seed_values_are_rejected) ... ok
+test_memory_proxy_envelope_is_enforced (test_cneh_exp_01.CNEHPreflightTests.test_memory_proxy_envelope_is_enforced) ... ok
+test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) ... 
+  test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) (operation='delete') ... FAIL
+  test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) (operation='add') ... FAIL
+test_no_colliding_arms_or_world_seeds (test_cneh_exp_01.CNEHPreflightTests.test_no_colliding_arms_or_world_seeds) ... ok
+test_nonfinite_controller_action_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_nonfinite_controller_action_is_rejected) ... ok
+test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) ... 
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_control_energy_proxy') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_controller_compute_proxy_ops') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_message_bytes') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_controller_memory_proxy_bytes') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_latency_steps') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='external_training_budget_verified') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='hardware_flops_verified') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='safety.json', key='chance_constraint_verified') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='safety.json', key='gate') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='negative_controls.json', key='outcome') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='limitations') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='policy_boundary') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='scientific_promotion_authorized') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='seeds.json', key='source') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='seeds.json', key='n_world_seeds') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='implementation.json', key='runner_sha256') ... FAIL
+  test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='implementation.json', key='evidence_format_version') ... FAIL
+test_resigned_protocol_drift_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_protocol_drift_is_rejected) ... ok
+test_resigned_raw_result_lie_is_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_raw_result_lie_is_rejected)
+A freshly rehashed forged non-primary CSV row must still fail. ... ok
+test_subdecimal_emulator_divergence_is_detected (test_cneh_exp_01.CNEHPreflightTests.test_subdecimal_emulator_divergence_is_detected) ... ok
+test_trace_hash_detects_one_ulp_and_signed_zero (test_cneh_exp_01.CNEHPreflightTests.test_trace_hash_detects_one_ulp_and_signed_zero) ... ok
+test_unsupported_replication_claim_forbidden (test_cneh_exp_01.CNEHPreflightTests.test_unsupported_replication_claim_forbidden) ... ok
+
+======================================================================
+FAIL: test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) (operation='delete')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 243, in test_missing_or_additional_derived_fields_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_missing_or_additional_derived_fields_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_missing_or_additional_derived_fields_are_rejected) (operation='add')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 243, in test_missing_or_additional_derived_fields_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_control_energy_proxy')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_controller_compute_proxy_ops')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_message_bytes')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_controller_memory_proxy_bytes')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='observed_max_latency_steps')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='external_training_budget_verified')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='budget.json', key='hardware_flops_verified')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='safety.json', key='chance_constraint_verified')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='safety.json', key='gate')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='negative_controls.json', key='outcome')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='limitations')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='policy_boundary')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='verdict.json', key='scientific_promotion_authorized')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='seeds.json', key='source')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='seeds.json', key='n_world_seeds')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='implementation.json', key='runner_sha256')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_resigned_derived_claims_are_rejected (test_cneh_exp_01.CNEHPreflightTests.test_resigned_derived_claims_are_rejected) (file='implementation.json', key='evidence_format_version')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-1fnkz66p/tests/test_cneh_exp_01.py", line 228, in test_resigned_derived_claims_are_rejected
+    with self.assertRaisesRegex(ValueError, "derived evidence"):
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.249s
+
+FAILED (failures=19)

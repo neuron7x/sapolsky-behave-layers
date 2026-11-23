@@ -1,0 +1,17 @@
+{"name": "standard-tests", "exit_code": 0}
+{"name": "numeric-tests", "exit_code": 0}
+{"name": "mutations", "exit_code": 0}
+{"name": "numeric-mutations", "exit_code": 0}
+{"name": "math-generate", "exit_code": 0}
+{"name": "math-verify", "exit_code": 0}
+{"name": "metrology-measure", "exit_code": 0}
+{"name": "metrology-verify", "exit_code": 0}
+{"name": "metrology-qualified-cost", "exit_code": 2}
+{"name": "a1-primary-replay", "exit_code": 0}
+{"name": "science-readiness", "exit_code": 2}
+{"name": "a1-bnsyn-replay", "exit_code": 0}
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../evidence/independent-a2-final/verify.py", line 77, in <module>
+    assert not changed and actual==set(reconstruction['source_files']),{'changed':changed,'unexpected':list(actual-set(reconstruction['source_files']))}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'changed': [], 'unexpected': ['experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc', 'experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc']}

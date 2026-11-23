@@ -1,0 +1,23 @@
+{
+  "corrupt_raw_batches": 1,
+  "corrupt_rows": [
+    {
+      "arm": "CENTRAL_EMULATOR",
+      "batch_calls": 8,
+      "cpu_end_ns": 64509571,
+      "cpu_ns_per_call": 141683.5,
+      "cpu_start_ns": 63376103,
+      "position": 1,
+      "repeat": 0,
+      "seed": 3001,
+      "trace_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "wall_end_ns": 164061612380515,
+      "wall_ns_per_call": 141602.125,
+      "wall_start_ns": 164061611247698
+    }
+  ],
+  "emulator_trace_parity": true,
+  "finding": "transient emulator divergence accepted by timing gate",
+  "source_sha256": "eccaebe8ff58e39c0d985661ebd5b9d6aab431a7a2589dc8dd82e8861d1c6d2b",
+  "status": "LOCAL_TIMING_ONLY"
+}

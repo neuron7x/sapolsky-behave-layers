@@ -1,0 +1,5 @@
+# Adjudicated false positive: this exact historical finding is a SHA256 source
+# digest for pinned BN-Syn src/bnsyn/api.py, not an API credential. Its value is
+# recomputed from commit c1de425ce4ece362e7f2feb2d9f24da5d3231014 in the CI evidence.
+# Scope is one immutable commit, file, rule and line; future findings stay enabled.
+a65ab49681bc748acb71cde9abe5bc99a4045ab3:artifacts/cneh-exp-01-a1/bnsyn/report.json:generic-api-key:1

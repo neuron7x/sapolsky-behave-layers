@@ -1,0 +1,5 @@
+{
+  "status": "ACCEPTED",
+  "finding": "sequential samples have identical overlapping wall intervals",
+  "metrology_sha256": "539d10d2a48a680a1532fae5ca05f99a4206b4ce74f94299ccdb31d85996aa33"
+}

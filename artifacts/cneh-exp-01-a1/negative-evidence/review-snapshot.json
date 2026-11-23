@@ -1,0 +1,33 @@
+{
+  "diff_sha256": "c30ec9efe2ef6f95517cfa4cc44abab4caf2fd83e569d653b1bec5ae2cae5bb6",
+  "fixed_and_independently_rechecked": 3,
+  "fixed_reproductions_sha256": "72e6a4ccbc1160745d5c7d794faef3fcbb1a7cf80ffec34120e8b05e9d5ab591",
+  "not_run": [
+    "independent actual BN-Syn execution by this reviewer",
+    "physical joule/FLOP calibration",
+    "external blind scientific replication"
+  ],
+  "reproduced_findings": 3,
+  "reviewed_head": "99df8af1ceebff4eee99f9e4c5d0397ed98d7eea",
+  "scope_limit": "Read-only source review and isolated regression fault injection; absence of findings is not proof of safety.",
+  "source_and_test_sha256": {
+    "experiments/cneh_exp_01/bnsyn_adapter.py": "bf81cce1c71c5c47660f3609dc23f1fc442967c7a5fb146eb27329a6502d3a4d",
+    "experiments/cneh_exp_01/estimators.py": "7af15d1bcdf62e9eb96ac472649b7cb049a60732eb4d85871536383d93e6a408",
+    "experiments/cneh_exp_01/hardware.py": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9",
+    "experiments/cneh_exp_01/qualification.py": "e383029440067b6405698834bc227ed545f05ae3ad96f1171be9b79e31326577",
+    "experiments/cneh_exp_01/replication.py": "353943cd5864484022772c4f5e0e4f30d34d7698acd44e3b730d6dbf00fcff8a",
+    "experiments/cneh_exp_01/run.py": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+    "tests/test_cneh_exp_01.py": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+    "tests/test_cneh_exp_01_bnsyn.py": "55d13914a9094f85ff540c2423c576913f07c25c0c9cc5dfd8ba5362425311ab",
+    "tests/test_cneh_exp_01_estimators.py": "3e22523d2ea11308a615803421352ca140c17d358e5cdfd22b256274a20e7e0d",
+    "tests/test_cneh_exp_01_hardware.py": "dac70b561bd468a9ae050bcbc09bdb1fc5e38fb0d0f626f255258cbb61cb145f",
+    "tests/test_cneh_exp_01_qualification.py": "971ff4c0188a6572059b57317b2ba450b7d64d9d5f9acb929713a3653975a8af",
+    "tests/test_cneh_exp_01_replication.py": "c9ac59152e989e0499d7208dd0262dfba0120eeccb37e34c61bbe22948ac2f3d"
+  },
+  "unittest_result": {
+    "exit_code": 0,
+    "log_sha256": "a3f3e7eb89a1284287280f380ebab5b604037c1f16bf7bc22198789704db4512",
+    "tests": 60
+  },
+  "unresolved_major_findings": 0
+}

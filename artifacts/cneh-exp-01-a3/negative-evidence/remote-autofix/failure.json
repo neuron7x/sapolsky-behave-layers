@@ -1,0 +1,10 @@
+{
+  "schema": "cneh-historical-autofix-conflict-v1",
+  "remote_commit": "9e1de455fb52c1a0f200353b81e33d260698395e",
+  "path": "artifacts/cneh-exp-01-a2/g4-a2-audit.py",
+  "expected_historical_sha256": "9483ed7d5cb720ad982d70ad18d80c357385d5ac19f5c2d7cfa49ed40fa07841",
+  "remote_sha256": "ff4e6b05eda31fb0b8c99cab1e0557c1587ea016580157ab7071cf7b034d7fbc",
+  "manifest_verification": "FAIL",
+  "scope": "Unused-import autofix changed immutable historical evidence; preserve remote commit and restore bytes in a subsequent explicit commit",
+  "scientific_promotion_authorized": false
+}

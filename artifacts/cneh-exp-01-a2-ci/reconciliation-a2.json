@@ -1,0 +1,10 @@
+{
+  "branch": "research/cneh-exp-01",
+  "local_head": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+  "remote_head": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+  "hookspath_query_exit": 1,
+  "configured_hookspath": "",
+  "active_git_hook_files": [],
+  "reported_hook_exit_5": "NOT_REPRODUCED_IN_THIS_CHECKOUT",
+  "preserved_worktree_changes": " M docs/lab/EXPERIMENT_LEDGER.jsonl\n?? .gitleaksignore\n"
+}

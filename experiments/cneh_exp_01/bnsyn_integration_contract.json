@@ -1,0 +1,59 @@
+{
+  "schema": "cneh-bnsyn-integration-v1",
+  "authority": "INTEGRATION_SMOKE_ONLY",
+  "scientific_promotion_authorized": false,
+  "source": {
+    "repository": "neuron7x/bnsyn-phase-controlled-emergent-dynamics",
+    "commit": "c1de425ce4ece362e7f2feb2d9f24da5d3231014",
+    "files_sha256": "888b766ebd345c37dc916b27a71a42e2633d72502aec76912d5019241f76ec33",
+    "file_count": 118,
+    "scope": [
+      "src/**",
+      "pyproject.toml",
+      "LICENSE"
+    ]
+  },
+  "dependencies": {
+    "numpy": "2.4.1",
+    "scipy": "1.17.1",
+    "pydantic": "2.12.5"
+  },
+  "smoke": {
+    "seeds": [
+      73001,
+      73002
+    ],
+    "neurons": 32,
+    "steps": 1000,
+    "dt_ms": 0.1,
+    "p_conn": 0.2,
+    "backend": "reference",
+    "observation": "mean membrane voltage mV in each contiguous 16-neuron partition before action",
+    "action": "uniform injected current pA in each partition",
+    "base_current_pA": 300.0,
+    "current_bound_pA": 500.0,
+    "target_voltage_mV": -55.0,
+    "feedback_gain_pA_per_mV": 2.0,
+    "cross_gain_pA_per_mV": 0.25,
+    "arms": [
+      "COUPLED",
+      "CENTRAL_EMULATOR",
+      "ZERO_ACTION"
+    ],
+    "trace_encoding": "IEEE754 binary64 hex for all voltage/adaptation/conductance/action/observation values plus spike bits; RNG state SHA256 after each step"
+  },
+  "acceptance": {
+    "emulator_trace_equality": "exact",
+    "replay_trace_equality": "exact",
+    "all_values_finite": true,
+    "minimum_total_spikes": 1,
+    "zero_action_trace_must_differ": true,
+    "minimum_voltage_range_mV": 1e-09
+  },
+  "limitations": [
+    "Exploratory adapter qualification only; no predeclared neural goal task or causal dual-control benefit.",
+    "COUPLED and CENTRAL execute the same update within one process; no distributed transport or physical cost equivalence proved.",
+    "No training, plasticity qualification, criticality claim, PID attribution or real-world safety proof.",
+    "Fresh seeds here are public engineering fixtures, not a blinded replication cohort."
+  ]
+}

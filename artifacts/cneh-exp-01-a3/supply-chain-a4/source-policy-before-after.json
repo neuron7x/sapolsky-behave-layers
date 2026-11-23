@@ -1,0 +1,85 @@
+{
+  "base_commit": "3c0feee217e22647997b3888173f372dbeb2f01f",
+  "before": "FAIL",
+  "before_violations": [
+    {
+      "file": "Makefile.cwc",
+      "line": 67,
+      "text": "uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 68,
+      "text": "sed -E 's/(torch==[0-9.]+)\\+cpu/\\1/' /tmp/cwc-runtime-requirements.txt > /tmp/cwc-auditable-requirements.txt"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 69,
+      "text": "uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 70,
+      "text": "uv export --quiet --frozen --extra cpu --only-dev --no-emit-project --output-file /tmp/cwc-dev-group-requirements.txt"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 71,
+      "text": "uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-dev-group-requirements.txt --progress-spinner=off"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 72,
+      "text": "uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off"
+    },
+    {
+      "file": "Makefile.cwc",
+      "line": 257,
+      "text": "VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt"
+    },
+    {
+      "file": ".github/workflows/cwc-quality.yml",
+      "line": 56,
+      "text": "python -m pip install --upgrade pip"
+    },
+    {
+      "file": ".github/workflows/cwc-quality.yml",
+      "line": 57,
+      "text": "pip install -r cwc-requirements-dev.txt"
+    },
+    {
+      "file": ".github/workflows/cwc-full-pr-gate.yml",
+      "line": 32,
+      "text": "run: pipx install uv==0.10.12"
+    },
+    {
+      "file": ".github/workflows/cwc-full-pr-gate.yml",
+      "line": 36,
+      "text": "VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt"
+    },
+    {
+      "file": ".github/workflows/cwc-full-pr-gate.yml",
+      "line": 55,
+      "text": "run: pipx install uv==0.10.12"
+    },
+    {
+      "file": ".github/workflows/cwc-doc-gates.yml",
+      "line": 26,
+      "text": "run: pipx install uv==0.10.12"
+    },
+    {
+      "file": ".github/workflows/pr-audit.yml",
+      "line": 55,
+      "text": "run: pipx install uv==0.10.12"
+    }
+  ],
+  "current": "PASS",
+  "current_violations": [],
+  "scope": [
+    "Makefile.cwc",
+    ".github/workflows/cwc-quality.yml",
+    ".github/workflows/cwc-full-pr-gate.yml",
+    ".github/workflows/cwc-doc-gates.yml",
+    ".github/workflows/pr-audit.yml"
+  ]
+}

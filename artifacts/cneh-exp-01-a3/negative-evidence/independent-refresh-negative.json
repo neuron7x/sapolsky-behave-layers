@@ -1,0 +1,24 @@
+{
+  "observed_exit": 0,
+  "false_PASS_reproduced": true,
+  "boundaries_mocked": [
+    "G1",
+    "G2"
+  ],
+  "actual_checkout_file_count": 0,
+  "receipt": {
+    "receipt": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/final-acceptance/independent-refresh-negative-04bot4ax/acceptance-20261123T153303011040.json",
+    "sha256": "c224685d445f43e977cb1cccc2746aacfbc95234d17fa22340e0e4eed5f3bac2",
+    "ENGINEERING_QUALIFIED": true,
+    "gates": {
+      "G1": "PASS",
+      "G2": "PASS",
+      "G3": "PASS",
+      "G4": "PASS"
+    }
+  },
+  "auditor_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+  "source_commit": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+  "fixture": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/final-acceptance/independent-refresh-negative-04bot4ax",
+  "scope": "adversarial isolated replay-gate test, not actual qualification"
+}

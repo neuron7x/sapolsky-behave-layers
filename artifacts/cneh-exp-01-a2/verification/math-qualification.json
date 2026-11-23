@@ -1,0 +1,655 @@
+{
+  "OOD_residual": 0.24500000000000002,
+  "authority": "ANALYTIC_FIXTURES_ONLY",
+  "causal_attribution_qualified": false,
+  "checks": {
+    "CWC_finite_certificate_has_no_causal_authority": {
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    "CWC_local_certificate_has_no_causal_authority": {
+      "actual": false,
+      "expected": false,
+      "pass": true
+    },
+    "Fisher_covariance_condition": {
+      "actual": 2.0,
+      "expected": 2.0,
+      "pass": true
+    },
+    "Fisher_covariance_min_eigenvalue": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "Fisher_covariance_rescaling": {
+      "actual": 0.25,
+      "expected": 0.25,
+      "pass": true
+    },
+    "Fisher_full_rank": {
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    "Fisher_rank_deficiency": {
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    "Hankel_independent_block_SVD": {
+      "actual": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "expected": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "pass": true
+    },
+    "OOD_nominal_model_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "Wc_block_factor": {
+      "actual": [
+        [
+          0.2869438321173024,
+          0.059759349968587526
+        ],
+        [
+          0.05975934996858751,
+          0.3142478281926026
+        ]
+      ],
+      "expected": [
+        [
+          0.28694383211730234,
+          0.05975934996858752
+        ],
+        [
+          0.05975934996858752,
+          0.3142478281926025
+        ]
+      ],
+      "pass": true
+    },
+    "Wo_A_block_factor": {
+      "actual": [
+        [
+          46.01374752572499,
+          11.845353203249994
+        ],
+        [
+          11.845353203249994,
+          12.546218212500001
+        ]
+      ],
+      "expected": [
+        [
+          46.013747525724995,
+          11.845353203249996
+        ],
+        [
+          11.845353203249996,
+          12.546218212499996
+        ]
+      ],
+      "pass": true
+    },
+    "Wo_B_block_factor": {
+      "actual": [
+        [
+          3.1365545531250003,
+          -9.059231154750004
+        ],
+        [
+          -9.059231154750004,
+          60.99565528210002
+        ]
+      ],
+      "expected": [
+        [
+          3.1365545531249994,
+          -9.059231154750002
+        ],
+        [
+          -9.059231154750002,
+          60.99565528210002
+        ]
+      ],
+      "pass": true
+    },
+    "Wo_joint_block_factor": {
+      "actual": [
+        [
+          49.15030207884999,
+          2.7861220484999905
+        ],
+        [
+          2.7861220484999905,
+          73.54187349460003
+        ]
+      ],
+      "expected": [
+        [
+          49.150302078850004,
+          2.7861220484999936
+        ],
+        [
+          2.7861220484999936,
+          73.54187349460001
+        ]
+      ],
+      "pass": true
+    },
+    "causal_dr_intervention_effect": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "causal_ips_intervention_effect": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "confounded_dr_intervention_effect": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "confounded_ips_intervention_effect": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "confounded_observations_rejected_as_trial": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "countermodels_actual_intervention_separation": {
+      "actual": 0.5,
+      "expected": 0.5,
+      "pass": true
+    },
+    "countermodels_observational_equivalence": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "false_randomization_negative_is_biased": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "finite_Hankel_cancellation_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "full_rank_Fisher_cancellation_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "indefinite_covariance_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "interventional_countermodels_resolved": {
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    "observational_countermodels_unresolved": {
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    "parameter_Fisher_open_loop_oracle": {
+      "actual": 20.156152,
+      "expected": 20.156152000231643,
+      "pass": true
+    },
+    "parameter_Fisher_zero_excitation": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "post_outcome_context_leakage_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "same_unit_training_leakage_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "similarity_0_Hankel": {
+      "actual": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "expected": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "pass": true
+    },
+    "similarity_0_Wc": {
+      "actual": [
+        [
+          0.2869438321173024,
+          0.059759349968587526
+        ],
+        [
+          0.05975934996858751,
+          0.3142478281926026
+        ]
+      ],
+      "expected": [
+        [
+          0.2869438321173024,
+          0.059759349968587526
+        ],
+        [
+          0.05975934996858751,
+          0.3142478281926026
+        ]
+      ],
+      "pass": true
+    },
+    "similarity_0_Wo": {
+      "actual": [
+        [
+          49.15030207884999,
+          2.7861220484999905
+        ],
+        [
+          2.7861220484999905,
+          73.54187349460003
+        ]
+      ],
+      "expected": [
+        [
+          49.15030207884999,
+          2.7861220484999905
+        ],
+        [
+          2.7861220484999905,
+          73.54187349460003
+        ]
+      ],
+      "pass": true
+    },
+    "similarity_1_Hankel": {
+      "actual": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "expected": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "pass": true
+    },
+    "similarity_1_Wc": {
+      "actual": [
+        [
+          1.3458559854545353,
+          0.1383213070167382
+        ],
+        [
+          0.1383213070167382,
+          0.07856195704815065
+        ]
+      ],
+      "expected": [
+        [
+          1.3458559854545353,
+          0.13832130701673817
+        ],
+        [
+          0.13832130701673817,
+          0.07856195704815065
+        ]
+      ],
+      "pass": true
+    },
+    "similarity_1_Wo": {
+      "actual": [
+        [
+          12.2875755197125,
+          -9.501453471212507
+        ],
+        [
+          -9.501453471212507,
+          300.8828254011126
+        ]
+      ],
+      "expected": [
+        [
+          12.287575519712497,
+          -9.501453471212507
+        ],
+        [
+          -9.501453471212507,
+          300.88282540111265
+        ]
+      ],
+      "pass": true
+    },
+    "similarity_2_Hankel": {
+      "actual": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "expected": [
+        3.5273267986606407,
+        5.010459998410815
+      ],
+      "pass": true
+    },
+    "similarity_2_Wc": {
+      "actual": [
+        [
+          0.3142478281926026,
+          -0.05975934996858751
+        ],
+        [
+          -0.059759349968587526,
+          0.2869438321173024
+        ]
+      ],
+      "expected": [
+        [
+          0.3142478281926026,
+          -0.05975934996858751
+        ],
+        [
+          -0.059759349968587526,
+          0.2869438321173024
+        ]
+      ],
+      "pass": true
+    },
+    "similarity_2_Wo": {
+      "actual": [
+        [
+          73.54187349460003,
+          -2.7861220484999905
+        ],
+        [
+          -2.7861220484999905,
+          49.15030207884999
+        ]
+      ],
+      "expected": [
+        [
+          73.54187349460003,
+          -2.7861220484999905
+        ],
+        [
+          -2.7861220484999905,
+          49.15030207884999
+        ]
+      ],
+      "pass": true
+    },
+    "singular_covariance_rejected": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "state_observable_despite_zero_parameter_information": {
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    "unobserved_isolated_coordinate": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "wrapper_rejects_known_raw_invalid_inputs": {
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    "zero_actuation_Wc": {
+      "actual": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "expected": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "pass": true
+    },
+    "zero_observation_Wo": {
+      "actual": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "expected": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "pass": true
+    }
+  },
+  "confounding_negative": {
+    "actual_enumerated_do_1": 0.5,
+    "authority": "INVALID_RANDOMIZATION_ASSUMPTION",
+    "false_randomization_IPS_do_1": 1.0
+  },
+  "countermodel_certificates": {
+    "interventional": {
+      "causal_authority_granted": false,
+      "minimum_pair_separation": 0.5,
+      "pair_separations": [
+        {
+          "best_action": "do_1",
+          "max_total_variation": 0.5,
+          "model_a": "causal",
+          "model_b": "confounded"
+        }
+      ],
+      "selected_actions": [
+        "do_0",
+        "do_1"
+      ],
+      "state": "FINITE_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+      "tolerance": 1e-12,
+      "unresolved_pairs": []
+    },
+    "observational": {
+      "causal_authority_granted": false,
+      "minimum_pair_separation": 0.0,
+      "pair_separations": [
+        {
+          "best_action": null,
+          "max_total_variation": 0.0,
+          "model_a": "causal",
+          "model_b": "confounded"
+        }
+      ],
+      "selected_actions": [
+        "observe"
+      ],
+      "state": "NOT_IDENTIFIABLE_UNDER_DECLARED_CHANNEL",
+      "tolerance": 1e-12,
+      "unresolved_pairs": [
+        [
+          "causal",
+          "confounded"
+        ]
+      ]
+    }
+  },
+  "fisher_certificate": {
+    "causal_authority_granted": false,
+    "condition_number": 1.7675918792439984,
+    "information_condition_number": 2.0,
+    "information_min_eigenvalue": 1.0,
+    "nullspace_basis": [],
+    "numerical_rank": 2,
+    "observable_count": 3,
+    "parameter_count": 2,
+    "rank_tolerance": 1e-10,
+    "singular_values": [
+      2.302775637731995,
+      1.3027756377319946
+    ],
+    "smallest_singular_value": 1.3027756377319946,
+    "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+  },
+  "intervention_values": {
+    "causal": {
+      "dr_do_0": 0.0,
+      "dr_do_1": 1.0,
+      "ips_do_0": 0.0,
+      "ips_do_1": 1.0
+    },
+    "confounded": {
+      "dr_do_0": 0.5,
+      "dr_do_1": 0.5,
+      "ips_do_0": 0.5,
+      "ips_do_1": 0.5
+    }
+  },
+  "known_raw_reference_failures": {
+    "NaN_Hankel": {
+      "input": "NaN in Wc[0,0]",
+      "raw_input_rejected": false,
+      "raw_return": [
+        0.0,
+        0.0
+      ]
+    },
+    "infinite_variance": {
+      "input": "+Infinity observation variance",
+      "raw_Wo_joint": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "raw_input_rejected": false
+    },
+    "postregistration_CWC_Fisher_cancellation": {
+      "information_status": "NUMERICALLY_UNQUALIFIED_DESPITE_FULL_JACOBIAN_RANK",
+      "input": "J=[[1,1],[1,1+1e-8]], covariance=I",
+      "origin": "independent adversarial review after fixture registration; no threshold change",
+      "raw_certificate": {
+        "causal_authority_granted": false,
+        "condition_number": 400000006.55488676,
+        "information_condition_number": null,
+        "information_condition_number_status": "SINGULAR",
+        "information_min_eigenvalue": 0.0,
+        "nullspace_basis": [],
+        "numerical_rank": 2,
+        "observable_count": 2,
+        "parameter_count": 2,
+        "rank_tolerance": 1e-10,
+        "singular_values": [
+          2.000000005,
+          4.999999930563917e-09
+        ],
+        "smallest_singular_value": 4.999999930563917e-09,
+        "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE"
+      },
+      "stable_SVD_minimum_information": 2.4999999305639164e-17
+    },
+    "postregistration_finite_Hankel_cancellation": {
+      "independent_diagonal_answer": [
+        1.0,
+        10000000000.0
+      ],
+      "input": "Wc=diag(1e20,1), Wo=I",
+      "origin": "independent adversarial review after fixture registration; retained counterexample, no threshold change",
+      "raw_input_rejected": false,
+      "raw_return": [
+        0.0,
+        10000000000.0
+      ]
+    }
+  },
+  "neural_estimators_qualified": false,
+  "rank_deficient_certificate": {
+    "causal_authority_granted": false,
+    "condition_number": 9419954459336630.0,
+    "information_condition_number": null,
+    "information_condition_number_status": "SINGULAR",
+    "information_min_eigenvalue": 0.0,
+    "nullspace_basis": [
+      [
+        -0.8944271909999159,
+        0.4472135954999578
+      ]
+    ],
+    "numerical_rank": 1,
+    "observable_count": 3,
+    "parameter_count": 2,
+    "rank_tolerance": 1e-10,
+    "singular_values": [
+      8.366600265340756,
+      8.881784197001252e-16
+    ],
+    "smallest_singular_value": 8.881784197001252e-16,
+    "state": "LOCAL_FIRST_ORDER_NOT_IDENTIFIABLE"
+  },
+  "reference_direct_use_qualified": false,
+  "runtime": {
+    "numpy": "2.4.1",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "scipy": "1.17.1"
+  },
+  "schema": "cneh-reused-math-qualification-v1",
+  "scientific_promotion_authorized": false,
+  "source_sha256": {
+    "bnsyn-requirements.lock": "d9c45ebba2f23a14132ab196e7d2a5543259c307040e45882ab9d156372eb6fe",
+    "bridge": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+    "contract": "e9ea53c391a31b772917359d8b6d259cd0da6173ee4cd0836d20a59baa63c3d3",
+    "cwc/causal/cate.py": "e974ce6dfa578ed0929d94f8c71e6adbcfabcbc6833260d773e08a30cee60582",
+    "cwc/causal/observability.py": "cfece177778139320cbb3a8d5d0be55835c28658f4787f088815c63fe427b49a",
+    "cwc/causal/potential_outcomes.py": "9c0412d10c9865774ae83fba53b84901a35b0d751c2ce27b1660285241d00cc9",
+    "pr44_reference": "652f77232590f64992afd1f59d8e08f363cc024bbbe48f877324bdd20b07e6a0"
+  },
+  "status": "PASS"
+}

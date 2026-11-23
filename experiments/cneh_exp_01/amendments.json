@@ -1,0 +1,23 @@
+{
+  "experiment": "CNEH-EXP-01",
+  "amendments": [
+    {
+      "id": "A1",
+      "date": "2026-11-23",
+      "parent_commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+      "reason": "Close engineering verification gaps and specify independently falsifiable integration gates without raising scientific authority.",
+      "diff_of_intent": "Original primary hypotheses, thresholds, seeds and source locks unchanged. Add source-bound exact trace and evidence checks, timing-only instrumentation, commitment consistency tooling and exploratory substrate/estimator qualification. Original positive conjunction remains structurally unsatisfiable.",
+      "contract": "INTEGRATION_CONTRACT.md",
+      "scientific_promotion_authorized": false
+    },
+    {
+      "id": "A2",
+      "date": "2026-11-23",
+      "parent_commit": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+      "reason": "Owner execution directive: reuse PR44/CWC mathematical references, extend bounded physical metrology, close repository admission failures.",
+      "diff_of_intent": "No original hypothesis, threshold, seeds, estimands, comparators or stopping rule changed. New analytic engineering fixtures and measurement ceilings frozen before execution; no scientific promotion.",
+      "contract": "EXECUTION_AMENDMENT_A2.md",
+      "scientific_promotion_authorized": false
+    }
+  ]
+}

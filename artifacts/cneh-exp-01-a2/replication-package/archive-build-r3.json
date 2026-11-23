@@ -1,0 +1,14 @@
+{
+  "schema": "cneh-engineering-archive-build-v1",
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "archive": "cneh-exp-01-a2-f030a12-r3.tar.gz",
+  "sha256": "df311241fe4b50c1d283c44b1cab902c50d45ee7c05656c2468dc8508eebe6ca",
+  "bytes": 7282937,
+  "file_count": 190,
+  "canonical_source_file_count": 47,
+  "deterministic_double_build": "BYTE_IDENTICAL",
+  "permissions": "all files mode 0644; uid=gid=0; names empty; mtime=0; gzip filename empty; gzip mtime=0",
+  "previous_failed_archive_preserved": "cneh-exp-01-a2-f030a12.tar.gz",
+  "assembly_wrapper_sha256": "269c93e8b5f0186aef4a1dc0ab4e30a64d397428a8fa6fcd920daa09dbe6d705",
+  "system_md_sha256": "34f4b73878aa4705e633c414e5eac16d12cb17dcf8516402061b3efbf1feda3e"
+}

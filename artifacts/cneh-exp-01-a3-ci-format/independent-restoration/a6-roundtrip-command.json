@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43-pair/evidence/verify_layout_roundtrip.py",
+    "--repo",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43-pair/repo",
+    "--head",
+    "2e28b06f396ceed2a82de4a6955fedced2f11615",
+    "--out",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43-pair/evidence/a6-restored-2e28b06"
+  ],
+  "exit_code": 0,
+  "elapsed_s": 1.682,
+  "output_sha256": "940e1961ca85af78b8c3629b74f395b29189044e5692e927c6c689984a1a0b90",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

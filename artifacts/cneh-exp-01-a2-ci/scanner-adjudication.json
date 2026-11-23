@@ -1,0 +1,13 @@
+{
+  "classification": "VERIFIED_NONCREDENTIAL_SOURCE_DIGEST",
+  "source_repository": "neuron7x/bnsyn-phase-controlled-emergent-dynamics",
+  "source_commit": "c1de425ce4ece362e7f2feb2d9f24da5d3231014",
+  "source_path": "src/bnsyn/api.py",
+  "sha256": "3d78e3cd1c3efbfdb720e4cb0355cafb46ea0b8169dd6a589ffd268e689e2722",
+  "finding_fingerprint": "a65ab49681bc748acb71cde9abe5bc99a4045ab3:artifacts/cneh-exp-01-a1/bnsyn/report.json:generic-api-key:1",
+  "scanner_version": "8.28.0",
+  "scope": "Only this exact immutable finding; no rule/path/global skip",
+  "source_bytes_recomputed": true,
+  "future_same_path_detector_negative_control": "gitleaks-negative-control.json",
+  "historical_evidence_modified": false
+}

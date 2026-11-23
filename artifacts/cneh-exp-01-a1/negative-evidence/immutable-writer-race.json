@@ -1,0 +1,9 @@
+{
+  "final_seeds": [
+    3002
+  ],
+  "final_verdict": "REPLICATION_NOT_TESTED",
+  "finding": "concurrent writers both pass immutable evidence admission; second overwrites first",
+  "source_sha256": "f89482dd522f9a94aa79343f820334d2e12c255b85ad6e9e1a4cdc79eaa31ac9",
+  "writer_errors": []
+}

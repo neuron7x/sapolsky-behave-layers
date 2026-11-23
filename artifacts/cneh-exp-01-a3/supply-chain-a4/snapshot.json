@@ -1,0 +1,97 @@
+{
+  "base_commit": "3c0feee217e22647997b3888173f372dbeb2f01f",
+  "branch": "research/cneh-exp-01",
+  "direct_versions_changed": false,
+  "known_probe_failure": "mutmut --help from repository root exits 1 without source_paths; configured isolated fixture exits 0. Canonical custom mutation_probe.py is unchanged.",
+  "locks_package_counts": {
+    "cwc_dev": 30,
+    "pip_audit": 29,
+    "uv": 1
+  },
+  "not_run": [
+    "new remote CI",
+    "full pr-full gate in this worker"
+  ],
+  "outside_scope": "dgc-math.yml retains its existing unpinned tooling install; it is outside the frozen required workflow roster.",
+  "owned_files": [
+    {
+      "base_sha256": "11ff00bc23f7b7c9141e28c9b65bf405634adec0224fbb040f8a17a4e337ef3c",
+      "diff_sha256": "1f14ca086f9917d854dc1acbdcd2f85e01f37a30a3ab0ca55c6e37d7deb23e30",
+      "path": "Makefile.cwc",
+      "sha256": "c0d103fa1c45f129bde13f3e0a44fc644961b903858c94c68c05d1a4184d872c"
+    },
+    {
+      "base_sha256": "5730270bfef50bb31fd29dd4c34104ded217fd7b333cd9598754ec1f4eb52be4",
+      "diff_sha256": "77c6ad6cd856d2a8f3f99a128a127f5fbd7a3e31b5d887e601486ba8a96403f6",
+      "path": ".github/workflows/cwc-quality.yml",
+      "sha256": "b40d787aa722564be7bbaf70af9891ac170998a58782d1fa9c857acfa6bc74e1"
+    },
+    {
+      "base_sha256": "2f72db847cdd20efdd8a99181f34ba5e86ade386a69f9c7bdf31aace9d742607",
+      "diff_sha256": "3cd181b0422b418bb67da9f179e25a337c1e8ada79b9c148101e9245015deb28",
+      "path": ".github/workflows/cwc-full-pr-gate.yml",
+      "sha256": "f1828154a2d2899c28db1b018539ad53fea4f49f786fff614634ce0223ddb51f"
+    },
+    {
+      "base_sha256": "794e72d5942dafdf168a4d156e39495f2e55f33b6373d43b1914af6b3b7c46c5",
+      "diff_sha256": "29cce5b1827aee17ce37144209abfa3ff4568a65197d9169c3a365eccc3c7b8c",
+      "path": ".github/workflows/cwc-doc-gates.yml",
+      "sha256": "bb9e91eea63f6cbbecd1d08b67e93bb7692035751a2a08bd20f2831a02e8cac6"
+    },
+    {
+      "base_sha256": "3f10ccc472fbfef8ef9ff622a9d2c5e799668b55fed35b06e7ea54fa64a3c2c4",
+      "diff_sha256": "b6223283741a7bb3d82247e078992c13c55f40adc58e214427c0aef09b4844e1",
+      "path": ".github/workflows/pr-audit.yml",
+      "sha256": "ea83b0f74453d0ce7ad94fb726a7faf03387a0837c136e68e900f02913a835cb"
+    },
+    {
+      "base_sha256": null,
+      "diff_sha256": "6b9368b0f55913d03494e30736547078487796ca2a44603774c33d3eba394e1e",
+      "path": "requirements/ci-uv.lock",
+      "sha256": "2a8e9790ab29036d08ad0d8e06e8a70e7886f131b760adf25b499546efa64bf6"
+    },
+    {
+      "base_sha256": null,
+      "diff_sha256": "5f3273775ff9e8b86e763aafa3b838b907f14591628a939296131a7d62bde9bc",
+      "path": "requirements/cwc-dev.lock",
+      "sha256": "8671c23425fc3545a0e9f7828ba2ee65c705eccfefca630c73f9ab580aead762"
+    },
+    {
+      "base_sha256": null,
+      "diff_sha256": "6e71c365028cc4f026059279916c3f7942a7f5bad0019c649ccb86fc88c46991",
+      "path": "requirements/pip-audit.lock",
+      "sha256": "1d292fd36b9b3c9b4d02e397d909724599dd680811674582aec33d2c792d5376"
+    },
+    {
+      "base_sha256": null,
+      "diff_sha256": "ce4779e54228b27c958cd8b80dff6f45c69ccbad91d2c7e84bf658c6ba0e4605",
+      "path": "scripts/cwc_dependency_audit.py",
+      "sha256": "a38a163990aa4f0aeedeb4967c5b83f2df73b590c247cbf3fab3590e6c60ba3f"
+    },
+    {
+      "base_sha256": null,
+      "diff_sha256": "bd5af0ba291287affb88e219b538debdc6edcf0078f9a903a2646bb95eae10e8",
+      "path": "tests/test_cwc_dependency_audit.py",
+      "sha256": "41d40ff2b1d9469b7dca63a7c767ec66f37b7b95db6b80085a3a254309986681"
+    }
+  ],
+  "real_advisory_audits": {
+    "cwc_dev_closure": "PASS",
+    "runtime": "PASS",
+    "uv_dev_group": "PASS"
+  },
+  "repository": "neuron7x/sapolsky-behave-layers",
+  "runtime_uv_lock_changed": false,
+  "schema": "cneh-a4-supply-chain-execution-v1",
+  "scientific_promotion_authorized": false,
+  "source_policy_after": "PASS",
+  "source_policy_before": "FAIL",
+  "targeted_tests": {
+    "exit_code": 0,
+    "passed": 49,
+    "subtests_passed": 10
+  },
+  "timestamp_utc": "2026-11-23T15:54:27.010909+00:00",
+  "wrong_hash_package_installed": false,
+  "wrong_official_uv_wheel_hash_exit": 1
+}

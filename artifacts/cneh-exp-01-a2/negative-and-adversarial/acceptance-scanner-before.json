@@ -1,0 +1,22 @@
+[
+ {
+  "RuleID": "generic-api-key",
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 116,
+  "EndLine": 116,
+  "StartColumn": 69,
+  "EndColumn": 105,
+  "Match": "api_sha==REDACTED ",
+  "Secret": "REDACTED",
+  "File": "../evidence/a2-delivery/acceptance-auditor.py",
+  "SymlinkFile": "",
+  "Commit": "",
+  "Entropy": 3.6437764,
+  "Author": "",
+  "Email": "",
+  "Date": "",
+  "Message": "",
+  "Tags": [],
+  "Fingerprint": "../evidence/a2-delivery/acceptance-auditor.py:generic-api-key:116"
+ }
+]

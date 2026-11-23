@@ -1,0 +1,30 @@
+test_finite_inputs_overflow_rejected (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_finite_inputs_overflow_rejected) ... ok
+test_fisher_quadratic_score_identity_and_reparametrization (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_fisher_quadratic_score_identity_and_reparametrization) ... FAIL
+test_frozen_known_answers (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_frozen_known_answers) ... FAIL
+test_gramian_matches_independent_trajectory_energy (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_gramian_matches_independent_trajectory_energy) ... ok
+test_invalid_inputs_never_become_information (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_invalid_inputs_never_become_information) ... ok
+test_pid_rejects_invalid_mass_and_reconstructs_nonuniform (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_pid_rejects_invalid_mass_and_reconstructs_nonuniform) ... ok
+
+======================================================================
+FAIL: test_fisher_quadratic_score_identity_and_reparametrization (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_fisher_quadratic_score_identity_and_reparametrization)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-v4i7d7gu/tests/test_cneh_exp_01_estimators.py", line 25, in test_fisher_quadratic_score_identity_and_reparametrization
+    self.assertAlmostEqual(left, right, places=11)
+AssertionError: 42.91380645289466 != 87.57919684264219 within 11 places (44.66539038974753 difference)
+
+======================================================================
+FAIL: test_frozen_known_answers (test_cneh_exp_01_estimators.EstimatorQualificationTests.test_frozen_known_answers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-v4i7d7gu/tests/test_cneh_exp_01_estimators.py", line 12, in test_frozen_known_answers
+    self.assertEqual(report["status"], "PASS")
+AssertionError: 'FAIL' != 'PASS'
+- FAIL
++ PASS
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.003s
+
+FAILED (failures=2)

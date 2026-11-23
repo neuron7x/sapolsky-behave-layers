@@ -1,0 +1,135 @@
+[
+  {
+    "label": "bootstrap-version",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "--version"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:08:03.134187+00:00",
+    "end_utc": "2026-11-23T16:08:03.142205+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "bfc01581a993b13091dd169f8853c867fa573b5e25c88f575cef0fb9e3eb878a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:08:03.142476+00:00",
+    "end_utc": "2026-11-23T16:08:03.150441+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "cpu-frozen-sync",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "sync",
+      "--frozen",
+      "--extra",
+      "cpu",
+      "--python",
+      "/usr/bin/python3.11",
+      "--no-python-downloads",
+      "--no-build"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:08:03.151539+00:00",
+    "end_utc": "2026-11-23T16:09:14.773448+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "049567bc794774f0cb36a57619ca62364720c5f4005d7ef99a2a50db80965277"
+  },
+  {
+    "label": "dev-hash-locked-install",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv/bin/python",
+      "--require-hashes",
+      "--only-binary",
+      ":all:",
+      "--default-index",
+      "https://pypi.org/simple",
+      "-r",
+      "requirements/cwc-dev.lock"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:09:14.774067+00:00",
+    "end_utc": "2026-11-23T16:09:40.709129+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e4f342ec790cf5a2eef542c4a2e34e7cdaa1d1042403964b49f2da8a23bb0fab"
+  },
+  {
+    "label": "installed-dependency-check",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "check",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv/bin/python"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:09:40.709570+00:00",
+    "end_utc": "2026-11-23T16:09:40.742024+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "ea075f2f52a0cb3b4fb03330f6b7c98dc8a8a4f82e413fb89167422343b5372d"
+  },
+  {
+    "label": "installed-versions",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "freeze",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv/bin/python"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:09:40.742436+00:00",
+    "end_utc": "2026-11-23T16:09:40.758714+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "8b1c0ba079ed420cae85eca86a7ddab69d51b67be76bdd1c7c43e2e87e9afe1a",
+    "stderr_sha256": "91b3751bbab311efe66a980da899e1e919b968f586b3371dcce072ca4ce9d788"
+  },
+  {
+    "label": "runtime-inventory",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv/bin/python",
+      "-B",
+      "-c",
+      "import json,platform,torch,numpy; print(json.dumps({\"python\":platform.python_version(),\"torch\":torch.__version__,\"cuda_available\":torch.cuda.is_available(),\"torch_cuda_build\":torch.version.cuda,\"numpy\":numpy.__version__}))"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:09:40.759254+00:00",
+    "end_utc": "2026-11-23T16:09:42.879300+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "1730420a240930d0a4d0a5c9e2de29fc2f004ef547175b040d91ab49ac77b7a4",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "final-source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:09:42.879821+00:00",
+    "end_utc": "2026-11-23T16:09:42.895965+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

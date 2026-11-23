@@ -1,0 +1,49 @@
+{
+  "head": "b2b1262c5903955a3eabb7a32936967bd0964784",
+  "scope_source_commit": "e9808dc27fef72826dc52966e1821a6e8c84a583",
+  "files": {
+    ".github/workflows/cwc-doc-gates.yml": {
+      "sha256": "bb9e91eea63f6cbbecd1d08b67e93bb7692035751a2a08bd20f2831a02e8cac6",
+      "git_blob_sha1": "dc10ea6d82f0e6cd7eb895a6da9536e34e0e6a39"
+    },
+    ".github/workflows/cwc-full-pr-gate.yml": {
+      "sha256": "f1828154a2d2899c28db1b018539ad53fea4f49f786fff614634ce0223ddb51f",
+      "git_blob_sha1": "50c1dc42509939c2c85dee63f1443a91b68513d1"
+    },
+    ".github/workflows/cwc-quality.yml": {
+      "sha256": "b40d787aa722564be7bbaf70af9891ac170998a58782d1fa9c857acfa6bc74e1",
+      "git_blob_sha1": "89c2bba27fb7b1657a238fd3a984e9fb1b998097"
+    },
+    ".github/workflows/pr-audit.yml": {
+      "sha256": "ea83b0f74453d0ce7ad94fb726a7faf03387a0837c136e68e900f02913a835cb",
+      "git_blob_sha1": "ae5699ee69402b115e4bb4245a6e70b0dee7e38a"
+    },
+    "Makefile.cwc": {
+      "sha256": "c0d103fa1c45f129bde13f3e0a44fc644961b903858c94c68c05d1a4184d872c",
+      "git_blob_sha1": "cbf04b27747758bbb793a626c5c569129784bb5b"
+    },
+    "requirements/ci-uv.lock": {
+      "sha256": "2a8e9790ab29036d08ad0d8e06e8a70e7886f131b760adf25b499546efa64bf6",
+      "git_blob_sha1": "dd8bd287437ecc8b4d58a9eeb463ad90b875541d"
+    },
+    "requirements/cwc-dev.lock": {
+      "sha256": "8671c23425fc3545a0e9f7828ba2ee65c705eccfefca630c73f9ab580aead762",
+      "git_blob_sha1": "5770fb6802060ad4ebca1ca1be98cd5a361129b8"
+    },
+    "requirements/pip-audit.lock": {
+      "sha256": "1d292fd36b9b3c9b4d02e397d909724599dd680811674582aec33d2c792d5376",
+      "git_blob_sha1": "148505ce6971f9c843628180585881e97dfece8b"
+    },
+    "scripts/cwc_dependency_audit.py": {
+      "sha256": "a38a163990aa4f0aeedeb4967c5b83f2df73b590c247cbf3fab3590e6c60ba3f",
+      "git_blob_sha1": "6d9366f081147878253e10369a4245116f1d217e"
+    },
+    "tests/test_cwc_dependency_audit.py": {
+      "sha256": "41d40ff2b1d9469b7dca63a7c767ec66f37b7b95db6b80085a3a254309986681",
+      "git_blob_sha1": "bc4956afe3feb94bd0acc9907144cfefa1d3b455"
+    }
+  },
+  "scope_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "status_porcelain": "?? experiments/cneh_exp_01/acceptance.py\n?? experiments/cneh_exp_01/provenance.py\n?? tests/test_cneh_exp_01_acceptance.py\n?? tests/test_cneh_exp_01_provenance.py\n",
+  "worktrees": "worktree /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo\nHEAD b2b1262c5903955a3eabb7a32936967bd0964784\nbranch refs/heads/research/cneh-exp-01\n\n"
+}

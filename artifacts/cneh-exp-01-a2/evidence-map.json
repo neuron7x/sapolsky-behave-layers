@@ -1,0 +1,343 @@
+{
+  "schema": "cneh-evidence-map-v1",
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "authority": "ENGINEERING_ONLY",
+  "rows": [
+    {
+      "id": "exact_trace",
+      "claim": "Binary64 action/state serializations distinguish one ULP and signed zero",
+      "assumption": "Same implementation and declared finite precision",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/run.py",
+        "line": 61,
+        "sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01.py",
+        "line": 71,
+        "sha256": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Adjacent floats hash identically or coupled/exact central traces differ",
+      "artifact_path": "artifacts/cneh-exp-01-a1/primary/negative_controls.json",
+      "artifact_sha256": "34c499286e862ef006eecac54f7f034eba0c74305911360cffd610d30b5c8c84"
+    },
+    {
+      "id": "plant_boundary",
+      "claim": "Nonfinite or actuator-bound-violating actions rejected at plant boundary",
+      "assumption": "Bound specified by frozen protocol",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/run.py",
+        "line": 141,
+        "sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01.py",
+        "line": 24,
+        "sha256": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Common-mode action exceeds actuator bound and still admitted",
+      "artifact_path": "artifacts/cneh-exp-01-a1/negative-evidence/actuator-bound-pass.json",
+      "artifact_sha256": "199ae627c2d65d77c836c737a1a293907de1205b01f21736fe24fdbfb2e9e4ce"
+    },
+    {
+      "id": "proxy_admission",
+      "claim": "Declared synthetic budgets affect admission",
+      "assumption": "Proxies are engineering constraints, not electrical cost",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/run.py",
+        "line": 141,
+        "sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01.py",
+        "line": 109,
+        "sha256": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Zero memory ceiling still produces budget_ok",
+      "artifact_path": "artifacts/cneh-exp-01-a1/mutations/report.json",
+      "artifact_sha256": "0449ae3cc4be9cee787bf9e8e47a6db460adf7270282a45b3d5a42849c3f3046"
+    },
+    {
+      "id": "resigned_primary",
+      "claim": "Recomputed manifest cannot conceal forged primary/sidecar outcomes under trusted verifier",
+      "assumption": "Verifier code and protocol anchored externally to immutable Git commit",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/run.py",
+        "line": 329,
+        "sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01.py",
+        "line": 200,
+        "sha256": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Any derived score, field roster, seed or outcome substitution accepted",
+      "artifact_path": "artifacts/cneh-exp-01-a1/negative-evidence/fixed-reproductions.json",
+      "artifact_sha256": "72e6a4ccbc1160745d5c7d794faef3fcbb1a7cf80ffec34120e8b05e9d5ab591"
+    },
+    {
+      "id": "immutable_output",
+      "claim": "Exclusive bundle reservation rejects second concurrent writer",
+      "assumption": "Local filesystem semantics; no authentication of attacker-controlled verifier",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/run.py",
+        "line": 299,
+        "sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01.py",
+        "line": 29,
+        "sha256": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Two simultaneous writers both succeed or an existing bundle changes",
+      "artifact_path": "artifacts/cneh-exp-01-a1/negative-evidence/immutable-writer-race.json",
+      "artifact_sha256": "24cab0ade2d717f9bfa7b46ffb1c3ae88178b2e7830d66c53d940511656dd592"
+    },
+    {
+      "id": "timing_trace",
+      "claim": "Every timed execution checked for deterministic parity",
+      "assumption": "Complete synchronous simulator timing boundary",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/hardware.py",
+        "line": 27,
+        "sha256": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_hardware.py",
+        "line": 44,
+        "sha256": "dac70b561bd468a9ae050bcbc09bdb1fc5e38fb0d0f626f255258cbb61cb145f",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Early transient corruption disappears behind last-result overwrite",
+      "artifact_path": "artifacts/cneh-exp-01-a1/negative-evidence/transient-timing-parity-pass.json",
+      "artifact_sha256": "fe4d0ef101adb953ac0b966e4e337f821fc166e3cc98afe5a43bdec935cf8962"
+    },
+    {
+      "id": "resource_ceilings",
+      "claim": "Measured wall/CPU/RSS/serialization/verifier limits independently enforce admission",
+      "assumption": "Shared Linux host, fixed policies with no training; declared fixture transport only",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/metrology.py",
+        "line": 323,
+        "sha256": "65be851d645a8a013c458415b4f9a073a140b92797ec349e7cb4379400dc00df",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_metrology.py",
+        "line": 55,
+        "sha256": "dce57168db2df46ab9e9f68f14c28933356d44e7de980198350b9eb90989f3a5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Any frozen ceiling exceeded without admission FAIL",
+      "artifact_path": "artifacts/cneh-exp-01-a2/verification/metrology/report.json",
+      "artifact_sha256": "773aa1c8d611a7d9de70610366b7452722fd135f1bd32cfa58106b4e13b62350"
+    },
+    {
+      "id": "resource_evidence",
+      "claim": "Semantically invalid nested vectors/intervals fail even when resigned",
+      "assumption": "No independent authentication of physically plausible fabricated timings",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/metrology.py",
+        "line": 356,
+        "sha256": "65be851d645a8a013c458415b4f9a073a140b92797ec349e7cb4379400dc00df",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_metrology.py",
+        "line": 126,
+        "sha256": "dce57168db2df46ab9e9f68f14c28933356d44e7de980198350b9eb90989f3a5",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Invented RAM, overlapping intervals, wrong byte count or source substitution admitted",
+      "artifact_path": "artifacts/cneh-exp-01-a2/negative-and-adversarial/redteam-a2-metrology-final-source-receipt.json",
+      "artifact_sha256": "73ba8dd08b7cb82fccc70091939da59cd7e8cf4b0d08a1b81378e085d975408d"
+    },
+    {
+      "id": "math_analytic",
+      "claim": "Named Gramian/Fisher/Hankel analytic identities and coordinate changes reconcile with independent oracles",
+      "assumption": "Frozen LTI/Gaussian assumptions and tolerances; exact PR44+CWC source",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/math_qualification.py",
+        "line": 277,
+        "sha256": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/cneh_math/qualification_cases.py",
+        "line": 34,
+        "sha256": "c9dd837334a430a292c2993bfeff6298189e4bb3779d8184b7e2f95673601b44",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Any of 45 analytic checks disagrees within frozen tolerances",
+      "artifact_path": "artifacts/cneh-exp-01-a2/verification/math-qualification.json",
+      "artifact_sha256": "2e6c7f4b20882ace761e547ff049cfe42951792753705cf86a795b8e2dddc5ad"
+    },
+    {
+      "id": "hankel_conditioning",
+      "claim": "Small Hankel singular value lost by finite-precision reference is rejected",
+      "assumption": "No silent repair or reference promotion",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/math_qualification.py",
+        "line": 123,
+        "sha256": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/cneh_math/qualification_cases.py",
+        "line": 99,
+        "sha256": "c9dd837334a430a292c2993bfeff6298189e4bb3779d8184b7e2f95673601b44",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "diag(1e20,1) yields 0 for independently nonzero small singular value and passes",
+      "artifact_path": "artifacts/cneh-exp-01-a2/negative-and-adversarial/redteam-a2-hankel-cancellation.json",
+      "artifact_sha256": "d714fd3c63b0cd0e5ff5821d2568a955baea74b1757cd3abc4155ccb12feba8e"
+    },
+    {
+      "id": "fisher_identifiability",
+      "claim": "State observability does not certify unknown-parameter identifiability or numerical estimator accuracy",
+      "assumption": "Noise covariance and excitation explicitly declared",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/math_qualification.py",
+        "line": 159,
+        "sha256": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/cneh_math/qualification_cases.py",
+        "line": 129,
+        "sha256": "c9dd837334a430a292c2993bfeff6298189e4bb3779d8184b7e2f95673601b44",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Zero parameter excitation inherits positive state-observability claim",
+      "artifact_path": "artifacts/cneh-exp-01-a2/verification/math-qualification.json",
+      "artifact_sha256": "2e6c7f4b20882ace761e547ff049cfe42951792753705cf86a795b8e2dddc5ad"
+    },
+    {
+      "id": "causal_negative_controls",
+      "claim": "Exact intervention separates observationally equivalent SCMs; leakage/confounded trial rejected",
+      "assumption": "Known analytic SCM and assignment; no finite-sample neural efficacy inference",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/math_qualification.py",
+        "line": 242,
+        "sha256": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/cneh_math/qualification_cases.py",
+        "line": 152,
+        "sha256": "c9dd837334a430a292c2993bfeff6298189e4bb3779d8184b7e2f95673601b44",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Ignoring do-replacement or accepting overlapping training/evaluation units passes",
+      "artifact_path": "artifacts/cneh-exp-01-a2/verification/numeric-mutations/report.json",
+      "artifact_sha256": "d2a085aded57ca9101077edaa20b381d9b88624c5cbd88040eaa942e4b5672ad"
+    },
+    {
+      "id": "pid_scope",
+      "claim": "Exact-PMF I_min analytic fixtures only",
+      "assumption": "No qualified sample estimator or intervention-mediated cognition",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/estimators.py",
+        "line": 115,
+        "sha256": "7af15d1bcdf62e9eb96ac472649b7cb049a60732eb4d85871536383d93e6a408",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_estimators.py",
+        "line": 69,
+        "sha256": "3e22523d2ea11308a615803421352ca140c17d358e5cdfd22b256274a20e7e0d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Invalid mass or nats mislabeled as bits passes",
+      "artifact_path": "artifacts/cneh-exp-01-a1/estimators.json",
+      "artifact_sha256": "0c1c182f39e33b595164cf88092dd11263c2a28e432b851adcfd906b46ab2e43"
+    },
+    {
+      "id": "neural_integration",
+      "claim": "Pinned actual AdEx execution has spikes, exact parity and actuator state response",
+      "assumption": "32 neurons,1000 steps,2 public seeds; within recorded runtime; no goal efficacy",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/bnsyn_adapter.py",
+        "line": 238,
+        "sha256": "bf81cce1c71c5c47660f3609dc23f1fc442967c7a5fb146eb27329a6502d3a4d",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_bnsyn.py",
+        "line": 114,
+        "sha256": "55d13914a9094f85ff540c2423c576913f07c25c0c9cc5dfd8ba5362425311ab",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "EXECUTED_ENGINEERING_ONLY",
+      "falsifier": "Disconnected actuator passes because only action labels changed",
+      "artifact_path": "artifacts/cneh-exp-01-a1/bnsyn/report.json",
+      "artifact_sha256": "4c83226484313223cfc73dd5a8b0ffe65507db40efa107325ef1eb68adb45cda"
+    },
+    {
+      "id": "replication_binding",
+      "claim": "Commitment/reveal/output seals bind supplied bytes only",
+      "assumption": "External identity, chronology and blinded cohort absent",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/replication.py",
+        "line": 146,
+        "sha256": "5f668ab64f1a3195e7ed076fe8b47eb532f064a8bec145fdc191d68bcda973e1",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_replication.py",
+        "line": 75,
+        "sha256": "14b94cb13c196e6f050ee4016a8129796649bcf208725cdf2290bf97d5a25691",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "REPLICATION_NOT_TESTED",
+      "falsifier": "Self-attested identity or boolean upgrades to independent replication",
+      "artifact_path": "artifacts/cneh-exp-01-a2/g4-a2-epistemic.json",
+      "artifact_sha256": "606bc900695c7b98c130ee53fd0a346a965afbf0d8bb69dca7027fbeb8a93412"
+    },
+    {
+      "id": "science_boundary",
+      "claim": "Engineering PASS cannot promote frozen positive conjunction",
+      "assumption": "Exact central emulator has D=0; positive margin0.05 fixed",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/qualification.py",
+        "line": 20,
+        "sha256": "e383029440067b6405698834bc227ed545f05ae3ad96f1171be9b79e31326577",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_qualification.py",
+        "line": 25,
+        "sha256": "971ff4c0188a6572059b57317b2ba450b7d64d9d5f9acb929713a3653975a8af",
+        "git_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87"
+      },
+      "result": "SCIENTIFIC_PROMOTION_BLOCKED",
+      "falsifier": "Scientific request returns0 or SUPPORTED_NARROW under frozen comparator",
+      "artifact_path": "artifacts/cneh-exp-01-a2/g4-a2-epistemic.json",
+      "artifact_sha256": "606bc900695c7b98c130ee53fd0a346a965afbf0d8bb69dca7027fbeb8a93412"
+    }
+  ]
+}

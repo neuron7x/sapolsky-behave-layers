@@ -1,0 +1,58 @@
+{
+  "schema": "cneh-a6-lossless-layout-restoration-v1",
+  "status": "PASS",
+  "original_commit": "5d579a20a16700ae0cbec9daf8640edecf8603f3",
+  "source_head": "29a5d4fe9c707d4e357f19bf114b89dac7bac7e4",
+  "restored_files": 434,
+  "all_bytes_and_modes_match_original_git": true,
+  "inventory_sha256": "78f1e82757a239e0b9c86bf9d90ff847bf91a3d22439855e97c270cfacc91efc",
+  "restored_manifests": [
+    {
+      "path": "SHA256SUMS",
+      "sha256": "861e360bd1427b869f7aec9ce9161da0d7f4e02f61b69a0e3d3e812ed2540d9c"
+    },
+    {
+      "path": "acceptance/mutations-v8/SHA256SUMS",
+      "sha256": "7e80506d38941cbbf8fff273a719a456ab73413399ca8a44e63e3035cb92893e"
+    },
+    {
+      "path": "acceptance/mutations-v9/SHA256SUMS",
+      "sha256": "cbb93a05b963d8604207240997be286cf9607bb06ab7c550491704dabb065784"
+    },
+    {
+      "path": "full-environment/SHA256SUMS",
+      "sha256": "48a3db840c969b882d2bc8e23f747dbbc66ffd13625c05cc384c23d7faf258ec"
+    },
+    {
+      "path": "independent-review-a3/SHA256SUMS",
+      "sha256": "ecb8614a1db0ffebe7d77209e4fffd7c1dc763dd8a97110098a78cc3e9144c5b"
+    },
+    {
+      "path": "independent-review-a3/fresh-acceptance-mutations/SHA256SUMS",
+      "sha256": "d86e66e4cb460ae69089dcd348f173406c3d4411b3efa6b4597058f639e4adf0"
+    },
+    {
+      "path": "independent-review-a5/SHA256SUMS",
+      "sha256": "eef963802ccccee4e8a735f5858e603fa7f555a8656185033381eb74c4f6d196"
+    },
+    {
+      "path": "supply-chain-a4/SHA256SUMS",
+      "sha256": "5dc43aa48347f351c655c1423534fb70360c32b456a41d1a0b3e4066b91d0d19"
+    },
+    {
+      "path": "supply-chain-a4-review/SHA256SUMS",
+      "sha256": "4cea3481c18fac15f2d0cd9c38d47202726b0e7d1a7d3b58bc51b268e4752957"
+    },
+    {
+      "path": "wheel-bytecheck/pre-final-v2/SHA256SUMS",
+      "sha256": "d111441d396a8c21ec298331beb3edc719cf2d5ae4fbc4d4c1139c624e42cd87"
+    }
+  ],
+  "aliases": {
+    "artifacts/cneh-exp-01-a3/SHA256SUMS": "artifacts/cneh-exp-01-a3/PROVENANCE_ORIGINAL_SHA256SUMS_5d579a2.txt",
+    "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/SHA256SUMS": "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/PROVENANCE_ORIGINAL_SHA256SUMS_5d579a2.txt",
+    "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/negative-member/module.py": "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/negative-member/module.bin"
+  },
+  "scientific_promotion_authorized": false,
+  "original_qualification": "BLOCKED_CODEQL"
+}

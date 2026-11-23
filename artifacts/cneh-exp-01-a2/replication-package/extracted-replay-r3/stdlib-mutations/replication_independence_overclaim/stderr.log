@@ -1,0 +1,32 @@
+test_cli_keeps_private_reveal_private_and_requires_external_authority (test_cneh_exp_01_replication.CNEHReplicationTests.test_cli_keeps_private_reveal_private_and_requires_external_authority) ... FAIL
+test_duplicate_keys_nonfinite_and_extra_fields_fail_closed (test_cneh_exp_01_replication.CNEHReplicationTests.test_duplicate_keys_nonfinite_and_extra_fields_fail_closed) ... ok
+test_known_and_duplicate_seeds_rejected (test_cneh_exp_01_replication.CNEHReplicationTests.test_known_and_duplicate_seeds_rejected) ... ok
+test_missing_wrong_count_short_nonce_invalid_binding_rejected (test_cneh_exp_01_replication.CNEHReplicationTests.test_missing_wrong_count_short_nonce_invalid_binding_rejected) ... ok
+test_nonce_hides_identical_seed_cohort (test_cneh_exp_01_replication.CNEHReplicationTests.test_nonce_hides_identical_seed_cohort) ... ok
+test_output_seal_binds_commitment_and_raw_bytes_without_time_authority (test_cneh_exp_01_replication.CNEHReplicationTests.test_output_seal_binds_commitment_and_raw_bytes_without_time_authority) ... ok
+test_output_seal_missing_pair_or_swapped_commitment_is_rejected (test_cneh_exp_01_replication.CNEHReplicationTests.test_output_seal_missing_pair_or_swapped_commitment_is_rejected) ... ok
+test_public_commitment_never_contains_seeds_or_nonce (test_cneh_exp_01_replication.CNEHReplicationTests.test_public_commitment_never_contains_seeds_or_nonce) ... ok
+test_roundtrip_has_no_independence_authority (test_cneh_exp_01_replication.CNEHReplicationTests.test_roundtrip_has_no_independence_authority) ... FAIL
+test_seed_nonce_identity_code_and_protocol_tamper_rejected (test_cneh_exp_01_replication.CNEHReplicationTests.test_seed_nonce_identity_code_and_protocol_tamper_rejected) ... ok
+test_self_attested_independence_is_rejected (test_cneh_exp_01_replication.CNEHReplicationTests.test_self_attested_independence_is_rejected) ... ok
+
+======================================================================
+FAIL: test_cli_keeps_private_reveal_private_and_requires_external_authority (test_cneh_exp_01_replication.CNEHReplicationTests.test_cli_keeps_private_reveal_private_and_requires_external_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-043fg4m1/tests/test_cneh_exp_01_replication.py", line 134, in test_cli_keeps_private_reveal_private_and_requires_external_authority
+    self.assertFalse(json.loads(verified.stdout)["independent_blind_replication"])
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_roundtrip_has_no_independence_authority (test_cneh_exp_01_replication.CNEHReplicationTests.test_roundtrip_has_no_independence_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-043fg4m1/tests/test_cneh_exp_01_replication.py", line 26, in test_roundtrip_has_no_independence_authority
+    self.assertFalse(result["independent_blind_replication"])
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.076s
+
+FAILED (failures=2)

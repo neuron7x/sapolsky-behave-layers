@@ -1,0 +1,15 @@
+{
+  "finite_Hankel_cancellation": {
+    "status": "REJECTED",
+    "error": "PR44 Hankel spectrum disagrees with stable SVD oracle"
+  },
+  "finite_Fisher_cancellation": {
+    "status": "REJECTED",
+    "error": "full Jacobian rank does not qualify numerically unstable Fisher spectrum"
+  },
+  "finite_Fisher_precision_loss": {
+    "status": "REJECTED",
+    "error": "full Jacobian rank does not qualify numerically unstable Fisher spectrum"
+  },
+  "source_sha256": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d"
+}

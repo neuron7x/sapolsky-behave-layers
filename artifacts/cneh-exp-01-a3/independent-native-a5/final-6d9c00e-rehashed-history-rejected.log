@@ -1,0 +1,25 @@
+python3 -B -c "import unittest; suite=unittest.defaultTestLoader.discover('tests', pattern='test_cneh_history_guard.py'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(0 if result.wasSuccessful() and result.testsRun>=16 and not result.skipped and not result.expectedFailures and not result.unexpectedSuccesses else 1)"
+test_cli_cannot_select_weaker_anchors_and_reports_nonzero_failure (test_cneh_history_guard.HistoryGuardTests.test_cli_cannot_select_weaker_anchors_and_reports_nonzero_failure) ... ok
+test_deleted_rewritten_reordered_and_duplicated_ledger_rows_are_rejected (test_cneh_history_guard.HistoryGuardTests.test_deleted_rewritten_reordered_and_duplicated_ledger_rows_are_rejected) ... ok
+test_existing_anchor_outside_head_ancestry_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_existing_anchor_outside_head_ancestry_is_rejected) ... ok
+test_existing_file_replaced_by_directory_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_existing_file_replaced_by_directory_is_rejected) ... ok
+test_extra_ignored_file_in_each_dedicated_root_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_extra_ignored_file_in_each_dedicated_root_is_rejected) ... ok
+test_frozen_scientific_byte_change_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_frozen_scientific_byte_change_is_rejected) ... ok
+test_fully_resigned_bundle_passes_checksum_but_fails_git_history (test_cneh_history_guard.HistoryGuardTests.test_fully_resigned_bundle_passes_checksum_but_fails_git_history) ... ok
+test_git_replacement_cannot_reauthenticate_modified_history (test_cneh_history_guard.HistoryGuardTests.test_git_replacement_cannot_reauthenticate_modified_history) ... ok
+test_malformed_or_nonfinite_appended_ledger_cannot_pass (test_cneh_history_guard.HistoryGuardTests.test_malformed_or_nonfinite_appended_ledger_cannot_pass) ... ok
+test_missing_anchor_and_empty_roster_or_root_fail_closed (test_cneh_history_guard.HistoryGuardTests.test_missing_anchor_and_empty_roster_or_root_fail_closed) ... ok
+test_missing_historical_file_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_missing_historical_file_is_rejected) ... ok
+test_real_ledger_regenerator_can_insert_new_sorted_bundle (test_cneh_history_guard.HistoryGuardTests.test_real_ledger_regenerator_can_insert_new_sorted_bundle) ... ok
+test_same_bytes_symlink_leaf_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_same_bytes_symlink_leaf_is_rejected) ... ok
+test_same_contents_symlink_parent_is_rejected (test_cneh_history_guard.HistoryGuardTests.test_same_contents_symlink_parent_is_rejected) ... ok
+test_shallow_history_is_rejected_even_when_anchor_files_exist (test_cneh_history_guard.HistoryGuardTests.test_shallow_history_is_rejected_even_when_anchor_files_exist) ... ok
+test_valid_history_future_bundle_and_append_only_ledger_pass (test_cneh_history_guard.HistoryGuardTests.test_valid_history_future_bundle_and_append_only_ledger_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 1.712s
+
+OK
+python3 -B scripts/cneh_history_guard.py
+{"schema": "cneh-history-guard-v1", "status": "FAIL", "error": "historical byte mismatch: artifacts/cneh-exp-01-a2/SHA256SUMS; trusted=93772b17c379146878025a141fc819802cf7d2b9ca16b0be00ee0b292f7b31f3, actual=07d7ce96606edf903540ddfc5bc745b9d24aba83de45c1f99f95ac074538b6e8", "scientific_promotion_authorized": false, "independent_replication": "NOT_TESTED"}
+make: *** [Makefile.cwc:73: cneh-history-guard] Помилка 1

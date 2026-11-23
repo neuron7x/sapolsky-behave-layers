@@ -1,0 +1,21 @@
+test_cneh_exp_01_replication (unittest.loader._FailedTest.test_cneh_exp_01_replication) ... ERROR
+
+======================================================================
+ERROR: test_cneh_exp_01_replication (unittest.loader._FailedTest.test_cneh_exp_01_replication)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_cneh_exp_01_replication
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_replication.py", line 12, in <module>
+    from experiments.cneh_exp_01 import replication as rep
+ImportError: cannot import name 'replication' from 'experiments.cneh_exp_01' (unknown location)
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

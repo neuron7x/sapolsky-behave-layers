@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/replication.py
++++ experiments/cneh_exp_01/replication.py
+@@ -168,7 +168,7 @@
+         seal_status = "PASS"
+     return {"schema": "cneh-commitment-verification-v1", "consistency": "PASS",
+             "output_seal": seal_status, "authority": "EXTERNAL_ATTESTATION_REQUIRED",
+-            "chronology": "NOT_AUTHENTICATED", "independent_blind_replication": False,
++            "chronology": "NOT_AUTHENTICATED", "independent_blind_replication": True,
+             "scientific_promotion_authorized": False,
+             "commitment_sha256": commitment["commitment_sha256"],
+             "required_external_order": ["commitment_published", "outputs_published", "reveal_published"],

@@ -1,0 +1,9 @@
+test_broken_timer_fails (test_cneh_exp_01_hardware.HardwareTimingTests.test_broken_timer_fails) ... ok
+test_complete_balanced_blocks_and_raw_interval_arithmetic (test_cneh_exp_01_hardware.HardwareTimingTests.test_complete_balanced_blocks_and_raw_interval_arithmetic) ... ok
+test_emulator_fault_fails_even_when_timers_work (test_cneh_exp_01_hardware.HardwareTimingTests.test_emulator_fault_fails_even_when_timers_work) ... ok
+test_transient_corruption_in_early_batch_is_not_overwritten (test_cneh_exp_01_hardware.HardwareTimingTests.test_transient_corruption_in_early_batch_is_not_overwritten) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.469s
+
+OK

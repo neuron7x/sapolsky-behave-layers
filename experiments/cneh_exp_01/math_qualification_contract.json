@@ -1,0 +1,88 @@
+{
+  "schema": "cneh-reused-math-qualification-v1",
+  "authority": "ANALYTIC_FIXTURES_ONLY",
+  "scientific_promotion_authorized": false,
+  "purpose": "Qualify existing PR44 and CWC functions against independent finite-dimensional oracles; no new experimental endpoint or neural causal claim",
+  "pr44": {
+    "repository": "neuron7x/sapolsky-behave-layers",
+    "commit": "d0eada284220c4dad759191f5a847139a2dcb999",
+    "path": "experiments/cneh_exp_02/linear_reference.py",
+    "sha256": "652f77232590f64992afd1f59d8e08f363cc024bbbe48f877324bdd20b07e6a0",
+    "reuse": ["finite_gramians", "hankel_singular_values", "theta_regression_information_open_loop", "mv"]
+  },
+  "cwc": {
+    "cwc/causal/observability.py": "cfece177778139320cbb3a8d5d0be55835c28658f4787f088815c63fe427b49a",
+    "cwc/causal/cate.py": "e974ce6dfa578ed0929d94f8c71e6adbcfabcbc6833260d773e08a30cee60582",
+    "cwc/causal/potential_outcomes.py": "9c0412d10c9865774ae83fba53b84901a35b0d751c2ce27b1660285241d00cc9"
+  },
+  "numerics": {
+    "dtype": "float64",
+    "absolute_tolerance": 1e-10,
+    "relative_tolerance": 1e-9,
+    "psd_absolute_tolerance": 1e-10,
+    "rank_tolerance": 1e-10,
+    "maximum_horizon": 64,
+    "finite_difference_step": 1e-6,
+    "finite_difference_absolute_tolerance": 1e-8,
+    "finite_difference_relative_tolerance": 1e-6,
+    "finite_law_total_variation_tolerance": 1e-12
+  },
+  "lti_fixture": {
+    "A": [[0.7, 0.2], [-0.1, 0.8]],
+    "B": [[0.35, 0.0], [0.0, 0.35]],
+    "C_A": [[1.0, 0.0], [0.0, 0.0]],
+    "C_B": [[0.0, 0.0], [0.0, 1.0]],
+    "horizon": 7,
+    "observation_variance": 0.04,
+    "similarity_transforms": [[[1.0, 0.0], [0.0, 1.0]], [[2.0, 0.5], [0.0, 0.5]], [[0.0, -1.0], [1.0, 0.0]]],
+    "oracles": ["Wc = reachability_block @ reachability_block.T", "Wo = whitened_observation_block.T @ whitened_observation_block", "finite Hankel singular values = nonzero scipy.linalg.svdvals(observation_block @ reachability_block)"],
+    "negative_controls": ["zero B gives zero Wc", "zero C gives zero Wo", "one isolated unobserved coordinate remains rank deficient", "nonfinite and nonsymmetric or indefinite matrices rejected before PR44 delegation"]
+  },
+  "fisher_fixture": {
+    "jacobian": [[1.0, 0.0], [0.0, 2.0], [1.0, 1.0]],
+    "covariance": [[1.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 2.0]],
+    "rank_deficient_jacobian": [[1.0, 2.0], [2.0, 4.0], [3.0, 6.0]],
+    "covariance_rescaling": 4.0,
+    "oracle": "J.T @ scipy.linalg.solve(covariance,J,assume_a='pos'); rank and spectrum compared to CWC certificate",
+    "negative_controls": ["singular covariance rejected", "indefinite covariance rejected", "nonsymmetric covariance rejected", "NaN and infinity and bool rejected"]
+  },
+  "open_loop_parameter_fixture": {
+    "theta": 0.2,
+    "a0": 0.7,
+    "a1": 0.8,
+    "actuator_gain": 0.35,
+    "initial": [0.2, -0.1],
+    "fixed_actions": [[0.4, 0.0], [0.0, 0.3], [0.0, 0.0], [-0.2, 0.1]],
+    "observation_variance": 0.04,
+    "oracle": "Central finite difference of the closed-form matrix-power open-loop response; CWC local_first_order_identifiability on resulting parameter Jacobian",
+    "zero_excitation_negative": "initial=(0,0), every action=(0,0) yields zero parameter Fisher despite positive-definite joint state-observability Gramian",
+    "scope": "Known deterministic LTI plant, fixed actions, independent full-state Gaussian observations with known constant covariance; not adaptive closed-loop Fisher"
+  },
+  "countermodel_fixture": {
+    "latent_support": [0, 1],
+    "latent_probabilities": [0.5, 0.5],
+    "models": {"causal": "X=U; Y=X", "confounded": "X=U; Y=U"},
+    "observation": "Enumerate exact joint law (X,Y), identical for both models",
+    "interventions": [0, 1],
+    "intervention_operation": "Replace equation X=U with X=a; then evaluate the unchanged Y equation",
+    "expected_observational_total_variation": 0.0,
+    "expected_interventional_total_variation": 0.5,
+    "expected_effects": {"causal": 1.0, "confounded": 0.0},
+    "trial_fixture": "Four equally weighted cells U x assigned action, unique unit per cell, propensity=0.5; exact enumeration rather than a sampled empirical cohort",
+    "outcome_predictions": "Fixed analytic predictions declared before evaluation; no fitted model",
+    "reuse": ["finite_identifiability_certificate", "ips_policy_value", "doubly_robust_policy_value"],
+    "negative_controls": ["observational X=U data rejected as incomplete randomized fixture", "same-unit training/evaluation overlap rejected", "post-outcome context feature rejected", "nonfinite utility rejected before IPS"]
+  },
+  "misspecification_fixture": {
+    "nominal_A": [[0.7, 0.2], [-0.1, 0.8]],
+    "shifted_A": [[0.7, 0.55], [-0.1, 0.8]],
+    "state": [0.3, -0.7],
+    "operation": "Delegate both one-step responses to PR44 mv; residual above frozen tolerance invalidates nominal-model attribution",
+    "expected": "MODEL_MISSPECIFIED"
+  },
+  "known_raw_reference_failures": [
+    {"case": "NaN Hankel Gramian", "raw_behavior": "returns zero spectrum", "required_wrapper_behavior": "reject before delegation"},
+    {"case": "infinite observation variance", "raw_behavior": "returns zero observation Gramian", "required_wrapper_behavior": "reject before delegation"}
+  ],
+  "scope_exclusions": ["independent external replication", "physical cost qualification", "nonlinear or neural state observability", "global parameter identifiability", "finite-sample inference or estimator coverage", "authenticating real-world randomization or model-training provenance", "SUPPORTED_NARROW promotion", "modification or merge of PR44"]
+}

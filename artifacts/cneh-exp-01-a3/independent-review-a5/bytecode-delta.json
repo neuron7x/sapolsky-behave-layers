@@ -1,0 +1,27 @@
+{
+  "acceptance_source_sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+  "results": [
+    {
+      "bundle_pyc_files": [],
+      "bundle_unchanged": true,
+      "bytecode_writes_enabled": true,
+      "exit_code": 0,
+      "mode": "exact_committed_test",
+      "stderr_sha256": "a97652cd46585ebce18ba2eea8065c569bc8b315b434708c394253a31dc74be9"
+    },
+    {
+      "bundle_pyc_files": [
+        "__pycache__/acceptance-auditor.cpython-312.pyc"
+      ],
+      "bundle_unchanged": false,
+      "bytecode_writes_enabled": true,
+      "exit_code": 1,
+      "mode": "unsafe_loader_restored_in_fixture",
+      "stderr_sha256": "1105cebeb0fd9ea38511384c156fbe74fff9686a36d42d2d6c452bae6fe33704"
+    }
+  ],
+  "scope": "One changed historical-loader test only; actual bytecode enabled, isolated copied source and bundle; unsafe-loader intervention only in own temporary fixture",
+  "source_commit": "6d9c00e987eee963b6b067c59c8a5af92d4691ef",
+  "status": "PASS",
+  "test_source_sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd"
+}

@@ -1,0 +1,65 @@
+{
+  "dependency_lock_sha256": "d9c45ebba2f23a14132ab196e7d2a5543259c307040e45882ab9d156372eb6fe",
+  "installed_record_files_verified": 2488,
+  "installed_record_mismatches": [],
+  "packages": [
+    {
+      "locked_wheel_sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+      "name": "annotated-types",
+      "record_files_verified": 8,
+      "version": "0.8.0"
+    },
+    {
+      "locked_wheel_sha256": "7ad270f438cbdd402c364980317fb6b117d9ec5e226fff5b4148dd9aa9fc6e02",
+      "name": "numpy",
+      "record_files_verified": 916,
+      "version": "2.4.1"
+    },
+    {
+      "locked_wheel_sha256": "e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d",
+      "name": "pydantic",
+      "record_files_verified": 112,
+      "version": "2.12.5"
+    },
+    {
+      "locked_wheel_sha256": "eceb81a8d74f9267ef4081e246ffd6d129da5d87e37a77c9bde550cb04870c1c",
+      "name": "pydantic_core",
+      "record_files_verified": 10,
+      "version": "2.41.5"
+    },
+    {
+      "locked_wheel_sha256": "02ae3b274fde71c5e92ac4d54bc06c42d80e399fec704383dcd99b301df37458",
+      "name": "scipy",
+      "record_files_verified": 1426,
+      "version": "1.17.1"
+    },
+    {
+      "locked_wheel_sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "name": "typing_extensions",
+      "record_files_verified": 6,
+      "version": "4.16.0"
+    },
+    {
+      "locked_wheel_sha256": "bc210535442b39e1bf2805e0c7a17dfd6a4ace760c84c7f7d16245d23a6b1c39",
+      "name": "typing-inspection",
+      "record_files_verified": 10,
+      "version": "0.4.5"
+    }
+  ],
+  "pr44_source": {
+    "commit": "d0eada284220c4dad759191f5a847139a2dcb999",
+    "download_matches_local": true,
+    "github_blob_sha1": "83b32037dc06c02954c46278d1e0a557899d4c0f",
+    "path": "experiments/cneh_exp_02/linear_reference.py",
+    "repository": "neuron7x/sapolsky-behave-layers",
+    "reuse": [
+      "finite_gramians",
+      "hankel_singular_values",
+      "theta_regression_information_open_loop",
+      "mv"
+    ],
+    "sha256": "652f77232590f64992afd1f59d8e08f363cc024bbbe48f877324bdd20b07e6a0"
+  },
+  "status": "PASS",
+  "trust_boundary": "Wheel SHA256s checked against frozen lock and pip installation report; installed files checked against distribution RECORD; this is not external metrology or replication."
+}

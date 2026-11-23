@@ -1,0 +1,46 @@
+uv 0.10.12 (x86_64-unknown-linux-gnu)
+pip-audit 2.10.1
+AUDIT TARGET: runtime.txt
+AUDIT TARGET: dev-group.txt
+AUDIT TARGET: cwc-dev.lock
+Using Python 3.11.15 environment at: /home/neuro7/.cache/claude-tmp/cwc-dependency-audit-8nysk1cc/tool
+Resolved 29 packages in 5ms
+Installed 29 packages in 40ms
+ + boolean-py==5.0
+ + cachecontrol==0.15.0
+ + certifi==2026.11.20
+ + charset-normalizer==3.5.3
+ + cyclonedx-python-lib==11.12.0
+ + defusedxml==0.7.1
+ + filelock==4.3.0
+ + idna==3.20
+ + license-expression==30.4.4
+ + markdown-it-py==4.3.0
+ + mdurl==0.1.2
+ + msgpack==1.2.4
+ + packageurl-python==0.17.6
+ + packaging==26.3
+ + pip==26.3
+ + pip-api==0.0.35
+ + pip-audit==2.10.1
+ + pip-requirements-parser==32.0.1
+ + platformdirs==4.14.8
+ + py-serializable==2.2.0
+ + pygments==2.21.0
+ + pyparsing==3.3.3
+ + requests==2.34.2
+ + rich==15.0.0
+ + sortedcontainers==2.4.0
+ + tomli==2.5.0
+ + tomli-w==1.2.0
+ + typing-extensions==4.16.0
+ + urllib3==2.8.0
+WARNING:pip_audit._cli:--no-deps is supported, but users are encouraged to fully hash their pinned dependencies
+WARNING:pip_audit._cli:Consider using a tool like `pip-compile`: https://pip-tools.readthedocs.io/en/latest/#using-hashes
+No known vulnerabilities found
+WARNING:pip_audit._cli:--no-deps is supported, but users are encouraged to fully hash their pinned dependencies
+WARNING:pip_audit._cli:Consider using a tool like `pip-compile`: https://pip-tools.readthedocs.io/en/latest/#using-hashes
+No known vulnerabilities found
+WARNING:pip_audit._cli:--no-deps is supported, but users are encouraged to fully hash their pinned dependencies
+WARNING:pip_audit._cli:Consider using a tool like `pip-compile`: https://pip-tools.readthedocs.io/en/latest/#using-hashes
+No known vulnerabilities found

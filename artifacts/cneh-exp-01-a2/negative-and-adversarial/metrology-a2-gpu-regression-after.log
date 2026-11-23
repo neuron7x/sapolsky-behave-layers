@@ -1,0 +1,19 @@
+test_actual_resource_vector_has_complete_paired_blocks (test_cneh_exp_01_metrology.MetrologyTests.test_actual_resource_vector_has_complete_paired_blocks) ... ok
+test_ceiling_failure_cannot_be_serialized_as_pass (test_cneh_exp_01_metrology.MetrologyTests.test_ceiling_failure_cannot_be_serialized_as_pass) ... ok
+test_every_frozen_measured_ceiling_has_a_rejection_witness (test_cneh_exp_01_metrology.MetrologyTests.test_every_frozen_measured_ceiling_has_a_rejection_witness) ... ok
+test_gpu_inventory_excludes_display_connectors (test_cneh_exp_01_metrology.MetrologyTests.test_gpu_inventory_excludes_display_connectors) ... ok
+test_missing_duplicate_samples_and_wrong_sources_fail (test_cneh_exp_01_metrology.MetrologyTests.test_missing_duplicate_samples_and_wrong_sources_fail) ... ok
+test_output_reservation_rejects_concurrent_writer (test_cneh_exp_01_metrology.MetrologyTests.test_output_reservation_rejects_concurrent_writer) ... ok
+test_profile_restores_controller_on_failed_episode (test_cneh_exp_01_metrology.MetrologyTests.test_profile_restores_controller_on_failed_episode) ... ok
+test_requested_physical_authority_is_never_inferred (test_cneh_exp_01_metrology.MetrologyTests.test_requested_physical_authority_is_never_inferred) ... ok
+test_resigned_nested_claims_and_escaped_intervals_are_rejected (test_cneh_exp_01_metrology.MetrologyTests.test_resigned_nested_claims_and_escaped_intervals_are_rejected) ... ok
+test_resigned_trace_lie_rejected (test_cneh_exp_01_metrology.MetrologyTests.test_resigned_trace_lie_rejected) ... ok
+test_sequential_measurement_intervals_cannot_overlap (test_cneh_exp_01_metrology.MetrologyTests.test_sequential_measurement_intervals_cannot_overlap) ... ok
+test_transient_worker_trace_corruption_is_not_overwritten (test_cneh_exp_01_metrology.MetrologyTests.test_transient_worker_trace_corruption_is_not_overwritten) ... ok
+test_worker_nonzero_timeout_and_forged_identity_fail (test_cneh_exp_01_metrology.MetrologyTests.test_worker_nonzero_timeout_and_forged_identity_fail) ... ok
+test_worker_source_mismatch_fails_before_simulation (test_cneh_exp_01_metrology.MetrologyTests.test_worker_source_mismatch_fails_before_simulation) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 2.000s
+
+OK

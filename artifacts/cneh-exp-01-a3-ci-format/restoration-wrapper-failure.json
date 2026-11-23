@@ -1,0 +1,7 @@
+{
+  "status": "INVALID_RECONSTRUCTION_WRAPPER",
+  "exit_code": 1,
+  "source_sha256": "5b0d51a2da1fcf214ef942a2af4772130dbb609b956a8f4c751faedfc8cc418c",
+  "cause": "Path.absolute retained lexical .. and misclassified an external relative output as inside repository; rejected before creating output",
+  "evidence_modified_by_failed_restoration": false
+}

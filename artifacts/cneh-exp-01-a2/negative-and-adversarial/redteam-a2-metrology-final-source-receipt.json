@@ -1,0 +1,40 @@
+{
+  "head": "56096cb5b0563cce4ac100b35279826e9735ee3b",
+  "source_sha256": "65be851d645a8a013c458415b4f9a073a140b92797ec349e7cb4379400dc00df",
+  "report_sha256": "75b04fb1a1edb44d7c67646069fcb1a1f267ffc339b2f4f8f7fa4a5f4095ab07",
+  "baseline_admission": "PASS",
+  "resource_parity_verified": false,
+  "tests_run": 7,
+  "forgeries_rejected": 7,
+  "results": {
+    "inherited_forged_summary": {
+      "status": "REJECTED",
+      "error": "inherited timing summary mismatch"
+    },
+    "inherited_forged_source": {
+      "status": "REJECTED",
+      "error": "inherited timing source/metadata mismatch: source_sha256"
+    },
+    "inherited_ram_overclaim": {
+      "status": "REJECTED",
+      "error": "inherited timing source/metadata mismatch: physical_vector"
+    },
+    "host_omitted": {
+      "status": "REJECTED",
+      "error": "host identity fields mismatch"
+    },
+    "worker_sample_outside_worker": {
+      "status": "REJECTED",
+      "error": "sample wall interval escaped worker interval"
+    },
+    "stdout_byte_forgery": {
+      "status": "REJECTED",
+      "error": "worker output byte count mismatch"
+    },
+    "overlapping_worker_samples": {
+      "status": "REJECTED",
+      "error": "overlapping sequential measurement intervals"
+    }
+  },
+  "scope": "same frozen seven attacks; no additional hardware benchmark or broader review"
+}

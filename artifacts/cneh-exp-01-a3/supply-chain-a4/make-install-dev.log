@@ -1,0 +1,3 @@
+uv pip install --python /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python --require-hashes --only-binary :all: --default-index https://pypi.org/simple -r requirements/cwc-dev.lock
+Using Python 3.11.15 environment at: /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final
+Checked 30 packages in 2ms

@@ -1,0 +1,217 @@
+{
+  "schema": "cneh-a3-a5-file-evidence-map-v1",
+  "source_snapshot": "6d9c00e987eee963b6b067c59c8a5af92d4691ef",
+  "authority": "ENGINEERING_COMPONENT_EVIDENCE_ONLY",
+  "reuses_unchanged_scientific_map": "artifacts/cneh-exp-01-a2/evidence-map.json",
+  "final_delivery_qualification": "NOT_RUN; external post-commit proof required",
+  "scientific_promotion_authorized": false,
+  "rows": [
+    {
+      "id": "A3-FRESH",
+      "claim": "Admission requires fresh reconstruction and execution; cached self-authored PASS is not accepted",
+      "assumption": "Reviewed executing code and trusted host/Git bootstrap",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/acceptance.py",
+        "line": 525,
+        "sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+        "git_blob_sha1": "4de30b06bcca7a9a20be23a12d717a92682f7102",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 161,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "Scoped counterexamples rejected; final complete admission NOT_RUN in this pre-delivery packet",
+      "falsifier": "Old --refresh/cache fixture produces an authoritative PASS",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a3/report.json",
+      "artifact_sha256": "ba17c682236cab5d96bc2f1127e6c47d574517385bd7f77ed5c4b96ec6e83330"
+    },
+    {
+      "id": "A3-ATOMIC",
+      "claim": "Existing output, symlink and concurrent writer cannot share an admission bundle",
+      "assumption": "Local filesystem atomic mkdir semantics",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/acceptance.py",
+        "line": 151,
+        "sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+        "git_blob_sha1": "4de30b06bcca7a9a20be23a12d717a92682f7102",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 128,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "Competing writer rejected; old outputs preserved",
+      "falsifier": "Second writer succeeds or pre-existing evidence bytes change",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a3/report.json",
+      "artifact_sha256": "ba17c682236cab5d96bc2f1127e6c47d574517385bd7f77ed5c4b96ec6e83330"
+    },
+    {
+      "id": "A3-CI",
+      "claim": "Required CI identities bind exact SHA, GitHub app, workflow and event",
+      "assumption": "Authenticated GitHub API and frozen required-check manifest",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/acceptance.py",
+        "line": 89,
+        "sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+        "git_blob_sha1": "4de30b06bcca7a9a20be23a12d717a92682f7102",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 343,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "Wrong source/event/app/SHA and incomplete contexts rejected",
+      "falsifier": "Same human name substitutes for a required source/event context",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a3/report.json",
+      "artifact_sha256": "ba17c682236cab5d96bc2f1127e6c47d574517385bd7f77ed5c4b96ec6e83330"
+    },
+    {
+      "id": "A3-GIT",
+      "claim": "Inconsistent mergeability or Git/PR identity cannot pass G1",
+      "assumption": "Actual local Git state plus authenticated remote API",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/acceptance.py",
+        "line": 185,
+        "sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+        "git_blob_sha1": "4de30b06bcca7a9a20be23a12d717a92682f7102",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 211,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "mergeable=false FAIL; absent mergeability UNKNOWN",
+      "falsifier": "Dirty or stale identity, contradictory mergeability admitted",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a3/g1-fixed-reprobe.json",
+      "artifact_sha256": "c2b751e1a3d1df63abb20923a911333db22c6fe28a1e54caf0d6d7ed5da7038a"
+    },
+    {
+      "id": "A3-ARTIFACT",
+      "claim": "Artifact collection validates every required run roster and complete pagination",
+      "assumption": "GitHub artifact digest anchors collection only; semantic replay remains separate",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/provenance.py",
+        "line": 375,
+        "sha256": "1f4d22168bde79b38c6f7f71e6dbce4033b80243cd9cba5b760860668587916c",
+        "git_blob_sha1": "2515909827a4f1e382a0c9562c9d5cf68750b428",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_provenance.py",
+        "line": 223,
+        "sha256": "75c39e6971b70d9f272d1eca1cab3e2cc4c289915bff9068ba25439965dae2ad",
+        "git_blob_sha1": "7a56882ad8802c0503f28b0160e8fb4d18d0fecd",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "9 historical ZIP digests and 10 inner manifests verified; collector has no admission authority",
+      "falsifier": "Missing/stale artifact or truncated/moving page accepted",
+      "artifact_path": "artifacts/cneh-exp-01-a3/provenance/FINAL_RECEIPT.json",
+      "artifact_sha256": "0ea110a9c882abd6c6a536cb9a4a1adc17260e837ac81095da69f998dac1f893"
+    },
+    {
+      "id": "A3-ARCHIVE",
+      "claim": "Archive paths and entry types fail closed before extraction",
+      "assumption": "Declared archive size bound and regular-file extraction scope",
+      "implementation": {
+        "path": "experiments/cneh_exp_01/provenance.py",
+        "line": 74,
+        "sha256": "1f4d22168bde79b38c6f7f71e6dbce4033b80243cd9cba5b760860668587916c",
+        "git_blob_sha1": "2515909827a4f1e382a0c9562c9d5cf68750b428",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_provenance.py",
+        "line": 131,
+        "sha256": "75c39e6971b70d9f272d1eca1cab3e2cc4c289915bff9068ba25439965dae2ad",
+        "git_blob_sha1": "7a56882ad8802c0503f28b0160e8fb4d18d0fecd",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "Wrong digest/size/expiry and malformed members rejected",
+      "falsifier": "Traversal, duplicate, special member or forged digest accepted",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a3/provenance-probes.json",
+      "artifact_sha256": "f1c5c79d2d7420b2f76b4dcba8c270cea82a915043ebc756557a3d1f8ff82e41"
+    },
+    {
+      "id": "A3-READONLY",
+      "claim": "Loading the historical prototype preserves bundle bytes and roster",
+      "assumption": "Historical script bytes have their pinned known digest",
+      "implementation": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 61,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "test": {
+        "path": "tests/test_cneh_exp_01_acceptance.py",
+        "line": 61,
+        "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd",
+        "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+        "commit_introduced": "3c82304cda9d31fd4630810da2e83244ff19839c"
+      },
+      "result": "Normal loader exit0; restored unsafe loader assertion-fails with bytecode sidecar",
+      "falsifier": "Regression test writes a compiled cache into immutable A2",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-review-a5/report.json",
+      "artifact_sha256": "f557df75315a0ddc0f69d688c5a7e49fe7b81340d3e91525d63e7d8604ce849d"
+    },
+    {
+      "id": "A4-LOCK",
+      "claim": "Required CI tooling uses full binary hash locks and propagates audit failures",
+      "assumption": "Reviewed official artifact hashes, Python/uv/OS bootstrap and advisory-service availability",
+      "implementation": {
+        "path": "scripts/cwc_dependency_audit.py",
+        "line": 85,
+        "sha256": "a38a163990aa4f0aeedeb4967c5b83f2df73b590c247cbf3fab3590e6c60ba3f",
+        "git_blob_sha1": "6d9366f081147878253e10369a4245116f1d217e",
+        "commit_introduced": "e9808dc27fef72826dc52966e1821a6e8c84a583"
+      },
+      "test": {
+        "path": "tests/test_cwc_dependency_audit.py",
+        "line": 69,
+        "sha256": "41d40ff2b1d9469b7dca63a7c767ec66f37b7b95db6b80085a3a254309986681",
+        "git_blob_sha1": "bc4956afe3feb94bd0acc9907144cfefa1d3b455",
+        "commit_introduced": "e9808dc27fef72826dc52966e1821a6e8c84a583"
+      },
+      "result": "49 tests plus10subtests;3 actual advisory audits;wrong wheel hash rejected",
+      "falsifier": "Unhashed transitive wheel installs, empty audit or nonzero subprocess becomes success",
+      "artifact_path": "artifacts/cneh-exp-01-a3/supply-chain-a4-review/report.json",
+      "artifact_sha256": "9592539b7e161f4332b481c89cd7fc02fb697c5b8b2b16ba678c1c02bf1eed99"
+    },
+    {
+      "id": "A5-HISTORY",
+      "claim": "Required documentation and full evidence gates reject fully rehashed historical substitution",
+      "assumption": "Fixed historical commit anchors, complete Git ancestry and reviewed guard source",
+      "implementation": {
+        "path": "scripts/cneh_history_guard.py",
+        "line": 204,
+        "sha256": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8",
+        "git_blob_sha1": "ef2c335d7598e8eab71462c7a03dd6b67ef70289",
+        "commit_introduced": "6d9c00e987eee963b6b067c59c8a5af92d4691ef"
+      },
+      "test": {
+        "path": "tests/test_cneh_history_guard.py",
+        "line": 116,
+        "sha256": "4dc286678bbcbf303a13b33c176c8345141c4b8bd9ed454f96cabc6ea6f13433",
+        "git_blob_sha1": "b6e925c7cd2ccd357899a87cb4bbd3f80a85aafd",
+        "commit_introduced": "6d9c00e987eee963b6b067c59c8a5af92d4691ef"
+      },
+      "result": "Native verify-evidence exit0 baseline/exit2 forged;16cases and1661historicalfiles",
+      "falsifier": "Changed frozen artifact plus recomputed manifests passes required native evidence gate",
+      "artifact_path": "artifacts/cneh-exp-01-a3/independent-native-a5/final-6d9c00e-verification.json",
+      "artifact_sha256": "1a97e070e730df5667a493a6c5bee52ac5f2df5e85d989366921d3765b05125d"
+    }
+  ]
+}

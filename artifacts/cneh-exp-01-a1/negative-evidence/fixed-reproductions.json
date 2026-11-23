@@ -1,0 +1,28 @@
+{
+  "actuator_bound": {
+    "error": "controller action exceeds physical interface bound",
+    "status": "REJECTED"
+  },
+  "immutable_race": {
+    "first_bundle_verdict": "REPLICATION_NOT_TESTED",
+    "retained_seeds": [
+      3001
+    ],
+    "status": "REJECTED_SECOND_WRITER",
+    "writer_errors": [
+      "FileExistsError:[Errno 17] File exists: '/home/neuro7/.cache/claude-tmp/cneh-redteam-race-so5smuak/bundle'"
+    ]
+  },
+  "source_sha256": {
+    "bnsyn_adapter.py": "bf81cce1c71c5c47660f3609dc23f1fc442967c7a5fb146eb27329a6502d3a4d",
+    "estimators.py": "7af15d1bcdf62e9eb96ac472649b7cb049a60732eb4d85871536383d93e6a408",
+    "hardware.py": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9",
+    "qualification.py": "e383029440067b6405698834bc227ed545f05ae3ad96f1171be9b79e31326577",
+    "replication.py": "353943cd5864484022772c4f5e0e4f30d34d7698acd44e3b730d6dbf00fcff8a",
+    "run.py": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879"
+  },
+  "transient_timing": {
+    "error": "deterministic trace parity failed within timed repetitions",
+    "status": "REJECTED"
+  }
+}

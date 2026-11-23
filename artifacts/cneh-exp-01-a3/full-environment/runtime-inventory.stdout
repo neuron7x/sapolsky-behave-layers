@@ -1,0 +1,1 @@
+{"python": "3.11.15", "torch": "2.13.0+cpu", "cuda_available": false, "torch_cuda_build": null, "numpy": "2.2.6"}

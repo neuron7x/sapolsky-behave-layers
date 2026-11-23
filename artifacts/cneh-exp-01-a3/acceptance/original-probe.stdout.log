@@ -1,0 +1,2 @@
+{"receipt": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/acceptance-redteam-bncpofhu/acceptance-20261123T153434903870.json", "sha256": "a42b6223d9ace94ca373da2942e92a62556048a2c2fd16746e7d224ea1f054df", "ENGINEERING_QUALIFIED": true, "gates": {"G1": "PASS", "G2": "PASS", "G3": "PASS", "G4": "PASS"}}
+{"receipt": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/acceptance-a3-implementation/original-probe-result.json", "sha256": "a882d988363183e36782573ea8afc8444bab850e82d6231c0b3d6cdda0b98094", "status": "REPRODUCED_DEFECT"}

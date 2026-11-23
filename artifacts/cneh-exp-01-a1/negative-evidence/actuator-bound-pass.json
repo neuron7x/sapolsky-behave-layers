@@ -1,0 +1,12 @@
+{
+  "action": [
+    0.81,
+    0.0
+  ],
+  "all_within_declared_envelope": true,
+  "bound": 0.8,
+  "finding": "finite action above frozen actuator bound accepted",
+  "max_control_energy": 15.7464,
+  "source_sha256": "8bbbb6a132f048f47fddaf1184417ddba2a911d2657ff7a135f089418742cac9",
+  "verdict": "REPLICATION_NOT_TESTED"
+}

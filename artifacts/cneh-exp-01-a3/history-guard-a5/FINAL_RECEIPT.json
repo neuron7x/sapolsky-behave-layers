@@ -1,0 +1,166 @@
+{
+  "actual_production_guard": {
+    "anchors": [
+      {
+        "commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+        "exact_roster": false,
+        "files": 1,
+        "files_sha256": "243110475ee6be8b2b6c0a02df315d3587c369d7aec6a0e509a7649590cb01e8",
+        "path": "experiments/cneh_exp_01/protocol.json"
+      },
+      {
+        "commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+        "exact_roster": false,
+        "files": 1,
+        "files_sha256": "b1b38c13447c2f87f6040d5be373df79043281eb5da1ab95a082c3f935bdef0e",
+        "path": "experiments/cneh_exp_01/PREREGISTRATION.md"
+      },
+      {
+        "commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+        "exact_roster": false,
+        "files": 1,
+        "files_sha256": "7074a6571030f826c52525f9f8fcb395ed1290f3a81eb87157c85fa0d4af4128",
+        "path": "experiments/cneh_exp_01/frozen_sources.lock"
+      },
+      {
+        "commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+        "exact_roster": false,
+        "files": 1,
+        "files_sha256": "59f5e5d37277abfee5ed971f43ad24c1717b61de0d9533dfd6ddafab1cdc6297",
+        "path": "experiments/cneh_exp_01/CNEH-04-DC_Formal_Specification.md"
+      },
+      {
+        "commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+        "exact_roster": false,
+        "files": 1219,
+        "files_sha256": "653121692f1f8f33fa17c0b2942cc9d0726f63b4ebd919ad096054546e31f9f7",
+        "path": "artifacts"
+      },
+      {
+        "commit": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+        "exact_roster": true,
+        "files": 104,
+        "files_sha256": "b5f6ed08fd01232a8cd4ee30ac8fda22999ac4bb2eb1f9013afa3d29d92e35d8",
+        "path": "artifacts/cneh-exp-01-a1"
+      },
+      {
+        "commit": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+        "exact_roster": true,
+        "files": 328,
+        "files_sha256": "fc81459261baa6b7550d92b413edcbcf1500e1479c82a84c027340e622ef44bf",
+        "path": "artifacts/cneh-exp-01-a2"
+      },
+      {
+        "commit": "ff4dc6a77124ae3575788a2b953cbbc2f4872d2a",
+        "exact_roster": true,
+        "files": 6,
+        "files_sha256": "7d4e52d8f4e5a6f31f8f0539ed194c4298e5327b2b6932978346fdfa0349a89d",
+        "path": "artifacts/cneh-exp-01-a2-ci"
+      }
+    ],
+    "guard_sha256": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8",
+    "head_sha": "b0f19fdbb4f3db26312ab18acb7cf8677ca9913a",
+    "independent_replication": "NOT_TESTED",
+    "ledger": {
+      "appended_rows": 0,
+      "commit": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "current_rows": 80,
+      "current_sha256": "0de5306ccd5dfbac6a5d33b33fa62e8f6ef37ac736c45d8ae1e9a0edc70af593",
+      "historical_rows": 80,
+      "historical_sha256": "0de5306ccd5dfbac6a5d33b33fa62e8f6ef37ac736c45d8ae1e9a0edc70af593",
+      "path": "docs/lab/EXPERIMENT_LEDGER.jsonl",
+      "preservation_rule": "EXACT_OLD_ROWS_AND_RELATIVE_ORDER; NEW_ROWS_MAY_INTERLEAVE"
+    },
+    "protected_files": 1661,
+    "schema": "cneh-history-guard-v1",
+    "scientific_promotion_authorized": false,
+    "status": "PASS"
+  },
+  "commands": [
+    {
+      "argv": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "cneh-history-guard"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "exit_code": 0,
+      "label": "mandatory-target-final",
+      "stderr_sha256": "8684f5da21083c342c85950f450f4f28ea4c0197d5f1a5b06555cafac8d2e8d0",
+      "stdout_sha256": "1fac8d233f861149df31f4a243bdde9758d4d7cdffc69b5e93e5eb71a3c07b9e"
+    },
+    {
+      "argv": [
+        "make",
+        "-n",
+        "-f",
+        "Makefile.cwc",
+        "pr-security"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "exit_code": 0,
+      "label": "mandatory-graph-pr-security",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a4d80adb64a117ddb222d0601a337c2e5c323ebc1ccab62c440106a39e59dc96"
+    },
+    {
+      "argv": [
+        "make",
+        "-n",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "exit_code": 0,
+      "label": "mandatory-graph-verify-evidence",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a338d6c32f5675870e94d18024161fbb1c082a0de434951c6fa71ae27ac2b26d"
+    },
+    {
+      "argv": [
+        "make",
+        "-n",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence",
+        "pr-security"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "exit_code": 0,
+      "label": "mandatory-graph-combined",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "31e39ad1f9693267366a3a5e9b3290fe24e36644e6f84d5e960b56a352d1931b"
+    }
+  ],
+  "full_ci": "NOT_RUN",
+  "independent_replication": "NOT_TESTED",
+  "independent_verification": "NOT_RUN_BY_IMPLEMENTER",
+  "mandatory_graphs": {
+    "combined_executes_guard_once": "PASS_DRY_RUN",
+    "pr-security": "PASS_DRY_RUN",
+    "verify-evidence": "PASS_DRY_RUN"
+  },
+  "owned_diff_sha256": "2ca02dac8e1838243a7b6c4575717d936b1ffa9092ee9e4c839bfc99e7e5372f",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "resigned_bundle_negative_receipt_sha256": "d67f3bfa72171b130b62447c63799e49d5ab829673bfa8084cc0cdf6ea4ca30b",
+  "schema": "cneh-history-a5-implementation-v1",
+  "scientific_promotion_authorized": false,
+  "scope": "ENGINEERING_HISTORY_PRESERVATION_ONLY",
+  "source_commit": "b0f19fdbb4f3db26312ab18acb7cf8677ca9913a",
+  "source_files_sha256": {
+    "Makefile.cwc": "94fd5e935272e571fed726f95b68bc73ab1eba2875512d23f2374970e2a57480",
+    "scripts/cneh_history_guard.py": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8",
+    "tests/test_cneh_history_guard.py": "4dc286678bbcbf303a13b33c176c8345141c4b8bd9ed454f96cabc6ea6f13433"
+  },
+  "source_unchanged_during_checks": true,
+  "status": "PASS",
+  "targeted_tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 16
+  },
+  "umask": "022"
+}

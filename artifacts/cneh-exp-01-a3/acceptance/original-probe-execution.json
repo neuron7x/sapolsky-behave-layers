@@ -1,0 +1,13 @@
+{
+  "source_commit": "c4725231f3d47b8a6722330d824d4b569ad69d01",
+  "original_probe_sha256": "0892280b2fd490eb016d14d2413915e7f98b6c27ebc8372c4e80ffe4c38eb907",
+  "executed_probe_sha256": "cc87d5a25742b9796987fe6063406b1f4f3ac9a50d9fde45c5c2349471f1fef9",
+  "only_probe_change": "redirect receipt to owned fresh evidence path; original probe/evidence unchanged",
+  "original_auditor_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+  "command": [
+    "python3",
+    "-B",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/acceptance-a3-implementation/original-probe-isolated-output.py"
+  ],
+  "exit_code": 0
+}

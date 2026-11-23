@@ -1,0 +1,1 @@
+{"status":"INVALID_VERIFIER_SCRIPT","exit_code":1,"reason":"Initial verifier compared underscore distribution name pydantic_core to hyphen lock name pydantic-core without package-name normalization; no implementation defect inferred."}

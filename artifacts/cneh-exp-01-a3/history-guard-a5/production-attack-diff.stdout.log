@@ -1,0 +1,22 @@
+diff --git a/artifacts/cneh-exp-01-a2/SHA256SUMS b/artifacts/cneh-exp-01-a2/SHA256SUMS
+index 9732e75..8cd99ab 100644
+--- a/artifacts/cneh-exp-01-a2/SHA256SUMS
++++ b/artifacts/cneh-exp-01-a2/SHA256SUMS
+@@ -1,6 +1,6 @@
+ 0d6e6a80a679cdf8646b1dbb64644edc1b04fd68caa4151f51fd2fd125cf4f63  ASSESSMENT.md
+ cb98539fddcf0c4bda35083eb78135355668f7b94ad7dd55622bdd444ec67ce3  acceptance-auditor-selfcheck.json
+-fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1  acceptance-auditor.py
++a0a1d62facb34818571ab5aab9bde68feb4d0bc27ad0b049aca93a37bde5a776  acceptance-auditor.py
+ 2ba2d2cd6f42329f5926ba36857253b381fe944584af5419edb21ecde7210ca3  evidence-map.json
+ 9483ed7d5cb720ad982d70ad18d80c357385d5ac19f5c2d7cfa49ed40fa07841  g4-a2-audit.py
+ 606bc900695c7b98c130ee53fd0a346a965afbf0d8bb69dca7027fbeb8a93412  g4-a2-epistemic.json
+diff --git a/artifacts/cneh-exp-01-a2/acceptance-auditor.py b/artifacts/cneh-exp-01-a2/acceptance-auditor.py
+index 0293631..865b9af 100644
+--- a/artifacts/cneh-exp-01-a2/acceptance-auditor.py
++++ b/artifacts/cneh-exp-01-a2/acceptance-auditor.py
+@@ -276,3 +276,5 @@ def main():
+   failure={'schema':'cneh-final-acceptance-error-v1','timestamp_utc':now(),'final_sha':args.final_sha,'ENGINEERING_QUALIFIED':False,'error_type':type(error).__name__,'error':str(error),'auditor_sha256':sha(Path(__file__).read_bytes())}
+   target=audit.out/('error-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%f')+'.json');target.write_bytes(canonical(failure));print(json.dumps(failure));return 1
+ if __name__=='__main__':raise SystemExit(main())
++
++# Adversarial substituted historical evidence fixture.

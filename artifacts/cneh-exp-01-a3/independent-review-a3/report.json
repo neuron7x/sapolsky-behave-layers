@@ -1,0 +1,109 @@
+{
+  "ENGINEERING_QUALIFIED": false,
+  "delegated_a4_review": {
+    "path": "../a4-independent-review/report.json",
+    "rerun_by_this_agent": false,
+    "reviewer": "/root/independent_verification",
+    "scope_source_commit": "e9808dc27fef72826dc52966e1821a6e8c84a583",
+    "sha256": "9592539b7e161f4332b481c89cd7fc02fb697c5b8b2b16ba678c1c02bf1eed99",
+    "status": "PASS_WITH_CAVEATS"
+  },
+  "evidence_sha256": {
+    "acceptance-before-g1-fix.py": "3861a5b452bc898bf139904e565e251893fa7b0d6162f42ab4f543a734460a37",
+    "acceptance-tests-final.log": "772380401834ab5d7dd118e5b02d676e33e3b3eea8aef18637dbc057e0f4a99c",
+    "fresh-acceptance-mutations/report.json": "de1c0719c3d659da2af2231bee27119c4110da650a93e2e74310f136b7501dae",
+    "g1-fixed-reprobe.json": "c2b751e1a3d1df63abb20923a911333db22c6fe28a1e54caf0d6d7ed5da7038a",
+    "g1-mergeable-false.json": "88f55f52ee04def24aa33bcc7ebf822c977a65299424e9d0f88d0b52cb4f4c75",
+    "historical-resign-result.json": "23fd5b7ac64725d6cd0b1d553171d8294f88d4d2c94a46a1cde6247c4f4365d2",
+    "mutation-admission-probes.json": "1501f1a8927556c2d4f0d5377c1e74a50287c96e3b11c446bfbea4e2157891d0",
+    "provenance-probes.json": "f1c5c79d2d7420b2f76b4dcba8c270cea82a915043ebc756557a3d1f8ff82e41",
+    "provenance-tests.log": "7c884178d0f87839856bbb14174fce1ca82803fae4b32b92cd37c058ce593cac",
+    "replacement-probes.json": "204f34702c209f315232a51a9738ee43120b7537bb5ad517c02c196379c7129c"
+  },
+  "external_replication": "NOT_TESTED",
+  "findings": [
+    {
+      "id": "A2_CACHED_PASS",
+      "location": "experiments/cneh_exp_01/acceptance.py fresh output reservation and run",
+      "negative_preserved": true,
+      "old_evidence": "../final-acceptance-redteam.json",
+      "old_source_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+      "status": "CLOSED_IN_REPLACEMENT"
+    },
+    {
+      "behavior": "True remains PASS, False becomes FAIL, None remains UNKNOWN",
+      "evidence": "g1-fixed-reprobe.json",
+      "fixed_source_sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+      "id": "A3_EXPLICIT_NONMERGEABLE_PASS",
+      "old_source_sha256": "3861a5b452bc898bf139904e565e251893fa7b0d6162f42ab4f543a734460a37",
+      "status": "REPRODUCED_THEN_FIXED"
+    },
+    {
+      "complete_hosted_ci": "NOT_RUN",
+      "evidence": "historical-resign-result.json",
+      "fixture_base_commit": "0d362a42edecd9fd654ca476602ab51f3fdaa715",
+      "id": "RESIGNED_HISTORICAL_A2_ACCEPTED_BY_CI_COMPONENTS",
+      "location": "Makefile.cwc:229 and .github/workflows/cwc-doc-gates.yml evidence checksum/docs regeneration steps",
+      "mechanism": "No Git-anchor preservation comparison in the exercised mandatory CI components; rehashed old artifact and sidecar are internally checksum-consistent",
+      "observed": "checksum gate0; semantic validator0; docs regeneration0; docs diff0; acceptance20tests0; frozenGitblobcomparison1",
+      "status": "OPEN_A5_IMPLEMENTATION_PENDING"
+    }
+  ],
+  "not_run": [
+    "complete final-SHA G1/G2/G3/G4",
+    "full hosted CI",
+    "A5 future history guard",
+    "external operator replication",
+    "physical energy/FLOP calibration"
+  ],
+  "parent_head": "3c82304cda9d31fd4630810da2e83244ff19839c",
+  "preserved_partial_attempts": [
+    "historical-resign-initial: wrong fixture environment lacked torch; semantic NOT_EVALUATED",
+    "historical-resign-a5-doc-drift: new A5 document not yet in generated register; isolated pre-A5 base used for decisive negative"
+  ],
+  "results": {
+    "A2_historical_blob_preservation_exit": 0,
+    "acceptance_module_tests": {
+      "exit_code": 0,
+      "tests": 20
+    },
+    "fresh_fixed_a3_mutants": {
+      "assertion_only": true,
+      "baseline_tests": 20,
+      "errors": 0,
+      "exit_code": 0,
+      "killed": 4,
+      "total": 4
+    },
+    "independent_acceptance_boundary_probes": 15,
+    "independent_provenance_archive_probes": 4,
+    "mutation_admission_negative_interventions": 5,
+    "provenance_module_tests": {
+      "exit_code": 0,
+      "source_unchanged_after_test": true,
+      "tests": 18
+    },
+    "required_ci_contexts_preserved": 14,
+    "required_workflow_hashes_match": 6
+  },
+  "schema": "cneh-a3-final-adversarial-review-v1",
+  "scientific_promotion_authorized": false,
+  "scope": [
+    "A3 fresh-only acceptance/source-aware CI/replay boundary",
+    "provenance collectors",
+    "A4 delegated independent receipt",
+    "re-signed historical evidence against current CI components"
+  ],
+  "source_binding_scope": "Exact working file bytes; A3 source is uncommitted at review time and is not attributed to parent HEAD",
+  "source_sha256": {
+    "artifacts/cneh-exp-01-a3/acceptance/run_mutations.py": "a246eebd00b23521f21aa5cf82230bb5eecebba3c3d038eb085f5796a99f11ee",
+    "experiments/cneh_exp_01/acceptance.py": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+    "experiments/cneh_exp_01/provenance.py": "1f4d22168bde79b38c6f7f71e6dbce4033b80243cd9cba5b760860668587916c",
+    "experiments/cneh_exp_01/required_checks_manifest.json": "18ed6d542d38a6ad8ff64e181a5d6db2e6e9a9a178d7287647d027b044444d35",
+    "tests/test_cneh_exp_01_acceptance.py": "8add22f76f457bfb16c075407fbab4e61fa0b68ce06c7d1ae5c957a69a43ec45",
+    "tests/test_cneh_exp_01_provenance.py": "75c39e6971b70d9f272d1eca1cab3e2cc4c289915bff9068ba25439965dae2ad"
+  },
+  "status": "A3_SCOPED_REVIEW_COMPLETE_WITH_OPEN_CI_HISTORY_GAP",
+  "timestamp_utc": "2026-11-23T16:12:21.988333+00:00",
+  "worktree_status": " M docs/vnv/DOCUMENT_STATUS_REGISTER.csv\n?? artifacts/cneh-exp-01-a3/\n"
+}
