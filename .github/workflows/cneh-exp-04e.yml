@@ -1,0 +1,50 @@
+name: CNEH-EXP-04E sealed trace attribution
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_04e/**'
+      - 'tests/test_cneh_exp_04e.py'
+      - '.github/workflows/cneh-exp-04e.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  sealed-trace-attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify protocol lineage and immutable parent code
+        run: |
+          git merge-base --is-ancestor 0310445d88474f07a455dbc3a7cbdcc8a3ff466f HEAD
+          git show 0310445d88474f07a455dbc3a7cbdcc8a3ff466f:experiments/cneh_exp_04e/PROTOCOL.md | cmp - experiments/cneh_exp_04e/PROTOCOL.md
+          git diff --exit-code 5a6920609579f87008affe8a2bf90b8b8e8e9ac2 HEAD -- experiments/cneh_exp_04d experiments/cneh_exp_04c experiments/cneh_exp_04b experiments/cneh_exp_03 experiments/cneh_exp_01 tests/test_cneh_exp_04d.py .github/workflows/cneh-exp-04d.yml
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Qualify attribution reducer
+        run: python -m unittest discover -s tests -p test_cneh_exp_04e.py -v
+      - name: Fetch exact historical artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14862245545/zip" --output /tmp/cneh04d.zip
+          echo '2cdc9b23dc7521368dc54c63ea91009ae83c7ad05307ca082a54d46225bd5615  /tmp/cneh04d.zip' | sha256sum --strict -c -
+      - name: Attribute complete trace and verify fresh reduction
+        run: |
+          python -m experiments.cneh_exp_04e.audit --archive /tmp/cneh04d.zip --out /tmp/cneh04e.json
+          python -m experiments.cneh_exp_04e.audit --archive /tmp/cneh04d.zip --out /tmp/cneh04e.json --verify
+          (cd /tmp && sha256sum cneh04e.json > cneh04e.sha256)
+      - name: Preserve diagnostic evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-04e-retrospective-attribution-SHA256
+          path: |
+            /tmp/cneh04e.json
+            /tmp/cneh04e.sha256
+          if-no-files-found: error
+          retention-days: 90
