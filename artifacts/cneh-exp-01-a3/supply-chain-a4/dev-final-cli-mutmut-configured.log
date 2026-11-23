@@ -1,0 +1,15 @@
+Usage: mutmut [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  apply
+  browse
+  export-cicd-stats
+  print-time-estimates
+  results
+  run
+  show
+  tests-for-mutant

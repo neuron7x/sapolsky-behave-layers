@@ -1,0 +1,27 @@
+Collecting annotated-types==0.8.0 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 3))
+  Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Collecting numpy==2.4.1 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 9))
+  Downloading numpy-2.4.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.4/16.4 MB 3.2 MB/s eta 0:00:00
+Collecting pydantic==2.12.5 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 85))
+  Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 463.6/463.6 kB 4.2 MB/s eta 0:00:00
+Collecting pydantic-core==2.41.5 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 89))
+  Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 2.9 MB/s eta 0:00:00
+Collecting scipy==1.17.1 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 214))
+  Downloading scipy-1.17.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.2/35.2 MB 4.4 MB/s eta 0:00:00
+Collecting typing-extensions==4.16.0 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 277))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 8.8 MB/s eta 0:00:00
+Collecting typing-inspection==0.4.5 (from -r /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock (line 285))
+  Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/annotated_types-0.8.0-py3-none-any.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/numpy-2.4.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/pydantic-2.12.5-py3-none-any.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/scipy-1.17.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/typing_extensions-4.16.0-py3-none-any.whl
+Saved /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads/typing_inspection-0.4.5-py3-none-any.whl
+Successfully downloaded annotated-types numpy pydantic pydantic-core scipy typing-extensions typing-inspection

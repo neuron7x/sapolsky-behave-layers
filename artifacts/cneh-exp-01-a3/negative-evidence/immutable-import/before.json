@@ -1,0 +1,10 @@
+{
+  "schema": "cneh-immutable-import-negative-v1",
+  "historical_source_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1",
+  "created_files": [
+    "__pycache__/acceptance-auditor.cpython-312.pyc"
+  ],
+  "test_source_sha256": "8add22f76f457bfb16c075407fbab4e61fa0b68ce06c7d1ae5c957a69a43ec45",
+  "result": "FROZEN_BUNDLE_WRITE_REPRODUCED",
+  "scope": "isolated exact historical source copy; live artifact unchanged"
+}

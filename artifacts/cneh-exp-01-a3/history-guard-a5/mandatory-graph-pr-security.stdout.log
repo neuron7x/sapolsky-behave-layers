@@ -1,0 +1,29 @@
+PYTHONPATH=. .venv/bin/python scripts/truth_gate.py
+docker run --rm --user "$(id -u):$(id -g)" \
+	-v "$(pwd):/repo" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+	-color .github/workflows/*.yml
+set -eu; \
+	git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"; \
+	expected_head="$(git rev-parse --verify HEAD)"; \
+	docker run --rm --user "$(id -u):$(id -g)" --entrypoint sh \
+	-v "$(pwd):/repo:ro" -v "$git_common_dir:$git_common_dir:ro" -w /repo \
+	-v "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/scripts/secret_scan_container.sh:/secret-scan.sh:ro" \
+	zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 \
+	/secret-scan.sh "$expected_head"
+PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_dependency_integrity_gate.py
+PYTHONPATH=. .venv/bin/python scripts/dependency_integrity_gate.py --self-test
+PYTHONPATH=. .venv/bin/python scripts/dependency_integrity_gate.py
+python3 -m unittest discover -s tests -p test_cwc_dependency_audit.py -v
+python3 scripts/cwc_dependency_audit.py
+PYTHONPATH=. .venv/bin/python scripts/architecture_gate.py
+PYTHONPATH=. .venv/bin/python scripts/hermeticity_gate.py
+PYTHONPATH=. .venv/bin/python scripts/complexity_gate.py
+PYTHONPATH=. .venv/bin/python scripts/build_sbom.py --check
+PYTHONPATH=. .venv/bin/python scripts/inference_integrity_gate.py
+PYTHONPATH=. .venv/bin/python scripts/assurance_attack.py
+PYTHONPATH=. .venv/bin/python scripts/assurance_report.py
+echo "CWC-ENGINEERING-ASSURANCE: ALL GATES PASSED"
+PYTHONPATH=. .venv/bin/python -m pytest -q tests/test_secret_scan_gate.py
+python3 -B -c "import unittest; suite=unittest.defaultTestLoader.discover('tests', pattern='test_cneh_history_guard.py'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(0 if result.wasSuccessful() and result.testsRun>=16 and not result.skipped and not result.expectedFailures and not result.unexpectedSuccesses else 1)"
+python3 -B scripts/cneh_history_guard.py
+echo "CWC-PR-SECURITY: ALL GATES PASSED"

@@ -1,0 +1,97 @@
+test_actor_headers_collect_only_names_and_classify_absence (test_cneh_exp_01_provenance.ProvenanceTests.test_actor_headers_collect_only_names_and_classify_absence) ... ok
+test_complete_artifacts_remain_nonqualifying_provenance (test_cneh_exp_01_provenance.ProvenanceTests.test_complete_artifacts_remain_nonqualifying_provenance) ... ok
+test_concurrent_output_has_exactly_one_writer (test_cneh_exp_01_provenance.ProvenanceTests.test_concurrent_output_has_exactly_one_writer) ... ok
+test_dirty_tree_and_other_head_reject (test_cneh_exp_01_provenance.ProvenanceTests.test_dirty_tree_and_other_head_reject) ... ok
+test_every_run_must_have_complete_artifact_roster (test_cneh_exp_01_provenance.ProvenanceTests.test_every_run_must_have_complete_artifact_roster) ... FAIL
+test_existing_output_and_symlink_parents_cannot_receive_writes (test_cneh_exp_01_provenance.ProvenanceTests.test_existing_output_and_symlink_parents_cannot_receive_writes) ... FAIL
+test_manifest_rejects_unlisted_symlink_before_reading_target (test_cneh_exp_01_provenance.ProvenanceTests.test_manifest_rejects_unlisted_symlink_before_reading_target) ... FAIL
+test_manifest_validates_bytes_and_classifies_upload_extras (test_cneh_exp_01_provenance.ProvenanceTests.test_manifest_validates_bytes_and_classifies_upload_extras) ... ok
+test_output_inside_repository_is_rejected_before_creation (test_cneh_exp_01_provenance.ProvenanceTests.test_output_inside_repository_is_rejected_before_creation) ... ok
+test_pagination_rejects_moving_totals_duplicate_ids_and_truncation (test_cneh_exp_01_provenance.ProvenanceTests.test_pagination_rejects_moving_totals_duplicate_ids_and_truncation) ... 
+  test_pagination_rejects_moving_totals_duplicate_ids_and_truncation (test_cneh_exp_01_provenance.ProvenanceTests.test_pagination_rejects_moving_totals_duplicate_ids_and_truncation) (number=0) ... FAIL
+test_stale_artifact_rejected_before_download (test_cneh_exp_01_provenance.ProvenanceTests.test_stale_artifact_rejected_before_download) ... ok
+test_strict_json_and_paths_reject_ambiguous_inputs (test_cneh_exp_01_provenance.ProvenanceTests.test_strict_json_and_paths_reject_ambiguous_inputs) ... 
+  test_strict_json_and_paths_reject_ambiguous_inputs (test_cneh_exp_01_provenance.ProvenanceTests.test_strict_json_and_paths_reject_ambiguous_inputs) (name="'.'") ... FAIL
+  test_strict_json_and_paths_reject_ambiguous_inputs (test_cneh_exp_01_provenance.ProvenanceTests.test_strict_json_and_paths_reject_ambiguous_inputs) (name="'x\\x01'") ... FAIL
+test_wrong_remote_is_rejected_before_network_or_collection (test_cneh_exp_01_provenance.ProvenanceTests.test_wrong_remote_is_rejected_before_network_or_collection) ... FAIL
+test_zip_declared_size_bound_is_checked_before_decompression (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_declared_size_bound_is_checked_before_decompression) ... ok
+test_zip_file_directory_conflict_is_rejected_before_output (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_file_directory_conflict_is_rejected_before_output) ... FAIL
+test_zip_traversal_duplicate_and_special_member_rejected (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_traversal_duplicate_and_special_member_rejected) ... 
+  test_zip_traversal_duplicate_and_special_member_rejected (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_traversal_duplicate_and_special_member_rejected) (kind=49152) ... FAIL
+
+======================================================================
+FAIL: test_every_run_must_have_complete_artifact_roster (test_cneh_exp_01_provenance.ProvenanceTests.test_every_run_must_have_complete_artifact_roster)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 221, in test_every_run_must_have_complete_artifact_roster
+    with self.assertRaisesRegex(ValueError, "missing|roster"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_existing_output_and_symlink_parents_cannot_receive_writes (test_cneh_exp_01_provenance.ProvenanceTests.test_existing_output_and_symlink_parents_cannot_receive_writes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 96, in test_existing_output_and_symlink_parents_cannot_receive_writes
+    with self.assertRaises((ValueError, FileExistsError)):
+AssertionError: (<class 'ValueError'>, <class 'FileExistsError'>) not raised
+
+======================================================================
+FAIL: test_manifest_rejects_unlisted_symlink_before_reading_target (test_cneh_exp_01_provenance.ProvenanceTests.test_manifest_rejects_unlisted_symlink_before_reading_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 181, in test_manifest_rejects_unlisted_symlink_before_reading_target
+    with self.assertRaisesRegex(ValueError, "symlink|regular"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_pagination_rejects_moving_totals_duplicate_ids_and_truncation (test_cneh_exp_01_provenance.ProvenanceTests.test_pagination_rejects_moving_totals_duplicate_ids_and_truncation) (number=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 193, in test_pagination_rejects_moving_totals_duplicate_ids_and_truncation
+    with self.subTest(number=number), self.assertRaises(ValueError):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_strict_json_and_paths_reject_ambiguous_inputs (test_cneh_exp_01_provenance.ProvenanceTests.test_strict_json_and_paths_reject_ambiguous_inputs) (name="'.'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 124, in test_strict_json_and_paths_reject_ambiguous_inputs
+    with self.subTest(name=repr(name)), self.assertRaises(ValueError):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_strict_json_and_paths_reject_ambiguous_inputs (test_cneh_exp_01_provenance.ProvenanceTests.test_strict_json_and_paths_reject_ambiguous_inputs) (name="'x\\x01'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 124, in test_strict_json_and_paths_reject_ambiguous_inputs
+    with self.subTest(name=repr(name)), self.assertRaises(ValueError):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_wrong_remote_is_rejected_before_network_or_collection (test_cneh_exp_01_provenance.ProvenanceTests.test_wrong_remote_is_rejected_before_network_or_collection)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 72, in test_wrong_remote_is_rejected_before_network_or_collection
+    with self.assertRaisesRegex(ValueError, "remote|repository"):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_zip_file_directory_conflict_is_rejected_before_output (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_file_directory_conflict_is_rejected_before_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 150, in test_zip_file_directory_conflict_is_rejected_before_output
+    self.assertFalse(destination.exists())
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_zip_traversal_duplicate_and_special_member_rejected (test_cneh_exp_01_provenance.ProvenanceTests.test_zip_traversal_duplicate_and_special_member_rejected) (kind=49152)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_provenance.py", line 142, in test_zip_traversal_duplicate_and_special_member_rejected
+    with self.subTest(kind=kind), self.assertRaises(ValueError):
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.393s
+
+FAILED (failures=9)

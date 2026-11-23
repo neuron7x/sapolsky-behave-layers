@@ -1,0 +1,5 @@
+uv 0.10.12 (x86_64-unknown-linux-gnu)
+pip-audit 2.10.1
+AUDIT TARGET: runtime.txt
+AUDIT TARGET: dev-group.txt
+AUDIT TARGET: cwc-dev.lock

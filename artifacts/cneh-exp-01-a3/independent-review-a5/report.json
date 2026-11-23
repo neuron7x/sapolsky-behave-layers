@@ -1,0 +1,147 @@
+{
+  "ENGINEERING_QUALIFIED": false,
+  "closure": {
+    "implementation_receipt_path": "../history-guard-a5/FINAL_RECEIPT.json",
+    "implementation_receipt_sha256": "8b26af17631aaf804b5d8b3a18e9278b762380b7172d0cd4047ea042aa4c07e4",
+    "implementation_reported_controls": {
+      "guard_exit": 0,
+      "resigned_guard_exit": 1,
+      "resigned_manifest_exit": 0,
+      "unit_tests": 16
+    },
+    "independent_rerun_of_implementation_controls_by_this_agent": false,
+    "previous_finding": "RESIGNED_HISTORICAL_A2_ACCEPTED_BY_CI_COMPONENTS",
+    "prior_negative_path": "../redteam-a3-final/historical-resign-result.json",
+    "prior_negative_sha256": "23fd5b7ac64725d6cd0b1d553171d8294f88d4d2c94a46a1cde6247c4f4365d2",
+    "state": "IMPLEMENTED_AND_STATICALLY_CLOSED; INDEPENDENT_NATIVE_EXECUTION_RECORDED_SEPARATELY"
+  },
+  "evidence": {
+    "bytecode_delta_sha256": "b03b0d5300f439e3cd7ddf72881569308b14e0ef225c57c22df138ab92f21b41",
+    "bytecode_probe_sha256": "401a5c37346bcf2f63ec18aab3ca30b52fb3177fac16f13d1f272143027c3909"
+  },
+  "executed_by_this_agent": {
+    "A2_git_preservation_comparison_exit": 0,
+    "changed_test_bytecode_enabled": {
+      "A2_bundle_changed": false,
+      "cases": 1,
+      "exit_code": 0
+    },
+    "unsafe_loader_fixture_intervention": {
+      "A2_bundle_changed": true,
+      "cases": 1,
+      "classification": "ASSERTION_KILL",
+      "exit_code": 1
+    }
+  },
+  "independent_replication": "NOT_TESTED",
+  "invariants_reviewed": [
+    {
+      "id": "fixed_trusted_git_anchors",
+      "locations": [
+        "scripts/cneh_history_guard.py:23",
+        "scripts/cneh_history_guard.py:112",
+        "scripts/cneh_history_guard.py:204"
+      ],
+      "observation": "CLI cannot select alternate anchors; root/full history/ancestry checked; replacement/graft/env object substitutions disabled; commit and blob payload hashes recomputed."
+    },
+    {
+      "id": "actual_historical_bytes_and_roster",
+      "locations": [
+        "scripts/cneh_history_guard.py:79",
+        "scripts/cneh_history_guard.py:159",
+        "scripts/cneh_history_guard.py:220"
+      ],
+      "observation": "Actual regular files and executable bit checked; symlink files/parents rejected; dedicated A1/A2/A2-ci exact file rosters include ignored additions; rehashed current manifests cannot change trusted historical digests."
+    },
+    {
+      "id": "global_future_extension_scope",
+      "locations": [
+        "scripts/cneh_history_guard.py:37"
+      ],
+      "observation": "Original global artifacts anchor preserves existing tracked files without freezing entire future artifacts roster. Exact dedicated CNEH roots remain closed to added files."
+    },
+    {
+      "id": "ledger_history",
+      "locations": [
+        "scripts/cneh_history_guard.py:179",
+        "scripts/cneh_history_guard.py:232"
+      ],
+      "observation": "Strict duplicate/nonfinite parsing and unique run IDs; every old raw row and relative order preserved; newly generated rows can interleave. New rows do not establish scientific authority."
+    },
+    {
+      "id": "mandatory_ci_rejection",
+      "locations": [
+        "Makefile.cwc:38",
+        "Makefile.cwc:70",
+        "Makefile.cwc:234",
+        ".github/workflows/cwc-doc-gates.yml:39"
+      ],
+      "observation": "Phony history target is prerequisite of required verify-evidence and pr-security; nonzero guard/test exit propagates. All prior checksum/semantic/security targets remain."
+    },
+    {
+      "id": "meaningful_negative_controls",
+      "locations": [
+        "tests/test_cneh_history_guard.py:111",
+        "Makefile.cwc:72"
+      ],
+      "observation": "Inspected16realGit cases incl checksum-valid historical substitution, deleted/rewritten/reordered ledger, malformed additions, shallow/unrelated history, Gitreplace, invalidtypes and ignored extra files. Target requires>=16 with no skips/xfails."
+    },
+    {
+      "id": "historical_loader_no_bytecode",
+      "locations": [
+        "tests/test_cneh_exp_01_acceptance.py:61"
+      ],
+      "observation": "ModuleType+compile/exec preserves __file__ without importlib bytecode writes; before/after historical bundle hash roster assertion retained."
+    }
+  ],
+  "new_findings": [],
+  "not_run": [
+    "Native verify-evidence/doc gates and production-anchor resigned bundle (cross-thread peer ownership)",
+    "Optional Git object corruption injection (outside frozen catalog; parent handles read-only git fsck)",
+    "Final hosted CI and complete final-SHA G1-G4",
+    "External operator replication or calibrated physical cost"
+  ],
+  "residual_limits": [
+    "Native Git executable/object-store/platform trust is not a cryptographic external laboratory attestation.",
+    "Repository contains staged/untracked final evidence delivery; this scoped review does not certify G1 cleanliness or final admission."
+  ],
+  "schema": "cneh-a5-static-independent-review-v1",
+  "scientific_promotion_authorized": false,
+  "scope": "Independent static/invariant review of A5 guard and mandatory Make prerequisites; narrow changed A3 historical-loader test calibration. Native verify-evidence/doc/production re-sign execution owned by cross-thread peer and not duplicated.",
+  "source_bindings": {
+    "Makefile.cwc": {
+      "git_blob_sha1": "07d9e5fb5557c552776c4d8c18166ccb84a5f199",
+      "matches_commit": true,
+      "sha256": "94fd5e935272e571fed726f95b68bc73ab1eba2875512d23f2374970e2a57480"
+    },
+    "docs/methodology/CNEH_LQP43_EVIDENCE_CONTOUR_A5.md": {
+      "git_blob_sha1": "01b87ef8b581c0cee2283469d4ddeb4b0a7c9cbc",
+      "matches_commit": true,
+      "sha256": "9c2b2aaa8fc5d6cdf51d506a88601b4b064b19067186ae0fe3d40fcd2e6c5e89"
+    },
+    "experiments/cneh_exp_01/acceptance.py": {
+      "git_blob_sha1": "4de30b06bcca7a9a20be23a12d717a92682f7102",
+      "matches_commit": true,
+      "sha256": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64"
+    },
+    "scripts/cneh_history_guard.py": {
+      "git_blob_sha1": "ef2c335d7598e8eab71462c7a03dd6b67ef70289",
+      "matches_commit": true,
+      "sha256": "8fd1aead0c836356407fe199fa796121e40c4c68c601f1bdea585bc7d34299a8"
+    },
+    "tests/test_cneh_exp_01_acceptance.py": {
+      "git_blob_sha1": "b3fd00536933b7c74db4ec903852d57084ce556b",
+      "matches_commit": true,
+      "sha256": "64418c6454049d8533ac7d71df343203da2396da06b2b8ee62e88438d6da2cdd"
+    },
+    "tests/test_cneh_history_guard.py": {
+      "git_blob_sha1": "b6e925c7cd2ccd357899a87cb4bbd3f80a85aafd",
+      "matches_commit": true,
+      "sha256": "4dc286678bbcbf303a13b33c176c8345141c4b8bd9ed454f96cabc6ea6f13433"
+    }
+  },
+  "source_commit": "6d9c00e987eee963b6b067c59c8a5af92d4691ef",
+  "status": "SCOPED_STATIC_REVIEW_COMPLETE_NO_NEW_REPRODUCED_DEFECT",
+  "timestamp_utc": "2026-11-23T16:28:45.550459+00:00",
+  "worktree_status": "?? artifacts/cneh-exp-01-a3/\n"
+}

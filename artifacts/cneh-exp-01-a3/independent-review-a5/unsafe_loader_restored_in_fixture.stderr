@@ -1,0 +1,15 @@
+test_original_false_pass_remains_reproducible (test_cneh_exp_01_acceptance.AcceptanceTests.test_original_false_pass_remains_reproducible) ... FAIL
+
+======================================================================
+FAIL: test_original_false_pass_remains_reproducible (test_cneh_exp_01_acceptance.AcceptanceTests.test_original_false_pass_remains_reproducible)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/cneh-a5-bytecode-296_dyrd/tests/test_cneh_exp_01_acceptance.py", line 72, in test_original_false_pass_remains_reproducible
+    self.assertEqual(before, after)
+AssertionError: {'evi[11305 chars]3', 'verification/mutations/source_manifest.js[34198 chars]855'} != {'evi[11305 chars]3', '__pycache__/acceptance-auditor.cpython-31[34316 chars]855'}
+Diff is 46664 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.071s
+
+FAILED (failures=1)

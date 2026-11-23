@@ -1,0 +1,11 @@
+{
+  "status": "INVALID_VERIFIER_COUNT_EXPECTATION",
+  "cause": "pytest JUnit includes 49 top-level tests plus 10 successful subtests, hence 59 executions",
+  "test_command_exit": 0,
+  "source_changed": false,
+  "rerun_needed": false,
+  "evidence": [
+    "targeted-tests-r2.stdout",
+    "targeted-tests-r2.xml"
+  ]
+}

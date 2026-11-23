@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/bin/python",
+    "-B",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/final-wheel-bytecheck/check_installed.py",
+    "--out",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/final-wheel-bytecheck/pre-final-v2"
+  ],
+  "start_utc": "2026-11-23T16:23:33.418291+00:00",
+  "end_utc": "2026-11-23T16:23:37.503218+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "daf33778a9e3023ecc6b8b9b40aea8ea4e543296897a553e6155199ae30a15f8",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "verifier_sha256_before": "1f52d005e4a4bb3291ed77e042082714219b78e625f80f6f3cd3cd6a75077d96",
+  "verifier_sha256_after": "1f52d005e4a4bb3291ed77e042082714219b78e625f80f6f3cd3cd6a75077d96"
+}

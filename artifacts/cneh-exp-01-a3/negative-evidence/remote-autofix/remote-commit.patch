@@ -1,0 +1,38 @@
+commit 9e1de455fb52c1a0f200353b81e33d260698395e
+Author:     Yaroslav Vasylenko <stapkabenderka@ukr.net>
+AuthorDate: Mon Nov 23 17:43:08 2026 +0200
+Commit:     GitHub <noreply@github.com>
+CommitDate: Mon Nov 23 17:43:08 2026 +0200
+
+    Potential fix for pull request finding 'CodeQL / Unused import'
+    
+    **CodeQL Finding Remediation — Remove Unused Import**
+    
+    Remove the unused `copy` import from `artefakti/cneh-exp-01-a2/g4-a2-audit.py` to resolve the CodeQL `Unused import` finding.
+    
+    This is a narrowly scoped, behavior-preserving code-quality correction. The imported module is not referenced by the implementation; therefore, its removal should not affect execution semantics, deterministic replay, evidence generation, cryptographic verification, or scientific conclusions.
+    
+    **Verification requirements:**
+    - Confirm the import has no runtime dependencies or intentional initialization side effects.
+    - Apply only the proposed import removal; preserve all other source code.
+    - Verify that the affected module passes syntax validation and relevant regression tests.
+    - Confirm that CodeQL no longer reports this finding.
+    - Re-run all mandatory CI checks against the updated PR head SHA.
+    - Preserve existing evidence artifacts, SHA-256 manifests, preregistration contracts, and scientific verdicts.
+    
+    **Acceptance criterion:** The CodeQL finding is resolved without behavioral regression, scientific claim promotion, or unauthorized changes to the evidence chain.
+    
+    **Scope:** Code-quality remediation only. This change does not independently establish `ENGINEERING_QUALIFIED` or alter the status `FORMALIZED / EMPIRICAL VALIDATION PENDING`.
+    
+    Co-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>
+
+diff --git a/artifacts/cneh-exp-01-a2/g4-a2-audit.py b/artifacts/cneh-exp-01-a2/g4-a2-audit.py
+index 8d4dfea..cb1a4cd 100644
+--- a/artifacts/cneh-exp-01-a2/g4-a2-audit.py
++++ b/artifacts/cneh-exp-01-a2/g4-a2-audit.py
+@@ -1,5 +1,4 @@
+ """Read-only G4 epistemic audit; writes only this evidence directory and temp fixtures."""
+-import copy
+ from collections import Counter
+ import csv
+ import hashlib

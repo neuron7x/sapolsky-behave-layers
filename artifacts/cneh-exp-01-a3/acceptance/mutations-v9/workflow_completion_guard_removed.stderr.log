@@ -1,0 +1,73 @@
+test_a3_mutation_false_kills_errors_skips_and_forged_identity_rejected (test_cneh_exp_01_acceptance.AcceptanceTests.test_a3_mutation_false_kills_errors_skips_and_forged_identity_rejected) ... ok
+test_canonical_remote_excludes_wrong_owner_and_host (test_cneh_exp_01_acceptance.AcceptanceTests.test_canonical_remote_excludes_wrong_owner_and_host) ... ok
+test_ci_name_cannot_substitute_for_app_workflow_event_or_sha (test_cneh_exp_01_acceptance.AcceptanceTests.test_ci_name_cannot_substitute_for_app_workflow_event_or_sha) ... ok
+test_codeql_upload_job_does_not_replace_analysis_result (test_cneh_exp_01_acceptance.AcceptanceTests.test_codeql_upload_job_does_not_replace_analysis_result) ... ok
+test_concurrent_and_second_writer_cannot_share_output (test_cneh_exp_01_acceptance.AcceptanceTests.test_concurrent_and_second_writer_cannot_share_output) ... ok
+test_duplicate_documentation_name_does_not_cover_both_events (test_cneh_exp_01_acceptance.AcceptanceTests.test_duplicate_documentation_name_does_not_cover_both_events) ... ok
+test_empty_missing_pending_neutral_skipped_or_failed_ci_cannot_pass (test_cneh_exp_01_acceptance.AcceptanceTests.test_empty_missing_pending_neutral_skipped_or_failed_ci_cannot_pass) ... ok
+test_executing_auditor_must_equal_final_sha_blob (test_cneh_exp_01_acceptance.AcceptanceTests.test_executing_auditor_must_equal_final_sha_blob) ... ok
+test_existing_empty_directory_is_rejected (test_cneh_exp_01_acceptance.AcceptanceTests.test_existing_empty_directory_is_rejected) ... ok
+test_existing_file_and_dangling_or_resolved_symlink_are_rejected (test_cneh_exp_01_acceptance.AcceptanceTests.test_existing_file_and_dangling_or_resolved_symlink_are_rejected) ... ok
+test_existing_output_cli_failure_preserves_original (test_cneh_exp_01_acceptance.AcceptanceTests.test_existing_output_cli_failure_preserves_original) ... ok
+test_forged_cache_injected_after_reservation_cannot_bypass_fresh_g3 (test_cneh_exp_01_acceptance.AcceptanceTests.test_forged_cache_injected_after_reservation_cannot_bypass_fresh_g3) ... ok
+test_fresh_incomplete_source_executes_reconstruction_then_fails_closed (test_cneh_exp_01_acceptance.AcceptanceTests.test_fresh_incomplete_source_executes_reconstruction_then_fails_closed) ... ok
+test_g1_rejects_wrong_branch_upstream_or_stale_pr_head (test_cneh_exp_01_acceptance.AcceptanceTests.test_g1_rejects_wrong_branch_upstream_or_stale_pr_head) ... ok
+test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) ... 
+  test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='in_progress', conclusion=None) ... FAIL
+  test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='failure') ... FAIL
+  test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='neutral') ... FAIL
+  test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='skipped') ... FAIL
+test_historical_ledger_deletion_rewrite_or_unchecked_extension_rejected (test_cneh_exp_01_acceptance.AcceptanceTests.test_historical_ledger_deletion_rewrite_or_unchecked_extension_rejected) ... ok
+test_original_false_pass_remains_reproducible (test_cneh_exp_01_acceptance.AcceptanceTests.test_original_false_pass_remains_reproducible) ... ok
+test_output_inside_repository_is_rejected_before_writes (test_cneh_exp_01_acceptance.AcceptanceTests.test_output_inside_repository_is_rejected_before_writes) ... ok
+test_refresh_cli_is_removed_and_does_not_create_output (test_cneh_exp_01_acceptance.AcceptanceTests.test_refresh_cli_is_removed_and_does_not_create_output) ... ok
+test_replacement_rejects_same_self_authored_receipt_without_writes (test_cneh_exp_01_acceptance.AcceptanceTests.test_replacement_rejects_same_self_authored_receipt_without_writes) ... ok
+
+======================================================================
+FAIL: test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='in_progress', conclusion=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-a3-mutation-7n4wg1db/tests/test_cneh_exp_01_acceptance.py", line 360, in test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs
+    self.assertEqual(gate.ci_provenance(checks, changed, manifest, self.final_sha)["status"], expected)
+AssertionError: 'PASS' != 'UNKNOWN'
+- PASS
++ UNKNOWN
+
+
+======================================================================
+FAIL: test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-a3-mutation-7n4wg1db/tests/test_cneh_exp_01_acceptance.py", line 360, in test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs
+    self.assertEqual(gate.ci_provenance(checks, changed, manifest, self.final_sha)["status"], expected)
+AssertionError: 'PASS' != 'FAIL'
+- PASS
++ FAIL
+
+
+======================================================================
+FAIL: test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='neutral')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-a3-mutation-7n4wg1db/tests/test_cneh_exp_01_acceptance.py", line 360, in test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs
+    self.assertEqual(gate.ci_provenance(checks, changed, manifest, self.final_sha)["status"], expected)
+AssertionError: 'PASS' != 'FAIL'
+- PASS
++ FAIL
+
+
+======================================================================
+FAIL: test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs (test_cneh_exp_01_acceptance.AcceptanceTests.test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs) (status='completed', conclusion='skipped')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-a3-mutation-7n4wg1db/tests/test_cneh_exp_01_acceptance.py", line 360, in test_green_checks_do_not_mask_unfinished_or_failed_workflow_runs
+    self.assertEqual(gate.ci_provenance(checks, changed, manifest, self.final_sha)["status"], expected)
+AssertionError: 'PASS' != 'FAIL'
+- PASS
++ FAIL
+
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.630s
+
+FAILED (failures=4)

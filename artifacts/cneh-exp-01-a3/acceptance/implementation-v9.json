@@ -1,0 +1,49 @@
+{
+  "schema": "cneh-acceptance-a3-implementation-v2",
+  "current_head": "0d362a42edecd9fd654ca476602ab51f3fdaa715",
+  "mutation_execution_base_commit": "b2b1262c5903955a3eabb7a32936967bd0964784",
+  "owned_files_sha256": {
+    "experiments/cneh_exp_01/acceptance.py": "2027aef3588a3a63f98597f18167d91aec94f1bfa37426eb3dcb5cd75c67bc64",
+    "tests/test_cneh_exp_01_acceptance.py": "8add22f76f457bfb16c075407fbab4e61fa0b68ce06c7d1ae5c957a69a43ec45"
+  },
+  "owned_diff_sha256": "42489f428db44ec4f30208a02d42b151f97390edab99ff0944a4709406651022",
+  "targeted_command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_cneh_exp_01_acceptance.py",
+    "-v"
+  ],
+  "targeted_exit_code": 0,
+  "targeted_tests": 20,
+  "targeted_log_sha256": "34183e34426e8f00337b0c3ef4ee34695257fc0696f87bf459d08f180f5700ce",
+  "mutation_command": [
+    "python3",
+    "-B",
+    "../evidence/acceptance-a3-implementation/run_mutations.py",
+    "--repo",
+    ".",
+    "--out",
+    "../evidence/acceptance-a3-implementation/mutations-v9"
+  ],
+  "mutation_exit_code": 0,
+  "mutation_report_sha256": "ef4dbbe32dca247e9f6996f4d2a4816e86c4e6602cc9f1adf6044e52128939bc",
+  "mutation_admission": {
+    "total": 4,
+    "killed": 4,
+    "classification": "KILLED_ASSERTION",
+    "driver_sha256": "a246eebd00b23521f21aa5cf82230bb5eecebba3c3d038eb085f5796a99f11ee"
+  },
+  "source_unchanged_since_mutations": true,
+  "pre_fix_source_path": "acceptance-pre-v9.py",
+  "pre_fix_source_sha256": "3861a5b452bc898bf139904e565e251893fa7b0d6162f42ab4f543a734460a37",
+  "root_driver_destination": "artifacts/cneh-exp-01-a3/acceptance/run_mutations.py",
+  "full_actual_final_sha_G1_G2_G3_G4": "NOT_RUN; serialized final commit and fresh invocation required",
+  "scientific_promotion_authorized": false,
+  "independent_replication": "NOT_TESTED"
+}

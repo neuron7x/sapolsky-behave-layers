@@ -1,0 +1,12 @@
+{
+  "status": "INVALID_VERIFIER_FIXTURE",
+  "cause": "git archive omitted .git required by assurance_report Git provenance test",
+  "observed_tests": {
+    "passed": 48,
+    "failed": 1,
+    "subtests_passed": 10
+  },
+  "raw_failure_preserved": "failure.json",
+  "production_source_changed": false,
+  "test_selection_unchanged": true
+}

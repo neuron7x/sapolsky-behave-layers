@@ -1,0 +1,82 @@
+Collecting ast-serialize==0.13.1 (from -r requirements/cwc-dev.lock (line 4))
+  Downloading ast_serialize-0.13.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 1.8 MB/s eta 0:00:00
+Collecting click==8.4.2 (from -r requirements/cwc-dev.lock (line 62))
+  Downloading click-8.4.2-py3-none-any.whl (119 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 119.2/119.2 kB 2.7 MB/s eta 0:00:00
+Collecting coverage==7.16.2 (from -r requirements/cwc-dev.lock (line 65))
+  Downloading coverage-7.16.2-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (256 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 256.6/256.6 kB 3.0 MB/s eta 0:00:00
+Collecting hypothesis==6.168.5 (from -r requirements/cwc-dev.lock (line 187))
+  Downloading hypothesis-6.168.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 2.1 MB/s eta 0:00:00
+Collecting iniconfig==2.1.0 (from -r requirements/cwc-dev.lock (line 273))
+  Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Collecting libcst==1.9.0 (from -r requirements/cwc-dev.lock (line 276))
+  Downloading libcst-1.9.0-cp311-cp311-manylinux_2_28_x86_64.whl (2.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 2.5 MB/s eta 0:00:00
+Collecting librt==0.17.0 (from -r requirements/cwc-dev.lock (line 341))
+  Downloading librt-0.17.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (604 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 604.6/604.6 kB 3.1 MB/s eta 0:00:00
+Collecting linkify-it-py==2.2.0 (from -r requirements/cwc-dev.lock (line 465))
+  Downloading linkify_it_py-2.2.0-py3-none-any.whl (21 kB)
+Collecting markdown-it-py==4.3.0 (from -r requirements/cwc-dev.lock (line 468))
+  Downloading markdown_it_py-4.3.0-py3-none-any.whl (96 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 97.0/97.0 kB 5.2 MB/s eta 0:00:00
+Collecting mdit-py-plugins==0.7.0 (from -r requirements/cwc-dev.lock (line 471))
+  Downloading mdit_py_plugins-0.7.0-py3-none-any.whl (72 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 72.9/72.9 kB 4.9 MB/s eta 0:00:00
+Collecting mdurl==0.1.2 (from -r requirements/cwc-dev.lock (line 474))
+  Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Collecting mutmut==3.7.0 (from -r requirements/cwc-dev.lock (line 477))
+  Downloading mutmut-3.7.0-py3-none-any.whl (59 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.1/59.1 kB 7.1 MB/s eta 0:00:00
+Collecting mypy==2.3.0 (from -r requirements/cwc-dev.lock (line 480))
+  Downloading mypy-2.3.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (15.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.1/15.1 MB 1.8 MB/s eta 0:00:00
+Collecting mypy-extensions==1.2.0 (from -r requirements/cwc-dev.lock (line 526))
+  Downloading mypy_extensions-1.2.0-py3-none-any.whl (5.1 kB)
+Collecting numpy==2.2.6 (from -r requirements/cwc-dev.lock (line 529))
+  Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.8/16.8 MB 3.6 MB/s eta 0:00:00
+Collecting packaging==25.0 (from -r requirements/cwc-dev.lock (line 585))
+  Downloading packaging-25.0-py3-none-any.whl (66 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 66.5/66.5 kB 4.5 MB/s eta 0:00:00
+Collecting pathspec==1.1.1 (from -r requirements/cwc-dev.lock (line 588))
+  Using cached pathspec-1.1.1-py3-none-any.whl (57 kB)
+Collecting platformdirs==4.4.0 (from -r requirements/cwc-dev.lock (line 591))
+  Downloading platformdirs-4.4.0-py3-none-any.whl (18 kB)
+Collecting pluggy==1.6.0 (from -r requirements/cwc-dev.lock (line 594))
+  Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+Collecting pygments==2.21.0 (from -r requirements/cwc-dev.lock (line 597))
+  Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Collecting pytest==9.1.1 (from -r requirements/cwc-dev.lock (line 600))
+  Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+Collecting pytest-cov==7.1.0 (from -r requirements/cwc-dev.lock (line 603))
+  Downloading pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Collecting pyyaml==6.0.2 (from -r requirements/cwc-dev.lock (line 606))
+  Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (762 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 763.0/763.0 kB 4.3 MB/s eta 0:00:00
+Collecting rich==15.0.0 (from -r requirements/cwc-dev.lock (line 660))
+  Using cached rich-15.0.0-py3-none-any.whl (310 kB)
+Collecting ruff==0.17.3 (from -r requirements/cwc-dev.lock (line 663))
+  Downloading ruff-0.17.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.6/10.6 MB 3.7 MB/s eta 0:00:00
+Collecting setproctitle==1.3.8 (from -r requirements/cwc-dev.lock (line 682))
+  Downloading setproctitle-1.3.8-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (32 kB)
+Collecting sortedcontainers==2.4.0 (from -r requirements/cwc-dev.lock (line 783))
+  Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+Collecting textual==8.2.8 (from -r requirements/cwc-dev.lock (line 786))
+  Downloading textual-8.2.8-py3-none-any.whl (731 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 731.4/731.4 kB 6.4 MB/s eta 0:00:00
+Collecting tomli==2.5.0 (from -r requirements/cwc-dev.lock (line 789))
+  Downloading tomli-2.5.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (276 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 276.4/276.4 kB 7.6 MB/s eta 0:00:00
+Collecting typing-extensions==4.15.0 (from -r requirements/cwc-dev.lock (line 855))
+  Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 4.8 MB/s eta 0:00:00
+Installing collected packages: sortedcontainers, typing-extensions, tomli, setproctitle, ruff, pyyaml, pygments, pluggy, platformdirs, pathspec, packaging, numpy, mypy-extensions, mdurl, linkify-it-py, iniconfig, hypothesis, coverage, click, ast-serialize, pytest, markdown-it-py, librt, libcst, rich, pytest-cov, mypy, mdit-py-plugins, textual, mutmut
+Successfully installed ast-serialize-0.13.1 click-8.4.2 coverage-7.16.2 hypothesis-6.168.5 iniconfig-2.1.0 libcst-1.9.0 librt-0.17.0 linkify-it-py-2.2.0 markdown-it-py-4.3.0 mdit-py-plugins-0.7.0 mdurl-0.1.2 mutmut-3.7.0 mypy-2.3.0 mypy-extensions-1.2.0 numpy-2.2.6 packaging-25.0 pathspec-1.1.1 platformdirs-4.4.0 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 pytest-cov-7.1.0 pyyaml-6.0.2 rich-15.0.0 ruff-0.17.3 setproctitle-1.3.8 sortedcontainers-2.4.0 textual-8.2.8 tomli-2.5.0 typing-extensions-4.15.0
+
+[notice] A new release of pip is available: 24.0 -> 26.3
+[notice] To update, run: /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/ci-supplychain-a4/dev/bin/python -m pip install --upgrade pip

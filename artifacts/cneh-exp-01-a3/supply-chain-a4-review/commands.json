@@ -1,0 +1,282 @@
+[
+  {
+    "label": "source-archive",
+    "argv": [
+      "git",
+      "archive",
+      "--format=tar",
+      "--output=/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/source.tar",
+      "b2b1262c5903955a3eabb7a32936967bd0964784"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "start_utc": "2026-11-23T16:04:06.680605+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "python-version",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "--version"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/checkout",
+    "start_utc": "2026-11-23T16:04:09.640471+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "b1d173e941dbfa8bbabe0c832c75d9449f31942f882d76510e027fa02de2cae0",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "uv-version",
+    "argv": [
+      "uv",
+      "--version"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/checkout",
+    "start_utc": "2026-11-23T16:04:09.644347+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "bfc01581a993b13091dd169f8853c867fa573b5e25c88f575cef0fb9e3eb878a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "installed-record-bytes",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "-c",
+      "import base64,csv,hashlib,importlib.metadata,json\nrows={};bad=[];checked=0;unhashed=0\nfor d in importlib.metadata.distributions():\n name=d.metadata['Name'];rows[name]={'version':d.version,'requires':d.requires or []}\n for f in d.files or []:\n  if not f.hash:unhashed+=1;continue\n  p=d.locate_file(f)\n  actual=base64.urlsafe_b64encode(hashlib.new(f.hash.mode,p.read_bytes()).digest()).rstrip(b'=').decode()\n  if actual!=f.hash.value:bad.append(str(f))\n  checked+=1\nprint(json.dumps({'distributions':rows,'record_files_checked':checked,'unhashed_record_entries':unhashed,'mismatches':bad}))\n"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/checkout",
+    "start_utc": "2026-11-23T16:04:09.651230+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "9f982a7c844e139953f2daea4b63c7fab287d0faafa758b46b072653eb5f82fe",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "installed-transitive-closure",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "-c",
+      "import importlib.metadata,json,re\nfrom packaging.requirements import Requirement\nfrom packaging.markers import default_environment\nenvironment=default_environment();environment['extra']=''\ninstalled={re.sub(r'[-_.]+','-',d.metadata['Name']).lower():d.version for d in importlib.metadata.distributions()};bad=[];count=0\nfor d in importlib.metadata.distributions():\n for raw in d.requires or []:\n  r=Requirement(raw)\n  if r.marker and not r.marker.evaluate(environment):continue\n  n=re.sub(r'[-_.]+','-',r.name).lower();count+=1\n  if n not in installed or (r.specifier and not r.specifier.contains(installed[n])):bad.append([d.metadata['Name'],raw,installed.get(n)])\nprint(json.dumps({'active_dependency_edges':count,'unmet':bad,'environment':environment}))\n"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/checkout",
+    "start_utc": "2026-11-23T16:04:10.434753+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "31036c82f191b77005db4bb5896e03ade6a0dafbbf9d972149ce7aa115879cde",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "targeted-tests",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_dependency_integrity_gate.py",
+      "tests/test_cwc_dependency_audit.py",
+      "--junitxml=/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/targeted-tests.xml"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/checkout",
+    "start_utc": "2026-11-23T16:04:10.545275+00:00",
+    "exit_code": 1,
+    "expected_exit": 0,
+    "stdout_sha256": "24b2d8914ae603ec94cb5f295b08e47278fed8cd7b214384bc84bd5ffaa3b324",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "isolated-clone",
+    "argv": [
+      "git",
+      "clone",
+      "--shared",
+      "--no-checkout",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review",
+    "start_utc": "2026-11-23T16:05:23.425005+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "85aab726c0d4c2f3d4d26f9ee33e168132a055a9552cbc2d58f22da4ed487bd4"
+  },
+  {
+    "label": "isolated-detached-head",
+    "argv": [
+      "git",
+      "checkout",
+      "--detach",
+      "b2b1262c5903955a3eabb7a32936967bd0964784"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:05:23.436163+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "d8ad3e82b0285847bb7521ebc8248c49f77bb1ab1b23de37bb42daf540949edc"
+  },
+  {
+    "label": "targeted-tests-r2",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_dependency_integrity_gate.py",
+      "tests/test_cwc_dependency_audit.py",
+      "--junitxml=/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/targeted-tests-r2.xml"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:05:23.568037+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "b294c0f58e165afaec0993004495446d836bb6d9254d635f1e2c92e21597f9e7",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "real-advisory-audits",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "scripts/cwc_dependency_audit.py"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:06:12.159496+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "2abfbac420622936b1d76b272fa4df9c374dee71f6d389981f17bf60f362c2e3",
+    "stderr_sha256": "a19622617c890581a4cf84ce29bd1ff00109cca51082723efa635e441350a8e2"
+  },
+  {
+    "label": "negative-env-create",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-B",
+      "-m",
+      "venv",
+      "--without-pip",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/wrong-hash-venv"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:06:32.101334+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "official-wheel-wrong-hash",
+    "argv": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/wrong-hash-venv/bin/python",
+      "--require-hashes",
+      "--only-binary",
+      ":all:",
+      "--default-index",
+      "https://pypi.org/simple",
+      "-r",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/wrong-hash.lock"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:06:32.127862+00:00",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "908a9aa3e7bd3191c19d9eac7a1136d42cb070870d917a908ca6797915d58eb8"
+  },
+  {
+    "label": "wrong-hash-no-install",
+    "argv": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/wrong-hash-venv/bin/python",
+      "-B",
+      "-c",
+      "import importlib.metadata; assert not any(d.metadata[\"Name\"].lower()==\"uv\" for d in importlib.metadata.distributions())"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:06:36.762138+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "final-head",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "start_utc": "2026-11-23T16:06:36.804431+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "58c0123b6775eecb2779d147e2fe6d7b6afa03670d874581b4c74208f9f25c77",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "final-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "start_utc": "2026-11-23T16:06:36.806945+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "4ed4796902ee8ccb348749363acb3150285de2ac2e1fbf8049702aedb0ff777c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "unchanged-threshold-inputs",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "e9808dc27fef72826dc52966e1821a6e8c84a583^",
+      "e9808dc27fef72826dc52966e1821a6e8c84a583",
+      "--",
+      "uv.lock",
+      "cwc-requirements-dev.txt",
+      "pyproject.toml",
+      "experiments/cneh_exp_01/protocol.json"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "start_utc": "2026-11-23T16:06:36.814134+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "clone-source-clean",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/git-checkout",
+    "start_utc": "2026-11-23T16:06:36.816644+00:00",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

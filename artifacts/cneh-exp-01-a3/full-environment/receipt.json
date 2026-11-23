@@ -1,0 +1,28 @@
+{
+  "schema": "cneh-local-full-gate-environment-v1",
+  "status": "ENVIRONMENT_PREPARED",
+  "full_gate_executed": false,
+  "environment_path": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv",
+  "preparation_source_commit": "b2b1262c5903955a3eabb7a32936967bd0964784",
+  "dependency_inputs_sha256": {
+    "uv.lock": "4b7d0b3a8cd97ec19e58091ecbf010f22b174223be27f9b9617f8f081725462a",
+    "pyproject.toml": "021e81d80a052b77cdba1660fca6417e8324aacc002eb4cc86100afc736b7d9f",
+    "requirements/cwc-dev.lock": "8671c23425fc3545a0e9f7828ba2ee65c705eccfefca630c73f9ab580aead762",
+    "requirements/ci-uv.lock": "2a8e9790ab29036d08ad0d8e06e8a70e7886f131b760adf25b499546efa64bf6"
+  },
+  "bootstrap_binary_sha256": "56ad65c85aa2c92013807d89d2ff55579dfed03255363e6180c1cc8ca2c4ac59",
+  "bootstrap_version": "uv 0.10.12 (x86_64-unknown-linux-gnu)",
+  "environment_overrides": {
+    "UV_PROJECT_ENVIRONMENT": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/lqp43-full-venv",
+    "UV_CACHE_DIR": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/lqp43-full-env-preparation/uv-cache",
+    "UV_PYTHON_DOWNLOADS": "never",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1"
+  },
+  "input_bytes_unchanged": true,
+  "scientific_promotion_authorized": false,
+  "scope": "CPU environment only; final-source canonical pr-full still requires explicit final SHA and must not overlap metrology"
+}

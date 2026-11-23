@@ -1,0 +1,28 @@
+test_failed_export_cannot_fall_through_to_install_or_audit (test_cwc_dependency_audit.DependencyAuditTests.test_failed_export_cannot_fall_through_to_install_or_audit) ... ok
+test_hash_locked_installer_rejects_wrong_wheel_and_accepts_exact_wheel (test_cwc_dependency_audit.DependencyAuditTests.test_hash_locked_installer_rejects_wrong_wheel_and_accepts_exact_wheel) ... Using Python 3.11.15 environment at: /home/neuro7/.cache/claude-tmp/tmpg0c16bpv/rejected
+Resolved 1 package in 1ms
+  × Failed to read `cwc-hash-fixture @
+  │ file:///home/neuro7/.cache/claude-tmp/tmpg0c16bpv/cwc_hash_fixture-1.0-py3-none-any.whl`
+  ╰─▶ Hash mismatch for `cwc-hash-fixture @
+      file:///home/neuro7/.cache/claude-tmp/tmpg0c16bpv/cwc_hash_fixture-1.0-py3-none-any.whl`
+
+      Expected:
+        sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+      Computed:
+        sha256:756ea521b579497245dae8e89c264c82999f5ddb9633a7f0b369b77bca336f05
+Using Python 3.11.15 environment at: /home/neuro7/.cache/claude-tmp/tmpg0c16bpv/accepted
+Resolved 1 package in 1ms
+Installed 1 package in 2ms
+ + cwc-hash-fixture==1.0 (from file:///home/neuro7/.cache/claude-tmp/tmpg0c16bpv/cwc_hash_fixture-1.0-py3-none-any.whl)
+ok
+test_lock_drift_and_unhashed_transitive_dependency_are_rejected (test_cwc_dependency_audit.DependencyAuditTests.test_lock_drift_and_unhashed_transitive_dependency_are_rejected) ... ok
+test_missing_or_empty_target_prevents_any_audit (test_cwc_dependency_audit.DependencyAuditTests.test_missing_or_empty_target_prevents_any_audit) ... ok
+test_nonzero_vulnerability_or_collection_failure_propagates (test_cwc_dependency_audit.DependencyAuditTests.test_nonzero_vulnerability_or_collection_failure_propagates) ... AUDIT TARGET: dependencies.txt
+AUDIT TARGET: dependencies.txt
+ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.145s
+
+OK

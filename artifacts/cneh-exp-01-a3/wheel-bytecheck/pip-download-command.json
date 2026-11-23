@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+    "-I",
+    "-B",
+    "-m",
+    "pip",
+    "--isolated",
+    "--disable-pip-version-check",
+    "--no-cache-dir",
+    "download",
+    "--require-hashes",
+    "--only-binary=:all:",
+    "--index-url",
+    "https://pypi.org/simple",
+    "--dest",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/final-wheel-bytecheck-downloads",
+    "-r",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/experiments/cneh_exp_01/bnsyn-requirements.lock"
+  ],
+  "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/final-wheel-bytecheck",
+  "start_utc": "2026-11-23T16:19:48.038397+00:00",
+  "end_utc": "2026-11-23T16:20:07.063878+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "3eec6d2119470d764e80264e160e3c42fb50de0a9b5db183182008ef35c1535d",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

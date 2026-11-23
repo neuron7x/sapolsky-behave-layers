@@ -1,0 +1,167 @@
+{
+  "status": "PASS",
+  "required_names": [
+    "Audit Python tooling dependencies",
+    "CodeQL",
+    "CodeQL Python analysis",
+    "Fractal multiscale verification",
+    "Full verification, validation, and falsification",
+    "Pinned BN-Syn integration smoke (no efficacy claim)",
+    "Reject vulnerable dependency changes",
+    "Scan complete Git history for secrets",
+    "Validate GitHub Actions",
+    "doc-and-evidence-gates",
+    "preflight (3.11)",
+    "preflight (3.12)",
+    "quality"
+  ],
+  "missing_required_names": [],
+  "observed_check_count": 14,
+  "failed_checks": [],
+  "pending_checks": [],
+  "non_success_commit_statuses": [],
+  "all_observed_checks": [
+    {
+      "id": 137799161155,
+      "name": "CodeQL",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/runs/137799161155",
+      "started_at": "2026-11-23T15:26:34Z",
+      "completed_at": "2026-11-23T15:26:43Z"
+    },
+    {
+      "id": 137798223159,
+      "name": "Scan complete Git history for secrets",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003764/job/137798223159",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:35Z"
+    },
+    {
+      "id": 137798222816,
+      "name": "doc-and-evidence-gates",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003900/job/137798222816",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:46Z"
+    },
+    {
+      "id": 137798222725,
+      "name": "Validate GitHub Actions",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003764/job/137798222725",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:26Z"
+    },
+    {
+      "id": 137798222676,
+      "name": "Audit Python tooling dependencies",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003764/job/137798222676",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:28:08Z"
+    },
+    {
+      "id": 137798222577,
+      "name": "CodeQL Python analysis",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205004207/job/137798222577",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:26:45Z"
+    },
+    {
+      "id": 137798222518,
+      "name": "Fractal multiscale verification",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003803/job/137798222518",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:26Z"
+    },
+    {
+      "id": 137798222218,
+      "name": "Reject vulnerable dependency changes",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003764/job/137798222218",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:20Z"
+    },
+    {
+      "id": 137798222137,
+      "name": "quality",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205004016/job/137798222137",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:26:25Z"
+    },
+    {
+      "id": 137798221913,
+      "name": "Full verification, validation, and falsification",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003803/job/137798221913",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:36:03Z"
+    },
+    {
+      "id": 137798221533,
+      "name": "preflight (3.11)",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003733/job/137798221533",
+      "started_at": "2026-11-23T15:25:13Z",
+      "completed_at": "2026-11-23T15:25:42Z"
+    },
+    {
+      "id": 137798220898,
+      "name": "Pinned BN-Syn integration smoke (no efficacy claim)",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003733/job/137798220898",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:57Z"
+    },
+    {
+      "id": 137798220295,
+      "name": "preflight (3.12)",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45205003733/job/137798220295",
+      "started_at": "2026-11-23T15:25:12Z",
+      "completed_at": "2026-11-23T15:25:35Z"
+    },
+    {
+      "id": 137798171055,
+      "name": "doc-and-evidence-gates",
+      "head_sha": "f5625363f72be3652d6b6e6fbfad1ceeac57e857",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45204987957/job/137798171055",
+      "started_at": "2026-11-23T15:25:08Z",
+      "completed_at": "2026-11-23T15:25:39Z"
+    }
+  ],
+  "commit_statuses": [],
+  "timestamp_utc": "2026-11-23T15:36:30.082264+00:00"
+}

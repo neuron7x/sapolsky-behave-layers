@@ -1,0 +1,6 @@
+{
+  "status": "FAIL",
+  "error_type": "RuntimeError",
+  "error": "targeted-tests unexpected exit 1",
+  "scope_source_commit": "e9808dc27fef72826dc52966e1821a6e8c84a583"
+}

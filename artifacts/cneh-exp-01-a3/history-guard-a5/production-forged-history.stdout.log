@@ -1,0 +1,1 @@
+{"schema": "cneh-history-guard-v1", "status": "FAIL", "error": "historical byte mismatch: artifacts/cneh-exp-01-a2/SHA256SUMS; trusted=93772b17c379146878025a141fc819802cf7d2b9ca16b0be00ee0b292f7b31f3, actual=551d8dea2e9a72be446288373e059b4b26145db7f740da9b84ee8389af805c86", "scientific_promotion_authorized": false, "independent_replication": "NOT_TESTED"}

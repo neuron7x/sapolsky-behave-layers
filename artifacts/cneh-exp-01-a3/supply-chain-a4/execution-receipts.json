@@ -1,0 +1,447 @@
+[
+  {
+    "label": "bootstrap-final-create",
+    "command": [
+      "python3.11",
+      "-m",
+      "venv",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 1.960716236004373
+  },
+  {
+    "label": "bootstrap-final-install",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/python",
+      "-m",
+      "pip",
+      "install",
+      "--require-hashes",
+      "--only-binary=:all:",
+      "--index-url",
+      "https://pypi.org/simple",
+      "-r",
+      "requirements/ci-uv.lock"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 1.1795676150068175
+  },
+  {
+    "label": "bootstrap-final-version",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "--version"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.005248130008112639
+  },
+  {
+    "label": "dev-final-create",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "venv",
+      "--python",
+      "3.11",
+      "--no-project",
+      "--no-python-downloads",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.03223528902162798
+  },
+  {
+    "label": "dev-final-install",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "install",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "--require-hashes",
+      "--only-binary",
+      ":all:",
+      "--default-index",
+      "https://pypi.org/simple",
+      "-r",
+      "requirements/cwc-dev.lock"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 10.238916440983303
+  },
+  {
+    "label": "dev-final-check",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "check",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.015118336013983935
+  },
+  {
+    "label": "dev-final-inventory",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-final/bin/uv",
+      "pip",
+      "list",
+      "--python",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "--format",
+      "json"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.008135887008393183
+  },
+  {
+    "label": "dev-final-imports",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-c",
+      "import coverage,hypothesis,numpy,mypy.version,ruff,mutmut,tomli,pytest_cov; print(\"eight direct tooling imports: PASS\")"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.696595660992898
+  },
+  {
+    "label": "dev-final-cli-pytest",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "pytest",
+      "--version"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.08550937098334543
+  },
+  {
+    "label": "dev-final-cli-mypy",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "mypy",
+      "--version"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.1136330180161167
+  },
+  {
+    "label": "dev-final-cli-ruff",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "ruff",
+      "--version"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.02466004600864835
+  },
+  {
+    "label": "dev-final-cli-coverage",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "coverage",
+      "--version"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.06437911198008806
+  },
+  {
+    "label": "dev-final-cli-mutmut",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/mutmut",
+      "--help"
+    ],
+    "exit_code": 1,
+    "expected_exit": 0,
+    "duration_s": 0.4865714200132061
+  },
+  {
+    "label": "dev-final-cli-mutmut-configured",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/mutmut",
+      "--help"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/mutmut-cli-fixture",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.30826789600541815
+  },
+  {
+    "label": "audit-final-install",
+    "command": [
+      "python3.11",
+      "-c",
+      "from pathlib import Path; from scripts.cwc_dependency_audit import install_tool; install_tool(Path('/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/audit-final'), Path(\"requirements/pip-audit.lock\"))"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.11114177902345546
+  },
+  {
+    "label": "audit-final-check",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/audit-final/bin/python",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.30850583501160145
+  },
+  {
+    "label": "audit-final-inventory",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/audit-final/bin/python",
+      "-m",
+      "pip",
+      "list",
+      "--format=json"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.11692027302342467
+  },
+  {
+    "label": "audit-final-version",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/audit-final/bin/python",
+      "-m",
+      "pip_audit",
+      "--version"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.49759081899537705
+  },
+  {
+    "label": "bootstrap-negative-create",
+    "command": [
+      "python3.11",
+      "-m",
+      "venv",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-negative"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 1.9638564829947427
+  },
+  {
+    "label": "bootstrap-negative-hash",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-negative/bin/python",
+      "-m",
+      "pip",
+      "install",
+      "--require-hashes",
+      "--only-binary=:all:",
+      "--index-url",
+      "https://pypi.org/simple",
+      "--no-cache-dir",
+      "-r",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/uv-wrong-hash.lock"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "duration_s": 5.63958982899203
+  },
+  {
+    "label": "bootstrap-negative-not-installed",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/bootstrap-negative/bin/python",
+      "-c",
+      "import importlib.util; assert importlib.util.find_spec(\"uv\") is None"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.011919382988708094
+  },
+  {
+    "label": "dependency-audit-final",
+    "command": [
+      "python3.11",
+      "scripts/cwc_dependency_audit.py"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 1.6942211290006526
+  },
+  {
+    "label": "targeted-tests-final",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_dependency_integrity_gate.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 4.518165421002777
+  },
+  {
+    "label": "actionlint-final",
+    "command": [
+      "actionlint",
+      ".github/workflows/cwc-quality.yml",
+      ".github/workflows/cwc-full-pr-gate.yml",
+      ".github/workflows/cwc-doc-gates.yml",
+      ".github/workflows/pr-audit.yml"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.022248196008149534
+  },
+  {
+    "label": "helper-lint-final",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "ruff",
+      "check",
+      "--target-version",
+      "py311",
+      "--no-force-exclude",
+      "scripts/cwc_dependency_audit.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.030091309017734602
+  },
+  {
+    "label": "diff-check-final",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.00505636099842377
+  },
+  {
+    "label": "targeted-tests-current",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_dependency_integrity_gate.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 5.720165803999407
+  },
+  {
+    "label": "helper-lint-current",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "ruff",
+      "check",
+      "--target-version",
+      "py311",
+      "--no-force-exclude",
+      "scripts/cwc_dependency_audit.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "duration_s": 0.026883181009907275
+  },
+  {
+    "label": "make-install-dev",
+    "command": [
+      "make",
+      "-f",
+      "Makefile.cwc",
+      "install-dev",
+      "PY=/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0
+  },
+  {
+    "label": "unchanged-frozen-inputs",
+    "command": [
+      "git",
+      "diff",
+      "--exit-code",
+      "3c0feee217e22647997b3888173f372dbeb2f01f",
+      "--",
+      "uv.lock",
+      "cwc-requirements-dev.txt"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0
+  },
+  {
+    "label": "diff-check-current",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0
+  },
+  {
+    "label": "targeted-tests-closure",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_dependency_integrity_gate.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "exit_code": 0,
+    "observed": "49 passed, 10 subtests passed in 4.03s"
+  },
+  {
+    "label": "helper-lint-closure",
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/ci-supplychain-a4/dev-final/bin/python",
+      "-m",
+      "ruff",
+      "check",
+      "--target-version",
+      "py311",
+      "--no-force-exclude",
+      "scripts/cwc_dependency_audit.py",
+      "tests/test_cwc_dependency_audit.py"
+    ],
+    "exit_code": 0
+  }
+]

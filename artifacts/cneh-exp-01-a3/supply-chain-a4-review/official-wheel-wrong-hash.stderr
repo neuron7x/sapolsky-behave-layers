@@ -1,0 +1,12 @@
+Using Python 3.11.15 environment at: /home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/a4-independent-review/wrong-hash-venv
+Resolved 1 package in 561ms
+Downloading uv (22.4MiB)
+ Downloaded uv
+  × Failed to download `uv==0.10.12`
+  ╰─▶ Hash mismatch for `uv==0.10.12`
+
+      Expected:
+        sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+      Computed:
+        sha256:101481a1f48db6becf219914a591a588c0b3bfd05bef90768a5d04972bd6455e
