@@ -65,6 +65,7 @@ def run_cortex_bnsyn(seed:int,arm:str,source:Path)->dict[str,Any]:
         raise ValueError("not a qualified BN-Syn bridge arm")
     assert_bn_source(source)
     sys.path.insert(0,str(source/"src"))
+    sys.path.insert(0, str(HERE.parents[1]))
     import numpy as np
     from bnsyn.config import AdExParams, CriticalityParams, SynapseParams
     from bnsyn.sim.network import Network, NetworkParams
