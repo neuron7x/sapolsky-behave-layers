@@ -1,0 +1,95 @@
+{
+  "id": "CNEH-EXP-02",
+  "hypothesis": "CNEH-04-DC",
+  "hypothesis_status": "FORMALIZED / EMPIRICAL VALIDATION PENDING",
+  "protocol_tier": "SYNTHETIC_MECHANISM_EXPLORATION_ONLY",
+  "source_sha256": "5250113e580fd5d63f5f96fde19f8b1cb5a21a76a1d39f126d1f5182b298556a",
+  "model": {
+    "a0": 0.83,
+    "a1": 0.86,
+    "control_gain": 0.43,
+    "theta_nominal": 0.03,
+    "theta_ood": [
+      -0.44,
+      -0.31,
+      0.33,
+      0.46
+    ],
+    "shift_step": 12,
+    "horizon": 48,
+    "process_sd": 0.015,
+    "observation_sd": 0.055,
+    "initial_abs": 0.65,
+    "goal_abs": 0.52,
+    "safety_abs": 2,
+    "goal_tolerance": 0.18,
+    "action_abs": 0.65
+  },
+  "agent": {
+    "forgetting_factor": 0.88,
+    "ridge_prior_precision": 8,
+    "state_filter_observation_weight": 0.72,
+    "theta_clip": 0.65,
+    "control_gain": 0.92,
+    "probe_base_amplitude": 0.06,
+    "probe_surprise_gain": 0.012,
+    "probe_uncertainty_gain": 0.045,
+    "probe_max_amplitude": 0.16,
+    "probe_period_A": 7,
+    "probe_period_B": 11,
+    "surprise_decay": 0.85,
+    "packet_bytes_per_direction": 32
+  },
+  "cohorts": {
+    "smoke": [
+      3001,
+      3002,
+      3003,
+      3004,
+      3005,
+      3006,
+      3007,
+      3008
+    ],
+    "primary_start": 61001,
+    "primary_count": 128,
+    "replication": "EXTERNAL_OPERATOR_REQUIRED"
+  },
+  "arms": [
+    "COUPLED",
+    "CENTRAL_EMULATOR",
+    "STATIC_FUSION",
+    "SCRAMBLED_CONTENT",
+    "NO_PROBE",
+    "ONE_WAY_A_TO_B",
+    "DISCONNECTED",
+    "HOMOGENEOUS_VIEW",
+    "FULL_INFORMATION_ORACLE"
+  ],
+  "primary_contrasts": [
+    "STATIC_FUSION",
+    "SCRAMBLED_CONTENT",
+    "NO_PROBE",
+    "CENTRAL_EMULATOR"
+  ],
+  "resource_envelope": {
+    "max_control_energy_proxy": 36,
+    "max_controller_operation_proxy": 15000,
+    "max_communication_bytes": 8192,
+    "max_per_agent_memory_bytes": 4096,
+    "max_steps": 48,
+    "training_steps": 0
+  },
+  "alpha": 0.05,
+  "material_effect": 0.05,
+  "scientific_promotion_allowed": false,
+  "independent_replication": false,
+  "intentional_nonclaims": [
+    "No actual neurophysiology",
+    "No PID estimator",
+    "No experimental Fisher information under adaptive noise",
+    "No hardware joule/flop parity",
+    "No independent external blind replication",
+    "No emergence claim"
+  ]
+}

@@ -1,0 +1,106 @@
+name: CNEH real BN-Syn pin-and-replay bridge
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cneh-bnsyn-bridge.yml'
+      - 'experiments/cneh_exp_02/bnsyn_bridge.py'
+      - 'experiments/cneh_exp_02/bnsyn_stimulus_calibration.py'
+      - 'experiments/cneh_exp_02/run.py'
+      - 'experiments/cneh_exp_02/protocol.json'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  pinned-bnsyn-adex:
+    name: Pinned BN-Syn AdEx live feedback and proof replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout external BN-Syn at audited immutable commit
+        uses: actions/checkout@v4
+        with:
+          repository: neuron7x/bnsyn-phase-controlled-emergent-dynamics
+          ref: c1de425ce4ece362e7f2feb2d9f24da5d3231014
+          path: external/bnsyn
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only minimal reference neuron mathematics
+        run: |
+          python -m pip install --only-binary=:all: numpy==2.2.6 scipy==1.15.3 pydantic==2.12.4
+      - name: Run real AdEx BN-Syn two-cortex feedback
+        run: |
+          python experiments/cneh_exp_02/bnsyn_bridge.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-bridge
+      - name: Replay source, action/state traces and hashes
+        run: |
+          python experiments/cneh_exp_02/bnsyn_bridge.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-bridge --verify
+          (cd /tmp/cneh-bnsyn-bridge && sha256sum --check SHA256SUMS)
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("/tmp/cneh-bnsyn-bridge")
+          x=json.loads((root/"bridge_protocol.json").read_text())
+          y=json.loads((root/"neural_trace.json").read_text())
+          print("BN-Syn source sha=",x["source"]["source_sha"])
+          print("Exact central parity=",x["result"]["central_exact"])
+          print("Disconnection causes state difference=",x["result"]["disconnection_changes_trajectory"])
+          for arm,row in sorted(y.items()):
+              print(arm,"spikes_A=",row["total_spikes_A"],"spikes_B=",row["total_spikes_B"],
+                    "trace=",row["trace_sha256"][:20])
+          assert x["result"]["real_bnsyn_network_executed"]
+          assert x["result"]["central_exact"]
+          assert not x["result"]["neural_emergence_established"]
+          PY
+      - name: Kill perfectly re-signed telemetry-fabrication attack
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, tempfile, shutil
+          from experiments.cneh_exp_02.bnsyn_bridge import verify
+          source=Path("external/bnsyn")
+          with tempfile.TemporaryDirectory() as tmp:
+              dest=Path(tmp)/"tampered"
+              shutil.copytree("/tmp/cneh-bnsyn-bridge",dest)
+              trace=dest/"neural_trace.json"
+              trace.write_bytes(trace.read_bytes()+b" ")
+              files=sorted(x for x in dest.iterdir() if x.name!="SHA256SUMS")
+              (dest/"SHA256SUMS").write_text(
+                  "".join(f"{hashlib.sha256(x.read_bytes()).hexdigest()}  {x.name}\n" for x in files),
+                  encoding="ascii"
+              )
+              try:
+                  verify(dest,source)
+              except ValueError as exc:
+                  print("Forged and rehashed BN-Syn output rejected:",exc)
+              else:
+                  raise AssertionError("resigned evidence forgery survived verification")
+          PY
+      - name: Calibrate spiking response without touching CNEH primary
+        run: |
+          python experiments/cneh_exp_02/bnsyn_stimulus_calibration.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-calibration
+          python experiments/cneh_exp_02/bnsyn_stimulus_calibration.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-calibration --verify
+          (cd /tmp/cneh-bnsyn-calibration && sha256sum --check SHA256SUMS)
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("/tmp/cneh-bnsyn-calibration/stimulus_grid.json").read_text())
+          print("Post-observation stimulus diagnostic:",x["verdict"])
+          for current in x["calibration_grid_pA"]:
+              rows=[r for r in x["cells"] if r["injected_current_pA"]==current]
+              print(f"current_pA={current:.1f} spike_sum={sum(r['spike_count_population_A']+r['spike_count_population_B'] for r in rows)} maxV={max(r['max_voltage_mV'] for r in rows):.4f}")
+          assert x["scientific_CNEH_promotion"] is False
+          PY
+      - name: Archive separate non-promotable AdEx stimulus calibration
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-bnsyn-stimulus-calibration-SHA256
+          path: /tmp/cneh-bnsyn-calibration
+          retention-days: 90
+      - name: Archive source-pinned real neuron bridge evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-bnsyn-live-source-pinned-SHA256
+          path: /tmp/cneh-bnsyn-bridge
+          retention-days: 90

@@ -1,0 +1,85 @@
+name: CNEH-EXP-02 adaptive two-cortex proof battery
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cneh-exp-02.yml'
+      - 'experiments/cneh_exp_02/**'
+      - 'experiments/cneh_exp_01/CNEH-04-DC_Formal_Specification.md'
+      - 'tests/test_cneh_exp_02.py'
+      - 'tests/test_cneh_linear_reference.py'
+      - 'tests/test_cneh_cwc_bridge.py'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  mechanistic-preflight:
+    name: Fail-closed synthetic two-cortex preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Adversarial and causal-isolation tests
+        run: python -m unittest discover -s tests -p test_cneh_exp_02.py -v
+      - name: Reproducible smoke / SHA256 proof
+        run: |
+          python experiments/cneh_exp_02/run.py --phase smoke --out /tmp/cneh02-smoke
+          python experiments/cneh_exp_02/run.py --out /tmp/cneh02-smoke --verify
+          (cd /tmp/cneh02-smoke && sha256sum --check SHA256SUMS)
+      - name: Frozen 128-world exploratory primary
+        run: |
+          python experiments/cneh_exp_02/run.py --phase primary --out /tmp/cneh02-primary
+          python experiments/cneh_exp_02/run.py --out /tmp/cneh02-primary --verify
+          (cd /tmp/cneh02-primary && sha256sum --check SHA256SUMS)
+          python -c 'import json;from pathlib import Path;p=Path("/tmp/cneh02-primary");v=json.loads((p/"verdict.json").read_text());d=json.loads((p/"diagnostics.json").read_text());assert v["verdict"]=="EXPLORATORY_INTERNAL_ONLY" and not v["scientific_promotion_authorized"];assert d["emulator_exact_trace_parity"] and d["scramble_donor_message_marginals_exact"]'
+      - name: Interpret frozen exploratory outcome and control falsifiers
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("/tmp/cneh02-primary")
+          m = json.loads((root / "diagnostics.json").read_text())
+          print("=== CNEH-EXP-02 INTERNAL PRIMARY (128 WORLDS) ===")
+          for arm, score in sorted(m["mean_success_by_arm"].items()):
+              print(f"{arm:28s} safe-goal-rate={score:.6f} mean-goal-error={m['mean_goal_error_by_arm'][arm]:.6f}")
+          for baseline, c in m["contrasts_exploratory"].items():
+              print(f"COUPLED - {baseline}: paired={c['mean_paired_difference']:+.6f}, conservative LCB={c['one_sided_lcb_exploratory_only']:+.6f}")
+          print("central_emulator_parity=", m["emulator_exact_trace_parity"])
+          print("same_time_scramble_packet_marginal=", m["scramble_donor_message_marginals_exact"])
+          print("max_control_input_l2_proxy=", m["max_control_effort"])
+          print("max_algorithmic_operation_proxy=", m["max_operation_proxy"])
+          print("status=EXPLORATORY_INTERNAL_ONLY; no neuroemergence claim; external blind replication NOT_TESTED")
+          assert m["emulator_exact_trace_parity"]
+          assert m["scramble_donor_message_marginals_exact"]
+          assert m["all_world_budget_envelopes_pass"]
+          PY
+      - name: Publish externally replayable exploration bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-exp-02-internal-primary-128world-SHA256
+          path: /tmp/cneh02-primary
+          retention-days: 90
+      - name: Publish smoke negative-control bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-exp-02-mechanism-smoke-SHA256
+          path: /tmp/cneh02-smoke
+          retention-days: 30
+  exact-math-cwc-bridge:
+    name: Independent LTI reference vs CWC rank/Fisher code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exact two-state Gramian / Hankel / parameter-information tests
+        run: python -m unittest discover -s tests -p test_cneh_linear_reference.py -v
+      - name: Install bounded matrix dependency (no full model stack)
+        run: |
+          python -m pip install --only-binary=:all: numpy==2.2.6
+      - name: Cross-verify real CWC identifiability implementation
+        run: python -m unittest discover -s tests -p test_cneh_cwc_bridge.py -v
