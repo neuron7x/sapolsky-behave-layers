@@ -1,0 +1,1 @@
+{"evidence_format_version":2,"runner_sha256":"9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879","trace_encoding":"canonical JSON of float.hex binary64 action/state rows","verification_scope":"same-implementation deterministic replay; not independent replication"}

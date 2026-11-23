@@ -1,0 +1,42 @@
+{
+  "status": "SOURCE_PINS_ONLY_NOT_YET_EXECUTABLE_INTEGRATION",
+  "date": "2026-11-23",
+  "entries": [
+    {
+      "repo": "neuron7x/sapolsky-behave-layers",
+      "sha": "95c78c588b83ded30d0d882ddcf0f8fa6502a109",
+      "role": "CWC root, normative methodology"
+    },
+    {
+      "repo": "neuron7x/bnsyn-phase-controlled-emergent-dynamics",
+      "sha": "c1de425ce4ece362e7f2feb2d9f24da5d3231014",
+      "role": "candidate neurodynamic substrate; not yet integrated"
+    },
+    {
+      "repo": "neuron7x/neosynaptex",
+      "sha": "04f232e22066e594a29fa9b95e28a7ac48851122",
+      "role": "candidate independent null diagnostic; not yet integrated"
+    },
+    {
+      "repo": "neuron7xLab/neuron7x-agents",
+      "sha": "0c8e88e7296f42d1ab7d9834bdbafb54b610e384",
+      "role": "optional DNCA, not yet integrated"
+    },
+    {
+      "repo": "neuron7xLab/time-rupture-inference",
+      "sha": "87f6423af17c97e752812826491a598c630936e1",
+      "role": "candidate hidden-regime benchmark; not yet integrated"
+    },
+    {
+      "repo": "neuron7xLab/proof-of-state",
+      "sha": "abfd7187f3042a8d8ba4b46bb86fb913f30f7ed3",
+      "role": "candidate independent replay verification; not yet integrated"
+    },
+    {
+      "repo": "neuron7xLab/measured-honesty",
+      "sha": "49b7b4f4cbaca7448c09f6b4e526cc06a7184431",
+      "role": "candidate epistemic audit; not yet integrated"
+    }
+  ],
+  "policy": "No repository vendoring, no inferred interface compatibility, no frozen negative mutation."
+}

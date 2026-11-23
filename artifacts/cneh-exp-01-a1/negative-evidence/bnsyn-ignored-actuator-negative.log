@@ -1,0 +1,1 @@
+{"negative_control": "ignored_actuator", "outcome": "KILLED", "reason": "neural action responsiveness absent", "response_digests_equal": true, "full_trace_digests_equal": false, "source_unchanged": true}

@@ -1,0 +1,1 @@
+{"chance_constraint_verified":false,"gate":"SYNTHETIC_ONLY","physical_safety_qualified":false,"synthetic_safe_rates":{"A_ONLY":1.0,"B_ONLY":1.0,"CENTRAL_EMULATOR":1.0,"COUPLED":1.0,"FULL_INFORMATION_ORACLE":1.0,"HOMOGENEOUS_DUPLICATES":1.0,"ONE_WAY":1.0,"PARALLEL_NO_MESSAGES":1.0,"SCRAMBLED_MATCHED_TRAFFIC":1.0,"STATIC_FUSION":1.0}}

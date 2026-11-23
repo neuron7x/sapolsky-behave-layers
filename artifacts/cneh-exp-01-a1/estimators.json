@@ -1,0 +1,147 @@
+{
+  "authority": "ANALYTIC_COMPONENTS_ONLY",
+  "causal_attribution_qualified": false,
+  "checks": {
+    "duplicate_reconstruction": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "duplicate_redundancy_bits": {
+      "actual": 1.0,
+      "expected": 1,
+      "pass": true
+    },
+    "duplicate_synergy_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "duplicate_unique_1_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "duplicate_unique_2_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "fisher_rank_deficiency": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "fisher_zero_sensitivity": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "gaussian_location": {
+      "actual": 2.0,
+      "expected": 2.0,
+      "pass": true
+    },
+    "gramian_trajectory_energy": {
+      "actual": 0.32237683978896814,
+      "expected": 0.32237683978896814,
+      "pass": true
+    },
+    "independent_reconstruction": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "independent_redundancy_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "independent_synergy_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "independent_unique_1_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "independent_unique_2_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "scalar_gramian": {
+      "actual": 5.328125,
+      "expected": 5.328125,
+      "pass": true
+    },
+    "source_permutation_joint_information_bits": {
+      "actual": 0.7219280948873623,
+      "expected": 0.7219280948873623,
+      "pass": true
+    },
+    "source_permutation_redundancy_bits": {
+      "actual": 0.236452797660028,
+      "expected": 0.236452797660028,
+      "pass": true
+    },
+    "source_permutation_synergy_bits": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "source_permutation_unique": {
+      "actual": 0.4854752972273343,
+      "expected": 0.4854752972273343,
+      "pass": true
+    },
+    "unobserved_coordinate": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    },
+    "variance_rescaling": {
+      "actual": 0.5,
+      "expected": 0.5,
+      "pass": true
+    },
+    "xor_reconstruction": {
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    "xor_redundancy_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "xor_synergy_bits": {
+      "actual": 1.0,
+      "expected": 1,
+      "pass": true
+    },
+    "xor_unique_1_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "xor_unique_2_bits": {
+      "actual": 0.0,
+      "expected": 0,
+      "pass": true
+    },
+    "zero_observation": {
+      "actual": 0.0,
+      "expected": 0.0,
+      "pass": true
+    }
+  },
+  "contract_sha256": "f2e19000da3a603bbc5576ae0ac2d7fc436ccc09bc0700f81ad5285b62881f6e",
+  "neural_estimators_qualified": false,
+  "schema": "cneh-analytic-qualification-v1",
+  "scientific_promotion_authorized": false,
+  "source_sha256": "7af15d1bcdf62e9eb96ac472649b7cb049a60732eb4d85871536383d93e6a408",
+  "status": "PASS"
+}

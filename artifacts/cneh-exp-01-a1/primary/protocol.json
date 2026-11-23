@@ -1,0 +1,87 @@
+{
+  "experiment_id": "CNEH-EXP-01",
+  "specification": "CNEH-04-DC",
+  "hypothesis_status": "FORMALIZED / EMPIRICAL VALIDATION PENDING",
+  "kind": "prospective_synthetic_preflight",
+  "primary_comparator": "CENTRAL_EMULATOR",
+  "status": "NOT_TESTED",
+  "source_spec_sha256": "5250113e580fd5d63f5f96fde19f8b1cb5a21a76a1d39f126d1f5182b298556a",
+  "model": {
+    "d": 2,
+    "step_horizon": 24,
+    "change_step": 6,
+    "A_base_diagonal": [
+      0.82,
+      0.84
+    ],
+    "cross_coupling_nominal": 0.02,
+    "ood_cross_coupling_set": [
+      -0.28,
+      -0.18,
+      0.22,
+      0.34
+    ],
+    "actuator_gain": 0.35,
+    "actuator_bound": 0.8,
+    "process_noise_sd": 0.025,
+    "observation_noise_sd": 0.09,
+    "initial_state_abs_bound": 0.6,
+    "goal_abs_bound": 0.55,
+    "goal_tolerance_l2": 0.25,
+    "safety_abs_bound": 2.5
+  },
+  "cohorts": {
+    "development": "NONPROMOTABLE",
+    "primary": {
+      "seed_first": 51001,
+      "seed_last": 51128,
+      "n_world_seeds": 128
+    },
+    "replication": {
+      "n_world_seeds": 128,
+      "actor": "independent_external_operator",
+      "blinding": "commit_seed_sha256_before_execution; reveal_after_published_outputs",
+      "status": "NOT_TESTED"
+    }
+  },
+  "arms": [
+    "COUPLED",
+    "CENTRAL_EMULATOR",
+    "STATIC_FUSION",
+    "SCRAMBLED_MATCHED_TRAFFIC",
+    "A_ONLY",
+    "B_ONLY",
+    "PARALLEL_NO_MESSAGES",
+    "ONE_WAY",
+    "HOMOGENEOUS_DUPLICATES",
+    "FULL_INFORMATION_ORACLE"
+  ],
+  "primary_contrasts": [
+    "CENTRAL_EMULATOR",
+    "STATIC_FUSION",
+    "SCRAMBLED_MATCHED_TRAFFIC"
+  ],
+  "material_effect": 0.05,
+  "alpha_fwer": 0.05,
+  "number_family_tests": 6,
+  "one_sided_lcb": "mean(paired_binary_difference)-sqrt(2*ln(6/0.05)/N)",
+  "randomness": "paired_common_random_numbers_per_seed_no_state_truth_leak",
+  "resource_envelope": {
+    "control_energy_proxy_max": 48,
+    "controller_compute_proxy_ops_max": 5000,
+    "message_bytes_max": 4096,
+    "controller_memory_proxy_bytes_max": 16384,
+    "latency_steps_max": 24,
+    "training_steps_max": 0
+  },
+  "comparative_cost_status": "UNQUALIFIED_PHYSICAL_FLOPS_AND_JOULES",
+  "scientific_qualification_requires": [
+    "independent_blind_replication",
+    "matched_measured_resource_vector",
+    "physical-interface parity",
+    "central_emulator_trace_parity",
+    "all_primary_lcbs_above_material_effect",
+    "no_status_overclaim"
+  ],
+  "claim_promotion_allowed": false
+}

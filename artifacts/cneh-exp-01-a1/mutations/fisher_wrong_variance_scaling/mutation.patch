@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/estimators.py
++++ experiments/cneh_exp_01/estimators.py
+@@ -42,7 +42,7 @@
+     if variance <= 0:
+         raise ValueError("variance must be positive")
+     n = len(j[0])
+-    return _finite_matrix([[math.fsum(row[a] * row[b] for row in j) / variance
++    return _finite_matrix([[math.fsum(row[a] * row[b] for row in j) * variance
+                             for b in range(n)] for a in range(n)])
+ 
+ 

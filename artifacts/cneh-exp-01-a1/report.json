@@ -1,0 +1,254 @@
+{
+  "analytic_checks": 27,
+  "commands": [
+    {
+      "command": [
+        "/usr/bin/python",
+        "-c",
+        "import json,unittest\ns=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01*.py')\nr=unittest.TextTestRunner(verbosity=2).run(s)\nprint(json.dumps({'tests_run':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skipped':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}))\nraise SystemExit(0 if r.wasSuccessful() and r.testsRun>=60 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)\n"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "a4a12e06317f22456039965ed1a780c57375a17688962ec9e5c5ad96fd8e9714",
+      "name": "unittest"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/run.py",
+        "--phase",
+        "primary",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "7e0fbe33168b92add53ac42cd9306820cfb469d84bc3b520687f0a58cc8d570f",
+      "name": "primary-generate"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/run.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary",
+        "--verify"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "c152715bd31258016524a4a1b1ef51a91d1a4d736c3136030607c665dd666cd9",
+      "name": "primary-verify"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/qualification.py",
+        "--bundle",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary",
+        "--require-scientific-readiness"
+      ],
+      "exit_code": 2,
+      "expected_exit": 2,
+      "log_sha256": "d51fa0d7c0df946ffa35e3e4857aa6718300fdc627ad2950435c5132ecba706c",
+      "name": "science-readiness"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/estimators.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/estimators.json"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "d7083f5ea2d92eb2217197d5139fb000bd4b0b198f0f241ec6899d3b8b27f59b",
+      "name": "estimators"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/hardware.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/timing.json",
+        "--require-qualified-cost"
+      ],
+      "exit_code": 2,
+      "expected_exit": 2,
+      "log_sha256": "6ca016a6db354638273db71de1ab12abe2003d95a51e1a1511fcef40f40e2dd2",
+      "name": "hardware"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/mutation_check.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/mutations"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "8063be21be131ce621b0a86ebd549b5d0854e7da8dca4ede8e86c5923cc63b40",
+      "name": "mutations"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/bnsyn_adapter.py",
+        "--source",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/bnsyn"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "d04cca264b366c736be2bdf333a0defd51a933ee24a0602e8b1f5ffddd5c5792",
+      "name": "bnsyn-execute"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/bnsyn_adapter.py",
+        "--source",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/bnsyn",
+        "--verify"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "d04cca264b366c736be2bdf333a0defd51a933ee24a0602e8b1f5ffddd5c5792",
+      "name": "bnsyn-verify"
+    }
+  ],
+  "cost_qualification": "COST_INSTRUMENT_INVALID",
+  "frozen_originals": {
+    "CNEH-04-DC_Formal_Specification.md": "5250113e580fd5d63f5f96fde19f8b1cb5a21a76a1d39f126d1f5182b298556a",
+    "PREREGISTRATION.md": "e11f289235659ab8378cbe87210bac09de4580ef199391870fd18d45ff69590b",
+    "frozen_sources.lock": "1811bff84525cae7463b8c02c6815b29515043086484d96704bfba727bc81751",
+    "protocol.json": "39323416b25923c4a6024a340415bf9db30e2821ba14e4fe294e40ac830a5d8e"
+  },
+  "mutations": {
+    "invalid": 0,
+    "killed": 11,
+    "total": 11
+  },
+  "neural": {
+    "checks": {
+      "action_responsiveness": true,
+      "active_spiking": true,
+      "all_arm_exact_replay": true,
+      "emulator_exact_parity": true,
+      "finite_trajectories": true,
+      "source_verified": true
+    },
+    "episodes": [
+      {
+        "arm": "COUPLED",
+        "response_sha256": "9eb7d240f9f6c3baf4f6072c48acbb28ca665ff1b5ff743f0e4aa1641ab171bd",
+        "seed": 73001,
+        "total_spikes": 96,
+        "trace_sha256": "a35667b0b50c55d297cc2b0890a93c2e80e75fdf7f85ee39638647c9146a56cf",
+        "voltage_range_mV": 106.78548547050379
+      },
+      {
+        "arm": "CENTRAL_EMULATOR",
+        "response_sha256": "9eb7d240f9f6c3baf4f6072c48acbb28ca665ff1b5ff743f0e4aa1641ab171bd",
+        "seed": 73001,
+        "total_spikes": 96,
+        "trace_sha256": "a35667b0b50c55d297cc2b0890a93c2e80e75fdf7f85ee39638647c9146a56cf",
+        "voltage_range_mV": 106.78548547050379
+      },
+      {
+        "arm": "ZERO_ACTION",
+        "response_sha256": "92124d15f76aef1249d2be3ab082a903aa4203fa86dfb1ae95b80b729621ad83",
+        "seed": 73001,
+        "total_spikes": 0,
+        "trace_sha256": "4cffcb3fd8de213384d7fe896c6cc120fd9f64532f3757fa0409c901eca2a7f9",
+        "voltage_range_mV": 28.67071182714929
+      },
+      {
+        "arm": "COUPLED",
+        "response_sha256": "1361f776dad64bb9e24b5f22bbdad40d3b04b6ec3414e65380d09c3d291c6ee7",
+        "seed": 73002,
+        "total_spikes": 96,
+        "trace_sha256": "8e97f63a63557e9e7ee098201552800ec195f386c4e81b527f26cf81141a29bb",
+        "voltage_range_mV": 108.81801632905068
+      },
+      {
+        "arm": "CENTRAL_EMULATOR",
+        "response_sha256": "1361f776dad64bb9e24b5f22bbdad40d3b04b6ec3414e65380d09c3d291c6ee7",
+        "seed": 73002,
+        "total_spikes": 96,
+        "trace_sha256": "8e97f63a63557e9e7ee098201552800ec195f386c4e81b527f26cf81141a29bb",
+        "voltage_range_mV": 108.81801632905068
+      },
+      {
+        "arm": "ZERO_ACTION",
+        "response_sha256": "639c9018a4817288568321b2cdc0074d6998cfbb98e9189a02c280357570d357",
+        "seed": 73002,
+        "total_spikes": 0,
+        "trace_sha256": "3ad28309239fcffd6f01236a6f9fe0a1f611e734e30b9720fd6a4fac3db1fdc3",
+        "voltage_range_mV": 23.915571098998548
+      }
+    ]
+  },
+  "not_run": [
+    "external independent blind replication",
+    "calibrated physical joule/FLOP qualification",
+    "neural efficacy experiment",
+    "hosted exact-head CI"
+  ],
+  "primary": {
+    "coupled_success": 122,
+    "emulator_divergences": 0,
+    "rows": 1280,
+    "world_seeds": 128
+  },
+  "science_readiness": "BLOCKED",
+  "scope": "Internal engineering implementation verification, not independent external scientific replication",
+  "source_drift": false,
+  "state": {
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "files": {
+      ".github/workflows/cneh-exp-01.yml": "52846099842648e0477e9dcb62ebb52d204507d2b97b594f81adee49da4e8080",
+      "experiments/cneh_exp_01/CLAIM_BOUNDARY.md": "3981b5846fbf8e9bc8cf11a9c993257fe519adeb9540c8a849de30e6e2780bb2",
+      "experiments/cneh_exp_01/CNEH-04-DC_Formal_Specification.md": "5250113e580fd5d63f5f96fde19f8b1cb5a21a76a1d39f126d1f5182b298556a",
+      "experiments/cneh_exp_01/INTEGRATION_CONTRACT.md": "bfd546bda6100ee312446a34615daea5caf46c59109df905ca5ba92db1fb2c44",
+      "experiments/cneh_exp_01/PREREGISTRATION.md": "e11f289235659ab8378cbe87210bac09de4580ef199391870fd18d45ff69590b",
+      "experiments/cneh_exp_01/QUALIFICATION_GUIDE.md": "488e48c57b10b1c9e493b03090796ab173ed0ae2dd4fc18850e94a99659e4cf9",
+      "experiments/cneh_exp_01/README.md": "2b75108eeae9f69504df9a0dd2f7766ba1fdac93a1bda42ccee9fd7532f25bc0",
+      "experiments/cneh_exp_01/amendments.json": "030dbf81424b36e00194149f6752f3445a492c7b0d4278cfad9166cf80c51b31",
+      "experiments/cneh_exp_01/bnsyn-requirements.in": "5f2b0688c87101ff815446ad1ce77e1c4f721e2ef95ed76dd2c952f729b473f5",
+      "experiments/cneh_exp_01/bnsyn-requirements.lock": "d9c45ebba2f23a14132ab196e7d2a5543259c307040e45882ab9d156372eb6fe",
+      "experiments/cneh_exp_01/bnsyn_adapter.py": "bf81cce1c71c5c47660f3609dc23f1fc442967c7a5fb146eb27329a6502d3a4d",
+      "experiments/cneh_exp_01/bnsyn_integration_contract.json": "41ef0fa10b1e5d77e51539245bc75e375d5dca5fa8f1779810fc6a80e346eade",
+      "experiments/cneh_exp_01/estimators.py": "7af15d1bcdf62e9eb96ac472649b7cb049a60732eb4d85871536383d93e6a408",
+      "experiments/cneh_exp_01/frozen_sources.lock": "1811bff84525cae7463b8c02c6815b29515043086484d96704bfba727bc81751",
+      "experiments/cneh_exp_01/hardware.py": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9",
+      "experiments/cneh_exp_01/mutation_check.py": "e9c8f028c43b2b1776d0a0731533bc2fce54ecfcf66817315d8a4b2d8da67d36",
+      "experiments/cneh_exp_01/protocol.json": "39323416b25923c4a6024a340415bf9db30e2821ba14e4fe294e40ac830a5d8e",
+      "experiments/cneh_exp_01/qualification.py": "e383029440067b6405698834bc227ed545f05ae3ad96f1171be9b79e31326577",
+      "experiments/cneh_exp_01/qualification_contract.json": "f2e19000da3a603bbc5576ae0ac2d7fc436ccc09bc0700f81ad5285b62881f6e",
+      "experiments/cneh_exp_01/replication.py": "c2201462ee95c24a344a890ba8aaebf9a62e8ece151e46cf01ee0b3504090350",
+      "experiments/cneh_exp_01/run.py": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+      "tests/test_cneh_exp_01.py": "74d657fffa2468ac077c55dc76b4f1d8423c3fb43178b6d19bf7439cd769c8e5",
+      "tests/test_cneh_exp_01_bnsyn.py": "55d13914a9094f85ff540c2423c576913f07c25c0c9cc5dfd8ba5362425311ab",
+      "tests/test_cneh_exp_01_estimators.py": "3e22523d2ea11308a615803421352ca140c17d358e5cdfd22b256274a20e7e0d",
+      "tests/test_cneh_exp_01_hardware.py": "dac70b561bd468a9ae050bcbc09bdb1fc5e38fb0d0f626f255258cbb61cb145f",
+      "tests/test_cneh_exp_01_qualification.py": "971ff4c0188a6572059b57317b2ba450b7d64d9d5f9acb929713a3653975a8af",
+      "tests/test_cneh_exp_01_replication.py": "9f56413f34c0b941594369216cdcb50eab0ae1fbb50157cb731774bbb0d72691"
+    },
+    "git_status": "",
+    "head": "12f3575d9adbc21755c70ec454440ae8b06ba0d4",
+    "tree_sha256": "4c1a33f69b18afad8bce37d6259a14bebb21beec03daf22f7e2fb244740a06a4"
+  },
+  "tests": {
+    "errors": 0,
+    "expected_failures": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests_run": 60,
+    "unexpected_successes": 0
+  },
+  "timing_batches": 200,
+  "verdict": "PASS_WITH_CAVEATS"
+}

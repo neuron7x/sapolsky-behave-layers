@@ -1,0 +1,119 @@
+[
+  {
+    "command": [
+      "/usr/bin/python",
+      "-c",
+      "import json,unittest\ns=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01*.py')\nr=unittest.TextTestRunner(verbosity=2).run(s)\nprint(json.dumps({'tests_run':r.testsRun,'failures':len(r.failures),'errors':len(r.errors),'skipped':len(r.skipped),'expected_failures':len(r.expectedFailures),'unexpected_successes':len(r.unexpectedSuccesses)}))\nraise SystemExit(0 if r.wasSuccessful() and r.testsRun>=60 and not r.skipped and not r.expectedFailures and not r.unexpectedSuccesses else 1)\n"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "a4a12e06317f22456039965ed1a780c57375a17688962ec9e5c5ad96fd8e9714",
+    "name": "unittest"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/run.py",
+      "--phase",
+      "primary",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "7e0fbe33168b92add53ac42cd9306820cfb469d84bc3b520687f0a58cc8d570f",
+    "name": "primary-generate"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/run.py",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary",
+      "--verify"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "c152715bd31258016524a4a1b1ef51a91d1a4d736c3136030607c665dd666cd9",
+    "name": "primary-verify"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/qualification.py",
+      "--bundle",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/primary",
+      "--require-scientific-readiness"
+    ],
+    "exit_code": 2,
+    "expected_exit": 2,
+    "log_sha256": "d51fa0d7c0df946ffa35e3e4857aa6718300fdc627ad2950435c5132ecba706c",
+    "name": "science-readiness"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/estimators.py",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/estimators.json"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "d7083f5ea2d92eb2217197d5139fb000bd4b0b198f0f241ec6899d3b8b27f59b",
+    "name": "estimators"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/hardware.py",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/timing.json",
+      "--require-qualified-cost"
+    ],
+    "exit_code": 2,
+    "expected_exit": 2,
+    "log_sha256": "6ca016a6db354638273db71de1ab12abe2003d95a51e1a1511fcef40f40e2dd2",
+    "name": "hardware"
+  },
+  {
+    "command": [
+      "/usr/bin/python",
+      "experiments/cneh_exp_01/mutation_check.py",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/mutations"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "8063be21be131ce621b0a86ebd549b5d0854e7da8dca4ede8e86c5923cc63b40",
+    "name": "mutations"
+  },
+  {
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+      "experiments/cneh_exp_01/bnsyn_adapter.py",
+      "--source",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/bnsyn"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "d04cca264b366c736be2bdf333a0defd51a933ee24a0602e8b1f5ffddd5c5792",
+    "name": "bnsyn-execute"
+  },
+  {
+    "command": [
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+      "experiments/cneh_exp_01/bnsyn_adapter.py",
+      "--source",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn",
+      "--out",
+      "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-final/bnsyn",
+      "--verify"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "log_sha256": "d04cca264b366c736be2bdf333a0defd51a933ee24a0602e8b1f5ffddd5c5792",
+    "name": "bnsyn-verify"
+  }
+]
