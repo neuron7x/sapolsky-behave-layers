@@ -1,0 +1,36 @@
+{
+  "schema": "cneh-component-qualification-v1",
+  "purpose": "ENGINEERING_QUALIFICATION_ONLY",
+  "scientific_promotion_authorized": false,
+  "numerics": {"absolute_tolerance": 1e-12, "relative_tolerance": 1e-10},
+  "fisher": {
+    "estimand": "Conditional Gaussian mean-parameter Fisher information J_transpose_J / variance",
+    "assumptions": "Known constant positive variance; independent scalar Gaussian residuals; fixed design; supplied exact mean sensitivities",
+    "fixtures": ["Gaussian location", "variance rescaling", "zero sensitivity", "collinear sensitivity columns"],
+    "excluded": ["unknown or parameter-dependent covariance", "closed-loop endogenous design inference", "global identifiability"]
+  },
+  "gramian": {
+    "estimand": "Finite-horizon discrete LTI observability Gramian sum(t=0..T-1) (C A^t)^T (C A^t)",
+    "fixtures": ["scalar geometric sum", "zero observation", "unobserved decoupled coordinate", "trajectory output-energy identity"],
+    "excluded": ["nonlinear empirical Gramian", "parameter Fisher information", "neural system observability inference"]
+  },
+  "pid": {
+    "estimand": "Williams-Beer I_min bivariate PID of an explicitly supplied exact finite PMF",
+    "units": "bits",
+    "fixtures": ["independent target", "duplicate fair bit", "fair XOR", "source permutation", "information reconstruction"],
+    "excluded": ["sample-based PMF estimation", "finite-sample confidence", "causal attribution", "unique universal redundancy definition"]
+  },
+  "timing": {
+    "clock": "perf_counter_ns",
+    "cpu_clock": "process_time_ns",
+    "boundary": "Complete synchronous simulate call including controller, synthetic plant, serialization and trace hashing; excludes setup, reporting and warmup",
+    "seeds": [3001, 3002, 3003, 3004],
+    "warmup_calls_per_arm": 2,
+    "repeats": 5,
+    "batch_calls": 8,
+    "order_seed": 90261123,
+    "order": "shuffle complete arm blocks independently per repeat and seed",
+    "authority": "LOCAL_TIMING_ONLY",
+    "cost_status": "COST_INSTRUMENT_INVALID"
+  }
+}
