@@ -1,0 +1,40 @@
+name: CNEH-EXP-04C bounded observation qualification
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_04c/**'
+      - 'tests/test_cneh_exp_04c.py'
+      - '.github/workflows/cneh-exp-04c.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  bounded-support-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify frozen analytic protocol
+        run: git show e87803126cd128e6d7927917b691f9c7190440dc:experiments/cneh_exp_04c/PREREGISTRATION.md | cmp - experiments/cneh_exp_04c/PREREGISTRATION.md
+      - name: Exhaustive containment and false-acceptance counterexamples
+        run: python -m unittest discover -s tests -p test_cneh_exp_04c.py -v
+      - name: Produce and replay analytic qualification
+        run: |
+          python -m experiments.cneh_exp_04c.qualification --out /tmp/cneh04c.json
+          python -m experiments.cneh_exp_04c.qualification --out /tmp/cneh04c.json --verify
+      - name: Archive analytic qualification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-04c-analytic-${{ matrix.python }}
+          path: /tmp/cneh04c.json
+          if-no-files-found: error
+          retention-days: 90
