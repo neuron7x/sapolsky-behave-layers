@@ -5,7 +5,7 @@
   "pull_request": 43,
   "branch": "research/cneh-exp-01",
   "base_branch": "main",
-  "frozen_against_source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "frozen_against_source_commit": "e9808dc27fef72826dc52966e1821a6e8c84a583",
   "required_contexts": [
     {
       "name": "preflight (3.11)",
@@ -140,10 +140,10 @@
   "workflow_sources_sha256": {
     ".github/workflows/cneh-exp-01.yml": "73797e3a9f9739ec75978128343826e128c098a5309c4e9365df80e085deed5f",
     ".github/workflows/codeql.yml": "e1a10666e8cc4e3ac1dbd91535c44de19b49b1428b337304ce80cc5cc7e9cb02",
-    ".github/workflows/cwc-doc-gates.yml": "794e72d5942dafdf168a4d156e39495f2e55f33b6373d43b1914af6b3b7c46c5",
-    ".github/workflows/cwc-full-pr-gate.yml": "2f72db847cdd20efdd8a99181f34ba5e86ade386a69f9c7bdf31aace9d742607",
-    ".github/workflows/cwc-quality.yml": "5730270bfef50bb31fd29dd4c34104ded217fd7b333cd9598754ec1f4eb52be4",
-    ".github/workflows/pr-audit.yml": "3f10ccc472fbfef8ef9ff622a9d2c5e799668b55fed35b06e7ea54fa64a3c2c4"
+    ".github/workflows/cwc-doc-gates.yml": "bb9e91eea63f6cbbecd1d08b67e93bb7692035751a2a08bd20f2831a02e8cac6",
+    ".github/workflows/cwc-full-pr-gate.yml": "f1828154a2d2899c28db1b018539ad53fea4f49f786fff614634ce0223ddb51f",
+    ".github/workflows/cwc-quality.yml": "b40d787aa722564be7bbaf70af9891ac170998a58782d1fa9c857acfa6bc74e1",
+    ".github/workflows/pr-audit.yml": "ea83b0f74453d0ce7ad94fb726a7faf03387a0837c136e68e900f02913a835cb"
   },
   "source_binding": "For GitHub Actions, bind check_run.check_suite.id to workflow_run.check_suite_id (and job URL/run ID), require workflow path, event and head SHA. GitHub Advanced Security CodeQL has its own app/suite and additionally requires the codeql workflow analysis context. Verify the CodeQL analysis result separately from upload job success.",
   "event_policy": "Pull-request contexts are required. Both documentation push and pull-request contexts are required separately. Path-filtered optional quality push is checked individually when present; it cannot substitute for its pull-request context.",
@@ -155,5 +155,12 @@
     "empty": "FAIL"
   },
   "legacy_statuses": "Check configured legacy commit contexts separately; absent legacy contexts do not inherit the aggregate pending label.",
-  "scientific_promotion_authorized": false
+  "scientific_promotion_authorized": false,
+  "manifest_revision": 2,
+  "supersedes": {
+    "git_commit": "ff4dc6a77124ae3575788a2b953cbbc2f4872d2a",
+    "path": "experiments/cneh_exp_01/required_checks_manifest.json",
+    "sha256": "c848b89a41930eda03f6ecaa976947fbd797c02665860b5e5b5c2465cead1191"
+  },
+  "amendment": "experiments/cneh_exp_01/SUPPLY_CHAIN_AMENDMENT_A4.md"
 }
