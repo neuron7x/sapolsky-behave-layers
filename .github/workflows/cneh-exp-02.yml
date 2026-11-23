@@ -1,0 +1,46 @@
+name: CNEH-EXP-02 adaptive two-cortex proof battery
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cneh-exp-02.yml'
+      - 'experiments/cneh_exp_02/**'
+      - 'experiments/cneh_exp_01/CNEH-04-DC_Formal_Specification.md'
+      - 'tests/test_cneh_exp_02.py'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  mechanistic-preflight:
+    name: Fail-closed synthetic two-cortex preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Adversarial and causal-isolation tests
+        run: python -m unittest discover -s tests -p test_cneh_exp_02.py -v
+      - name: Reproducible smoke / SHA256 proof
+        run: |
+          python experiments/cneh_exp_02/run.py --phase smoke --out /tmp/cneh02-smoke
+          python experiments/cneh_exp_02/run.py --out /tmp/cneh02-smoke --verify
+          (cd /tmp/cneh02-smoke && sha256sum --check SHA256SUMS)
+      - name: Frozen 128-world exploratory primary
+        run: |
+          python experiments/cneh_exp_02/run.py --phase primary --out /tmp/cneh02-primary
+          python experiments/cneh_exp_02/run.py --out /tmp/cneh02-primary --verify
+          (cd /tmp/cneh02-primary && sha256sum --check SHA256SUMS)
+          python -c 'import json;from pathlib import Path;p=Path("/tmp/cneh02-primary");v=json.loads((p/"verdict.json").read_text());d=json.loads((p/"diagnostics.json").read_text());assert v["verdict"]=="EXPLORATORY_INTERNAL_ONLY" and not v["scientific_promotion_authorized"];assert d["emulator_exact_trace_parity"] and d["scramble_donor_message_marginals_exact"]'
+      - name: Publish externally replayable exploration bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-exp-02-internal-primary-128world-SHA256
+          path: /tmp/cneh02-primary
+          retention-days: 90
+      - name: Publish smoke negative-control bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-exp-02-mechanism-smoke-SHA256
+          path: /tmp/cneh02-smoke
+          retention-days: 30
