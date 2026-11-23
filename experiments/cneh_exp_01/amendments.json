@@ -1,0 +1,14 @@
+{
+  "experiment": "CNEH-EXP-01",
+  "amendments": [
+    {
+      "id": "A1",
+      "date": "2026-11-23",
+      "parent_commit": "4ccb02e7da16c4a65573e8e7c7e98a0b8456119b",
+      "reason": "Close engineering verification gaps and specify independently falsifiable integration gates without raising scientific authority.",
+      "diff_of_intent": "Original primary hypotheses, thresholds, seeds and source locks unchanged. Add source-bound exact trace and evidence checks, timing-only instrumentation, commitment consistency tooling and exploratory substrate/estimator qualification. Original positive conjunction remains structurally unsatisfiable.",
+      "contract": "INTEGRATION_CONTRACT.md",
+      "scientific_promotion_authorized": false
+    }
+  ]
+}
