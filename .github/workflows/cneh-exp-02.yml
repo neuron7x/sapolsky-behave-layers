@@ -6,6 +6,8 @@ on:
       - 'experiments/cneh_exp_02/**'
       - 'experiments/cneh_exp_01/CNEH-04-DC_Formal_Specification.md'
       - 'tests/test_cneh_exp_02.py'
+      - 'tests/test_cneh_linear_reference.py'
+      - 'tests/test_cneh_cwc_bridge.py'
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -77,6 +79,7 @@ jobs:
       - name: Exact two-state Gramian / Hankel / parameter-information tests
         run: python -m unittest discover -s tests -p test_cneh_linear_reference.py -v
       - name: Install bounded matrix dependency (no full model stack)
-        run: python -m pip install --only-binary=:all: numpy==2.2.6
+        run: |
+          python -m pip install --only-binary=:all: numpy==2.2.6
       - name: Cross-verify real CWC identifiability implementation
         run: python -m unittest discover -s tests -p test_cneh_cwc_bridge.py -v
