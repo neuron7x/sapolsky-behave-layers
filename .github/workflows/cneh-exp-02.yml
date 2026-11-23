@@ -65,3 +65,18 @@ jobs:
           name: cneh-exp-02-mechanism-smoke-SHA256
           path: /tmp/cneh02-smoke
           retention-days: 30
+  exact-math-cwc-bridge:
+    name: Independent LTI reference vs CWC rank/Fisher code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exact two-state Gramian / Hankel / parameter-information tests
+        run: python -m unittest discover -s tests -p test_cneh_linear_reference.py -v
+      - name: Install bounded matrix dependency (no full model stack)
+        run: python -m pip install --only-binary=:all: numpy==2.2.6
+      - name: Cross-verify real CWC identifiability implementation
+        run: python -m unittest discover -s tests -p test_cneh_cwc_bridge.py -v
