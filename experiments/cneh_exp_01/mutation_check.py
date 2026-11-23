@@ -138,6 +138,8 @@ def execute(root: Path, test_file: str, destination: Path, timeout: float) -> di
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
+            # The child can exit between timeout detection and killpg. It is
+            # still classified as timed out; collect its streams below.
             pass
         stdout, stderr = process.communicate()
     write_new(destination / "stdout.log", stdout.encode())

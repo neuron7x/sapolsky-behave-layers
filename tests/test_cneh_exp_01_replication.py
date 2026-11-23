@@ -123,6 +123,7 @@ class CNEHReplicationTests(unittest.TestCase):
                        "--code-sha", "a" * 40, "--operator-id", "operator", "--out", str(bundle)]
             created = subprocess.run(command, capture_output=True, text=True)
             self.assertEqual(created.returncode, 0, created.stderr)
+            self.assertEqual((bundle / "commitment.json").stat().st_mode & 0o777, 0o600)
             self.assertEqual((bundle / "private" / "reveal.json").stat().st_mode & 0o777, 0o600)
             self.assertEqual((bundle / "private").stat().st_mode & 0o777, 0o700)
             verified = subprocess.run([sys.executable, str(Path(rep.__file__)), "verify",

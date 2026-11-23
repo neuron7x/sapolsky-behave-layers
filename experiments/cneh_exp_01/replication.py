@@ -177,7 +177,7 @@ def verify_reveal(commitment: dict[str, Any], reveal: dict[str, Any], *,
                                          "all_preregistered_outputs_accounted_for"]}
 
 
-def _write_new(path: Path, value: Any, *, mode: int = 0o644) -> None:
+def _write_new(path: Path, value: Any, *, mode: int = 0o600) -> None:
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
     with os.fdopen(descriptor, "wb") as stream:
         stream.write(canonical(value))
