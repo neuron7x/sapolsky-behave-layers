@@ -1,0 +1,32 @@
+name: CNEH-EXP-01 preflight (synthetic / fail closed)
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_01/**'
+      - 'tests/test_cneh_exp_01.py'
+      - '.github/workflows/cneh-exp-01.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit and mutation negative tests
+        run: python -m unittest discover -s tests -p test_cneh_exp_01.py -v
+      - name: Deterministic smoke / sealed artifact
+        run: |
+          python experiments/cneh_exp_01/run.py --phase smoke --out /tmp/cneh-smoke
+          python experiments/cneh_exp_01/run.py --out /tmp/cneh-smoke --verify
+          python -c 'import json; from pathlib import Path; x=json.loads(Path("/tmp/cneh-smoke/verdict.json").read_text()); assert x["verdict"]=="REPLICATION_NOT_TESTED" and not x["scientific_promotion_authorized"]'
+      - name: Archive smoke proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-exp-01-synthetic-smoke
+          path: /tmp/cneh-smoke/
+          retention-days: 30
