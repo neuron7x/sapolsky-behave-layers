@@ -1,0 +1,76 @@
+{
+  "assertion_failure": {
+    "status": "KILLED",
+    "unittest": {
+      "error_test_ids": [],
+      "expected_failures": 0,
+      "failure_test_ids": [
+        "test_fixture.Test.test_guard"
+      ],
+      "skipped": 0,
+      "successful": false,
+      "tests_run": 1,
+      "unexpected_successes": 0
+    },
+    "exit_code": 1,
+    "default_excludes_site_packages": true
+  },
+  "runtime_error": {
+    "status": "INVALID_MUTANT",
+    "unittest": {
+      "error_test_ids": [
+        "test_fixture.Test.test_guard"
+      ],
+      "expected_failures": 0,
+      "failure_test_ids": [],
+      "skipped": 0,
+      "successful": false,
+      "tests_run": 1,
+      "unexpected_successes": 0
+    },
+    "exit_code": 1,
+    "default_excludes_site_packages": true
+  },
+  "skip": {
+    "status": "INVALID_MUTANT",
+    "unittest": {
+      "error_test_ids": [],
+      "expected_failures": 0,
+      "failure_test_ids": [],
+      "skipped": 1,
+      "successful": true,
+      "tests_run": 1,
+      "unexpected_successes": 0
+    },
+    "exit_code": 0,
+    "default_excludes_site_packages": true
+  },
+  "empty": {
+    "status": "INVALID_MUTANT",
+    "unittest": {
+      "error_test_ids": [],
+      "expected_failures": 0,
+      "failure_test_ids": [],
+      "skipped": 0,
+      "successful": true,
+      "tests_run": 0,
+      "unexpected_successes": 0
+    },
+    "exit_code": 0,
+    "default_excludes_site_packages": true
+  },
+  "survivor": {
+    "status": "SURVIVED",
+    "unittest": {
+      "error_test_ids": [],
+      "expected_failures": 0,
+      "failure_test_ids": [],
+      "skipped": 0,
+      "successful": true,
+      "tests_run": 1,
+      "unexpected_successes": 0
+    },
+    "exit_code": 0,
+    "default_excludes_site_packages": true
+  }
+}

@@ -1,0 +1,17 @@
+test_broken_timer_fails (test_cneh_exp_01_hardware.HardwareTimingTests.test_broken_timer_fails) ... ok
+test_complete_balanced_blocks_and_raw_interval_arithmetic (test_cneh_exp_01_hardware.HardwareTimingTests.test_complete_balanced_blocks_and_raw_interval_arithmetic) ... ok
+test_emulator_fault_fails_even_when_timers_work (test_cneh_exp_01_hardware.HardwareTimingTests.test_emulator_fault_fails_even_when_timers_work) ... FAIL
+test_transient_corruption_in_early_batch_is_not_overwritten (test_cneh_exp_01_hardware.HardwareTimingTests.test_transient_corruption_in_early_batch_is_not_overwritten) ... ok
+
+======================================================================
+FAIL: test_emulator_fault_fails_even_when_timers_work (test_cneh_exp_01_hardware.HardwareTimingTests.test_emulator_fault_fails_even_when_timers_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-825y1x7b/tests/test_cneh_exp_01_hardware.py", line 41, in test_emulator_fault_fails_even_when_timers_work
+    with self.assertRaisesRegex(RuntimeError, "parity"):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.469s
+
+FAILED (failures=1)

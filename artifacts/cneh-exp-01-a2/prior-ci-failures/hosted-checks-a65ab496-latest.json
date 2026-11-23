@@ -1,0 +1,104 @@
+{
+  "timestamp": "2026-11-23T14:48:42.261848+00:00",
+  "head": "a65ab49681bc748acb71cde9abe5bc99a4045ab3",
+  "checks": [
+    {
+      "id": 137773243625,
+      "name": "Validate GitHub Actions",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919748/job/137773243625"
+    },
+    {
+      "id": 137773243154,
+      "name": "Reject vulnerable dependency changes",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919748/job/137773243154"
+    },
+    {
+      "id": 137773242910,
+      "name": "Scan complete Git history for secrets",
+      "status": "completed",
+      "conclusion": "failure",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919748/job/137773242910"
+    },
+    {
+      "id": 137773242695,
+      "name": "Audit Python tooling dependencies",
+      "status": "in_progress",
+      "conclusion": null,
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919748/job/137773242695"
+    },
+    {
+      "id": 137773241454,
+      "name": "Full verification, validation, and falsification",
+      "status": "in_progress",
+      "conclusion": null,
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919094/job/137773241454"
+    },
+    {
+      "id": 137773241035,
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918882/job/137773241035"
+    },
+    {
+      "id": 137773240349,
+      "name": "Fractal multiscale verification",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197919094/job/137773240349"
+    },
+    {
+      "id": 137773238851,
+      "name": "preflight (3.12)",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918647/job/137773238851"
+    },
+    {
+      "id": 137773238718,
+      "name": "preflight (3.11)",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918647/job/137773238718"
+    },
+    {
+      "id": 137773238696,
+      "name": "CodeQL Python analysis",
+      "status": "in_progress",
+      "conclusion": null,
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918393/job/137773238696"
+    },
+    {
+      "id": 137773237984,
+      "name": "doc-and-evidence-gates",
+      "status": "completed",
+      "conclusion": "failure",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918473/job/137773237984"
+    },
+    {
+      "id": 137773237891,
+      "name": "Pinned BN-Syn integration smoke (no efficacy claim)",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197918647/job/137773237891"
+    },
+    {
+      "id": 137773197105,
+      "name": "doc-and-evidence-gates",
+      "status": "completed",
+      "conclusion": "failure",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197906081/job/137773197105"
+    },
+    {
+      "id": 137773195885,
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45197905848/job/137773195885"
+    }
+  ]
+}

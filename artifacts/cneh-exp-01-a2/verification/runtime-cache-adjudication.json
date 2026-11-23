@@ -1,0 +1,23 @@
+{
+  "interpretation": "Exactly two timestamp pyc cache artifacts from isolated -I workers; each byte equals independent compilation of the pinned source. No source file admission exceptions. All other unexpected paths remain rejected.",
+  "known_runtime_cache_roster": {
+    "experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc": {
+      "exact_bytes_match": true,
+      "flags": 0,
+      "independently_compiled_pyc_sha256": "49be764455f2f1e9f9bf06d3aeab2bd235f47b6d8e59cba76b1a1580521a5a4f",
+      "magic_matches": true,
+      "observed_pyc_sha256": "49be764455f2f1e9f9bf06d3aeab2bd235f47b6d8e59cba76b1a1580521a5a4f",
+      "source_sha256": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9"
+    },
+    "experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc": {
+      "exact_bytes_match": true,
+      "flags": 0,
+      "independently_compiled_pyc_sha256": "9d306e6ccb40c9bffb94b9a75b594ace530e740a03b16e5f09c4f2f7b74ac602",
+      "magic_matches": true,
+      "observed_pyc_sha256": "9d306e6ccb40c9bffb94b9a75b594ace530e740a03b16e5f09c4f2f7b74ac602",
+      "source_sha256": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879"
+    }
+  },
+  "root_cause": "metrology launches Python with -I -S; -I ignores PYTHONDONTWRITEBYTECODE; run.py and hardware.py imports produce these two exact cache files.",
+  "status": "PASS"
+}

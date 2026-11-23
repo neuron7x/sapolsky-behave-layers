@@ -1,0 +1,36 @@
+{
+  "archive_sha256": "df311241fe4b50c1d283c44b1cab902c50d45ee7c05656c2468dc8508eebe6ca",
+  "status": "PASS",
+  "controls": [
+    {
+      "name": "genuine_cache",
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "-I",
+        "-B",
+        "-c",
+        "import hashlib,importlib.util,json,pathlib,py_compile,sys,tempfile\nroot=pathlib.Path(sys.argv[1]); names=json.loads(sys.argv[2]); evidence=[]\nwith tempfile.TemporaryDirectory(prefix='cneh-cache-oracle-') as directory:\n for index,name in enumerate(names):\n  cache=root/name; source=pathlib.Path(importlib.util.source_from_cache(str(cache)))\n  expected=pathlib.Path(directory)/str(index)\n  py_compile.compile(str(source),cfile=str(expected),dfile=str(source),doraise=True,invalidation_mode=py_compile.PycInvalidationMode.TIMESTAMP)\n  actual_bytes=cache.read_bytes(); expected_bytes=expected.read_bytes()\n  if actual_bytes!=expected_bytes: raise ValueError('cache does not reproduce from canonical source: '+name)\n  evidence.append({'path':name,'sha256':hashlib.sha256(actual_bytes).hexdigest(),'expected_sha256':hashlib.sha256(expected_bytes).hexdigest(),'status':'EXACT_INTERPRETER_COMPILE_MATCH'})\nprint(json.dumps(evidence,sort_keys=True))\n",
+        "/home/neuro7/.cache/claude-tmp/cneh-cache-adjudication-control-43mguz06",
+        "[\"experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc\", \"experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc\"]"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "pass": true
+    },
+    {
+      "name": "byte_flipped_cache",
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+        "-I",
+        "-B",
+        "-c",
+        "import hashlib,importlib.util,json,pathlib,py_compile,sys,tempfile\nroot=pathlib.Path(sys.argv[1]); names=json.loads(sys.argv[2]); evidence=[]\nwith tempfile.TemporaryDirectory(prefix='cneh-cache-oracle-') as directory:\n for index,name in enumerate(names):\n  cache=root/name; source=pathlib.Path(importlib.util.source_from_cache(str(cache)))\n  expected=pathlib.Path(directory)/str(index)\n  py_compile.compile(str(source),cfile=str(expected),dfile=str(source),doraise=True,invalidation_mode=py_compile.PycInvalidationMode.TIMESTAMP)\n  actual_bytes=cache.read_bytes(); expected_bytes=expected.read_bytes()\n  if actual_bytes!=expected_bytes: raise ValueError('cache does not reproduce from canonical source: '+name)\n  evidence.append({'path':name,'sha256':hashlib.sha256(actual_bytes).hexdigest(),'expected_sha256':hashlib.sha256(expected_bytes).hexdigest(),'status':'EXACT_INTERPRETER_COMPILE_MATCH'})\nprint(json.dumps(evidence,sort_keys=True))\n",
+        "/home/neuro7/.cache/claude-tmp/cneh-cache-adjudication-control-43mguz06",
+        "[\"experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc\", \"experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc\"]"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "pass": true
+    }
+  ]
+}

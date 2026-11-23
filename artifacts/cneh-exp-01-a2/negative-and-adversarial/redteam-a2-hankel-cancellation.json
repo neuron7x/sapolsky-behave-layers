@@ -1,0 +1,41 @@
+{
+  "rows": [
+    {
+      "scale": 10000000000.0,
+      "actual": [
+        1.0,
+        100000.0
+      ],
+      "expected": [
+        1.0,
+        100000.0
+      ],
+      "relative_error_small": 0.0
+    },
+    {
+      "scale": 1e+16,
+      "actual": [
+        1.0,
+        100000000.0
+      ],
+      "expected": [
+        1.0,
+        100000000.0
+      ],
+      "relative_error_small": 0.0
+    },
+    {
+      "scale": 1e+20,
+      "actual": [
+        0.0,
+        10000000000.0
+      ],
+      "expected": [
+        1.0,
+        10000000000.0
+      ],
+      "relative_error_small": 1.0
+    }
+  ],
+  "bridge_sha256": "49688a086ec66f85a4f372ed221407b4c7b34790e2def3abec316732849b953c"
+}

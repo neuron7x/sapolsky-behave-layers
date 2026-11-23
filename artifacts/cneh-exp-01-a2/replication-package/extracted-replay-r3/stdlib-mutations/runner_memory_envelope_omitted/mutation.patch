@@ -1,0 +1,10 @@
+--- experiments/cneh_exp_01/run.py
++++ experiments/cneh_exp_01/run.py
+@@ -203,7 +203,6 @@
+     budget_ok = (energy <= budget["control_energy_proxy_max"] and
+                  compute_proxy <= budget["controller_compute_proxy_ops_max"] and
+                  message_bytes <= budget["message_bytes_max"] and
+-                 CONTROLLER_MEMORY_PROXY_BYTES <= budget["controller_memory_proxy_bytes_max"] and
+                  p["step_horizon"] <= budget["latency_steps_max"] and
+                  budget["training_steps_max"] == 0)
+     return {"seed": int(seed), "arm": arm,

@@ -1,0 +1,1 @@
+{"python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]", "executable": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python", "dependencies": {"numpy": "2.4.1", "scipy": "1.17.1", "pydantic": "2.12.5"}}

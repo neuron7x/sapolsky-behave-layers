@@ -1,0 +1,22 @@
+{
+  "archive": "cneh-exp-01-a2-f030a12-r3.tar.gz",
+  "archive_sha256": "df311241fe4b50c1d283c44b1cab902c50d45ee7c05656c2468dc8508eebe6ca",
+  "canonical_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "extraction": "FRESH_TEMPORARY_DIRECTORY",
+  "command": [
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+    "/home/neuro7/.cache/claude-tmp/cneh-package-r3-replay-cmss7j7m/cneh-exp-01-a2/replay.py",
+    "--python",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+    "--trusted-git",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo",
+    "--out",
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/replication-package-a2/extracted-replay-r3",
+    "--full"
+  ],
+  "existing_locked_runtime_reused": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+  "runtime_not_included_in_archive": true,
+  "new_dependency_installation": "NOT_RUN",
+  "exit_code": 0,
+  "seconds": 26.040818148001563
+}

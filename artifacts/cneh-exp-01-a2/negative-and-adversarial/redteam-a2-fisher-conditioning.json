@@ -1,0 +1,26 @@
+[
+  {
+    "epsilon": 1e-07,
+    "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE",
+    "rank": 2,
+    "information_min_eigenvalue": 2.4424906541753444e-15,
+    "information_condition_number": "1637672673654722.2",
+    "independent_svd_min_squared": 2.4999998808676157e-15
+  },
+  {
+    "epsilon": 1e-08,
+    "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE",
+    "rank": 2,
+    "information_min_eigenvalue": 0.0,
+    "information_condition_number": "inf",
+    "independent_svd_min_squared": 2.4999999305639164e-17
+  },
+  {
+    "epsilon": 1e-09,
+    "state": "LOCAL_FIRST_ORDER_IDENTIFIABLE",
+    "rank": 2,
+    "information_min_eigenvalue": 0.0,
+    "information_condition_number": "inf",
+    "independent_svd_min_squared": 2.500000255832414e-19
+  }
+]

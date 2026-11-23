@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/math_qualification.py
++++ experiments/cneh_exp_01/math_qualification.py
+@@ -179,7 +179,7 @@
+             minimum = float(singular[-1] ** 2)
+             condition = float((singular[0] / singular[-1]) ** 2)
+             measured_condition = certificate.information_condition_number
+-            if (minimum <= 0 or not math.isfinite(minimum) or not math.isfinite(condition)
++            if False and (minimum <= 0 or not math.isfinite(minimum) or not math.isfinite(condition)
+                     or certificate.information_min_eigenvalue <= 0
+                     or measured_condition is None or not math.isfinite(measured_condition)
+                     or not math.isclose(certificate.information_min_eigenvalue, minimum,

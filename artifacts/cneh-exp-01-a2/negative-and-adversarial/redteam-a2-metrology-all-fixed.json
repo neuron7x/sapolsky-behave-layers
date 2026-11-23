@@ -1,0 +1,43 @@
+{
+  "results": {
+    "inherited_forged_summary": {
+      "status": "REJECTED",
+      "error": "inherited timing summary mismatch"
+    },
+    "inherited_forged_source": {
+      "status": "REJECTED",
+      "error": "inherited timing source/metadata mismatch: source_sha256"
+    },
+    "inherited_ram_overclaim": {
+      "status": "REJECTED",
+      "error": "inherited timing source/metadata mismatch: physical_vector"
+    },
+    "host_omitted": {
+      "status": "REJECTED",
+      "error": "host identity fields mismatch"
+    },
+    "worker_sample_outside_worker": {
+      "status": "REJECTED",
+      "error": "sample wall interval escaped worker interval"
+    },
+    "stdout_byte_forgery": {
+      "status": "REJECTED",
+      "error": "worker output byte count mismatch"
+    },
+    "overlapping_worker_samples": {
+      "status": "REJECTED",
+      "error": "overlapping sequential measurement intervals"
+    }
+  },
+  "source_sha256": {
+    "metrology.py": "bd1438333b705fe0ecab5fd2936db939ee1c21a20281488cea846add5bca0013",
+    "metrology_contract.json": "9ee4f3c94a608fca9cd139eaee2d714369eff315b8170efc0506c5907108f95b",
+    "hardware.py": "dfb408c22698302a5d553db12eb27d877cda81a243f60d4d37f8623958d083d9",
+    "run.py": "9dbe48538bcb72d2c3ab4c79e7de9744ee6af138cb977cff2af23e95b4ee8879",
+    "protocol.json": "39323416b25923c4a6024a340415bf9db30e2821ba14e4fe294e40ac830a5d8e",
+    "qualification_contract.json": "f2e19000da3a603bbc5576ae0ac2d7fc436ccc09bc0700f81ad5285b62881f6e"
+  },
+  "baseline_admission": "PASS",
+  "resource_parity_verified": false,
+  "independent_local_measurement_report_sha256": "7eed104b265545355cb7bd0a0c689c7cfa90dcb2827c89ac02ebd7c2bfdd0b0b"
+}

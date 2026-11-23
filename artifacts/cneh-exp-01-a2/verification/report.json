@@ -1,0 +1,260 @@
+{
+  "ENGINEERING_QUALIFIED": false,
+  "acceptance_gates": {
+    "G1": "PENDING_FINAL_PUSH_EQUALITY",
+    "G2": "PENDING_ALL_MANDATORY_FINAL_HEAD_CI",
+    "G3": "SOURCE_RECONSTRUCTION_AND_REPLAY_PASS_FINAL_HEAD_REPLAY_PENDING",
+    "G4": "BLOCKING_SCIENCE_STATUSES_PRESERVED"
+  },
+  "additional_negative_controls": "independent-negative-controls.json",
+  "commands": [
+    {
+      "command": [
+        "/usr/bin/python",
+        "-c",
+        "import json,unittest\nsuite=unittest.defaultTestLoader.discover('tests',pattern='test_cneh_exp_01*.py')\nresult=unittest.TextTestRunner(verbosity=2).run(suite)\nrecord={'tests_run':result.testsRun,'errors':len(result.errors),'failures':len(result.failures),'skips':len(result.skipped),'expected_failures':len(result.expectedFailures),'unexpected_successes':len(result.unexpectedSuccesses)}\nprint(json.dumps(record))\nraise SystemExit(0 if result.wasSuccessful() and result.testsRun>=74 and not result.skipped and not result.expectedFailures and not result.unexpectedSuccesses else 1)\n"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "6021126369e2b57853e7a64bbb1d9cbc0d67e49b7168ef41b36e4ea9e396c71e",
+      "name": "standard-tests"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "-c",
+        "import json,unittest\nsuite=unittest.defaultTestLoader.discover('tests/cneh_math',pattern='qualification_cases.py')\nresult=unittest.TextTestRunner(verbosity=2).run(suite)\nrecord={'tests_run':result.testsRun,'errors':len(result.errors),'failures':len(result.failures),'skips':len(result.skipped),'expected_failures':len(result.expectedFailures),'unexpected_successes':len(result.unexpectedSuccesses)}\nprint(json.dumps(record))\nraise SystemExit(0 if result.wasSuccessful() and result.testsRun>=14 and not result.skipped and not result.expectedFailures and not result.unexpectedSuccesses else 1)\n"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "978c48bcb0d8c69ae11e3a9e4acdddf0c94c85c9b4a763bb2771363cd9138722",
+      "name": "numeric-tests"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/mutation_check.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/mutations"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "8063be21be131ce621b0a86ebd549b5d0854e7da8dca4ede8e86c5923cc63b40",
+      "name": "mutations"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/math_mutation_check.py",
+        "--reference",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/pr44-linear-reference.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/numeric-mutations"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "e9a4830d83ac988c0899298dcb35ec23865bf1656b3d287c03bdf5e51fb0d7ce",
+      "name": "numeric-mutations"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/math_qualification.py",
+        "--reference",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/pr44-linear-reference.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/math-qualification.json"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "266b7e03559885ba240662b8298fd3ed6eb09830da9c7546d0f50fd704d7ff71",
+      "name": "math-generate"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/math_qualification.py",
+        "--reference",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/pr44-linear-reference.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/math-qualification.json",
+        "--verify"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "266b7e03559885ba240662b8298fd3ed6eb09830da9c7546d0f50fd704d7ff71",
+      "name": "math-verify"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/metrology.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/metrology"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "faa39c9ab4e6bfdfbded5e6e6435d5cb6b1a955d408ae144cf4a79da59e3d329",
+      "name": "metrology-measure"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/metrology.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/metrology",
+        "--verify"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "faa39c9ab4e6bfdfbded5e6e6435d5cb6b1a955d408ae144cf4a79da59e3d329",
+      "name": "metrology-verify"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/metrology.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/metrology",
+        "--verify",
+        "--require-qualified-cost"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 2,
+      "expected_exit": 2,
+      "log_sha256": "faa39c9ab4e6bfdfbded5e6e6435d5cb6b1a955d408ae144cf4a79da59e3d329",
+      "name": "metrology-qualified-cost"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/run.py",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/artifacts/cneh-exp-01-a1/primary",
+        "--verify"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "c152715bd31258016524a4a1b1ef51a91d1a4d736c3136030607c665dd666cd9",
+      "name": "a1-primary-replay"
+    },
+    {
+      "command": [
+        "/usr/bin/python",
+        "experiments/cneh_exp_01/qualification.py",
+        "--bundle",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/artifacts/cneh-exp-01-a1/primary",
+        "--require-scientific-readiness"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 2,
+      "expected_exit": 2,
+      "log_sha256": "9d3b438f3182222559f979a0d453550d0002f9f70674c9fe5d5d9a5d3255be26",
+      "name": "science-readiness"
+    },
+    {
+      "command": [
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+        "experiments/cneh_exp_01/bnsyn_adapter.py",
+        "--source",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn",
+        "--out",
+        "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/artifacts/cneh-exp-01-a1/bnsyn",
+        "--verify"
+      ],
+      "cwd": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "log_sha256": "d04cca264b366c736be2bdf333a0defd51a933ee24a0602e8b1f5ffddd5c5792",
+      "name": "a1-bnsyn-replay"
+    }
+  ],
+  "independent_external_replication": "NOT_TESTED",
+  "initial_strict_roster_failure_preserved": "execution.log",
+  "installed_dependency_packages_verified": 7,
+  "installed_dependency_record_files_verified": 2488,
+  "local_source_verification": "PASS",
+  "math_checks": 45,
+  "metrology": {
+    "admission": "PASS",
+    "instruments": {
+      "electrical_joules": "INSTRUMENT_INVALID",
+      "hardware_flops": "INSTRUMENT_INVALID",
+      "network_transport_cost": "INSTRUMENT_INVALID"
+    },
+    "resource_parity_verified": false,
+    "samples": 80,
+    "timing_batches": 200,
+    "workers": 20
+  },
+  "neural_replay": {
+    "artifact_path": "artifacts/cneh-exp-01-a1/bnsyn",
+    "manifest_sha256": "41b520e805364bcf1a37dd37fa7c4787b247039114ca5f7d2671ec80024cdb7a",
+    "status": "PASS"
+  },
+  "not_run": [
+    "final push equality",
+    "all mandatory hosted checks on final delivery SHA",
+    "clean final delivery SHA replay"
+  ],
+  "numeric_mutations": {
+    "invalid": 0,
+    "killed": 7,
+    "total": 7
+  },
+  "numeric_tests": {
+    "errors": 0,
+    "expected_failures": 0,
+    "failures": 0,
+    "skips": 0,
+    "tests_run": 14,
+    "unexpected_successes": 0
+  },
+  "origin_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "origin_git_status": "",
+  "original_frozen_sha256": {
+    "CNEH-04-DC_Formal_Specification.md": "5250113e580fd5d63f5f96fde19f8b1cb5a21a76a1d39f126d1f5182b298556a",
+    "PREREGISTRATION.md": "e11f289235659ab8378cbe87210bac09de4580ef199391870fd18d45ff69590b",
+    "frozen_sources.lock": "1811bff84525cae7463b8c02c6815b29515043086484d96704bfba727bc81751",
+    "protocol.json": "39323416b25923c4a6024a340415bf9db30e2821ba14e4fe294e40ac830a5d8e"
+  },
+  "pinned_pr44_source_matches_github": true,
+  "primary_replay": {
+    "artifact_path": "artifacts/cneh-exp-01-a1/primary",
+    "emulator_divergences": 0,
+    "manifest_sha256": "3b9f1999569a29d22246f1f214c18e97f1c021f866e6bbef0a51107fe44040a1",
+    "rows": 1280,
+    "successes": 122,
+    "world_seeds": 128
+  },
+  "reconstructed_source_files": 2961,
+  "runtime_cache_adjudication": "runtime-cache-adjudication.json",
+  "scientific_promotion_authorized": false,
+  "source_archive_sha256": "d6dea6fce9a19c91a0fe57d38f6d27b1d3b5ae987fc2b55a3cec327e7f563300",
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "source_tree_exact_roster": "2961 pinned tracked files plus exactly two independently byte-reconstructed CPython caches",
+  "standard_tests": {
+    "errors": 0,
+    "expected_failures": 0,
+    "failures": 0,
+    "skips": 0,
+    "tests_run": 74,
+    "unexpected_successes": 0
+  },
+  "targeted_mutations": {
+    "invalid": 0,
+    "killed": 11,
+    "total": 11
+  },
+  "tracked_source_drift": false,
+  "verdict": "PASS_WITH_CAVEATS"
+}

@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "scope": "Preparation synthetic negative controls only; no final audit executed",
+  "cases": {
+    "all13": "PASS",
+    "empty": "UNKNOWN",
+    "missing": "UNKNOWN",
+    "in_progress": "PENDING",
+    "queued": "PENDING",
+    "failure": "FAIL",
+    "cancelled": "FAIL",
+    "skipped": "FAIL",
+    "neutral": "FAIL",
+    "None": "FAIL",
+    "commit_failure": "FAIL",
+    "commit_pending": "PENDING",
+    "duplicates": "REJECTED",
+    "overflow": "REJECTED",
+    "../outside": "REJECTED",
+    "/absolute": "REJECTED",
+    "exact_G4_25_roster_and_pinned_hash": "PASS"
+  },
+  "required_check_names": [
+    "Audit Python tooling dependencies",
+    "CodeQL",
+    "CodeQL Python analysis",
+    "Fractal multiscale verification",
+    "Full verification, validation, and falsification",
+    "Pinned BN-Syn integration smoke (no efficacy claim)",
+    "Reject vulnerable dependency changes",
+    "Scan complete Git history for secrets",
+    "Validate GitHub Actions",
+    "doc-and-evidence-gates",
+    "preflight (3.11)",
+    "preflight (3.12)",
+    "quality"
+  ],
+  "auditor_sha256": "fabdb74ac9572086a847c0486da10039f00ae4a89e46c08d9eeeff9bd26862d1"
+}

@@ -1,0 +1,24 @@
+...F..........
+======================================================================
+FAIL: test_gpu_inventory_excludes_display_connectors (test_cneh_exp_01_metrology.MetrologyTests.test_gpu_inventory_excludes_display_connectors)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/tests/test_cneh_exp_01_metrology.py", line 53, in test_gpu_inventory_excludes_display_connectors
+    self.assertEqual([entry["name"] for entry in inventory], ["card0", "card12"])
+AssertionError: Lists differ: ['card0', 'card0-DP-1', 'card12', 'card12-eDP-1'] != ['card0', 'card12']
+
+First differing element 1:
+'card0-DP-1'
+'card12'
+
+First list contains 2 additional elements.
+First extra element 2:
+'card12'
+
+- ['card0', 'card0-DP-1', 'card12', 'card12-eDP-1']
++ ['card0', 'card12']
+
+----------------------------------------------------------------------
+Ran 14 tests in 2.056s
+
+FAILED (failures=1)

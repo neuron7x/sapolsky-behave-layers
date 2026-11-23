@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/run.py
++++ experiments/cneh_exp_01/run.py
+@@ -186,7 +186,7 @@
+                                  true_theta=th if arm == "FULL_INFORMATION_ORACLE" else None)
+         if not all(math.isfinite(v) for v in (u0, u1)):
+             raise ValueError("nonfinite controller action")
+-        if max(abs(u0), abs(u1)) > p["actuator_bound"]:
++        if False and max(abs(u0), abs(u1)) > p["actuator_bound"]:
+             raise ValueError("controller action exceeds physical interface bound")
+         # Deterministic algorithmic proxy; not measured FLOPs or wall-clock latency.
+         compute_proxy += 64 if arm in ("COUPLED", "CENTRAL_EMULATOR", "SCRAMBLED_MATCHED_TRAFFIC") else 48

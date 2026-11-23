@@ -1,0 +1,11 @@
+--- experiments/cneh_exp_01/math_qualification.py
++++ experiments/cneh_exp_01/math_qualification.py
+@@ -154,7 +154,7 @@
+         result = _number(self.reference.theta_regression_information_open_loop(**parameters))
+         if result < 0:
+             raise ValueError("negative parameter Fisher information")
+-        return result
++        return result * 2
+ 
+     def local_identifiability(self, jacobian: Any, covariance: Any):
+         j = _matrix(jacobian)

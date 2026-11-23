@@ -1,0 +1,1 @@
+{"checks": 25, "failed": [], "flags": 32, "historical_counts": {"A1_entire_evidence": 104, "A1_negative_evidence": 10, "all_preexisting_CWC_artifacts": 1219, "explicit_CWC_history": 16}, "receipt_sha256": "606bc900695c7b98c130ee53fd0a346a965afbf0d8bb69dca7027fbeb8a93412", "status": "PASS"}

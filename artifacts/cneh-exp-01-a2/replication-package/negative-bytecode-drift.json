@@ -1,0 +1,20 @@
+{
+  "archive_sha256": "8aeeba898400297c67801986559d02d570b9bac64eebaad011bc27b8ad051a05",
+  "command": [
+    "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/inputs/bnsyn-locked-venv/bin/python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-p",
+    "test_cneh_exp_01*.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "added_files": [
+    "source/experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc",
+    "source/experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc"
+  ],
+  "changed_files": []
+}

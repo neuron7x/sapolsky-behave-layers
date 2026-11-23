@@ -1,0 +1,14 @@
+{
+  "canonical_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "archive": "cneh-exp-01-a2-f030a12.tar.gz",
+  "sha256": "8aeeba898400297c67801986559d02d570b9bac64eebaad011bc27b8ad051a05",
+  "bytes": 7266866,
+  "payload_files": 189,
+  "deterministic_double_build_equal": true,
+  "gzip_mtime": 0,
+  "tar_uid": 0,
+  "tar_gid": 0,
+  "tar_mtime": 0,
+  "private_seed_files": 0,
+  "included_venvs": 0
+}

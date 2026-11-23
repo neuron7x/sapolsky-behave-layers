@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/experiments/cneh_exp_01/metrology.py", line 532, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/experiments/cneh_exp_01/metrology.py", line 520, in main
+    report = verify_bundle(args.out)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/experiments/cneh_exp_01/metrology.py", line 503, in verify_bundle
+    return validate_report(run.strict_json((out / "report.json").read_bytes()), require_admissible=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/evidence/independent-a2-final/checkout/experiments/cneh_exp_01/metrology.py", line 370, in validate_report
+    raise ValueError("metrology authority overclaim")
+ValueError: metrology authority overclaim

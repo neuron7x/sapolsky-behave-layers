@@ -1,0 +1,104 @@
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	﻿2026-11-23T14:47:43.2556910Z ##[group]Run make -f Makefile.cwc docs-regen
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.2557309Z ^[[36;1mmake -f Makefile.cwc docs-regen^[[0m
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.2557845Z ^[[36;1mgit diff --exit-code docs/lab/EXPERIMENT_LEDGER.jsonl docs/vnv/DOCUMENT_STATUS_REGISTER.csv^[[0m
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.2590045Z shell: /usr/bin/bash -e {0}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.2590222Z ##[endgroup]
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.3952805Z PYTHONPATH=. .venv/bin/python scripts/build_experiment_ledger.py
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7333085Z ledger: 80 records -> docs/lab/EXPERIMENT_LEDGER.jsonl
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7333736Z   artifacts/act-j-pilot: TRAINED_CONTROLLER_REALISES_V_STAR
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7334222Z   artifacts/act-j-pilot-decision: PILOT_GO_L4_CONFIRMATORY
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7334653Z   artifacts/cab-01-q1: CAB01_Q1_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7335083Z   artifacts/cab-01-q1-r1: CAB01_Q1_R1_BENCHMARK_QUALIFIED_SYNTHETIC
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7335734Z   artifacts/causal-debt-program: DEFERRED_CAUSAL_CREDIT_SYNTHETIC_CONTROL_ESTABLISHED_REAL_MODEL_UNTESTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7336472Z   artifacts/causal-debt-v1: CAUSAL_DEBT_CONTROL_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7337130Z   artifacts/causal-debt-v2: CAUSAL_DEBT_V2_CONTROL_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7337624Z   artifacts/cneh-exp-01-a1/primary: REPLICATION_NOT_TESTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7338224Z   artifacts/cog-countermodel-01: AUTONOMOUS_COUNTERMODEL_GENERATOR_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7338884Z   artifacts/cog-countermodel-01r: SET_VALUED_COUNTERMODEL_GUARD_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7339712Z   artifacts/cog-epistemic-01: TYPED_EPISTEMIC_LATTICE_R1_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7340139Z   artifacts/cog-epistemic-01r: TYPED_EPISTEMIC_LATTICE_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7340551Z   artifacts/cog-info-02: DECISION_RELEVANT_INFORMATION_GOVERNOR_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7340993Z   artifacts/cog-memory-01: ASSUMPTION_AWARE_MEMORY_CONSOLIDATION_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7341412Z   artifacts/cog-plan-01: PROOF_CARRYING_COUNTERFACTUAL_PLANNER_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7341852Z   artifacts/cog-self-01: AUTONOMOUS_DECISION_RELEVANT_FALSIFICATION_GOVERNOR_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7342294Z   artifacts/csca-01a-model-adequacy: COUNTERFACTUAL_MODEL_ERROR_PROPAGATES_TO_CAUSAL_CREDIT
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7342712Z   artifacts/csca-06a-falsifiability: INTERVENTIONAL_FALSIFIABILITY_INSTRUMENT_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7343122Z   artifacts/csca-06a-r1-global-evalue: GLOBAL_CHECKPOINT_FALSIFIABILITY_QUALIFIED_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7343511Z   artifacts/csca-06b-operator-robustness: OPERATOR_FAMILY_ROBUSTNESS_QUALIFIED_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7343884Z   artifacts/csca-06c-position-content: POSITION_CONTENT_MECHANISM_UNRESOLVED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7344229Z   artifacts/csca-07-passive-replay: PASSIVE_REPLAY_IDENTIFIABILITY_BOUNDARY_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7344648Z   artifacts/csca-08-regime-identifiability: OBSERVATIONAL_IDENTIFYING_CONTRACT_QUALIFIED_SYNTHETIC_NARROWED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7345065Z   artifacts/cwc-flagship-route-01: CWC_FLAGSHIP_ROUTE_01_NOT_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7345391Z   artifacts/cwc-flagship-route-02: CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7345667Z   artifacts/dgc-01-dev: DEVELOPMENT_ONLY_NOT_CONFIRMATORY
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7345903Z   artifacts/dgc-01-falsification: COUNTEREXAMPLE_FOUND
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7346187Z   artifacts/dgc-02-finance-confirmatory: SYNTHETIC_CONFIRMATORY_THRESHOLD_MET
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7346520Z   artifacts/dgc-02-finance-dev: DEVELOPMENT_ONLY_NON_PROMOTING
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7346967Z   artifacts/fractal-adversarial-v1: SEE_verdict.json
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7347289Z   artifacts/history/cog-epistemic-01-initial-negative: TYPED_EPISTEMIC_LATTICE_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7347627Z   artifacts/npi-01: NPI_01_FIRST_ORDER_CERTIFICATE_NOT_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7347923Z   artifacts/research-s01-ood-credit: S01_OOD_CAUSAL_CREDIT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7348256Z   artifacts/research-s01-skill-luck: S01_SKILLLUCK_CONCEPT_REPRODUCED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7348828Z   artifacts/research-s03-latent-dynamics: S03_CONTROLLED_LATENT_DYNAMICS_NOT_QUALIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7349286Z   artifacts/via-v1-attention-horizon-qualification: ATTENTION_HORIZON_MECHANISM_QUALIFIED_CONTROL_ONLY
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7349732Z   artifacts/via-v1-causal-surface: VIA_V1_METHOD_VALIDATED_ASCENSION_BLOCKED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7350132Z   artifacts/via-v1-evidence-sufficiency: VIA_V1_INSTANCE_OPPORTUNITY_UNIDENTIFIED_FROM_FROZEN_REAL_EVIDENCE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7350507Z   artifacts/wp10-coherence: COHERENCE_DECIRCULARIZED_0_CONTRADICTIONS
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7350789Z   artifacts/wp11-pinsker: PINSKER_DICHOTOMY_CERTIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7351033Z   artifacts/wp12-prereg-integrity: PREREG_INTEGRITY_CLEAN
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7351284Z   artifacts/wp13-effect-size: EFFECT_SIZES_CI_POSITIVE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7351588Z   artifacts/wp14-real-lm-contextual: WP14_REAL_LM_NOT_IDENTIFIABLE_ROBUST
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7351924Z   artifacts/wp15-compute-pareto: SYNTHETIC_COMPUTE_PARETO_DOMINATES
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7352280Z   artifacts/wp17-metrology: METROLOGY_LIMITED__PARETO_SURVIVES_PHYSICAL_ROUTE_COST
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7352672Z   artifacts/wp18-real-workload-pilot: WP18_KILL_RULE_TRIGGERED_NO_REAL_IDENTIFIABILITY
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7353039Z   artifacts/wp19-negative-robustness: NEGATIVE_IS_MECHANISM_SPECIFIC
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7353465Z   artifacts/wp2-routing-v2/final: ROUTING_CAUSALITY_SUPPORTED_UNDER_COUNTERFACTUAL_VALUE_DISTILLATION_ON_SYNTHETIC_BENCHMARK
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7353986Z   artifacts/wp2-routing-v2/oracle-gap: ROUTING_CAUSALITY_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7354259Z   artifacts/wp2-routing-v3-r3c: ROUTING_END_TO_END_NOT_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7354596Z   artifacts/wp2-routing-v3-r3c-reinforce: ROUTING_END_TO_END_SUPPORTED_UNDER_BINDING_BUDGET
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7354983Z   artifacts/wp2-routing-v3-surface-matched: ROUTE_DECISION_IS_THE_COMPUTATION
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7355378Z   artifacts/wp3-plasticity-v1/oracle-gap: PLASTICITY_BENCHMARK_NOT_IDENTIFIABLE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7355689Z   artifacts/wp3-plasticity-v10-contexts: L4H_GENERALIZES
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7355956Z   artifacts/wp3-plasticity-v11-ratebridge: L4I_BRIDGE_CONFIRMED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7356220Z   artifacts/wp3-plasticity-v12-consistency: L4J_CONSISTENT
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7356496Z   artifacts/wp3-plasticity-v13-killtest: L4K_LINE_SURVIVES
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7356943Z   artifacts/wp3-plasticity-v2-confirmatory: L4_IDENTIFIABLE_CONFIRMED_SYNTHETIC
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7357272Z   artifacts/wp3-plasticity-v3-governor: L4A_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7357542Z   artifacts/wp3-plasticity-v4-inferred: L4B_BOUNDARY_MAPPED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7357851Z   artifacts/wp3-plasticity-v5-thinmargin: L4C_SCALING_VIOLATED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7358154Z   artifacts/wp3-plasticity-v6-scaling: L4D_BUDGET_SCALING_VIOLATED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7358457Z   artifacts/wp3-plasticity-v7-mechanism: L4E_MECHANISM_INCOMPLETE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7358752Z   artifacts/wp3-plasticity-v8-armscaling: L4F_ARM_SCALING_MAPPED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7359015Z   artifacts/wp3-plasticity-v9-costrobust: L4G_ROBUST
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7359244Z   artifacts/wp3-rcfr: RCFR_NOT_SUPPORTED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7359504Z   artifacts/wp4-adaptive-depth: ADAPTIVE_COMPUTE_JENSEN_GAP_CONFIRMED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7359826Z   artifacts/wp4-adaptive-depth-v2: SYNTHETIC_HALT_IDENTITY_VERIFIED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7360148Z   artifacts/wp4-end-to-end-v4: SUPPORTED_END_TO_END_INTERNAL
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7360466Z   artifacts/wp4-exact-compute-v3: INVALID_PROTOCOL_DEVIATION
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7360766Z   artifacts/wp4-exact-compute-v31: SUPPORTED_NARROWED_INTERNAL
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7361116Z   artifacts/wp5-adaptive-compute-controller: AC2_CONTROLLER_RECOVERS
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7361489Z   artifacts/wp5-adaptive-compute-identifiability: AC1_IDENTIFIABLE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7361799Z   artifacts/wp5-adaptive-compute-inferred: AC3_BOUNDARY_MAPPED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7362135Z   artifacts/wp5-adaptive-compute-ratebridge: AC4_RATE_BRIDGE_CONFIRMED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7362539Z   artifacts/wp6-real-lm: WP6_REAL_LM_NOT_IDENTIFIABLE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7362816Z   artifacts/wp7-certificate-hardening: WP7_GAP_CLOSED_POSITIVES_ROBUST
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7363201Z   artifacts/wp8-family-wise-error: WP8_FWER_CONTROLLED
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7363494Z   artifacts/wp9-independence: INDEPENDENCE_ROBUST
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7363746Z   artifacts/wpr1-routability-spec: SPEC_PREDICTS_CERTIFICATE
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.7391673Z PYTHONPATH=. .venv/bin/python scripts/build_document_register.py
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8539777Z register -> docs/vnv/DOCUMENT_STATUS_REGISTER.csv (177 docs: 63 governed + 114 discovered)
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8540688Z   EXISTS: 167
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8541099Z   TRIGGER_NOT_REACHED: 10
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8600340Z diff --git a/docs/lab/EXPERIMENT_LEDGER.jsonl b/docs/lab/EXPERIMENT_LEDGER.jsonl
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8600861Z index 2ba7a89..772fddb 100644
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8601162Z --- a/docs/lab/EXPERIMENT_LEDGER.jsonl
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8601499Z +++ b/docs/lab/EXPERIMENT_LEDGER.jsonl
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8601785Z @@ -5,6 +5,7 @@
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8603373Z  {"run_id": "artifacts:causal-debt-program", "artifact_path": "artifacts/causal-debt-program", "verdict": "DEFERRED_CAUSAL_CREDIT_SYNTHETIC_CONTROL_ESTABLISHED_REAL_MODEL_UNTESTED", "experiment": "causal-debt-program", "n_seeds": null, "evidence_commit": "8a1d4589a8969a0c0d62f421661afce8398508cb", "sha256sums_hash": "b85f53c82355eb47e075181830b71759e5f84947eaa185be1c22b468560712e8", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8606350Z  {"run_id": "artifacts:causal-debt-v1", "artifact_path": "artifacts/causal-debt-v1", "verdict": "CAUSAL_DEBT_CONTROL_NOT_QUALIFIED", "experiment": "causal-debt-v1", "n_seeds": null, "evidence_commit": "71fdff646a5d5b08db910a46e89a26d7aebd1617", "sha256sums_hash": "ad83b6d02493f2b22c5d6a05338b54ab987db3198e3eeab6c1dd0322f3ef845c", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8608882Z  {"run_id": "artifacts:causal-debt-v2", "artifact_path": "artifacts/causal-debt-v2", "verdict": "CAUSAL_DEBT_V2_CONTROL_QUALIFIED", "experiment": "causal-debt-v2", "n_seeds": null, "evidence_commit": "45bc85ae80103473c7e21c414a308dd7dbf6b766", "sha256sums_hash": "ea96d0c9edad0654c97672197b439bf39231e358991ed1c9c45c041750c045a0", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8611233Z +{"run_id": "artifacts:cneh-exp-01-a1:primary", "artifact_path": "artifacts/cneh-exp-01-a1/primary", "verdict": "REPLICATION_NOT_TESTED", "experiment": "CNEH-EXP-01", "n_seeds": null, "evidence_commit": "a65ab49681bc748acb71cde9abe5bc99a4045ab3", "sha256sums_hash": "3b9f1999569a29d22246f1f214c18e97f1c021f866e6bbef0a51107fe44040a1", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8613620Z  {"run_id": "artifacts:cog-countermodel-01", "artifact_path": "artifacts/cog-countermodel-01", "verdict": "AUTONOMOUS_COUNTERMODEL_GENERATOR_NOT_QUALIFIED", "experiment": "cog-countermodel-01", "n_seeds": null, "evidence_commit": "6e7d25e480b9ff631bf8b368f30d3b1c2d1b88ed", "sha256sums_hash": "1bf15567c87c4028895f5c6506c210cc1bd74d20e205bcba291bc5aa788324eb", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8616103Z  {"run_id": "artifacts:cog-countermodel-01r", "artifact_path": "artifacts/cog-countermodel-01r", "verdict": "SET_VALUED_COUNTERMODEL_GUARD_QUALIFIED_SYNTHETIC_NARROWED", "experiment": "cog-countermodel-01r", "n_seeds": null, "evidence_commit": "4ab0a8357ed041cd846dfae43dd993fbdbc78181", "sha256sums_hash": "21f380c4b6570e2b5eebb022ff9314a79694cdc54d2bb1c69abbe7311467d8f9", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:43.8618795Z  {"run_id": "artifacts:cog-epistemic-01", "artifact_path": "artifacts/cog-epistemic-01", "verdict": "TYPED_EPISTEMIC_LATTICE_R1_QUALIFIED_SYNTHETIC_NARROWED", "experiment": "cog-epistemic-01", "n_seeds": null, "evidence_commit": "90c11aecee2aa0072ef7a902ee4e23decbb954a8", "sha256sums_hash": "4b7523cd01e243243114141529d9165144c99faded8ebc118212bdaf5f75d4d3", "has_checksums": true}
+doc-and-evidence-gates	Regenerated docs are in sync (ledger + register)	2026-11-23T14:47:44.0926276Z ##[error]Process completed with exit code 1.

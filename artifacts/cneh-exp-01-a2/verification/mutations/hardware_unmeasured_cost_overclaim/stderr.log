@@ -1,0 +1,21 @@
+test_broken_timer_fails (test_cneh_exp_01_hardware.HardwareTimingTests.test_broken_timer_fails) ... ok
+test_complete_balanced_blocks_and_raw_interval_arithmetic (test_cneh_exp_01_hardware.HardwareTimingTests.test_complete_balanced_blocks_and_raw_interval_arithmetic) ... FAIL
+test_emulator_fault_fails_even_when_timers_work (test_cneh_exp_01_hardware.HardwareTimingTests.test_emulator_fault_fails_even_when_timers_work) ... ok
+test_transient_corruption_in_early_batch_is_not_overwritten (test_cneh_exp_01_hardware.HardwareTimingTests.test_transient_corruption_in_early_batch_is_not_overwritten) ... ok
+
+======================================================================
+FAIL: test_complete_balanced_blocks_and_raw_interval_arithmetic (test_cneh_exp_01_hardware.HardwareTimingTests.test_complete_balanced_blocks_and_raw_interval_arithmetic)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/neuro7/.cache/claude-tmp/cneh-mutation-njsxh09f/tests/test_cneh_exp_01_hardware.py", line 21, in test_complete_balanced_blocks_and_raw_interval_arithmetic
+    self.assertEqual(report["cost_status"], "COST_INSTRUMENT_INVALID")
+AssertionError: 'COST_INSTRUMENT_VALID' != 'COST_INSTRUMENT_INVALID'
+- COST_INSTRUMENT_VALID
++ COST_INSTRUMENT_INVALID
+?                 ++
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.466s
+
+FAILED (failures=1)

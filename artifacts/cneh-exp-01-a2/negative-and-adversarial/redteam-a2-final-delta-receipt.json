@@ -1,0 +1,35 @@
+{
+  "head": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "file_sha256": {
+    "experiments/cneh_exp_01/math_mutation_check.py": "4e110485059dd4029fda246bdabae001cd70848bc7a1241068301b7192416701",
+    "experiments/cneh_exp_01/mutation_check.py": "09e2ae1972ac356f2af50954fb2f5ca6776b76c6343cf89652d6321acd00ef15",
+    "experiments/cneh_exp_01/math_qualification.py": "ffa8cc9fde9cf8a8b177ccf0bbb3a7f6dfff50056635bc70c5719d8393707a9d",
+    "experiments/cneh_exp_01/metrology.py": "65be851d645a8a013c458415b4f9a073a140b92797ec349e7cb4379400dc00df",
+    "tests/cneh_math/qualification_cases.py": "c9dd837334a430a292c2993bfeff6298189e4bb3779d8184b7e2f95673601b44",
+    "tests/test_cneh_exp_01_metrology.py": "dce57168db2df46ab9e9f68f14c28933356d44e7de980198350b9eb90989f3a5"
+  },
+  "new_math_driver": {
+    "status": "PASS",
+    "baseline_tests": 14,
+    "assertion_kills": 7,
+    "total": 7,
+    "runtime_errors": 0,
+    "source_unchanged": true,
+    "default_stdlib_runner_site_packages": false
+  },
+  "driver_negative_controls": [
+    "assertion KILLED",
+    "runtime error INVALID_MUTANT",
+    "skip INVALID_MUTANT",
+    "empty suite INVALID_MUTANT",
+    "valid behavior SURVIVED"
+  ],
+  "metrology_final_source_seven_frozen_attacks": "7/7 REJECTED",
+  "new_major_findings": 0,
+  "evidence_sha256": {
+    "redteam-a2-math-mutants/report.json": "a4e43a6fe8d51a9a3f264ec6b0b56ac314fb82a83e0e8dab328251e0c7afeaa1",
+    "redteam-a2-mutation-driver-controls.json": "bfa7672d84c302dbdadfc967887a6473a4fe898fcca93f66162a015287f32693",
+    "redteam-a2-metrology-final-source-receipt.json": "73ba8dd08b7cb82fccc70091939da59cd7e8cf4b0d08a1b81378e085d975408d"
+  },
+  "scope": "Read-only final driver delta and seven frozen final-source metrology attacks; no new physical benchmark"
+}

@@ -1,0 +1,106 @@
+{
+  "actual_command_count": 17,
+  "archive": "cneh-exp-01-a2-f030a12-r3.tar.gz",
+  "archive_bytes": 7282937,
+  "archive_file_count": 190,
+  "archive_sha256": "df311241fe4b50c1d283c44b1cab902c50d45ee7c05656c2468dc8508eebe6ca",
+  "cache_controls": {
+    "byte_flipped_exit": 1,
+    "genuine_exit": 0
+  },
+  "canonical_git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "canonical_source_file_count": 47,
+  "canonical_source_unchanged": true,
+  "cost_status": "COST_INSTRUMENT_INVALID",
+  "engineering_replay": "PASS",
+  "existing_locked_runtime_reused": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43/repo/../inputs/bnsyn-locked-venv/bin/python",
+  "expected_negative_gates": {
+    "metrology-cost-lock": 2,
+    "science-lock": 2
+  },
+  "external_execution_protocol": "BLOCKED_NOT_IMPLEMENTED",
+  "external_seed_commitment": "ABSENT",
+  "full_extraction_exit_code": 0,
+  "independent_blind_replication": "REPLICATION_NOT_TESTED",
+  "independent_operator": "ABSENT",
+  "mutations": {
+    "numeric": {
+      "killed": 7,
+      "total": 7
+    },
+    "stdlib": {
+      "killed": 11,
+      "total": 11
+    }
+  },
+  "new_dependency_installation": "NOT_RUN",
+  "new_local_metrology_sha256": "85681b8955a5217cfc40785abd734164349efb9c5bddeb0c474215f753e047b8",
+  "numeric_checks": 45,
+  "numeric_tests": 14,
+  "preserved_initial_negative": {
+    "archive_sha256": "8aeeba898400297c67801986559d02d570b9bac64eebaad011bc27b8ad051a05",
+    "cause": "two exact CPython cache additions caused immutable package membership failure; canonical source bytes unchanged",
+    "exit_code": 1,
+    "receipt": "extraction-receipt.json",
+    "reproduction": "negative-bytecode-drift.json"
+  },
+  "raw_comparisons": [
+    {
+      "compared_payload_sha256": "3e414d1cdfab4bbd183d623c409bba60bd445a45f619f00d30a9ab877c42ddcb",
+      "comparison": "EXACT_BYTES",
+      "fresh_file_sha256": "3e414d1cdfab4bbd183d623c409bba60bd445a45f619f00d30a9ab877c42ddcb",
+      "fresh_local_path": "extracted-replay-r3/primary/primary.csv",
+      "fresh_outputs_exported": false,
+      "kind": "primary_rows",
+      "payload_bytes": 175608,
+      "retained_file_sha256": "3e414d1cdfab4bbd183d623c409bba60bd445a45f619f00d30a9ab877c42ddcb",
+      "retained_package_path": "raw-a1/primary/primary.csv"
+    },
+    {
+      "compared_payload_sha256": "5ffd9d78e94a2f37f82741a1c1d82f126e2a6b0e7d33df0b74bcd488c183497d",
+      "comparison": "EXACT_BYTES",
+      "fresh_file_sha256": "95db27baccf2d3ea9821308f3dfd0e0e4ff672720a07ed1712bcf30997871be3",
+      "fresh_local_path": "extracted-replay-r3/bnsyn/traces.json.gz",
+      "fresh_outputs_exported": false,
+      "kind": "bnsyn_traces",
+      "payload_bytes": 22438838,
+      "retained_file_sha256": "95db27baccf2d3ea9821308f3dfd0e0e4ff672720a07ed1712bcf30997871be3",
+      "retained_package_path": "raw-a1/bnsyn/traces.json.gz"
+    }
+  ],
+  "repository_edits_by_this_package_task": [],
+  "runtime_cache_adjudication": [
+    {
+      "expected_sha256": "3ee2e30ef03ca6b04138955be20ad86201a408bbd07d48cd53011e68434748a4",
+      "path": "experiments/cneh_exp_01/__pycache__/hardware.cpython-312.pyc",
+      "sha256": "3ee2e30ef03ca6b04138955be20ad86201a408bbd07d48cd53011e68434748a4",
+      "status": "EXACT_INTERPRETER_COMPILE_MATCH"
+    },
+    {
+      "expected_sha256": "97bb8f08fdd4394f0710bea83654cf94221df7c773d067c3e9aaaddc8a1e287a",
+      "path": "experiments/cneh_exp_01/__pycache__/run.cpython-312.pyc",
+      "sha256": "97bb8f08fdd4394f0710bea83654cf94221df7c773d067c3e9aaaddc8a1e287a",
+      "status": "EXACT_INTERPRETER_COMPILE_MATCH"
+    }
+  ],
+  "schema": "cneh-package-final-evidence-v1",
+  "scientific_promotion_authorized": false,
+  "source_authentication": "CANONICAL_GIT_SOURCE_VERIFIED_AGAINST_CALLER_TRUSTED_CHECKOUT",
+  "source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "stdlib_tests": {
+    "errors": 0,
+    "failures": 0,
+    "skips": 0,
+    "tests": 74
+  },
+  "tamper_controls": {
+    "baseline_exit": 0,
+    "negative_count": 4,
+    "negative_exits": [
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+}
