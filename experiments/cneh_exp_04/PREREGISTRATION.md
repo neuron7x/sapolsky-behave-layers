@@ -1,0 +1,25 @@
+# CNEH-EXP-04 — prospective active causal reidentification
+
+**Authority:** internal synthetic finite-model-family qualification only. This is a new lineage, not an EXP03/03B/03C outcome rescue. The neural noninterference gate in EXP03C is an upstream prerequisite for later neural claims, not a dependency of this standalone synthetic mathematical experiment.
+
+## Frozen plant and information boundary
+
+Scalar physical state x(t+1) = 0.6 x(t) + b(theta)^T u(t) + w(t), observed y(t) = x(t)+v(t). Initial x=0; independent bounded uniform process and observation noise in [-0.005,0.005], sampled in advance. Nominal b=(0.8,0). At one hidden transition tau uniformly selected from integer 20..39, b switches to one of (-0.8,0), (0,0.8), (0,-0.8) uniformly. The controller knows the nominal coefficient and the finite candidate family, not the change time, selected coefficient, latent state or random tape. It receives only tick, y, and its own previous action. No privileged seed argument to controller. Goal x=0.3; 80 transitions; action L1 bound 0.5, state safety bound 2.0. This is a causal input-response parameter family, not recovery of an arbitrary causal graph.
+
+Frozen public OOD fixture worlds: seeds 85001..85064 inclusive. Separate no-change negative fixtures: 85101..85108. Common random numbers and identical plant/sensor interfaces across arms. No seed exclusion or outcome-dependent tuning.
+
+## Detection and active identification
+
+Observed transition residual r=y(t+1)-0.6*y(t). Under the true mode, |r-b^T u| <= epsilon=0.005*(2+0.6)=0.013 (plus 1e-12 numerical slack). Fixed scheduled sentinels: every fourth transition, +0.25 on alternating input channels, starting channel 1 at t=0. A nominal mismatch triggers detection; reinitialize candidate set to the entire known family and eliminate every incompatible model. Thereafter intersect candidate sets with each new transition. Empty candidate set is explicit MODEL_SET_VIOLATION, not fallback fabrication. Singleton identifies the coefficient; tracking control uses the identified channel and sign with bounded inverse-model control.
+
+In ambiguous state, ACTIVE_REID chooses the finite action-grid probe maximizing the minimum pairwise predicted residual separation (tie-break lower L1 effort, then lexicographic order). Grid: both coordinates in {-0.5,-0.375,-0.25,-0.125,0,0.125,0.25,0.375,0.5}, |u1|+|u2|<=0.5. PERIODIC_REID uses the same scheduled sentinels and elimination; when ambiguous on a nonsentinel tick, chooses minimax one-step tracking on the same grid, not an information objective. STATIC_NOMINAL retains nominal control, with identical scheduled sentinels. EXACT_EMULATOR executes the exact active policy (paired fidelity negative control). ORACLE is privileged diagnostic only, with the same input envelope/sentinels.
+
+For the declared family, a channel-1 sentinel produces at least 0.2 separation from the nominal prediction after any switch. The next such sentinel is within seven transitions; detection by tau+8 under the bounded-noise assumptions. The asymmetric probe (0.125,0.375) yields four distinct predictions -0.3,-0.1,0.1,0.3; minimum separation 0.2>2epsilon, so one deliberate probe suffices to identify any remaining candidates. Under these assumptions ACTIVE detection/identification must satisfy detection delay <=8 and identification <=9; no-change worlds must not detect. These are falsifiable finite-family engineering invariants, not population statistical efficacy claims.
+
+## Endpoints and acceptance
+
+Per-world true model containment (evaluator-only), detection/identification times and correctness, no-change false positives, post-OOD mean absolute tracking error, final-16 mean absolute tracking error, post-OOD goal-band fraction (|x-0.3|<=0.05), all safety states, probe counts and realized action L1/L2 proxies. Compare ACTIVE vs PERIODIC and STATIC on paired descriptive contrasts, report all signed outcomes including nulls; no positive tracking contrast is required. Budgets share envelopes, not guaranteed identical realized resources. Exact emulator traces must match byte-for-byte after removing arm label. Missing worlds, nonfinite fields, unsafe actions/states, false positives, true-mode elimination, wrong singleton, delayed active identification under stated assumptions or emulator divergence fail closed. Real energy/FLOPs/transport, neural efficacy, external blind replication, superiority over exact central simulation remain unqualified. No CNEH scientific promotion. Full deterministic replay, strict file roster and SHA256 manifest; archive every output including failure.
+
+## Generalization debt
+
+This experiment implements Detect -> Identify -> Adapt -> Control for a specified known model family and bounded noise. It does not establish unconstrained structural recovery, calibrated stochastic identification under unknown noise, neural implementation, information synergy, resource superiority or external replication. Later work must qualify these separately. Do not tune this cohort to achieve a favorable effect.
