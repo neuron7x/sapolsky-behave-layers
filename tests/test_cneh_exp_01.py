@@ -53,6 +53,53 @@ class CNEHPreflightTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 mod.verify_bundle(out)
 
+    def test_resigned_raw_result_lie_is_rejected(self):
+        """A freshly rehashed forged non-primary CSV row must still fail."""
+        import csv
+        with tempfile.TemporaryDirectory() as root:
+            out = Path(root) / "bundle"
+            mod.write_bundle(out, "SMOKE", [3001, 3002], self.protocol)
+            csv_path = out / "pilot.csv"
+            with csv_path.open(encoding="utf-8", newline="") as fh:
+                reader = csv.DictReader(fh)
+                fields, rows = list(reader.fieldnames), list(reader)
+            target = next(row for row in rows if row["arm"] == "A_ONLY")
+            target["success"] = str(1 - int(target["success"]))
+            with csv_path.open("w", encoding="utf-8", newline="") as fh:
+                writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\\n")
+                writer.writeheader()
+                writer.writerows(rows)
+            manifest = sorted(p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS")
+            (out / "SHA256SUMS").write_text(
+                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\\n" for p in manifest),
+                encoding="ascii",
+            )
+            with self.assertRaisesRegex(ValueError, "raw trajectory"):
+                mod.verify_bundle(out)
+
+    def test_resigned_protocol_drift_is_rejected(self):
+        with tempfile.TemporaryDirectory() as root:
+            out = Path(root) / "bundle"
+            mod.write_bundle(out, "SMOKE", [3001, 3002], self.protocol)
+            protocol = json.loads((out / "protocol.json").read_text())
+            protocol["material_effect"] = 0.0  # hostile threshold override
+            (out / "protocol.json").write_bytes(mod.canonical(protocol))
+            manifest = sorted(p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS")
+            (out / "SHA256SUMS").write_text(
+                "".join(f"{mod.digest(p.read_bytes())}  {p.name}\\n" for p in manifest),
+                encoding="ascii",
+            )
+            with self.assertRaisesRegex(ValueError, "resigned protocol"):
+                mod.verify_bundle(out)
+
+    def test_extra_bundle_member_is_rejected(self):
+        with tempfile.TemporaryDirectory() as root:
+            out = Path(root) / "bundle"
+            mod.write_bundle(out, "SMOKE", [3001, 3002], self.protocol)
+            (out / "UNREGISTERED.json").write_text("{}")
+            with self.assertRaisesRegex(ValueError, "membership"):
+                mod.verify_bundle(out)
+
     def test_unsupported_replication_claim_forbidden(self):
         with tempfile.TemporaryDirectory() as root:
             out=Path(root)/"bundle"
