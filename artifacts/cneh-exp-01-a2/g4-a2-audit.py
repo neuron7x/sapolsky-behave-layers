@@ -1,5 +1,4 @@
 """Read-only G4 epistemic audit; writes only this evidence directory and temp fixtures."""
-import copy
 from collections import Counter
 import csv
 import hashlib
