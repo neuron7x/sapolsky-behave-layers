@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
       - name: Install only minimal reference neuron mathematics
         run: |
-          python -m pip install --only-binary=:all: numpy==2.2.6 scipy==1.15.3
+          python -m pip install --only-binary=:all: numpy==2.2.6 scipy==1.15.3 pydantic==2.12.4
       - name: Run real AdEx BN-Syn two-cortex feedback
         run: |
           python experiments/cneh_exp_02/bnsyn_bridge.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-bridge
