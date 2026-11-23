@@ -235,36 +235,117 @@ def write_bundle(out: Path, phase: str, seeds: list[int], protocol: dict[str, An
 
 
 def verify_bundle(out: Path) -> None:
+    """Fail closed on re-signed CSV lies, drifted source contracts, or invalid claims.
+
+    Deterministic replay is an *internal* check, not an independent replication
+    or an adversary-resistant signature of the code that performs this check.
+    """
+    if not out.is_dir() or out.is_symlink():
+        raise ValueError("invalid bundle directory")
+    entries = list(out.iterdir())
+    if any(not p.is_file() or p.is_symlink() for p in entries):
+        raise ValueError("unexpected directory or symlink in evidence bundle")
+    if not (out / "SHA256SUMS").is_file():
+        raise ValueError("missing hash manifest")
     expected = {}
-    for line in (out/"SHA256SUMS").read_text(encoding="ascii").splitlines():
+    manifest_lines = (out / "SHA256SUMS").read_text(encoding="ascii").splitlines()
+    for line in manifest_lines:
+        if line.count("  ") != 1:
+            raise ValueError("invalid SHA256SUMS record")
         h, name = line.split("  ", 1)
-        if name in expected or "/" in name or "\\" in name or len(h)!=64:
+        if (name in expected or not name or "/" in name or "\\" in name
+                or len(h) != 64 or any(c not in "0123456789abcdef" for c in h)):
             raise ValueError("invalid SHA256SUMS entry")
-        expected[name]=h
-    actual = {p.name for p in out.iterdir() if p.is_file() and p.name!="SHA256SUMS"}
-    if set(expected)!=actual:
+        expected[name] = h
+    if list(expected) != sorted(expected):
+        raise ValueError("noncanonical hash manifest order")
+    actual = {p.name for p in entries if p.name != "SHA256SUMS"}
+    if set(expected) != actual:
         raise ValueError("evidence file membership mismatch")
     for name, sha in expected.items():
-        if digest((out/name).read_bytes())!=sha:
+        if digest((out / name).read_bytes()) != sha:
             raise ValueError(f"SHA mismatch: {name}")
-    p=json.loads((out/"protocol.json").read_text())
-    with (out/("primary.csv" if (out/"primary.csv").exists() else "pilot.csv")).open(encoding="utf-8") as handle:
-        rows=list(csv.DictReader(handle))
-    seeds=json.loads((out/"seeds.json").read_text())["seeds"]
-    by={(int(r["seed"]),r["arm"]):r for r in rows}
-    if len(rows)!=len(seeds)*len(ARMS) or len(by)!=len(rows):
-        raise ValueError("missing or duplicate arm rows")
-    if any(by[(s,"COUPLED")]["trace_sha256"]!=by[(s,"CENTRAL_EMULATOR")]["trace_sha256"] for s in seeds):
-        raise ValueError("central emulator parity fail")
-    verdict=json.loads((out/"verdict.json").read_text())
-    for baseline in PRIMARY_BASELINES:
-        ds=[int(by[(s,"COUPLED")]["success"])-int(by[(s,baseline)]["success"]) for s in seeds]
-        got=verdict["primary_comparisons"][baseline]
-        if (abs(got["mean_paired_difference"]-sum(ds)/len(ds))>1e-12 or
-            abs(got["one_sided_lcb"]-lower_bound(ds,p))>1e-12):
-            raise ValueError("metric recomputation mismatch")
-    if verdict["scientific_promotion_authorized"] or verdict["independent_blind_replication"]:
-        raise ValueError("unsupported scientific promotion")
+    frozen = {"protocol.json": "protocol.json",
+              "preregistration.md": "PREREGISTRATION.md",
+              "frozen_sources.lock": "frozen_sources.lock"}
+    for bundle_name, source_name in frozen.items():
+        if (out / bundle_name).read_bytes() != (HERE / source_name).read_bytes():
+            raise ValueError(f"resigned protocol/source drift: {bundle_name}")
+    p = json.loads((out / "protocol.json").read_text(encoding="utf-8"))
+    if p.get("hypothesis_status") != "FORMALIZED / EMPIRICAL VALIDATION PENDING" or p.get("claim_promotion_allowed") is not False:
+        raise ValueError("canonical scientific authority lock violated")
+    expected_spec_hash = digest((HERE / "CNEH-04-DC_Formal_Specification.md").read_bytes())
+    if p.get("source_spec_sha256") != expected_spec_hash:
+        raise ValueError("original CNEH-04-DC specification hash mismatch")
+
+    seed_obj = json.loads((out / "seeds.json").read_text(encoding="utf-8"))
+    seeds = seed_obj["seeds"]
+    if (not seeds or len(seeds) != len(set(seeds))
+            or any(type(x) is not int for x in seeds)
+            or seed_obj.get("n_world_seeds") != len(seeds)):
+        raise ValueError("invalid independent world-seed list")
+    phase = seed_obj.get("phase")
+    if phase not in ("SMOKE", "PRIMARY"):
+        raise ValueError("unapproved cohort phase")
+    expected_names = {"protocol.json", "preregistration.md", "frozen_sources.lock",
+                      "seeds.json", "budget.json", "safety.json",
+                      "negative_controls.json", "verdict.json",
+                      "primary.csv" if phase == "PRIMARY" else "pilot.csv"}
+    if actual != expected_names:
+        raise ValueError("wrong phase artifact roster")
+    if phase == "PRIMARY":
+        c = p["cohorts"]["primary"]
+        frozen_seeds = list(range(c["seed_first"], c["seed_last"] + 1))
+        if seeds != frozen_seeds or len(seeds) != c["n_world_seeds"]:
+            raise ValueError("confirmatory cohort diverges from preregistration")
+
+    csv_name = "primary.csv" if phase == "PRIMARY" else "pilot.csv"
+    with (out / csv_name).open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+    replay_rows, replay_metrics = evaluate(seeds, p)
+    if len(rows) != len(replay_rows):
+        raise ValueError("missing or extra arm rows")
+    expected_columns = list(replay_rows[0])
+    if reader.fieldnames != expected_columns:
+        raise ValueError("unexpected CSV columns")
+    for actual_row, replay_row in zip(rows, replay_rows):
+        if actual_row != {k: str(v) for k, v in replay_row.items()}:
+            raise ValueError(f"raw trajectory/reward/cost mismatch in re-signed CSV for seed={replay_row['seed']} arm={replay_row['arm']}")
+    if not replay_metrics["emulator_trace_parity"]:
+        raise ValueError("faithful central emulator parity violated")
+    if not replay_metrics["scrambled_traffic_envelope_parity"]:
+        raise ValueError("scramble envelope mismatch")
+    if not replay_metrics["all_budget_envelopes_pass"]:
+        raise ValueError("a controller exceeded the resource envelope")
+
+    verdict = json.loads((out / "verdict.json").read_text(encoding="utf-8"))
+    if (verdict.get("experiment") != "CNEH-EXP-01"
+            or verdict.get("hypothesis_status") != p["hypothesis_status"]
+            or verdict.get("phase") != phase
+            or verdict.get("verdict") != "REPLICATION_NOT_TESTED"
+            or verdict.get("independent_blind_replication") is not False
+            or verdict.get("scientific_promotion_authorized") is not False):
+        raise ValueError("scientific authority forged or mismatched")
+    if verdict["primary_comparisons"] != replay_metrics["comparisons"]:
+        raise ValueError("paired effect size / interval mismatch")
+    if verdict["rates"] != replay_metrics["success_rates"]:
+        raise ValueError("success-rate integrity mismatch")
+    budget = json.loads((out / "budget.json").read_text(encoding="utf-8"))
+    if (budget.get("budget_envelope") != p["resource_envelope"]
+            or budget.get("all_within_declared_envelope") is not True
+            or budget.get("physical_joules_verified") is not False
+            or budget.get("hardware_flops_verified") is not False):
+        raise ValueError("budget claim exceeds measured authority")
+    neg = json.loads((out / "negative_controls.json").read_text(encoding="utf-8"))
+    if (neg.get("central_emulator_trace_parity") is not True
+            or neg.get("scrambled_envelope_parity") is not True
+            or neg.get("semantic_distribution_matching_verified") is not False
+            or neg.get("central_simulation_dominance_applies") is not True):
+        raise ValueError("negative control overclaim")
+    safety = json.loads((out / "safety.json").read_text(encoding="utf-8"))
+    if safety.get("synthetic_safe_rates") != replay_metrics["safe_rates"] or safety.get("physical_safety_qualified") is not False:
+        raise ValueError("safety evidence mismatch")
 
 
 def main() -> None:
