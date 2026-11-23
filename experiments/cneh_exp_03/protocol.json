@@ -1,0 +1,126 @@
+{
+  "schema": "cneh-structural-ood-v1",
+  "experiment": "CNEH-EXP-03",
+  "hypothesis": "CNEH-04-DC",
+  "hypothesis_status": "FORMALIZED / EMPIRICAL VALIDATION PENDING",
+  "authority": "PROSPECTIVE_INTERNAL_SIMULATOR_MECHANISM_PILOT",
+  "scientific_promotion_authorized": false,
+  "source_commit": "959c2f089e6a3f143b64429cd4a2e84a778da8e7",
+  "bnsyn_source_commit": "c1de425ce4ece362e7f2feb2d9f24da5d3231014",
+  "seeds": [
+    82001,
+    82002,
+    82003,
+    82004,
+    82005,
+    82006,
+    82007,
+    82008
+  ],
+  "network": {
+    "neurons": 32,
+    "frac_inhib": 0.25,
+    "p_conn": 0.2,
+    "dt_ms": 0.1,
+    "steps": 1000,
+    "intervention_tick": 400,
+    "backend": "reference",
+    "population_A": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      24,
+      25,
+      26,
+      27
+    ],
+    "population_B": [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      28,
+      29,
+      30,
+      31
+    ]
+  },
+  "stimulus": {
+    "base_current_pA": 300,
+    "probe_amplitude_pA": 80,
+    "probe_period_ticks": 80,
+    "max_current_pA": 500
+  },
+  "arms": [
+    {
+      "name": "SHAM_BASE",
+      "cut": false,
+      "probe": false
+    },
+    {
+      "name": "SHAM_PROBE_A",
+      "cut": false,
+      "probe": true
+    },
+    {
+      "name": "CUT_AB_BASE",
+      "cut": true,
+      "probe": false
+    },
+    {
+      "name": "CUT_AB_PROBE_A",
+      "cut": true,
+      "probe": true
+    }
+  ],
+  "endpoint": {
+    "name": "B_post_spikes_per_neuron",
+    "window": "ticks 400..999 inclusive",
+    "scale": "count / 16",
+    "factorial_contrast": "(SHAM_PROBE_A-SHAM_BASE)-(CUT_AB_PROBE_A-CUT_AB_BASE)",
+    "secondary": "same factorial contrast in post-window mean B voltage (mV)",
+    "scope": "paired descriptive world-level interaction only"
+  },
+  "invariants": [
+    "exact pre-intervention state and input equality across all arms",
+    "exact exogenous RNG-state equality at every tick",
+    "B receives identical direct current in all arms",
+    "only A-to-B incoming E and I weights are removed by CUT; other weights bitwise unchanged",
+    "SHAM reconstructs both weight containers without changing bytes",
+    "active spiking required in pre-intervention population A and B, otherwise report unqualified operating regime",
+    "no positive scientific promotion"
+  ],
+  "limits": {
+    "max_episodes": 32,
+    "max_steps_per_episode": 1000,
+    "max_neurons": 32,
+    "max_current_pA": 500
+  },
+  "forbidden_inferences": [
+    "unique direct synaptic mediation",
+    "emergent intelligence",
+    "biological validation",
+    "physical resource parity",
+    "independent external replication",
+    "controller superiority"
+  ],
+  "scientific_status": "REPLICATION_NOT_TESTED",
+  "physical_energy": "INSTRUMENT_INVALID"
+}
