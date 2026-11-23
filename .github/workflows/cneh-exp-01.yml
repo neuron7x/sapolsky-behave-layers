@@ -3,22 +3,29 @@ on:
   pull_request:
     paths:
       - 'experiments/cneh_exp_01/**'
-      - 'tests/test_cneh_exp_01.py'
+      - 'tests/test_cneh_exp_01*.py'
       - '.github/workflows/cneh-exp-01.yml'
   workflow_dispatch: {}
 permissions:
   contents: read
 jobs:
   preflight:
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          python-version: '3.12'
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Unit and mutation negative tests
-        run: python -m unittest discover -s tests -p test_cneh_exp_01.py -v
+        run: python -m unittest discover -s tests -p 'test_cneh_exp_01*.py' -v
+      - name: Calibrate assertion-based falsifiers
+        run: python experiments/cneh_exp_01/mutation_check.py --out /tmp/cneh-mutations
       - name: Deterministic smoke / sealed artifact
         run: |
           python experiments/cneh_exp_01/run.py --phase smoke --out /tmp/cneh-smoke
@@ -31,14 +38,76 @@ jobs:
           (cd /tmp/cneh-primary && sha256sum --check SHA256SUMS)
           python -c 'import json; from pathlib import Path; x=json.loads(Path("/tmp/cneh-primary/verdict.json").read_text()); assert x["phase"]=="PRIMARY" and x["verdict"]=="REPLICATION_NOT_TESTED" and not x["scientific_promotion_authorized"]'
       - name: Archive internal PRIMARY evidence (not blind replication)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: cneh-exp-01-internal-primary-SHA256
+          name: cneh-exp-01-internal-primary-SHA256-${{ matrix.python }}
           path: /tmp/cneh-primary/
+          if-no-files-found: error
           retention-days: 90
       - name: Archive smoke proof
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: cneh-exp-01-synthetic-smoke
+          name: cneh-exp-01-synthetic-smoke-${{ matrix.python }}
           path: /tmp/cneh-smoke/
           retention-days: 30
+      - name: Analytic components, measured timing and science lock
+        run: |
+          mkdir /tmp/cneh-qualification
+          python experiments/cneh_exp_01/estimators.py --out /tmp/cneh-qualification/estimators.json
+          python experiments/cneh_exp_01/hardware.py --out /tmp/cneh-qualification/timing.json
+          if python experiments/cneh_exp_01/qualification.py --bundle /tmp/cneh-primary --require-scientific-readiness > /tmp/cneh-qualification/readiness.json; then
+            echo 'Unexpected scientific promotion' >&2
+            exit 1
+          else
+            rc=$?
+            test "$rc" -eq 2
+          fi
+      - name: Archive qualification and falsification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cneh-exp-01-engineering-qualification-${{ matrix.python }}
+          path: |
+            /tmp/cneh-mutations/
+            /tmp/cneh-qualification/
+          if-no-files-found: error
+          retention-days: 90
+
+  neural-integration:
+    name: Pinned BN-Syn integration smoke (no efficacy claim)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: neuron7x/bnsyn-phase-controlled-emergent-dynamics
+          ref: c1de425ce4ece362e7f2feb2d9f24da5d3231014
+          path: .cneh-inputs/bnsyn
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install hash-locked isolated neural runtime
+        run: |
+          python -m venv /tmp/cneh-neural-venv
+          /tmp/cneh-neural-venv/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock --report /tmp/cneh-neural-install.json
+      - name: Execute and replay actual pinned neural dynamics
+        run: |
+          /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/bnsyn_adapter.py --source .cneh-inputs/bnsyn --out /tmp/cneh-neural
+          /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/bnsyn_adapter.py --source .cneh-inputs/bnsyn --out /tmp/cneh-neural --verify
+          (cd /tmp/cneh-neural && sha256sum --check SHA256SUMS)
+      - name: Archive neural integration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cneh-exp-01-pinned-neural-integration
+          path: |
+            /tmp/cneh-neural/
+            /tmp/cneh-neural-install.json
+          if-no-files-found: error
+          retention-days: 90

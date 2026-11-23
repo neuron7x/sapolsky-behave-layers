@@ -23,6 +23,8 @@ ARMS = (
     "FULL_INFORMATION_ORACLE",
 )
 PRIMARY_BASELINES = ("CENTRAL_EMULATOR", "STATIC_FUSION", "SCRAMBLED_MATCHED_TRAFFIC")
+EVIDENCE_FORMAT_VERSION = 2
+CONTROLLER_MEMORY_PROXY_BYTES = 256  # Frozen algorithmic proxy, NOT measured RAM.
 
 
 def canonical(obj: Any) -> bytes:
@@ -31,6 +33,55 @@ def canonical(obj: Any) -> bytes:
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def strict_json(data: str | bytes) -> Any:
+    """Reject ambiguous objects and all nonfinite JSON numbers, including overflow."""
+    def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    def number(value: str) -> float:
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            raise ValueError("nonfinite JSON number")
+        return parsed
+
+    def constant(value: str) -> None:
+        raise ValueError(f"nonfinite JSON constant: {value}")
+
+    return json.loads(data, object_pairs_hook=pairs, parse_float=number,
+                      parse_constant=constant)
+
+
+def trace_digest(actions_states: list[list[float]]) -> str:
+    """Exact binary64 values, including signed zero; no decimal rounding."""
+    if any(not math.isfinite(v) for row in actions_states for v in row):
+        raise ValueError("nonfinite action/state trace")
+    return digest(canonical([[v.hex() for v in row] for row in actions_states]))
+
+
+def validate_seeds(seeds: list[int]) -> None:
+    if (type(seeds) is not list or not seeds
+            or any(type(seed) is not int or seed < 0 for seed in seeds)):
+        raise ValueError("world seeds must be a nonempty list of nonnegative integers")
+    if len(seeds) != len(set(seeds)):
+        raise ValueError("duplicate world seeds")
+
+
+def validate_cohort(phase: str, seeds: list[int], protocol: dict[str, Any]) -> None:
+    validate_seeds(seeds)
+    if phase not in ("SMOKE", "PRIMARY"):
+        raise ValueError("unapproved cohort phase")
+    if phase == "PRIMARY":
+        cohort = protocol["cohorts"]["primary"]
+        frozen = list(range(cohort["seed_first"], cohort["seed_last"] + 1))
+        if seeds != frozen or len(seeds) != cohort["n_world_seeds"]:
+            raise ValueError("confirmatory cohort diverges from preregistration")
 
 
 def clamp(value: float, bound: float) -> float:
@@ -91,6 +142,8 @@ def simulate(seed: int, arm: str, protocol: dict[str, Any]) -> dict[str, Any]:
     """One paired episode; controller never receives latent theta except oracle arm."""
     if arm not in ARMS:
         raise ValueError(f"unknown arm: {arm}")
+    validate_seeds([seed])
+    canonical(protocol)  # Refuse NaN/Infinity in the model or budget before control.
     p = protocol["model"]
     budget = protocol["resource_envelope"]
     rng = random.Random(int(seed))
@@ -105,7 +158,7 @@ def simulate(seed: int, arm: str, protocol: dict[str, Any]) -> dict[str, Any]:
     history_y0: list[float] = []
     history_y1: list[float] = []
     actions_states: list[list[float]] = []
-    safe = True
+    safe = max(abs(x0), abs(x1)) <= p["safety_abs_bound"]
     energy = 0.0
     message_bytes = 0
     compute_proxy = 0
@@ -131,19 +184,26 @@ def simulate(seed: int, arm: str, protocol: dict[str, Any]) -> dict[str, Any]:
         u0, u1 = controller.act(t, sensed, goal, arm, p,
                                  true_state=(x0, x1) if arm == "FULL_INFORMATION_ORACLE" else None,
                                  true_theta=th if arm == "FULL_INFORMATION_ORACLE" else None)
+        if not all(math.isfinite(v) for v in (u0, u1)):
+            raise ValueError("nonfinite controller action")
+        if max(abs(u0), abs(u1)) > p["actuator_bound"]:
+            raise ValueError("controller action exceeds physical interface bound")
         # Deterministic algorithmic proxy; not measured FLOPs or wall-clock latency.
         compute_proxy += 64 if arm in ("COUPLED", "CENTRAL_EMULATOR", "SCRAMBLED_MATCHED_TRAFFIC") else 48
         energy += u0*u0 + u1*u1
         next_x0 = p["A_base_diagonal"][0]*x0 + th*x1 + p["actuator_gain"]*u0 + w0
         next_x1 = -th*x0 + p["A_base_diagonal"][1]*x1 + p["actuator_gain"]*u1 + w1
         x0, x1 = next_x0, next_x1
-        actions_states.append([round(u0, 12), round(u1, 12), round(x0, 12), round(x1, 12)])
+        if not all(math.isfinite(v) for v in (x0, x1, energy)):
+            raise ValueError("nonfinite plant state or control effort")
+        actions_states.append([u0, u1, x0, x1])
         if max(abs(x0), abs(x1)) > p["safety_abs_bound"]:
             safe = False
     terminal_error = math.hypot(x0-goal[0], x1-goal[1])
     budget_ok = (energy <= budget["control_energy_proxy_max"] and
                  compute_proxy <= budget["controller_compute_proxy_ops_max"] and
                  message_bytes <= budget["message_bytes_max"] and
+                 CONTROLLER_MEMORY_PROXY_BYTES <= budget["controller_memory_proxy_bytes_max"] and
                  p["step_horizon"] <= budget["latency_steps_max"] and
                  budget["training_steps_max"] == 0)
     return {"seed": int(seed), "arm": arm,
@@ -151,8 +211,9 @@ def simulate(seed: int, arm: str, protocol: dict[str, Any]) -> dict[str, Any]:
             "safe": int(safe), "budget_ok": int(budget_ok),
             "terminal_error": round(terminal_error, 12), "control_energy_proxy": round(energy, 12),
             "controller_compute_proxy_ops": compute_proxy, "message_bytes": message_bytes,
-            "controller_memory_proxy_bytes": 256, "latency_steps": p["step_horizon"],
-            "trace_sha256": digest(canonical(actions_states))}
+            "controller_memory_proxy_bytes": CONTROLLER_MEMORY_PROXY_BYTES,
+            "latency_steps": p["step_horizon"],
+            "trace_sha256": trace_digest(actions_states)}
 
 
 def lower_bound(diffs: list[int], protocol: dict[str, Any]) -> float:
@@ -163,8 +224,7 @@ def lower_bound(diffs: list[int], protocol: dict[str, Any]) -> float:
 
 
 def evaluate(seeds: list[int], protocol: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    if len(seeds) != len(set(seeds)):
-        raise ValueError("duplicate world seeds")
+    validate_seeds(seeds)
     rows = [simulate(seed, arm, protocol) for seed in seeds for arm in ARMS]
     by = {(r["seed"], r["arm"]): r for r in rows}
     emu_identical = all(by[(s, "COUPLED")]["trace_sha256"] == by[(s, "CENTRAL_EMULATOR")]["trace_sha256"] for s in seeds)
@@ -186,36 +246,27 @@ def evaluate(seeds: list[int], protocol: dict[str, Any]) -> tuple[list[dict[str,
     return rows, metrics
 
 
-def write_bundle(out: Path, phase: str, seeds: list[int], protocol: dict[str, Any]) -> Path:
-    if out.exists() and any(out.iterdir()):
-        raise FileExistsError("refuse overwrite: evidence bundles are immutable")
-    out.mkdir(parents=True, exist_ok=True)
-    rows, metrics = evaluate(seeds, protocol)
-    for name, src in (("protocol.json","protocol.json"),("preregistration.md","PREREGISTRATION.md"),("frozen_sources.lock","frozen_sources.lock")):
-        (out/name).write_bytes((HERE/src).read_bytes())
-    (out/"seeds.json").write_bytes(canonical({"phase": phase, "n_world_seeds": len(seeds),
-        "seeds": seeds, "source": "public fixed prereg seeds" if phase=="PRIMARY" else "external seed commitment/reveal required"}))
-    header = list(rows[0].keys())
-    with (out/("primary.csv" if phase=="PRIMARY" else "pilot.csv")).open("w", newline="", encoding="utf-8") as f:
-        w=csv.DictWriter(f, fieldnames=header, lineterminator="\n")
-        w.writeheader()
-        w.writerows(rows)
+def derived_artifacts(phase: str, seeds: list[int], protocol: dict[str, Any],
+                      rows: list[dict[str, Any]], metrics: dict[str, Any]) -> dict[str, Any]:
+    """Complete, closed schemas for derived evidence; no unchecked claim fields."""
     budget = {"budget_envelope": protocol["resource_envelope"],
               "observed_max_control_energy_proxy": max(r["control_energy_proxy"] for r in rows),
               "observed_max_controller_compute_proxy_ops": max(r["controller_compute_proxy_ops"] for r in rows),
               "observed_max_message_bytes": max(r["message_bytes"] for r in rows),
+              "observed_max_controller_memory_proxy_bytes": max(r["controller_memory_proxy_bytes"] for r in rows),
+              "observed_max_latency_steps": max(r["latency_steps"] for r in rows),
               "all_within_declared_envelope": metrics["all_budget_envelopes_pass"],
               "hardware_flops_verified": False, "physical_joules_verified": False,
               "external_training_budget_verified": False}
-    (out/"budget.json").write_bytes(canonical(budget))
-    (out/"safety.json").write_bytes(canonical({"synthetic_safe_rates": metrics["safe_rates"],
-        "physical_safety_qualified": False, "chance_constraint_verified": False, "gate": "SYNTHETIC_ONLY"}))
-    (out/"negative_controls.json").write_bytes(canonical({
+    safety = {"synthetic_safe_rates": metrics["safe_rates"],
+        "physical_safety_qualified": False, "chance_constraint_verified": False, "gate": "SYNTHETIC_ONLY"}
+    negative_controls = {
         "central_emulator_trace_parity": metrics["emulator_trace_parity"],
         "scrambled_envelope_parity": metrics["scrambled_traffic_envelope_parity"],
         "semantic_distribution_matching_verified": False,
         "central_simulation_dominance_applies": True,
-        "outcome": "NO_STRICT_MONOLITH_ADVANTAGE_POSSIBLE"}))
+        "outcome": ("NO_STRICT_MONOLITH_ADVANTAGE_POSSIBLE" if metrics["emulator_trace_parity"]
+                    else "MEASUREMENT_INVALID")}
     invalid = (not metrics["emulator_trace_parity"] or
                not metrics["scrambled_traffic_envelope_parity"] or
                not metrics["all_budget_envelopes_pass"])
@@ -224,21 +275,64 @@ def write_bundle(out: Path, phase: str, seeds: list[int], protocol: dict[str, An
         "phase": phase, "verdict": disposition, "scientific_promotion_authorized": False,
         "independent_blind_replication": False,
         "primary_comparisons": metrics["comparisons"], "rates": metrics["success_rates"],
-        "policy_boundary": "unrestricted centralized emulator dominates in expressivity; exact matched traces observed; cannot claim stronger coupled architecture",
+        "policy_boundary": "unrestricted centralized emulator dominates in expressivity; parity is mandatory; cannot claim stronger coupled architecture",
         "limitations": ["synthetic rather than empirical neurodynamic substrate",
             "unverified physical compute/latency/energy", "blind replication not performed",
             "no PID/Gramian/parameter-FIM measurement", "not an independent implementation"]}
-    (out/"verdict.json").write_bytes(canonical(verdict))
+    return {
+        "seeds.json": {"phase": phase, "n_world_seeds": len(seeds), "seeds": seeds,
+                       "source": "public fixed prereg seeds" if phase == "PRIMARY"
+                       else "internal engineering smoke; not blind replication"},
+        "implementation.json": {
+            "evidence_format_version": EVIDENCE_FORMAT_VERSION,
+            "runner_sha256": digest(Path(__file__).read_bytes()),
+            "trace_encoding": "canonical JSON of float.hex binary64 action/state rows",
+            "verification_scope": "same-implementation deterministic replay; not independent replication",
+        },
+        "budget.json": budget,
+        "safety.json": safety,
+        "negative_controls.json": negative_controls,
+        "verdict.json": verdict,
+    }
+
+
+def write_bundle(out: Path, phase: str, seeds: list[int], protocol: dict[str, Any]) -> Path:
+    frozen_protocol = strict_json((HERE / "protocol.json").read_bytes())
+    if canonical(protocol) != canonical(frozen_protocol):
+        raise ValueError("writer protocol diverges from frozen preregistration")
+    validate_cohort(phase, seeds, protocol)
+    if out.is_symlink():
+        raise ValueError("refuse symlink evidence directory")
+    if out.exists():
+        raise FileExistsError("refuse overwrite: evidence bundles are immutable")
+    rows, metrics = evaluate(seeds, protocol)
+    artifacts = derived_artifacts(phase, seeds, protocol, rows, metrics)
+    # Exclusive reservation closes concurrent writers' check-then-write race.
+    # A failed write leaves an incomplete, non-admissible bundle for diagnosis.
+    out.mkdir(parents=True, exist_ok=False)
+    for name, src in (("protocol.json", "protocol.json"),
+                      ("preregistration.md", "PREREGISTRATION.md"),
+                      ("frozen_sources.lock", "frozen_sources.lock")):
+        (out / name).write_bytes((HERE / src).read_bytes())
+    for name, artifact in artifacts.items():
+        (out / name).write_bytes(canonical(artifact))
+    with (out / ("primary.csv" if phase == "PRIMARY" else "pilot.csv")).open(
+            "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
     payload_files = sorted(p for p in out.iterdir() if p.is_file() and p.name!="SHA256SUMS")
     (out/"SHA256SUMS").write_text("".join(f"{digest(p.read_bytes())}  {p.name}\n" for p in payload_files), encoding="ascii")
     return out
 
 
-def verify_bundle(out: Path) -> None:
+def verify_bundle(out: Path, *, require_valid: bool = False) -> dict[str, Any]:
     """Fail closed on re-signed CSV lies, drifted source contracts, or invalid claims.
 
     Deterministic replay is an *internal* check, not an independent replication
     or an adversary-resistant signature of the code that performs this check.
+    Authentic negative bundles remain auditable. ``require_valid`` also checks
+    engineering admission; neither mode can authorize scientific promotion.
     """
     if not out.is_dir() or out.is_symlink():
         raise ValueError("invalid bundle directory")
@@ -271,33 +365,25 @@ def verify_bundle(out: Path) -> None:
     for bundle_name, source_name in frozen.items():
         if (out / bundle_name).read_bytes() != (HERE / source_name).read_bytes():
             raise ValueError(f"resigned protocol/source drift: {bundle_name}")
-    p = json.loads((out / "protocol.json").read_text(encoding="utf-8"))
+    p = strict_json((out / "protocol.json").read_bytes())
     if p.get("hypothesis_status") != "FORMALIZED / EMPIRICAL VALIDATION PENDING" or p.get("claim_promotion_allowed") is not False:
         raise ValueError("canonical scientific authority lock violated")
     expected_spec_hash = digest((HERE / "CNEH-04-DC_Formal_Specification.md").read_bytes())
     if p.get("source_spec_sha256") != expected_spec_hash:
         raise ValueError("original CNEH-04-DC specification hash mismatch")
 
-    seed_obj = json.loads((out / "seeds.json").read_text(encoding="utf-8"))
-    seeds = seed_obj["seeds"]
-    if (not seeds or len(seeds) != len(set(seeds))
-            or any(type(x) is not int for x in seeds)
-            or seed_obj.get("n_world_seeds") != len(seeds)):
+    seed_obj = strict_json((out / "seeds.json").read_bytes())
+    if type(seed_obj) is not dict or "seeds" not in seed_obj:
         raise ValueError("invalid independent world-seed list")
+    seeds = seed_obj["seeds"]
     phase = seed_obj.get("phase")
-    if phase not in ("SMOKE", "PRIMARY"):
-        raise ValueError("unapproved cohort phase")
+    validate_cohort(phase, seeds, p)
     expected_names = {"protocol.json", "preregistration.md", "frozen_sources.lock",
                       "seeds.json", "budget.json", "safety.json",
-                      "negative_controls.json", "verdict.json",
+                      "negative_controls.json", "verdict.json", "implementation.json",
                       "primary.csv" if phase == "PRIMARY" else "pilot.csv"}
     if actual != expected_names:
         raise ValueError("wrong phase artifact roster")
-    if phase == "PRIMARY":
-        c = p["cohorts"]["primary"]
-        frozen_seeds = list(range(c["seed_first"], c["seed_last"] + 1))
-        if seeds != frozen_seeds or len(seeds) != c["n_world_seeds"]:
-            raise ValueError("confirmatory cohort diverges from preregistration")
 
     csv_name = "primary.csv" if phase == "PRIMARY" else "pilot.csv"
     with (out / csv_name).open(encoding="utf-8", newline="") as handle:
@@ -312,40 +398,17 @@ def verify_bundle(out: Path) -> None:
     for actual_row, replay_row in zip(rows, replay_rows):
         if actual_row != {k: str(v) for k, v in replay_row.items()}:
             raise ValueError(f"raw trajectory/reward/cost mismatch in re-signed CSV for seed={replay_row['seed']} arm={replay_row['arm']}")
-    if not replay_metrics["emulator_trace_parity"]:
-        raise ValueError("faithful central emulator parity violated")
-    if not replay_metrics["scrambled_traffic_envelope_parity"]:
-        raise ValueError("scramble envelope mismatch")
-    if not replay_metrics["all_budget_envelopes_pass"]:
-        raise ValueError("a controller exceeded the resource envelope")
-
-    verdict = json.loads((out / "verdict.json").read_text(encoding="utf-8"))
-    if (verdict.get("experiment") != "CNEH-EXP-01"
-            or verdict.get("hypothesis_status") != p["hypothesis_status"]
-            or verdict.get("phase") != phase
-            or verdict.get("verdict") != "REPLICATION_NOT_TESTED"
-            or verdict.get("independent_blind_replication") is not False
-            or verdict.get("scientific_promotion_authorized") is not False):
-        raise ValueError("scientific authority forged or mismatched")
-    if verdict["primary_comparisons"] != replay_metrics["comparisons"]:
-        raise ValueError("paired effect size / interval mismatch")
-    if verdict["rates"] != replay_metrics["success_rates"]:
-        raise ValueError("success-rate integrity mismatch")
-    budget = json.loads((out / "budget.json").read_text(encoding="utf-8"))
-    if (budget.get("budget_envelope") != p["resource_envelope"]
-            or budget.get("all_within_declared_envelope") is not True
-            or budget.get("physical_joules_verified") is not False
-            or budget.get("hardware_flops_verified") is not False):
-        raise ValueError("budget claim exceeds measured authority")
-    neg = json.loads((out / "negative_controls.json").read_text(encoding="utf-8"))
-    if (neg.get("central_emulator_trace_parity") is not True
-            or neg.get("scrambled_envelope_parity") is not True
-            or neg.get("semantic_distribution_matching_verified") is not False
-            or neg.get("central_simulation_dominance_applies") is not True):
-        raise ValueError("negative control overclaim")
-    safety = json.loads((out / "safety.json").read_text(encoding="utf-8"))
-    if safety.get("synthetic_safe_rates") != replay_metrics["safe_rates"] or safety.get("physical_safety_qualified") is not False:
-        raise ValueError("safety evidence mismatch")
+    expected_artifacts = derived_artifacts(phase, seeds, p, replay_rows, replay_metrics)
+    for name, expected_artifact in expected_artifacts.items():
+        actual_artifact = strict_json((out / name).read_bytes())
+        # Canonical bytes distinguish True from 1, False from 0, and 1 from 1.0;
+        # plain dict equality would silently accept these evidence type changes.
+        if canonical(actual_artifact) != canonical(expected_artifact):
+            raise ValueError(f"derived evidence mismatch: {name}")
+    verdict = expected_artifacts["verdict.json"]
+    if require_valid and verdict["verdict"] == "INVALID":
+        raise ValueError("authentic negative evidence: engineering qualification INVALID")
+    return verdict
 
 
 def main() -> None:
@@ -355,10 +418,10 @@ def main() -> None:
     parser.add_argument("--verify",action="store_true")
     args=parser.parse_args()
     if args.verify:
-        verify_bundle(args.out)
+        verify_bundle(args.out, require_valid=True)
         print("SHA256SUMS verified; paired contrasts recomputed; no unsupported promotion")
         return
-    protocol=json.loads((HERE/"protocol.json").read_text(encoding="utf-8"))
+    protocol=strict_json((HERE/"protocol.json").read_bytes())
     if protocol["hypothesis_status"]!="FORMALIZED / EMPIRICAL VALIDATION PENDING" or protocol["claim_promotion_allowed"] is not False:
         raise RuntimeError("canonical claim lock violated")
     if args.phase=="primary":
@@ -371,7 +434,7 @@ def main() -> None:
         seeds=[3001,3002,3003,3004]
         phase="SMOKE"
     write_bundle(args.out,phase,seeds,protocol)
-    verify_bundle(args.out)
+    verify_bundle(args.out, require_valid=True)
     print(f"{phase} bundle: {args.out} (verdict: REPLICATION_NOT_TESTED; SHA256 verified)")
 
 

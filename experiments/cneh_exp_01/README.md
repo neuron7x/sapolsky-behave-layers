@@ -7,15 +7,22 @@ This directory is an executable **toy system**, not a neural simulation, complet
 ## Execute
 
 ```sh
-python -m unittest discover -s tests -p test_cneh_exp_01.py -v
+python -m unittest discover -s tests -p 'test_cneh_exp_01*.py' -v
 python experiments/cneh_exp_01/run.py --phase smoke --out /tmp/cneh-smoke
 python experiments/cneh_exp_01/run.py --out /tmp/cneh-smoke --verify
 python experiments/cneh_exp_01/run.py --phase primary --out /tmp/cneh-primary
 python experiments/cneh_exp_01/run.py --out /tmp/cneh-primary --verify
-sha256sum -c /tmp/cneh-primary/SHA256SUMS # run inside bundle folder instead
+(cd /tmp/cneh-primary && sha256sum -c SHA256SUMS)
 ```
 
-No `pip` installation is required. Each evidence bundle is immutable and contains `SHA256SUMS`, per-arm paired data, frozen protocol/source copies, resource/safety/negative controls and `verdict.json`. Verify with the built-in verifier: it independently recomputes all paired contrasts from the frozen CSV and refuses status promotion.
+No `pip` installation is required for the synthetic harness, analytic fixtures,
+commitment tooling or tests. The optional neural integration uses a separate locked
+environment. A new output directory is required; concurrent writers cannot replace
+an existing bundle. Evidence v2 adds `implementation.json`, binds the runner SHA256,
+and hashes exact `float.hex()` trajectories. Verification replays every raw row and
+checks every derived sidecar field. This uses the same implementation, not an
+independent scientific estimator. Historical v1 bundles require the original code
+revision; they are not overwritten or silently upgraded.
 
 ## Measured versus unmeasured
 
@@ -23,8 +30,25 @@ This pilot records *simulated control-input effort* and deliberately simple *alg
 
 The `CENTRAL_EMULATOR` is not handicapped. It receives both physical observations, implements the exact same update as `COUPLED`, and yields identical action/state traces. Any claimed strict advantage over it is invalid under the simulation-dominance boundary.
 
-No external blinded replication has been performed, and local reruns by the same operator cannot be described as independent replication. `SUPPORTED_NARROW` is blocked. Follow-up neural/DNCA/time-rupture/neosynaptex adapters are future work; `frozen_sources.lock` pins candidates only.
+No external blinded replication has been performed, and local reruns cannot be
+described as independent replication. `SUPPORTED_NARROW` is structurally unreachable
+in this frozen lineage: its conjunction requires a positive LCB against a trace-identical
+emulator. Closing other gates cannot change this logical obstruction. A bounded
+comparator claim requires a separate prospective lineage and untouched cohorts.
+
+A pinned BN-Syn adapter now executes real spiking dynamics as **integration smoke
+only**. It does not replace the frozen synthetic PRIMARY, establish a neural goal
+task, qualify causal attribution, or prove distributed physical cost parity.
+Other candidates in the historical source lock remain unintegrated. Historical
+references to other owners are preserved; this work uses only `neuron7x` repositories.
 
 ## Preregistration discipline
 
 `PREREGISTRATION.md` and `protocol.json` were committed to this branch before any CNEH runner code and before the local synthetic pilot. The first internal 128-seed run is internal synthetic evidence; it cannot qualify a blind independent replication. No existing CWC result or historical negative is modified.
+
+The additive [engineering amendment](INTEGRATION_CONTRACT.md),
+[component contract](qualification_contract.json) and
+[neural contract](bnsyn_integration_contract.json) were committed before their new
+qualification probes. No original threshold, seed, primary contrast or source lock
+was changed. [Qualification guide](QUALIFICATION_GUIDE.md) documents commands,
+acceptance evidence and remaining external gates.
