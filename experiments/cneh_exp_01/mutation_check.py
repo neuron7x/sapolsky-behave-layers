@@ -124,9 +124,11 @@ def materialize(root: Path, snapshot: dict[str, bytes]) -> None:
         write_new(path, data)
 
 
-def execute(root: Path, test_file: str, destination: Path, timeout: float) -> dict[str, Any]:
+def execute(root: Path, test_file: str, destination: Path, timeout: float, *,
+            site_packages: bool = False) -> dict[str, Any]:
     summary_path = root / "unittest-result.json"
-    command = [sys.executable, "-I", "-S", "-c", TEST_RUNNER, test_file, str(summary_path)]
+    flags = ["-I"] + ([] if site_packages else ["-S"])
+    command = [sys.executable, *flags, "-c", TEST_RUNNER, test_file, str(summary_path)]
     started = time.perf_counter()
     process = subprocess.Popen(command, cwd=root, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, text=True, start_new_session=True)

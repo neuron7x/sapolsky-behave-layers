@@ -4,6 +4,7 @@ on:
     paths:
       - 'experiments/cneh_exp_01/**'
       - 'tests/test_cneh_exp_01*.py'
+      - 'tests/cneh_math/**'
       - '.github/workflows/cneh-exp-01.yml'
   workflow_dispatch: {}
 permissions:
@@ -73,6 +74,25 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      - name: Bounded Linux resource measurement and semantic replay
+        run: |
+          python experiments/cneh_exp_01/metrology.py --out /tmp/cneh-metrology
+          if python experiments/cneh_exp_01/metrology.py --out /tmp/cneh-metrology --verify --require-qualified-cost; then
+            echo 'Unavailable physical instruments were promoted' >&2
+            exit 1
+          else
+            rc=$?
+            test "$rc" -eq 2
+          fi
+      - name: Archive measured resource vectors
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cneh-exp-01-metrology-${{ matrix.python }}
+          path: /tmp/cneh-metrology/
+          if-no-files-found: error
+          retention-days: 90
+
   neural-integration:
     name: Pinned BN-Syn integration smoke (no efficacy claim)
     runs-on: ubuntu-latest
@@ -101,7 +121,24 @@ jobs:
           /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/bnsyn_adapter.py --source .cneh-inputs/bnsyn --out /tmp/cneh-neural
           /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/bnsyn_adapter.py --source .cneh-inputs/bnsyn --out /tmp/cneh-neural --verify
           (cd /tmp/cneh-neural && sha256sum --check SHA256SUMS)
-      - name: Archive neural integration evidence
+      - name: Acquire immutable PR44 mathematical reference
+        run: |
+          curl --fail --silent --show-error --location https://raw.githubusercontent.com/neuron7x/sapolsky-behave-layers/d0eada284220c4dad759191f5a847139a2dcb999/experiments/cneh_exp_02/linear_reference.py --output /tmp/cneh-pr44-linear-reference.py
+      - name: Qualify reused mathematics and causal counterexamples
+        env:
+          CNEH_PR44_REFERENCE: /tmp/cneh-pr44-linear-reference.py
+        run: |
+          /tmp/cneh-neural-venv/bin/python - <<'PY'
+          import unittest
+          suite = unittest.defaultTestLoader.discover('tests/cneh_math', pattern='qualification_cases.py')
+          assert suite.countTestCases() >= 14, 'missing optional numerical qualification cases'
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          assert result.wasSuccessful() and not result.skipped and not result.expectedFailures
+          PY
+          /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_qualification.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-math-qualification.json
+          /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_qualification.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-math-qualification.json --verify
+          /tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_mutation_check.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-math-mutations
+      - name: Archive neural integration and mathematical evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -109,5 +146,7 @@ jobs:
           path: |
             /tmp/cneh-neural/
             /tmp/cneh-neural-install.json
+            /tmp/cneh-math-qualification.json
+            /tmp/cneh-math-mutations/
           if-no-files-found: error
           retention-days: 90

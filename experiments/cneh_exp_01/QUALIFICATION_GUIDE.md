@@ -98,6 +98,49 @@ Neural bundle verification is exact within its recorded environment. A different
 Python/platform or dependency inventory produces a separate bundle; do not relabel
 that as a byte-identical replay of the original environment.
 
+## Reused mathematics and bounded hardware metrology (A2)
+
+PR44 is pinned at `d0eada284220c4dad759191f5a847139a2dcb999` for read-only
+mathematical reuse. It remains a separate dependent experimental lineage. The
+qualification bridge authenticates the reference file before loading it and uses
+existing CWC causal estimators. Independent block/SVD/linear-solve oracles check
+finite-horizon Wc/Wo, Hankel similarity invariance, covariance-weighted Fisher rank
+and the distinction between state observability and parameter excitation.
+Exact structural-equation interventions distinguish observationally equivalent
+causal/confounded models. Leakage and OOD fixtures are analytic controls, not empirical
+model-validity evidence. Raw reference failures remain visible; the bridge rejects
+invalid input or numerical disagreement instead of silently repairing the reference.
+
+```sh
+curl --fail --silent --show-error --location https://raw.githubusercontent.com/neuron7x/sapolsky-behave-layers/d0eada284220c4dad759191f5a847139a2dcb999/experiments/cneh_exp_02/linear_reference.py --output /tmp/cneh-pr44-linear-reference.py
+CNEH_PR44_REFERENCE=/tmp/cneh-pr44-linear-reference.py /tmp/cneh-neural-venv/bin/python -m unittest discover -s tests/cneh_math -p qualification_cases.py -v
+/tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_qualification.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-reused-math.json
+/tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_qualification.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-reused-math.json --verify
+/tmp/cneh-neural-venv/bin/python experiments/cneh_exp_01/math_mutation_check.py --reference /tmp/cneh-pr44-linear-reference.py --out /tmp/cneh-math-mutations
+python experiments/cneh_exp_01/metrology.py --out /tmp/cneh-metrology
+python experiments/cneh_exp_01/metrology.py --out /tmp/cneh-metrology --verify --require-qualified-cost
+```
+
+The optional numerical cases run in the mandatory pinned numerical CI job; they are
+not silently skipped in a dependency-free environment. Missing source or dependency
+drift fails. The final metrology command must exit2 despite passing included
+engineering ceilings. Fresh per-arm processes measure high-water RSS including the
+interpreter/imports/warmup; separate profiling runs expose controller and serialization
+fixture overhead; verification cost is measured separately. Every declared included
+limit affects admission. Raw timings are validated for structure and arithmetic,
+not authenticated as external metrology. Replay cannot recreate past wall-clock
+intervals. Electrical energy, hardware FLOPs and physical transport remain invalid
+instruments; matched upper ceilings do not demonstrate actual resource parity.
+
+| BN-Syn obligation | Current PR43 evidence ceiling |
+|---|---|
+| Successful API integration | Executed pinned Network/AdEx source |
+| Reproducible neural trajectories | Exact recorded state/action replay within the pinned environment |
+| Genuine spiking | Measured spikes in the engineering smoke |
+| Functional interpopulation coupling | NOT_TESTED: zero-action responsiveness is a different intervention |
+| Structural neural OOD response | NOT_TESTED |
+| Causal improvement in a neural goal task | NOT_TESTED; requires PR44/future prospective experiment |
+
 ## Sealed cohort workflow
 
 The external operator prepares a private JSON array of 128 distinct 64-bit seeds,
