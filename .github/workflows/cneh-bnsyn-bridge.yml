@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/cneh-bnsyn-bridge.yml'
       - 'experiments/cneh_exp_02/bnsyn_bridge.py'
+      - 'experiments/cneh_exp_02/bnsyn_stimulus_calibration.py'
       - 'experiments/cneh_exp_02/run.py'
       - 'experiments/cneh_exp_02/protocol.json'
   workflow_dispatch: {}
@@ -76,6 +77,27 @@ jobs:
               else:
                   raise AssertionError("resigned evidence forgery survived verification")
           PY
+      - name: Calibrate spiking response without touching CNEH primary
+        run: |
+          python experiments/cneh_exp_02/bnsyn_stimulus_calibration.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-calibration
+          python experiments/cneh_exp_02/bnsyn_stimulus_calibration.py --bnsyn-root external/bnsyn --out /tmp/cneh-bnsyn-calibration --verify
+          (cd /tmp/cneh-bnsyn-calibration && sha256sum --check SHA256SUMS)
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("/tmp/cneh-bnsyn-calibration/stimulus_grid.json").read_text())
+          print("Post-observation stimulus diagnostic:",x["verdict"])
+          for current in x["calibration_grid_pA"]:
+              rows=[r for r in x["cells"] if r["injected_current_pA"]==current]
+              print(f"current_pA={current:.1f} spike_sum={sum(r['spike_count_population_A']+r['spike_count_population_B'] for r in rows)} maxV={max(r['max_voltage_mV'] for r in rows):.4f}")
+          assert x["scientific_CNEH_promotion"] is False
+          PY
+      - name: Archive separate non-promotable AdEx stimulus calibration
+        uses: actions/upload-artifact@v4
+        with:
+          name: cneh-bnsyn-stimulus-calibration-SHA256
+          path: /tmp/cneh-bnsyn-calibration
+          retention-days: 90
       - name: Archive source-pinned real neuron bridge evidence
         uses: actions/upload-artifact@v4
         with:
