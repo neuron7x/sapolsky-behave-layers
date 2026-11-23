@@ -64,12 +64,8 @@ secret-scan-regression:
 	PYTHONPATH=. $(PY) -m pytest -q tests/test_secret_scan_gate.py
 
 dependency-audit:
-	uv export --quiet --frozen --extra cpu --no-dev --no-emit-project --output-file /tmp/cwc-runtime-requirements.txt
-	sed -E 's/(torch==[0-9.]+)\+cpu/\1/' /tmp/cwc-runtime-requirements.txt > /tmp/cwc-auditable-requirements.txt
-	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-auditable-requirements.txt --progress-spinner=off
-	uv export --quiet --frozen --extra cpu --only-dev --no-emit-project --output-file /tmp/cwc-dev-group-requirements.txt
-	uvx --from pip-audit==2.10.1 pip-audit --disable-pip -r /tmp/cwc-dev-group-requirements.txt --progress-spinner=off
-	uvx --from pip-audit==2.10.1 pip-audit -r cwc-requirements-dev.txt --progress-spinner=off
+	python3 -m unittest discover -s tests -p test_cwc_dependency_audit.py -v
+	python3 scripts/cwc_dependency_audit.py
 
 dependency-integrity-gate:
 	PYTHONPATH=. $(PY) -m pytest -q tests/test_dependency_integrity_gate.py
@@ -254,7 +250,7 @@ clean-pyc:
 	find . -name "*.pyc" -not -path "./.git/*" -delete 2>/dev/null || true
 
 install-dev:
-	VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
+	uv pip install --python $(PY) --require-hashes --only-binary :all: --default-index https://pypi.org/simple -r requirements/cwc-dev.lock
 
 rd03-gate:
 	$(PY) scripts/rd03_gate.py --self-test

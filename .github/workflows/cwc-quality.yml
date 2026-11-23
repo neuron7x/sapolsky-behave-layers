@@ -19,6 +19,7 @@ on:
       - "ruff.toml"
       - "mypy.ini"
       - "cwc-requirements-dev.txt"
+      - "requirements/**"
       - "Makefile.cwc"
       - ".github/workflows/cwc-quality.yml"
   pull_request:
@@ -33,6 +34,7 @@ on:
       - "ruff.toml"
       - "mypy.ini"
       - "cwc-requirements-dev.txt"
+      - "requirements/**"
       - "Makefile.cwc"
       - ".github/workflows/cwc-quality.yml"
 
@@ -50,11 +52,11 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: cwc-requirements-dev.txt
+          cache-dependency-path: requirements/cwc-dev.lock
       - name: Install CWC dev tooling (no torch needed for the pure-logic gates)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r cwc-requirements-dev.txt
+          python -m pip install --require-hashes --only-binary=:all: --index-url https://pypi.org/simple -r requirements/cwc-dev.lock
+          python -m pip list --format=json
 
       # torch/pynvml are optional here: the CUDA-marked and torch-importing
       # tests skip on a CPU runner, and ruff/mypy target only pure-Python CWC

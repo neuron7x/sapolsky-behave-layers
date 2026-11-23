@@ -27,13 +27,17 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: cwc-requirements-dev.txt
+          cache-dependency-path: |
+            requirements/ci-uv.lock
+            requirements/cwc-dev.lock
       - name: Install uv
-        run: pipx install uv==0.10.12
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: --index-url https://pypi.org/simple -r requirements/ci-uv.lock
+          uv --version
       - name: Build the locked CPU environment
         run: |
           uv sync --frozen --extra cpu
-          VIRTUAL_ENV=.venv uv pip install -r cwc-requirements-dev.txt
+          uv pip install --python .venv/bin/python --require-hashes --only-binary :all: --default-index https://pypi.org/simple -r requirements/cwc-dev.lock
       - name: Run the canonical expert gate
         # Hosted runners have no CUDA/NVML: use the documented CPU floor (Makefile.cwc coverage).
         run: make -f Makefile.cwc pr-full COVERAGE_FAIL_UNDER=91
@@ -52,7 +56,9 @@ jobs:
             experiments/fractal_multiscale/pyproject.toml
             experiments/fractal_multiscale/uv.lock
       - name: Install uv
-        run: pipx install uv==0.10.12
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: --index-url https://pypi.org/simple -r requirements/ci-uv.lock
+          uv --version
       - name: Build the isolated frozen fractal environment
         run: uv sync --frozen --project experiments/fractal_multiscale --extra dev
       - name: Run its independent lint, type, protocol, and test gates
