@@ -1,0 +1,159 @@
+{
+  "schema": "cneh-required-checks-v1",
+  "protocol": "CNEH-LQP-43-v1.0",
+  "repository": "neuron7x/sapolsky-behave-layers",
+  "pull_request": 43,
+  "branch": "research/cneh-exp-01",
+  "base_branch": "main",
+  "frozen_against_source_commit": "f030a12b145bd8b43876c9e2d8b268e820e92b87",
+  "required_contexts": [
+    {
+      "name": "preflight (3.11)",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cneh-exp-01.yml",
+      "event": "pull_request",
+      "job_id": "preflight"
+    },
+    {
+      "name": "preflight (3.12)",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cneh-exp-01.yml",
+      "event": "pull_request",
+      "job_id": "preflight"
+    },
+    {
+      "name": "Pinned BN-Syn integration smoke (no efficacy claim)",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cneh-exp-01.yml",
+      "event": "pull_request",
+      "job_id": "neural-integration"
+    },
+    {
+      "name": "Full verification, validation, and falsification",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-full-pr-gate.yml",
+      "event": "pull_request",
+      "job_id": "full-verification"
+    },
+    {
+      "name": "Fractal multiscale verification",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-full-pr-gate.yml",
+      "event": "pull_request",
+      "job_id": "fractal-verification"
+    },
+    {
+      "name": "doc-and-evidence-gates",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-doc-gates.yml",
+      "event": "pull_request",
+      "job_id": "doc-and-evidence-gates"
+    },
+    {
+      "name": "doc-and-evidence-gates",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-doc-gates.yml",
+      "event": "push",
+      "job_id": "doc-and-evidence-gates"
+    },
+    {
+      "name": "quality",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-quality.yml",
+      "event": "pull_request",
+      "job_id": "quality"
+    },
+    {
+      "name": "CodeQL Python analysis",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/codeql.yml",
+      "event": "pull_request",
+      "job_id": "analyze"
+    },
+    {
+      "name": "CodeQL",
+      "app_id": 57789,
+      "app_slug": "github-advanced-security",
+      "workflow_path": null,
+      "event": null,
+      "job_id": null,
+      "requires_context": {
+        "name": "CodeQL Python analysis",
+        "workflow_path": ".github/workflows/codeql.yml",
+        "event": "pull_request"
+      }
+    },
+    {
+      "name": "Validate GitHub Actions",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/pr-audit.yml",
+      "event": "pull_request",
+      "job_id": "workflow-audit"
+    },
+    {
+      "name": "Scan complete Git history for secrets",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/pr-audit.yml",
+      "event": "pull_request",
+      "job_id": "secret-audit"
+    },
+    {
+      "name": "Reject vulnerable dependency changes",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/pr-audit.yml",
+      "event": "pull_request",
+      "job_id": "dependency-review"
+    },
+    {
+      "name": "Audit Python tooling dependencies",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/pr-audit.yml",
+      "event": "pull_request",
+      "job_id": "dependency-audit"
+    }
+  ],
+  "allowed_optional_contexts": [
+    {
+      "name": "quality",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "workflow_path": ".github/workflows/cwc-quality.yml",
+      "event": "push",
+      "job_id": "quality"
+    }
+  ],
+  "all_observed_check_runs_must_succeed": true,
+  "pagination_required": true,
+  "workflow_sources_sha256": {
+    ".github/workflows/cneh-exp-01.yml": "73797e3a9f9739ec75978128343826e128c098a5309c4e9365df80e085deed5f",
+    ".github/workflows/codeql.yml": "e1a10666e8cc4e3ac1dbd91535c44de19b49b1428b337304ce80cc5cc7e9cb02",
+    ".github/workflows/cwc-doc-gates.yml": "794e72d5942dafdf168a4d156e39495f2e55f33b6373d43b1914af6b3b7c46c5",
+    ".github/workflows/cwc-full-pr-gate.yml": "2f72db847cdd20efdd8a99181f34ba5e86ade386a69f9c7bdf31aace9d742607",
+    ".github/workflows/cwc-quality.yml": "5730270bfef50bb31fd29dd4c34104ded217fd7b333cd9598754ec1f4eb52be4",
+    ".github/workflows/pr-audit.yml": "3f10ccc472fbfef8ef9ff622a9d2c5e799668b55fed35b06e7ea54fa64a3c2c4"
+  },
+  "source_binding": "For GitHub Actions, bind check_run.check_suite.id to workflow_run.check_suite_id (and job URL/run ID), require workflow path, event and head SHA. GitHub Advanced Security CodeQL has its own app/suite and additionally requires the codeql workflow analysis context. Verify the CodeQL analysis result separately from upload job success.",
+  "event_policy": "Pull-request contexts are required. Both documentation push and pull-request contexts are required separately. Path-filtered optional quality push is checked individually when present; it cannot substitute for its pull-request context.",
+  "status_policy": {
+    "completed_success": "PASS",
+    "completed_non_success": "FAIL",
+    "missing": "FAIL",
+    "pending": "UNKNOWN",
+    "empty": "FAIL"
+  },
+  "legacy_statuses": "Check configured legacy commit contexts separately; absent legacy contexts do not inherit the aggregate pending label.",
+  "scientific_promotion_authorized": false
+}
