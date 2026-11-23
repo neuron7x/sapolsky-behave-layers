@@ -1,0 +1,60 @@
+{
+  "schema": "independent-cneh-a6-roundtrip-v1",
+  "status": "PASS",
+  "head": "2e28b06f396ceed2a82de4a6955fedced2f11615",
+  "original_commit": "5d579a20a16700ae0cbec9daf8640edecf8603f3",
+  "restored_files": 434,
+  "restored_inventory_sha256": "d9ee93cd8d32a741d25d053e8c99541b57e290ba18c8d425a5684d41400ca02d",
+  "manifest_results": [
+    {
+      "path": "artifacts/cneh-exp-01-a3/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/acceptance/mutations-v8/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/acceptance/mutations-v9/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/full-environment/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/independent-review-a3/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/independent-review-a3/fresh-acceptance-mutations/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/independent-review-a5/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/supply-chain-a4/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/supply-chain-a4-review/SHA256SUMS",
+      "exit_code": 0
+    },
+    {
+      "path": "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/SHA256SUMS",
+      "exit_code": 0
+    }
+  ],
+  "negative_exit_code": 1,
+  "current_python_artifacts_parsed": 40,
+  "source_status_after": "clean",
+  "reconstructed_directory": "/home/neuro7/Documents/Codex/2026-11-23/cneh-pr43-pair/evidence/a6-restored-2e28b06",
+  "mapping": {
+    "artifacts/cneh-exp-01-a3/SHA256SUMS": "artifacts/cneh-exp-01-a3/PROVENANCE_ORIGINAL_SHA256SUMS_5d579a2.txt",
+    "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/SHA256SUMS": "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/PROVENANCE_ORIGINAL_SHA256SUMS_5d579a2.txt",
+    "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/negative-member/module.py": "artifacts/cneh-exp-01-a3/wheel-bytecheck/pre-final-v2/negative-member/module.bin"
+  },
+  "verifier_sha256": "442b5aae565355198f49eda53168d5127252df9a3ce9aa6f7cd7e110a1fd1e2e"
+}

@@ -1,0 +1,57 @@
+{
+  "commit": "2e28b06f396ceed2a82de4a6955fedced2f11615",
+  "checks": [
+    {
+      "command": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "verify-evidence"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 3.25,
+      "log": "a6-2e28b06-verify-evidence.log",
+      "log_sha256": "dbeeae0f72cbd3f75c85f984e0316e051ee06a926a849d82998a54d3e6096864"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/doc_status_gate.py"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.801,
+      "log": "a6-2e28b06-doc-status.log",
+      "log_sha256": "cc4b4bbd9a395a1269f883b73736307b7f4b8e1013b2a97f4e1e61a8ade4fe84"
+    },
+    {
+      "command": [
+        "make",
+        "-f",
+        "Makefile.cwc",
+        "docs-regen",
+        "PY=python3 -B"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.634,
+      "log": "a6-2e28b06-docs-regen.log",
+      "log_sha256": "861661584c06161d57b5e257c787d16d57844ffadc2b62f220c814fa667a15cc"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "docs/lab/EXPERIMENT_LEDGER.jsonl",
+        "docs/vnv/DOCUMENT_STATUS_REGISTER.csv"
+      ],
+      "exit_code": 0,
+      "elapsed_s": 0.01,
+      "log": "a6-2e28b06-docs-diff.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "status_after": "",
+  "hosted_ci": "NOT_YET_VERIFIED"
+}
