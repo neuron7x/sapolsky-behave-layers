@@ -9,7 +9,6 @@ import argparse
 import csv
 import importlib
 import io
-import json
 import math
 import struct
 from pathlib import Path
@@ -209,6 +208,19 @@ def verify_world(episodes: list[dict[str, Any]], p: dict[str, Any]) -> dict[str,
             raise ValueError("exogenous random tape mismatch")
         if [r["u_B_pA"] for r in rows] != [r["u_B_pA"] for r in base["trace"]]:
             raise ValueError("direct receiver input confound")
+        declared_arm = next(a for a in p["arms"] if a["name"] == name)
+        for tick, row in enumerate(rows):
+            ua, ub = direct_currents(tick, declared_arm, p)
+            if row["u_A_pA"] != ua.hex() or row["u_B_pA"] != ub.hex():
+                raise ValueError("input differs from frozen intervention")
+        if ep["trace_sha256"] != pinned.sha(pinned.canonical(rows)):
+            raise ValueError("trace digest mismatch")
+        observed_spikes = sum(row["spikes_B"] for row in rows[pre:]) / len(n["population_B"])
+        observed_voltage = math.fsum(float.fromhex(row["mean_voltage_B_mV"]) for row in rows[pre:]) / (n["steps"] - pre)
+        if ep[ENDPOINTS[0]] != observed_spikes or ep[ENDPOINTS[1]] != observed_voltage:
+            raise ValueError("derived endpoint does not agree with raw trace")
+        if ep["pre_spikes_A"] != sum(row["spikes_A"] for row in rows[:pre]) or ep["pre_spikes_B"] != sum(row["spikes_B"] for row in rows[:pre]):
+            raise ValueError("pre-intervention spike summary mismatch")
         expected_cut = name.startswith("CUT_")
         w = ep["structure"]
         if w["cut"] is not expected_cut or w["off_target_unchanged"] is not True or w["available_AB_edges"] <= 0:
