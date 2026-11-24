@@ -114,8 +114,20 @@ def rng_sha(net) -> str:
 
 def verify_selected(net,np,row: dict,filter_state) -> None:
     gaba,bits=state_values(net)
-    require(state_sha(net,np)==row["state_sha256"] and rng_sha(net)==row["rng_sha256"],
-            "selected native state/RNG replay mismatch")
+    actual_state,actual_rng=state_sha(net,np),rng_sha(net)
+    if actual_state!=row["state_sha256"] or actual_rng!=row["rng_sha256"]:
+        # Preserve exact first failure, never convert a mismatch to a tolerance pass.
+        fields={"gaba":g.hx(gaba)==row["true_gaba"],
+                "spikes":list(bits)==row["true_bits"],
+                "source_V":g.hx(net.state.V_mV[list(g.SOURCES)])==row["source_V"],
+                "source_w":g.hx(net.state.w_pA[list(g.SOURCES)])==row["source_w"]}
+        witness={"tick":row["tick"],"state_expected":row["state_sha256"],
+                 "state_actual":actual_state,"rng_expected":row["rng_sha256"],
+                 "rng_actual":actual_rng,"state_equal":actual_state==row["state_sha256"],
+                 "rng_equal":actual_rng==row["rng_sha256"],"public_latent_fields_equal":fields,
+                 "gain_hex":float(net.gain).hex(),"transition_mode":row["transition_mode"],
+                 "next_mode":row["next_mode"]}
+        raise ValueError("selected native state/RNG replay mismatch: "+pinned.canonical(witness).decode().strip())
     require(g.hx(gaba)==row["true_gaba"] and list(bits)==row["true_bits"] and
             g.hx(net.state.V_mV[list(g.SOURCES)])==row["source_V"] and
             g.hx(net.state.w_pA[list(g.SOURCES)])==row["source_w"],"selected latent observation replay mismatch")

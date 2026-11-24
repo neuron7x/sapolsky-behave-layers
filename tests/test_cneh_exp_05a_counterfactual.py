@@ -40,3 +40,15 @@ class TestCounterfactual(unittest.TestCase):
             list(a.stream_array(io.StringIO('[{"x":1},]')))
         with self.assertRaises(ValueError):
             list(a.stream_array(io.StringIO('[{"x":1}] {}')))
+
+    def test_first_episode_difference_never_masks_mismatch(self):
+        left={"valid":True,"trace":[{"tick":0,"state_sha256":"a","rng_sha256":"r"},
+                                    {"tick":1,"state_sha256":"b","rng_sha256":"s"}]}
+        right={"valid":True,"trace":[dict(x) for x in left["trace"]]}
+        self.assertTrue(a.first_episode_difference(left,right)["exact_match"])
+        right["trace"][1]["state_sha256"]="changed"
+        report=a.first_episode_difference(left,right)
+        self.assertFalse(report["exact_match"])
+        self.assertEqual(report["first_different_tick"],1)
+        self.assertEqual(report["first_different_fields"],["state_sha256"])
+        self.assertEqual(report["digest_or_action_difference"]["state_sha256"]["archive"],"b")

@@ -191,6 +191,41 @@ def summarize(episodes: list[dict]) -> dict:
             "per_world":[{"seed":ep["seed"],**reduce_blocks(blocks([ep]))} for ep in episodes]}
 
 
+def first_episode_difference(archived: dict,replayed: dict) -> dict:
+    """Exact first difference; a diagnostic, never an alternative acceptance gate."""
+    if archived==replayed:
+        return {"exact_match":True,"first_different_tick":None}
+    ar,rr=archived.get("trace",[]),replayed.get("trace",[])
+    differing_top=sorted(k for k in set(archived)|set(replayed)
+                         if k!="trace" and archived.get(k)!=replayed.get(k))
+    for left,right in zip(ar,rr):
+        if left!=right:
+            keys=sorted(k for k in set(left)|set(right) if left.get(k)!=right.get(k))
+            digests={k:{"archive":left.get(k),"replay":right.get(k)}
+                     for k in ("state_sha256","rng_sha256","group","next_mode","transition_mode")
+                     if k in keys}
+            return {"exact_match":False,"first_different_tick":left.get("tick"),
+                    "first_different_fields":keys,"digest_or_action_difference":digests,
+                    "archived_rows":len(ar),"replayed_rows":len(rr),
+                    "different_top_level_fields":differing_top}
+    return {"exact_match":False,"first_different_tick":None,
+            "archived_rows":len(ar),"replayed_rows":len(rr),
+            "different_top_level_fields":differing_top}
+
+
+def forensic_reference(ep: dict,rt: dict) -> dict:
+    """Replay unmodified parent without any counterfactual cloning, after a failure."""
+    try:
+        reference=prior.episode(prior.world(ep["seed"]),ep["arm"],rt,d.sensor_tape(ep["seed"]))
+        return {"reference_valid":reference.get("valid") is True,
+                "reference_failure":reference.get("failure"),
+                "archive_digest":pinned.sha(pinned.canonical(ep)),
+                "reference_digest":pinned.sha(pinned.canonical(reference)),
+                "comparison":first_episode_difference(ep,reference)}
+    except (ValueError,RuntimeError,ArithmeticError,TypeError) as exc:
+        return {"reference_valid":False,"reference_exception":str(exc)}
+
+
 def run_shard(archive: Path,source: Path,arm: str) -> dict:
     require(archive.is_file() and not archive.is_symlink() and e.sha_file(archive)==ARCHIVE_SHA,"archive digest mismatch")
     lock_path=HERE.parent/"cneh_exp_01"/"bnsyn_integration_contract.json"
@@ -228,7 +263,8 @@ def run_shard(archive: Path,source: Path,arm: str) -> dict:
                 try:
                     episodes.append(episode(ep,rt,cert))
                 except (ValueError,RuntimeError,ArithmeticError,TypeError) as exc:
-                    episodes.append({"seed":seed,"arm":arm,"valid":False,"failure":str(exc)})
+                    episodes.append({"seed":seed,"arm":arm,"valid":False,"failure":str(exc),
+                                     "unmodified_parent_replay":forensic_reference(ep,rt)})
         require(seen==set(itertools.product(prior.SEEDS,p.ARMS)) and len(emulator)==16,"incomplete archive roster")
     require(pinned.validate_source(source,lock)==before,"native source changed")
     passed=len(episodes)==len(prior.SEEDS) and all(x["valid"] for x in episodes)
