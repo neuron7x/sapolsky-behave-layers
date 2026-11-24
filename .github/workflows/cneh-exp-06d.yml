@@ -1,0 +1,87 @@
+name: CNEH-EXP-06D model-set inverse falsification
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_06d/**'
+      - 'tests/test_cneh_exp_06d.py'
+      - '.github/workflows/cneh-exp-06d.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  native:
+    name: Native ${{ matrix.arch }} model-set enclosure
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve parent and freeze model uncertainty
+        run: |
+          git merge-base --is-ancestor f507d619458aac7f2fae09b9849a45e6bf22bb03 HEAD
+          git show f507d619458aac7f2fae09b9849a45e6bf22bb03:experiments/cneh_exp_06d/PROTOCOL.md | cmp - experiments/cneh_exp_06d/PROTOCOL.md
+          git diff --exit-code 48c0a596803b8410d39ac86f4974c01115e794da HEAD -- 'experiments/cneh_exp_05*' experiments/cneh_exp_06a experiments/cneh_exp_06b experiments/cneh_exp_06c scripts/cneh_promotion_gate.py
+          test "$(uname -m)" = "$ARCH"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Authenticate C negative evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14934382112/zip" --output /tmp/parent.zip
+          echo '103a8268cffa855e661760e69f93bb1187ecc92c85f53996949a745cb3f1f2ae  /tmp/parent.zip' | sha256sum --strict -c -
+      - name: Independent mathematical regression tests
+        run: python -m unittest discover -s tests -p test_cneh_exp_06d.py -v
+      - name: Execute every model-state-noise fixture
+        run: python -m experiments.cneh_exp_06d.run run --arch "$ARCH" --parent /tmp/parent.zip --out /tmp/result
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh06d-${{ matrix.arch }}
+          path: /tmp/result/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve exact native evidence and sealed parent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14934382112/zip" --output /tmp/parent.zip
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh06d-*' --dir /tmp/profiles
+      - name: Recompute complete exact model-set evidence
+        run: |
+          python -m experiments.cneh_exp_06d.run aggregate --parent /tmp/parent.zip --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/aggregate
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-06D --verdict /tmp/aggregate/report.json
+          (cd /tmp/aggregate && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh06d-aggregate
+          path: /tmp/aggregate/
+          if-no-files-found: error
+          retention-days: 90
