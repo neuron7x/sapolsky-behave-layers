@@ -118,7 +118,13 @@ class RealGitEvidenceTests(unittest.TestCase):
         return path
 
     def test_clean_fixture_positive_control(self):
-        report=g.audit_repository(self.repo)
+        try:
+            report=g.audit_repository(self.repo)
+        except DENIED as exc:
+            # A clean, authenticated fixture must be admitted. A typed denial
+            # is an observable contract violation; unrelated exceptions still
+            # remain unittest errors, never mutation kills.
+            self.fail(f"valid evidence fixture rejected: {exc}")
         self.assertEqual(report["engineering_gate"],"PASS")
         self.assertIs(report[FLAG],False)
         self.assertEqual(report["source_files"],3)
