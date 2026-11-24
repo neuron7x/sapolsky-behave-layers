@@ -1,0 +1,44 @@
+name: CNEH-EXP-05K analytical reachability and blind admission
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_05k/**'
+      - 'tests/test_cneh_exp_05k_boundary.py'
+      - '.github/workflows/cneh-exp-05k.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen analytical protocol
+        run: |
+          git merge-base --is-ancestor 54d4f71fed3066f17af5be3d793c5b832d93e821 HEAD
+          git show 54d4f71fed3066f17af5be3d793c5b832d93e821:experiments/cneh_exp_05k/PROTOCOL.md | cmp - experiments/cneh_exp_05k/PROTOCOL.md
+          git diff --exit-code aafb850a21c95f26f3b4c4425f7ed2578718fe83 HEAD -- experiments/cneh_exp_05h experiments/cneh_exp_05v experiments/cneh_exp_05d experiments/cneh_exp_05 scripts/cneh_promotion_gate.py
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Exact rational and fail-closed contract falsification
+        run: python -m unittest discover -s tests -p test_cneh_exp_05k_boundary.py -v
+      - name: Replay scoped negative-authority verdict
+        run: |
+          mkdir /tmp/cneh05k
+          python -c 'from experiments.cneh_exp_05k import boundary as k; import sys; sys.stdout.buffer.write(k.canonical(k.report()))' > /tmp/cneh05k/report.json
+          python -c 'from experiments.cneh_exp_05k import boundary as k; import sys; sys.stdout.buffer.write(k.canonical(k.report()))' > /tmp/cneh05k/replay.json
+          cmp /tmp/cneh05k/report.json /tmp/cneh05k/replay.json
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05K --verdict /tmp/cneh05k/report.json
+          (cd /tmp/cneh05k && sha256sum report.json replay.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+          python -c 'import json; r=json.load(open("/tmp/cneh05k/report.json")); print(json.dumps({"status_assignments":r["contract_tests"]["status_assignments"],"rejected":len(r["contract_tests"]["attacks_rejected"]),"admission":r["blind_cohort_admission"],"real_trust_roots":r["real_trust_roots"],"finite_bounds":[(x["horizon_ms"],x["approx_upper_fraction"]) for x in r["reachability"]["finite_horizons"]]},sort_keys=True))'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05k-analytical-boundary
+          path: /tmp/cneh05k/
+          if-no-files-found: error
+          retention-days: 90
