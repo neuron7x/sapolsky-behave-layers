@@ -289,22 +289,39 @@ def aggregate(args):
     exact=sum(r["comparison"]["exact"] for r in compared)
     close=sum(r["comparison"]["numerical_close"] for r in compared)
     sentinel_ok=all([s["id"] for s in sentinels[a]]==list(SENTINELS) and all(s["status"]=="PASS" for s in sentinels[a]) for a in ARCHES)
-    full=not missing and len(all_reports)==w.N and complete==dict.fromkeys(ARCHES,w.N) and len(compared)==w.N and sentinel_ok
+    preflight={}
+    for arch in ARCHES:
+        try:
+            folder=args.profiles/f"cneh05x-preflight-{arch}"
+            authenticate(folder,{"report.json"})
+            value=read(folder/"report.json")
+            fp=value["fingerprint"]
+            check_fp(fp,arch,args.head,args.run_id,fp["install_sha256"])
+            w.need(value["arch"]==arch and value["manifest_sha256"]==args.manifest_sha
+                   and value["passive_parity"] is True and value["audit"]["status"]=="PASS"
+                   and len(value["mutations"])==5 and value["arithmetic"]["microcases"]==64,"preflight scope")
+            preflight[arch]=value
+        except (ValueError,TypeError,KeyError,OSError) as exc:
+            missing.append({"preflight":arch,"reason":str(exc)})
+    full=not missing and len(preflight)==2 and len(all_reports)==w.N and complete==dict.fromkeys(ARCHES,w.N) and len(compared)==w.N and sentinel_ok
     observed_exact_fail=any(not r["comparison"]["exact"] for r in compared)
     gate="FAIL" if observed_exact_fail else "PASS_FINITE_ONLY" if full and exact==w.N else "BLOCKED"
     counts={a:{k:sum(r["audits"][a][k] for r in all_reports if a in r["audits"]) for k in COUNTS} for a in ARCHES}
     result={"experiment":"CNEH-EXP-05X","head_sha":args.head,"manifest_sha256":args.manifest_sha,"run_id":args.run_id,
             "scope":"PUBLIC_NUMERICAL_OOD_STRESS_ONLY","expected_unique_worlds":1000,"expected_native_episodes":2000,
             "complete_by_arch":complete,"paired_comparisons":len(compared),"exact_pairs":exact,"numerically_close_pairs":close,
+            "exact_step_schedules":sum(r["comparison"]["step_schedule_exact"] for r in compared),
+            "exact_event_tapes":sum(r["comparison"]["event_tape_exact"] for r in compared),
+            "exact_raw_samples":sum(r["comparison"]["raw_samples_exact"] for r in compared),
             "cross_cpu_deterministic_replay":gate,"complete_evidence":full,"missing_or_invalid_shards":missing,
             "sentinel_repeat_pass":sentinel_ok,"counts_by_arch":counts,
             "max_event_time_error_ms":max((r["comparison"]["max_event_time_error_ms"] for r in compared if r["comparison"]["max_event_time_error_ms"] is not None),default=None),
             "max_full_errors":{k:max((r["comparison"]["max_full_errors"][k] for r in compared),default=None) for k in ("V","w","g_ampa","g_nmda","g_gabaa")},
             "scientific_promotion_authorized":False,"scientific_promotion":"BLOCKED","blind_causal_cohort":"BLOCKED",
             "historical_native_replay":"FAIL_PRESERVED","historical_fixed_step_gate":"FAIL_PRESERVED",
-            "reports":all_reports,"sentinel_repeats":sentinels,"provenance":provenance}
+            "reports":all_reports,"sentinel_repeats":sentinels,"provenance":provenance,"preflight":preflight}
     args.out.mkdir();write(args.out/"report.json",result);seal(args.out,{"report.json"})
-    print(w.canonical({k:v for k,v in result.items() if k not in ("reports","provenance","sentinel_repeats")}).decode(),end="")
+    print(w.canonical({k:v for k,v in result.items() if k not in ("reports","provenance","sentinel_repeats","preflight")}).decode(),end="")
     return 0 if gate=="PASS_FINITE_ONLY" else 2
 
 
