@@ -3,7 +3,8 @@ on:
   pull_request:
     paths:
       - 'experiments/cneh_exp_05x/**'
-      - '.github/workflows/cneh-exp-05x.yml'
+      # Transport-only changes use the dedicated truth/transport audit.
+      # Historical X numerical FAIL is never reclassified by that audit.
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -187,14 +188,23 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12.16'
-      - name: Retrieve all available same-run audit artifacts
+      - name: Strict same-run artifact transport
+        id: retrieve
         env:
           GH_TOKEN: ${{ github.token }}
+          UPSTREAM_OK: "${{ needs.manifest.result == 'success' && needs.preflight.result == 'success' && needs.native.result == 'success' && needs.pair.result == 'success' }}"
         run: |
-          mkdir /tmp/profiles
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh05x-pair-*' --dir /tmp/profiles || true
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh05x-preflight-*' --dir /tmp/profiles || true
+          python -m scripts.cneh_artifact_transport --spec x --run-id "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --head "$HEAD_SHA" --upstream-ok "$UPSTREAM_OK" --profiles /tmp/profiles --out /tmp/transport
+      - name: Preserve exact transport or blocked receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh05x-transport
+          path: /tmp/transport/
+          if-no-files-found: error
+          retention-days: 90
       - name: Full 1000-pair fail-closed verdict, no survivor admission
+        if: steps.retrieve.outcome == 'success'
         run: |
           set +e
           python -m experiments.cneh_exp_05x.run aggregate --manifest-sha "$INPUT_SHA" --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/x-aggregate
@@ -204,7 +214,7 @@ jobs:
           (cd /tmp/x-aggregate && sha256sum --strict -c SHA256SUMS)
           exit "$status"
       - name: Preserve verdict including missing or divergent episodes
-        if: always()
+        if: always() && steps.retrieve.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: cneh05x-aggregate
