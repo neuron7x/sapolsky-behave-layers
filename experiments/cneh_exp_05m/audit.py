@@ -183,7 +183,8 @@ def reduce_episode(ep):
             cell=ages.setdefault(k,{"correct":0,"stale":0})
             cell["stale" if row["stale_singleton"] else "correct"]+=1
     # Recompute original endpoints as a semantic cross-check, not a new estimator.
-    for evt,original in zip(events,ep["segments"],strict=True):
+    checks=events if schedule else [s.boundary(data,0,d.STEPS)]
+    for evt,original in zip(checks,ep["segments"],strict=True):
         require((evt["I20_latency_ticks"] is not None)==original["I20"]
                 and evt["I20_latency_ticks"]==original["I20_latency"]
                 and (None if evt["mode"]==3 else evt["J10_latency_ticks"] is not None)==original["J10"]
