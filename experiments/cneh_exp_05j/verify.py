@@ -109,7 +109,12 @@ def verify_bracket(p,l,u):
     else:
         need(evaluate(p,l)<0<evaluate(p,u) and roots_open(seq,l,u)==1,"nonisolated/non-upward root")
     m=(l+u)/2
-    need(evaluate(diff(p),m)>0,"nontransverse root")
+    dp=diff(p)
+    # A positive derivative at the midpoint alone is not enough:
+    # an odd multiple root can be strictly sign-changing but grazing.
+    need(evaluate(dp,l)>0 and evaluate(dp,u)>0,"nontransverse root endpoint")
+    if l<u and len(dp)>1:
+        need(roots_open(sturm(dp),l,u)==0,"nontransverse root inside bracket")
     return m
 
 
