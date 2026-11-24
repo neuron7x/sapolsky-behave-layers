@@ -403,9 +403,42 @@ def report():
     }
 
 
+def verify_profiles(profiles, head, checkout, run_id):
+    """Reconstruct the entire supplemental report and reject partial receipts."""
+    expected = report()
+    require(expected["status"] == "PASS", "fresh assurance reconstruction failed")
+    expected.update(head_sha=head, checkout_sha=checkout, run_id=run_id)
+    expected_raw = canonical(expected)
+    roster = {"assurance-cneh06e-x86_64", "assurance-cneh06e-aarch64"}
+    require({p.name for p in profiles.iterdir()} == roster,
+            "assurance architecture roster")
+    for arch in sorted(roster):
+        root = profiles/arch
+        require({p.name for p in root.iterdir()} == {"primary", "replay"},
+                "assurance process roster")
+        for name in ("primary", "replay"):
+            folder = root/name
+            require({p.name for p in folder.iterdir()} == {"report.json", "SHA256SUMS"},
+                    "assurance file roster")
+            raw = (folder/"report.json").read_bytes()
+            require(raw == expected_raw, "assurance raw reconstruction mismatch")
+            require((folder/"SHA256SUMS").read_bytes() ==
+                    (digest(raw)+"  report.json\n").encode("ascii"),
+                    "assurance manifest mismatch")
+    print(json.dumps({
+        "scope": expected["scope"], "status": "PASS",
+        "architecture_profiles": len(roster), "process_receipts": 4,
+        "fresh_reconstructions": 1, "unique_cases": expected["unique_cases"],
+        "mutants_killed": expected["mutants_killed"],
+        "report_sha256": digest(expected_raw),
+    }, sort_keys=True))
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--out", type=Path)
+    mode.add_argument("--profiles", type=Path)
     parser.add_argument("--head", required=True)
     parser.add_argument("--checkout", required=True)
     parser.add_argument("--run-id", required=True)
@@ -413,6 +446,9 @@ def main():
     require(all(re.fullmatch(r"[0-9a-f]{40}", s)
                 for s in (args.head, args.checkout)), "invalid commit identity")
     require(re.fullmatch(r"[1-9][0-9]*", args.run_id), "invalid run identity")
+    if args.profiles is not None:
+        verify_profiles(args.profiles, args.head, args.checkout, args.run_id)
+        return 0
     args.out.mkdir(parents=True, exist_ok=False)
     try:
         result = report()
