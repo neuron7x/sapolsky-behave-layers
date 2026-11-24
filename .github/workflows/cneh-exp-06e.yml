@@ -16,7 +16,7 @@ env:
   HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 jobs:
   native:
-    if: github.event_name != 'schedule'
+    if: github.event_name == 'pull_request'
     name: Native ${{ matrix.arch }} exact quotient
     strategy:
       fail-fast: false
@@ -33,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Verify frozen protocol and parent source preservation
@@ -44,6 +45,7 @@ jobs:
           printf '%s\n' '.github/workflows/cneh-exp-06e.yml' 'experiments/cneh_exp_06e/PROTOCOL.md' 'experiments/cneh_exp_06e/assurance.py' 'experiments/cneh_exp_06e/quotient.py' 'experiments/cneh_exp_06e/run.py' 'tests/test_cneh_exp_06e.py' | sort > /tmp/expected
           diff -u /tmp/expected /tmp/actual
           test "$(uname -m)" = "$ARCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12.16'
@@ -56,16 +58,23 @@ jobs:
       - name: Execute independent assertions
         run: python -m unittest discover -s tests -p test_cneh_exp_06e.py -v
       - name: Bounded feedback-directed assurance with independent process replay
+        id: assurance
         run: |
           CHECKOUT_SHA="$(git rev-parse HEAD)"
-          PYTHONHASHSEED=0 python -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/assurance/primary
-          PYTHONHASHSEED=2147483647 python -O -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/assurance/replay
+          test "$CHECKOUT_SHA" = "$GITHUB_SHA"
+          PRIMARY_RC=0
+          REPLAY_RC=0
+          PYTHONHASHSEED=0 timeout --kill-after=5s 180s python -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --out /tmp/assurance/primary || PRIMARY_RC=$?
+          PYTHONHASHSEED=2147483647 timeout --kill-after=5s 180s python -O -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --out /tmp/assurance/replay || REPLAY_RC=$?
+          printf 'primary_exit=%s replay_exit=%s\n' "$PRIMARY_RC" "$REPLAY_RC"
+          test "$PRIMARY_RC" -eq 0
+          test "$REPLAY_RC" -eq 0
           cmp /tmp/assurance/primary/report.json /tmp/assurance/replay/report.json
           cmp /tmp/assurance/primary/SHA256SUMS /tmp/assurance/replay/SHA256SUMS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.assurance.outcome != 'skipped' }}
         with:
-          name: assurance-cneh06e-${{ matrix.arch }}
+          name: assurance-cneh06e-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
           path: /tmp/assurance/
           if-no-files-found: error
           retention-days: 90
@@ -85,18 +94,19 @@ jobs:
           echo "REPLAY_PASS: three independent processes, three hash seeds, one optimized interpreter; native $ARCH"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cneh06e-${{ matrix.arch }}
+          name: cneh06e-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
           path: /tmp/result/
           if-no-files-found: error
           retention-days: 90
   aggregate:
-    if: github.event_name != 'schedule'
+    if: github.event_name == 'pull_request'
     needs: native
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -106,13 +116,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14934927808/zip" --output /tmp/parent.zip
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh06e-*' --dir /tmp/profiles
+          # Exact same-attempt artifacts only; partial reruns fail closed.
+          # Rerun all jobs to create a complete new evidence set.
+          for arch in aarch64 x86_64; do
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "cneh06e-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/profiles/cneh06e-$arch"
+          done
       - name: Independently reconstruct all adaptive assurance receipts
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'assurance-cneh06e-*' --dir /tmp/assurance-profiles
-          python -m experiments.cneh_exp_06e.assurance --profiles /tmp/assurance-profiles --head "$HEAD_SHA" --checkout "$(git rev-parse HEAD)" --run-id "$GITHUB_RUN_ID"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for arch in aarch64 x86_64; do
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "assurance-cneh06e-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/assurance-profiles/assurance-cneh06e-$arch"
+          done
+          timeout --kill-after=5s 180s python -m experiments.cneh_exp_06e.assurance --profiles /tmp/assurance-profiles --head "$HEAD_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
       - name: Reconstruct complete raw panel and enforce negative admission
         run: |
           python -m experiments.cneh_exp_06e.run aggregate --parent /tmp/parent.zip --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/aggregate
@@ -120,16 +137,16 @@ jobs:
           (cd /tmp/aggregate && sha256sum --strict -c SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cneh06e-aggregate
+          name: cneh06e-aggregate-attempt-${{ github.run_attempt }}
           path: /tmp/aggregate/
           if-no-files-found: error
           retention-days: 90
 
-  # Periodic regression is intentionally separate from exact-head scientific
+  # Periodic and manual regression is intentionally separate from exact-head scientific
   # evidence admission. It neither reuses expiring parent receipts nor grants
   # calibration, control authority or scientific promotion.
   scheduled-regression:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     name: Scheduled regression ${{ matrix.arch }} (engineering only)
     permissions:
       contents: read
@@ -148,6 +165,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Verify frozen protocol and native architecture
@@ -155,22 +173,30 @@ jobs:
           git merge-base --is-ancestor 5addb8a825e08cd72d8f8e0cc37b808f0f9e898b HEAD
           git show 5addb8a825e08cd72d8f8e0cc37b808f0f9e898b:experiments/cneh_exp_06e/PROTOCOL.md | cmp - experiments/cneh_exp_06e/PROTOCOL.md
           test "$(uname -m)" = "$ARCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12.16'
       - name: Execute all quotient assurance tests
         run: python -m unittest discover -s tests -p test_cneh_exp_06e.py -v
       - name: Bounded feedback-directed assurance with independent process replay
+        id: assurance
         run: |
           CHECKOUT_SHA="$(git rev-parse HEAD)"
-          PYTHONHASHSEED=0 python -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/assurance/primary
-          PYTHONHASHSEED=2147483647 python -O -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/assurance/replay
+          test "$CHECKOUT_SHA" = "$GITHUB_SHA"
+          PRIMARY_RC=0
+          REPLAY_RC=0
+          PYTHONHASHSEED=0 timeout --kill-after=5s 180s python -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --out /tmp/assurance/primary || PRIMARY_RC=$?
+          PYTHONHASHSEED=2147483647 timeout --kill-after=5s 180s python -O -m experiments.cneh_exp_06e.assurance --head "$HEAD_SHA" --checkout "$CHECKOUT_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --out /tmp/assurance/replay || REPLAY_RC=$?
+          printf 'primary_exit=%s replay_exit=%s\n' "$PRIMARY_RC" "$REPLAY_RC"
+          test "$PRIMARY_RC" -eq 0
+          test "$REPLAY_RC" -eq 0
           cmp /tmp/assurance/primary/report.json /tmp/assurance/replay/report.json
           cmp /tmp/assurance/primary/SHA256SUMS /tmp/assurance/replay/SHA256SUMS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.assurance.outcome != 'skipped' }}
         with:
-          name: assurance-cneh06e-${{ matrix.arch }}
+          name: assurance-cneh06e-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
           path: /tmp/assurance/
           if-no-files-found: error
           retention-days: 90
@@ -187,18 +213,19 @@ jobs:
           git rev-parse HEAD > /tmp/weekly/HEAD
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cneh06e-weekly-${{ matrix.arch }}
+          name: cneh06e-weekly-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
           path: /tmp/weekly/
           if-no-files-found: error
           retention-days: 30
   scheduled-compare:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: scheduled-regression
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -207,21 +234,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'assurance-cneh06e-*' --dir /tmp/assurance-profiles
-          python -m experiments.cneh_exp_06e.assurance --profiles /tmp/assurance-profiles --head "$HEAD_SHA" --checkout "$(git rev-parse HEAD)" --run-id "$GITHUB_RUN_ID"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for arch in aarch64 x86_64; do
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "assurance-cneh06e-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/assurance-profiles/assurance-cneh06e-$arch"
+          done
+          timeout --kill-after=5s 180s python -m experiments.cneh_exp_06e.assurance --profiles /tmp/assurance-profiles --head "$HEAD_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
       - name: Compare independently regenerated native reports
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh06e-weekly-*' --dir /tmp/weekly-native
-          python3 -c 'from pathlib import Path; import sys; sys.exit(0 if {p.name for p in Path("/tmp/weekly-native").iterdir()} == {"cneh06e-weekly-aarch64", "cneh06e-weekly-x86_64"} else "unexpected native roster")'
           for arch in aarch64 x86_64; do
-            (
-              cd "/tmp/weekly-native/cneh06e-weekly-$arch"
-              test "$(cat HEAD)" = "$HEAD_SHA"
-              test "$(cat SCOPE)" = 'REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION'
-              sha256sum --strict -c SHA256SUMS
-            )
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "cneh06e-weekly-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/weekly-native/cneh06e-weekly-$arch"
           done
-          cmp /tmp/weekly-native/cneh06e-weekly-aarch64/payload.json /tmp/weekly-native/cneh06e-weekly-x86_64/payload.json
-          echo 'REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION: native raw byte equality'
+          timeout --kill-after=5s 180s python -m experiments.cneh_exp_06e.assurance --regression-profiles /tmp/weekly-native --head "$HEAD_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
