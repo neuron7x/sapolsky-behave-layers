@@ -12,7 +12,7 @@ class TestTransport(unittest.TestCase):
             root=Path(d)/"profiles"
             groups=dict(t.expected(spec))
             def download(cmd):
-                pattern=cmd[cmd.index("--pattern")+1]
+                pattern=cmd[cmd.index("--pattern")+1] if "--pattern" in cmd else cmd[cmd.index("--name")+1]
                 for name in sorted(groups[pattern]):
                     if not (missing and name.endswith("pair-0")):
                         (root/name).mkdir()
