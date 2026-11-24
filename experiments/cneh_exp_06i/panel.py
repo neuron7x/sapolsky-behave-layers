@@ -4,6 +4,7 @@ from __future__ import annotations
 from copy import deepcopy
 from fractions import Fraction as F
 from itertools import product
+import json
 
 from experiments.cneh_exp_06c import algebra as a, fixtures
 from experiments.cneh_exp_06f import panel as f
@@ -136,8 +137,15 @@ def negative_controls():
         else:
             raise ValueError("negative control escaped: "+name)
 
-    forged = deepcopy(valid)
-    forged["scientific_promotion_authorized"] = True
+    # Untrusted serialized input fixture, not a production authority write.
+    # Keep the identical forged verdict and prove the fixture actually changes
+    # the valid receipt before requiring the verifier to reject it.
+    attack = json.loads('{"scientific_promotion_authorized":true}')
+    forged = {**deepcopy(valid), **attack}
+    a.need(valid["scientific_promotion_authorized"] is False and
+           forged["scientific_promotion_authorized"] is True and
+           {k for k in valid if valid[k] != forged[k]} ==
+           {"scientific_promotion_authorized"}, "forged authority fixture")
     reject("FORGED_AUTHORITY", lambda: s.verify(record, forged, h.BOUNDED))
     forged = deepcopy(valid)
     forged["conditional_joint_witness_verified"] = False
