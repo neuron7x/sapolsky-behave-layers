@@ -52,6 +52,8 @@ jobs:
         run: |
           /tmp/cneh04g-env/bin/python -m experiments.cneh_exp_04g.run --source .cneh-inputs/bnsyn --out /tmp/cneh04g --verify
           (cd /tmp/cneh04g && sha256sum --strict -c SHA256SUMS)
+      - name: Enforce CNEH negative-only scientific authority boundary
+        run: python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-04G --verdict /tmp/cneh04g/verdict.json
       - name: Preserve all calibration and experiment traces
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

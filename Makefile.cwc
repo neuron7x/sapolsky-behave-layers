@@ -329,3 +329,10 @@ cab01-q1-r1-gate:
 
 cog-self01-gate:
 	PYTHONPATH=. $(PY) scripts/cog_self01_gate.py --self-test
+
+# Necessary scientific-promotion invariants; negative evidence is not promotion.
+.PHONY: cneh-promotion-guard
+verify pr-fast: cneh-promotion-guard
+cneh-promotion-guard:
+	python3 -B -m unittest discover -s tests -p test_cneh_promotion_gate.py -v
+	python3 -B -m scripts.cneh_promotion_gate audit
