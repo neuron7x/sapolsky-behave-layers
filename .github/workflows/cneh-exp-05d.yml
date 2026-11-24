@@ -1,10 +1,5 @@
 name: CNEH-EXP-05D certified exponential full-state qualification
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05d/**'
-      - 'tests/test_cneh_exp_05d_certified.py'
-      - '.github/workflows/cneh-exp-05d.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

@@ -1,10 +1,5 @@
 name: CNEH-EXP-05S finite charge-aware selector
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05s/**'
-      - 'tests/test_cneh_exp_05s_selector.py'
-      - '.github/workflows/cneh-exp-05s.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

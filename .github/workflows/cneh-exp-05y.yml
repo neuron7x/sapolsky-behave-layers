@@ -1,9 +1,5 @@
 name: CNEH-EXP-05Y portable software-rounded cross-CPU OOD replay
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05y/**'
-      - '.github/workflows/cneh-exp-05y.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

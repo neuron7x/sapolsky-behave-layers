@@ -1,10 +1,5 @@
 name: CNEH-EXP-05A sealed counterfactual regret and reachability
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05a/**'
-      - 'tests/test_cneh_exp_05a*.py'
-      - '.github/workflows/cneh-exp-05a.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

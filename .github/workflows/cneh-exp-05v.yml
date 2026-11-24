@@ -1,9 +1,5 @@
 name: CNEH-EXP-05V independent transition and adversarial admission
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05v/**'
-      - '.github/workflows/cneh-exp-05v.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

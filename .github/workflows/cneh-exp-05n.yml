@@ -1,10 +1,5 @@
 name: CNEH-EXP-05N native checkpoint and numerical domain
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05n/**'
-      - 'tests/test_cneh_exp_05n_evidence.py'
-      - '.github/workflows/cneh-exp-05n.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

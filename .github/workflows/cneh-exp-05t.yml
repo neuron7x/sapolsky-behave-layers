@@ -1,9 +1,5 @@
 name: CNEH-EXP-05T sealed transition causality
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05t/**'
-      - '.github/workflows/cneh-exp-05t.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

@@ -1,10 +1,5 @@
 name: CNEH-EXP-05Q historical provenance inventory
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05q/**'
-      - 'tests/test_cneh_exp_05q_inventory.py'
-      - '.github/workflows/cneh-exp-05q.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

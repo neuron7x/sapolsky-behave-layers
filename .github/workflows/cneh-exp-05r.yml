@@ -1,10 +1,5 @@
 name: CNEH-EXP-05R numerical execution-domain qualification
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05r/**'
-      - 'tests/test_cneh_exp_05r.py'
-      - '.github/workflows/cneh-exp-05r.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

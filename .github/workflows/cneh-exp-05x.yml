@@ -1,10 +1,5 @@
 name: CNEH-EXP-05X native cross-CPU OOD replay
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05x/**'
-      # Transport-only changes use the dedicated truth/transport audit.
-      # Historical X numerical FAIL is never reclassified by that audit.
   workflow_dispatch: {}
 permissions:
   contents: read

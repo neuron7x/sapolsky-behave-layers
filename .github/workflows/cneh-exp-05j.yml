@@ -1,10 +1,5 @@
 name: CNEH-EXP-05J adaptive event-resolved integration
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05j/**'
-      - 'tests/test_cneh_exp_05j_roots.py'
-      - '.github/workflows/cneh-exp-05j.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

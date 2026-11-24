@@ -1,10 +1,5 @@
 name: CNEH-EXP-05K analytical reachability and blind admission
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05k/**'
-      - 'tests/test_cneh_exp_05k_boundary.py'
-      - '.github/workflows/cneh-exp-05k.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

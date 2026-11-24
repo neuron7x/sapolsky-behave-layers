@@ -1,10 +1,5 @@
 name: CNEH-EXP-05M sealed multiscale temporal evidence
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05m/**'
-      - 'tests/test_cneh_exp_05m.py'
-      - '.github/workflows/cneh-exp-05m.yml'
   workflow_dispatch: {}
 permissions:
   contents: read

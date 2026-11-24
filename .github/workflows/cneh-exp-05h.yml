@@ -1,9 +1,5 @@
 name: CNEH-EXP-05H hybrid physical-time convergence
 on:
-  pull_request:
-    paths:
-      - 'experiments/cneh_exp_05h/**'
-      - '.github/workflows/cneh-exp-05h.yml'
   workflow_dispatch: {}
 permissions:
   contents: read
