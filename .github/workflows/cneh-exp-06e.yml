@@ -53,7 +53,19 @@ jobs:
       - name: Execute independent assertions
         run: python -m unittest discover -s tests -p test_cneh_exp_06e.py -v
       - name: Execute complete fixed panel
+        env:
+          PYTHONHASHSEED: '0'
         run: python -m experiments.cneh_exp_06e.run native --arch "$ARCH" --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --parent /tmp/parent.zip --out /tmp/result
+      - name: Autonomous three-process replay and optimization invariance
+        run: |
+          PYTHONHASHSEED=1 python -m experiments.cneh_exp_06e.run native --arch "$ARCH" --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --parent /tmp/parent.zip --out /tmp/replay-1
+          PYTHONHASHSEED=2147483647 python -O -m experiments.cneh_exp_06e.run native --arch "$ARCH" --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --parent /tmp/parent.zip --out /tmp/replay-2
+          for replica in /tmp/replay-1 /tmp/replay-2; do
+            cmp /tmp/result/payload.json "$replica/payload.json"
+            cmp /tmp/result/receipt.json "$replica/receipt.json"
+          done
+          sha256sum /tmp/result/payload.json /tmp/replay-1/payload.json /tmp/replay-2/payload.json
+          echo "REPLAY_PASS: three independent processes, three hash seeds, one optimized interpreter; native $ARCH"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: cneh06e-${{ matrix.arch }}
