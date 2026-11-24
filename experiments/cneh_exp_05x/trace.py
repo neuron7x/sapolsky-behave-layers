@@ -43,6 +43,7 @@ class Trace:
                      "trials":0,"rejected":0,"accepted":0,"chunks":[]}
         self.segments.append(self.active)
         self.hash=hashlib.sha256()
+        self.schedule=hashlib.sha256()
         self.chunk=hashlib.sha256()
         self.chunk_n=0
 
@@ -61,6 +62,7 @@ class Trace:
         row=self.active
         row["trials"]+=1
         row["rejected"]+=int(error>=1.)
+        self.schedule.update(b"T"+pack(solver.t,h,float(error<1.)))
         self.add(b"T"+pack(solver.t,h,error)+array_bytes(K)+array_bytes(scale))
 
     def accept(self,dense,event):
@@ -69,6 +71,7 @@ class Trace:
         t= w.f(event["t_ms"]) if event is not None else float(solver.t)
         w.need(self.start<=dense.t_old<t<=solver.t<=self.bound,"accepted step crosses forcing bound")
         row["accepted"]+=1
+        self.schedule.update(b"A"+pack(dense.t_old,solver.t,solver.h_abs,t))
         self.add(b"A"+pack(dense.t_old,solver.t,solver.h_abs,t)
                  +array_bytes(solver.y)+array_bytes(dense.y_old)+array_bytes(dense.Q)
                  + (w.canonical(event) if event is not None else b"-"))
@@ -88,6 +91,7 @@ class Trace:
             if self.chunk_n:
                 row["chunks"].append(self.chunk.hexdigest())
             row["trace_sha256"]=self.hash.hexdigest()
+            row["schedule_sha256"]=self.schedule.hexdigest()
             w.need(row["trials"]==row["accepted"]+row["rejected"],"trial count binding")
 
     def solver_class(self):
