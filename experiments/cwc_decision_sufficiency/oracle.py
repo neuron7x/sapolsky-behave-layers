@@ -4,7 +4,6 @@ from __future__ import annotations
 from fractions import Fraction as F
 from functools import lru_cache
 from itertools import combinations, product
-import hashlib
 import json
 
 MAX_WORLDS, MAX_ACTIONS, MAX_TESTS = 8, 4, 8
@@ -226,6 +225,16 @@ def greedy(matrix, tests, epsilon=0):
     return visit(tuple(range(len(m))), ts)
 
 
+def budget_disposition(matrix, tests, budget, epsilon=0):
+    cap = exact(budget)
+    need(cap >= 0, "negative budget")
+    cost, policy = optimal(matrix, tests, epsilon)
+    if cost is None or cost > cap:
+        return "ABSTAIN"
+    need(replay(matrix, tests, cost, policy, epsilon), "unverified budget plan")
+    return "CONDITIONAL_PLAN_AVAILABLE"
+
+
 def binary_family(kind):
     worlds = tuple(product(range(2), repeat=3))
     labels = tuple(x^y if kind == "XOR" else (y if x == 0 else z) for x, y, z in worlds)
@@ -288,12 +297,13 @@ def report():
     need(optimal(impossible, tests) == (None, None) and
          brute_force_cost(impossible, tests) is None and
          static_analysis(impossible, tests)[0] is None, "false feasibility")
-    need(cases == 7168, "frozen case count")
+    budget = budget_disposition(*binary_family("XOR"), 0)
+    need(budget == "ABSTAIN" and cases == 7168, "frozen case count or zero budget")
     return {"scope": SCOPE, "cases": cases, "nested_checks": nested,
             "obstruction_checks": obstruction_checks, "loss_winner": loss_winner,
             "regret_winner": regret_winner, "shifted_loss_winner": shifted_winner,
             "triple_obstruction": [0, 1, 2], "families": families,
-            "indistinguishable_impossible": True, "zero_budget_nonterminal": "ABSTAIN",
+            "indistinguishable_impossible": True, "zero_budget_nonterminal": budget,
             "scientific_promotion_authorized": False, "source_action_authorized": False,
             "closed_loop_authorized": False, "external_novelty": "NOT_ESTABLISHED"}
 
