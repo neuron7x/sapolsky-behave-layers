@@ -70,8 +70,13 @@ class Dense:
 class PortableRK45:
     def __init__(self,fun,t0,y0,t_bound,*,rtol,atol,max_step,tracker=None):
         env=inspect.getclosurevars(fun).nonlocals
-        w.need(set(("start","g0","current"))<=set(env),"frozen physical RHS closure drift")
-        self.params=np.array([env["start"],*env["g0"],env["current"]],dtype=np.float64)
+        w.need({"conductance","current"}<=set(env),"frozen physical RHS closure drift")
+        g=inspect.getclosurevars(env["conductance"]).nonlocals
+        w.need({"start","g0"}<=set(g) and np.asarray(g["g0"]).shape==(3,),
+               "frozen conductance closure drift")
+        self.params=np.array([g["start"],*g["g0"],env["current"]],dtype=np.float64)
+        w.need(np.isfinite(self.params).all() and self.params[0]<=t0<t_bound,
+               "invalid forcing parameters")
         self.t=float(t0);self.t_bound=float(t_bound)
         self.y=np.array(y0,dtype=np.float64,copy=True)
         self.rtol=float(rtol);self.atol=float(atol);self.max_step=float(max_step)
