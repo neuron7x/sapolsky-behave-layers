@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from bisect import bisect_right
-from collections import Counter
 import math
 import re
 
@@ -74,7 +73,7 @@ def audit(world,result):
     count_syn=count_external=count_routed=count_forcing=steps=trials=rejects=rhs=certs=0
     max_residual=0.
     fields={"start","bound","Vw_start","g_start","rhs_count","rhs_min","rhs_max","trials","rejected",
-            "accepted","chunks","end","accepted_end","Vw_end","g_end","reset","trace_sha256"}
+            "accepted","chunks","end","accepted_end","Vw_end","sample_end","g_end","reset","trace_sha256"}
     for i in range(32):
         ext=list(map(w.f,world["external"][i]))
         inc=gaba if i<16 else []
@@ -101,6 +100,10 @@ def audit(world,result):
             w.need(start<=lo<=hi<=bound,"RHS stage crosses forcing boundary")
             w.need(row["Vw_start"]==previous_vw,"V/w discontinuity outside certified reset")
             exact_list(row["Vw_end"],2)
+            exact_list(row["sample_end"],2)
+            ix=int(round(end*10.))
+            if 0<=ix<len(TIMES) and float(TIMES[ix])==end:
+                w.need(row["sample_end"]==[w.hx(v) for v in samples[ix,:2,i]],"dense sample boundary binding")
             gstart,g_end=exact_list(row["g_start"],3),exact_list(row["g_end"],3)
             for k,tau in enumerate((2.5,100.,6.)):
                 max_residual=max(max_residual,
@@ -128,7 +131,7 @@ def audit(world,result):
             previous_t=end;previous_vw=row["Vw_end"]
         w.need(previous_t==w.END and target==len(boundaries) and index==len(events[i])
                and total_steps==physical["accepted_steps"][i],"incomplete event/forcing coverage")
-        w.need(previous_vw==[w.hx(v) for v in samples[-1,:2,i]],"final physical sample binding")
+        w.need(ledgers[i][-1]["sample_end"]==[w.hx(v) for v in samples[-1,:2,i]],"final physical sample binding")
     w.need(max_residual<=1e-10,"analytic synaptic jump/decay mismatch")
     return {"status":"PASS","synaptic_stops":count_syn,"external_impulses":count_external,
             "receiver_arrivals":count_routed,"forcing_stops":count_forcing,
