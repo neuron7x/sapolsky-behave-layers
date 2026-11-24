@@ -1,6 +1,6 @@
 /* Portable scalar binary64 DP5(4). MPFR is the software transcendental engine.
  * No BLAS, no native exp/pow/sqrt, no fused multiply-add in this object.
- * All stage products and sums are explicitly ordered and separately rounded.
+ * Stage products and sums are ordered and separately rounded; the embedded\n * error dot alone is correctly rounded over exact binary64 inputs.
  */
 #include <float.h>
 #include <fenv.h>
@@ -76,6 +76,68 @@ static const double P[7][4]={
 {0,-0x1.5fda423d67152p+0,0x1.a2e673007345fp+1,-0x1.c46c8b61f95e5p+0},
 {0,0x1.61e97be1b9227p+0,-0x1.e1e97be1b9227p+1,0x1.30f4bdf0dc914p+1}};
 
+/* Correctly rounded dot of the represented binary64 tableau and stages.
+ * MPFR dot rounds the sum of exact products, not the seven rounded
+ * binary64 products. MPFR's wider exponent range avoids intermediate
+ * over/underflow. Near binary64 exponent boundaries use outward bounds.
+ */
+static _Thread_local int dot_initialized;
+static _Thread_local mpfr_t dot_e[7],dot_k[7],dot_y,dot_lo,dot_hi;
+static _Thread_local mpfr_ptr dot_ep[7],dot_kp[7];
+
+static void init_dot(void){
+    if(dot_initialized)return;
+    for(int k=0;k<7;k++){
+        mpfr_init2(dot_e[k],53);mpfr_init2(dot_k[k],53);
+        mpfr_set_d(dot_e[k],E[k],MPFR_RNDN);
+        dot_ep[k]=dot_e[k];dot_kp[k]=dot_k[k];
+    }
+    mpfr_init2(dot_y,53);mpfr_init2(dot_lo,128);mpfr_init2(dot_hi,128);
+    dot_initialized=1;
+}
+static double dot_component(const double *K,int i){
+    if(i!=0&&i!=1){fault=1;return NAN;}
+    init_dot();
+    for(int k=0;k<7;k++){
+        if(!isfinite(K[2*k+i])){fault=1;return NAN;}
+        mpfr_set_d(dot_k[k],K[2*k+i],MPFR_RNDN);
+    }
+    mpfr_dot(dot_y,dot_ep,dot_kp,7,MPFR_RNDN);
+    if(mpfr_zero_p(dot_y))return 0.;
+    double v=mpfr_get_d(dot_y,MPFR_RNDN);
+    if(isfinite(v)&&fabs(v)>=2.*DBL_MIN&&fabs(v)<=DBL_MAX/2.)return v;
+    const int precisions[]={128,256,512,1024,4352};
+    for(int k=0;k<5;k++){
+        mpfr_set_prec(dot_lo,precisions[k]);mpfr_set_prec(dot_hi,precisions[k]);
+        mpfr_dot(dot_lo,dot_ep,dot_kp,7,MPFR_RNDD);
+        mpfr_dot(dot_hi,dot_ep,dot_kp,7,MPFR_RNDU);
+        double l=mpfr_get_d(dot_lo,MPFR_RNDN),h=mpfr_get_d(dot_hi,MPFR_RNDN);
+        if(bits(l)==bits(h)&&isfinite(l))return l;
+    }
+    fault=1;return NAN;
+}
+double error_dot(const double *K,int i){
+    fault=0;
+    if(!numeric_environment())return NAN;
+    return dot_component(K,i);
+}
+static double embedded_error(const double *K,double h,const double *scale){
+    double sq=0.;
+    for(int i=0;i<2;i++){
+        if(!isfinite(scale[i])||scale[i]<=0.){fault=1;return NAN;}
+        double sum=dot_component(K,i);
+        double z=(h*sum)/scale[i];
+        double product=z*z;sq=sq+product;
+    }
+    return soft(2,sq/2.,0.);
+}
+double error_norm(const double *K,double h,const double *scale){
+    fault=0;
+    if(!numeric_environment()||!isfinite(h)||h<=0.)return NAN;
+    double result=embedded_error(K,h,scale);
+    return fault||!isfinite(result)?NAN:result;
+}
+
 void tableau(double *out){
     int k=0;
     for(int i=0;i<6;i++)out[k++]=C[i];
@@ -133,14 +195,7 @@ int dp_trial(double t,double end,const double *s,const double *p,double rtol,dou
         scale[i]=atol+rtol*(a0>a1?a0:a1);
     }
     times[6]=end;rhs(end,next,p,K+12);
-    double sq=0.;
-    for(int i=0;i<2;i++){
-        double sum=0.;
-        for(int k=0;k<7;k++){double product=K[2*k+i]*E[k];sum=sum+product;}
-        double z=(h*sum)/scale[i];
-        double product=z*z;sq=sq+product;
-    }
-    *err=soft(2,sq/2.,0.);
+    *err=embedded_error(K,h,scale);
     return fault||!isfinite(*err)||!isfinite(next[0])||!isfinite(next[1])?3:0;
 }
 void dp_dense(const double *K,double *Q){
