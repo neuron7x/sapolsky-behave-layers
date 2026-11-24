@@ -68,3 +68,25 @@ retuning, switching to a favorable worker, or relabeling approximate replay.
 Engineering merge of valid negative evidence is allowed. A failed engineering
 instrument gate still blocks that experiment's merge under the existing
 admission policy. No unresolved promotion status may be converted to PASS.
+
+
+## Mandatory adversarial ratchet
+
+The initial green guard and tests at `f8677f5b744e7a3e826f167b6b8abfc4045ffcc9`
+remain immutable controls. The expanded independent oracle uses literal expected
+gate names/statuses, tests JSON exponent overflow and returned-record aliasing,
+literal assignment variants, and real Git negative controls (assume-unchanged,
+skip-worktree, unrelated identical tree, symlink, historical roster, nested
+positive claim). Verify historical object bytes directly; Git diff alone is
+not an evidence integrity verifier.
+
+The full PR workflow runs three separate hosted campaigns (Python 3.11/3.12/3.13,
+different hash seeds and shuffled test order). Each must reproduce the old
+suite's green baseline, falsify the old implementation using the expanded
+suite, pass the hardened unmutated baseline, and kill all 24 intentional
+mutants across lattice, authority and evidence families. Each candidate runs
+in its own process. Import errors, unexpected crashes, incomplete/skipped
+tests or timeouts do not count as kills. Save all receipts. No aggregate
+majority vote or passing-only reporting. A surviving mutant blocks the
+engineering gate until investigated. The finite mutation panel does not prove
+general arbitrary-code safety, and no scientific promotion is authorized.

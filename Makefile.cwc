@@ -334,5 +334,5 @@ cog-self01-gate:
 .PHONY: cneh-promotion-guard
 verify pr-fast: cneh-promotion-guard
 cneh-promotion-guard:
-	python3 -B -m unittest discover -s tests -p test_cneh_promotion_gate.py -v
+	python3 -B -m unittest discover -s tests -p 'test_cneh_promotion*.py' -v
 	python3 -B -m scripts.cneh_promotion_gate audit

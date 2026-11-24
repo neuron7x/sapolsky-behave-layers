@@ -185,7 +185,7 @@ def verify_anchored_lineage(repo: Path) -> None:
     """Read historical object bytes, not merely Git's index-dependent diff."""
     for root in ("experiments/cneh_exp_04g","experiments/cneh_exp_05"):
         roster=entries(repo,Anchor(BASE,root,tree=True))
-        tracked=set(git(repo,"ls-files","-z","--",root).decode().split("\\0"))-{""}
+        tracked=set(git(repo,"ls-files","-z","--",root).decode().split("\0"))-{""}
         if tracked!=set(roster):
             raise PromotionViolation("historical tracked roster changed: "+root)
         hashes=blob_digests(repo,{oid for _,oid in roster.values()})
