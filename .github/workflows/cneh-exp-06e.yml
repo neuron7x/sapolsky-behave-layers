@@ -1,0 +1,90 @@
+name: CNEH-EXP-06E structural quotient falsification
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_06e/**'
+      - 'tests/test_cneh_exp_06e.py'
+      - '.github/workflows/cneh-exp-06e.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  native:
+    name: Native ${{ matrix.arch }} exact quotient
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify frozen protocol and parent source preservation
+        run: |
+          git merge-base --is-ancestor 5addb8a825e08cd72d8f8e0cc37b808f0f9e898b HEAD
+          git show 5addb8a825e08cd72d8f8e0cc37b808f0f9e898b:experiments/cneh_exp_06e/PROTOCOL.md | cmp - experiments/cneh_exp_06e/PROTOCOL.md
+          git merge-base --is-ancestor 22d786bf843a10a398e96db75fcd4be72a7ed1a0 HEAD
+          git diff --name-only 22d786bf843a10a398e96db75fcd4be72a7ed1a0 HEAD | sort > /tmp/actual
+          printf '%s\n' '.github/workflows/cneh-exp-06e.yml' 'experiments/cneh_exp_06e/PROTOCOL.md' 'experiments/cneh_exp_06e/quotient.py' 'experiments/cneh_exp_06e/run.py' 'tests/test_cneh_exp_06e.py' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+          test "$(uname -m)" = "$ARCH"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Authenticate sealed D evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14934927808/zip" --output /tmp/parent.zip
+          echo '2cc2ed3254a9467a32830976e0e0f6373f9e6d8e9904073d60dbb2c12bd02f49  /tmp/parent.zip' | sha256sum --strict -c -
+      - name: Execute independent assertions
+        run: python -m unittest discover -s tests -p test_cneh_exp_06e.py -v
+      - name: Execute complete fixed panel
+        run: python -m experiments.cneh_exp_06e.run native --arch "$ARCH" --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --parent /tmp/parent.zip --out /tmp/result
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh06e-${{ matrix.arch }}
+          path: /tmp/result/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve both native receipts and sealed parent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14934927808/zip" --output /tmp/parent.zip
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh06e-*' --dir /tmp/profiles
+      - name: Reconstruct complete raw panel and enforce negative admission
+        run: |
+          python -m experiments.cneh_exp_06e.run aggregate --parent /tmp/parent.zip --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/aggregate
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-06E --verdict /tmp/aggregate/report.json
+          (cd /tmp/aggregate && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh06e-aggregate
+          path: /tmp/aggregate/
+          if-no-files-found: error
+          retention-days: 90
