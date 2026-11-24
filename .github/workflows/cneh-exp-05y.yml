@@ -29,6 +29,8 @@ jobs:
         run: |
           git merge-base --is-ancestor 7408e3d418f2c87d5c6fd042de491f7b888bc137 HEAD
           git show 7408e3d418f2c87d5c6fd042de491f7b888bc137:experiments/cneh_exp_05y/PROTOCOL.md | cmp - experiments/cneh_exp_05y/PROTOCOL.md
+          git merge-base --is-ancestor eaaacdfb25b7971c40d95424f28d185ffc88cf7e HEAD
+          git show eaaacdfb25b7971c40d95424f28d185ffc88cf7e:experiments/cneh_exp_05y/PROTOCOL_R1.md | cmp - experiments/cneh_exp_05y/PROTOCOL_R1.md
           git diff --exit-code 2eaecb663ad053c77d833771b0893b9498b6c796 HEAD -- experiments/cneh_exp_05x experiments/cneh_exp_05j experiments/cneh_exp_05h experiments/cneh_exp_05v experiments/cneh_exp_05d experiments/cneh_exp_05 experiments/cneh_exp_01 scripts/cneh_promotion_gate.py
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -86,6 +88,14 @@ jobs:
           sudo apt-get install -y --no-install-recommends libmpfr-dev binutils gcc
           bash experiments/cneh_exp_05y/build.sh
           gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name cneh05y-manifest --dir /tmp/input
+      - name: Retrieve both sealed original arithmetic witnesses
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir /tmp/reduction
+          for id in 14901052141 14901860095; do
+            curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/$id/zip" --output "/tmp/reduction/$id.zip"
+          done
       - name: Independent root tests, passive parity, mutation and arithmetic preflight
         run: |
           /tmp/x-env/bin/python -m unittest discover -s tests -p test_cneh_exp_05j_roots.py -v
@@ -311,26 +321,33 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12.16'
-      - name: Retrieve all available same-run audit artifacts
+      - name: Strict same-run artifact transport
+        id: retrieve
         env:
           GH_TOKEN: ${{ github.token }}
+          UPSTREAM_OK: "${{ needs.manifest.result == 'success' && needs.preflight.result == 'success' && needs.native.result == 'success' && needs.pair.result == 'success' && needs.reference.result == 'success' && needs.forensic_compare.result == 'success' }}"
         run: |
-          mkdir /tmp/profiles
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh05y-pair-*' --dir /tmp/profiles || true
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh05y-preflight-*' --dir /tmp/profiles || true
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh05y-reference-*' --dir /tmp/profiles || true
-          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name cneh05y-forensic-aggregate --dir /tmp/forensic || true
+          python -m scripts.cneh_artifact_transport --spec y --run-id "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --head "$HEAD_SHA" --upstream-ok "$UPSTREAM_OK" --profiles /tmp/profiles --out /tmp/transport
+      - name: Preserve exact transport or blocked receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh05y-transport
+          path: /tmp/transport/
+          if-no-files-found: error
+          retention-days: 90
       - name: Full 1000-pair fail-closed verdict, no survivor admission
+        if: steps.retrieve.outcome == 'success'
         run: |
           set +e
-          python -m experiments.cneh_exp_05y.run aggregate --manifest-sha "$INPUT_SHA" --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --out /tmp/x-aggregate
+          python -m experiments.cneh_exp_05y.run aggregate --manifest-sha "$INPUT_SHA" --profiles /tmp/profiles --head "$HEAD_SHA" --run-id "$GITHUB_RUN_ID" --transport /tmp/transport --out /tmp/x-aggregate
           status=$?
           set -e
           python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05Y --verdict /tmp/x-aggregate/report.json
           (cd /tmp/x-aggregate && sha256sum --strict -c SHA256SUMS)
           exit "$status"
       - name: Preserve verdict including missing or divergent episodes
-        if: always()
+        if: always() && steps.retrieve.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: cneh05y-aggregate
