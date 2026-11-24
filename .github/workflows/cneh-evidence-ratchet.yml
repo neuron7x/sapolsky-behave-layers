@@ -1,0 +1,106 @@
+name: CNEH seven-axis evidence ratchet
+on:
+  pull_request:
+    paths:
+      - 'scripts/cneh_evidence_*.py'
+      - 'scripts/cneh_promotion_gate.py'
+      - 'tests/test_cneh_evidence_ratchet.py'
+      - 'experiments/cneh_governance/**'
+      - '.github/workflows/cneh-evidence-ratchet.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  fault-panel:
+    name: Evidence ratchet round ${{ matrix.round }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - round: 1
+            python: "3.11"
+            seed: 711
+          - round: 2
+            python: "3.12"
+            seed: 712
+          - round: 3
+            python: "3.13"
+            seed: 713
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONHASHSEED: ${{ matrix.seed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Authenticate seven-axis preregistration
+        run: |
+          git merge-base --is-ancestor 8331d734eda2e9fd6905eb1c1c995d7e462f8473 HEAD
+          git show 8331d734eda2e9fd6905eb1c1c995d7e462f8473:experiments/cneh_governance/EVIDENCE_RATCHET_V2.md | cmp - experiments/cneh_governance/EVIDENCE_RATCHET_V2.md
+      - name: Run all 168 named fault injections and clean controls
+        run: |
+          python -B -m scripts.cneh_evidence_ratchet --seed "${{ matrix.seed }}" --out /tmp/evidence-ratchet.json
+          (cd /tmp && sha256sum evidence-ratchet.json > evidence-ratchet.sha256)
+      - name: Preserve complete fault receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-evidence-ratchet-round-${{ matrix.round }}
+          path: |
+            /tmp/evidence-ratchet.json
+            /tmp/evidence-ratchet.sha256
+          if-no-files-found: error
+          retention-days: 90
+  historical-evidence:
+    name: Authenticate historical ${{ matrix.experiment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - experiment: CNEH-EXP-04G
+            artifact: 14889488512
+            digest: 03a5731775b7def8a9f09a9aab806737253a5431ea5e08ea10360ec1cf58b103
+          - experiment: CNEH-EXP-05
+            artifact: 14890028886
+            digest: db78569d633a4fd1ae5649ab02e53a86b48e97f0317b45a849a56cd73e993ea8
+    env:
+      EXPERIMENT: ${{ matrix.experiment }}
+      ARTIFACT: ${{ matrix.artifact }}
+      EXPECTED_SHA: ${{ matrix.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.12"
+      - name: Download exact historical archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/$ARTIFACT/zip" --output /tmp/sealed.zip
+          echo "$EXPECTED_SHA  /tmp/sealed.zip" | sha256sum --strict -c -
+      - name: Independently authenticate historical archive and all native traces
+        run: |
+          python -B -m scripts.cneh_evidence_admission archive --experiment "$EXPERIMENT" --input /tmp/sealed.zip --out /tmp/historical-admission.json
+          (cd /tmp && sha256sum historical-admission.json > historical-admission.sha256)
+      - name: Preserve historical evidence admission receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-evidence-admission-${{ matrix.experiment }}
+          path: |
+            /tmp/historical-admission.json
+            /tmp/historical-admission.sha256
+          if-no-files-found: error
+          retention-days: 90

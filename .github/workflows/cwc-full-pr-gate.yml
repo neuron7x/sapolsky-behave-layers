@@ -15,6 +15,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  cneh-promotion-invariants:
+    name: CNEH fail-closed scientific promotion invariants
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Verify promotion invariants and negative controls
+        run: |
+          python -B -m unittest discover -s tests -p 'test_cneh_promotion*.py' -v
+          python -m scripts.cneh_promotion_gate audit
+
+  cneh-promotion-adversarial:
+    name: CNEH adversarial campaign ${{ matrix.round }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - round: 1
+            python: "3.11"
+            seed: 113
+          - round: 2
+            python: "3.12"
+            seed: 127
+          - round: 3
+            python: "3.13"
+            seed: 131
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONHASHSEED: ${{ matrix.seed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Attack previously green implementation and every fault mutant
+        run: |
+          python -B -m scripts.cneh_promotion_attack campaign --seed "${{ matrix.seed }}" --out /tmp/cneh-promotion-attack.json
+          (cd /tmp && sha256sum cneh-promotion-attack.json > cneh-promotion-attack.sha256)
+      - name: Preserve complete attack receipts even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-promotion-adversarial-round-${{ matrix.round }}
+          path: |
+            /tmp/cneh-promotion-attack.json
+            /tmp/cneh-promotion-attack.sha256
+          if-no-files-found: error
+          retention-days: 90
+
   full-verification:
     name: Full verification, validation, and falsification
     runs-on: ubuntu-latest

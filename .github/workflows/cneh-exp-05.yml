@@ -50,10 +50,16 @@ jobs:
           /tmp/cneh05-env/bin/python -m unittest discover -s tests -p test_cneh_exp_04f.py -v
       - name: Execute independent prospective cohort
         run: /tmp/cneh05-env/bin/python -m experiments.cneh_exp_05.run --source .cneh-inputs/bnsyn --out /tmp/cneh05
+      - name: Seal complete evidence bytes before native replay
+        run: python -m scripts.cneh_evidence_admission snapshot --experiment CNEH-EXP-05 --input /tmp/cneh05 --out /tmp/cneh05-before.json
       - name: Fresh deterministic replay and SHA256
         run: |
           /tmp/cneh05-env/bin/python -m experiments.cneh_exp_05.run --source .cneh-inputs/bnsyn --out /tmp/cneh05 --verify
           (cd /tmp/cneh05 && sha256sum --strict -c SHA256SUMS)
+      - name: Enforce CNEH negative-only scientific authority boundary
+        run: python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05 --verdict /tmp/cneh05/verdict.json
+      - name: Independently admit negative evidence after native replay
+        run: python -m scripts.cneh_evidence_admission admit --experiment CNEH-EXP-05 --input /tmp/cneh05 --before /tmp/cneh05-before.json --out /tmp/cneh05-admission.json
       - name: Preserve complete native traces and evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -62,5 +68,7 @@ jobs:
           path: |
             /tmp/cneh05/
             /tmp/cneh05-install.json
+            /tmp/cneh05-before.json
+            /tmp/cneh05-admission.json
           if-no-files-found: error
           retention-days: 90

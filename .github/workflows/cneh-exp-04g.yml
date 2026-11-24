@@ -48,10 +48,16 @@ jobs:
           /tmp/cneh04g-env/bin/python -m unittest discover -s tests -p test_cneh_exp_04f_audit.py -v
       - name: Execute all prospective calibration and paired worlds
         run: /tmp/cneh04g-env/bin/python -m experiments.cneh_exp_04g.run --source .cneh-inputs/bnsyn --out /tmp/cneh04g
+      - name: Seal complete evidence bytes before native replay
+        run: python -m scripts.cneh_evidence_admission snapshot --experiment CNEH-EXP-04G --input /tmp/cneh04g --out /tmp/cneh04g-before.json
       - name: Fresh full replay and SHA256
         run: |
           /tmp/cneh04g-env/bin/python -m experiments.cneh_exp_04g.run --source .cneh-inputs/bnsyn --out /tmp/cneh04g --verify
           (cd /tmp/cneh04g && sha256sum --strict -c SHA256SUMS)
+      - name: Enforce CNEH negative-only scientific authority boundary
+        run: python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-04G --verdict /tmp/cneh04g/verdict.json
+      - name: Independently admit negative evidence after native replay
+        run: python -m scripts.cneh_evidence_admission admit --experiment CNEH-EXP-04G --input /tmp/cneh04g --before /tmp/cneh04g-before.json --out /tmp/cneh04g-admission.json
       - name: Preserve all calibration and experiment traces
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -60,5 +66,7 @@ jobs:
           path: |
             /tmp/cneh04g/
             /tmp/cneh04g-install.json
+            /tmp/cneh04g-before.json
+            /tmp/cneh04g-admission.json
           if-no-files-found: error
           retention-days: 90
