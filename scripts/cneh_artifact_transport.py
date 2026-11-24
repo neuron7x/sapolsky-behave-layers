@@ -32,7 +32,11 @@ def fetch(spec,run_id,repo,head,profiles,upstream_ok,download):
     profiles.mkdir(parents=True,exist_ok=False)
     receipts=[]
     for pattern,names in expected(spec):
-        code=download(["gh","run","download",run_id,"--repo",repo,"--pattern",pattern,"--dir",str(profiles)])
+        if len(names)==1:
+            name=next(iter(names))
+            code=download(["gh","run","download",run_id,"--repo",repo,"--name",name,"--dir",str(profiles/name)])
+        else:
+            code=download(["gh","run","download",run_id,"--repo",repo,"--pattern",pattern,"--dir",str(profiles)])
         if type(code) is not int:
             raise ValueError("invalid download exit code")
         receipts.append({"pattern":pattern,"exit_code":code,"expected":sorted(names)})
