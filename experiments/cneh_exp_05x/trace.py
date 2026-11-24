@@ -5,7 +5,6 @@ from collections import defaultdict
 import hashlib
 import inspect
 import math
-import struct
 from unittest.mock import patch
 
 import numpy as np
@@ -37,6 +36,7 @@ class Trace:
         closure=inspect.getclosurevars(fun).nonlocals
         w.need("conductance" in closure,"parent RHS contract drift")
         self.conductance=closure["conductance"]
+        self.start,self.bound,self.lo,self.hi=t0,bound,t0,t0
         self.active={"start":w.hx(t0),"bound":w.hx(bound),"Vw_start":[w.hx(x) for x in y0],
                      "g_start":[w.hx(x) for x in self.conductance(t0)],
                      "rhs_count":0,"rhs_min":w.hx(t0),"rhs_max":w.hx(t0),
@@ -48,10 +48,10 @@ class Trace:
 
     def rhs(self,t):
         row=self.active
-        w.need(w.f(row["start"])<=t<=w.f(row["bound"]),"RHS stage crosses t_syn/forcing bound")
+        w.need(self.start<=t<=self.bound,"RHS stage crosses t_syn/forcing bound")
         row["rhs_count"]+=1
-        row["rhs_min"]=w.hx(min(t,w.f(row["rhs_min"])))
-        row["rhs_max"]=w.hx(max(t,w.f(row["rhs_max"])))
+        self.lo=min(t,self.lo)
+        self.hi=max(t,self.hi)
 
     def add(self,raw):
         self.hash.update(raw)
@@ -67,7 +67,7 @@ class Trace:
         row=self.active
         solver=self.solver
         t= w.f(event["t_ms"]) if event is not None else float(solver.t)
-        w.need(w.f(row["start"])<=dense.t_old<t<=solver.t<=w.f(row["bound"]),"accepted step crosses forcing bound")
+        w.need(self.start<=dense.t_old<t<=solver.t<=self.bound,"accepted step crosses forcing bound")
         row["accepted"]+=1
         self.add(b"A"+pack(dense.t_old,solver.t,solver.h_abs,t)
                  +array_bytes(solver.y)+array_bytes(dense.y_old)+array_bytes(dense.Q)
@@ -77,12 +77,14 @@ class Trace:
             row["chunks"].append(self.chunk.hexdigest())
             self.chunk=hashlib.sha256()
             self.chunk_n=0
-        row["end"]=w.hx(t)
-        row["accepted_end"]=w.hx(solver.t)
-        row["Vw_end"]=event["post"] if event is not None else [w.hx(x) for x in solver.y]
-        row["g_end"]=[w.hx(x) for x in self.conductance(t)]
-        row["reset"]=event is not None
         if event is not None or solver.status=="finished":
+            row["rhs_min"],row["rhs_max"]=w.hx(self.lo),w.hx(self.hi)
+            row["end"]=w.hx(t)
+            row["accepted_end"]=w.hx(solver.t)
+            row["Vw_end"]=event["post"] if event is not None else [w.hx(x) for x in solver.y]
+            row["sample_end"]=event["post"] if event is not None else [w.hx(x) for x in dense(t)]
+            row["g_end"]=[w.hx(x) for x in self.conductance(t)]
+            row["reset"]=event is not None
             if self.chunk_n:
                 row["chunks"].append(self.chunk.hexdigest())
             row["trace_sha256"]=self.hash.hexdigest()
