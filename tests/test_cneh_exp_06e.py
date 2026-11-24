@@ -1,8 +1,18 @@
 """Independent regression assertions for the frozen observation quotient."""
+from contextlib import redirect_stdout
 from fractions import Fraction as F
+import hashlib
+import io
+import json
+from pathlib import Path
+import platform
+import shutil
+import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
-from experiments.cneh_exp_06e import quotient as q
+from experiments.cneh_exp_06e import quotient as q, run
 
 
 class QuotientTests(unittest.TestCase):
@@ -53,6 +63,235 @@ class QuotientTests(unittest.TestCase):
             self.assertEqual(report[name], "FAIL_PRESERVED")
         self.assertEqual(report["closed_loop_efficacy"], "BLOCKED")
         self.assertEqual(report["calibration"], "NOT_TESTED")
+
+
+
+class AutonomousQuotientTests(unittest.TestCase):
+    """Supplemental engineering properties, not part of the frozen cohort."""
+
+    def test_key_contract(self):
+        active, silent = q.ANCHORS
+        v, t = q.VOLTAGE, F(100)
+        key = q.quotient_key(v, active, t)
+        self.assertNotEqual(key, q.quotient_key(v + 1, active, t))
+        for i in range(4):
+            changed = tuple(x + (F(1, 32) if i == j else 0)
+                            for j, x in enumerate(active))
+            self.assertNotEqual(key, q.quotient_key(v, changed, t))
+        self.assertNotEqual(key, q.quotient_key(v, active, F(120)))
+        self.assertEqual(q.quotient_key(v, silent, t),
+                         q.quotient_key(v, silent, F(120)))
+
+    def test_generated_interior_and_metamorphic_properties(self):
+        # Stable hash-derived rational panel, no host RNG or tuning.
+        for index in range(32):
+            raw = hashlib.sha256(f"CNEH-06E-ASSURANCE-V1:{index}".encode()).digest()
+            z = (F(-1, 3) + F(raw[0] % 17 - 8, 128),
+                 F(1 + raw[1] % 32, 128),
+                 F(0) if index % 4 == 0 else F(1 + raw[2] % 32, 128),
+                 F(1 + raw[3] % 32, 128))
+            gain = 1 + F(1 + raw[4] % 63, 64)
+            delay = F(1 + raw[5] % 63, 64)
+            tau = 100 + F(20 * (1 + raw[6] % 63), 64)
+            state = q.decimal_lift(z, gain, delay, tau)
+            outer = q.family_certificate(z)
+            inner = q.lift_box(z, (gain, gain), (delay, delay), (tau, tau))
+            # A point enclosure must be inside the full nuisance enclosure,
+            # and both must contain the high-precision lifted state.
+            for x, (lo, hi), (a, b) in zip(state, outer, inner, strict=True):
+                self.assertLessEqual(lo, a)
+                self.assertLessEqual(b, hi)
+                self.assertLessEqual(a - q.TOLERANCE, x)
+                self.assertLessEqual(x, b + q.TOLERANCE)
+                self.assertTrue(0 <= x <= 1)
+            # Gain and delay reparametrize a fiber without changing its trace.
+            other_gain, other_delay = F(2), F(0)
+            other = q.decimal_lift(z, other_gain, other_delay, tau)
+            for t in (0, 3, 18, 60, 120):
+                left = q.fixtures.current(F(t) + delay, state, tau_n=tau,
+                                          nmda_gain=gain)
+                right = q.fixtures.current(F(t), other, tau_n=tau,
+                                           nmda_gain=other_gain)
+                expected = q.quotient_current(t, z, tau)
+                self.assertLessEqual(abs(left - right), q.TOLERANCE)
+                self.assertLessEqual(abs(left - expected), q.TOLERANCE)
+            rate_a = q.quotient_current(120, z, F(100))
+            rate_b = q.quotient_current(120, z, F(120))
+            if z[2] == 0:
+                self.assertEqual(rate_a, rate_b)
+            else:
+                self.assertGreater(abs(rate_a - rate_b), q.TOLERANCE)
+
+    def test_reversed_boxes_and_exact_types(self):
+        z = q.ANCHORS[0]
+        good = ((F(1), F(2)), (F(0), F(1)), (F(100), F(120)))
+        for index in range(3):
+            box = list(good)
+            box[index] = tuple(reversed(box[index]))
+            with self.assertRaisesRegex(ValueError, "reversed box"):
+                q.lift_box(z, *box)
+        for bad in (True, 1, 1.0, "1"):
+            with self.assertRaises(ValueError):
+                q.decimal_lift(z, bad, F(0), F(100))
+
+    def test_targeted_mutants_are_killed(self):
+        # The same independent assertions must reject intentional defects.
+        # Unexpected exceptions are harness failures, not successful kills.
+        key = q.quotient_key
+        lift = q.decimal_lift
+        current = q.quotient_current
+
+        def drop_active_rate(v, z, t):
+            return (*key(v, z, t)[:-1], None)
+
+        def retain_silent_rate(v, z, t):
+            return (*key(v, z, t)[:-1], t)
+
+        def drop_amplitude(v, z, t):
+            k = key(v, z, t)
+            return (k[0], k[1], k[3], k[4], k[5])
+
+        def drop_voltage(v, z, t):
+            return key(v, z, t)[1:]
+
+        def wrong_gain(z, gain, delay, tau):
+            w, a, n, g = lift(z, gain, delay, tau)
+            return w, a, n * gain, g
+
+        def ignore_delay(z, gain, delay, tau):
+            return lift(z, gain, F(0), tau)
+
+        def biased_trace(t, z, tau):
+            return current(t, z, tau) + F(1, 10**10)
+
+        mutants = (
+            ("quotient_key", drop_active_rate, self.test_key_contract),
+            ("quotient_key", retain_silent_rate, self.test_key_contract),
+            ("quotient_key", drop_amplitude, self.test_key_contract),
+            ("quotient_key", drop_voltage, self.test_key_contract),
+            ("decimal_lift", wrong_gain, self.test_generated_interior_and_metamorphic_properties),
+            ("decimal_lift", ignore_delay, self.test_generated_interior_and_metamorphic_properties),
+            ("quotient_current", biased_trace, self.test_generated_interior_and_metamorphic_properties),
+        )
+        for target, mutant, check in mutants:
+            with self.subTest(mutant=mutant.__name__):
+                with patch.object(q, target, mutant):
+                    with self.assertRaises(AssertionError):
+                        check()
+
+
+class AutonomousEvidenceTests(unittest.TestCase):
+    """Fail-closed aggregate admission, with explicitly synthetic unit receipts."""
+
+    def test_aggregate_rejects_tampering(self):
+        report = q.report()
+        head = "a" * 40
+        run_id = "17"
+        raw = run.canonical(report)
+        cases = {
+            "valid": None,
+            "missing_arch": "native profile roster",
+            "extra_arch": "native profile roster",
+            "missing_file": "native evidence file roster",
+            "extra_file": "native evidence file roster",
+            "truncated_payload": "native raw payload differs",
+            "forged_authority": "native raw payload differs",
+            "erased_failure": "native raw payload differs",
+            "forged_calibration": "native raw payload differs",
+            "wrong_head": "native receipt mismatch",
+            "wrong_run": "native receipt mismatch",
+            "wrong_arch": "native receipt mismatch",
+            "wrong_parent": "native receipt mismatch",
+            "noncanonical_receipt": "native receipt mismatch",
+            "corrupt_parent": "parent archive digest mismatch",
+        }
+        for case, error in cases.items():
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                parent = root / "synthetic-parent.zip"
+                parent.write_bytes(b"unit-test-only parent bytes")
+                # Unit-test digest and interpreter only. The native workflow
+                # independently authenticates the actual sealed D artifact.
+                with patch.object(run, "PARENT_SHA256", run.sha(parent.read_bytes())), \
+                     patch.object(run, "PYTHON", platform.python_version()), \
+                     redirect_stdout(io.StringIO()):
+                    profiles = root / "profiles"
+                    for arch in run.ARCHES:
+                        folder = profiles / ("cneh06e-" + arch)
+                        folder.mkdir(parents=True)
+                        (folder / "payload.json").write_bytes(raw)
+                        (folder / "receipt.json").write_bytes(
+                            run.canonical(run.metadata(head, run_id, arch, raw)))
+                    target = profiles / "cneh06e-x86_64"
+                    receipt_path = target / "receipt.json"
+                    payload_path = target / "payload.json"
+                    if case == "missing_arch":
+                        shutil.rmtree(target)
+                    elif case == "extra_arch":
+                        (profiles / "unexpected").mkdir()
+                    elif case == "missing_file":
+                        receipt_path.unlink()
+                    elif case == "extra_file":
+                        (target / "extra").write_text("extra", encoding="ascii")
+                    elif case == "truncated_payload":
+                        payload_path.write_bytes(raw[:-1])
+                    elif case in ("forged_authority", "erased_failure", "forged_calibration"):
+                        altered = dict(report)
+                        if case == "forged_authority":
+                            altered["scientific_promotion_authorized"] = True
+                        elif case == "erased_failure":
+                            altered["historical_noise_width"] = "PASS"
+                        else:
+                            altered["calibration"] = "PASS"
+                        forged = run.canonical(altered)
+                        payload_path.write_bytes(forged)
+                        # Recompute the digest so mere receipt consistency
+                        # cannot pass a fraudulent report.
+                        receipt_path.write_bytes(run.canonical(
+                            run.metadata(head, run_id, "x86_64", forged)))
+                    elif case in ("wrong_head", "wrong_run", "wrong_arch", "wrong_parent"):
+                        receipt = json.loads(receipt_path.read_bytes())
+                        field, value = {
+                            "wrong_head": ("head_sha", "b" * 40),
+                            "wrong_run": ("run_id", "18"),
+                            "wrong_arch": ("arch", "aarch64"),
+                            "wrong_parent": ("parent_sha256", "0" * 64),
+                        }[case]
+                        receipt[field] = value
+                        receipt_path.write_bytes(run.canonical(receipt))
+                    elif case == "noncanonical_receipt":
+                        receipt_path.write_bytes(receipt_path.read_bytes() + b" ")
+                    elif case == "corrupt_parent":
+                        parent.write_bytes(b"changed parent")
+                    out = root / "aggregate"
+                    args = SimpleNamespace(parent=parent, profiles=profiles,
+                                           head=head, run_id=run_id, out=out)
+                    if error is not None:
+                        with self.assertRaisesRegex(ValueError, error):
+                            run.aggregate(args)
+                        self.assertFalse(out.exists())
+                    else:
+                        run.aggregate(args)
+                        self.assertEqual((out / "payload.json").read_bytes(), raw)
+                        summary = json.loads((out / "report.json").read_bytes())
+                        self.assertEqual(summary["qualification"],
+                                         "PASS_EXACT_SYNTHETIC_QUOTIENT_ONLY")
+                        self.assertIs(summary["scientific_promotion_authorized"], False)
+                        self.assertEqual(summary["historical_noise_width"], "FAIL_PRESERVED")
+                        self.assertEqual(summary["closed_loop_efficacy"], "BLOCKED")
+                        self.assertEqual(
+                            (out / "SHA256SUMS").read_text(encoding="ascii"),
+                            "".join(run.sha((out / name).read_bytes()) + "  " + name + "\n"
+                                    for name in ("payload.json", "report.json")))
+
+    def test_metadata_rejects_invalid_identity(self):
+        for head, run_id, arch in (("a" * 39, "17", "x86_64"),
+                                   ("A" * 40, "17", "x86_64"),
+                                   ("a" * 40, "0", "x86_64"),
+                                   ("a" * 40, "017", "x86_64"),
+                                   ("a" * 40, "17", "arm64")):
+            with self.assertRaises(ValueError):
+                run.metadata(head, run_id, arch, b"payload")
 
 
 if __name__ == "__main__":
