@@ -247,6 +247,48 @@ def episode(seed, arm, rt):
             "restored_transitions": len(CHECKPOINTS) * SUFFIX}
 
 
+def checkpoint_attacks(checkpoint, expected, rt):
+    """Real native restore attacks; forged local hashes never replace the anchor."""
+    import copy
+
+    tick = checkpoint["data"]["tick"]
+    cases = []
+    def reject(name, value, anchor, requested_tick):
+        try:
+            restore(value, anchor, SEEDS[0], requested_tick, rt)
+        except (ValueError, TypeError, KeyError, OverflowError):
+            cases.append(name)
+        else:
+            raise ValueError("checkpoint attack accepted: " + name)
+
+    reject("STALE_TICK", checkpoint, expected, tick + 1)
+    mutations = (
+        ("SHAPE", lambda x: x["arrays"]["V"].pop()),
+        ("CONFIGURATION", lambda x: x["configuration"].update(dt_ms="0x1.0000000000000p+0")),
+        ("TOPOLOGY", lambda x: x.update(mode=(x["mode"] + 1) % 4)),
+        ("BRANCH_FIELD", lambda x: x["branch"].pop("_sigma_ema")),
+        ("INVALID_RNG", lambda x: x["rng"].update(bit_generator="MT19937")),
+    )
+    for name, mutate in mutations:
+        data = copy.deepcopy(checkpoint["data"])
+        mutate(data)
+        forged = seal(data)
+        reject(name, forged, forged["sha256"], tick)
+    for name, mutate in (
+        ("FORGED_RNG", lambda x: x["rng"]["state"].update(state=1)),
+        ("FORGED_DYNAMIC", lambda x: x["arrays"]["w"].__setitem__(0, "0x1.0000000000000p+0")),
+    ):
+        data = copy.deepcopy(checkpoint["data"])
+        mutate(data)
+        need(digest(data) != expected, "ineffective checkpoint attack")
+        reject(name, seal(data), expected, tick)
+    return cases
+
+
+ATTACKS = ("STALE_TICK", "SHAPE", "CONFIGURATION", "TOPOLOGY", "BRANCH_FIELD",
+           "INVALID_RNG", "FORGED_RNG", "FORGED_DYNAMIC")
+
+
 def optional_features(np):
     core = np._core._multiarray_umath
     return sorted(x for x in core.__cpu_dispatch__ if core.__cpu_features__.get(x, False)
@@ -324,10 +366,14 @@ def execute(source, worker, profile, attempt, install_report):
     rt = pinned.load_runtime(source, lock)
     episodes = [episode(seed, arm, rt) for seed, arm in itertools.product(SEEDS, ARMS)]
     validate_panel(episodes)
+    checkpoint = episodes[0]["checkpoints"][1]
+    attacks = checkpoint_attacks(checkpoint, episodes[0]["trace"][CHECKPOINTS[1]]["state_sha256"], rt)
+    need(tuple(attacks) == ATTACKS, "checkpoint attack roster")
     fp = fingerprint(rt, profile, install_report)
     need(pinned.validate_source(source, lock) == source_before, "source changed")
     return {"worker": worker, "profile": profile, "attempt": attempt, "fingerprint": fp,
-            "source": lock["source"], "episodes": episodes, "panel_sha256": digest(episodes)}
+            "source": lock["source"], "native_attacks": attacks,
+            "episodes": episodes, "panel_sha256": digest(episodes)}
 
 
 def difference(left, right):
@@ -357,6 +403,7 @@ def aggregate(root):
             need((value["worker"], value["profile"], value["attempt"]) == (worker, profile, attempt),
                  "profile identity mismatch")
             validate_panel(value["episodes"])
+            need(tuple(value["native_attacks"]) == ATTACKS, "native attack roster")
             need(value["panel_sha256"] == digest(value["episodes"])
                  and value["fingerprint"]["install_report_sha256"] == file_sha(folder / "install.json"),
                  "profile digest binding")
@@ -371,7 +418,8 @@ def aggregate(root):
     return {"experiment": EXPERIMENT, "scientific_promotion_authorized": False,
             "scientific_promotion": "BLOCKED", "scope": "PINNED_FINITE_NATIVE_ENGINEERING_PANEL_ONLY",
             "historical_native_replay": "FAIL_PRESERVED", "native_panel_status": "PASS_PANEL_ONLY" if passed else "FAIL_PANEL",
-            "reports": len(records), "episodes_per_report": len(reference),
+            "reports": len(records), "native_checkpoint_attacks_per_report": len(ATTACKS),
+            "episodes_per_report": len(reference),
             "samples_per_episode": STEPS + 1, "checkpoints_per_episode": len(CHECKPOINTS),
             "restored_transitions_per_checkpoint": SUFFIX, "comparisons": comparisons}
 
