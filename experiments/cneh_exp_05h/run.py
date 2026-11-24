@@ -165,7 +165,15 @@ def reference_cell(initial, external, incoming, arm, i, strict):
         def rhs(time, state):
             V,w=state
             ga,gn,gg=conductance(time)
-            block=1./(1.+(1./3.57)*math.exp(-.062*V))
+            z=-.062*V
+            # DOP853 may evaluate rejected trial stages far outside the
+            # physical voltage envelope. Evaluate the identical sigmoid
+            # without overflow there; do not clip V or change the ODE.
+            if z>700.:
+                e=math.exp(-z)
+                block=e/(e+1./3.57)
+            else:
+                block=1./(1.+(1./3.57)*math.exp(z))
             syn=ga*V+gn*block*V+gg*(V+70.)
             return ((-10.*(V+70.)+20.*math.exp(min((V+55.)/2.,20.))-w-syn+u)/150.,
                     (2.*(V+70.)-w)/200.)
