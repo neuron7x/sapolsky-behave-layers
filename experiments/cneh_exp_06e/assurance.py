@@ -403,11 +403,177 @@ def report():
     }
 
 
-def verify_profiles(profiles, head, checkout, run_id):
+# The governance contract is deliberately separate from campaign generation.
+# Increasing a budget or changing a verdict requires reviewing this contract.
+REQUIRED_MUTANTS = {
+    "LIFT_NO_GAIN": "LIFT_REFERENCE",
+    "LIFT_NO_DELAY": "LIFT_REFERENCE",
+    "LIFT_FLIP_W": "LIFT_REFERENCE",
+    "LIFT_SWAP_AG": "LIFT_REFERENCE",
+    "LIFT_QUANTIZE_32": "LIFT_REFERENCE",
+    "KEY_DROP_ACTIVE_RATE": "KEY_REFERENCE",
+    "KEY_KEEP_SILENT_RATE": "KEY_REFERENCE",
+    "KEY_ZERO_VOLTAGE": "KEY_REFERENCE",
+    "KEY_ZERO_MODE_0": "KEY_REFERENCE",
+    "KEY_ZERO_MODE_1": "KEY_REFERENCE",
+    "KEY_ZERO_MODE_2": "KEY_REFERENCE",
+    "KEY_ZERO_MODE_3": "KEY_REFERENCE",
+    "TRACE_BIAS": "TRACE_REFERENCE",
+    "TRACE_FIXED_RATE": "TRACE_REFERENCE",
+    "BOX_COLLAPSE": "INTERVAL_EXCLUSION",
+}
+NEGATIVE_GATES = {
+    "historical_count_observability": "FAIL_PRESERVED",
+    "historical_nominal_ood": "FAIL_PRESERVED",
+    "historical_noise_width": "FAIL_PRESERVED",
+    "historical_2ms_reachability": "FAIL_PRESERVED",
+    "calibration": "NOT_TESTED",
+    "scientific_promotion": "BLOCKED",
+    "closed_loop_efficacy": "BLOCKED",
+    "blind_causal_cohort": "BLOCKED",
+    "scientific_promotion_authorized": False,
+    "source_action_authorized": False,
+    "closed_loop_authorized": False,
+}
+
+
+def decode_case(values):
+    require(type(values) is list and len(values) == 7,
+            "receipt candidate dimension")
+    require(all(type(v) is str and len(v) <= 512 for v in values),
+            "receipt candidate encoding")
+    case = tuple(F(v) for v in values)
+    validate(case)
+    require(case_values(case) == values, "noncanonical candidate")
+    return case
+
+
+def check_governance(result):
+    """Audit the execution transcript, not just its claimed PASS bit."""
+    require(result["scope"] == "SUPPLEMENTAL_ENGINEERING_ASSURANCE_ONLY",
+            "invalid assurance scope")
+    require(all(type(result.get(k)) is type(v) and result.get(k) == v
+                for k, v in NEGATIVE_GATES.items()), "negative gate changed")
+    require(result["status"] == "PASS" and result["mutation_status"] == "PASS"
+            and result["baseline_failures"] == []
+            and result["reduced_baseline_witness"] is None,
+            "nonpassing assurance report")
+    require(result["seed"] == "CNEH-06E-ASSURANCE-V2"
+            and result["round_budget"] == 6 and result["width_budget"] == 16
+            and result["diagnostic_times_ms"] == [0, 1, 3, 7, 18, 30, 60, 120]
+            and result["tolerance"] == str(F(1, 10**75)),
+            "assurance budget or tolerance changed")
+    require(result["unique_cases"] == 96 and result["reference_sample_checks"] == 768
+            and len(result["rounds"]) == 6, "campaign roster")
+    by_id = {}
+    ordered_ids = []
+    previous = []
+    for index, round_data in enumerate(result["rounds"]):
+        require(round_data["round"] == index and len(round_data["evaluations"]) == 16,
+                "round roster")
+        # Independent reconstruction of the feedback selection from the
+        # serialized metrics. A fabricated parent or duplicate is rejected.
+        selected = sorted(previous, key=lambda row: (
+            F(row["trace_error_pA"]), F(row["lift_error"]),
+            -F(row["min_point_clearance"]), row["id"]), reverse=True)[:4]
+        parents = [row["id"] for row in selected]
+        require(round_data["parents"] == parents, "feedback parent selection")
+        for row in round_data["evaluations"]:
+            case = decode_case(row["case"])
+            ident = identity(case)
+            require(row["id"] == ident and ident not in by_id,
+                    "duplicate or forged candidate identity")
+            require(row["parent_id"] is None or row["parent_id"] in parents,
+                    "unknown feedback parent")
+            if row["parent_id"] is not None:
+                parent_case = by_id[row["parent_id"]]
+                require(sum(x != y for x, y in zip(case, parent_case, strict=True)) == 1,
+                        "invalid single-coordinate mutation")
+            require(row["faults"] == [] and
+                    0 <= F(row["lift_error"]) <= TOL and
+                    0 <= F(row["trace_error_pA"]) <= TOL and
+                    F(row["min_point_clearance"]) >= -TOL,
+                    "baseline oracle invariant")
+            by_id[ident] = case
+            ordered_ids.append(ident)
+        previous = round_data["evaluations"]
+    require(len(by_id) == 96, "unique candidate roster")
+    mutants = result["mutation_ratchet"]
+    require(len(mutants) == result["mutants_killed"] == len(REQUIRED_MUTANTS)
+            and {row["mutant"] for row in mutants} == set(REQUIRED_MUTANTS),
+            "mutation ratchet roster")
+    implementations = {name: impl for name, _, impl in mutant_roster()}
+    require(set(implementations) == set(REQUIRED_MUTANTS), "mutation implementation roster")
+    for row in mutants:
+        name = row["mutant"]
+        fault = REQUIRED_MUTANTS[name]
+        count = row["cases_examined"]
+        require(row["status"] == "KILLED" and row["expected_fault"] == fault
+                and type(count) is int and 1 <= count <= len(ordered_ids),
+                "mutant admission")
+        witness = row["witness"]
+        original = decode_case(witness["original"])
+        original_id = identity(original)
+        require(witness["original_id"] == original_id == ordered_ids[count-1]
+                and witness["retained_fault"] == fault,
+                "mutation witness provenance")
+        require(witness["original_complexity"] == complexity(original),
+                "original witness complexity")
+        steps = witness["accepted_steps"]
+        require(type(witness["attempts"]) is int and
+                len(steps) <= witness["attempts"] <= 56 and len(steps) <= 14,
+                "witness reduction budget")
+        case = original
+        for step in steps:
+            coordinate = step["coordinate"]
+            require(type(coordinate) is int and 0 <= coordinate < 7
+                    and step["from"] == identity(case), "witness chain origin")
+            value = F(step["value"])
+            trial = case[:coordinate] + (value,) + case[coordinate+1:]
+            validate(trial)
+            require(step["to"] == identity(trial) and complexity(trial) < complexity(case),
+                    "witness chain reduction")
+            case = trial
+        reduced = witness["reduced"]
+        require(case == decode_case(reduced["case"]) and
+                witness["reduced_complexity"] == complexity(case),
+                "reduced witness identity")
+        impl = implementations[name]
+        require(fault in inspect(original, impl)["faults"] and
+                fault in inspect(case, impl)["faults"] and
+                serialize(inspect(case, impl)) == reduced and
+                not inspect(case)["faults"], "unreproducible mutation witness")
+
+
+def verify_regression_profiles(profiles, checkout):
+    """Periodic regression does not authenticate expired scientific receipts."""
+    from experiments.cneh_exp_06e import run
+    expected = run.canonical(q.report())
+    names = {"cneh06e-weekly-aarch64", "cneh06e-weekly-x86_64"}
+    require({p.name for p in profiles.iterdir()} == names,
+            "regression architecture roster")
+    for name in sorted(names):
+        root = profiles/name
+        require({p.name for p in root.iterdir()} ==
+                {"payload.json", "SHA256SUMS", "SCOPE", "HEAD"},
+                "regression file roster")
+        require((root/"HEAD").read_bytes() == (checkout+"\n").encode("ascii"),
+                "regression checkout mismatch")
+        require((root/"SCOPE").read_bytes() ==
+                b"REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION\n", "regression scope")
+        raw = (root/"payload.json").read_bytes()
+        require(raw == expected, "regression raw reconstruction mismatch")
+        require((root/"SHA256SUMS").read_bytes() ==
+                (digest(raw)+"  payload.json\n").encode("ascii"),
+                "regression manifest mismatch")
+    print("REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION: independent raw reconstruction PASS")
+
+
+def verify_profiles(profiles, head, checkout, run_id, attempt):
     """Reconstruct the entire supplemental report and reject partial receipts."""
     expected = report()
-    require(expected["status"] == "PASS", "fresh assurance reconstruction failed")
-    expected.update(head_sha=head, checkout_sha=checkout, run_id=run_id)
+    check_governance(expected)
+    expected.update(head_sha=head, checkout_sha=checkout, run_id=run_id, run_attempt=attempt)
     expected_raw = canonical(expected)
     roster = {"assurance-cneh06e-x86_64", "assurance-cneh06e-aarch64"}
     require({p.name for p in profiles.iterdir()} == roster,
@@ -439,27 +605,34 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--out", type=Path)
     mode.add_argument("--profiles", type=Path)
+    mode.add_argument("--regression-profiles", type=Path)
     parser.add_argument("--head", required=True)
     parser.add_argument("--checkout", required=True)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--attempt", required=True)
     args = parser.parse_args()
     require(all(re.fullmatch(r"[0-9a-f]{40}", s)
                 for s in (args.head, args.checkout)), "invalid commit identity")
     require(re.fullmatch(r"[1-9][0-9]*", args.run_id), "invalid run identity")
+    require(re.fullmatch(r"[1-9][0-9]*", args.attempt), "invalid attempt identity")
+    if args.regression_profiles is not None:
+        verify_regression_profiles(args.regression_profiles, args.checkout)
+        return 0
     if args.profiles is not None:
-        verify_profiles(args.profiles, args.head, args.checkout, args.run_id)
+        verify_profiles(args.profiles, args.head, args.checkout, args.run_id, args.attempt)
         return 0
     args.out.mkdir(parents=True, exist_ok=False)
     try:
         result = report()
+        if result["status"] == "PASS":
+            check_governance(result)
     except Exception as exc:
         # A harness error is never a mutation kill or scientific evidence.
         result = {"scope": "SUPPLEMENTAL_ENGINEERING_ASSURANCE_ONLY",
                   "status": "HARNESS_ERROR", "error_type": type(exc).__name__,
-                  "error": str(exc), "scientific_promotion": "BLOCKED",
-                  "scientific_promotion_authorized": False,
-                  "closed_loop_efficacy": "BLOCKED"}
-    result.update(head_sha=args.head, checkout_sha=args.checkout, run_id=args.run_id)
+                  "error": str(exc), **NEGATIVE_GATES}
+    result.update(head_sha=args.head, checkout_sha=args.checkout, run_id=args.run_id,
+                  run_attempt=args.attempt)
     raw = canonical(result)
     (args.out/"report.json").write_bytes(raw)
     (args.out/"SHA256SUMS").write_text(digest(raw)+"  report.json\n", encoding="ascii")
