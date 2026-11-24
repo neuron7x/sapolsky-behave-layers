@@ -28,6 +28,17 @@ class TestRoot(unittest.TestCase):
         with self.assertRaises(ValueError):
             c.first_upcross((F(-1,4),F(1),F(-1)))
 
+    def test_odd_multiple_root_not_transverse(self):
+        # (x-1/3)^3 changes sign, and both endpoints and midpoint
+        # have strictly positive derivatives, but its root is grazing.
+        p=(F(-1,27),F(1,3),F(-1),F(1))
+        den=2**72
+        l,u=F(den//3,den),F(den//3+1,den)
+        with self.assertRaisesRegex(ValueError,"nontransverse"):
+            v.verify_bracket(p,l,u)
+        with self.assertRaises(ValueError):
+            c.first_upcross(p)
+
     def test_exact_endpoint(self):
         p=(F(-1),F(1))
         self.assertEqual(c.first_upcross(p),(F(1),F(1)))
