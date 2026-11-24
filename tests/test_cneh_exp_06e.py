@@ -1,5 +1,6 @@
 """Independent regression assertions for the frozen observation quotient."""
 from contextlib import redirect_stdout
+from copy import deepcopy
 from fractions import Fraction as F
 import hashlib
 import io
@@ -12,7 +13,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from experiments.cneh_exp_06e import quotient as q, run
+from experiments.cneh_exp_06e import assurance, quotient as q, run
 
 
 class QuotientTests(unittest.TestCase):
@@ -293,6 +294,159 @@ class AutonomousEvidenceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 run.metadata(head, run_id, arch, b"payload")
 
+
+
+class MetaAssuranceTests(unittest.TestCase):
+    """Attack the autonomous verifier itself; no empirical claims."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.baseline = assurance.report()
+        assurance.check_governance(cls.baseline)
+
+    def test_governance_rejects_self_issued_authority_and_budget_drift(self):
+        cases = [
+            ("scientific_promotion_authorized", True, "negative gate changed"),
+            ("source_action_authorized", 0, "negative gate changed"),
+            ("historical_noise_width", "PASS", "negative gate changed"),
+            ("calibration", "PASS", "negative gate changed"),
+            ("round_budget", 7, "budget or tolerance"),
+            ("tolerance", "1/10", "budget or tolerance"),
+            ("unique_cases", 95, "campaign roster"),
+            ("status", "FAIL", "nonpassing assurance"),
+            ("mutants_killed", 14, "mutation ratchet roster"),
+        ]
+        for field, value, error in cases:
+            with self.subTest(field=field):
+                report = deepcopy(self.baseline)
+                report[field] = value
+                with self.assertRaisesRegex(ValueError, error):
+                    assurance.check_governance(report)
+
+    def test_governance_rejects_forged_search_and_mutation_transcripts(self):
+        cases = (
+            ("duplicate", "duplicate or forged candidate"),
+            ("parent", "feedback parent selection"),
+            ("false_parent", "unknown feedback parent"),
+            ("metric", "baseline oracle invariant"),
+            ("survivor", "mutant admission"),
+            ("witness_id", "mutation witness provenance"),
+            ("witness_budget", "witness reduction budget"),
+            ("witness_complexity", "reduced witness identity"),
+            ("witness_fault", "unreproducible mutation witness"),
+        )
+        for case, error in cases:
+            with self.subTest(case=case):
+                report = deepcopy(self.baseline)
+                rows = report["rounds"][0]["evaluations"]
+                witness = report["mutation_ratchet"][0]["witness"]
+                if case == "duplicate":
+                    rows[1] = deepcopy(rows[0])
+                elif case == "parent":
+                    report["rounds"][1]["parents"] = ["0" * 64]
+                elif case == "false_parent":
+                    rows[0]["parent_id"] = "0" * 64
+                elif case == "metric":
+                    rows[0]["trace_error_pA"] = "1"
+                elif case == "survivor":
+                    report["mutation_ratchet"][0]["status"] = "SURVIVED"
+                elif case == "witness_id":
+                    witness["original_id"] = "0" * 64
+                elif case == "witness_budget":
+                    witness["attempts"] = 57
+                elif case == "witness_complexity":
+                    witness["reduced_complexity"] += 1
+                elif case == "witness_fault":
+                    witness["reduced"]["faults"] = []
+                with self.assertRaisesRegex(ValueError, error):
+                    assurance.check_governance(report)
+
+    def test_attempt_bound_profiles_fail_closed_even_with_recomputed_hashes(self):
+        head, checkout, run_id, attempt = "a" * 40, "b" * 40, "17", "2"
+        original = dict(self.baseline, head_sha=head, checkout_sha=checkout,
+                        run_id=run_id, run_attempt=attempt)
+        cases = (
+            ("valid", None),
+            ("mixed_attempt", "raw reconstruction mismatch"),
+            ("all_rehashed_forgery", "raw reconstruction mismatch"),
+            ("missing_replay", "assurance process roster"),
+            ("extra_file", "assurance file roster"),
+            ("bad_manifest", "assurance manifest mismatch"),
+            ("oversize", "receipt size budget"),
+            ("symlink", "nonregular receipt file"),
+        )
+        for case, error in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                profiles = Path(directory)/"profiles"
+
+                def write(folder, report):
+                    folder.mkdir(parents=True, exist_ok=True)
+                    raw = assurance.canonical(report)
+                    (folder/"report.json").write_bytes(raw)
+                    (folder/"SHA256SUMS").write_text(
+                        assurance.digest(raw)+"  report.json\n", encoding="ascii")
+
+                for arch in ("x86_64", "aarch64"):
+                    for process in ("primary", "replay"):
+                        write(profiles/("assurance-cneh06e-"+arch)/process, original)
+                target = profiles/"assurance-cneh06e-x86_64"/"primary"
+                if case == "mixed_attempt":
+                    write(target, dict(original, run_attempt="1"))
+                elif case == "all_rehashed_forgery":
+                    for folder in profiles.glob("*/*"):
+                        write(folder, dict(original, calibration="PASS"))
+                elif case == "missing_replay":
+                    shutil.rmtree(target.parent/"replay")
+                elif case == "extra_file":
+                    (target/"unexpected").touch()
+                elif case == "bad_manifest":
+                    (target/"SHA256SUMS").write_text("invalid", encoding="ascii")
+                elif case == "oversize":
+                    with (target/"report.json").open("wb") as handle:
+                        handle.truncate(assurance.RECEIPT_LIMIT+1)
+                elif case == "symlink":
+                    outside = Path(directory)/"outside.json"
+                    (target/"report.json").rename(outside)
+                    (target/"report.json").symlink_to(outside)
+                with patch.object(assurance, "report", return_value=self.baseline), \
+                     redirect_stdout(io.StringIO()):
+                    if error:
+                        with self.assertRaisesRegex(ValueError, error):
+                            assurance.verify_profiles(profiles, head, checkout, run_id, attempt)
+                    else:
+                        assurance.verify_profiles(profiles, head, checkout, run_id, attempt)
+
+    def test_regression_does_not_admit_mutually_identical_forged_payloads(self):
+        checkout = "b" * 40
+        valid = q.report()
+        for case, error in (("valid", None), ("forged", "raw reconstruction mismatch"),
+                            ("wrong_checkout", "checkout mismatch"),
+                            ("wrong_scope", "regression scope"),
+                            ("extra_file", "regression file roster")):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                report = dict(valid, calibration="PASS") if case == "forged" else valid
+                raw = run.canonical(report)
+                for arch in ("aarch64", "x86_64"):
+                    folder = root/("cneh06e-weekly-"+arch)
+                    folder.mkdir()
+                    (folder/"payload.json").write_bytes(raw)
+                    (folder/"SHA256SUMS").write_text(
+                        assurance.digest(raw)+"  payload.json\n", encoding="ascii")
+                    (folder/"HEAD").write_text(
+                        ("a"*40 if case == "wrong_checkout" else checkout)+"\n",
+                        encoding="ascii")
+                    (folder/"SCOPE").write_text(
+                        ("SCIENTIFIC_ADMISSION" if case == "wrong_scope" else
+                         "REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION")+"\n", encoding="ascii")
+                    if case == "extra_file":
+                        (folder/"extra").touch()
+                with redirect_stdout(io.StringIO()):
+                    if error:
+                        with self.assertRaisesRegex(ValueError, error):
+                            assurance.verify_regression_profiles(root, checkout)
+                    else:
+                        assurance.verify_regression_profiles(root, checkout)
 
 if __name__ == "__main__":
     unittest.main()
