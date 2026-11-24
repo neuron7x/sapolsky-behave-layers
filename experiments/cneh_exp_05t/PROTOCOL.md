@@ -1,0 +1,25 @@
+# CNEH-EXP-05T — sealed transition-causality and adversarial admission
+
+Engineering forensic diagnostic only. Frozen parent PR63 head 4e33f71cd0b863ec150991830fa2aad53ee84ccc, run 45341075614. Original native FAIL_PANEL and historical EXP05 replay FAIL are immutable. Do not change parent protocols or merge ahead of PR63. No new efficacy cohort, positive scientific authority, or universal cross-domain guarantee.
+
+## T0: immutable external evidence and independent semantic admission
+
+Pin exact GitHub artifact IDs/ZIP SHA256 from that run before implementation:
+A DEFAULT 14895699328 2d1eced3a3e6444a2d1d088bdec586e72464ca6b353f09cda85fcd30529e0422
+A BASELINE 14896296016 ce61695709a2a6879eb1e92d065c79864777cf748f35102427c921faf0e91dbf
+B DEFAULT 14896011684 31f90b4bf129a274c9510f6001f020c7bdb8b6454c15c1b97ae3f6bbb57c6466
+B BASELINE 14896261054 b4e3078754cad30170c6895453ae7319bfa8d8958eff088eb8ae428aff85811b
+Aggregate 14896181291 c3caa1cb704cc595b6e6be3aebdafcac1f6841c45ac44404a9dc082d226ac656
+
+Read only, authenticate each outer archive against pinned external digest; reject duplicates, nonregular, unknown/missing members; check exact internal manifests. Independently validate report identity/complete seed×arm×tick roster, pre-action route schedule and action truth, exact constituent roster and lowercase 64-hex digests, finite canonical binary64 metric encoding and expected metric relations, terminal row contract, full checkpoint roster and payload hashes. Independently reconstruct physical state SHA256 from raw full checkpoint arrays, bool spike bytes, gain and topology matrix (not original snapshot function). Verify trace parts against checkpoint, no false independence. For digest-only noncheckpoint rows, explicitly mark state content non-reconstructible from archive; agreement of hashes is not independent execution proof. Confirm complete pairwise panel comparisons, every mismatch run, constituent differences, matching checkpoints and endpoint states. No magnitude estimate from digest-only rows.
+
+Attack local copies (never original artifacts): wrong action, route, missing metric, invalid metric, missing component, forged checkpoint state digest, out-of-roster seed, inconsistent physical hash, duplicate JSON, tampered ZIP and eight copied/rehashed reports. Unauthenticated report/ZIP cannot be admitted even if semantic checks pass. Distinguish structural validity, authentic frozen custody and physical replay. No claim this establishes cryptographic producer truth or scientific validity.
+
+## T1: transition-level causality
+
+The sealed A/B DEFAULT mismatch begins at output ticks 150 (92001 WAIT), 331 (92001 G1), 183 and 265 (92002 WAIT), 268 (92002 G1), 242 (92002 ALTERNATE). All six preceding state/RNG/route hashes agree; these are a retrospective exhaustive onset roster (not six independent worlds). Replay from last sealed A DEFAULT checkpoint preceding each onset to common pre-state; require exact digest at tick t-1. Preserve a full raw pre-state and both raw post-states. Execute the unchanged native step and separately passive instrumented step from independent restorations; require exact equality to uninstrumented result and metrics, or instrumentation invalid. Capture ordered actual numpy.exp callsites (NMDA, AdEx), all binary64 arguments/results and AdEx synaptic/external currents and outputs. Capture actual CPU/dispatch fingerprint, not only nine generic probes. Record full raw constituent diffs including sign and absolute/ULP difference, without converting mismatch to PASS.
+
+Two fresh hosted workers. Each executes DEFAULT and BASELINE processes exactly as EXP05N; also NO_ICL process when AVX512_ICL is enabled, otherwise explicit unavailable record. For the same common pre-state, compare DEFAULT/BASELINE native transition to sealed expected A and B post-digests. No favorable worker selection; lack of matching historical worker/profile => INCONCLUSIVE. In DEFAULT process, use baseline passively captured exp outputs as an operation-only counterfactual (NMDA_ONLY, ADEX_ONLY, BOTH); only substitute on exact callsite, argument bytes, shape and dtype equality; record mismatch/unsupported rather than guess. No other modification, no claim the modified process is native. Compare raw post-state and metrics to BASELINE, record whether individual substitutions suffice and whether combined intervention is sufficient. Separate association, actual operation divergence and local counterfactual restoration; no extrapolation to all trajectories. All observed mismatches retained. Same-step repeat and fixed comparison roster mandatory. A future corrected backend requires distinct prospective qualification.
+
+## Admission
+Scientific promotion remains BLOCKED. T0 external integrity and T1 operation-level local causal evidence are separate. Exact full-state replay, multiscale coherence and evidence integrity are conjunctive necessary gates. Passing T0 does not repair historical replay or native numerical-domain failure. Full CI and independent audit required before engineering integration. Report UNKNOWN/INCONCLUSIVE honestly. Freeze this protocol before implementation.

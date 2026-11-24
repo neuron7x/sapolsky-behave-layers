@@ -1,0 +1,43 @@
+name: CNEH-EXP-05S finite charge-aware selector
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  finite-selector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify frozen protocol and unchanged causal evidence
+        run: |
+          git merge-base --is-ancestor e1c51db2a6b6b3b1dbd12b8e452a171bfb6222c0 HEAD
+          git show e1c51db2a6b6b3b1dbd12b8e452a171bfb6222c0:experiments/cneh_exp_05s/PROTOCOL.md | cmp - experiments/cneh_exp_05s/PROTOCOL.md
+          git diff --exit-code a2f9bc79c0e87f7316ba13441e83e5a05b52c95a HEAD -- experiments/cneh_exp_05 experiments/cneh_exp_04g experiments/cneh_exp_05i scripts/cneh_promotion_gate.py
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Attack finite selector and inherited causal grammar
+        run: |
+          python -m unittest discover -s tests -p test_cneh_exp_05s_selector.py -v
+          python -m unittest discover -s tests -p test_cneh_exp_05i.py -v
+      - name: Execute all frozen synthetic fixtures and fresh report replay
+        run: |
+          mkdir /tmp/cneh05s
+          python -m experiments.cneh_exp_05s.selector --out /tmp/cneh05s/report.json
+          python -m experiments.cneh_exp_05s.selector --out /tmp/cneh05s/report.json --verify
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05S --verdict /tmp/cneh05s/report.json
+          (cd /tmp/cneh05s && sha256sum report.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+          python -c 'import json; r=json.load(open("/tmp/cneh05s/report.json")); print(json.dumps({"scope":r["scope"],"total_scenarios":r["total_scenarios"],"total_equivalence_pair_checks":r["total_equivalence_pair_checks"],"selected":{x["fixture"]:x["selected"] for x in r["fixtures"]}},sort_keys=True))'
+      - name: Preserve synthetic evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05s-finite-selector-SHA256
+          path: /tmp/cneh05s/
+          if-no-files-found: error
+          retention-days: 90

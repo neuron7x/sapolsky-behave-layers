@@ -1,0 +1,117 @@
+name: CNEH-EXP-05N native checkpoint and numerical domain
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  workers:
+    name: Native checkpoint worker ${{ matrix.worker }}
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [A, B]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      BNSYN_USE_TORCH: '0'
+      WORKER: ${{ matrix.worker }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen protocol and native parent
+        run: |
+          git merge-base --is-ancestor 990ad33399f273805616935fa312056d0f45e22c HEAD
+          git show 990ad33399f273805616935fa312056d0f45e22c:experiments/cneh_exp_05n/PROTOCOL.md | cmp - experiments/cneh_exp_05n/PROTOCOL.md
+          git diff --exit-code a2f9bc79c0e87f7316ba13441e83e5a05b52c95a HEAD -- experiments/cneh_exp_05 experiments/cneh_exp_04g experiments/cneh_exp_04f experiments/cneh_exp_04e experiments/cneh_exp_04d experiments/cneh_exp_04c experiments/cneh_exp_04b experiments/cneh_exp_03 experiments/cneh_exp_01 scripts/cneh_promotion_gate.py
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: neuron7x/bnsyn-phase-controlled-emergent-dynamics
+          ref: c1de425ce4ece362e7f2feb2d9f24da5d3231014
+          path: .cneh-inputs/bnsyn
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Install locked native dependencies and falsify evidence boundaries
+        run: |
+          python -m venv /tmp/cneh05n-env
+          /tmp/cneh05n-env/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock --report /tmp/cneh05n-install.json
+          /tmp/cneh05n-env/bin/python -m unittest discover -s tests -p test_cneh_exp_05n_evidence.py -v
+      - name: Default dispatch two fresh processes
+        run: |
+          mkdir /tmp/cneh05n-default
+          cp /tmp/cneh05n-install.json /tmp/cneh05n-default/install.json
+          for attempt in 1 2; do
+            env -u NPY_DISABLE_CPU_FEATURES /tmp/cneh05n-env/bin/python -m experiments.cneh_exp_05n.run run --source .cneh-inputs/bnsyn --worker "$WORKER" --profile DEFAULT --attempt "$attempt" --install-report /tmp/cneh05n-default/install.json --out "/tmp/cneh05n-default/run-$attempt.json"
+          done
+          (cd /tmp/cneh05n-default && sha256sum install.json run-1.json run-2.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+      - name: Baseline dispatch two fresh processes
+        if: always()
+        run: |
+          mkdir /tmp/cneh05n-baseline
+          cp /tmp/cneh05n-install.json /tmp/cneh05n-baseline/install.json
+          DISABLE=$(env -u NPY_DISABLE_CPU_FEATURES /tmp/cneh05n-env/bin/python -c 'import numpy as np; from experiments.cneh_exp_05n.run import optional_features; print(",".join(optional_features(np)))')
+          for attempt in 1 2; do
+            NPY_DISABLE_CPU_FEATURES="$DISABLE" /tmp/cneh05n-env/bin/python -m experiments.cneh_exp_05n.run run --source .cneh-inputs/bnsyn --worker "$WORKER" --profile BASELINE --attempt "$attempt" --install-report /tmp/cneh05n-baseline/install.json --out "/tmp/cneh05n-baseline/run-$attempt.json"
+          done
+          (cd /tmp/cneh05n-baseline && sha256sum install.json run-1.json run-2.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+      - name: Preserve default profile
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05n-${{ matrix.worker }}-DEFAULT
+          path: /tmp/cneh05n-default/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve baseline profile
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05n-${{ matrix.worker }}-BASELINE
+          path: /tmp/cneh05n-baseline/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: workers
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve exact same-run profile roster
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh-exp-05n-*-*' --dir /tmp/profiles
+      - name: Compare exact native panels and preserve negative evidence
+        run: |
+          mkdir /tmp/cneh05n
+          set +e
+          python -m experiments.cneh_exp_05n.run aggregate --profiles /tmp/profiles --out /tmp/cneh05n/report.json
+          first=$?
+          python -m experiments.cneh_exp_05n.run aggregate --profiles /tmp/profiles --out /tmp/cneh05n/report.json --verify
+          second=$?
+          set -e
+          test "$first" = "$second"
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05N --verdict /tmp/cneh05n/report.json
+          (cd /tmp/cneh05n && sha256sum report.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+          exit "$first"
+      - name: Preserve aggregate verdict including exact failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05n-aggregate
+          path: /tmp/cneh05n/
+          if-no-files-found: error
+          retention-days: 90

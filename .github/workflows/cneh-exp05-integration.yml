@@ -1,0 +1,51 @@
+name: CNEH EXP05 frozen engineering evidence admission
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_05*/**'
+      - 'tests/test_cneh_exp_05*.py'
+      - 'tests/test_cneh_exp05_integration.py'
+      - 'scripts/cneh_*.py'
+      - '.github/workflows/cneh-*.yml'
+      - 'docs/vnv/CNEH_EXP05_INTEGRATION_CLOSURE.md'
+      - 'experiments/cneh_exp_01/bnsyn-requirements.lock'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  immutable-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Canonical truth and scientific promotion boundary
+        run: |
+          python scripts/truth_gate.py
+          python -m scripts.cneh_promotion_gate audit
+      - name: Falsify frozen admission and transport
+        run: |
+          python -m unittest discover -s tests -p test_cneh_exp05_integration.py -v
+          python -m unittest discover -s tests -p test_cneh_artifact_transport.py -v
+          python -m unittest discover -s tests -p test_cneh_exp_05k_boundary.py -v
+      - name: Authenticate original commit ancestry, frozen code and every sealed verdict
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m scripts.cneh_exp05_integration --out /tmp/cneh-integration
+          (cd /tmp/cneh-integration && sha256sum --strict -c SHA256SUMS)
+      - name: Preserve finite engineering evidence only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp05-integration-admission
+          path: /tmp/cneh-integration/
+          if-no-files-found: error
+          retention-days: 90

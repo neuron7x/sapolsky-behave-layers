@@ -1,0 +1,49 @@
+name: CNEH-EXP-05Q historical provenance inventory
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  historical-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen protocol and preserve historical source
+        run: |
+          git merge-base --is-ancestor b54d23254c5d06f01adfa19909fc602ecef150fc HEAD
+          git show b54d23254c5d06f01adfa19909fc602ecef150fc:experiments/cneh_exp_05q/PROTOCOL.md | cmp - experiments/cneh_exp_05q/PROTOCOL.md
+          git diff --exit-code a2f9bc79c0e87f7316ba13441e83e5a05b52c95a HEAD -- experiments/cneh_exp_05 experiments/cneh_exp_04g experiments/cneh_exp_01 scripts/cneh_promotion_gate.py scripts/cneh_evidence_admission.py
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Falsify inventory with synthetic archive attacks
+        run: python -m unittest discover -s tests -p test_cneh_exp_05q_inventory.py -v
+      - name: Read immutable historical archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14890028886/zip" --output /tmp/cneh05.zip
+          echo 'db78569d633a4fd1ae5649ab02e53a86b48e97f0317b45a849a56cd73e993ea8  /tmp/cneh05.zip' | sha256sum --strict -c -
+      - name: Inventory original environment and locked wheel hashes without simulation
+        run: |
+          mkdir /tmp/cneh05q
+          python -m experiments.cneh_exp_05q.inventory --archive /tmp/cneh05.zip --out /tmp/cneh05q/report.json
+          python -m experiments.cneh_exp_05q.inventory --archive /tmp/cneh05.zip --out /tmp/cneh05q/replay.json
+          cmp /tmp/cneh05q/report.json /tmp/cneh05q/replay.json
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05Q --verdict /tmp/cneh05q/report.json
+          (cd /tmp/cneh05q && sha256sum report.json replay.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+          cat /tmp/cneh05q/report.json
+      - name: Preserve scoped provenance inventory
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05q-historical-provenance-SHA256
+          path: /tmp/cneh05q/
+          if-no-files-found: error
+          retention-days: 90
