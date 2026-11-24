@@ -90,3 +90,24 @@ tests or timeouts do not count as kills. Save all receipts. No aggregate
 majority vote or passing-only reporting. A surviving mutant blocks the
 engineering gate until investigated. The finite mutation panel does not prove
 general arbitrary-code safety, and no scientific promotion is authorized.
+
+## Independent evidence admission V2
+
+See [frozen seven-axis protocol](EVIDENCE_RATCHET_V2.md). The original 24 x 3
+source-mutation campaign remains mandatory. The separate seven-family fault
+panel runs 168 single-fault cases per worker (504 total), each through the real
+checker with an expected failure category, independent clean controls and an
+actual mutated-fixture witness. This is a measured increase in test-panel
+cardinality, not a claim of sevenfold scientific validity.
+
+EXP04G/EXP05 now snapshot all file digests before their unmodified native
+replay and independently validate the resulting bundle after replay: exact
+roster/manifest and preregistration/implementation lineage, negative verdict,
+world/episode identities, paired state/RNG/tape signatures, exact duplicate
+emulators, current ledger and physical recurrence. The dedicated ratchet
+workflow additionally downloads and checks the original pinned historical ZIPs;
+receipt JSONs from fresh runs live outside the original experiment bundle.
+Historical ZIP expiry blocks that historical check, not a reason to re-sign or
+silently substitute a newer artifact. A fresh snapshot is not a signature or
+proof of cross-worker portability. The checker is an additional bounded negative
+evidence verifier; no arbitrary code or scientific promotion guarantee.

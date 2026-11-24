@@ -252,7 +252,9 @@ def strict_array(path):
                 nonempty()
                 need(bool(buf),"ENCODING","truncated array")
                 if buf.startswith("]"):
-                    need(not buf[1:].strip() and not stream.read(1),"ENCODING","trailing data")
+                    need(not buf[1:].strip(),"ENCODING","trailing data")
+                    for tail in iter(lambda:stream.read(1024*1024),""):
+                        need(not tail.strip(),"ENCODING","trailing data")
                     return
                 if not first:
                     need(buf.startswith(","),"ENCODING","missing separator")

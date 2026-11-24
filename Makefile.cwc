@@ -336,3 +336,9 @@ verify pr-fast: cneh-promotion-guard
 cneh-promotion-guard:
 	python3 -B -m unittest discover -s tests -p 'test_cneh_promotion*.py' -v
 	python3 -B -m scripts.cneh_promotion_gate audit
+
+# Seven-axis evidence qualification; distinct from scientific promotion.
+.PHONY: cneh-evidence-ratchet
+verify pr-fast: cneh-evidence-ratchet
+cneh-evidence-ratchet:
+	python3 -B -m unittest discover -s tests -p test_cneh_evidence_ratchet.py -v
