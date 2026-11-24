@@ -132,21 +132,68 @@ def active_certificate():
             "all_actions_same_public_counts":True,"active_graph_counterexample":True}
 
 
-def certify_silent_inputs(initial,frames,actions):
-    need(len(initial)==5 and all(len(row)==32 for row in initial),"initial roster")
+def decode_finite(value):
+    need(type(value) is str,"binary64 string required")
+    try:
+        x=float.fromhex(value)
+    except (ValueError,OverflowError) as exc:
+        raise ValueError("invalid binary64 encoding") from exc
+    need(math.isfinite(x) and x.hex()==value,"noncanonical binary64 encoding")
+    return x
+
+
+def exact_equal(left,right):
+    """Typed tree equality; JSON booleans/numbers cannot alias each other."""
+    if type(left) is not type(right):
+        return False
+    if type(right) is dict:
+        return (set(left)==set(right) and all(type(k) is str for k in left)
+                and all(exact_equal(left[k],v) for k,v in right.items()))
+    if type(right) in (list,tuple):
+        return len(left)==len(right) and all(exact_equal(a,b) for a,b in zip(left,right,strict=True))
+    if type(right) is float:
+        return math.isfinite(left) and left.hex()==right.hex()
+    return left==right
+
+
+def certify_quiet_prefix(initial,frames,actions):
+    """Admission only to the analytic zero-input box, not a control permit."""
+    need(type(initial) is list and len(initial)==5
+         and all(type(row) is list and len(row)==N for row in initial),"initial roster")
     for bounds,row in zip(INITIAL,initial,strict=True):
         for value in row:
-            x=F(float.fromhex(value))
+            x=F(decode_finite(value))
             need(bounds[0]<=x<=bounds[1],"initial outside certified box")
-    need(len(frames)==len(actions)==20,"silent horizon roster")
+    need(type(frames) in (list,tuple) and type(actions) in (list,tuple)
+         and 1<=len(frames)==len(actions)<=20,"quiet prefix roster")
     for k,(frame,action) in enumerate(zip(frames,actions,strict=True)):
-        need(frame.tick==k and action in ("WAIT","G0","G1"),"unsupported decision")
-        need(all(not seq for seq in frame.external),"external impulse outside silent certificate")
-        need(type(frame.mode) is int and 0<=frame.mode<4,"hidden route domain")
+        need(type(frame.tick) is int and frame.tick==k
+             and type(action) is str and action in ("WAIT","G0","G1"),"unsupported decision")
+        need(type(frame.external) is tuple and len(frame.external)==N
+             and all(type(seq) is tuple and not seq for seq in frame.external),
+             "external impulse outside silent certificate")
+        need(type(frame.mode) is int and 0<=frame.mode<4 and type(frame.switches) is tuple,"hidden route domain")
+        previous=k/10.
+        mode=frame.mode
+        for row in frame.switches:
+            need(type(row) is tuple and len(row)==2,"switch roster")
+            t=decode_finite(row[0]);new=row[1]
+            need(previous<t<(k+1)/10. and type(new) is int and 0<=new<4 and new!=mode,
+                 "route chronology")
+            previous,mode=t,new
+    return {"scope":"ANALYTIC_QUIET_PREFIX","frames":len(frames),
+            "scientific_promotion_authorized":False}
+
+
+def certify_silent_inputs(initial,frames,actions):
+    result=certify_quiet_prefix(initial,frames,actions)
+    need(result["frames"]==20,"silent horizon roster")
+    return result
 
 
 def certify_result(value):
-    need(value=={"quiet":quiet_certificate(),"active":active_certificate()},"forged mathematical certificate/rank")
+    need(exact_equal(value,{"quiet":quiet_certificate(),"active":active_certificate()}),
+         "forged mathematical certificate/rank")
     return value
 
 
