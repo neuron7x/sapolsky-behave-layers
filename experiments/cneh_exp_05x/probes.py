@@ -24,7 +24,7 @@ def micro(index,variant):
             exp=math.nextafter(exp,math.inf)
         elif variant=="EXP_MINUS":
             exp=math.nextafter(exp,-math.inf)
-        value=fused(-.5,float(y[0]),exp) if variant=="FUSED" else -.5*float(y[0])+exp
+        value=fused(-.37,float(y[0]),exp) if variant=="FUSED" else -.37*float(y[0])+exp
         return np.array([value])
     solver=RK45(rhs,0.,np.array([index/64.]),.4,rtol=1e-9,atol=1e-11,max_step=.025)
     steps=[]
