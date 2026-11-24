@@ -177,7 +177,8 @@ def matrix_certificate():
     condition=hnorm*bnorm/(1-contraction)
     return {"primary_times_ms":[TIMES[i] for i in PRIMARY],"heldout_time_ms":60,
             "determinant_interval":encode(outward(det,2**40)),
-            "inverse_infinity_norm_upper":q(outward((bnorm,bnorm),2**40)[1]),
+            "midpoint_inverse_infinity_norm_upper":q(outward((bnorm,bnorm),2**40)[1]),
+            "inverse_infinity_norm_upper":q(outward((bnorm/(1-contraction),bnorm/(1-contraction)),2**40)[1]),
             "condition_infinity_upper":q(outward((condition,condition),2**40)[1]),
             "inverse_perturbation_upper":q(outward((contraction,contraction),2**100)[1]),
             "conditional_current_rank":4,"conditional_cell_rank":5,
