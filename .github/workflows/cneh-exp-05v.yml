@@ -1,0 +1,52 @@
+name: CNEH-EXP-05V independent transition and adversarial admission
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_05v/**'
+      - '.github/workflows/cneh-exp-05v.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  independent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen protocol and preserve parent experiments
+        run: |
+          git merge-base --is-ancestor 16fd695c4c088e790f6de4d7edb55d594b52d6d2 HEAD
+          git show 16fd695c4c088e790f6de4d7edb55d594b52d6d2:experiments/cneh_exp_05v/PROTOCOL.md | cmp - experiments/cneh_exp_05v/PROTOCOL.md
+          git diff --exit-code d226e5116f81b423c0678cac7838d52fbf96b110 HEAD -- experiments/cneh_exp_05d experiments/cneh_exp_05n experiments/cneh_exp_05t experiments/cneh_exp_05 experiments/cneh_exp_04g scripts/cneh_promotion_gate.py
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve externally anchored corrected and forensic artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir /tmp/archives
+          for id in 14896119541 14897032523 14896982017 14896567844 14896977776 14896203693; do
+            curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/$id/zip" --output "/tmp/archives/$id.zip"
+          done
+      - name: Independent full-transition oracle and actual rehashed counterexample
+        run: |
+          mkdir /tmp/cneh05v
+          python -m experiments.cneh_exp_05v.audit --archives /tmp/archives --out /tmp/cneh05v/report.json
+          python -m experiments.cneh_exp_05v.audit --archives /tmp/archives --out /tmp/cneh05v/report.json --verify
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05V --verdict /tmp/cneh05v/report.json
+          (cd /tmp/cneh05v && sha256sum report.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+      - name: Preserve exact independent evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05v-independent-transition-evidence
+          path: /tmp/cneh05v/
+          if-no-files-found: error
+          retention-days: 90
