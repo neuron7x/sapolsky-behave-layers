@@ -8,13 +8,17 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import itertools
 import json
+import math
 from pathlib import Path
 import re
 import sys
 
-from scripts.cneh_history_guard import git, require_commit, regular_file
+from scripts.cneh_history_guard import (
+    Anchor, blob_digests, entries, file_digest, git, require_commit, regular_file,
+)
 
 ROOT=Path(__file__).resolve().parents[1]
 GATES=("MULTISCALE_COHERENCE","DETERMINISTIC_REPLAY","EVIDENCE_INTEGRITY")
@@ -79,7 +83,7 @@ def decision(experiment: str) -> dict:
     return {"schema":"cneh-promotion-guard-v1","experiment":experiment,**checks,
             "scientific_promotion":"BLOCKED",FLAG:False,
             "authorization_blocker":"NO_AUTHENTICATED_PROMOTION_ISSUER",
-            "historical_record":record,
+            "historical_record":copy.deepcopy(record),
             "engineering_integration":"SEPARATE_GATE_NOT_PROMOTION"}
 
 
@@ -93,7 +97,12 @@ def strict_json(raw: bytes) -> object:
         return result
     def nonfinite(token):
         raise PromotionViolation("nonfinite JSON token: "+token)
-    return json.loads(raw,object_pairs_hook=pairs,parse_constant=nonfinite)
+    def finite_float(token):
+        value=float(token)
+        if not math.isfinite(value):
+            raise PromotionViolation("nonfinite JSON number: "+token)
+        return value
+    return json.loads(raw,object_pairs_hook=pairs,parse_constant=nonfinite,parse_float=finite_float)
 
 
 def reject_positive_claims(value: object) -> None:
@@ -107,6 +116,8 @@ def reject_positive_claims(value: object) -> None:
     elif isinstance(value,list):
         for v in value:
             reject_positive_claims(v)
+    elif type(value) is float and not math.isfinite(value):
+        raise PromotionViolation("nonfinite verdict value")
 
 
 def check_verdict(experiment: str, value: object) -> dict:
@@ -123,6 +134,16 @@ def literal_key(node: ast.AST | None) -> bool:
 
 def literal_false(node: ast.AST) -> bool:
     return isinstance(node,ast.Constant) and node.value is False
+
+
+def authority_target(node: ast.AST) -> bool:
+    if isinstance(node,(ast.Tuple,ast.List)):
+        return any(authority_target(x) for x in node.elts)
+    if isinstance(node,ast.Starred):
+        return authority_target(node.value)
+    return (isinstance(node,ast.Subscript) and literal_key(node.slice)
+            or isinstance(node,ast.Attribute) and node.attr==FLAG
+            or isinstance(node,ast.Name) and node.id==FLAG)
 
 
 def check_source(source: str, name: str) -> int:
@@ -144,13 +165,33 @@ def check_source(source: str, name: str) -> int:
         elif isinstance(node,(ast.Assign,ast.AnnAssign,ast.AugAssign)):
             targets=node.targets if isinstance(node,ast.Assign) else [node.target]
             for target in targets:
-                if (isinstance(target,ast.Subscript) and literal_key(target.slice)
-                    or isinstance(target,ast.Attribute) and target.attr==FLAG
-                    or isinstance(target,ast.Name) and target.id==FLAG):
+                if authority_target(target):
                     if isinstance(node,ast.AugAssign) or node.value is None:
                         raise PromotionViolation(f"{name}:{node.lineno}: ambiguous promotion write")
                     check(node.value,node.lineno)
+        elif isinstance(node,ast.NamedExpr) and authority_target(node.target):
+            check(node.value,node.lineno)
+        elif isinstance(node,ast.Delete) and any(authority_target(x) for x in node.targets):
+            raise PromotionViolation(f"{name}:{node.lineno}: direct authority deletion")
+        elif isinstance(node,ast.Call) and isinstance(node.func,ast.Name):
+            if node.func.id in ("setattr","delattr") and len(node.args)>=2 and literal_key(node.args[1]):
+                if node.func.id!="setattr" or len(node.args)!=3 or node.keywords:
+                    raise PromotionViolation(f"{name}:{node.lineno}: ambiguous literal authority mutation")
+                check(node.args[2],node.lineno)
     return count
+
+
+def verify_anchored_lineage(repo: Path) -> None:
+    """Read historical object bytes, not merely Git's index-dependent diff."""
+    for root in ("experiments/cneh_exp_04g","experiments/cneh_exp_05"):
+        roster=entries(repo,Anchor(BASE,root,tree=True))
+        tracked=set(git(repo,"ls-files","-z","--",root).decode().split("\\0"))-{""}
+        if tracked!=set(roster):
+            raise PromotionViolation("historical tracked roster changed: "+root)
+        hashes=blob_digests(repo,{oid for _,oid in roster.values()})
+        for name,(mode,oid) in roster.items():
+            if file_digest(regular_file(repo,name,mode))!=hashes[oid]:
+                raise PromotionViolation("historical bytes changed: "+name)
 
 
 def audit_repository(repo: Path) -> dict:
@@ -161,7 +202,7 @@ def audit_repository(repo: Path) -> dict:
     require_commit(repo,BASE,head)
     # Byte-exact historical G and 05 code/protocol lineage. Governance is
     # additive, not a rewrite of already sealed experiment implementation.
-    git(repo,"diff","--exit-code",BASE,"--","experiments/cneh_exp_04g","experiments/cneh_exp_05")
+    verify_anchored_lineage(repo)
     paths=git(repo,"ls-files","-z","--","experiments").decode().split("\0")
     source_files=json_files=writes=0
     for name in sorted(set(paths)-{""}):
