@@ -545,25 +545,42 @@ def check_governance(result):
                 not inspect(case)["faults"], "unreproducible mutation witness")
 
 
+# Limit untrusted receipt input before allocating memory. The report is
+# deterministic and finite; a missing, oversized or non-regular file is FAIL.
+RECEIPT_LIMIT = 4 * 1024 * 1024
+
+
+def check_directory(path, names, message):
+    require(path.is_dir() and not path.is_symlink(), message)
+    require({p.name for p in path.iterdir()} == names, message)
+
+
+def read_receipt(path):
+    require(path.is_file() and not path.is_symlink(), "nonregular receipt file")
+    require(path.stat().st_size <= RECEIPT_LIMIT, "receipt size budget")
+    with path.open("rb") as handle:
+        raw = handle.read(RECEIPT_LIMIT + 1)
+    require(len(raw) <= RECEIPT_LIMIT, "receipt size budget")
+    return raw
+
+
 def verify_regression_profiles(profiles, checkout):
     """Periodic regression does not authenticate expired scientific receipts."""
     from experiments.cneh_exp_06e import run
     expected = run.canonical(q.report())
     names = {"cneh06e-weekly-aarch64", "cneh06e-weekly-x86_64"}
-    require({p.name for p in profiles.iterdir()} == names,
-            "regression architecture roster")
+    check_directory(profiles, names, "regression architecture roster")
     for name in sorted(names):
         root = profiles/name
-        require({p.name for p in root.iterdir()} ==
-                {"payload.json", "SHA256SUMS", "SCOPE", "HEAD"},
-                "regression file roster")
-        require((root/"HEAD").read_bytes() == (checkout+"\n").encode("ascii"),
+        check_directory(root, {"payload.json", "SHA256SUMS", "SCOPE", "HEAD"},
+                        "regression file roster")
+        require(read_receipt(root/"HEAD") == (checkout+"\n").encode("ascii"),
                 "regression checkout mismatch")
-        require((root/"SCOPE").read_bytes() ==
+        require(read_receipt(root/"SCOPE") ==
                 b"REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION\n", "regression scope")
-        raw = (root/"payload.json").read_bytes()
+        raw = read_receipt(root/"payload.json")
         require(raw == expected, "regression raw reconstruction mismatch")
-        require((root/"SHA256SUMS").read_bytes() ==
+        require(read_receipt(root/"SHA256SUMS") ==
                 (digest(raw)+"  payload.json\n").encode("ascii"),
                 "regression manifest mismatch")
     print("REGRESSION_ONLY_NOT_SCIENTIFIC_ADMISSION: independent raw reconstruction PASS")
@@ -576,19 +593,17 @@ def verify_profiles(profiles, head, checkout, run_id, attempt):
     expected.update(head_sha=head, checkout_sha=checkout, run_id=run_id, run_attempt=attempt)
     expected_raw = canonical(expected)
     roster = {"assurance-cneh06e-x86_64", "assurance-cneh06e-aarch64"}
-    require({p.name for p in profiles.iterdir()} == roster,
-            "assurance architecture roster")
+    check_directory(profiles, roster, "assurance architecture roster")
     for arch in sorted(roster):
         root = profiles/arch
-        require({p.name for p in root.iterdir()} == {"primary", "replay"},
-                "assurance process roster")
+        check_directory(root, {"primary", "replay"}, "assurance process roster")
         for name in ("primary", "replay"):
             folder = root/name
-            require({p.name for p in folder.iterdir()} == {"report.json", "SHA256SUMS"},
-                    "assurance file roster")
-            raw = (folder/"report.json").read_bytes()
+            check_directory(folder, {"report.json", "SHA256SUMS"},
+                            "assurance file roster")
+            raw = read_receipt(folder/"report.json")
             require(raw == expected_raw, "assurance raw reconstruction mismatch")
-            require((folder/"SHA256SUMS").read_bytes() ==
+            require(read_receipt(folder/"SHA256SUMS") ==
                     (digest(raw)+"  report.json\n").encode("ascii"),
                     "assurance manifest mismatch")
     print(json.dumps({
@@ -622,15 +637,19 @@ def main():
         verify_profiles(args.profiles, args.head, args.checkout, args.run_id, args.attempt)
         return 0
     args.out.mkdir(parents=True, exist_ok=False)
+    result = None
+    stage = "GENERATION"
     try:
         result = report()
         if result["status"] == "PASS":
+            stage = "GOVERNANCE"
             check_governance(result)
     except Exception as exc:
         # A harness error is never a mutation kill or scientific evidence.
         result = {"scope": "SUPPLEMENTAL_ENGINEERING_ASSURANCE_ONLY",
                   "status": "HARNESS_ERROR", "error_type": type(exc).__name__,
-                  "error": str(exc), **NEGATIVE_GATES}
+                  "error": str(exc), "failure_stage": stage,
+                  "unadmitted_observed_report": result, **NEGATIVE_GATES}
     result.update(head_sha=args.head, checkout_sha=args.checkout, run_id=args.run_id,
                   run_attempt=args.attempt)
     raw = canonical(result)
