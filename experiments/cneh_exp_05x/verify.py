@@ -73,7 +73,7 @@ def audit(world,result):
     count_syn=count_external=count_routed=count_forcing=steps=trials=rejects=rhs=certs=0
     max_residual=0.
     fields={"start","bound","Vw_start","g_start","rhs_count","rhs_min","rhs_max","trials","rejected",
-            "accepted","chunks","end","accepted_end","Vw_end","sample_end","g_end","reset","trace_sha256"}
+            "accepted","chunks","end","accepted_end","Vw_end","sample_end","g_end","reset","trace_sha256","schedule_sha256"}
     for i in range(32):
         ext=list(map(w.f,world["external"][i]))
         inc=gaba if i<16 else []
@@ -112,7 +112,7 @@ def audit(world,result):
             for k in ("accepted","trials","rejected","rhs_count"):
                 w.need(type(row[k]) is int and row[k]>=0,"trial count type")
             w.need(row["accepted"]>0 and row["rhs_count"]>0 and row["trials"]==row["accepted"]+row["rejected"]
-                   and is_hash(row["trace_sha256"]) and len(row["chunks"])==(row["accepted"]+63)//64
+                   and is_hash(row["trace_sha256"]) and is_hash(row["schedule_sha256"]) and len(row["chunks"])==(row["accepted"]+63)//64
                    and all(is_hash(x) for x in row["chunks"]),"step digest/count roster")
             steps+=row["accepted"];total_steps+=row["accepted"];trials+=row["trials"]
             rejects+=row["rejected"];rhs+=row["rhs_count"]
@@ -156,7 +156,7 @@ def first_difference(a,b):
     if a["physical"]!=b["physical"]:
         p,q=a["physical"],b["physical"]
         return {"fields":sorted(k for k in p if p[k]!=q[k])}
-    return None
+    return {"fields":["canonical_binary64_encoding"]}
 
 
 def compare(a,b):
@@ -172,7 +172,11 @@ def compare(a,b):
     close=(counts and event_error<=1e-6 and routing and band_a==band_b
            and all(errors[k]<=limit for k,limit in zip(FIELDS,LIMITS,strict=True)))
     exact=(w.canonical(a)==w.canonical(b))
-    return {"exact":exact,"numerical_close":close,"spike_counts_equal":counts,"routing_order_equal":routing,
+    schedule=lambda q:[[tuple(s[k] for k in ("start","bound","end","schedule_sha256")) for s in rows] for rows in q["ledgers"]]
+    return {"exact":exact,"step_schedule_exact":schedule(a)==schedule(b),
+            "event_tape_exact":w.canonical(x["events"])==w.canonical(y["events"]),
+            "raw_samples_exact":w.canonical(x["samples"])==w.canonical(y["samples"]),
+            "numerical_close":close,"spike_counts_equal":counts,"routing_order_equal":routing,
             "max_event_time_error_ms":event_error,"max_full_errors":errors,
             "physical_band_count_x86":band_a,"physical_band_count_arm64":band_b,
             "first_difference":None if exact else first_difference(a,b)}
