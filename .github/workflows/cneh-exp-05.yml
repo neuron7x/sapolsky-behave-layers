@@ -1,0 +1,66 @@
+name: CNEH-EXP-05 reachability-constrained dual control
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_05/**'
+      - 'tests/test_cneh_exp_05.py'
+      - '.github/workflows/cneh-exp-05.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  bounded-dual-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      BNSYN_USE_TORCH: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen prospective protocol and integrated parent
+        run: |
+          git merge-base --is-ancestor c20ce0a5f52e4ac4da2b46ee458389f4d97de8cb HEAD
+          git show c20ce0a5f52e4ac4da2b46ee458389f4d97de8cb:experiments/cneh_exp_05/PREREGISTRATION.md | cmp - experiments/cneh_exp_05/PREREGISTRATION.md
+          git fetch origin main
+          git merge-base --is-ancestor 63846dba16b9a2646919bb6c6ce329de8a1a9d1b origin/main
+          git diff --exit-code 63846dba16b9a2646919bb6c6ce329de8a1a9d1b HEAD -- experiments/cneh_exp_04g experiments/cneh_exp_04f_audit experiments/cneh_exp_04f experiments/cneh_exp_04e experiments/cneh_exp_04d experiments/cneh_exp_04c experiments/cneh_exp_04b experiments/cneh_exp_03 experiments/cneh_exp_01
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: neuron7x/bnsyn-phase-controlled-emergent-dynamics
+          ref: c1de425ce4ece362e7f2feb2d9f24da5d3231014
+          path: .cneh-inputs/bnsyn
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install frozen simulator dependencies
+        run: |
+          python -m venv /tmp/cneh05-env
+          /tmp/cneh05-env/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock --report /tmp/cneh05-install.json
+      - name: Falsify structural bound, policy and inherited assumptions
+        run: |
+          /tmp/cneh05-env/bin/python -m unittest discover -s tests -p test_cneh_exp_05.py -v
+          /tmp/cneh05-env/bin/python -m unittest discover -s tests -p test_cneh_exp_04g.py -v
+          /tmp/cneh05-env/bin/python -m unittest discover -s tests -p test_cneh_exp_04f.py -v
+      - name: Execute independent prospective cohort
+        run: /tmp/cneh05-env/bin/python -m experiments.cneh_exp_05.run --source .cneh-inputs/bnsyn --out /tmp/cneh05
+      - name: Fresh deterministic replay and SHA256
+        run: |
+          /tmp/cneh05-env/bin/python -m experiments.cneh_exp_05.run --source .cneh-inputs/bnsyn --out /tmp/cneh05 --verify
+          (cd /tmp/cneh05 && sha256sum --strict -c SHA256SUMS)
+      - name: Preserve complete native traces and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05-dual-control-SHA256
+          path: |
+            /tmp/cneh05/
+            /tmp/cneh05-install.json
+          if-no-files-found: error
+          retention-days: 90
