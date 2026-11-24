@@ -1,0 +1,109 @@
+name: CNEH-EXP-05J adaptive event-resolved integration
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_exp_05j/**'
+      - 'tests/test_cneh_exp_05j_roots.py'
+      - '.github/workflows/cneh-exp-05j.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  episodes:
+    name: Event-resolved episode ${{ matrix.index }}
+    strategy:
+      fail-fast: false
+      matrix:
+        index: [0,1,2,3,4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      INDEX: ${{ matrix.index }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authenticate frozen protocol and preserve failed history
+        run: |
+          git merge-base --is-ancestor 776be855babefc9dd059dc41dfb5a1423cb464cb HEAD
+          git show 776be855babefc9dd059dc41dfb5a1423cb464cb:experiments/cneh_exp_05j/PROTOCOL.md | cmp - experiments/cneh_exp_05j/PROTOCOL.md
+          git diff --exit-code 7e2d8de6ef8ffd4864db96bf436dc00bec8176c1 HEAD -- experiments/cneh_exp_05h experiments/cneh_exp_05v experiments/cneh_exp_05d experiments/cneh_exp_05t experiments/cneh_exp_05n experiments/cneh_exp_05 scripts/cneh_promotion_gate.py
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Install locked numerical dependencies and retrieve exact reference
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m venv /tmp/j-env
+          /tmp/j-env/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock
+          mkdir /tmp/archives
+          ids=(14897588018 14897882365 14898111151 14897329874 14898275795 14896844936 14897598019 14898290682)
+          for id in 14896119541 14897018650 14898206091 "${ids[$INDEX]}"; do
+            curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/$id/zip" --output "/tmp/archives/$id.zip"
+          done
+      - name: Attack root isolation and independent certificate verification
+        run: /tmp/j-env/bin/python -m unittest discover -s tests -p test_cneh_exp_05j_roots.py -v
+      - name: Adaptive integration at two tolerances and exact fresh-process replay
+        run: |
+          PY=/tmp/j-env/bin/python
+          "$PY" -m experiments.cneh_exp_05j.run run --archives /tmp/archives --index "$INDEX" --out /tmp/j-result
+          "$PY" -m experiments.cneh_exp_05j.run run --archives /tmp/archives --index "$INDEX" --out /tmp/j-result --verify
+          "$PY" -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05J --verdict /tmp/j-result/report.json
+          (cd /tmp/j-result && sha256sum --strict -c SHA256SUMS)
+      - name: Preserve raw events and full physical state samples
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05j-${{ matrix.index }}
+          path: /tmp/j-result/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: episodes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve all sealed parent references and same-run candidates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m venv /tmp/j-env
+          /tmp/j-env/bin/python -m pip install --require-hashes --only-binary=:all: -r experiments/cneh_exp_01/bnsyn-requirements.lock
+          mkdir /tmp/archives
+          for id in 14896119541 14897018650 14898206091 14897588018 14897882365 14898111151 14897329874 14898275795 14896844936 14897598019 14898290682; do
+            curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/$id/zip" --output "/tmp/archives/$id.zip"
+          done
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'cneh-exp-05j-[0-7]' --dir /tmp/profiles
+      - name: Independently reconstruct root evidence and verify every raw comparison
+        run: |
+          set +e
+          /tmp/j-env/bin/python -m experiments.cneh_exp_05j.run aggregate --profiles /tmp/profiles --archives /tmp/archives --out /tmp/j-aggregate
+          first=$?
+          /tmp/j-env/bin/python -m experiments.cneh_exp_05j.run aggregate --profiles /tmp/profiles --archives /tmp/archives --out /tmp/j-aggregate --verify
+          second=$?
+          set -e
+          test "$first" = "$second"
+          /tmp/j-env/bin/python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-EXP-05J --verdict /tmp/j-aggregate/report.json
+          (cd /tmp/j-aggregate && sha256sum --strict -c SHA256SUMS)
+          exit "$first"
+      - name: Preserve scoped positive or negative numerical evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cneh-exp-05j-aggregate
+          path: /tmp/j-aggregate/
+          if-no-files-found: error
+          retention-days: 90
