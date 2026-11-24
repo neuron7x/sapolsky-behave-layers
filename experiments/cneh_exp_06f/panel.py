@@ -1,6 +1,7 @@
 """Fixed, independently generated stress panel and certified channel aliases."""
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from fractions import Fraction as F
 from functools import lru_cache
@@ -277,20 +278,94 @@ def summarize(cases):
     return summaries
 
 
+def negative_controls():
+    """Executable fail-closed controls; no measured sensor certification."""
+    record = measurement(F(-71), [F(100)]*5)
+    controls = {}
+
+    def reject(name, operation):
+        try:
+            operation()
+        except ValueError:
+            controls[name] = "REJECTED"
+        else:
+            raise ValueError("negative control escaped: "+name)
+
+    def bad_record(name, change):
+        bad = deepcopy(record)
+        change(bad)
+        reject(name, lambda: channel.estimate(bad, "WIDE_SYNTHETIC"))
+
+    reject("UNKNOWN_PROFILE", lambda: channel.estimate(record, "CALIBRATED"))
+    reject("NONSTRING_PROFILE", lambda: channel.estimate(record, True))
+    bad_record("FORGED_AUTHORITY", lambda r: r.update(source_action_authorized=True))
+    bad_record("FORGED_CALIBRATION", lambda r: r.update(real_calibration_verified=True))
+    bad_record("MISSING_SAMPLE", lambda r: r["samples"].pop())
+    bad_record("WRONG_TIME", lambda r: r["samples"][1].update(t_ms=4))
+    bad_record("NEGATIVE_ANALOG_ERROR", lambda r: r.update(current_error_pA="-1/1024"))
+    bad_record("EXCESS_ANALOG_ERROR", lambda r: r.update(current_error_pA="1/1"))
+    reject("UNDECLARED_DEWARP", lambda: channel.dewarp([F(100)]*5, EPS, "UNVERIFIED"))
+    reject("NONEXACT_CURRENT", lambda: channel.dewarp([100]*5, EPS, "WIDE_SYNTHETIC"))
+    reject("INVALID_QUANTIZER", lambda: quantize(F(100), F(0)))
+    reject("INVALID_TRUTH_TIME", lambda: certified_current(F(122), (F(0),)*4))
+
+    base = Scenario("NEGATIVE")
+    outside = {
+        "EXCESS_GAIN": replace(base, gain=F(5, 4)),
+        "EXCESS_OFFSET": replace(base, offset=F(17)),
+        "EXCESS_DRIFT": replace(base, drift=F(2)),
+        "EXCESS_JITTER": replace(base, jitter=(F(2),)*5),
+        "EXCESS_QUANTIZATION": replace(base, step=F(1, 2)),
+        "UNMODELED_CLIPPING": replace(base, cap=F(110)),
+    }
+    for name, scenario in outside.items():
+        a.need(not channel_membership(scenario, "WIDE_SYNTHETIC"),
+               "out-of-contract channel admitted: "+name)
+        controls[name] = "OUTSIDE_DECLARED_HYPOTHESIS"
+    a.need(len(controls) == 18, "negative control roster")
+    return controls
+
+
 def report():
-    cases = [panel_case(i, s, signs)
-             for s, i, signs in itertools.product(scenarios(), TRUTHS, SIGNS)]
-    keys = {(row["scenario"], row["truth_id"], tuple(row["noise_signs"])) for row in cases}
-    a.need(len(cases) == len(keys) == 384, "complete fixed panel")
-    a.need(sum(row["bounded_wide"] for row in cases) == 352 and
-           sum(row["bounded_ideal"] for row in cases) == 32, "bounded case roster")
+    cases, failures = [], []
+    for s, i, signs in itertools.product(scenarios(), TRUTHS, SIGNS):
+        try:
+            cases.append(panel_case(i, s, signs))
+        except Exception as exc:
+            # Preserve exact case identity and every completed case. A failed
+            # panel is not a positive admission, even if later cases succeed.
+            failures.append({"scenario": s.name, "truth_id": i,
+                             "noise_signs": list(signs),
+                             "error_type": type(exc).__name__, "error": str(exc)})
+    a.need(len(cases)+len(failures) == 384, "complete attempted panel")
+    alias, controls = None, None
+    try:
+        alias = alias_witness()
+    except Exception as exc:
+        failures.append({"stage": "alias_witness", "error_type": type(exc).__name__,
+                         "error": str(exc)})
+    try:
+        controls = negative_controls()
+    except Exception as exc:
+        failures.append({"stage": "negative_controls", "error_type": type(exc).__name__,
+                         "error": str(exc)})
+    summary = None
+    if not failures:
+        keys = {(row["scenario"], row["truth_id"], tuple(row["noise_signs"])) for row in cases}
+        a.need(len(cases) == len(keys) == 384, "complete fixed panel")
+        a.need(sum(row["bounded_wide"] for row in cases) == 352 and
+               sum(row["bounded_ideal"] for row in cases) == 32, "bounded case roster")
+        summary = summarize(cases)
     return {
         "experiment": "CNEH-EXP-06F",
         "scope": "SYNTHETIC_SENSOR_CHANNEL_FALSIFICATION_ONLY",
-        "qualification": "PASS_CONDITIONAL_CHANNEL_ENCLOSURE_ONLY",
-        "sensor_width_identifiability": "FAIL_COUNTEREXAMPLE",
-        "alias_witness": alias_witness(),
+        "qualification": "FAIL_ENGINEERING_GATE" if failures else
+                         "PASS_CONDITIONAL_CHANNEL_ENCLOSURE_ONLY",
+        "sensor_width_identifiability": "NOT_QUALIFIED" if alias is None else "FAIL_COUNTEREXAMPLE",
+        "alias_witness": alias,
+        "negative_controls": controls,
         "cases": cases,
-        "scenario_summary": summarize(cases),
+        "failures": failures,
+        "scenario_summary": summary,
         **NEGATIVE,
     }
