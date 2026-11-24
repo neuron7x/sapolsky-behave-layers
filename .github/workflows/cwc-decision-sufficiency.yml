@@ -1,0 +1,100 @@
+name: CWC-DS01 finite decision sufficiency
+on:
+  pull_request:
+    paths:
+      - 'experiments/cwc_decision_sufficiency/**'
+      - 'tests/test_cwc_decision_sufficiency.py'
+      - 'docs/research/CWC_RESEARCH_INTAKE.md'
+      - 'docs/research/CWC_EXTERNAL_RESOURCE_LEDGER.md'
+      - '.github/workflows/cwc-decision-sufficiency.yml'
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify frozen protocol and additive source tree
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(uname -m)" = "$ARCH"
+          git merge-base --is-ancestor "$HEAD_SHA" HEAD
+          git merge-base --is-ancestor "$BASE_SHA" HEAD
+          git merge-base --is-ancestor 0f3ae2ee00001b9d99adcedb95443ce6ae3f4bfc "$BASE_SHA"
+          git merge-base --is-ancestor 87a5964a70619014434559c601efa092659689eb HEAD
+          git show 87a5964a70619014434559c601efa092659689eb:experiments/cwc_decision_sufficiency/PROTOCOL.md | cmp - experiments/cwc_decision_sufficiency/PROTOCOL.md
+          git diff --name-status "$BASE_SHA" HEAD | sort > /tmp/actual
+          printf 'A\t%s\n' '.github/workflows/cwc-decision-sufficiency.yml' 'docs/research/CWC_EXTERNAL_RESOURCE_LEDGER.md' 'docs/research/CWC_RESEARCH_INTAKE.md' 'experiments/cwc_decision_sufficiency/PROTOCOL.md' 'experiments/cwc_decision_sufficiency/oracle.py' 'experiments/cwc_decision_sufficiency/run.py' 'tests/test_cwc_decision_sufficiency.py' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Independent proof falsifiers
+        run: python -m unittest discover -s tests -p test_cwc_decision_sufficiency.py -v
+      - name: Frozen complete panel and optimized replay
+        id: panel
+        run: |
+          PRIMARY_RC=0
+          REPLAY_RC=0
+          PYTHONHASHSEED=0 timeout --kill-after=5s 180s python -m experiments.cwc_decision_sufficiency.run native --arch "$ARCH" --out /tmp/panel/primary || PRIMARY_RC=$?
+          PYTHONHASHSEED=2147483647 timeout --kill-after=5s 180s python -O -m experiments.cwc_decision_sufficiency.run native --arch "$ARCH" --out /tmp/panel/replay || REPLAY_RC=$?
+          printf 'primary_exit=%s replay_exit=%s\n' "$PRIMARY_RC" "$REPLAY_RC"
+          test "$PRIMARY_RC" -eq 0
+          test "$REPLAY_RC" -eq 0
+          cmp /tmp/panel/primary/payload.json /tmp/panel/replay/payload.json
+          cmp /tmp/panel/primary/receipt.json /tmp/panel/replay/receipt.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() && steps.panel.outcome != 'skipped' }}
+        with:
+          name: cwc-ds01-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
+          path: /tmp/panel/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Obtain same-attempt artifacts and reconstruct
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for arch in aarch64 x86_64; do
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "cwc-ds01-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/profiles/$arch"
+          done
+          timeout --kill-after=5s 180s python -m experiments.cwc_decision_sufficiency.run aggregate --profiles /tmp/profiles --out /tmp/aggregate
+          (cd /tmp/aggregate && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cwc-ds01-aggregate-attempt-${{ github.run_attempt }}
+          path: /tmp/aggregate/
+          if-no-files-found: error
+          retention-days: 90
