@@ -149,11 +149,74 @@ def g_witness_recovery():
     return {"original_G_witness": witness, "reference_assisted_recovery": records}
 
 
+
+def negative_controls():
+    """Reject malformed records and explicit violations of the reference contract."""
+    from copy import deepcopy
+    v, x = fixtures.truth(16)
+    record, _, _ = make_record(v, x, F(1), F(3, 2), F(1, 2), F(110),
+                               F(0), F(0), 1)
+    controls = {}
+
+    def reject(name, transform, profile=h.BOUNDED):
+        changed = deepcopy(record)
+        transform(changed)
+        try:
+            h.estimate(changed, profile)
+        except ValueError:
+            controls[name] = "REJECTED"
+        else:
+            raise ValueError("negative control escaped: "+name)
+
+    reject("MISSING_REFERENCES", lambda r: r.update(references=None))
+    reject("MISSING_REFERENCE_CODE", lambda r: r["references"].pop("gamma"))
+    reject("EXTRA_REFERENCE_CODE", lambda r: r["references"].update(calibrated=True))
+    reject("FORGED_AUTHORITY", lambda r: r.update(source_action_authorized=True))
+    reject("FORGED_CALIBRATION", lambda r: r.update(real_calibration_verified=True))
+    reject("FORGED_NOISE_BUDGET", lambda r: r.update(current_error_pA="100/1"))
+    reject("MISSING_SAMPLE", lambda r: r["samples"].pop())
+    reject("WRONG_TIME", lambda r: r["samples"][1].update(t_ms=4))
+    reject("BOOLEAN_TIME", lambda r: r["samples"][0].update(t_ms=False))
+    reject("OFF_GRID_CODE", lambda r: r["samples"][0].update(current_pA="1/3"))
+    reject("NONCANONICAL_CODE", lambda r: r["references"].update(gamma="2/2"))
+    reject("VOLTAGE_OUTSIDE", lambda r: r.update(voltage_mV="-50/1"))
+    reject("UNSUPPORTED_PROFILE", lambda r: None, profile="CALIBRATED")
+    for name, field, value in (
+        ("GAIN_OUTSIDE", "span_pA", "300/1"),
+        ("OFFSET_OUTSIDE", "zero_pA", "30/1"),
+        ("DRIFT_OUTSIDE", "late_zero_pA", "30/1"),
+        ("GAMMA_OUTSIDE", "gamma", "3/1"),
+        ("DELAY_OUTSIDE", "delay_ms", "2/1"),
+        ("TAU_OUTSIDE", "tau_ms", "130/1"),
+    ):
+        bad = deepcopy(record)
+        bad["references"][field] = value
+        result = h.estimate(bad, h.BOUNDED)
+        a.need(result["status"] == "INCONSISTENT_REFERENCE" and
+               result["normalized_bounds"] is None, "reference domain leak: "+name)
+        controls[name] = result["status"]
+    bad = deepcopy(record)
+    bad["samples"][0]["current_pA"] = "900/1"
+    result = h.estimate(bad, h.BOUNDED)
+    a.need(result["status"] == "INCONSISTENT_CURRENT", "gross corruption escaped")
+    controls["GROSS_CURRENT_CORRUPTION"] = result["status"]
+    bad = deepcopy(record)
+    bad["references"] = None
+    result = h.estimate(bad)
+    a.need(result["status"] == "CALIBRATION_UNVERIFIED" and
+           result["normalized_bounds"] == [["0/1", "1/1"]]*4,
+           "missing reference fallback")
+    controls["UNVERIFIED_WITHOUT_REFERENCES"] = "FULL_PRIOR"
+    a.need(len(controls) == 21, "negative control roster")
+    return controls
+
+
 def report():
     results, failures, rows = {}, [], []
     for name, operation in (("diameter_certificate", h.diameter_certificate),
                             ("gamma_ablation", gamma_ablation),
-                            ("g_witness_recovery", g_witness_recovery)):
+                            ("g_witness_recovery", g_witness_recovery),
+                            ("negative_controls", negative_controls)):
         try:
             results[name] = operation()
         except Exception as exc:
