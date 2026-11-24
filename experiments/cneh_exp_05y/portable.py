@@ -27,6 +27,8 @@ LIB.dp_trial.argtypes=[D,D,P,P,D,D,P,P,P,P,P];LIB.dp_trial.restype=ct.c_int
 LIB.dp_dense.argtypes=[P,P];LIB.dp_dense.restype=None
 LIB.dp_sample.argtypes=[P,P,D,D,P];LIB.dp_sample.restype=None
 LIB.tableau.argtypes=[P];LIB.tableau.restype=None
+LIB.error_dot.argtypes=[P,ct.c_int];LIB.error_dot.restype=D
+LIB.error_norm.argtypes=[P,D,P];LIB.error_norm.restype=D
 w.need(LIB.software_version()==b"4.2.1" and LIB.numeric_environment()==1,"software arithmetic environment")
 
 
@@ -177,6 +179,8 @@ def probes():
         pass
     else:
         raise ValueError("overflow accepted")
-    return {"software":"MPFR "+LIB.software_version().decode(),"exp_independent_fixtures":len(xs),
+    from experiments.cneh_exp_05y import reduction
+    dot=reduction.audit(LIB,ptr,Path("/tmp/reduction"))
+    return {"embedded_error_reduction":dot,"software":"MPFR "+LIB.software_version().decode(),"exp_independent_fixtures":len(xs),
             "rounding_environment":"RN_EVEN_GRADUAL_UNDERFLOW","separate_fma_witness":(0.).hex(),
             "edge_fixtures":fixtures,"tableau_sha256":w.digest([w.hx(v) for v in data])}
