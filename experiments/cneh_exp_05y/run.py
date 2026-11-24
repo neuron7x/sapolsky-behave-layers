@@ -118,7 +118,8 @@ def fingerprint(arch,install):
     build=read(Path("/tmp/cneh05y/build.json"))
     w.need(build["arch"]==arch and build["library_sha256"]==file_sha(portable.LIBRARY)
            and build["kernel_source_sha256"]==file_sha(Path("experiments/cneh_exp_05y/kernel.c"))
-           and build["forbidden_fma"]==build["forbidden_transcendental_imports"]==0,"portable build identity")
+           and build["forbidden_fma"]==build["forbidden_transcendental_imports"]==0
+           and build["mpfr_dot_import"] is True,"portable build identity")
     return {"build":build,"software_version":portable.LIB.software_version().decode(),"arch":arch,"elf_machine":machine,"runner_arch":os.environ["RUNNER_ARCH"],
             "runner_environment":os.environ["RUNNER_ENVIRONMENT"],"cpuinfo":cpu.split("\n\n",1)[0],
             "platform":platform.platform(),"python":sys.version,"numpy":np.__version__,"scipy":scipy.__version__,
@@ -230,7 +231,8 @@ def check_fp(fp,arch,head,run,install_hash):
            "native provenance binding")
     build=fp["build"]
     w.need(fp["software_version"]=="4.2.1" and build["arch"]==arch and build["forbidden_fma"]==0
-           and build["forbidden_transcendental_imports"]==0 and "-ffp-contract=off" in build["flags"]
+           and build["forbidden_transcendental_imports"]==0 and build["mpfr_dot_import"] is True
+           and "-ffp-contract=off" in build["flags"]
            and build["kernel_source_sha256"]==file_sha(Path("experiments/cneh_exp_05y/kernel.c")),"software arithmetic provenance")
 
 
@@ -279,6 +281,18 @@ def pair(args,worlds):
 
 
 def aggregate(args):
+    transport=read(args.transport/"report.json")
+    authenticate(args.transport,{"report.json"})
+    w.need(transport["schema"]=="CNEH-ARTIFACT-TRANSPORT-V1" and transport["spec"]=="y"
+           and transport["run_id"]==args.run_id and transport["head_sha"]==args.head
+           and transport["status"]=="PASS" and transport["upstream_ok"] is True
+           and not transport["missing"] and not transport["unexpected"] and not transport["malformed"]
+           and all(x["exit_code"]==0 for x in transport["downloads"]),"transport admission")
+    forensic_folder=args.profiles/"cneh05y-forensic-aggregate"
+    authenticate(forensic_folder,{"report.json"})
+    forensic=read(forensic_folder/"report.json")
+    w.need(forensic["scope"] in ("SEALED_CHUNK_REPRODUCED","NEW_EXECUTION_ONLY")
+           and forensic["scientific_promotion_authorized"] is False,"forensic report scope")
     all_reports=[];sentinels={a:[] for a in ARCHES};missing=[];provenance=[]
     for shard in range(w.SHARDS):
         folder=args.profiles/f"cneh05y-pair-{shard}"
@@ -311,7 +325,11 @@ def aggregate(args):
             check_fp(fp,arch,args.head,args.run_id,fp["install_sha256"])
             w.need(value["arch"]==arch and value["manifest_sha256"]==args.manifest_sha
                    and value["passive_parity"] is True and value["audit"]["status"]=="PASS"
-                   and len(value["mutations"])==5 and value["arithmetic"]["exp_independent_fixtures"]==2049,"preflight scope")
+                   and len(value["mutations"])==5 and value["arithmetic"]["exp_independent_fixtures"]==2049
+                   and value["arithmetic"]["embedded_error_reduction"]["component_checks"]==4364
+                   and value["arithmetic"]["embedded_error_reduction"]["sealed_trial_records"]==128
+                   and len(value["arithmetic"]["embedded_error_reduction"]["negative_controls"])==5
+                   and all(value["arithmetic"]["embedded_error_reduction"]["negative_controls"].values()),"preflight scope")
             preflight[arch]=value
         except (ValueError,TypeError,KeyError,OSError) as exc:
             missing.append({"preflight":arch,"reason":str(exc)})
@@ -344,7 +362,8 @@ def aggregate(args):
             "scientific_promotion_authorized":False,"scientific_promotion":"BLOCKED","blind_causal_cohort":"BLOCKED",
             "historical_native_replay":"FAIL_PRESERVED","historical_fixed_step_gate":"FAIL_PRESERVED",
             "historical_cross_cpu_replay":"FAIL_PRESERVED","reference_qualified":sum(x["status"]=="PASS_FINITE" for x in reference),
-            "reference_reports":reference,
+            "reference_reports":reference,"transport_sha256":file_sha(args.transport/"report.json"),
+            "forensic_scope":forensic["scope"],"arithmetic_lineage":"R1_MPFR_EMBEDDED_ERROR_DOT",
             "reports":all_reports,"sentinel_repeats":sentinels,"provenance":provenance,"preflight":preflight}
     args.out.mkdir();write(args.out/"report.json",result);seal(args.out,{"report.json"})
     print(w.canonical({k:v for k,v in result.items() if k not in ("reports","provenance","sentinel_repeats","preflight")}).decode(),end="")
@@ -367,6 +386,8 @@ def main():
             p.add_argument("--shard",type=int,required=True)
         if name in ("pair","aggregate"):
             p.add_argument("--profiles",type=Path,required=True);p.add_argument("--head",required=True);p.add_argument("--run-id",required=True)
+        if name=="aggregate":
+            p.add_argument("--transport",type=Path,required=True)
     args=ap.parse_args()
     if args.command=="manifest":
         write(args.out,w.manifest());print(file_sha(args.out));return 0
