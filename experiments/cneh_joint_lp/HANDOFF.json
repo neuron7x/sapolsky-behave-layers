@@ -1,0 +1,215 @@
+{
+  "schema": "cwc-agent-handoff-v1",
+  "snapshot_date": "2026-11-25",
+  "status": "PROSPECTIVE_IMPLEMENTATION_PENDING_QUALIFICATION",
+  "base_main": "bdc3d736692aeb1362c12918afc022fa11c7ca2c",
+  "frozen_protocol": {
+    "commit": "47bdbeacd53d53b73d5e7c83e6f0a1a4221fd468",
+    "path": "experiments/cneh_joint_lp/PROTOCOL.md"
+  },
+  "bibliography": "experiments/cneh_joint_lp/BIBLIOGRAPHY.md",
+  "repository": "neuron7x/sapolsky-behave-layers",
+  "evidence_snapshot": [
+    {
+      "pr": 82,
+      "head": "2923553963d6be95f070a8869f460ddef022124f",
+      "workflows": "6/6 PASS",
+      "merged": false,
+      "scope": "finite decision oracle; verify actual checkout base independently"
+    },
+    {
+      "pr": 84,
+      "head": "fc81cbd9a6543dc17e973f9016d997d25fbc96dd",
+      "workflows": "7/7 PASS",
+      "merged": false,
+      "scope": "finite correlated reference faults"
+    },
+    {
+      "pr": 85,
+      "head": "b6f40ca780726927e6e77f718a60c2c6974d3f0a",
+      "workflows": "7/7 PASS",
+      "merged": false,
+      "scope": "strict certificate admission, not legacy call replacement"
+    },
+    {
+      "pr": 86,
+      "head": "5d75a637685a3036ca9f764a29fd5dff78f0fdc1",
+      "workflows": "7/7 PASS",
+      "merged": false,
+      "artifact_id": 15000064783,
+      "artifact_sha256": "a2fd1fc8e32568c7549919dd70bf507a8870823cc000b01cc7083eb7043b27e9",
+      "scope": "conditional sound outer coverage"
+    },
+    {
+      "pr": 87,
+      "head": "fa59dc4c6d09246ab66acfe2e82e64255c036c55",
+      "workflows": "6/6 PASS",
+      "merged": false,
+      "artifact_id": 15004700122,
+      "artifact_sha256": "4b5742c166fcbb175e7a93ddd801cd6c79959a2b04930cad69273d637478f6ad",
+      "scope": "actual source intake only; real model NOT_RUN"
+    },
+    {
+      "pr": 88,
+      "head": "870bd4fe258c6340f6506fbfe3eea142a3576352",
+      "base": "5d75a637685a3036ca9f764a29fd5dff78f0fdc1",
+      "workflows": "7/7 PASS",
+      "merged": false,
+      "artifact_id": 15003703304,
+      "artifact_sha256": "b4736581358411a82154c90cdf833cb6020ca2a3b9cca056130ff981c515263e",
+      "payload_sha256": "b837515afd47fd2e83c1686ab8a3c51d7914d384fcea4389b0c6700ffec5b31b",
+      "scope": "900 exact support comparisons; 271 strict electronic improvements and 30 frontier width improvements per architecture; 24 conditional decisions and 8 UNKNOWN per architecture"
+    }
+  ],
+  "current": {
+    "id": "JOINT-LP-01",
+    "scope": "shared-sample rational outer relaxation",
+    "proposer": "experiments/cneh_joint_lp/search.py",
+    "verifier": "experiments/cneh_joint_lp/kernel.py",
+    "evaluation": "experiments/cneh_joint_lp/panel.py",
+    "runner": "experiments/cneh_joint_lp/run.py",
+    "max_pivots_per_solve": 128,
+    "exit": {
+      "unique_continuous_records": 40,
+      "native_compatible_records": 64,
+      "native_negative_records": 16,
+      "native_toy_checks": 128,
+      "native_rejected_mutations": 36,
+      "minimum_native_exclusions": 12,
+      "process_receipts": 4,
+      "independent_reconstruction": 1,
+      "false_omission": 0,
+      "scientific_promotion": false
+    },
+    "commands": [
+      "python -B -m unittest discover -s tests -p test_cneh_joint_lp.py -v",
+      "python -B -c 'from experiments.cneh_joint_lp import panel,run; from experiments.cneh_exp_06f.run import canonical; r=panel.report(); run.validate(r); print(canonical(r).decode(\"ascii\"),end=\"\")'"
+    ]
+  },
+  "next": [
+    {
+      "id": "N01",
+      "priority": 0,
+      "depends": [
+        "JOINT-LP-01"
+      ],
+      "finding": "Remaining physiological coefficients share gamma/delay/tau across times, but are interval-relaxed; no exact nonlinear set equality.",
+      "source": "experiments/cneh_joint_lp/kernel.py:compile,reconstruct",
+      "methods": [
+        "M01",
+        "M03"
+      ],
+      "deliverable": "bounded nuisance partition with complete cover and independently replayed exact exclusion/upper proof per leaf; or rigorously scoped delta-UNSAT comparison",
+      "exit": "zero false omitted compatible worlds; compare proof strength under equal budget; delta-SAT not exact witness; retain UNKNOWN"
+    },
+    {
+      "id": "E01",
+      "priority": 0,
+      "depends": [
+        "PR87",
+        "owner integration or explicit qualified checkout"
+      ],
+      "finding": "By source inspection preflight validates cohort hash lists for internal consistency, readiness rehashes source bytes; it does not independently reconstruct cohorts from those bytes and compare against declared manifest.",
+      "source": "experiments/real_transfer_01/preflight.py:validate_source_manifest; readiness.py:validate_source_bytes,analyze",
+      "methods": [
+        "M07",
+        "M09"
+      ],
+      "deliverable": "bind actual source-intake reconstruction, exact cohort membership and repository fixture collision audit into an additive independent pre-execution verifier",
+      "exit": "reject source/cohort identity mismatch; no invented manifest/collision audit; scientific verdict NOT_TESTED until real prerequisites"
+    },
+    {
+      "id": "E02",
+      "priority": 0,
+      "depends": [
+        "E01",
+        "actual frozen model/runner artifacts"
+      ],
+      "finding": "By source inspection model manifest validation checks digest syntax and runner/policy bytes, not materialized checkpoint/tokenizer/template/calibration/governor byte identity for all declared digest fields.",
+      "source": "experiments/real_transfer_01/preflight.py:validate_model_manifest; readiness.py:validate_runtime_binding",
+      "methods": [
+        "M07",
+        "M09"
+      ],
+      "deliverable": "exact real byte binding and executable comparator/accounting preflight",
+      "exit": "all declared model artifacts actually materialized; no hash-only self-attestation; no fake weights or scientific model output"
+    },
+    {
+      "id": "E03",
+      "priority": 1,
+      "depends": [
+        "E01",
+        "E02"
+      ],
+      "finding": "External empirical model transfer remains NOT_TESTED despite real source reconstruction.",
+      "source": "experiments/real_transfer_01/PREREGISTRATION.md and amendments 001/002",
+      "methods": [
+        "M06"
+      ],
+      "deliverable": "run original frozen REAL-TRANSFER-01 with real model, all six comparator policies, contamination state and cohort metrics",
+      "exit": "report exact frozen verdict; no quota, threshold or data changes; no claim of per-instance certainty from statistical risk"
+    },
+    {
+      "id": "D01",
+      "priority": 1,
+      "depends": [
+        "JOINT-LP-01",
+        "PR88 owner integration"
+      ],
+      "finding": "COVER-02 upper affine regret uses outer boxes; joint LP bounds can retain shared observations in decision objectives.",
+      "source": "experiments/cneh_joint_decision/decision.py:decide (PR88)",
+      "methods": [
+        "M01",
+        "M04",
+        "M05"
+      ],
+      "deliverable": "prove every competitor regret component with exact dual certificate and separate I witness, then compare against existing COVER-02; check adaptive-submodularity before using greedy guarantee",
+      "exit": "no vacuous acceptance, no false certification; unchanged losses and epsilon; report cost and UNKNOWN"
+    },
+    {
+      "id": "F01",
+      "priority": 1,
+      "depends": [
+        "JOINT-LP-01"
+      ],
+      "finding": "Python exact checker and independent reconstruction are not mechanized proof of implementation semantics.",
+      "source": "experiments/cneh_joint_lp/kernel.py:certificate,check,checked_system",
+      "methods": [
+        "M07",
+        "M08"
+      ],
+      "deliverable": "pin Lean/mathlib and mechanize lift inclusion and Farkas/weak-duality soundness with no admitted lemmas",
+      "exit": "actual Lean kernel replay, proof digest, no sorry/admitted proof holes; no claim of full verified compiler"
+    },
+    {
+      "id": "A01",
+      "priority": 1,
+      "depends": [
+        "E01",
+        "D01"
+      ],
+      "finding": "Long-horizon agent continuity requires explicit proof dependencies and invalidation semantics, not reliance on previous conversation context.",
+      "source": "AGENTS.md; this handoff; canonical COG-MEMORY/PLAN/INFO/SELF",
+      "methods": [
+        "M07",
+        "M09"
+      ],
+      "deliverable": "fresh-agent clean checkout exercise using only pinned handoff and source, reconstruct proof and detect deliberately stale record/context",
+      "exit": "reproduce exact artifacts and correct dispositions, no access to hidden chat, no authority from agent consensus; external replication remains separate"
+    }
+  ],
+  "governance": {
+    "merge": "OWNER_ONLY",
+    "mark_ready": "OWNER_ONLY",
+    "main_mutations": "FORBIDDEN_UNLESS_SEPARATELY_AUTHORIZED",
+    "old_frozen_evidence": "IMMUTABLE",
+    "deep_research": "DO_NOT_START",
+    "stop_on_green": true,
+    "source_action_authorized": false,
+    "scientific_promotion_authorized": false,
+    "external_replication": "NOT_TESTED",
+    "physical_calibration": "NOT_TESTED",
+    "real_model_transfer": "NOT_TESTED",
+    "note": "Snapshot observations are not live state. Recheck current head/base/checkout, logs and artifact identities before any action. No duplicate PRs, no threshold tuning, no claims of exhaustive audit, agent consensus is not independent scientific replication."
+  }
+}
