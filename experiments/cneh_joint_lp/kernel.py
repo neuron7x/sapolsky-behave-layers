@@ -295,7 +295,33 @@ def receipt(record,profile,budget,rows,exclusion,bounds):
             "joint_existence_established":False,**NEGATIVE}
 
 
+def bounded_wire(value):
+    stack=[(value,0)]
+    count=0
+    while stack:
+        item,depth=stack.pop()
+        count+=1
+        need(count<=4096 and depth<=12,"proof object budget")
+        if type(item) is dict:
+            need(len(item)<=4096-count-len(stack) and
+                 all(type(key) is str and len(key)<=64 for key in item),
+                 "proof mapping budget")
+            stack.extend((x,depth+1) for x in item.values())
+        elif type(item) is list:
+            need(len(item)<=4096-count-len(stack),"proof array budget")
+            stack.extend((x,depth+1) for x in item)
+        elif type(item) is str:
+            need(len(item)<=MAX_TEXT,"proof string budget")
+        else:
+            need(item is None or type(item) is bool or
+                 type(item) is int and abs(item)<=2**31-1,"proof scalar schema")
+
+
 def verify(record,proof,profile,budget):
+    need(type(profile) is str and profile in ("UNVERIFIED",h.BOUNDED),
+         "reference profile")
+    need(type(budget) is int and 0<=budget<=128,"proposal pivot budget")
+    bounded_wire(proof)
     need(type(proof) is dict and set(proof)==set(NEGATIVE)|{
         "scope","record_sha256","system_sha256","profile","pivot_budget_per_solve","status",
         "coordinate_proofs","exclusion","outer_bounds","max_width","joint_existence_established"},
