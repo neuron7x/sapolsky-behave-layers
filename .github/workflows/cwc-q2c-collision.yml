@@ -1,0 +1,73 @@
+name: CWC Q2c repository collision audit
+on:
+  pull_request:
+    paths:
+      - 'experiments/cwc_collision/**'
+      - 'tests/test_cwc_collision_audit.py'
+      - '.github/workflows/cwc-q2c-collision.yml'
+permissions:
+  contents: read
+env:
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  collision-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Bind exact parent, qualified tree, frozen plan and additive roster
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
+          test "$GITHUB_BASE_REF" = main
+          test "$BASE_SHA" = 091a5d22f1776f5208e57afadf0ef4c79180b325
+          git merge-base --is-ancestor c7d67507df2d096b9cfb1f200ff3cc09c205ca6d "$BASE_SHA"
+          test "$(git rev-parse "$BASE_SHA^{tree}")" = ad224c7e257e65fb5764dca61f646915eea6cedb
+          git show 1b1d706469c52b3244d5af0554501e17d8ffd0f4:experiments/cwc_closure/PLAN.json | cmp - experiments/cwc_closure/PLAN.json
+          git show 505100d434cdc1e8f9d664c8e90f51dac6efd1a8:experiments/cwc_closure/PROTOCOL.md | cmp - experiments/cwc_closure/PROTOCOL.md
+          git show 8020be9097a0af6dd764a667fd1304bf6f1df4c2:CWC_CLOSURE.md | cmp - CWC_CLOSURE.md
+          git diff --exit-code "$BASE_SHA" HEAD -- experiments/real_transfer_01 experiments/cwc_closure claim_registry.json CWC_CLOSURE.md
+          git diff --name-status "$BASE_SHA" HEAD | sort > /tmp/q2c-actual
+          printf 'A\t%s\n' '.github/workflows/cwc-q2c-collision.yml' 'experiments/cwc_collision/PROTOCOL.md' 'experiments/cwc_collision/audit.py' 'tests/test_cwc_collision_audit.py' | sort > /tmp/q2c-expected
+          diff -u /tmp/q2c-expected /tmp/q2c-actual
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Normal and optimized engineering falsifiers
+        run: |
+          python -B -m unittest discover -s tests -p test_cwc_collision_audit.py -v
+          python -B -O -m unittest discover -s tests -p test_cwc_collision_audit.py -v
+          python -B -m experiments.real_transfer_01.semantic_gate
+      - name: Acquire exact pinned sources
+        run: |
+          mkdir -p /tmp/q2c-sources /tmp/q2c-receipt
+          fetch() {
+            curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --max-filesize "$2" --max-time 240 --output "/tmp/q2c-sources/$3" "$1"
+          }
+          fetch 'https://raw.githubusercontent.com/MichSchli/AVeriTeC/7c62d1ec8df3fb560d6efe2b85fa191135636f81/data/dev.json' 4194304 averitec_dev.json
+          fetch 'https://raw.githubusercontent.com/wenhuchen/HybridQA/db22fda8c5951438fade3c69d75b350335ba93b3/released_data/dev.json' 4194304 hybridqa_dev.json
+          fetch 'https://github.com/wenhuchen/WikiTables-WithLinks/archive/f4ed68e54e25c495f63d309de0b89c0f97b3c508.zip' 268435456 wikitable_links.zip
+      - name: Execute repository-only collision audit
+        id: audit
+        run: |
+          rc=0
+          timeout --kill-after=10s 1500s python -B -m experiments.cwc_collision.audit --root "$PWD" --cache /tmp/q2c-sources --receipt /tmp/q2c-receipt/audit.json || rc=$?
+          printf '{"head":"%s","base":"%s","checkout":"%s","run_id":"%s","run_attempt":"%s"}\n' "$HEAD_SHA" "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > /tmp/q2c-receipt/identity.json
+          if test -f /tmp/q2c-receipt/audit.json; then
+            (cd /tmp/q2c-receipt && sha256sum audit.json identity.json > SHA256SUMS && sha256sum --strict -c SHA256SUMS)
+          fi
+          exit "$rc"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() && steps.audit.outcome != 'skipped' }}
+        with:
+          name: cwc-q2c-collision-attempt-${{ github.run_attempt }}
+          path: /tmp/q2c-receipt/
+          if-no-files-found: error
+          retention-days: 90
