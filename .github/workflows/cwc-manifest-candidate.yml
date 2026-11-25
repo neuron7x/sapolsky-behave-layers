@@ -1,0 +1,110 @@
+name: CWC Q2b inert manifest candidate
+on:
+  pull_request:
+    paths:
+      - 'experiments/cwc_manifest_candidate/**'
+      - 'tests/test_cwc_manifest_candidate.py'
+      - '.github/workflows/cwc-manifest-candidate.yml'
+permissions:
+  contents: read
+  actions: read
+env:
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+  CWC_Q2C_ZIP: /tmp/cwc-candidate-history.zip
+jobs:
+  manifest-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Bind exact integration and preserve every historical path
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
+          test "$GITHUB_BASE_REF" = main
+          test "$BASE_SHA" = 3f894bb77ff91b37438fa143a3022c318a73769d
+          git merge-base --is-ancestor b0f24b1da0723bbfa6ff1af66af1d55a14ceeddb "$HEAD_SHA"
+          git show b0f24b1da0723bbfa6ff1af66af1d55a14ceeddb:experiments/cwc_manifest_candidate/PROTOCOL.md | cmp - experiments/cwc_manifest_candidate/PROTOCOL.md
+          git show 1b1d706469c52b3244d5af0554501e17d8ffd0f4:experiments/cwc_closure/PLAN.json | cmp - experiments/cwc_closure/PLAN.json
+          git diff --name-status "$BASE_SHA" HEAD | sort > /tmp/candidate-actual
+          printf 'A\t%s\n' '.github/workflows/cwc-manifest-candidate.yml' 'experiments/cwc_manifest_candidate/PROTOCOL.md' 'experiments/cwc_manifest_candidate/candidate.py' 'experiments/cwc_manifest_candidate/verify_candidate.py' 'experiments/cwc_manifest_candidate/TERMS_AND_COMPUTE_REVIEW.md' 'tests/test_cwc_manifest_candidate.py' | sort > /tmp/candidate-expected
+          diff -u /tmp/candidate-expected /tmp/candidate-actual
+          test ! -e experiments/real_transfer_01/SOURCE_MANIFEST.json
+          test ! -e experiments/real_transfer_01/MODEL_MANIFEST.json
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Download exact qualified historical evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/cwc-candidate-evidence
+          gh api repos/neuron7x/sapolsky-behave-layers/actions/artifacts/15023724404/zip > "$CWC_Q2C_ZIP"
+          python -B -c 'import os; from experiments.cwc_source_admission.collision_delta import load_historical_zip; load_historical_zip(os.environ["CWC_Q2C_ZIP"]); print("Historical evidence bytes verified")'
+      - name: Normal and optimized candidate controls plus frozen semantic gates
+        run: |
+          python -B -m unittest discover -s tests -p test_cwc_manifest_candidate.py -v
+          python -B -O -m unittest discover -s tests -p test_cwc_manifest_candidate.py -v
+          python -B -m experiments.real_transfer_01.semantic_gate
+          python -B -m experiments.real_transfer_01.temporal_gate --json
+      - name: Observe actual acquisition into repository-contained untracked cache
+        run: |
+          python -B -m experiments.cwc_source_admission.acquisition --cache "$GITHUB_WORKSPACE/source-cache-candidate" --receipt /tmp/cwc-candidate-evidence/acquisition.json
+          test -z "$(git ls-files -- source-cache-candidate)"
+      - name: Reconstruct complete custody and current tracked-tree coverage
+        run: |
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_source_admission.custody --root "$PWD" --cache "$PWD/source-cache-candidate" --acquisition /tmp/cwc-candidate-evidence/acquisition.json --historical-zip "$CWC_Q2C_ZIP" --receipt /tmp/cwc-candidate-evidence/custody.json
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_source_admission.verify_receipt --root "$PWD" --cache "$PWD/source-cache-candidate" --acquisition /tmp/cwc-candidate-evidence/acquisition.json --receipt /tmp/cwc-candidate-evidence/custody.json --historical-zip "$CWC_Q2C_ZIP" --out /tmp/cwc-candidate-evidence/verification.json
+      - name: Assemble inert candidate from freshly verified evidence
+        run: |
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_manifest_candidate.candidate --root "$PWD" --cache "$PWD/source-cache-candidate" --acquisition /tmp/cwc-candidate-evidence/acquisition.json --custody /tmp/cwc-candidate-evidence/custody.json --verification /tmp/cwc-candidate-evidence/verification.json --historical-zip "$CWC_Q2C_ZIP" --out /tmp/cwc-candidate-evidence/candidate.json
+      - name: Independently reconstruct candidate and reject canonical admission
+        run: |
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_manifest_candidate.verify_candidate --root "$PWD" --cache "$PWD/source-cache-candidate" --candidate /tmp/cwc-candidate-evidence/candidate.json --acquisition /tmp/cwc-candidate-evidence/acquisition.json --custody /tmp/cwc-candidate-evidence/custody.json --verification /tmp/cwc-candidate-evidence/verification.json --historical-zip "$CWC_Q2C_ZIP" --out /tmp/cwc-candidate-evidence/candidate-verification.json
+          python -B - <<'PY'
+          import json
+          from pathlib import Path
+          from experiments.real_transfer_01.readiness import analyze
+          candidate = Path('/tmp/cwc-candidate-evidence/candidate.json')
+          result = analyze(root=Path.cwd(), source_manifest_path=candidate)
+          if result['execution_status'] != 'NOT_TESTED' or not any(item.startswith('SOURCE_MANIFEST_INVALID:') for item in result['blockers']):
+              raise RuntimeError('Candidate unexpectedly passed original source readiness')
+          output = Path('/tmp/cwc-candidate-evidence/readiness-rejection.json')
+          with output.open('x', encoding='utf-8') as handle:
+              handle.write(json.dumps(result, sort_keys=True)+'\n')
+          print(json.dumps(result, sort_keys=True))
+          PY
+          test ! -e experiments/real_transfer_01/SOURCE_MANIFEST.json
+          test ! -e experiments/real_transfer_01/MODEL_MANIFEST.json
+          test -z "$(git ls-files -- source-cache-candidate)"
+          test -z "$(git status --porcelain --untracked-files=no)"
+      - name: Preserve exact run identity and checksums including failures
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p /tmp/cwc-candidate-evidence
+          python -B - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path('/tmp/cwc-candidate-evidence')
+          identity = {key: os.environ[value] for key, value in {
+              'head': 'HEAD_SHA', 'base': 'BASE_SHA', 'checkout': 'GITHUB_SHA',
+              'run_id': 'GITHUB_RUN_ID', 'run_attempt': 'GITHUB_RUN_ATTEMPT'}.items()}
+          (root/'identity.json').write_text(json.dumps(identity, sort_keys=True)+'\n')
+          rows = [hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name for path in sorted(root.glob('*.json'))]
+          (root/'SHA256SUMS').write_text('\n'.join(rows)+'\n')
+          PY
+          (cd /tmp/cwc-candidate-evidence && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() }}
+        with:
+          name: cwc-manifest-candidate-attempt-${{ github.run_attempt }}
+          path: /tmp/cwc-candidate-evidence/
+          if-no-files-found: error
+          retention-days: 90
