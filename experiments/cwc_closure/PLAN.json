@@ -1,0 +1,184 @@
+{
+  "schema": "cwc-terminal-plan-v1",
+  "id": "ACT-CWC-FINAL-01",
+  "state": "PROPOSED_ENGINEERING_NOT_SCIENTIFIC_VERDICT",
+  "goal": "Obtain a valid, evidence-sealed terminal verdict on the existing decision-relevant epistemic-control flagship, preserving the exact frozen REAL-TRANSFER-01 protocol.",
+  "parent": {
+    "main": "bdc3d736692aeb1362c12918afc022fa11c7ca2c",
+    "source_pr": 87,
+    "source_head": "fa59dc4c6d09246ab66acfe2e82e64255c036c55",
+    "source_run": 45575157643,
+    "source_artifact": 15004700122,
+    "source_artifact_sha256": "4b5742c166fcbb175e7a93ddd801cd6c79959a2b04930cad69273d637478f6ad"
+  },
+  "authority": {
+    "merge": "OWNER_ONLY",
+    "mark_ready": "OWNER_ONLY",
+    "new_experiments": "DEFER_UNLESS_EXPLICITLY_AUTHORIZED",
+    "primary_tuning": false,
+    "scientific_promotion": false,
+    "closed_loop_authorized": false,
+    "external_replication": "SEPARATE_QUALIFICATION",
+    "deep_research": false
+  },
+  "allocation": {
+    "critical_path_percent": 80,
+    "blocking_counterexamples_percent": 20
+  },
+  "scientific_contract": {
+    "id": "REAL-TRANSFER-01",
+    "protocol": "experiments/real_transfer_01/PREREGISTRATION.md",
+    "amendments": [
+      "experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_001.md",
+      "experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md"
+    ],
+    "programme_decision": "docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md",
+    "cohorts": {
+      "AVeriTeC": {
+        "CALIBRATION": 99,
+        "PRIMARY": 199,
+        "REPLICATION": 202
+      },
+      "HybridQA": {
+        "CALIBRATION": 64,
+        "PRIMARY": 256,
+        "REPLICATION": 256
+      }
+    },
+    "policies": [
+      "ALWAYS_ACT",
+      "ALWAYS_QUERY",
+      "ALWAYS_ABSTAIN",
+      "MAX_SCORE_MARGIN",
+      "MODEL_ID_MAXIMIN",
+      "DECISION_RELEVANT"
+    ],
+    "terminal": [
+      "REAL_TRANSFER_01_PASS",
+      "REAL_TRANSFER_01_NOT_SUPPORTED",
+      "REAL_TRANSFER_01_NOT_TESTED"
+    ]
+  },
+  "scoring": {
+    "definition": "100-point governance completion, not success probability. Sum only verified exit predicates; negative valid results count toward completion; blocked obligations do not. A valid PRIMARY kill allows replication NOT_APPLICABLE_UNDER_KILL_RULE for closure only.",
+    "weights": [
+      {
+        "id": "Q0",
+        "points": 10,
+        "requires": [],
+        "title": "Frozen scientific target and closure charter",
+        "exit": "frozen original contract and closure act accepted on qualified checkout; exact authority and kill rule preserved"
+      },
+      {
+        "id": "Q1",
+        "points": 20,
+        "requires": [
+          "Q0"
+        ],
+        "title": "Mathematical and canonical integration readiness",
+        "exit": "required integrated H/I/J proof paths, qualified decision and admission components, exact final-head/base CI; owner integration or explicitly qualified execution checkout, no unsupported promotion"
+      },
+      {
+        "id": "Q2a",
+        "points": 6,
+        "requires": [
+          "Q0"
+        ],
+        "title": "Pinned external source reconstruction",
+        "exit": "actual three immutable sources and both exact cohort rosters reconstructed; receipt and artifact digest verified"
+      },
+      {
+        "id": "Q2b",
+        "points": 5,
+        "requires": [
+          "Q2a"
+        ],
+        "title": "Source manifest admission",
+        "exit": "committed SOURCE_MANIFEST binds actual pinned bytes and exact ordered cohort memberships; independent binding succeeds; linked-data terms reviewed"
+      },
+      {
+        "id": "Q2c",
+        "points": 4,
+        "requires": [
+          "Q2a"
+        ],
+        "title": "Contamination preflight",
+        "exit": "versioned repository fixture inventory and collision counts independently reproduced; actual training corpus audit or explicit UNKNOWN allowed by frozen contract"
+      },
+      {
+        "id": "Q3a",
+        "points": 7,
+        "requires": [
+          "Q2b",
+          "Q2c"
+        ],
+        "title": "Real model/checkpoint identity",
+        "exit": "actual selected checkpoint/tokenizer/template/decoding/calibration/governor bytes and committed manifest; no hidden gold or test-driven model selection"
+      },
+      {
+        "id": "Q3b",
+        "points": 8,
+        "requires": [
+          "Q3a"
+        ],
+        "title": "Executable runner, all six policies and accounting",
+        "exit": "actual model calls and deterministic API; no gold leakage; comparators implement definitions; per-call token/query telemetry; calibration-only smoke and original semantic/temporal gates pass"
+      },
+      {
+        "id": "Q4a",
+        "points": 5,
+        "requires": [
+          "Q3b"
+        ],
+        "title": "CALIBRATION freeze",
+        "exit": "163 calibration records only; freeze model/policy params and access evidence before any PRIMARY output"
+      },
+      {
+        "id": "Q4b",
+        "points": 12,
+        "requires": [
+          "Q4a"
+        ],
+        "title": "PRIMARY decisive experiment",
+        "exit": "455 external PRIMARY records with all six policies, exact frozen endpoints and valid matched-cost accounting; complete observed positive or negative verdict"
+      },
+      {
+        "id": "Q4c",
+        "points": 8,
+        "requires": [
+          "Q4b"
+        ],
+        "title": "REPLICATION or documented terminal kill",
+        "exit": "458 fresh held-out records with all six policies after eligible PRIMARY; or explicit valid PRIMARY failure triggers NOT_APPLICABLE_UNDER_KILL_RULE, no fabricated replication"
+      },
+      {
+        "id": "Q5",
+        "points": 15,
+        "requires": [
+          "Q4b",
+          "Q4c"
+        ],
+        "title": "Evidence closure and reproducible release",
+        "exit": "full exact evidence package, original endpoint adjudication, 10000 bootstrap descriptive intervals, final canonical verification and owner-gated integration; bounded nonclaims and clean-room reviewer entry point"
+      }
+    ]
+  },
+  "current_next": "Q2b source-to-cohort and model byte binding implementation; Q2c and actual model materials remain blockers",
+  "execution": {
+    "max_repairs_per_pr": 3,
+    "max_changes_per_iteration": 1,
+    "live_checks": "exact main/head/base/checkout/run/attempt + frozen artifacts",
+    "stop_on_all_green": true,
+    "stop_on_terminal_blocker": true,
+    "no_speculative_repairs_while_ci_running": true,
+    "owner_only_merge": true
+  },
+  "deferred": [
+    "nonlinear physiological partition refinement unless required by flagship",
+    "Lean mechanization unless required by flagship",
+    "architecture expansion",
+    "new datasets or replacement benchmarks",
+    "external independent third-party replication as a separate scientific qualification"
+  ],
+  "status_snapshot": "The plan is prospective. Do not populate completed points from agent assertions. Re-evaluate each exit from actual evidence."
+}
