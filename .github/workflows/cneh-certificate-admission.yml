@@ -1,0 +1,43 @@
+name: CNEH strict certificate admission
+on:
+  pull_request:
+    paths:
+      - 'scripts/cneh_certificate_admission.py'
+      - 'tests/test_cneh_certificate_admission.py'
+      - 'experiments/cneh_exp_06i/**'
+      - 'experiments/cneh_exp_06j/**'
+      - 'Makefile.cwc'
+      - '.github/workflows/cneh-certificate-admission.yml'
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact historical proof lineage
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(uname -m)" = "${{ matrix.arch }}"
+          git merge-base --is-ancestor bdc3d736692aeb1362c12918afc022fa11c7ca2c HEAD
+          git diff --exit-code bdc3d736692aeb1362c12918afc022fa11c7ca2c HEAD -- experiments/cneh_exp_06i experiments/cneh_exp_06j
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Native bounded rejection and valid-proof controls
+        run: PYTHONHASHSEED=0 timeout --kill-after=5s 120s python -B -m unittest discover -s tests -p test_cneh_certificate_admission.py -v
+      - name: Optimized-process replay
+        run: PYTHONHASHSEED=2147483647 timeout --kill-after=5s 120s python -B -O -m unittest discover -s tests -p test_cneh_certificate_admission.py -v
