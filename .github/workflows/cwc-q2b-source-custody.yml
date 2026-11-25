@@ -1,0 +1,88 @@
+name: CWC Q2b observed source custody
+on:
+  pull_request:
+    paths:
+      - 'experiments/cwc_source_admission/**'
+      - 'tests/test_cwc_source_custody.py'
+      - '.github/workflows/cwc-q2b-source-custody.yml'
+permissions:
+  contents: read
+  actions: read
+env:
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+  CWC_Q2C_ZIP: /tmp/cwc-q2b-history.zip
+jobs:
+  source-custody:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Bind actual integration and preserve every historical path
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
+          test "$GITHUB_BASE_REF" = main
+          test "$BASE_SHA" = a9917b2028c252992fb23db006a85b22e8bf38f0
+          git merge-base --is-ancestor 7c859f9c20b534be0315f6145f14315a8dcb4095 "$HEAD_SHA"
+          git show 7c859f9c20b534be0315f6145f14315a8dcb4095:experiments/cwc_source_admission/PROTOCOL.md | cmp - experiments/cwc_source_admission/PROTOCOL.md
+          git show 1b1d706469c52b3244d5af0554501e17d8ffd0f4:experiments/cwc_closure/PLAN.json | cmp - experiments/cwc_closure/PLAN.json
+          git diff --name-status "$BASE_SHA" HEAD | sort > /tmp/q2b-actual
+          printf 'A\t%s\n' '.github/workflows/cwc-q2b-source-custody.yml' 'experiments/cwc_source_admission/PROTOCOL.md' 'experiments/cwc_source_admission/acquisition.py' 'experiments/cwc_source_admission/collision_delta.py' 'experiments/cwc_source_admission/custody.py' 'experiments/cwc_source_admission/verify_receipt.py' 'tests/test_cwc_source_custody.py' | sort > /tmp/q2b-expected
+          diff -u /tmp/q2b-expected /tmp/q2b-actual
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Download the exact qualified historical audit artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/cwc-q2b-receipt
+          gh api repos/neuron7x/sapolsky-behave-layers/actions/artifacts/15023724404/zip > "$CWC_Q2C_ZIP"
+          python -B -c 'import os; from experiments.cwc_source_admission.collision_delta import load_historical_zip; load_historical_zip(os.environ["CWC_Q2C_ZIP"]); print("Historical ZIP bytes and inventory identity verified")'
+      - name: Normal and optimized adversarial custody controls
+        run: |
+          python -B -m unittest discover -s tests -p test_cwc_source_custody.py -v
+          python -B -O -m unittest discover -s tests -p test_cwc_source_custody.py -v
+          python -B -m experiments.real_transfer_01.semantic_gate
+          python -B -m experiments.real_transfer_01.temporal_gate --json
+      - name: Acquire exact source bytes and observe acquisition timestamps
+        run: |
+          python -B -m experiments.cwc_source_admission.acquisition --cache /tmp/cwc-q2b-sources --receipt /tmp/cwc-q2b-receipt/acquisition.json
+      - name: Reconstruct complete metadata custody and current-tree coverage
+        run: |
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_source_admission.custody --root "$PWD" --cache /tmp/cwc-q2b-sources --acquisition /tmp/cwc-q2b-receipt/acquisition.json --historical-zip "$CWC_Q2C_ZIP" --receipt /tmp/cwc-q2b-receipt/custody.json
+      - name: Independently reconstruct receipt identities and counts
+        run: |
+          timeout --kill-after=10s 600s python -B -m experiments.cwc_source_admission.verify_receipt --root "$PWD" --cache /tmp/cwc-q2b-sources --acquisition /tmp/cwc-q2b-receipt/acquisition.json --receipt /tmp/cwc-q2b-receipt/custody.json --historical-zip "$CWC_Q2C_ZIP" --out /tmp/cwc-q2b-receipt/verification.json
+      - name: Preserve exact run identity and checksums including failures
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p /tmp/cwc-q2b-receipt
+          python -B - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path('/tmp/cwc-q2b-receipt')
+          identity = {key: os.environ[value] for key, value in {
+              'head': 'HEAD_SHA', 'base': 'BASE_SHA', 'checkout': 'GITHUB_SHA',
+              'run_id': 'GITHUB_RUN_ID', 'run_attempt': 'GITHUB_RUN_ATTEMPT'}.items()}
+          (root/'identity.json').write_text(json.dumps(identity, sort_keys=True)+'\n')
+          rows = []
+          for path in sorted(root.glob('*.json')):
+              rows.append(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name)
+          (root/'SHA256SUMS').write_text('\n'.join(rows)+'\n')
+          PY
+          (cd /tmp/cwc-q2b-receipt && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() }}
+        with:
+          name: cwc-q2b-source-custody-attempt-${{ github.run_attempt }}
+          path: /tmp/cwc-q2b-receipt/
+          if-no-files-found: error
+          retention-days: 90
