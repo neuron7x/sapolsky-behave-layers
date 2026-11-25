@@ -1,0 +1,115 @@
+name: CNEH-JOINT-LP-01 shared-sample exact dual assurance
+on:
+  pull_request:
+    paths:
+      - 'experiments/cneh_joint_lp/**'
+      - 'AGENTS.md'
+      - 'tests/test_cneh_joint_lp.py'
+      - '.github/workflows/cneh-joint-lp.yml'
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact base, frozen protocol and source preservation
+        run: |
+          test "$BASE_SHA" = "bdc3d736692aeb1362c12918afc022fa11c7ca2c"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(uname -m)" = "$ARCH"
+          git merge-base --is-ancestor "$HEAD_SHA" HEAD
+          git merge-base --is-ancestor "$BASE_SHA" HEAD
+          test "$BASE_SHA" = "bdc3d736692aeb1362c12918afc022fa11c7ca2c"
+          git diff --exit-code bdc3d736692aeb1362c12918afc022fa11c7ca2c HEAD -- experiments/cneh_exp_06c experiments/cneh_exp_06f experiments/cneh_exp_06h experiments/cneh_exp_06i experiments/cneh_exp_06j
+          git merge-base --is-ancestor 47bdbeacd53d53b73d5e7c83e6f0a1a4221fd468 HEAD
+          git show 47bdbeacd53d53b73d5e7c83e6f0a1a4221fd468:experiments/cneh_joint_lp/PROTOCOL.md | cmp - experiments/cneh_joint_lp/PROTOCOL.md
+          git diff --name-status "$BASE_SHA" HEAD | sort > /tmp/actual
+          printf 'A\t%s\n' '.github/workflows/cneh-joint-lp.yml' 'AGENTS.md' 'experiments/cneh_joint_lp/PROTOCOL.md' 'experiments/cneh_joint_lp/BIBLIOGRAPHY.md' 'experiments/cneh_joint_lp/HANDOFF.json' 'experiments/cneh_joint_lp/kernel.py' 'experiments/cneh_joint_lp/search.py' 'experiments/cneh_joint_lp/panel.py' 'experiments/cneh_joint_lp/run.py' 'tests/test_cneh_joint_lp.py' | sort > /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Authenticate sealed J aggregate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14973064112/zip" --output /tmp/parent.zip
+          echo '2f127a7590a9f6e5f01858c185be70d07ed28d78fd226a97807fa3443e729479  /tmp/parent.zip' | sha256sum --strict -c -
+      - name: Independent exact oracle and mutation probes
+        run: python -m unittest discover -s tests -p test_cneh_joint_lp.py -v
+      - name: Complete frozen panel and independent optimized replay
+        id: panel
+        run: |
+          PRIMARY_RC=0
+          REPLAY_RC=0
+          PYTHONHASHSEED=0 time -p timeout --kill-after=5s 600s python -m experiments.cneh_joint_lp.run native --arch "$ARCH" --head "$HEAD_SHA" --base "$BASE_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --parent /tmp/parent.zip --out /tmp/panel/primary || PRIMARY_RC=$?
+          PYTHONHASHSEED=2147483647 time -p timeout --kill-after=5s 600s python -O -m experiments.cneh_joint_lp.run native --arch "$ARCH" --head "$HEAD_SHA" --base "$BASE_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --parent /tmp/parent.zip --out /tmp/panel/replay || REPLAY_RC=$?
+          printf 'primary_exit=%s replay_exit=%s\n' "$PRIMARY_RC" "$REPLAY_RC"
+          test "$PRIMARY_RC" -eq 0
+          test "$REPLAY_RC" -eq 0
+          cmp /tmp/panel/primary/payload.json /tmp/panel/replay/payload.json
+          cmp /tmp/panel/primary/receipt.json /tmp/panel/replay/receipt.json
+          sha256sum /tmp/panel/primary/payload.json /tmp/panel/replay/payload.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() && steps.panel.outcome != 'skipped' }}
+        with:
+          name: cnehjointlp-${{ matrix.arch }}-attempt-${{ github.run_attempt }}
+          path: /tmp/panel/
+          if-no-files-found: error
+          retention-days: 90
+  aggregate:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.16'
+      - name: Retrieve exact-attempt native evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$BASE_SHA" = "bdc3d736692aeb1362c12918afc022fa11c7ca2c"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header "Accept: application/vnd.github+json" "https://api.github.com/repos/neuron7x/sapolsky-behave-layers/actions/artifacts/14973064112/zip" --output /tmp/parent.zip
+          for arch in aarch64 x86_64; do
+            gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "cnehjointlp-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/profiles/cnehjointlp-$arch"
+          done
+      - name: Independently reconstruct and enforce blocked scientific admission
+        run: |
+          time -p timeout --kill-after=5s 600s python -m experiments.cneh_joint_lp.run aggregate --parent /tmp/parent.zip --profiles /tmp/profiles --head "$HEAD_SHA" --base "$BASE_SHA" --checkout "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --out /tmp/aggregate
+          python -m scripts.cneh_promotion_gate check-verdict --experiment CNEH-JOINT-LP-01 --verdict /tmp/aggregate/report.json
+          (cd /tmp/aggregate && sha256sum --strict -c SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() }}
+        with:
+          name: cnehjointlp-aggregate-attempt-${{ github.run_attempt }}
+          path: /tmp/aggregate
+          if-no-files-found: error
+          retention-days: 90
