@@ -107,6 +107,7 @@ def verify_url(item, value, field, observed):
     for flag in ("http_fetch_performed", "provenance_verified", "imported_notices_reviewed"):
         require(item[flag] is False, "ATTRIBUTION_AUTHORITY")
     valid = text and 0 < len(raw) <= 16384 and not re.search(r"[\s\x00-\x1f\x7f\\]", value) and not re.search(r"%(?![0-9a-fA-F]{2})", value)
+    source_shape_valid = bool(valid)
     derived = text and value.startswith("/wiki/")
     url = "https://en.wikipedia.org" + value if derived else value
     try:
@@ -129,10 +130,15 @@ def verify_url(item, value, field, observed):
     except (ValueError, UnicodeError):
         valid = False
     require(item["structural_url_valid"] is bool(valid), "INDEPENDENT_URL_CLASSIFICATION")
+    require(set(item) == (required if valid else required | {"unresolved_reason"}),
+            "ATTRIBUTION_SCHEMA")
     if item["url_origin"] == "UNRESOLVED":
         require(not valid and item["url"] is None and item["structural_url_valid"] is False and
                 item["historical_revision_id"] is None and
                 type(item.get("unresolved_reason")) is str, "UNRESOLVED_URL_STATE")
+        same(item["unresolved_reason"],
+             "INVALID_OR_AMBIGUOUS_SOURCE_URL" if source_shape_valid else "MISSING_OR_MALFORMED_SOURCE_URL",
+             "UNRESOLVED_REASON")
     else:
         require(valid, "URL_STRUCTURE")
         same([item["url"], item["url_origin"], item["structural_url_valid"]],

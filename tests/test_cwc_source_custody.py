@@ -16,6 +16,7 @@ from experiments.cwc_collision import audit as collision
 from experiments.cwc_source_admission import acquisition
 from experiments.cwc_source_admission import collision_delta
 from experiments.cwc_source_admission import custody
+from experiments.cwc_source_admission import verify_receipt
 from experiments.real_transfer_01 import source_intake
 
 
@@ -303,6 +304,39 @@ class AttributionTests(unittest.TestCase):
         missing.pop(hashes[0])
         with self.assertRaises(ValueError):
             custody.join_cohort_records(missing, cohorts, expected_counts=counts)
+
+
+class IndependentVerifierTests(unittest.TestCase):
+    def test_unresolved_reason_binds_the_actual_failure_stage(self):
+        missing = "MISSING_OR_MALFORMED_SOURCE_URL"
+        invalid = "INVALID_OR_AMBIGUOUS_SOURCE_URL"
+        for value, reason in ((None, missing), ("line\nbreak", missing),
+                              ("not-an-absolute-url", invalid),
+                              ("https://example.org:invalid/article", invalid)):
+            with self.subTest(value=value):
+                item = custody.attribution_for_value(value, "source_url")
+                self.assertEqual(item["unresolved_reason"], reason)
+                verified = []
+                verify_receipt.verify_url(item, value, "source_url", verified)
+                self.assertEqual(verified, [item])
+                for substituted in ("SYNTHETIC_UNBOUND_TEXT", invalid if reason == missing else missing):
+                    changed = {**item, "unresolved_reason": substituted}
+                    observed = []
+                    with self.assertRaisesRegex(verify_receipt.VerificationError, "UNRESOLVED_REASON"):
+                        verify_receipt.verify_url(changed, value, "source_url", observed)
+                    self.assertEqual(observed, [])
+
+    def test_resolved_url_rejects_an_unresolved_reason_field(self):
+        for value in ("https://example.org/article", "http://example.org/article", "/wiki/Example"):
+            with self.subTest(value=value):
+                item = custody.attribution_for_value(value, "source_url")
+                verify_receipt.verify_url(item, value, "source_url", [])
+                for reason in ("SYNTHETIC_UNBOUND_TEXT", "MISSING_OR_MALFORMED_SOURCE_URL"):
+                    changed = {**item, "unresolved_reason": reason}
+                    observed = []
+                    with self.assertRaisesRegex(verify_receipt.VerificationError, "ATTRIBUTION_SCHEMA"):
+                        verify_receipt.verify_url(changed, value, "source_url", observed)
+                    self.assertEqual(observed, [])
 
 
 class HistoricalReceiptTests(unittest.TestCase):
