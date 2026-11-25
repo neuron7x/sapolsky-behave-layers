@@ -38,8 +38,12 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(uname -m)" = "$ARCH"
-          git merge-base --is-ancestor "$HEAD_SHA" HEAD
-          git merge-base --is-ancestor "$BASE_SHA" HEAD
+          test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
+          ACTUAL_BASE="$(git rev-parse HEAD^1)"
+          test "$ACTUAL_BASE" = "bdc3d736692aeb1362c12918afc022fa11c7ca2c"
+          git merge-base --is-ancestor "$BASE_SHA" "$ACTUAL_BASE"
+          BASE_SHA="$ACTUAL_BASE"
+          printf 'BASE_SHA=%s\n' "$BASE_SHA" >> "$GITHUB_ENV"
           git merge-base --is-ancestor 0f3ae2ee00001b9d99adcedb95443ce6ae3f4bfc "$BASE_SHA"
           git merge-base --is-ancestor 87a5964a70619014434559c601efa092659689eb HEAD
           git show 87a5964a70619014434559c601efa092659689eb:experiments/cwc_decision_sufficiency/PROTOCOL.md | cmp - experiments/cwc_decision_sufficiency/PROTOCOL.md
@@ -78,6 +82,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -87,6 +92,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
+          ACTUAL_BASE="$(git rev-parse HEAD^1)"
+          test "$ACTUAL_BASE" = "bdc3d736692aeb1362c12918afc022fa11c7ca2c"
+          git merge-base --is-ancestor "$BASE_SHA" "$ACTUAL_BASE"
+          export BASE_SHA="$ACTUAL_BASE"
           for arch in aarch64 x86_64; do
             gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "cwc-ds01-$arch-attempt-$GITHUB_RUN_ATTEMPT" --dir "/tmp/profiles/$arch"
           done
