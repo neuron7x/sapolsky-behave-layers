@@ -182,6 +182,14 @@ def witness(record, proof, profile, outer):
     return world[:4]
 
 
+def witness_set(record, proofs, profile, outer):
+    a.need(type(proofs) is list and len(proofs)<=8,"witness-set budget")
+    worlds=tuple(witness(record,proof,profile,outer) for proof in proofs)
+    a.need(all(world is not None for world in worlds),"missing constructive witness")
+    a.need(len(set(worlds))==len(worlds),"duplicate witness state")
+    return worlds
+
+
 def loss_contract(losses,epsilon):
     a.need(type(losses) is list and 2<=len(losses)<=4,"action roster")
     rows=[]
@@ -208,21 +216,21 @@ def corner_max(row,box):
     return max(dot(row,(F(1),*point)) for point in product(*box))
 
 
-def decide(record,parent,outer,witness_proof,losses,epsilon,profile,budget,*,independent=False):
+def decide(record,parent,outer,witness_proofs,losses,epsilon,profile,budget,*,independent=False):
     a.need(verify_cover(record,parent,outer,profile,budget),"verified correlated cover")
     rows,eps=loss_contract(losses,epsilon)
-    inner=witness(record,witness_proof,profile,outer)
+    inner=witness_set(record,witness_proofs,profile,outer)
     boxes=tuple(decode_box(box,4) for box in outer["frontier"])
     upper=corner_max if independent else affine_max
     bounds=[]
     for k in range(len(rows)):
         diff=differences(rows,k)
-        lo=None if inner is None else max(dot(d,(F(1),*inner)) for d in diff)
+        lo=None if not inner else max(dot(d,(F(1),*point)) for d,point in product(diff,inner))
         hi=None if not boxes else max(upper(d,box) for d,box in product(diff,boxes))
         a.need(lo is None or hi is not None and 0<=lo<=hi,"regret sandwich")
         bounds.append((lo,hi))
     certified=[k for k,(lo,hi) in enumerate(bounds)
-               if inner is not None and hi is not None and hi<=eps]
+               if inner and hi is not None and hi<=eps]
     excluded=[k for k,(lo,_) in enumerate(bounds) if lo is not None and lo>eps]
     if outer["status"]==c.EXCLUDED:
         status="CONTRADICTION"
@@ -234,15 +242,16 @@ def decide(record,parent,outer,witness_proof,losses,epsilon,profile,budget,*,ind
         status="UNKNOWN"
     return {"scope":SCOPE,"record_sha256":sha(canonical(record)),
             "parent_cover_sha256":sha(canonical(parent)),"outer_sha256":sha(canonical(outer)),
-            "witness_sha256":None if witness_proof is None else sha(canonical(witness_proof)),
+            "witnesses_sha256":sha(canonical(witness_proofs)),
+            "witness_count":len(inner),
             "losses":losses,"epsilon":epsilon,"profile":profile,"node_budget":budget,
             "bounds":[[None if x is None else a.q(x) for x in pair] for pair in bounds],
             "status":status,"certified_actions":certified,"excluded_actions":excluded,
-            "conditional_joint_witness_verified":inner is not None,**NEGATIVE}
+            "conditional_joint_witness_verified":bool(inner),**NEGATIVE}
 
 
-def verify_decision(record,parent,outer,witness_proof,losses,epsilon,profile,budget,receipt):
+def verify_decision(record,parent,outer,witness_proofs,losses,epsilon,profile,budget,receipt):
     v.bounded(receipt)
-    expected=decide(record,parent,outer,witness_proof,losses,epsilon,profile,budget,independent=True)
+    expected=decide(record,parent,outer,witness_proofs,losses,epsilon,profile,budget,independent=True)
     a.need(canonical(receipt)==canonical(expected),"decision certificate mismatch")
     return True
