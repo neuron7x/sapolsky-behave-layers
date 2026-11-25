@@ -3,8 +3,8 @@ from fractions import Fraction as F
 import unittest
 
 from experiments.cneh_exp_06h import reference as h
-from experiments.cneh_cover_assurance import correlated_decision as d
-from experiments.cneh_cover_assurance import correlated_panel as p
+from experiments.cneh_joint_decision import decision as d
+from experiments.cneh_joint_decision import panel as p
 
 
 class CorrelatedDecisionTests(unittest.TestCase):
