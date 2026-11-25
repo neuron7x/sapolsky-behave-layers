@@ -27,7 +27,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(git rev-parse HEAD^2)" = "$HEAD_SHA"
           test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
-          test "$BASE_SHA" = fa59dc4c6d09246ab66acfe2e82e64255c036c55
+          test "$GITHUB_BASE_REF" = main
+          test "$BASE_SHA" = eadeac4815086685646888d8a8495a18869dd638
+          git merge-base --is-ancestor fa59dc4c6d09246ab66acfe2e82e64255c036c55 "$BASE_SHA"
+          git diff --exit-code fa59dc4c6d09246ab66acfe2e82e64255c036c55 "$BASE_SHA"
           git merge-base --is-ancestor 505100d434cdc1e8f9d664c8e90f51dac6efd1a8 HEAD
           git show 505100d434cdc1e8f9d664c8e90f51dac6efd1a8:experiments/cwc_closure/PROTOCOL.md | cmp - experiments/cwc_closure/PROTOCOL.md
           git show 8020be9097a0af6dd764a667fd1304bf6f1df4c2:CWC_CLOSURE.md | cmp - CWC_CLOSURE.md
