@@ -37,7 +37,7 @@ qualifications, move it earlier and put the limiting condition next to it.
 | Missing actor, buried verb, ambiguous `it` | Identify the actor and action in each clause. Name the referent if two readings survive. [Google Technical Writing](https://developers.google.com/tech-writing/one/active-voice) |
 | Awkward stress, crowded qualifiers, unclear phrase boundary | Read aloud and listen for where the result lands and where the sentence needs a pause. [Purdue Global Writing Center](https://purdueglobalwriting.center/editing-and-revising/) |
 | One term for two operations, or two terms for one operation | Compare the wording with the protocol and code. Borrow controlled vocabulary from [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf). [Vale](https://vale.sh/docs) can flag configured term substitutions in Markdown. |
-| Agreement, duplicate words, spelling and punctuation | [LanguageTool](https://dev.languagetool.org/developing-rules.html) can flag candidates in prose. Review flags in context around identifiers, equations and quoted records. |
+| Agreement, duplicate words, spelling and punctuation | [LanguageTool](https://dev.languagetool.org/development-overview) can flag candidates in prose. Review flags in context around identifiers, equations and quoted records. |
 | A stronger claim, inverted metric or lost boundary after editing | Compare the revised sentence with the exact source. Check status, subject, polarity, denominator and scope before approving the change. |
 
 Vale and LanguageTool are optional editorial checks. Scientific status follows the
