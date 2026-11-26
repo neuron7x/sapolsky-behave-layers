@@ -44,6 +44,15 @@ def _verify_sha_dir(path: Path, expected: set[str]) -> dict[str, bytes]:
     return verified
 
 
+def _unique_json_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON evidence key: {key}")
+        result[key] = value
+    return result
+
+
 S01_CONTEXTS = {"TRAIN_CONFOUNDED": 2.0, "OOD_WEAK_CONFOUNDER": 0.2, "OOD_SIGN_FLIP": -1.5}
 S01_METHODS = ("EXACT_CF_SHAPLEY", "OBS_ASSOC", "RECENCY", "EQUAL")
 S01_PREDICATES = {
@@ -66,7 +75,7 @@ def _verify_s01_predicates(verdict: dict, raw: bytes) -> None:
     if tuple(reader.fieldnames or ()) != S01_COLUMNS:
         raise ValueError("S01 OOD seed CSV header mismatch")
     seen = set()
-    efficiency_by_seed: dict[tuple[int, str], float] = {}
+    seed_accounting: dict[tuple[int, str], tuple[float, int]] = {}
     for row in reader:
         location = f"{row.get('seed')}/{row.get('context')}/{row.get('method')}"
         if None in row or any(value is None for value in row.values()):
@@ -77,6 +86,7 @@ def _verify_s01_predicates(verdict: dict, raw: bytes) -> None:
             scores = tuple(float(row[field]) for field in ("score_A", "score_C", "score_D", "score_B"))
             false_mass = float(row["false_credit_mass"])
             efficiency = float(row["max_efficiency_error"])
+            evaluations = int(row["counterfactual_structural_evaluations"])
         except ValueError as exc:
             raise ValueError(f"S01 OOD malformed number at {location}") from exc
         seed, context, method = key
@@ -98,16 +108,24 @@ def _verify_s01_predicates(verdict: dict, raw: bytes) -> None:
         ):
             raise ValueError(f"S01 OOD score projection mismatch at {location}")
         if context.startswith("OOD_") and method == "EXACT_CF_SHAPLEY":
-            if not top1 or computed_mass > S01_TOLERANCE:
+            if not top1 or max(false_mass, computed_mass) > S01_TOLERANCE:
                 raise ValueError(f"S01 OOD primary predicate contradicted at {location}")
-        if efficiency > S01_TOLERANCE or efficiency != efficiency_by_seed.setdefault((seed, context), efficiency):
+        if efficiency > S01_TOLERANCE:
             raise ValueError(f"S01 OOD efficiency predicate contradicted at {location}")
+        if evaluations <= 0:
+            raise ValueError(f"S01 OOD invalid evaluation count at {location}")
+        accounting = (efficiency, evaluations)
+        if accounting != seed_accounting.setdefault((seed, context), accounting):
+            raise ValueError(f"S01 OOD inconsistent seed accounting at {location}")
     if seen != expected:
         missing = min(expected - seen)
         raise ValueError(f"S01 OOD seed roster incomplete at {missing[0]}/{missing[1]}/{missing[2]}")
     stored_max = verdict.get("max_shapley_efficiency_error")
-    if type(stored_max) not in (int, float) or stored_max != max(efficiency_by_seed.values()):
+    if type(stored_max) not in (int, float) or stored_max != max(x[0] for x in seed_accounting.values()):
         raise ValueError("S01 OOD efficiency summary differs from checked seed rows")
+    stored_evaluations = verdict.get("counterfactual_structural_evaluations")
+    if type(stored_evaluations) is not int or stored_evaluations != sum(x[1] for x in seed_accounting.values()):
+        raise ValueError("S01 OOD evaluation total differs from checked seed rows")
 
 
 def validate(root: Path) -> None:
@@ -117,7 +135,7 @@ def validate(root: Path) -> None:
     s01a_files = _verify_sha_dir(s01a_dir, {"verdict.json"})
     s01b_files = _verify_sha_dir(s01b_dir, {"verdict.json", "seed_results.csv"})
     s03_files = _verify_sha_dir(s03_dir, {"verdict.json", "seed_results.csv"})
-    s01a, s01b, s03 = (json.loads(files["verdict.json"])
+    s01a, s01b, s03 = (json.loads(files["verdict.json"], object_pairs_hook=_unique_json_pairs)
                        for files in (s01a_files, s01b_files, s03_files))
     if s01a.get("verdict") != "S01_SKILLLUCK_CONCEPT_REPRODUCED":
         raise ValueError("S01 conceptual verdict drift")

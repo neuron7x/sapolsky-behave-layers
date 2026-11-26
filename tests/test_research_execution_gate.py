@@ -118,6 +118,8 @@ def test_checksum_does_not_replace_exact_predicates(tmp_path: Path, fault: str) 
     ("missing", "seed roster incomplete at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
     ("duplicate", "duplicate seed row at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
     ("efficiency", "efficiency predicate contradicted at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+    ("threshold-boundary", "primary predicate contradicted at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+    ("bad-cost", "invalid evaluation count at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
 ])
 def test_resealed_rows_cannot_support_stale_outcomes(tmp_path: Path, fault: str, expected: str) -> None:
     root = _copy_fixture(tmp_path)
@@ -137,8 +139,13 @@ def test_resealed_rows_cannot_support_stale_outcomes(tmp_path: Path, fault: str,
         rows.pop(index)
     elif fault == "duplicate":
         rows.insert(index, rows[index])
-    else:
+    elif fault == "efficiency":
         rows[index]["max_efficiency_error"] = "1e-10"
+    elif fault == "threshold-boundary":
+        rows[index].update(top1_A="1", false_credit_mass="1.0005e-12", score_A="1.0", score_C="0.0",
+                           score_D="1e-12", score_B="0.0")
+    else:
+        rows[index]["counterfactual_structural_evaluations"] = "-1"
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
@@ -146,4 +153,15 @@ def test_resealed_rows_cannot_support_stale_outcomes(tmp_path: Path, fault: str,
     _reseal(directory, path.name)
     assert (directory / "verdict.json").read_bytes() == verdict
     with pytest.raises(ValueError, match=expected):
+        mod.validate(root)
+
+
+def test_resealed_duplicate_predicate_key_is_ambiguous(tmp_path: Path) -> None:
+    root = _copy_fixture(tmp_path)
+    path = root / "artifacts/research-s01-ood-credit/verdict.json"
+    raw = path.read_text().replace('"ood_shapley_unique_A_all": true',
+                                   '"ood_shapley_unique_A_all": false, "ood_shapley_unique_A_all": true')
+    path.write_text(raw)
+    _reseal(path.parent, path.name)
+    with pytest.raises(ValueError, match="duplicate JSON evidence key: ood_shapley_unique_A_all"):
         mod.validate(root)
