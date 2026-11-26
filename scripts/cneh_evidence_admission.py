@@ -38,14 +38,15 @@ ARCHIVES={
 
 
 class EvidenceViolation(ValueError):
-    def __init__(self,code,detail):
+    def __init__(self,code,detail,*,trace_tick=None):
         super().__init__(f"{code}: {detail}")
         self.code=code
+        self.trace_tick=trace_tick
 
 
-def need(condition,code,detail):
+def need(condition,code,detail,*,trace_tick=None):
     if not condition:
-        raise EvidenceViolation(code,detail)
+        raise EvidenceViolation(code,detail,trace_tick=trace_tick)
 
 
 def sha(raw):
@@ -275,14 +276,14 @@ def strict_array(path):
         raise EvidenceViolation("ENCODING",str(exc)) from exc
 
 
-def decode_gaba(row):
+def decode_gaba(row,*,trace_tick=None):
     values=row.get("true_gaba")
-    need(isinstance(values,list) and len(values)==16,"TRACE","receiver roster")
+    need(isinstance(values,list) and len(values)==16,"TRACE","receiver roster",trace_tick=trace_tick)
     try:
         result=[float.fromhex(x) for x in values]
     except (ValueError,TypeError,OverflowError) as exc:
-        raise EvidenceViolation("TRACE","bad conductance") from exc
-    need(all(math.isfinite(x) and x>=0 for x in result),"TRACE","invalid conductance")
+        raise EvidenceViolation("TRACE","bad conductance",trace_tick=trace_tick) from exc
+    need(all(math.isfinite(x) and x>=0 for x in result),"TRACE","invalid conductance",trace_tick=trace_tick)
     return result
 
 
@@ -295,30 +296,38 @@ def validate_trace(ep,key,contract):
     mode=2 if stage=="B" else 0
     used=0
     previous=None
+    # Use the row position, since a malformed row can lie about its tick.
+    def step_need(condition,detail,tick):
+        need(condition,"TRACE",detail,trace_tick=tick)
+
     for t,row in enumerate(rows):
-        need(isinstance(row,dict) and exact_int(row.get("tick"),t),"TRACE","ordered sample IDs")
-        need(hex_digest(row.get("state_sha256")) and hex_digest(row.get("rng_sha256")),"TRACE","state/RNG digest")
+        step_need(isinstance(row,dict) and exact_int(row.get("tick"),t),"ordered sample IDs",t)
+        step_need(hex_digest(row.get("state_sha256")) and hex_digest(row.get("rng_sha256")),"state/RNG digest",t)
         if contract["native"]:
-            values=decode_gaba(row)
+            values=decode_gaba(row,trace_tick=t)
             bits=row.get("true_bits")
-            need(isinstance(bits,list) and len(bits)==8 and all(integer(x) and x in (0,1) for x in bits),"TRACE","source bits")
-            need(row.get("transition_mode")== (None if t==0 else mode),"TRACE","transition mode")
+            step_need(isinstance(bits,list) and len(bits)==8 and all(integer(x) and x in (0,1) for x in bits),"source bits",t)
+            actual_mode=row.get("transition_mode")
+            step_need(actual_mode is None if t==0 else exact_int(actual_mode,mode),"transition mode",t)
             if previous is not None:
                 old,old_bits=previous
                 n=sum(MODES[mode][j]*sum(old_bits[j*4:j*4+4]) for j in (0,1))
-                need(max(abs(y-DECAY*(x+.5*n)) for x,y in zip(old,values,strict=True))<=1e-9,"TRACE","native recurrence")
+                step_need(max(abs(y-DECAY*(x+.5*n)) for x,y in zip(old,values,strict=True))<=1e-9,"native recurrence",t)
             mode=schedule0.get(t,mode)
-            need(exact_int(row.get("next_mode"),mode),"TRACE","next mode")
+            step_need(exact_int(row.get("next_mode"),mode),"next mode",t)
             previous=values,bits
         if t<steps:
             group=row.get("group")
-            need("group" in row and (group is None or integer(group) and group in (0,1)),"TRACE","source group")
+            step_need("group" in row and (group is None or integer(group) and group in (0,1)),"source group",t)
             used+=group is not None
             if contract["native"]:
-                need(equal(row.get("source_inputs_pA"),[500. if group==g else 0. for g in (0,1)])
-                     and row.get("direct_B_pA")==300. and row.get("applied_gain")==1.,"TRACE","native current envelope")
+                direct=row.get("direct_B_pA")
+                gain=row.get("applied_gain")
+                step_need(equal(row.get("source_inputs_pA"),[500. if group==g else 0. for g in (0,1)])
+                          and type(direct) in (int,float) and direct==300.
+                          and type(gain) in (int,float) and gain==1.,"native current envelope",t)
         else:
-            need("group" not in row,"TRACE","terminal action")
+            step_need("group" not in row,"terminal action",t)
     need(used==contract["stim_ticks"] and exact_int(ep.get("source_current_l1_pA_ticks"),contract["source_effort"]),"TRACE","source effort")
     return sha(canonical([rows[0]["state_sha256"],[(r["rng_sha256"],r.get("noise"),r.get("erasures")) for r in rows]]))
 
@@ -441,7 +450,12 @@ def main():
         print(canonical(report).decode(),end="")
         return 0
     except (ValueError,OSError,TypeError,KeyError,RecursionError,zipfile.BadZipFile) as exc:
-        print(json.dumps({"engineering_evidence":"BLOCKED","scientific_promotion":"BLOCKED",FLAG:False,"error":str(exc)}),file=sys.stderr)
+        failure={"engineering_evidence":"BLOCKED","scientific_promotion":"BLOCKED",FLAG:False,"error":str(exc)}
+        if isinstance(exc,EvidenceViolation):
+            failure["failure_code"]=exc.code
+            if exc.trace_tick is not None:
+                failure["trace_tick"]=exc.trace_tick
+        print(json.dumps(failure),file=sys.stderr)
         return 2
 
 
