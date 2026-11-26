@@ -5,14 +5,20 @@ Fresh checkout · fresh container · no author-local paths · no manual edits ·
 credentials · source/data hash verification · separate output dir · no overwrite of
 canonical artifacts · automatic verdict · automatic checksum verification.
 
-## One command
+## Commands and scope
+
+Use a fresh checkout with full Git history and record its commit and tree. Install
+runtime and development dependencies using the [test and CI reference](../vnv/CWC_TEST_AND_CI_REFERENCE.md).
+
 ```bash
+make -f Makefile.cwc verify-evidence
 make -f Makefile.cwc reproduce-primary
 ```
-which must: verify source → build environment (`uv sync --frozen`) → verify deps →
-generate immutable data (seeded generators) → run the primary experiment → collect raw
-outputs → analyze → generate verdict → compare to preregistered tolerance → write a
-reproduction report → validate SHA256SUMS.
+
+The first target verifies the history guard and archives with discovered manifests.
+The second regenerates eight seeded WP4 runs in temporary storage, analyzes them
+and checks the synthetic verdict and tolerance. Retain the command log as a receipt.
+Use `verify-full` to include both operations in the wider test suite.
 
 ## Containers
 Hermetic builds in `containers/` (`Dockerfile.cpu`, `Dockerfile.cuda`, `apptainer.def`).
@@ -24,5 +30,6 @@ a clean machine (see `docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md`). 
 the honest current gap.
 
 ## Acceptance
-fresh-machine PASS · one-command PASS · manual edits 0 · private paths 0 · checksum
-failures 0 · primary result within preregistered tolerance.
+Record the exact checkout and runtime, exit codes for archive verification and
+replay, manual edits, and the regenerated verdict and tolerance check. An external
+reproduction receipt identifies its operator and environment.

@@ -163,11 +163,17 @@ mechanism wins everything (`λ=2` above — over-penalized).
 Sections 1–8 treat the oracle gap `G` as the value of adaptive control. That is an
 *upper bound*: it assumes the controller can identify the right choice for free. A
 learned controller must actually *compute* which mechanism a context needs, at some
-cost `c_route`. The realized value is therefore
+cost `c_route` in the same utility units. For a policy with gross value `V_policy`
+under the same admissible choices and utility, its net advantage over the best
+fixed action satisfies
 
 ```
-V_realized = G − c_route.
+V_realized = V_policy − V_fixed − c_route ≤ G − c_route.
 ```
+
+Equality requires `V_policy = V_oracle`. The difference `V_oracle − V_policy`
+accounts for decisions that fail to attain oracle utility. See the
+[formal derivation](architecture/FORMAL_MODEL.md#adaptive-computation-and-information-cost).
 
 Two empirical anchors (`artifacts/wp2-routing-v3-*`, 8 seeds each) pin the extremes:
 

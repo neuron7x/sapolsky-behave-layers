@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 title: "Cognitive Wiring Core (CWC): evidence-first adaptive computation"
-message: "If you use this system or its evidence, please cite it."
+message: "Please cite the exact repository commit and, for measured evidence, the run and artifact digest."
 type: software
 authors:
   - given-names: Yaroslav
     family-names: Vasylenko
-repository-code: "local: nanochat-cwc-baseline (fork of karpathy/nanochat)"
+repository-code: "https://github.com/neuron7x/sapolsky-behave-layers"
 version: "1.1.0-5a0924c"
 date-released: "2026-07-21"
 license: MIT
@@ -16,5 +16,5 @@ abstract: >
   end-to-end routing learnable under a binding budget) and negatives (RCFR ties
   prior art; surface-matched routing shows the route decision is the computation;
   fractal emergence unsupported), plus a unifying identifiability theory
-  (V_realized = oracle_gap - route_decision_cost). Not yet a proven
-  Pareto-superior architecture; no independent replication.
+  (oracle_gap minus route_decision_cost bounds realized policy advantage).
+  Architecture-level Pareto advantage and independent replication remain untested.

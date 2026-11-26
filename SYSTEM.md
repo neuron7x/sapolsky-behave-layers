@@ -6,6 +6,11 @@ beats static Transformers / MoE / dynamic-compute systems at equal budget. This
 document is the entry point and the map. Consolidated 2026-07-16 (the two former
 sibling projects were merged in; see `legacy/` and `experiments/fractal_multiscale/`).
 
+Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md),
+[formal model](docs/architecture/FORMAL_MODEL.md),
+[test and CI coverage](docs/vnv/CWC_TEST_AND_CI_REFERENCE.md), and
+[sources and proof obligations](docs/publication/SOURCE_TO_OBLIGATION.md).
+
 ## What this system IS (honest one-line)
 A verified measurement substrate + falsification/governance runtime with multiple
 narrow supported mechanisms and preserved negative results, plus a mathematical
