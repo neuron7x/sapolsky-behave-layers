@@ -12,7 +12,7 @@ recorded separately in the DGC qualification pointer.
 
 - [Requirements](REQUIREMENTS.json) organizes 262 directive items in 15 categories.
   Shared evidence profiles supply the finding and rationale for each expanded
-  item. The hosted report emits an individual stable ordinal, classification,
+  item. A frozen Git roster binds each ordinal and source URI. The hosted report emits classification,
   rationale and Git blob bindings.
 - [Standards and venue crosswalk](STANDARDS.json) records official public scope,
   the selected reference or conditional authority, covered categories and open
@@ -22,7 +22,7 @@ recorded separately in the DGC qualification pointer.
   the applicable EU scope questions are separate records.
 - [Findings](FINDINGS.json) retains the exact original blob, adverse observation,
   falsification test and disposition. A candidate correction changes the text
-  in the corresponding file. Independent substantive admission stays open.
+  in the corresponding file. A changed blob remains pending review and cannot close the finding.
 - [Risk and acceptance record](RESEARCH_RISK_AND_ACCEPTANCE.md) records scoped
   failure modes, corrective controls and recovery obligations.
 
@@ -33,7 +33,9 @@ Every tracked blob has a path, mode, size, Git object ID and a classification.
 The report distinguishes documentary, evidentiary, verification and source
 material. A blob's identity supplies provenance. Pending substantive review is
 `INCOMPLETE`. Known open inconsistencies carry their explicit findings.
-Historical byte identities and negative outcomes remain available.
+A repo-wide Markdown scan reports unresolved simple inline relative path links.
+Anchors and remote URLs require separate verification. Historical byte identities
+and negative outcomes remain available.
 
 | State | Applies when |
 | --- | --- |
@@ -51,7 +53,8 @@ acceptance is blocked. `--accept` returns 3 while required evidence or external
 authority is unresolved. Malformed provenance or a corrupt register exits 2.
 
 The audit job exercises deliberate roster deletion, fabricated verification,
-misapplied exclusions, invalid evidence identities and duplicate records.
+misapplied exclusions, invalid evidence identities, duplicate records, same-count obligation substitution
+and missing Markdown targets.
 Existing exact-certificate, historical-evidence and experimental gates provide
 their own scoped receipts. Open gaps include input admission and model execution,
 independent scientific reproduction, complete per-document review, clean archive
@@ -60,7 +63,8 @@ issued. Interpret a valid negative through its frozen protocol.
 
 ## Sequence and responsibility
 
-Discovery and inventory use Git tree identity. Classification and cross-reference
+Discovery and inventory use Git tree identity. Preserve the pinned baseline and
+roster commits in the integrated ancestry when accepting this audit. Classification and cross-reference
 map obligations to actual records. Findings retain baseline counterexamples.
 Candidate remediation is reviewed against the source, then tested on the hosted
 checkout. Scientific validation and reproduction are separate acceptance stages.

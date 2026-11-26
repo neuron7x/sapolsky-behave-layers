@@ -19,11 +19,11 @@ None declared.
   written by the AI agent; the author specified the hypotheses, review critiques, and
   acceptance gates.
 - **Analysis:** metric computation, bootstrap CIs, and verdicts were produced by AI-written
-  code and are fully reproducible from the committed scripts.
+  code. Committed scripts support the results linked by the relevant evidence records.
 - **Documentation:** methodology, registries, cards, and reports in `docs/` were AI-drafted
   and grounded in the real repository state.
-- **Verification status:** all claims are backed by committed code, tests, and
-  checksummed evidence bundles. The author is responsible for the scientific claims.
+- **Verification status:** the historical claims use the support levels and evidence
+  named in the registry. The author is responsible for the scientific claims.
   **Independent replication has NOT been performed** (CWC-L8 = NOT_TESTED); no third party
   has yet re-derived the results.
 - **Not independently verified:** cross-hardware behaviour, scale generalization, and any

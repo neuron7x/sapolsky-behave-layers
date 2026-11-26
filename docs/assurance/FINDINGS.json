@@ -7,7 +7,7 @@
       "path": "docs/methodology/CWC_MASTER_METHODOLOGY.md",
       "baseline_blob_oid": "c495783bdfa6a620990fa6af5823aa7e754ace41",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Unconditional oracle-gap equality and universal model-seed unit overstate policy and experiment semantics.",
       "falsifier": "Cross-check the inequality and protocol-defined unit against FORMAL_MODEL and REAL-TRANSFER-01."
     },
@@ -16,7 +16,7 @@
       "path": "docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
       "baseline_blob_oid": "5f3d41c5ae3f24e6c9d4f951932ea2f98a6e8307",
       "status": "INVALID",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Project-wide five-corpus seed and CI rules conflict with the frozen two-family transfer protocol.",
       "falsifier": "Review model-seed applicability, exact gates and descriptive case intervals against the frozen text."
     },
@@ -25,7 +25,7 @@
       "path": "docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
       "baseline_blob_oid": "d2eeb0215b93c23b808c5f0f62f282f126305264",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Synthetic-only language persisted after frozen external source acquisition.",
       "falsifier": "Compare #87 and #94 intake receipts and preserve source admission as pending."
     },
@@ -34,7 +34,7 @@
       "path": "docs/data/DATASET_REGISTER.yaml",
       "baseline_blob_oid": "8ede20e8eeabe01c9588d723171e771eef86524f",
       "status": "INCOMPLETE",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The declared synthetic dataset schema was absent from the tree.",
       "falsifier": "Validate the synthetic YAML against schemas/dataset.schema.json. External families retain their separate source admission."
     },
@@ -43,7 +43,7 @@
       "path": "docs/system_card/CWC_SYSTEM_CARD.md",
       "baseline_blob_oid": "3b7b54effad57f1750df5f87b45d006210bb4036",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The historical d920f79 profile could be read as current and repo-wide.",
       "falsifier": "Identify the historical scope and reconcile the current data and risk documents."
     },
@@ -52,7 +52,7 @@
       "path": "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv",
       "baseline_blob_oid": "d07aeaf0a185a76674124c37ea0b23a82e3cbe54",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "WP4 had a broader status than its claim registry and modern contracts were omitted.",
       "falsifier": "Compare REQ-008 with the registry and new obligations with cited code and receipts."
     },
@@ -61,7 +61,7 @@
       "path": "docs/reproducibility/ARTIFACT_README.md",
       "baseline_blob_oid": "24bb5cfa3a03301d310843dfa62a7defdd07786a",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The archived suspension note conflicted with the public repository.",
       "falsifier": "Verify actual public access, current artifact locations and separate persistent release status."
     },
@@ -70,7 +70,7 @@
       "path": "docs/reproducibility/ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md",
       "baseline_blob_oid": "dc483266f345369b08ada69ca5242f7305ee253b",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Availability and archive status were conflated with a historical suspension.",
       "falsifier": "Resolve the public repository, releases and actual restore evidence separately."
     },
@@ -79,7 +79,7 @@
       "path": "docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md",
       "baseline_blob_oid": "d52f5a93a81a1da196c25190255854ab48ef35fe",
       "status": "INVALID",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Container recipes were called hermetic while CPU sync has a fallback and no clean restore is shown.",
       "falsifier": "Compare the scoped description with containers/Dockerfile.cpu and the hosted locked workflow."
     },
@@ -88,7 +88,7 @@
       "path": "docs/publication/ACM_ARTIFACT_EVALUATION_CHECKLIST.md",
       "baseline_blob_oid": "0ebd4648412812d4cb98e3532072ee537f469853",
       "status": "OUTDATED",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Historical test counts and archival claims lacked a matching release or badge scope.",
       "falsifier": "Confirm current scoped Actions evidence and distinguish venue badges from self-assessment."
     },
@@ -97,7 +97,7 @@
       "path": "docs/publication/NEURIPS_2026_SUBMISSION_CHECKLIST.md",
       "baseline_blob_oid": "ef751a1392f5df58abfdbe34500d96343b81aeb3",
       "status": "INCOMPLETE",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The historical self-assessment omitted topics from the official 16-question checklist.",
       "falsifier": "Map all 16 rows to the official checklist, preserve disclosure and approval dependencies."
     },
@@ -106,7 +106,7 @@
       "path": "docs/publication/AUTHOR_FUNDING_COI_AND_AI_ASSISTANCE_DISCLOSURE.md",
       "baseline_blob_oid": "8791244c60157e040cbf7ec9b1a59e38f1fe3149",
       "status": "INCOMPLETE",
-      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The historical Claude disclosure did not include the Codex documentation audit and exact verification boundaries.",
       "falsifier": "Record observed contributions and retain claims requiring author confirmation."
     },
@@ -172,6 +172,15 @@
       "disposition": "OPEN",
       "finding": "The targeted search has known forward-tracing and second-reviewer gaps.",
       "falsifier": "Track the search update and candidate-vs-HEC objective alignment before broader novelty claims."
+    },
+    {
+      "id": "F-20",
+      "path": "CITATION.cff",
+      "baseline_blob_oid": "8b06f9e050f185d631b5289988575496a05cf4ca",
+      "status": "OUTDATED",
+      "disposition": "CORRECTION_PENDING_REVIEW",
+      "finding": "The generic citation exposed a historical WP16 archive version as the default for the current source.",
+      "falsifier": "Verify commit-oriented live citation and confirm the explicit release-stamping function can insert and replace release fields."
     }
   ]
 }

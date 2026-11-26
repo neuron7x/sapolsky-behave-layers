@@ -405,13 +405,13 @@
       "id": "S-31",
       "name": "Institution-specific requirements",
       "authority": "target unresolved",
-      "url": "https://neurips.cc/public/guides/PaperChecklist",
+      "url": null,
       "categories": [
         13,
         14
       ],
       "status": "INCOMPLETE",
-      "finding": "The repository establishes no institution or contract imposing a different rubric. Obtain the actual institution and official rules if designated; the URL is the prospective venue checklist, not institutional proof."
+      "finding": "The repository establishes no institution or contract imposing a different rubric. Obtain the actual institution and official rules if designated. The institutional requirement is unresolved."
     }
   ]
 }

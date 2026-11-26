@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import posixpath
 import re
 import subprocess
 from collections import Counter
@@ -13,9 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIREMENTS = "docs/assurance/REQUIREMENTS.json"
 STANDARDS = "docs/assurance/STANDARDS.json"
 FINDINGS = "docs/assurance/FINDINGS.json"
+ROSTER_COMMIT = "87efe1bad7eb062cf415425334adb0e72250ab30"
 REQUIRED_COUNTS = (16, 14, 19, 20, 20, 22, 15, 25, 15, 17, 19, 18, 15, 19, 8)
 STATUSES = frozenset({"VERIFIED", "INCOMPLETE", "MISSING", "INVALID", "OUTDATED", "NOT_APPLICABLE"})
 OBJECT_ID = re.compile(r"[0-9a-f]{40}")
+MARKDOWN_LINK = re.compile(r"\]\(([^\s()]+)(?:\s+[^)]*)?\)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 DOCUMENT_SUFFIXES = frozenset({".md", ".rst", ".tex", ".bib", ".pdf", ".cff"})
 SCOPE_POINTER = "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
 
@@ -75,6 +79,64 @@ def inventory(root: Path, commit: str) -> dict[str, dict[str, Any]]:
     return records
 
 
+def obligation_roster(register: dict[str, Any]) -> tuple[tuple[int, str], ...]:
+    return tuple((category["category"], item)
+                 for category in register["categories"]
+                 for profile in category["profiles"]
+                 for item in profile["items"])
+
+
+def bind_rosters(root: Path, register: dict[str, Any], standards: list[dict[str, Any]]) -> None:
+    frozen = read_commit_json(root, ROSTER_COMMIT, REQUIREMENTS)
+    require(obligation_roster(register) == obligation_roster(frozen), "frozen obligation identity drift")
+    approved = read_commit_json(root, ROSTER_COMMIT, STANDARDS)["sources"]
+    expected = [(row["id"], None if row["authority"] == "target unresolved" else row["url"]) for row in approved]
+    require([(row["id"], row["url"]) for row in standards] == expected, "frozen source URI drift")
+
+
+def relative_link_findings(path: str, text: str, paths: set[str]) -> list[dict[str, Any]]:
+    result = []
+    fence = None
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        match = FENCE.match(line)
+        if match:
+            marker = match[1]
+            if fence is None:
+                fence = marker
+            elif marker[0] == fence[0] and len(marker) >= len(fence):
+                fence = None
+            continue
+        if fence:
+            continue
+        for link in MARKDOWN_LINK.findall(line):
+            target = link.partition("#")[0].partition("?")[0]
+            if not target or ":" in target or target.startswith(("/", "<")):
+                continue
+            relative = posixpath.normpath(posixpath.join(posixpath.dirname(path), target))
+            if relative not in paths:
+                result.append({"line": line_number, "target": target})
+    return result
+
+
+def inspect_relative_links(root: Path, commit: str, records: dict[str, Any]) -> dict[str, Any]:
+    paths = set(records) | {str(parent) for path in records for parent in Path(path).parents}
+    findings = {}
+    checked = 0
+    for path in records:
+        if not path.endswith(".md"):
+            continue
+        raw = git(root, "show", f"{commit}:{path}")
+        checked += 1
+        try:
+            errors = relative_link_findings(path, raw.decode("utf-8"), paths)
+        except UnicodeDecodeError:
+            errors = [{"line": 0, "target": "non-UTF-8 Markdown"}]
+        if errors:
+            findings[path] = errors
+    return {"files_scanned": checked, "findings": findings,
+            "scope": "simple inline repo-relative Markdown paths; excludes fragments, external links and fenced examples"}
+
+
 def validate_requirements(
     register: dict[str, Any], records: dict[str, Any], production_disabled: bool,
 ) -> list[dict[str, Any]]:
@@ -118,7 +180,12 @@ def validate_standards(register: dict[str, Any]) -> list[dict[str, Any]]:
     require([row["id"] for row in rows] == [f"S-{i:02d}" for i in range(1, 32)], "standards roster")
     for row in rows:
         require(row["status"] in {"INCOMPLETE", "NOT_APPLICABLE"}, "unsupported standards disposition")
-        require(row["url"].startswith("https://") and bool(row["finding"].strip()), "unbound official source")
+        url = row["url"]
+        if row["authority"] == "target unresolved":
+            require(url is None, "unresolved authority cannot supply an official URI")
+        else:
+            require(isinstance(url, str) and url.startswith("https://"), "unbound official source")
+        require(bool(row["finding"].strip()), "empty source assessment")
         require(bool(row["categories"]) and set(row["categories"]) <= set(range(1, 16)), "unsupported category")
         require((row["status"] == "NOT_APPLICABLE") == (row["authority"] == "scope excluded"),
                 "unjustified external-standard exclusion")
@@ -140,8 +207,17 @@ def audit(root: Path = ROOT) -> dict[str, Any]:
     disabled = pointer.get("production_control_authorized") is False and pointer.get("activation_authorized") is False
     requirements = validate_requirements(reg, records, disabled)
     standards = validate_standards(read_commit_json(root, head, STANDARDS))
+    bind_rosters(root, reg, standards)
     findings = read_commit_json(root, head, FINDINGS)
     require(findings.get("schema") == "cwc-documentation-findings-v1", "findings schema")
+    require(findings.get("baseline") == baseline["commit"], "findings baseline")
+    previous = read_commit_json(root, ROSTER_COMMIT, FINDINGS)["findings"]
+    reported = {row["id"]: row for row in findings["findings"]}
+    for old in previous:
+        current = reported.get(old["id"])
+        require(current is not None and
+                {k: v for k, v in current.items() if k != "disposition"} ==
+                {k: v for k, v in old.items() if k != "disposition"}, "finding roster or evidence drift")
     base_records = inventory(root, baseline["commit"])
     ids = set()
     for row in findings["findings"]:
@@ -149,20 +225,23 @@ def audit(root: Path = ROOT) -> dict[str, Any]:
         require(row["id"] not in ids and path in base_records and path in records, "unbound finding")
         ids.add(row["id"])
         require(row["status"] in {"INVALID", "OUTDATED", "INCOMPLETE"}, "unexpected finding status")
-        require(disposition in {"REMEDIATED_IN_CANDIDATE", "OPEN"}, "invalid finding disposition")
+        require(disposition in {"CORRECTION_PENDING_REVIEW", "OPEN"}, "invalid finding disposition")
         require(base_records[path]["blob_oid"] == row["baseline_blob_oid"], f"finding baseline mismatch: {path}")
-        if disposition == "REMEDIATED_IN_CANDIDATE":
-            require(records[path]["blob_oid"] != row["baseline_blob_oid"], f"remediation absent: {path}")
+        if disposition == "CORRECTION_PENDING_REVIEW":
+            require(records[path]["blob_oid"] != row["baseline_blob_oid"], f"candidate change absent: {path}")
         else:
             records[path]["status"] = row["status"]
             records[path]["basis"] = row["finding"]
     blockers = [row["id"] for row in (*requirements, *standards)
                 if row["status"] not in {"VERIFIED", "NOT_APPLICABLE"}]
-    blockers.extend(row["id"] for row in findings["findings"] if row["disposition"] == "OPEN")
+    blockers.extend(row["id"] for row in findings["findings"])
+    links = inspect_relative_links(root, head, records)
+    blockers.extend(f"LINK:{path}" for path in links["findings"])
     return {
         "schema": "cwc-documentation-audit-v1", "commit": head, "tree": tree, "baseline": baseline,
         "acceptance": "BLOCKED" if blockers else "ACCEPTED", "blockers": blockers,
         "inventory": records, "requirements": requirements, "standards": standards, "findings": findings["findings"],
+        "relative_links": links,
     }
 
 
@@ -188,6 +267,8 @@ def main() -> int:
         "commit": report["commit"], "tree": report["tree"], "inventory": dict(kinds),
         "requirements": dict(counts), "standards": len(report["standards"]),
         "open_items": len(report["blockers"]), "acceptance": report["acceptance"],
+        "markdown_scanned": report["relative_links"]["files_scanned"],
+        "markdown_with_link_findings": len(report["relative_links"]["findings"]),
     }, sort_keys=True))
     return 3 if args.accept and report["acceptance"] != "ACCEPTED" else 0
 

@@ -125,8 +125,11 @@ def restamp_citation(date: str) -> bool:
         return False
     commit = _sh("git rev-parse HEAD")
     text = cff.read_text()
-    text = re.sub(r'^version:.*$', f'version: "1.1.0-{commit[:7]}"', text, flags=re.MULTILINE)
-    text = re.sub(r'^date-released:.*$', f'date-released: "{date}"', text, flags=re.MULTILINE)
+    for field, value in (("version", f"1.1.0-{commit[:7]}"), ("date-released", date)):
+        line = f'{field}: "{value}"'
+        text, count = re.subn(rf"^{field}:.*$", line, text, flags=re.MULTILINE)
+        if not count:
+            text = f"{text.rstrip()}\n{line}\n"
     cff.write_text(text)
     return True
 
