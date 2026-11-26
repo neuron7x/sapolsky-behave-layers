@@ -1,10 +1,9 @@
 # COGNITIVE WIRING CORE — Unified System
 
-Single canonical repository for the CWC research programme: an evidence-first
-investigation of whether a causally-controlled adaptive-computation architecture
-beats static Transformers / MoE / dynamic-compute systems at equal budget. This
-document is the entry point and the map. Consolidated 2026-07-16 (the two former
-sibling projects were merged in; see `legacy/` and `experiments/fractal_multiscale/`).
+This map connects CWC's code, frozen protocols and evidence. CWC tested whether
+causally controlled adaptive computation could outperform declared static and
+adaptive baselines at equal budget. The repository consolidated two sibling
+projects on 2026-07-16. See `legacy/` and `experiments/fractal_multiscale/`.
 
 Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md),
 [formal model](docs/architecture/FORMAL_MODEL.md),
@@ -14,12 +13,12 @@ The [documentation audit](docs/assurance/DOCUMENTATION_AUDIT.md) tracks scope,
 evidence bindings and acceptance blockers. Its scoped documentation review and
 programme acceptance are separate results.
 
-## What this system IS (honest one-line)
-A verified measurement substrate + falsification/governance runtime with multiple
-narrow supported mechanisms and preserved negative results, plus a mathematical
-value/identifiability theory. The current direct real-data shared-router adaptive-depth
-branch is `NOT_SUPPORTED`; the broader L7 architecture-level Pareto claim remains
-`NOT_TESTED`. It is not an architecture with a proven Pareto advantage at scale.
+## Current claim boundary
+
+CWC measures and tests adaptive computation. Its records retain both scoped
+positive results and failed candidates. The preregistered two-exit adaptive-depth
+line ended as `NOT_SUPPORTED`. The broader L7 architecture-level Pareto claim
+and the external `REAL-TRANSFER-01` experiment remain `NOT_TESTED`.
 
 **WP4 corrected interpretation** (`docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md`):
 the substrate verifies the algebraic identity adaptive−static =
@@ -27,7 +26,17 @@ the substrate verifies the algebraic identity adaptive−static =
 an independently predicted empirical effect or an exactly compute-matched Pareto
 result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 
-**Current adaptive-depth boundary — CWC-FLAGSHIP-ROUTE-01/02 (2026-08-11):** R1 shared raw-coordinate routing failed `0/6` PRIMARY and `2/6` REPLICATION cells. A preregistered final rescue then removed cross-seed router transfer by fitting the same frozen ridge rule separately on each fresh model's CALIBRATION windows while keeping model/training/FLOP/frontier/baseline semantics fixed and using R1-disjoint evaluation offsets. R2 improved to `5/6` PRIMARY and `4/6` REPLICATION; CODE passed `6/6` seed-cohort cells but PROSE only `3/6`. Verdict `CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED`. The R2 preregistration explicitly forbids R3 rescue, so the current two-exit learned adaptive-depth lineage is **terminated**. Broad adaptive computation is not declared impossible. L7 architecture promotion has no surviving adaptive-depth candidate and remains blocked/`NOT_TESTED`. CWC programme continuation is narrowed to the mechanistically independent decision-relevant epistemic-control line and its external `REAL-TRANSFER-01` gate. See `artifacts/cwc-flagship-route-01/`, `artifacts/cwc-flagship-route-02/`, and `docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md`.
+**CWC-FLAGSHIP-ROUTE-01/02 (2026-08-11).** The R1 shared router passed
+`0/6` PRIMARY and `2/6` REPLICATION cells. R2 fit a separate ridge router on
+each independently trained model's CALIBRATION windows. The frozen repair
+kept the model, training, FLOP accounting, frontier and baselines fixed, and
+used evaluation offsets disjoint from R1. R2 passed `5/6` PRIMARY and `4/6`
+REPLICATION cells. CODE passed `6/6` and PROSE passed `3/6`.
+The verdict was `CWC_FLAGSHIP_ROUTE_02_NOT_SUPPORTED`. The R2 protocol closed
+the lineage and forbids an R3 rescue. L7 remains blocked. The remaining path
+to scientific promotion runs through `REAL-TRANSFER-01` and the
+decision-relevant epistemic-control line. [R1](artifacts/cwc-flagship-route-01/)
+· [R2](artifacts/cwc-flagship-route-02/) · [Programme decision](docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md)
 
 ## Causal-credit / counterfactual-model sub-line — current boundary
 
@@ -46,7 +55,7 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 - `COG-COUNTERMODEL-01`: frozen design-negative. Exact countermodels survived, but the preregistered requirement that a Pareto frontier recover the hidden generating beta failed (0.50 PRIMARY / 0.640625 REPLICATION). The failure exposed an invalid truth-selection objective inside an observational equivalence class and remains immutable.
 - `COG-COUNTERMODEL-01R`: set-valued countermodel guard qualified **synthetically and narrowly** on fresh cohorts. In the admitted reduced-form reparameterization class the unrestricted beta equivalence set is represented as all real beta; material exact alternatives survive with path error at floating-point scale. Explicit direct-effect bounds yield analytic assumption-conditional beta intervals, but never causal truth. Invalid upstream states are vetoed and unconditional authority remains zero.
 - `COG-EPISTEMIC-01`: raw confirmatory run remains **non-passing / harness-invalid as a complete qualification** because one F11 REPLICATION case never reached the intended adapter precondition; the upstream stochastic IV diagnostic returned `IDENTIFYING_ASSUMPTION_VIOLATED`. The raw run is preserved, not reclassified.
-- `COG-EPISTEMIC-01R`: typed epistemic runtime lattice qualified **synthetically and narrowly** with fresh namespaces. Both cohorts accepted 128/128 legal chains and rejected 0/1536 forbidden-promotion attacks across 12 families. `UNIDENTIFIED/FALSIFIED/OOD/ABSTAIN` are absorbing within a lineage; assumption evidence cannot substitute for direct intervention evidence; surrogate/replay sources cannot mint direct-intervention authority; capability tokens bind exact claim, parent digest and context scope. `INTERVENTION_SUPPORTED` remains operator/context scoped and is not a true-causal-model state.
+- `COG-EPISTEMIC-01R`: typed epistemic runtime lattice qualified **synthetically and narrowly** with fresh namespaces. Each cohort accepted 128/128 legal chains and 0/1,536 forbidden promotions across 12 attack families. `UNIDENTIFIED/FALSIFIED/OOD/ABSTAIN` are absorbing within a lineage; assumption evidence cannot substitute for direct intervention evidence; surrogate/replay sources cannot mint direct-intervention authority; capability tokens bind exact claim, parent digest and context scope. `INTERVENTION_SUPPORTED` remains operator/context scoped and is not a true-causal-model state.
 - `COG-MEMORY-01`: assumption-aware epistemic memory qualified **synthetically and narrowly**. Across 12 frozen memory attack families, PRIMARY and REPLICATION passed 128/128 per family with zero false causal consolidation. Assumption-conditional records are quarantined, surviving countermodels veto causal consolidation, and parent/assumption invalidation retracts dependent memories transitively. This is a memory-authority primitive only; planning/replay/active-control value remains unqualified.
 - `COG-PLAN-01`: proof-carrying counterfactual planner qualified **synthetically and narrowly**. Across 12 frozen families, PRIMARY and REPLICATION passed 128/128 per family. Robust action requires the same margin-separated action in every admitted world; hidden averaging cannot create authority; assumption-conditional memory remains conditional; stale or dropped-world certificates fail; disagreement invokes the certified information/budget governor or abstention. Real-world planning value and active control remain unqualified.
 - `COG-INFO-02`: decision-relevant information governor qualified **synthetically and narrowly**. It quotients surviving worlds by the predeclared immediate decision and spends evidence only against worlds capable of changing that decision. In the frozen same-decision zero-rate trap, the legacy model-identification maximin governor was blocked in 256/256 pooled cases while the decision-relevant governor selected the decisive probe in 256/256; when both could spend, the frozen D11 necessary-cost bound was strictly lower in 256/256 cases (median legacy/new ratio 9.7754x). Same-decision countermodels remain unresolved causal debt; no causal truth, real-world utility, or novelty claim follows.
@@ -56,8 +65,8 @@ result; adaptive uses `E_sample[m]` hops while static uses `round(E_sample[m])`.
 ## Claim ladder — current state
 | Level | Claim | Status | Evidence |
 |---|---|---|---|
-| L0 measurement substrate | instrumentation deterministic & validated | **SUPPORTED** | `artifacts/wp1-release/`, 207 tests, 99.46% cov, 12/12 mutation |
-| L1 benchmark identifiability | a benchmark with a real adaptive-compute advantage exists | **SUPPORTED** | `artifacts/wp2-routing-v2/` oracle gap 99.8% |
+| L0 measurement substrate | instrumentation passed the scoped deterministic checks | **SUPPORTED** | [WP1 release](artifacts/wp1-release/WP1_RELEASE_VERDICT.md), 209 tests passed, 1 deselected, 99% reported coverage with branch measurement, 12/12 selected mutants killed |
+| L1 benchmark identifiability | the oracle beat the best fixed policy on the synthetic S-R-O benchmark | **SUPPORTED** | [WP2 results](artifacts/wp2-routing-v2/RESULTS.md#L24-L32), 99.8% mean relative oracle gain |
 | L2 routing causality | learned controller routes causally, beats all controls | **SUPPORTED (NARROWED)** — under counterfactual value distillation, label-derived test capacity, surface cues present, no physical compute saving; see `artifacts/wp2-routing-v2/claim_boundary.json` | `artifacts/wp2-routing-v2/` bal 1.0, NMI 1.0, AUROC 1.0, 8 seeds |
 | L2a end-to-end routing (leaky benchmark) | leakage-free-*target* controller routes without value distillation | **SUPPORTED under a binding budget** — the earlier straight-through *collapse* was an estimator artifact; a REINFORCE controller (L=L_task+λ·C_use) reaches AUROC 1.0 with NO privileged target / NO label-derived capacity — but only at λ≥1 (binding budget), and surface cues are still present | `artifacts/wp2-routing-v3-r3c-reinforce/` learned 0.009 vs random 0.48, 8 seeds |
 | L2b route-decision cost (surface-matched) | can a cheap controller route when difficulty is purely structural? | **NO — ROUTE_DECISION_IS_THE_COMPUTATION** | `artifacts/wp2-routing-v3-surface-matched/` — on a surface-matched task neither a cheap nor an attention controller routes above chance (AUROC ~0.51, no loss saving) even under *direct supervision*; predicting the route costs ~the expensive computation |

@@ -55,23 +55,22 @@ authority is unresolved. Malformed provenance or a corrupt register exits 2.
 
 ## Admission of documentation
 
-`--accept-documentation` separately evaluates the scoped repository guidance and
-their recorded findings. The [internal review receipt](DOCUMENTATION_REVIEW.json)
-binds each observation to the reviewed commit, tree, and exact document or source
-blob. It records both substantiated corrections and unresolved findings displayed
-accurately in the canonical record. A missing receipt, changed reviewed byte or
-unresolved relative link blocks this admission. This internal technical review is
-distinct from human peer review, institutional approval and external replication.
+The [internal review receipt](DOCUMENTATION_REVIEW.json) binds each finding
+to the reviewed commit, tree and exact blob. The audit also scans relative links
+across tracked Markdown in the audit scope. A missing receipt, changed finding blob or broken
+relative link blocks scoped documentation acceptance. That acceptance covers
+the recorded technical review. Human peer review, institutional approval and
+external replication have their own evidence requirements.
 
-`--accept` remains the programme gate. Experimental, institutional and product
-evidence must meet their original obligations before that gate accepts.
+On a valid inventory, `--accept-documentation` exits 0 for scoped documentation
+acceptance and 3 if blocked. `--accept` applies the same exit codes to programme
+acceptance. Malformed provenance or a corrupt register exits 2.
 
-The audit job exercises deliberate roster deletion, fabricated verification,
-misapplied exclusions, invalid evidence identities, duplicate records, same-count obligation substitution
-and missing Markdown targets.
-The archive workflow also exercises byte damage in WP4, repeats deterministic
-packaging, checks exact manifest fields and restored Git bytes and modes, and
-rejects a dirty release.
+The audit job tests roster deletion, fabricated verification, misapplied
+exclusions, invalid evidence identities, duplicate records, same-count obligation
+substitution and broken Markdown targets. The same job damages a WP4 byte,
+repeats packaging, checks manifest fields and restored Git bytes and modes, and
+checks that packaging rejects a dirty release.
 Existing exact-certificate, historical-evidence and experimental gates provide
 their own scoped receipts. Open gaps include input admission and model execution,
 independent scientific reproduction, complete per-document review, external restoration of a frozen public archive and the authority of any applicable institution. No terminal act is
