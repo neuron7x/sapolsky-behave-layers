@@ -102,6 +102,10 @@ DOCS = [
     ("DOC-061", "P2", "docs/risk/DEPLOYMENT_MONITORING_DEPRECATION_AND_CHANGE_CONTROL.md", "TRIGGER_NOT_REACHED"),
     ("DOC-062", "P2", "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md", ""),
     ("DOC-063", "P2", "docs/risk/NONCOMPLIANCE_CORRECTIVE_AND_PREVENTIVE_ACTION.md", "TRIGGER_NOT_REACHED"),
+    ("DOC-064", "P1", "docs/architecture/CWC_ARCHITECTURE.md", ""),
+    ("DOC-065", "P1", "docs/architecture/FORMAL_MODEL.md", ""),
+    ("DOC-066", "P1", "docs/vnv/CWC_TEST_AND_CI_REFERENCE.md", ""),
+    ("DOC-067", "P1", "docs/publication/SOURCE_TO_OBLIGATION.md", ""),
 ]
 
 

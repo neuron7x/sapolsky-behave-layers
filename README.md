@@ -27,6 +27,11 @@ This project is built on top of Andrej Karpathy's **nanochat** (see
 [`docs/upstream/NANOCHAT_README.md`](docs/upstream/NANOCHAT_README.md)); the CWC work is
 additive and the upstream baseline is recorded pristine.
 
+Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md),
+[formal model](docs/architecture/FORMAL_MODEL.md),
+[test and CI coverage](docs/vnv/CWC_TEST_AND_CI_REFERENCE.md), and
+[sources and proof obligations](docs/publication/SOURCE_TO_OBLIGATION.md).
+
 ## Headline results (claim-tier, reproducible)
 
 | Result | Verdict | Evidence |
@@ -41,9 +46,10 @@ additive and the upstream baseline is recorded pristine.
 | Metaplasticity benchmark identifiable unbudgeted | **NOT_TESTED / non-identifiable** | `artifacts/wp3-plasticity-v1/` |
 | Multiscale/fractal emergence | **NOT_SUPPORTED** | `artifacts/history/fractal/` |
 
-The unifying theory (`docs/IDENTIFIABILITY_THEORY.md`): the value of adaptive control
-is the context×choice interaction `γ`, realized only under a **binding budget** and
-only when the route signal is **cheaply computable** — `V_realized = oracle_gap − route_decision_cost`.
+The [identifiability theory](docs/IDENTIFIABILITY_THEORY.md) derives an oracle gap
+from context×choice interaction under the declared utility and budget. A policy's
+net advantage is bounded above by the oracle gap minus its routing cost. Equality
+requires oracle utility under the same contract.
 
 ## What CWC does NOT claim
 
@@ -70,10 +76,11 @@ conceded in writing, per claim, in
 including the prior work that reports *positive* real-workload results this programme's
 negatives must confront (§2.3).
 
-> **The one defensible novelty statement:** not a mechanism and not a theory, but an
-> **executable, falsification-tested instrument that decides — before spending — whether a
-> given workload can pay for adaptivity**, together with the frozen negatives that
-> instrument produced when turned on its author's own preferred hypothesis.
+> **The contribution under test:** an executable measurement and falsification
+> harness for determining whether declared pilot workloads offer room for adaptive
+> decisions after routing cost. Retained negative results include the preregistered
+> rejection of the learned adaptive-depth candidate. The external decision-control
+> experiment remains `NOT_TESTED`.
 
 The bibliography is machine-verified, not hand-written: all 70 references were resolved
 against external authorities (arXiv API, DOI content negotiation, OpenAlex, Open Library),
@@ -92,8 +99,9 @@ make -f Makefile.cwc verify-evidence                 # checksum every evidence b
 make -f Makefile.cwc reproduce-primary               # re-derive the primary result end-to-end
 ```
 
-Every experiment ships `artifacts/<exp>/{RESULTS.md, verdict.json, SHA256SUMS}` and a
-`experiments/<exp>/PREREGISTRATION*.md` committed before its confirmatory run.
+Published evidence locations depend on the experiment. Use its frozen protocol,
+[experiment ledger](docs/lab/EXPERIMENT_LEDGER.jsonl) and exact run receipt to locate
+tracked evidence bundles or hosted artifacts.
 
 ## Repository status
 

@@ -31,13 +31,15 @@ advantage is not explained by static architecture, capacity, or optimization —
 it translate to a compute-equivalent advantage?
 
 ## 3. Related work
-See `RELATED_WORK_AND_NOVELTY_REVIEW.md` (systematic search PENDING). Nearest: MoD,
-MoE/Switch, DISeL/HyperFormer, EWC/SI/MAS.
+The [completed targeted review](RELATED_WORK_AND_NOVELTY_REVIEW.md) covers MoD,
+MoE/Switch, DISeL/HyperFormer and EWC/SI/MAS. The [source-to-obligation index](SOURCE_TO_OBLIGATION.md)
+records the use and scope of each method family.
 
 ## 4. Formal framework
 Oracle gap `G = 𝔼_c[max_a(β_a+γ_{c,a})] − max_a β_a`. A weakly-dominant choice forces
-`G=0`; identifiability is a **constrained** property (needs a binding budget). Realized
-value discounts route-decision cost: `V_realized = G − c_route` (§8).
+`G=0`; identifiability is a **constrained** property (needs a binding budget). A
+policy's net advantage satisfies `V_policy − V_fixed − c_route ≤ G − c_route`,
+with equality at oracle utility. [Formal derivation](../architecture/FORMAL_MODEL.md#adaptive-computation-and-information-cost).
 
 ## 5. Methods
 Measurement substrate (WP1): deterministic FLOP/VRAM/routing instrumentation, 207 tests,
