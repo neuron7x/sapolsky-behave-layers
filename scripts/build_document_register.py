@@ -106,6 +106,13 @@ DOCS = [
     ("DOC-065", "P1", "docs/architecture/FORMAL_MODEL.md", ""),
     ("DOC-066", "P1", "docs/vnv/CWC_TEST_AND_CI_REFERENCE.md", ""),
     ("DOC-067", "P1", "docs/publication/SOURCE_TO_OBLIGATION.md", ""),
+    ("DOC-068", "P1", "docs/assurance/DOCUMENTATION_AUDIT.md", ""),
+    ("DOC-069", "P1", "docs/assurance/REQUIREMENTS.json", ""),
+    ("DOC-070", "P1", "docs/assurance/STANDARDS.json", ""),
+    ("DOC-071", "P1", "docs/assurance/FINDINGS.json", ""),
+    ("DOC-072", "P1", "docs/assurance/RESEARCH_RISK_AND_ACCEPTANCE.md", ""),
+    ("DOC-073", "P1", "schemas/dataset.schema.json", ""),
+    ("DOC-074", "P1", "docs/assurance/DOCUMENTATION_REVIEW.json", ""),
 ]
 
 

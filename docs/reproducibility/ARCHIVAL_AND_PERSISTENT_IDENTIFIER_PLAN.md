@@ -1,17 +1,21 @@
-# Archival and Persistent-Identifier Plan
+# Archival and persistent-identifier plan
 
-## Current state
-- **Local immutability:** every evidence bundle carries `SHA256SUMS`; frozen negatives
-  live in `artifacts/history/`. Full backup at `~/CWC_CONSOLIDATION_BACKUP_2026-07-16/`
-  and a clean substrate zip in `~/Downloads/CWC-FULL-SUBSTRATE-*.zip`.
-- **Public archival: PENDING.** The GitHub organization is currently suspended (see
-  `SYSTEM.md`), so no public repository or DOI exists yet.
+The public [CWC repository](https://github.com/neuron7x/sapolsky-behave-layers) exposes Git
+history and scoped Actions evidence. Git commit/tree and artifact digest identify
+an exact object while it is accessible. As of the documentation audit, no GitHub
+Release is published. Hosted experiment artifacts may expire. The archival
+identifier and external restoration receipt remain open.
 
-## Plan (on public-release unblock)
-1. Push the frozen release (git bundle + `make-release` archives with `RELEASE_MANIFEST.json`).
-2. Mint a DOI via Zenodo (or an institutional archive) against the tagged release commit.
-3. Record the DOI in `CITATION.cff` and `ARTIFACT_README.md`.
-4. Deposit the source + evidence archives (not `.venv`) so the artifact is
-   reconstructible via `uv sync --frozen` + `make reproduce-primary`.
+A citeable release requires a tagged reviewed commit, explicit source and evidence
+rosters, archive hashes, permission-aware retention and a clean restoration from
+the published package. Compare every restored tracked path, blob and mode against
+the intended tree. Retain failed restores. The snapshot builder uses a clean tracked checkout, stages provenance-bound archives
+from the commit, and publishes into a new or empty directory. The independent
+[restoration checker](../../scripts/check_release_restoration.py) repeats the build
+and compares restored Git blobs and executable modes. Public release, permission
+review and external scientific reproduction remain separate acceptance obligations.
 
-Until then, the persistent identifier is the git commit hash + archive SHA-256.
+Deposit only artifacts authorized for redistribution. Record the archive identifier,
+release tag, commit/tree, payload digest and instructions in the citation and artifact
+guide after those records exist. The [external review protocol](../risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md)
+specifies the separate reproduction obligation.

@@ -24,7 +24,7 @@ bundles, and a mathematical theory that unifies the results.
 Full map and entry point: [`SYSTEM.md`](SYSTEM.md). Governing methodology:
 [`docs/methodology/CWC_MASTER_METHODOLOGY.md`](docs/methodology/CWC_MASTER_METHODOLOGY.md).
 This project is built on top of Andrej Karpathy's **nanochat** (see
-[`docs/upstream/NANOCHAT_README.md`](docs/upstream/NANOCHAT_README.md)); the CWC work is
+[the pinned upstream README](https://github.com/karpathy/nanochat/blob/92d63d4e8bb4df75c3b71618f31ddde2378b2bcd/README.md)); the CWC work is
 additive and the upstream baseline is recorded pristine.
 
 Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md),

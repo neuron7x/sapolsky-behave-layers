@@ -26,8 +26,10 @@ negative.
 ## 4. Theoretical model
 Oracle gap `G = 𝔼_c[max_a(β_a+γ_{c,a})] − max_a β_a`; value of control is the
 context×choice interaction `γ`, identifiable only under a **binding budget**.
-Realized value discounts the route-decision cost: `V_realized = G − c_route`
-(`docs/IDENTIFIABILITY_THEORY.md`).
+For a policy `π` under the same objective and action space,
+`V_π − V_fixed − c_π ≤ G − c_π`. Equality requires oracle utility. The cost uses
+utility units and excludes costs already represented in the objective.
+[Derivation](../architecture/FORMAL_MODEL.md#adaptive-computation-and-information-cost).
 
 ## 5. Operational definitions
 Each construct (routing, adaptive allocation, functional reuse, plasticity,
@@ -50,9 +52,11 @@ Exploratory findings (e.g. the plasticity λ≈1 revival) are labelled `EXPLORAT
 cannot be reported as confirmatory without a new preregistered run.
 
 ## 9–10. Unit of analysis / experimental unit
-The **experimental unit is the model seed** (paired across compared systems), not the
-token. Statistical hierarchy: init → training corpus → eval corpus → task family →
-example. Tokens of one run are not independent units.
+For paired model-training studies the experimental unit is the model seed. Tokens
+within a run share their training and context. A frozen experiment specifies its own
+unit, pairing and decision rule. REAL-TRANSFER-01 uses paired cases and descriptive
+stratified bootstrap intervals. Its protocol and pre-execution amendments govern its
+thresholds and eligible comparisons.
 
 ## 11. Control taxonomy
 random (compute-matched), frequency-matched random, frozen controller, reinitialized

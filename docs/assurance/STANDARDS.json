@@ -1,0 +1,417 @@
+{
+  "schema": "cwc-standards-crosswalk-v1",
+  "review_date": "2026-11-26",
+  "scope": "Public official scope and venue guidance. Clause-level and regulatory applicability determinations require additional authority and evidence.",
+  "sources": [
+    {
+      "id": "S-01",
+      "name": "NeurIPS 2026 paper checklist review",
+      "authority": "venue rubric",
+      "url": "https://neurips.cc/public/guides/PaperChecklist",
+      "categories": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        10,
+        13,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Use the 16-question crosswalk. Track-specific submission requirements apply to a selected submission and deadline; paper and supporting statements need sign-off."
+    },
+    {
+      "id": "S-02",
+      "name": "NeurIPS main track 2026",
+      "authority": "venue rubric",
+      "url": "https://neurips.cc/Conferences/2026/MainTrackHandbook",
+      "categories": [
+        13,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Use as a dated reference. The repository does not establish institutional affiliation or a submission."
+    },
+    {
+      "id": "S-03",
+      "name": "NeurIPS ethics",
+      "authority": "venue rubric",
+      "url": "https://neurips.cc/public/EthicsGuidelines",
+      "categories": [
+        10,
+        11,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Check asset rights, risks, people and reporting obligations for the selected paper."
+    },
+    {
+      "id": "S-04",
+      "name": "NeurIPS evaluations and datasets 2026",
+      "authority": "prospective track",
+      "url": "https://neurips.cc/Conferences/2026/CallForEvaluationsDatasets",
+      "categories": [
+        5,
+        10,
+        13,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Re-evaluate executable artifact and dataset metadata requirements if this track and contribution type are chosen."
+    },
+    {
+      "id": "S-05",
+      "name": "ACM SIGSIM PADS artifact evaluation",
+      "authority": "venue example",
+      "url": "https://sigsim.acm.org/conf/pads/2024/blog/artifact-evaluation/",
+      "categories": [
+        6,
+        9,
+        10,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Check functionality, reusability, persistent availability and external evaluation separately. Central policy endpoint returned HTTP 403; this is publisher-hosted venue guidance, not an awarded badge."
+    },
+    {
+      "id": "S-06",
+      "name": "ISO/IEC/IEEE 15289:2019",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/74909.html",
+      "categories": [
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        12,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Map life-cycle information items. The public scope refers to dated 12207 and 15288 editions. Clause-level conformity is unassessed."
+    },
+    {
+      "id": "S-07",
+      "name": "ISO/IEC/IEEE 12207:2026",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/90219.html",
+      "categories": [
+        4,
+        6,
+        8,
+        11,
+        12
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Use current software lifecycle scope for implementation, verification, transition and maintenance records. Clause-level conformity is unassessed."
+    },
+    {
+      "id": "S-08",
+      "name": "ISO/IEC/IEEE 15288:2023",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/81702.html",
+      "categories": [
+        4,
+        6,
+        8,
+        12
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Treat research and deployment lifecycles separately. Clause-level conformity is unassessed."
+    },
+    {
+      "id": "S-09",
+      "name": "ISO/IEC/IEEE 42010:2022",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/74393.html",
+      "categories": [
+        4
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Architecture descriptions need stakeholder concerns, viewpoints, correspondences and rationale. Clause-level conformity is unassessed."
+    },
+    {
+      "id": "S-10",
+      "name": "ISO/IEC/IEEE 29148:2018",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/72089.html",
+      "categories": [
+        4,
+        6,
+        9
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Bind requirements and acceptance to traced implementation and evidence. Published edition rather than the successor draft."
+    },
+    {
+      "id": "S-11",
+      "name": "IEEE 1012-2024",
+      "authority": "voluntary reference",
+      "url": "https://standards.ieee.org/ieee/1012/7324/",
+      "categories": [
+        6,
+        8,
+        9
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Scope V&V activities and evidence by lifecycle and independence. Clause-level conformity is unassessed."
+    },
+    {
+      "id": "S-12",
+      "name": "ISO/IEC 25010:2023",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/78176.html",
+      "categories": [
+        4,
+        6,
+        11
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Specify software quality attributes and observed evidence per measured boundary."
+    },
+    {
+      "id": "S-13",
+      "name": "ISO/IEC 25059:2023",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/obp/ui?_escaped_fragment_=iso%3Astd%3Aiso-iec%3A25059%3Aed-1%3Av1%3Aen",
+      "categories": [
+        4,
+        6,
+        11
+      ],
+      "status": "INCOMPLETE",
+      "finding": "AI quality reference for scoped evaluations. A successor draft is not a published requirement."
+    },
+    {
+      "id": "S-14",
+      "name": "ISO/IEC 5259 series",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/committee/6794475/x/catalogue/",
+      "categories": [
+        5,
+        7,
+        10
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Track AI data quality measures, provenance, admission and lifecycle governance. Series clauses are unassessed."
+    },
+    {
+      "id": "S-15",
+      "name": "ISO/IEC 23894:2023",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/77304.html",
+      "categories": [
+        11,
+        12,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Scope AI risks and mitigations by research use and actual system capabilities."
+    },
+    {
+      "id": "S-16",
+      "name": "ISO/IEC 42001:2023",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/42001",
+      "categories": [
+        11,
+        12,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Organizational management system requirements would need an owner, scope and operating evidence."
+    },
+    {
+      "id": "S-17",
+      "name": "ISO 9001:2026",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/9001",
+      "categories": [
+        8,
+        11,
+        12
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Quality management system requirements are a reference; organizational conformity is unassessed."
+    },
+    {
+      "id": "S-18",
+      "name": "ISO 31000:2018",
+      "authority": "voluntary guidance",
+      "url": "https://www.iso.org/standard/31000",
+      "categories": [
+        11,
+        12
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Risk ownership, treatment and monitoring. Guidance framework."
+    },
+    {
+      "id": "S-19",
+      "name": "ISO/IEC 27001:2022",
+      "authority": "voluntary reference",
+      "url": "https://www.iso.org/standard/27001",
+      "categories": [
+        10,
+        11,
+        12,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Inform information-security governance. A repository security scan does not establish ISMS conformity."
+    },
+    {
+      "id": "S-20",
+      "name": "IEC 60812:2018",
+      "authority": "voluntary method",
+      "url": "https://webstore.iec.ch/en/publication/26359",
+      "categories": [
+        11
+      ],
+      "status": "INCOMPLETE",
+      "finding": "FMEA applies to software and interfaces when selected for risk analysis."
+    },
+    {
+      "id": "S-21",
+      "name": "IEC 61025:2006",
+      "authority": "voluntary method",
+      "url": "https://webstore.iec.ch/en/publication/4311",
+      "categories": [
+        11
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Fault-tree methodology may support analysis of research evidence or release-governance failures."
+    },
+    {
+      "id": "S-22",
+      "name": "IEC 61508-1:2010",
+      "authority": "scope excluded",
+      "url": "https://webstore.iec.ch/en/publication/5515",
+      "categories": [
+        8,
+        11,
+        12
+      ],
+      "status": "NOT_APPLICABLE",
+      "finding": "No operational electrical/electronic/programmable electronic safety-function claim is in the research scope. Reassess before such use."
+    },
+    {
+      "id": "S-23",
+      "name": "ISO 12100:2010",
+      "authority": "scope excluded",
+      "url": "https://www.iso.org/standard/51528.html",
+      "categories": [
+        8,
+        11,
+        12
+      ],
+      "status": "NOT_APPLICABLE",
+      "finding": "No machinery design or operation is included in the current repository scope. Reassess if that scope changes."
+    },
+    {
+      "id": "S-24",
+      "name": "ISO/IEC 17025:2017",
+      "authority": "scope excluded",
+      "url": "https://committee.iso.org/standard/17025",
+      "categories": [
+        2,
+        7,
+        8
+      ],
+      "status": "NOT_APPLICABLE",
+      "finding": "No accreditation of a testing or calibration laboratory is requested or established in the current software research scope."
+    },
+    {
+      "id": "S-25",
+      "name": "JCGM GUM-1:2023",
+      "authority": "voluntary guidance",
+      "url": "https://www.bipm.org/en/doi/10.59161/jcgmgum-1-2023",
+      "categories": [
+        2,
+        3,
+        5,
+        7
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Use measurement scope, uncertainty and boundary conditions where they apply to actual instruments."
+    },
+    {
+      "id": "S-26",
+      "name": "FAIR Guiding Principles",
+      "authority": "voluntary guidance",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4792175/",
+      "categories": [
+        9,
+        10,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Provide persistent identities, provenance and documented access including authorization as needed. Source terms determine redistribution."
+    },
+    {
+      "id": "S-27",
+      "name": "W3C PROV",
+      "authority": "voluntary model",
+      "url": "https://www.w3.org/TR/prov-overview/",
+      "categories": [
+        9,
+        10
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Distinguish artifact entities, executions and accountable agents in evidence lineage."
+    },
+    {
+      "id": "S-28",
+      "name": "NIST AI RMF 1.0",
+      "authority": "voluntary guidance",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "categories": [
+        11,
+        12,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Use GOVERN, MAP, MEASURE and MANAGE as appropriate to actual use. Framework adoption is unassessed."
+    },
+    {
+      "id": "S-29",
+      "name": "EU AI Act",
+      "authority": "jurisdiction conditional",
+      "url": "https://eur-lex.europa.eu/eli/reg/2024/1689",
+      "categories": [
+        11,
+        12,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Article 2 contains scoped research conditions. Determine actual development, testing, supply, deployment and jurisdiction; no blanket exemption."
+    },
+    {
+      "id": "S-30",
+      "name": "EU GDPR",
+      "authority": "jurisdiction conditional",
+      "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+      "categories": [
+        10,
+        11,
+        13
+      ],
+      "status": "INCOMPLETE",
+      "finding": "Determine territorial scope, actual personal-data processing, obligations and applicable exceptions. Public access alone does not settle these facts."
+    },
+    {
+      "id": "S-31",
+      "name": "Institution-specific requirements",
+      "authority": "target unresolved",
+      "url": null,
+      "categories": [
+        13,
+        14
+      ],
+      "status": "INCOMPLETE",
+      "finding": "The repository establishes no institution or contract imposing a different rubric. Obtain the actual institution and official rules if designated. The institutional requirement is unresolved."
+    }
+  ]
+}

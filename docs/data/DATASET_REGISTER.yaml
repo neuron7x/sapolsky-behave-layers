@@ -1,5 +1,6 @@
 # CWC Dataset Register — synthetic generators (schema: schemas/dataset.schema.json)
-# Every dataset is a deterministic generator; commit + seed reproduce it exactly.
+# This registry is limited to synthetic generators and their registered versions.
+# External sources follow experiments/real_transfer_01/INTAKE_CONTRACT.md.
 
 datasets:
   - dataset_id: semantic-route

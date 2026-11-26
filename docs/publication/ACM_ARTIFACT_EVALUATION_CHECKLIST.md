@@ -1,32 +1,12 @@
-# ACM Artifact Evaluation Checklist (self-assessment)
+# ACM artifact evaluation crosswalk
 
-## Gate A — Functional
-| Criterion | Status | Evidence |
-|---|---|---|
-| Documented | Yes | ARTIFACT_README.md, SYSTEM.md |
-| Consistent | Yes | claims ⟷ artifacts ⟷ verdicts (doc-gate) |
-| Complete | Yes | all shipped results have bundles + SHA256SUMS |
-| Exercisable | Yes | `make experiment-tests` (69), `make verify-evidence` (11) |
-| Verified | Yes | VERIFICATION_RECORD.md |
-| Validated | Yes | VALIDATION_RECORD.md |
+Internal assessment against the [ACM SIGSIM PADS artifact guidance](https://sigsim.acm.org/conf/pads/2024/blog/artifact-evaluation/).
+Any badge is a decision by the selected venue.
 
-## Gate B — Reusable
-| Criterion | Status |
-|---|---|
-| Modular structure | Yes (cwc/ experiments/ scripts/ schemas/) |
-| Stable interfaces | Partial (experiment runners are research-grade) |
-| Data dictionary + schemas | Yes |
-| Examples + extension points | Partial |
-| Versioning | Yes (CHANGELOG, CITATION) |
-| Test suite | Yes |
-
-## Gate C — Available
-| Criterion | Status |
-|---|---|
-| Persistent public repository | **PENDING** (GitHub org suspended — see SYSTEM.md) |
-| Immutable version | Yes (commit + release archive) |
-| DOI / identifier | **PENDING** (ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md) |
-| License | Yes (MIT) |
-
-## Gate D — Results Reproduced
-**NOT claimable** — requires an independent operator (CWC-L8 = NOT_TESTED).
+| Criterion | Repository evidence and remaining work |
+| --- | --- |
+| Documented and consistent | [Artifact guide](../reproducibility/ARTIFACT_README.md), [architecture](../architecture/CWC_ARCHITECTURE.md), [scope and claims](../../SYSTEM.md). Audit actual doc and artifact alignment on the cited tree. |
+| Complete and exercisable | [Test selection and hosted results](../vnv/CWC_TEST_AND_CI_REFERENCE.md). Restore the candidate release, verify applicable checksums and walk one scoped result from data to verdict. |
+| Reusable | [Interfaces and components](../architecture/CWC_ARCHITECTURE.md). Validate package restoration and representative extensions against the stated environment. |
+| Available | The repository is public. The durable archival package and identifier remain open. [Archive plan](../reproducibility/ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md). |
+| Results evaluated externally | Independent operator outcome and venue decision remain open. [Reproduction protocol](../risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md). |
