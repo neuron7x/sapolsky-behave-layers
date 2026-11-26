@@ -1,0 +1,247 @@
+{
+  "schema": "cwc-documentation-review-v1",
+  "basis": "INTERNAL_CODEX_REVIEW",
+  "reviewed_commit": "bd260e48ec49561c802d87f173e30ce6cb481b6b",
+  "reviewed_tree": "9f152a11ae7c3a979f980014d99e3145f155e6d6",
+  "scope": "Repository documentation baseline, identified finding corrections and accurate open statuses",
+  "independence": "Separate internal technical reviewers. External, institutional and human peer-review authority are outside this receipt.",
+  "findings": [
+    {
+      "id": "F-01",
+      "path": "docs/methodology/CWC_MASTER_METHODOLOGY.md",
+      "blob_oid": "9a28c4d0b5639388def2585ced5444e8479d2c59",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Methodology states the policy utility upper bound and ties experimental units to frozen protocols.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/methodology/CWC_MASTER_METHODOLOGY.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/architecture/FORMAL_MODEL.md#L7-L18"
+      ]
+    },
+    {
+      "id": "F-02",
+      "path": "docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
+      "blob_oid": "1596592abb7a6d324b2e3d5ed1dad527d01c25bd",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Shared model-seed guidance is limited to the paired-seed design. REAL-TRANSFER-01 retains the frozen case-paired design and its descriptive intervals.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/experiments/real_transfer_01/PREREGISTRATION.md#L213-L235"
+      ]
+    },
+    {
+      "id": "F-03",
+      "path": "docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
+      "blob_oid": "0a4f13ad2c969ba2a3aaba0b34ad29344c4da394",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The synthetic generator scope and external custody scope are explicit. Source acquisition and publication notices give no admission or model execution authority.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/pull/94"
+      ]
+    },
+    {
+      "id": "F-04",
+      "path": "docs/data/DATASET_REGISTER.yaml",
+      "blob_oid": "62470fe716f902ebcb520d204ac2ee65e6004c37",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Hosted validation resolves the schema and all five generator records, rejects duplicate keys, incorrect generator kind and missing generator paths.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/data/DATASET_REGISTER.yaml",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921592/job/139716897717"
+      ]
+    },
+    {
+      "id": "F-05",
+      "path": "docs/system_card/CWC_SYSTEM_CARD.md",
+      "blob_oid": "bf07ef9389d9b4b9f25bcab93825bceeb5877bc0",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The historical WP1 system-card table is bounded to d920f79. Current limitations point to the architecture, data plan and findings.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/system_card/CWC_SYSTEM_CARD.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md"
+      ]
+    },
+    {
+      "id": "F-06",
+      "path": "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv",
+      "blob_oid": "9a6c521eef15ed178a83881cc89dca6855586a9e",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "WP4's matrix status matches the claim registry. JOINT-LP, decision sufficiency, source admission and the blocked external experiment have separate bindings.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/claim_registry.json",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/experiments/cneh_joint_lp/PROTOCOL.md"
+      ]
+    },
+    {
+      "id": "F-07",
+      "path": "docs/reproducibility/ARTIFACT_README.md",
+      "blob_oid": "ddfad26f12ae80db720c54d5ed57ca6d93e1be59",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The guide identifies the public repository and states that persistent archival release is pending. Evidence citations name the tested checkout and digest.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/reproducibility/ARTIFACT_README.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/vnv/CWC_TEST_AND_CI_REFERENCE.md"
+      ]
+    },
+    {
+      "id": "F-08",
+      "path": "docs/reproducibility/ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md",
+      "blob_oid": "222ea50764b5cf78427c84c0f745ed820c89a817",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The archival plan uses a Git-bound packager and separates hosted restoration from a public archival release and external reproduction.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/reproducibility/ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921600/job/139716897806"
+      ]
+    },
+    {
+      "id": "F-09",
+      "path": "docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md",
+      "blob_oid": "7d894257532b5591eed579260729bfae006ecb1b",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The protocol records the historical CPU recipe fallback. Frozen CI and WP4 archive verification are scoped separately from independent clean-room validation.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/containers/Dockerfile.cpu",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/scripts/reproduce_primary.py"
+      ]
+    },
+    {
+      "id": "F-10",
+      "path": "docs/publication/ACM_ARTIFACT_EVALUATION_CHECKLIST.md",
+      "blob_oid": "0cd8e535e77a73054e918885db97f4b5ff0471a5",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The ACM crosswalk treats a badge as a venue decision. The submission evidence and archival or external reproduction gaps are reported explicitly.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/publication/ACM_ARTIFACT_EVALUATION_CHECKLIST.md",
+        "https://sigsim.acm.org/conf/pads/2024/blog/artifact-evaluation/"
+      ]
+    },
+    {
+      "id": "F-11",
+      "path": "docs/publication/NEURIPS_2026_SUBMISSION_CHECKLIST.md",
+      "blob_oid": "f531814dc0252fcf7dae96e1c49aab4ad7f1ac2c",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "All sixteen NeurIPS prompts map to the record and preserve venue/final-author decisions. The reproducibility route and human-review conditions are scoped to the submission.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/publication/NEURIPS_2026_SUBMISSION_CHECKLIST.md",
+        "https://neurips.cc/public/guides/PaperChecklist",
+        "https://neurips.cc/public/EthicsGuidelines"
+      ]
+    },
+    {
+      "id": "F-12",
+      "path": "docs/publication/AUTHOR_FUNDING_COI_AND_AI_ASSISTANCE_DISCLOSURE.md",
+      "blob_oid": "1884470ad9934c978918aa8e90d4290355392f00",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Earlier funding, hardware and COI statements are marked historical. The Codex and hosted-CI work is recorded separately. Current declarations require author confirmation.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/publication/AUTHOR_FUNDING_COI_AND_AI_ASSISTANCE_DISCLOSURE.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/assurance/DOCUMENTATION_AUDIT.md"
+      ]
+    },
+    {
+      "id": "F-13",
+      "path": "scripts/make_release.py",
+      "blob_oid": "658904325fec541f3b78eff05400a2c13ee57eec",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Separate hosted code rebuilt two identical archives, restored and checked exact paths, bytes and modes, and rejected dirty input and five forged manifest fields.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/scripts/make_release.py",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921600/job/139716897806"
+      ]
+    },
+    {
+      "id": "F-14",
+      "path": "scripts/reproduce_primary.py",
+      "blob_oid": "67ee5e74e18b556cc8f3a72146475b0ef5a24991",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The entry point rejects missing, truncated or corrupt archive receipts before replay. A locked hosted run also checked the unchanged synthetic endpoint.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/scripts/reproduce_primary.py",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921600/job/139716897806",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921604/job/139716982354"
+      ]
+    },
+    {
+      "id": "F-15",
+      "path": "experiments/real_transfer_01/evaluator.py",
+      "blob_oid": "4b8f041ba4a0ab03a7b09a1dd22863e4fc07cb63",
+      "disposition": "OPEN_RECORDED",
+      "observation": "The evaluator discrepancy remains a programme blocker. No external benchmark verdict is issued.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/experiments/real_transfer_01/evaluator.py",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md#L55-L76"
+      ]
+    },
+    {
+      "id": "F-16",
+      "path": "experiments/real_transfer_01/readiness.py",
+      "blob_oid": "991cf45518af8539e619a4dd4b86f5073f6d2f7a",
+      "disposition": "OPEN_RECORDED",
+      "observation": "Source, model and runner admission remain unresolved. Frozen source-intake candidate evidence describes source and custody only.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/experiments/real_transfer_01/readiness.py",
+        "https://github.com/neuron7x/sapolsky-behave-layers/pull/94",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/CWC_CLOSURE.md"
+      ]
+    },
+    {
+      "id": "F-17",
+      "path": "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+      "blob_oid": "b86579e661be2f635254e9a810a8fa103a4b95f7",
+      "disposition": "OPEN_RECORDED",
+      "observation": "The required external reproduction receipt is absent. Internal code review, byte replay and hosted checks have distinct evidence roles.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md"
+      ]
+    },
+    {
+      "id": "F-18",
+      "path": "docs/DGC_CONTINUOUS_ASSURANCE_v1.md",
+      "blob_oid": "3e5df0fb84f6d07c811ea63d962f51d938e89295",
+      "disposition": "OPEN_RECORDED",
+      "observation": "The policy and actual precedence are distinguished. Unvalidated FAIL contributes HOLD if no other eligible FAIL yields ROLLBACK; deciding the intended production behavior remains open.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/DGC_CONTINUOUS_ASSURANCE_v1.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/cwc/governance/continuous_assurance.py#L156-L184"
+      ]
+    },
+    {
+      "id": "F-19",
+      "path": "docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md",
+      "blob_oid": "f78b5d0bbedbce59e1ba9f30911011d2b3756bc2",
+      "disposition": "OPEN_RECORDED",
+      "observation": "The prior-art review is targeted and preserves review limits and pending comparator work. Wider novelty remains unaccepted.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/publication/SOURCE_TO_OBLIGATION.md"
+      ]
+    },
+    {
+      "id": "F-20",
+      "path": "CITATION.cff",
+      "blob_oid": "e6fc4c2aea96877a89c80fc5861c5214821c1ff4",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "Live citation uses the public Git commit and run-and-digest evidence identity. Hosted tests cover inserting and replacing explicit release metadata.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/CITATION.cff",
+        "https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762921600/job/139716897806"
+      ]
+    },
+    {
+      "id": "F-21",
+      "path": "dev/LEADERBOARD.md",
+      "blob_oid": "f3801ca2f968e03dd7c2b34cb3df05c5810fc1e4",
+      "disposition": "CORRECTION_REVIEWED",
+      "observation": "The corrected link resolves relative to dev/. The pinned upstream README retains the original blob and uses its original layout in the scanner.",
+      "references": [
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/dev/LEADERBOARD.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/dev/LOG.md",
+        "https://github.com/neuron7x/sapolsky-behave-layers/blob/bd260e48ec49561c802d87f173e30ce6cb481b6b/docs/upstream/NANOCHAT_README.md"
+      ]
+    }
+  ]
+}
