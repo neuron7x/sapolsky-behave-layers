@@ -60,7 +60,7 @@ jobs:
             sha256sum uv.lock artifacts/wp4-adaptive-depth/SHA256SUMS
           } > "$receipt/checkout.txt"
           make -f Makefile.cwc reproduce-primary 2>&1 | tee "$receipt/replay.log"
-          printf 'WP4: `SYNTHETIC_HALT_IDENTITY_VERIFIED` across eight CPU seeds.\n\nDownload the checkout receipt and replay log under Artifacts.\n' >> "$GITHUB_STEP_SUMMARY"
+          printf 'WP4: SYNTHETIC_HALT_IDENTITY_VERIFIED across eight CPU seeds.\n\nDownload the checkout receipt and replay log under Artifacts.\n' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: ${{ !cancelled() && (steps.replay.outcome == 'success' || steps.replay.outcome == 'failure') }}
         with:
