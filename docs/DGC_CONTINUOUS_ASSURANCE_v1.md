@@ -34,6 +34,16 @@ Decision hierarchy:
 - any current FAIL -> `ROLLBACK`;
 - only complete, fresh, validated evidence with no failed gate -> `CONTINUE`.
 
+### Recorded implementation precedence
+
+The list above describes the intended policy. The implementation checks presence,
+freshness and required human validation before evaluating observation status. A
+category that requires human validation but has no validated observation is marked
+`UNVALIDATED`. A fresh `FAIL` in that category contributes `HOLD`. A separate
+qualifying `FAIL` still takes overall precedence and yields `ROLLBACK`.
+The pending behavior/specification decision is recorded as F-18.
+[Current control flow](https://github.com/neuron7x/sapolsky-behave-layers/blob/ada7044df7ed9424791864d2ef44d1643d01523d/cwc/governance/continuous_assurance.py#L156-L184).
+
 Cross-deployment evidence and conflicting duplicate observations are rejected.
 
 ## Claim boundary

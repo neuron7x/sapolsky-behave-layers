@@ -11,7 +11,8 @@ Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md)
 [test and CI coverage](docs/vnv/CWC_TEST_AND_CI_REFERENCE.md), and
 [sources and proof obligations](docs/publication/SOURCE_TO_OBLIGATION.md).
 The [documentation audit](docs/assurance/DOCUMENTATION_AUDIT.md) tracks scope,
-evidence bindings and acceptance blockers.
+evidence bindings and acceptance blockers. Its scoped documentation review and
+programme acceptance are separate results.
 
 ## What this system IS (honest one-line)
 A verified measurement substrate + falsification/governance runtime with multiple

@@ -53,6 +53,19 @@ GitHub Actions run. The catalogue command exits 0 on a valid inventory even if
 acceptance is blocked. `--accept` returns 3 while required evidence or external
 authority is unresolved. Malformed provenance or a corrupt register exits 2.
 
+## Admission of documentation
+
+`--accept-documentation` separately evaluates the scoped repository guidance and
+their recorded findings. The [internal review receipt](DOCUMENTATION_REVIEW.json)
+binds each observation to the reviewed commit, tree, and exact document or source
+blob. It records both substantiated corrections and unresolved findings displayed
+accurately in the canonical record. A missing receipt, changed reviewed byte or
+unresolved relative link blocks this admission. This internal technical review is
+distinct from human peer review, institutional approval and external replication.
+
+`--accept` remains the programme gate. Experimental, institutional and product
+evidence must meet their original obligations before that gate accepts.
+
 The audit job exercises deliberate roster deletion, fabricated verification,
 misapplied exclusions, invalid evidence identities, duplicate records, same-count obligation substitution
 and missing Markdown targets.
@@ -61,8 +74,7 @@ packaging, checks exact manifest fields and restored Git bytes and modes, and
 rejects a dirty release.
 Existing exact-certificate, historical-evidence and experimental gates provide
 their own scoped receipts. Open gaps include input admission and model execution,
-independent scientific reproduction, complete per-document review, clean archive
-restoration and the authority of any applicable institution. No terminal act is
+independent scientific reproduction, complete per-document review, external restoration of a frozen public archive and the authority of any applicable institution. No terminal act is
 issued. Interpret a valid negative through its frozen protocol.
 
 ## Sequence and responsibility

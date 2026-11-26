@@ -21,7 +21,8 @@ change a frozen gate. Exact synthetic panels use their declared finite populatio
 ## Confirmatory design
 - Pilot seeds are **excluded** from confirmatory inference.
 - Minimum **8 paired model seeds** (shipped experiments use 8).
-- Real evaluation corpora ≥ 5 is REQUIRED for real-workload claims (`NOT_TESTED` today).
+- For broad paired-seed real-workload claims under this guidance, prespecify at least
+  five evaluation corpora. REAL-TRANSFER-01 follows its frozen two-family design.
 - Paired systems share data order, token budget, checkpoint rule, and
   hyperparameter-search budget.
 

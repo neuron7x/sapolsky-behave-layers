@@ -35,6 +35,6 @@ Its admission, privacy and risk assessments remain scoped and open as recorded.
 | 18 | Security | local research code; no network/credential surface in experiments |
 | 19 | Human oversight | fully human-operated; no autonomous action |
 | 20 | Deployment status | `LOCAL_RESEARCH_ONLY · NOT_PUBLIC_SERVICE · NOT_SAFETY_CRITICAL · NOT_AUTONOMOUSLY_DEPLOYED · NO_FRONTIER_CAPABILITY_CLAIM` |
-| 21 | Unresolved risks | none at current scope; escalation triggers in risk profile |
+| 21 | Unresolved risks | none recorded for the historical WP1 scope; see the current findings above |
 | 22 | Change history | `CHANGELOG.md` |
 | 23 | Contact / reporting | repository owner (Yaroslav Vasylenko) |

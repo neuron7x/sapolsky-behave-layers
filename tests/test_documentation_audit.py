@@ -23,6 +23,47 @@ class DocumentationAuditTests(unittest.TestCase):
             for path in profile["evidence"]
         }
 
+    def review_fixture(self):
+        path = "method.md"
+        findings = [{"id": "F-01", "path": path, "disposition": "OPEN"}]
+        records = {path: {"blob_oid": "a" * 40}}
+        review = {"schema": "cwc-documentation-review-v1", "basis": "INTERNAL_CODEX_REVIEW", "findings": [{
+            "id": "F-01", "path": path, "blob_oid": "a" * 40,
+            "disposition": "OPEN_RECORDED", "observation": "A blocked study is explicitly recorded.",
+            "references": ["https://example.invalid/study"],
+        }]}
+        return review, findings, records
+
+    def test_documentation_accepts_honestly_recorded_open_findings(self) -> None:
+        review, findings, records = self.review_fixture()
+        result = audit.documentation_disposition(review, findings, records, {"findings": {}})
+        self.assertEqual(result["status"], "ACCEPTED")
+        self.assertEqual(result["open_findings_recorded"], 1)
+
+    def test_missing_review_cannot_accept(self) -> None:
+        _, findings, records = self.review_fixture()
+        self.assertEqual(audit.documentation_disposition(None, findings, records, {"findings": {}})["status"],
+                         "BLOCKED")
+
+    def test_stale_review_and_broken_links_block_documentation(self) -> None:
+        review, findings, records = self.review_fixture()
+        records["method.md"]["blob_oid"] = "b" * 40
+        result = audit.documentation_disposition(review, findings, records, {"findings": {"method.md": []}})
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["blockers"], ["LINK:method.md", "STALE_DOCUMENTATION_REVIEW:F-01"])
+
+    def test_relabelled_open_finding_is_rejected(self) -> None:
+        review, findings, records = self.review_fixture()
+        review["findings"][0]["disposition"] = "CORRECTION_REVIEWED"
+        with self.assertRaisesRegex(audit.AuditError, "review disposition mismatch"):
+            audit.documentation_disposition(review, findings, records, {"findings": {}})
+
+    def test_claimed_external_review_is_rejected(self) -> None:
+        review, findings, records = self.review_fixture()
+        review["basis"] = "EXTERNAL_REPLICATION"
+        with self.assertRaisesRegex(audit.AuditError, "unsupported review authority"):
+            audit.documentation_disposition(review, findings, records, {"findings": {}})
+
     def test_required_roster_expands_to_individual_entries(self) -> None:
         rows = audit.validate_requirements(self.register, self.records, True)
         self.assertEqual(len(rows), 262)

@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIREMENTS = "docs/assurance/REQUIREMENTS.json"
 STANDARDS = "docs/assurance/STANDARDS.json"
 FINDINGS = "docs/assurance/FINDINGS.json"
+DOC_REVIEW = "docs/assurance/DOCUMENTATION_REVIEW.json"
+DOC_REVIEW_BASIS = "INTERNAL_CODEX_REVIEW"
 ROSTER_COMMIT = "87efe1bad7eb062cf415425334adb0e72250ab30"
 REQUIRED_COUNTS = (16, 14, 19, 20, 20, 22, 15, 25, 15, 17, 19, 18, 15, 19, 8)
 STATUSES = frozenset({"VERIFIED", "INCOMPLETE", "MISSING", "INVALID", "OUTDATED", "NOT_APPLICABLE"})
@@ -201,6 +203,40 @@ def validate_standards(register: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def documentation_disposition(
+    review: dict[str, Any] | None,
+    findings: list[dict[str, Any]],
+    records: dict[str, Any],
+    links: dict[str, Any],
+) -> dict[str, Any]:
+    blockers = [f"LINK:{path}" for path in links["findings"]]
+    if review is None:
+        blockers.append("MISSING_DOCUMENTATION_REVIEW")
+        return {"status": "BLOCKED", "blockers": blockers}
+    require(review.get("schema") == "cwc-documentation-review-v1", "documentation review schema")
+    require(review.get("basis") == DOC_REVIEW_BASIS, "unsupported review authority")
+    rows = review["findings"]
+    require([row["id"] for row in rows] == [row["id"] for row in findings],
+            "documentation review roster mismatch")
+    for item, row in zip(findings, rows, strict=True):
+        ident, path = item["id"], item["path"]
+        expected = "CORRECTION_REVIEWED" if item["disposition"] == "CORRECTION_PENDING_REVIEW" else "OPEN_RECORDED"
+        require(row["path"] == path and row["disposition"] == expected, f"review disposition mismatch: {ident}")
+        require(isinstance(row["observation"], str) and bool(row["observation"].strip()), f"empty review: {ident}")
+        require(row["references"] and all(isinstance(url, str) and url.startswith("https://")
+                                         for url in row["references"]), f"unbound review references: {ident}")
+        if row["blob_oid"] != records[path]["blob_oid"]:
+            blockers.append(f"STALE_DOCUMENTATION_REVIEW:{ident}")
+    return {
+        "status": "BLOCKED" if blockers else "ACCEPTED",
+        "basis": DOC_REVIEW_BASIS,
+        "scope": "CWC baseline guidance and the recorded findings",
+        "blockers": blockers,
+        "reviewed_corrections": sum(row["disposition"] == "CORRECTION_REVIEWED" for row in rows),
+        "open_findings_recorded": sum(row["disposition"] == "OPEN_RECORDED" for row in rows),
+    }
+
+
 def audit(root: Path = ROOT) -> dict[str, Any]:
     head = git(root, "rev-parse", "HEAD").decode().strip()
     tree = git(root, "rev-parse", f"{head}^{{tree}}").decode().strip()
@@ -246,18 +282,32 @@ def audit(root: Path = ROOT) -> dict[str, Any]:
     blockers.extend(row["id"] for row in findings["findings"])
     links = inspect_relative_links(root, head, records)
     blockers.extend(f"LINK:{path}" for path in links["findings"])
+    review = read_commit_json(root, head, DOC_REVIEW) if DOC_REVIEW in records else None
+    if review is not None:
+        reviewed = review["reviewed_commit"]
+        require(OBJECT_ID.fullmatch(reviewed) is not None, "invalid reviewed commit")
+        git(root, "merge-base", "--is-ancestor", reviewed, head)
+        reviewed_tree = git(root, "rev-parse", f"{reviewed}^{{tree}}").decode().strip()
+        require(reviewed_tree == review["reviewed_tree"], "reviewed tree mismatch")
+        reviewed_records = inventory(root, reviewed)
+        for row in review["findings"]:
+            require(row["path"] in reviewed_records and
+                    row["blob_oid"] == reviewed_records[row["path"]]["blob_oid"], "reviewed byte identity mismatch")
+    doc_disposition = documentation_disposition(review, findings["findings"], records, links)
     return {
         "schema": "cwc-documentation-audit-v1", "commit": head, "tree": tree, "baseline": baseline,
         "acceptance": "BLOCKED" if blockers else "ACCEPTED", "blockers": blockers,
         "inventory": records, "requirements": requirements, "standards": standards, "findings": findings["findings"],
-        "relative_links": links,
+        "relative_links": links, "documentation_acceptance": doc_disposition,
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, help="Write a new report outside the checkout")
-    parser.add_argument("--accept", action="store_true", help="Fail if acceptance is blocked")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--accept", action="store_true", help="Fail if programme acceptance is blocked")
+    mode.add_argument("--accept-documentation", action="store_true", help="Require scoped documentation admission")
     args = parser.parse_args()
     try:
         report = audit()
@@ -276,9 +326,12 @@ def main() -> int:
         "commit": report["commit"], "tree": report["tree"], "inventory": dict(kinds),
         "requirements": dict(counts), "standards": len(report["standards"]),
         "open_items": len(report["blockers"]), "acceptance": report["acceptance"],
+        "documentation_acceptance": report["documentation_acceptance"],
         "markdown_scanned": report["relative_links"]["files_scanned"],
         "markdown_with_link_findings": len(report["relative_links"]["findings"]),
     }, sort_keys=True))
+    if args.accept_documentation:
+        return 0 if report["documentation_acceptance"]["status"] == "ACCEPTED" else 3
     return 3 if args.accept and report["acceptance"] != "ACCEPTED" else 0
 
 

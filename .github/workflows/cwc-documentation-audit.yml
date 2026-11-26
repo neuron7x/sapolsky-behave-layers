@@ -32,6 +32,7 @@ jobs:
           mkdir "$RUNNER_TEMP/cwc-documentation-audit"
           report="$RUNNER_TEMP/cwc-documentation-audit/documentation-audit.json"
           python -B scripts/documentation_audit.py --output "$report"
+          python -B scripts/documentation_audit.py --accept-documentation
           rc=0
           python -B scripts/documentation_audit.py --accept || rc=$?
           python -B -c 'import json, sys; r=json.load(open(sys.argv[1])); expected={"ACCEPTED":0,"BLOCKED":3}[r["acceptance"]]; sys.exit(0 if int(sys.argv[2])==expected else 1)' "$report" "$rc"

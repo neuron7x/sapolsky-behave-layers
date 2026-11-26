@@ -26,7 +26,7 @@ separate rules below.
 
 REAL-TRANSFER-01 has reconstructed AVeriTeC and HybridQA source bytes and fixed cohort
 identities. The manifest candidate is inert. Model execution and scientific transfer
-remain open. Source custody controls record pinned source identity, licenses and
+remain open. Source custody controls record pinned source identity, published license notices and
 attribution candidates, the actual cohort assignment, and the audited tree. Recheck
 admission after tree or source changes.
 

@@ -4,11 +4,10 @@
 Yaroslav Vasylenko — research direction, hypotheses, methodology, acceptance decisions,
 and responsibility for all claims.
 
-## Funding
-No external funding. Compute is the author's local hardware (RTX 3050 4GiB).
-
-## Conflicts of interest
-None declared.
+## Historical funding, compute and conflicts disclosure
+The earlier disclosure recorded no external funding, author-local compute on an RTX 3050
+with 4 GiB, and no declared conflicts. The audit below used GitHub-hosted verification.
+Current funding and conflicts require author confirmation for any submission.
 
 ## Historical AI assistance
 - **Model / tool:** Claude (Anthropic), via Claude Code, acting as an autonomous coding

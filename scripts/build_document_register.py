@@ -112,6 +112,7 @@ DOCS = [
     ("DOC-071", "P1", "docs/assurance/FINDINGS.json", ""),
     ("DOC-072", "P1", "docs/assurance/RESEARCH_RISK_AND_ACCEPTANCE.md", ""),
     ("DOC-073", "P1", "schemas/dataset.schema.json", ""),
+    ("DOC-074", "P1", "docs/assurance/DOCUMENTATION_REVIEW.json", ""),
 ]
 
 
