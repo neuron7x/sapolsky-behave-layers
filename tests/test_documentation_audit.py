@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts import documentation_audit as audit
+from scripts import reproduce_primary, wp16_release_spine
 
 
 class DocumentationAuditTests(unittest.TestCase):
@@ -82,6 +87,42 @@ class DocumentationAuditTests(unittest.TestCase):
         text = "[good](../README.md)\n[missing](missing.md)\n```\n[fake](fenced.md)\n```\n"
         self.assertEqual(audit.relative_link_findings("docs/a.md", text, {"README.md"}),
                          [{"line": 2, "target": "missing.md"}])
+
+    def test_wp4_archive_damage_rejects_before_replay(self) -> None:
+        for kind in ("missing_manifest", "missing_manifest_row", "changed_archive"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                rel = Path("artifacts/wp4-adaptive-depth")
+                archive = root / rel
+                shutil.copytree(reproduce_primary.ROOT / rel, archive)
+                manifest = archive / "SHA256SUMS"
+                if kind == "missing_manifest":
+                    manifest.unlink()
+                elif kind == "missing_manifest_row":
+                    manifest.write_bytes(manifest.read_bytes().split(b"\n", maxsplit=1)[1])
+                else:
+                    with (archive / "analysis.json").open("ab") as stream:
+                        stream.write(b"\n")
+                output = io.StringIO()
+                with patch.object(reproduce_primary, "ROOT", root), contextlib.redirect_stdout(output):
+                    self.assertEqual(reproduce_primary.main(), 1)
+                self.assertNotIn("running wp4", output.getvalue())
+
+    def test_citation_release_stamps_insert_and_replace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            citation = root / "CITATION.cff"
+            citation.write_text('title: CWC\n', encoding="utf-8")
+            with patch.object(wp16_release_spine, "ROOT", root), patch.object(
+                wp16_release_spine, "_sh", return_value="a" * 40,
+            ):
+                self.assertTrue(wp16_release_spine.restamp_citation("2026-11-26"))
+                self.assertTrue(wp16_release_spine.restamp_citation("2026-11-27"))
+            text = citation.read_text(encoding="utf-8")
+            self.assertEqual(text.count("version:"), 1)
+            self.assertEqual(text.count("date-released:"), 1)
+            self.assertIn('version: "1.1.0-aaaaaaa"', text)
+            self.assertIn('date-released: "2026-11-27"', text)
 
     def test_source_binding_excludes_dirty_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

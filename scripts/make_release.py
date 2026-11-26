@@ -1,71 +1,67 @@
-"""Build clean release archives (G0): source (no .git / caches) + evidence,
-each with a SHA-256, plus RELEASE_MANIFEST.json. Deterministic file order.
-Usage: PYTHONPATH=. .venv/bin/python scripts/make_release.py --out /tmp/cwc-release
-"""
+"""Build source and evidence archives from the same clean Git commit."""
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import os
 import subprocess
-import tarfile
+from hashlib import file_digest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDE = {".git", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache",
-           ".ruff_cache", ".hypothesis", ".coverage"}
+UPSTREAM_COMMIT = "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd"
 
 
-def _sh(cmd: str) -> str:
-    return subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=ROOT).stdout.strip()
+def git(*args: str) -> bytes:
+    return subprocess.check_output(["git", *args], cwd=ROOT)
 
 
-def _clean_files(subdirs: list[str]) -> list[Path]:
-    out = []
-    for sub in subdirs:
-        for p in sorted((ROOT / sub).rglob("*")):
-            if p.is_file() and not any(part in EXCLUDE or part.endswith(".pyc") for part in p.parts):
-                out.append(p)
-    return out
-
-
-def _tar(files: list[Path], dest: Path) -> str:
-    with tarfile.open(dest, "w:gz") as tf:
-        for f in files:
-            tf.add(f, arcname=str(f.relative_to(ROOT)))
-    return hashlib.sha256(dest.read_bytes()).hexdigest()
+def sha256(path: Path) -> str:
+    with path.open("rb") as stream:
+        return file_digest(stream, "sha256").hexdigest()
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", type=Path, default=Path("/tmp/cwc-release"))
-    args = ap.parse_args()
-    args.out.mkdir(parents=True, exist_ok=True)
-    commit = _sh("git rev-parse HEAD")
-    src = _clean_files(["cwc", "experiments", "scripts", "docs", "schemas", "tests",
-                        "nanochat", "containers"]) + [ROOT / f for f in
-                        ("Makefile.cwc", "uv.lock", "pyproject.toml", "ruff.toml", "mypy.ini",
-                         "SYSTEM.md", "CITATION.cff", "claim_registry.json") if (ROOT / f).exists()]
-    ev = _clean_files(["artifacts"])
-    src_sha = _tar(src, args.out / f"cwc-source-{commit[:7]}.tar.gz")
-    ev_sha = _tar(ev, args.out / f"cwc-evidence-{commit[:7]}.tar.gz")
-    manifest = {
-        "project": "Cognitive Wiring Core", "version": "1.0.0", "git_commit": commit,
-        "git_tree": _sh("git rev-parse HEAD^{tree}"),
-        "upstream_commit": _sh("git rev-parse master"),
-        "source_archive_sha256": src_sha, "evidence_archive_sha256": ev_sha,
-        "source_files": len(src), "evidence_files": len(ev),
-        "supported_claims": ["CWC-L0-measurement", "CWC-L1-identifiability",
-                             "CWC-L2-routing-causality (NARROWED)", "CWC-L2p-jensen-gap"],
-        "prohibited_claims": ["autonomous adaptive routing", "compute-equivalent Pareto",
-                              "general adaptive intelligence", "energy efficiency"],
-    }
-    (args.out / "RELEASE_MANIFEST.json").write_text(json.dumps(manifest, indent=2))
-    sums = "\n".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}"
-                     for p in sorted(args.out.glob("*")) if p.name != "SHA256SUMS")
-    (args.out / "SHA256SUMS").write_text(sums + "\n")
-    print(f"release: {args.out} | source {len(src)} files sha {src_sha[:12]} "
-          f"| evidence {len(ev)} files sha {ev_sha[:12]}")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=Path("/tmp/cwc-release"))
+    args = parser.parse_args()
+    commit = git("rev-parse", "HEAD").decode("ascii").strip()
+    if git("status", "--porcelain", "--untracked-files=no").strip():
+        parser.error("release snapshot requires a clean tracked checkout")
+    tree = git("rev-parse", f"{commit}^{{tree}}").decode("ascii").strip()
+    claims = json.loads(git("show", f"{commit}:claim_registry.json"))["claims"]
+    entries = git("ls-tree", "-r", "-z", "--name-only", commit).split(b"\0")[:-1]
+    evidence_count = sum(path.startswith(b"artifacts/") for path in entries)
+    names = f"cwc-source-{commit[:7]}.tar.gz", f"cwc-evidence-{commit[:7]}.tar.gz"
+    out = args.out.resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    if out.exists() and (not out.is_dir() or any(out.iterdir())):
+        parser.error("release output must be a new or empty directory")
+    with TemporaryDirectory(prefix=".cwc-release-", dir=out.parent) as tmp:
+        stage = Path(tmp)
+        scopes = ((".", ":(exclude)artifacts"), ("artifacts",))
+        for name, paths in zip(names, scopes, strict=True):
+            git("-c", "tar.umask=0022", "archive", "--format=tar.gz",
+                f"--output={stage / name}", commit, "--", *paths)
+        hashes = {name: sha256(stage / name) for name in names}
+        manifest = {
+            "project": "Cognitive Wiring Core", "version": f"snapshot-{commit[:12]}",
+            "git_commit": commit, "git_tree": tree, "upstream_commit": UPSTREAM_COMMIT,
+            "source_archive_sha256": hashes[names[0]], "evidence_archive_sha256": hashes[names[1]],
+            "source_files": len(entries) - evidence_count, "evidence_files": evidence_count,
+            "supported_claims": sorted(c["claim_id"] for c in claims if c["status"] == "SUPPORTED"),
+            "narrowed_claims": sorted(c["claim_id"] for c in claims if c["status"] == "SUPPORTED_NARROWED"),
+            "prohibited_claims": sorted({v for c in claims for v in c.get("prohibited_extrapolations", [])}),
+        }
+        manifest_path = stage / "RELEASE_MANIFEST.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        hashes[manifest_path.name] = sha256(manifest_path)
+        (stage / "SHA256SUMS").write_text(
+            "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items())), encoding="ascii",
+        )
+        os.replace(stage, out)
+    print(f"RELEASE SNAPSHOT: {commit} {tree} ({len(entries)} tracked files)")
 
 
 if __name__ == "__main__":

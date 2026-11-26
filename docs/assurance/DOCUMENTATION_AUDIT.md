@@ -34,6 +34,7 @@ The report distinguishes documentary, evidentiary, verification and source
 material. A blob's identity supplies provenance. Pending substantive review is
 `INCOMPLETE`. Known open inconsistencies carry their explicit findings.
 A repo-wide Markdown scan reports unresolved simple inline relative path links.
+The exact byte-for-byte upstream README is checked in its pinned original layout.
 Anchors and remote URLs require separate verification. Historical byte identities
 and negative outcomes remain available.
 
@@ -55,6 +56,8 @@ authority is unresolved. Malformed provenance or a corrupt register exits 2.
 The audit job exercises deliberate roster deletion, fabricated verification,
 misapplied exclusions, invalid evidence identities, duplicate records, same-count obligation substitution
 and missing Markdown targets.
+The archive workflow also exercises byte damage in WP4, repeats deterministic
+packaging, checks restored Git bytes and modes, and rejects a dirty release.
 Existing exact-certificate, historical-evidence and experimental gates provide
 their own scoped receipts. Open gaps include input admission and model execution,
 independent scientific reproduction, complete per-document review, clean archive

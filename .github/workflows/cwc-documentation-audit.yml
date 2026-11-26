@@ -38,6 +38,10 @@ jobs:
           cd "$RUNNER_TEMP/cwc-documentation-audit"
           sha256sum documentation-audit.json > SHA256SUMS
           sha256sum --strict --check SHA256SUMS
+      - name: Restore two independently built source and evidence packages
+        run: |
+          umask 022
+          python -B scripts/check_release_restoration.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: cwc-documentation-audit-${{ github.run_attempt }}

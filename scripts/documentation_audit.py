@@ -21,6 +21,8 @@ OBJECT_ID = re.compile(r"[0-9a-f]{40}")
 MARKDOWN_LINK = re.compile(r"\]\(([^\s()]+)(?:\s+[^)]*)?\)")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 DOCUMENT_SUFFIXES = frozenset({".md", ".rst", ".tex", ".bib", ".pdf", ".cff"})
+UPSTREAM_LAYOUT = "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd"
+UPSTREAM_README = "docs/upstream/NANOCHAT_README.md"
 SCOPE_POINTER = "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
 
 
@@ -120,6 +122,10 @@ def relative_link_findings(path: str, text: str, paths: set[str]) -> list[dict[s
 
 def inspect_relative_links(root: Path, commit: str, records: dict[str, Any]) -> dict[str, Any]:
     paths = set(records) | {str(parent) for path in records for parent in Path(path).parents}
+    upstream = inventory(root, UPSTREAM_LAYOUT)
+    require(records[UPSTREAM_README]["blob_oid"] == upstream["README.md"]["blob_oid"],
+            "upstream documentation bytes differ from the pinned original")
+    upstream_paths = set(upstream) | {str(parent) for path in upstream for parent in Path(path).parents}
     findings = {}
     checked = 0
     for path in records:
@@ -128,7 +134,10 @@ def inspect_relative_links(root: Path, commit: str, records: dict[str, Any]) -> 
         raw = git(root, "show", f"{commit}:{path}")
         checked += 1
         try:
-            errors = relative_link_findings(path, raw.decode("utf-8"), paths)
+            if path == UPSTREAM_README:
+                errors = relative_link_findings("README.md", raw.decode("utf-8"), upstream_paths)
+            else:
+                errors = relative_link_findings(path, raw.decode("utf-8"), paths)
         except UnicodeDecodeError:
             errors = [{"line": 0, "target": "non-UTF-8 Markdown"}]
         if errors:

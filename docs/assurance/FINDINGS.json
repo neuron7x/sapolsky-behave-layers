@@ -115,7 +115,7 @@
       "path": "scripts/make_release.py",
       "baseline_blob_oid": "b1088b0f6679181d87b4ae5f59bf664a745342e3",
       "status": "INVALID",
-      "disposition": "OPEN",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Working-tree bytes and wall-clock metadata can produce different archives under the same Git identity.",
       "falsifier": "Adversarially test a dirty included file, repeat builds and exact path/blob/mode restoration."
     },
@@ -124,7 +124,7 @@
       "path": "scripts/reproduce_primary.py",
       "baseline_blob_oid": "21df67dd5a9c68cebb80da5c1817d526a47e42f4",
       "status": "INCOMPLETE",
-      "disposition": "OPEN",
+      "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "Synthetic replay accepts its own regenerated outputs without validating the original WP4 archive in this entry point.",
       "falsifier": "Apply one-byte archive corruption or remove a required manifest. Independent archive checks must reject it."
     },
@@ -181,6 +181,15 @@
       "disposition": "CORRECTION_PENDING_REVIEW",
       "finding": "The generic citation exposed a historical WP16 archive version as the default for the current source.",
       "falsifier": "Verify commit-oriented live citation and confirm the explicit release-stamping function can insert and replace release fields."
+    },
+    {
+      "id": "F-21",
+      "path": "dev/LEADERBOARD.md",
+      "baseline_blob_oid": "3319d203316984c5b799c30b063200b9e2080276",
+      "status": "OUTDATED",
+      "disposition": "CORRECTION_PENDING_REVIEW",
+      "finding": "An extra dev/ prefix points at a missing relative log.",
+      "falsifier": "Resolve LOG.md relative to dev/ against the exact tracked tree."
     }
   ]
 }

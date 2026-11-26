@@ -11,6 +11,26 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
+class DatasetLoader(yaml.SafeLoader):
+    """Safe YAML loader with unambiguous mappings."""
+
+
+def unique_mapping(loader: DatasetLoader, node: yaml.MappingNode) -> dict:
+    result = {}
+    for key, value in loader.construct_pairs(node, deep=True):
+        if key in result:
+            raise ValueError(f"duplicate YAML field: {key}")
+        result[key] = value
+    return result
+
+
+DatasetLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, unique_mapping)
+
+
+def load_yaml(text: str) -> dict:
+    return yaml.load(text, Loader=DatasetLoader)
+
+
 def validate(payload: dict, schema: dict, root: Path) -> None:
     root_fields = set(schema["properties"])
     if set(payload) != root_fields:
@@ -51,7 +71,7 @@ def validate(payload: dict, schema: dict, root: Path) -> None:
 def main() -> int:
     try:
         schema = json.loads((ROOT / "schemas/dataset.schema.json").read_text(encoding="utf-8"))
-        payload = yaml.safe_load((ROOT / "docs/data/DATASET_REGISTER.yaml").read_text(encoding="utf-8"))
+        payload = load_yaml((ROOT / "docs/data/DATASET_REGISTER.yaml").read_text(encoding="utf-8"))
         validate(payload, schema, ROOT)
     except (OSError, TypeError, ValueError, KeyError, yaml.YAMLError) as exc:
         print(f"DATASET REGISTER FAIL: {exc}", file=sys.stderr)

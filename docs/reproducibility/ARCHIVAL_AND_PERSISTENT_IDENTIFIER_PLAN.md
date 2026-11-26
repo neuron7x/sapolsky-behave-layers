@@ -9,9 +9,11 @@ identifier and external restoration receipt remain open.
 A citeable release requires a tagged reviewed commit, explicit source and evidence
 rosters, archive hashes, permission-aware retention and a clean restoration from
 the published package. Compare every restored tracked path, blob and mode against
-the intended tree. Retain failed restores. The current source packager reads the
-working tree. [Builder](../../scripts/make_release.py). Treat its output as a draft
-until a restoration check establishes provenance.
+the intended tree. Retain failed restores. The snapshot builder uses a clean tracked checkout, stages provenance-bound archives
+from the commit, and publishes into a new or empty directory. The independent
+[restoration checker](../../scripts/check_release_restoration.py) repeats the build
+and compares restored Git blobs and executable modes. Public release, permission
+review and external scientific reproduction remain separate acceptance obligations.
 
 Deposit only artifacts authorized for redistribution. Record the archive identifier,
 release tag, commit/tree, payload digest and instructions in the citation and artifact

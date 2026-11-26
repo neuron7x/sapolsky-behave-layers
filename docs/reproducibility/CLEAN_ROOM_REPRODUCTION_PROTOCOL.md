@@ -16,8 +16,8 @@ make -f Makefile.cwc reproduce-primary
 ```
 
 The first target verifies the history guard and archives with discovered manifests.
-The second regenerates eight seeded WP4 runs in temporary storage, analyzes them
-and checks the synthetic verdict and tolerance. Retain the command log as a receipt.
+The second checks the frozen WP4 manifest and listed bytes, regenerates eight
+seeded WP4 runs in temporary storage, and checks the synthetic verdict and tolerance. Retain the command log as a receipt.
 Use `verify-full` to include both operations in the wider test suite.
 
 ## Containers

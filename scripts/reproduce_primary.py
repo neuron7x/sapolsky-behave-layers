@@ -10,9 +10,11 @@ import os
 import subprocess
 import sys
 import tempfile
+from hashlib import sha256
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+WP4_MANIFEST_SHA256 = "4ca9de7ff7de6027d37570dfa45ffec0830c814a07566e70a7ba3d987614966a"
 
 
 def _env() -> dict[str, str]:
@@ -23,6 +25,17 @@ def _env() -> dict[str, str]:
 
 
 def main() -> int:
+    archive = ROOT / "artifacts/wp4-adaptive-depth"
+    manifest = archive / "SHA256SUMS"
+    if not manifest.is_file() or sha256(manifest.read_bytes()).hexdigest() != WP4_MANIFEST_SHA256:
+        print("[reproduce-primary] FAIL: frozen WP4 manifest missing or changed", file=sys.stderr)
+        return 1
+    if subprocess.run(
+        ["sha256sum", "--strict", "--check", "--quiet", manifest.name], cwd=archive,
+    ).returncode:
+        print("[reproduce-primary] FAIL: archived WP4 bytes failed checksum verification", file=sys.stderr)
+        return 1
+
     print("[reproduce-primary] running wp4 adaptive-depth in an isolated directory...")
     with tempfile.TemporaryDirectory(prefix="cwc-wp4-") as tmp:
         tmp_root = Path(tmp)

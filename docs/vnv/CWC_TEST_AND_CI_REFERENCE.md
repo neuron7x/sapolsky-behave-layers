@@ -42,4 +42,11 @@ For a PR receipt record PR head, base, tested checkout, tree, run ID, attempt, j
 | JOINT-LP attempt 1 | CPython 3.12.16 on x86_64 and aarch64. Four process receipts and a fresh reconstruction agree on payload SHA-256 `f67215d0de14f0e8c98106ebf055e516e9b6ecc8a7f38985206c8b6ee5ca836f`. The unique panel contains 64 toy target checks, 32 compatible records, 8 certified exclusions and 18 rejected mutations. Architecture totals repeat the same panel. Scientific promotion is blocked. [Aggregate receipt](https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45593809355/job/139134865855). |
 | REAL-TRANSFER-01 source stage | Three frozen source payloads and six cohorts were reconstructed. Later custody and inert manifest candidate work retain nonadmission. Model execution is `NOT_RUN`. The scientific verdict and independent external replication are `NOT_TESTED`. [Source-intake job](https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45575157643/job/139071160509) · [manifest scope](../../experiments/cwc_manifest_candidate/PROTOCOL.md). |
 
+## Documentation-audit candidate additions
+
+The current candidate adds a separate Git-bound archive check before the WP4 replay.
+The historical target description above remains scoped to its baseline commit. The
+[audit workflow](../../.github/workflows/cwc-documentation-audit.yml) exercises
+frozen manifest damage controls and clean restoration of the current package.
+
 [Verification plan](VERIFICATION_AND_VALIDATION_PLAN.md) · [artifact reproduction](../reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md) · [architecture](../architecture/CWC_ARCHITECTURE.md).
