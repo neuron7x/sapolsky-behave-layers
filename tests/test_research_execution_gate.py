@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import csv
+import hashlib
 import importlib.util
 import json
 import shutil
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MODPATH = ROOT / "scripts/research_execution_gate.py"
@@ -69,3 +73,77 @@ def test_erased_negative_result_fails_even_with_resealed_checksum(tmp_path: Path
         assert "negative verdict" in str(exc)
     else:
         raise AssertionError("erased negative verdict was accepted")
+
+
+def _reseal(directory: Path, name: str) -> None:
+    ledger = directory / "SHA256SUMS"
+    replacement = hashlib.sha256((directory / name).read_bytes()).hexdigest()
+    pairs = [line.split("  ", 1) for line in ledger.read_text().splitlines()]
+    ledger.write_text("".join(f"{replacement if key == name else digest}  {key}\n"
+                              for digest, key in pairs))
+
+
+@pytest.mark.parametrize("fault", ["empty", "omit-verdict", "duplicate"])
+def test_ledger_cannot_drop_or_duplicate_required_entries(tmp_path: Path, fault: str) -> None:
+    root = _copy_fixture(tmp_path)
+    ledger = root / "artifacts/research-s01-ood-credit/SHA256SUMS"
+    rows = ledger.read_text().splitlines()
+    replacement = {"empty": [], "omit-verdict": rows[1:], "duplicate": rows + rows[:1]}[fault]
+    ledger.write_text("\n".join(replacement) + "\n")
+    with pytest.raises(ValueError, match="checksum"):
+        mod.validate(root)
+
+
+@pytest.mark.parametrize("fault", ["missing", "empty", "partial", "not-boolean"])
+def test_checksum_does_not_replace_exact_predicates(tmp_path: Path, fault: str) -> None:
+    root = _copy_fixture(tmp_path)
+    path = root / "artifacts/research-s01-ood-credit/verdict.json"
+    document = json.loads(path.read_text())
+    if fault == "missing":
+        del document["primary_predicates"]
+    elif fault == "empty":
+        document["primary_predicates"] = {}
+    elif fault == "partial":
+        del document["primary_predicates"]["ood_shapley_unique_A_all"]
+    else:
+        document["primary_predicates"]["ood_shapley_unique_A_all"] = 1
+    path.write_text(json.dumps(document))
+    _reseal(path.parent, path.name)
+    with pytest.raises(ValueError, match="primary predicate"):
+        mod.validate(root)
+
+
+@pytest.mark.parametrize("fault, expected", [
+    ("contradiction", "primary predicate contradicted at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+    ("missing", "seed roster incomplete at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+    ("duplicate", "duplicate seed row at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+    ("efficiency", "efficiency predicate contradicted at 1000/OOD_SIGN_FLIP/EXACT_CF_SHAPLEY"),
+])
+def test_resealed_rows_cannot_support_stale_outcomes(tmp_path: Path, fault: str, expected: str) -> None:
+    root = _copy_fixture(tmp_path)
+    directory = root / "artifacts/research-s01-ood-credit"
+    path = directory / "seed_results.csv"
+    verdict = (directory / "verdict.json").read_bytes()
+    with path.open(newline="") as handle:
+        reader = csv.DictReader(handle)
+        fields, rows = reader.fieldnames, list(reader)
+    index = next(i for i, row in enumerate(rows)
+                 if (row["seed"], row["context"], row["method"]) ==
+                 ("1000", "OOD_SIGN_FLIP", "EXACT_CF_SHAPLEY"))
+    if fault == "contradiction":
+        rows[index].update(top1_A="0", false_credit_mass="1.0", score_A="0.0", score_C="0.0",
+                           score_D="1.0", score_B="0.0")
+    elif fault == "missing":
+        rows.pop(index)
+    elif fault == "duplicate":
+        rows.insert(index, rows[index])
+    else:
+        rows[index]["max_efficiency_error"] = "1e-10"
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
+    _reseal(directory, path.name)
+    assert (directory / "verdict.json").read_bytes() == verdict
+    with pytest.raises(ValueError, match=expected):
+        mod.validate(root)
