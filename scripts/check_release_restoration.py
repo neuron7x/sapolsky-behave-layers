@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+UPSTREAM = "92d63d4e8bb4df75c3b71618f31ddde2378b2bcd"
 
 
 def require(condition: bool, detail: str) -> None:
@@ -24,6 +25,30 @@ def git(*args: str) -> bytes:
 def sha256(path: Path) -> str:
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def validate_manifest(doc: dict, expected: dict) -> None:
+    require(doc.keys() == expected.keys(), "release manifest field roster mismatch")
+    for key, value in expected.items():
+        require(type(doc[key]) is type(value) and doc[key] == value, f"release manifest mismatch: {key}")
+
+
+def manifest_controls(doc: dict, expected: dict) -> None:
+    attacked = {
+        "source_archive_sha256": "0" * 64,
+        "evidence_archive_sha256": "0" * 64,
+        "source_files": 0,
+        "evidence_files": 0,
+        "upstream_commit": "0" * 40,
+    }
+    for field, value in attacked.items():
+        try:
+            validate_manifest({**doc, field: value}, expected)
+        except ValueError as exc:
+            require(str(exc) == f"release manifest mismatch: {field}", "wrong mutation rejection")
+        else:
+            raise ValueError(f"forged manifest field was admitted: {field}")
+    print(f"RELEASE MANIFEST CONTROLS PASS: {len(attacked)}/{len(attacked)} forged fields rejected")
 
 
 def check() -> None:
@@ -44,11 +69,31 @@ def check() -> None:
                 [sys.executable, str(ROOT / "scripts/make_release.py"), "--out", str(dest)], check=True,
             )
             subprocess.run(["sha256sum", "--strict", "--check", "SHA256SUMS"], cwd=dest, check=True)
-        names = {path.name for path in first.iterdir()}
-        require(len(names) == 4 and names == {path.name for path in second.iterdir()}, "output roster mismatch")
+        source_name = f"cwc-source-{commit[:7]}.tar.gz"
+        evidence_name = f"cwc-evidence-{commit[:7]}.tar.gz"
+        payload_names = {source_name, evidence_name, "RELEASE_MANIFEST.json"}
+        names = payload_names | {"SHA256SUMS"}
+        require(all(names == {path.name for path in dest.iterdir()} for dest in (first, second)),
+                "output roster mismatch")
         require(all(sha256(first / name) == sha256(second / name) for name in names), "build bytes diverge")
+        hashes = {name: sha256(first / name) for name in sorted(payload_names)}
+        sums = "".join(f"{digest}  {name}\n" for name, digest in hashes.items())
+        require((first / "SHA256SUMS").read_text(encoding="ascii") == sums, "checksum roster mismatch")
+        claims = json.loads(git("show", f"{commit}:claim_registry.json"))["claims"]
+        evidence_count = sum(name.startswith("artifacts/") for name in expected)
+        git("cat-file", "-e", f"{UPSTREAM}^{{commit}}")
+        manifest = {
+            "project": "Cognitive Wiring Core", "version": f"snapshot-{commit[:12]}",
+            "git_commit": commit, "git_tree": tree, "upstream_commit": UPSTREAM,
+            "source_archive_sha256": hashes[source_name], "evidence_archive_sha256": hashes[evidence_name],
+            "source_files": len(expected) - evidence_count, "evidence_files": evidence_count,
+            "supported_claims": sorted(c["claim_id"] for c in claims if c["status"] == "SUPPORTED"),
+            "narrowed_claims": sorted(c["claim_id"] for c in claims if c["status"] == "SUPPORTED_NARROWED"),
+            "prohibited_claims": sorted({item for c in claims for item in c.get("prohibited_extrapolations", [])}),
+        }
         doc = json.loads((first / "RELEASE_MANIFEST.json").read_text(encoding="utf-8"))
-        require((doc["git_commit"], doc["git_tree"]) == (commit, tree), "release identity mismatch")
+        validate_manifest(doc, manifest)
+        manifest_controls(doc, manifest)
         restored.mkdir()
         seen: set[str] = set()
         for archive_path in sorted(first.glob("*.tar.gz")):

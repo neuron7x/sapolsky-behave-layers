@@ -57,7 +57,8 @@ The audit job exercises deliberate roster deletion, fabricated verification,
 misapplied exclusions, invalid evidence identities, duplicate records, same-count obligation substitution
 and missing Markdown targets.
 The archive workflow also exercises byte damage in WP4, repeats deterministic
-packaging, checks restored Git bytes and modes, and rejects a dirty release.
+packaging, checks exact manifest fields and restored Git bytes and modes, and
+rejects a dirty release.
 Existing exact-certificate, historical-evidence and experimental gates provide
 their own scoped receipts. Open gaps include input admission and model execution,
 independent scientific reproduction, complete per-document review, clean archive
@@ -73,3 +74,15 @@ Candidate remediation is reviewed against the source, then tested on the hosted
 checkout. Scientific validation and reproduction are separate acceptance stages.
 Owner, venue and independent review decisions must be recorded by the corresponding
 authority. The gate refuses acceptance while a required stage is unresolved.
+
+## Preserved audit counterexamples
+
+- [Initial audit head `87efe1b`](https://github.com/neuron7x/sapolsky-behave-layers/commit/87efe1bad7eb062cf415425334adb0e72250ab30)
+  accepted same-count obligation substitution, missing findings and arbitrary HTTPS
+  source URIs in its metadata path. The tightened gate binds the frozen rosters
+  and rejects substitutions. A changed file alone cannot close a finding.
+- [Package proof at `31e5d50`](https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45762708275/job/139716193148)
+  established identical builds and restoration. Reviewing the validator still
+  found that mismatched inner archive digests or partition counts could pass
+  when outer checksums were refreshed. The revised check derives manifest hashes
+  and counts from the archive files and Git inventory and injects forged fields.
