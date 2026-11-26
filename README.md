@@ -20,8 +20,8 @@ and credits nanochat's contributors. [Citation](CITATION.cff) · [Third-party no
 
 | Result | Verdict | Evidence |
 |---|---|---|
-| Instrumentation passed the scoped deterministic checks | **SUPPORTED** | [WP1 release](artifacts/wp1-release/WP1_RELEASE_VERDICT.md), 209 tests passed, 1 deselected, 99% reported coverage with branch measurement, 12/12 selected mutants killed |
-| The oracle beat the best fixed policy on the synthetic S-R-O benchmark | **SUPPORTED** | [WP2 results](artifacts/wp2-routing-v2/RESULTS.md#L24-L32), 99.8% mean relative oracle gain |
+| Instrumentation passed the scoped deterministic checks | **SUPPORTED** | [WP1 release](artifacts/wp1-release/WP1_RELEASE_VERDICT.md), 209 tests passed, 1 deselected, 99% coverage in a separate branch-enabled run, 12/12 selected mutants killed |
+| The oracle beat the best of three tested fixed baselines on synthetic S-R-O | **SUPPORTED** | [WP2 results](artifacts/wp2-routing-v2/RESULTS.md#L24-L32), 99.8% mean relative reduction in canonical cross-entropy across 5 seeds |
 | Synthetic halt-oracle identity: adaptive−static = `P_sample(m>K)` | **SUPPORTED_NARROWED** | `artifacts/wp4-adaptive-depth/`; interpretation corrected in `docs/vnv/EPISTEMIC_CORRECTION_WP4_2026-07-19.md` |
 | Frozen exact operator-hop allocation with free halt oracle | **SUPPORTED_NARROWED_INTERNAL** | `artifacts/wp4-exact-compute-v31/`; 16 untouched seeds, 7 distributions; not end-to-end compute parity |
 | REINFORCE recovered routing on the S-R-O task with surface cues | **SUPPORTED (binding budget)** | `artifacts/wp2-routing-v3-r3c-reinforce/` (AUROC 1.0, 8 seeds) |

@@ -26,9 +26,9 @@ qualifications, move it earlier and put the limiting condition next to it.
 - Count direction: “The router failed `0/6` cells” says it failed none.
   The receipt reports `0/6` passed. Write “The shared router passed `0/6`
   PRIMARY cells.” [R1 programme decision](../vnv/CWC_PROGRAM_DECISION_2026-08-11.md)
-- Scope: “The oracle beat the best fixed policy on the synthetic S-R-O benchmark.”
-  Report the mean relative gain with the oracle, comparator and workload in
-  view. [WP2 results](../../artifacts/wp2-routing-v2/RESULTS.md#L24-L32)
+- Scope: “The oracle beat the best of three tested fixed baselines on synthetic S-R-O.”
+  Report the metric, 99.8% mean relative reduction in canonical cross-entropy
+  across five seeds, with the oracle, comparators and workload in view. [WP2 results](../../artifacts/wp2-routing-v2/RESULTS.md#L24-L32)
 
 ## Choose the check for the failure
 
