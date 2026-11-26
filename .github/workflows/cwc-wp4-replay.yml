@@ -1,0 +1,69 @@
+name: WP4 replay
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/cwc-wp4-replay.yml
+      - Makefile.cwc
+      - pyproject.toml
+      - uv.lock
+      - requirements/ci-uv.lock
+      - scripts/reproduce_primary.py
+      - experiments/wp4_adaptive_depth/**
+      - experiments/wp2_routing_v1/**
+      - artifacts/wp4-adaptive-depth/**
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/cwc-wp4-replay.yml
+      - Makefile.cwc
+      - pyproject.toml
+      - uv.lock
+      - requirements/ci-uv.lock
+      - scripts/reproduce_primary.py
+      - experiments/wp4_adaptive_depth/**
+      - experiments/wp2_routing_v1/**
+      - artifacts/wp4-adaptive-depth/**
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    name: Replay eight WP4 seeds on CPU
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Install the locked CPU environment
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: --index-url https://pypi.org/simple -r requirements/ci-uv.lock
+          uv sync --frozen --extra cpu --python 3.11
+      - name: Check the archive and replay WP4
+        id: replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          receipt="$RUNNER_TEMP/cwc-wp4-replay"
+          mkdir -p "$receipt"
+          {
+            printf 'checkout=%s\ntree=%s\n' "$(git rev-parse HEAD)" "$(git rev-parse 'HEAD^{tree}')"
+            printf 'run=%s\nattempt=%s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+            .venv/bin/python --version
+            uv --version
+            sha256sum uv.lock artifacts/wp4-adaptive-depth/SHA256SUMS
+          } > "$receipt/checkout.txt"
+          make -f Makefile.cwc reproduce-primary 2>&1 | tee "$receipt/replay.log"
+          printf 'WP4: SYNTHETIC_HALT_IDENTITY_VERIFIED across eight CPU seeds.\n\nDownload the checkout receipt and replay log under Artifacts.\n' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ !cancelled() && (steps.replay.outcome == 'success' || steps.replay.outcome == 'failure') }}
+        with:
+          name: cwc-wp4-replay-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/cwc-wp4-replay/
+          if-no-files-found: error
