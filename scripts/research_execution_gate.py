@@ -114,9 +114,9 @@ def validate(root: Path) -> None:
     s01a_dir = root / "artifacts/research-s01-skill-luck"
     s01b_dir = root / "artifacts/research-s01-ood-credit"
     s03_dir = root / "artifacts/research-s03-latent-dynamics"
-    s01a_files = _verify_sha_dir(s01a_dir, {"verdict.json", "seed_results.csv"})
+    s01a_files = _verify_sha_dir(s01a_dir, {"verdict.json"})
     s01b_files = _verify_sha_dir(s01b_dir, {"verdict.json", "seed_results.csv"})
-    s03_files = _verify_sha_dir(s03_dir, {"verdict.json"})
+    s03_files = _verify_sha_dir(s03_dir, {"verdict.json", "seed_results.csv"})
     s01a, s01b, s03 = (json.loads(files["verdict.json"])
                        for files in (s01a_files, s01b_files, s03_files))
     if s01a.get("verdict") != "S01_SKILLLUCK_CONCEPT_REPRODUCED":

@@ -88,7 +88,7 @@ def test_ledger_cannot_drop_or_duplicate_required_entries(tmp_path: Path, fault:
     root = _copy_fixture(tmp_path)
     ledger = root / "artifacts/research-s01-ood-credit/SHA256SUMS"
     rows = ledger.read_text().splitlines()
-    replacement = {"empty": [], "omit-verdict": rows[1:], "duplicate": rows + rows[:1]}[fault]
+    replacement = {"empty": [], "omit-verdict": [row for row in rows if not row.endswith("  verdict.json")], "duplicate": rows + rows[:1]}[fault]
     ledger.write_text("\n".join(replacement) + "\n")
     with pytest.raises(ValueError, match="checksum"):
         mod.validate(root)
