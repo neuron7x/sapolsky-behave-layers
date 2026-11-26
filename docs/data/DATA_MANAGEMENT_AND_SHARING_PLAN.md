@@ -1,10 +1,9 @@
 # Data Management and Sharing Plan (DMP)
 
-## Nature of CWC data
-CWC's confirmatory experiments use **synthetic, procedurally-generated data**, not
-collected corpora. The "datasets" are deterministic **generators** in the codebase,
-seeded explicitly; there is no PII, no scraped content, and no licensing encumbrance on
-the generated examples.
+## Synthetic generator experiments
+The entries below describe the historical controlled generator experiments. These
+procedurally generated examples use source and seeds. External sources follow the
+separate rules below.
 
 | Field | Value |
 |---|---|
@@ -23,6 +22,21 @@ the generated examples.
 | Deletion | frozen negatives are never deleted |
 | Licensing | MIT (generated data), upstream nanochat separately |
 
-## Real-workload data (future, NOT_TESTED)
-When real workloads are introduced (RQ-pareto), each must gain a full dataset card,
-license record, contamination check, and split policy **before** any confirmatory run.
+## External workload custody and access
+
+REAL-TRANSFER-01 has reconstructed AVeriTeC and HybridQA source bytes and fixed cohort
+identities. The manifest candidate is inert. Model execution and scientific transfer
+remain open. Source custody controls record pinned source identity, licenses and
+attribution candidates, the actual cohort assignment, and the audited tree. Recheck
+admission after tree or source changes.
+
+Controlled source bytes stay in the permitted acquisition environment. Share only
+metadata, checksums and artifacts when terms permit. Do not assume the repository's
+MIT license applies to third-party data, upstream models or linked text. Record the
+actual use purpose, applicable terms and exceptions, personal data handling, access,
+retention and disposition before authorizing use or redistribution. A repository
+literal-collision check has a scoped corpus and cannot establish training provenance.
+
+[Source contract](../../experiments/real_transfer_01/INTAKE_CONTRACT.md) ·
+[candidate policy](../../experiments/cwc_manifest_candidate/PROTOCOL.md) ·
+[terms and compute review](../../experiments/cwc_manifest_candidate/TERMS_AND_COMPUTE_REVIEW.md).

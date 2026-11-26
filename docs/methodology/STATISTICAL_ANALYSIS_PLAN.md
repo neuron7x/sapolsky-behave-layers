@@ -1,8 +1,15 @@
 # CWC Statistical Analysis Plan (SAP)
 
-Project-wide statistical rules. Binds every confirmatory experiment. Reflects the
-methods actually used in the shipped experiments (paired seeds, bootstrap CIs,
-worst-seed reporting).
+Design guidance for paired-seed adaptive-computation studies. An experiment's frozen
+protocol and accepted pre-execution amendments control its population, unit, matched
+cost, multiplicity, thresholds and stopping. Apply the guidance below only to the
+declared paired-seed design.
+
+REAL-TRANSFER-01 binds two workload families, all six policies, case-paired descriptive
+bootstrap intervals and fixed gates. Its intervals quantify uncertainty and cannot
+change a frozen gate. Exact synthetic panels use their declared finite populations.
+[External protocol](../../experiments/real_transfer_01/PREREGISTRATION.md)
+· [matched-cost amendment](../../experiments/real_transfer_01/PRE_EXECUTION_AMENDMENT_002.md).
 
 ## Estimand & unit
 - Primary estimand per claim is declared in its hypothesis (`HYPOTHESIS_REGISTRY.yaml`).
@@ -37,8 +44,9 @@ worst-seed reporting).
 
 ## Power & sample size
 See `POWER_AND_SAMPLE_SIZE_PLAN.md`. For synthetic mechanism experiments the effect
-sizes are large and near-deterministic (e.g. Jensen gap error 0.0000), so 8 seeds is
-amply powered; real-workload claims require a pre-run power analysis.
+sizes observed on the fixed synthetic panels can be large or exact. An observed
+zero identity error does not establish statistical power. For inference, justify the
+preregistered sample size for the estimand, effect size and dependence structure.
 
 ## Multiplicity & data handling
 - Primary hypotheses are few and preregistered; secondary comparisons use Holm

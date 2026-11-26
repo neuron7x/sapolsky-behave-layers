@@ -37,5 +37,7 @@ Expected outputs, tolerances and per-result commands: `RESULT_TO_SCRIPT_MATRIX.c
 Expected runtime/cost: `EXPECTED_RUNTIME_HARDWARE_AND_COST.md`.
 
 ## License / citation
-MIT (`LICENSE`); cite via `CITATION.cff`. Archival identifier: pending public release
-(GitHub org currently suspended — see `SYSTEM.md`).
+Use the [repository license](../../LICENSE) and [citation record](../../CITATION.cff).
+Cite the exact public commit. Use the [test and CI reference](../vnv/CWC_TEST_AND_CI_REFERENCE.md)
+for the tested checkout and artifact digest of a measured result. The persistent
+archival release remains open.

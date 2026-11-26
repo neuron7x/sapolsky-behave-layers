@@ -1,0 +1,791 @@
+{
+  "schema": "cwc-documentation-requirements-v1",
+  "audit_baseline": {
+    "commit": "558dd8bdb2bf76a4d83fd41a04dc7e23a5c03fab",
+    "tree": "8aae8dc71e54d68504c8fed7274be7d388bfc62d"
+  },
+  "categories": [
+    {
+      "category": 1,
+      "name": "Fundamental scientific documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "CWC_CLOSURE.md",
+            "SYSTEM.md"
+          ],
+          "finding": "Existing charter and overview need one versioned scope with claims, counterclaims and a reviewable novelty boundary.",
+          "items": [
+            "R&D project passport",
+            "Scientific concept",
+            "Scientific problem statement",
+            "Research relevance",
+            "Object and subject",
+            "Objectives and tasks",
+            "Fundamental scientific significance",
+            "Practical significance",
+            "Research applicability boundaries"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "claim_registry.json",
+            "docs/methodology/HYPOTHESIS_REGISTRY.yaml",
+            "experiments/real_transfer_01/PREREGISTRATION.md"
+          ],
+          "finding": "Registry and frozen hypotheses exist. Continue evidence binding claim by claim and preserve the terminal negative.",
+          "items": [
+            "Primary and alternative hypotheses",
+            "Null hypotheses"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/architecture/FORMAL_MODEL.md",
+            "docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md",
+            "docs/publication/SOURCE_TO_OBLIGATION.md"
+          ],
+          "finding": "Formal derivations and a targeted review exist. Wider novelty needs scoped comparator analysis and reviewer evidence.",
+          "items": [
+            "Theoretical justification",
+            "Scientific novelty",
+            "Literature review",
+            "State-of-the-art analysis",
+            "Comparison with existing solutions"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 2,
+      "name": "Methodological documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/methodology/CWC_MASTER_METHODOLOGY.md",
+            "docs/methodology/EXPERIMENT_PROTOCOL_TEMPLATE.md",
+            "docs/methodology/PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY.md"
+          ],
+          "finding": "Master process and template exist. Bind each operative design and deviation to the frozen experiment and confirm authority precedence.",
+          "items": [
+            "Research methodology",
+            "Design methodology",
+            "Experimental methodology",
+            "Falsification methodology",
+            "Hypothesis acceptance and rejection criteria"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/evaluation/MEASUREMENT_UNCERTAINTY_AND_METROLOGY_REPORT.md",
+            "docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
+            "docs/FORMAL_IDENTIFIABILITY_CERTIFICATE.md"
+          ],
+          "finding": "Measurement and inference are scoped to their instruments, populations and models. Preserve counterexamples and identify the sampling unit and assumptions per endpoint.",
+          "items": [
+            "Measurement methodology",
+            "Statistical analysis methodology",
+            "Causal inference methodology",
+            "Uncertainty quantification methodology"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/vnv/VERIFICATION_AND_VALIDATION_PLAN.md",
+            "docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md",
+            "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+            "docs/ENGINEERING_ASSURANCE.md"
+          ],
+          "finding": "Plans and automated checks exist. Full independent outcome and cross-experiment coverage remain open.",
+          "items": [
+            "Verification methodology",
+            "Validation methodology",
+            "Reproducibility methodology",
+            "Independent audit methodology",
+            "Quality control methodology"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 3,
+      "name": "Mathematical documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/architecture/FORMAL_MODEL.md",
+            "experiments/cneh_joint_lp/PROTOCOL.md",
+            "experiments/cwc_decision_sufficiency/PROTOCOL.md"
+          ],
+          "finding": "Scoped assumptions and equations exist. Index all model-specific definitions, domains and obligation dependencies with an exact protocol revision.",
+          "items": [
+            "Mathematical model",
+            "Formal mathematical framework",
+            "Axiomatic system",
+            "Definition register",
+            "Theorem lemma and proposition register",
+            "Equation system",
+            "Variables and parameters register",
+            "Initial and boundary conditions",
+            "Mathematical invariants register",
+            "Mathematical constraints register"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "experiments/cneh_joint_lp/kernel.py",
+            "experiments/cneh_joint_lp/PROTOCOL.md",
+            "tests/test_cneh_joint_lp.py"
+          ],
+          "finding": "Exact rational replay and bounded controls exist; the row constructions share the parser and coefficient code. Wider continuous completeness and theorem-prover mechanization have no accepted proof here.",
+          "items": [
+            "Formal proofs",
+            "Mathematical correctness verification protocol",
+            "Numerical error analysis"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/IDENTIFIABILITY_THEORY.md",
+            "docs/CSCA_07_PASSIVE_REPLAY_IDENTIFIABILITY_THEORY.md",
+            "docs/CSCA_08_OBSERVATIONAL_IDENTIFYING_CONTRACT.md",
+            "experiments/cneh_joint_lp/PROTOCOL.md"
+          ],
+          "finding": "Model-specific analyses and counterexamples exist. Derive scope per model and state what finite or conditional evidence supports each conclusion.",
+          "items": [
+            "Stability analysis",
+            "Convergence analysis",
+            "Sensitivity analysis",
+            "Observability analysis",
+            "Controllability analysis",
+            "Identifiability analysis"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 4,
+      "name": "Architectural and engineering documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/architecture/CWC_ARCHITECTURE.md",
+            "SYSTEM.md",
+            "engineering/architecture_contract.json",
+            "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv"
+          ],
+          "finding": "Core architecture and selected import rules exist. Complete current stakeholder requirements, acceptance and coverage by component.",
+          "items": [
+            "Technical requirements specification",
+            "Functional requirements",
+            "Non-functional requirements",
+            "System architecture",
+            "Architectural specifications",
+            "Functional diagrams",
+            "Component diagrams",
+            "Data flow diagrams",
+            "System invariant specifications",
+            "Requirements traceability matrix"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/architecture/CWC_ARCHITECTURE.md",
+            "cwc/epistemics/lattice.py",
+            "docs/architecture/FORMAL_MODEL.md",
+            "experiments/cneh_joint_lp/PROTOCOL.md"
+          ],
+          "finding": "Representative contracts exist. Index actual interfaces, state machines, algorithms, side effects and exceptions across active components.",
+          "items": [
+            "State-transition diagrams",
+            "Interface specifications",
+            "Algorithm specifications",
+            "Software component specifications"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "uv.lock",
+            "SBOM.spdx.json",
+            "RELEASE_MANIFEST.json",
+            "docs/ENGINEERING_ASSURANCE.md",
+            "docs/adr/0001-cwc-measurement-safe-instrumentation.md"
+          ],
+          "finding": "Locks and decisions exist. Bind versions, configuration, integration, owner and validation to an exact snapshot.",
+          "items": [
+            "Dependency register",
+            "Architecture Decision Records",
+            "Engineering decision register",
+            "Integration documentation",
+            "Configuration documentation",
+            "Computational environment documentation"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 5,
+      "name": "Experimental documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "CWC_CLOSURE.md",
+            "experiments/cwc_closure/PLAN.json",
+            "docs/methodology/HYPOTHESIS_REGISTRY.yaml",
+            "experiments/real_transfer_01/PREREGISTRATION.md"
+          ],
+          "finding": "Frozen exemplar and programme plan exist; catalogue all current experiments and their executed or blocked status.",
+          "items": [
+            "Experimental master plan",
+            "Research preregistration",
+            "Experimental design",
+            "Experimental protocols",
+            "Calibration protocols",
+            "Repeated experiment protocols"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/methodology/EXPERIMENT_PROTOCOL_TEMPLATE.md",
+            "experiments/cneh_joint_lp/PROTOCOL.md",
+            "experiments/cwc_decision_sufficiency/PROTOCOL.md",
+            "docs/vnv/VALIDATION_RECORD.md"
+          ],
+          "finding": "Validated examples and limited panels exist. Map each registered control class and run identity to its protocol.",
+          "items": [
+            "Control protocols",
+            "Intervention protocols",
+            "Ablation study protocols",
+            "Comparative study protocols",
+            "Stress-testing protocols",
+            "Boundary-condition investigation protocols",
+            "OOD investigation protocols",
+            "Negative control protocols",
+            "Positive control protocols"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/lab/EXPERIMENT_LEDGER.jsonl",
+            "docs/methodology/NEGATIVE_RESULTS_REGISTER.json",
+            "docs/methodology/PROTOCOL_AMENDMENT_AND_DEVIATION_POLICY.md"
+          ],
+          "finding": "Historical logs and negative results exist. Include hosted raw manifests, actual anomalies and signed deviations with immutable receipts; missing execution stays untested.",
+          "items": [
+            "Experimental logs",
+            "Raw experimental data",
+            "Negative results register",
+            "Anomaly register",
+            "Protocol deviation register"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 6,
+      "name": "Verification, validation and falsification",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/vnv/VERIFICATION_AND_VALIDATION_PLAN.md",
+            "docs/vnv/CWC_TEST_AND_CI_REFERENCE.md",
+            "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv"
+          ],
+          "finding": "Canonical CI and scoped coverage exist. Trace selection, implementation, counterexample and exact receipt for each obligation.",
+          "items": [
+            "V&V master plan",
+            "Formal verification plan",
+            "Mathematical verification protocols",
+            "Software verification protocols",
+            "Functional verification protocols",
+            "System verification protocols",
+            "Integration verification protocols",
+            "Verification coverage matrix"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/vnv/VALIDATION_RECORD.md",
+            "experiments/real_transfer_01/PREREGISTRATION.md",
+            "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md"
+          ],
+          "finding": "Scoped validation protocols exist. Preserve blocked external execution, contaminated or unknown inputs and absent third-party receipts.",
+          "items": [
+            "Scientific validation protocols",
+            "Empirical validation protocols",
+            "Independent validation protocols",
+            "Generalizability verification protocols"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "scripts/cneh_promotion_gate.py",
+            "scripts/mutation_probe.py",
+            "tests/test_cneh_joint_lp.py",
+            "docs/methodology/NEGATIVE_RESULTS_REGISTER.json"
+          ],
+          "finding": "Bounded falsification and mutation controls exist. Add occurrence and custody for failed controls, counterexamples and replay across the full required roster.",
+          "items": [
+            "Hypothesis falsification protocols",
+            "Model falsification protocols",
+            "Invariant falsification protocols",
+            "Adversarial testing protocols",
+            "Mutation testing protocols",
+            "Regression testing protocols",
+            "Deterministic replay protocols",
+            "Robustness verification protocols",
+            "Failed verification register",
+            "Counterexample register"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 7,
+      "name": "Statistical documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
+            "docs/methodology/POWER_AND_SAMPLE_SIZE_PLAN.md",
+            "experiments/real_transfer_01/PREREGISTRATION.md"
+          ],
+          "finding": "General statistical guidance and frozen experiment plans coexist. Explicitly bind denominators, estimands, independence, preregistered sample sizes and stopping per protocol.",
+          "items": [
+            "Statistical analysis plan",
+            "Sample size justification",
+            "Statistical power analysis",
+            "Statistical assumption verification",
+            "Statistical significance analysis",
+            "Effect size analysis",
+            "Confidence intervals",
+            "Multiple comparison corrections"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/evaluation/MEASUREMENT_UNCERTAINTY_AND_METROLOGY_REPORT.md",
+            "docs/vnv/VALIDATION_RECORD.md",
+            "docs/publication/THREATS_TO_VALIDITY_AND_RED_TEAM.md"
+          ],
+          "finding": "Document systematic and random error, nuisance models and sensitivity at the level of each measured result. Scope deterministic fixtures separately from statistical estimates.",
+          "items": [
+            "Systematic error analysis",
+            "Random error analysis",
+            "Uncertainty analysis",
+            "Confounding factor analysis",
+            "Statistical robustness analysis",
+            "Alternative explanation analysis",
+            "Statistical verification report"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 8,
+      "name": "Formal acts and records",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/vnv/EXPERIMENT_CLOSEOUT_TEMPLATE.md",
+            "docs/vnv/CNEH_EXP05_INTEGRATION_CLOSURE.md",
+            "docs/acts/ACT_RD_03.md"
+          ],
+          "finding": "Templates and scoped historical acts exist. Accept actual acts only with scope, criteria, immutable receipts, deviation disposition and accountable owner.",
+          "items": [
+            "Act of completion of scientific research activities",
+            "Act of completion of experimental activities",
+            "Act of completion of engineering activities",
+            "Act of research phase completion",
+            "Act of testing and trials",
+            "Act of mathematical verification",
+            "Act of software verification",
+            "Act of architectural verification",
+            "Act of system verification",
+            "Act of integration verification",
+            "Act of empirical validation",
+            "Act of statistical validation",
+            "Act of falsification",
+            "Act of reproducibility confirmation",
+            "Act of evidence integrity verification",
+            "Act of nonconformity identification",
+            "Act of nonconformity resolution"
+          ]
+        },
+        {
+          "status": "MISSING",
+          "evidence": [
+            "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+            "CWC_CLOSURE.md"
+          ],
+          "finding": "An independence protocol is available. The independently issued outcome records and accountable acceptance acts are absent from the identified evidence.",
+          "items": [
+            "Act of independent verification",
+            "Act of independent audit",
+            "Act of acceptance of research results",
+            "Act of software acceptance",
+            "Act of technical readiness confirmation",
+            "Act of transfer of research results",
+            "Act of research project completion"
+          ]
+        },
+        {
+          "status": "NOT_APPLICABLE",
+          "evidence": [
+            "docs/system_card/CWC_SYSTEM_CARD.md",
+            "artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json"
+          ],
+          "finding": "Current audited scope is a research repository with production activation denied. Reassess when a system is actually offered for operational commissioning.",
+          "items": [
+            "Act of operational commissioning"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 9,
+      "name": "Evidentiary documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "claim_registry.json",
+            "docs/lab/EXPERIMENT_LEDGER.jsonl",
+            "docs/methodology/NEGATIVE_RESULTS_REGISTER.json",
+            "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv"
+          ],
+          "finding": "Existing ledgers cover scoped experiments. Trace hosted-only receipts and statuses per claim, custody, immutable evidence, counterevidence and requirements.",
+          "items": [
+            "Scientific claims register",
+            "Evidence register",
+            "Counterevidence register",
+            "Empirical confirmation register",
+            "Evidence source register",
+            "Falsified claims register",
+            "Unsubstantiated claims register",
+            "Hypothesis–experiment–result–evidence matrix",
+            "Requirement–implementation–test–evidence matrix"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "cwc/research_ops/evidence_graph.py",
+            "docs/ENGINEERING_ASSURANCE.md",
+            "scripts/cneh_history_guard.py",
+            "experiments/cneh_joint_lp/kernel.py"
+          ],
+          "finding": "Evidence graph code, exact certificates and roster guards exist. Complete argument obligations and independent receipt coverage; Git identity alone establishes byte provenance.",
+          "items": [
+            "Evidence dependency graph",
+            "Evidence provenance chain",
+            "Formal Assurance Case",
+            "Evidence integrity control protocols",
+            "Cryptographic artifact checksums",
+            "Formal proof certificates"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 10,
+      "name": "Data governance and reproducibility",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
+            "docs/data/DATASET_REGISTER.yaml",
+            "docs/data/DATA_DICTIONARY.md",
+            "experiments/cwc_manifest_candidate/TERMS_AND_COMPUTE_REVIEW.md"
+          ],
+          "finding": "Synthetic and external intake cases require scoped metadata, terms, controlled access and current source admission. Source acquisition has its own receipt.",
+          "items": [
+            "Research Data Management Plan",
+            "Dataset passports",
+            "Data dictionary",
+            "Data provenance register",
+            "Data collection protocols",
+            "Data cleaning protocols",
+            "Data processing protocols",
+            "Data quality control protocols",
+            "FAIR principles documentation"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/data/SPLIT_CONTAMINATION_AND_TEST_ACCESS_POLICY.md",
+            "docs/reproducibility/RESULT_TO_SCRIPT_MATRIX.csv",
+            "uv.lock",
+            "experiments/real_transfer_01/PREREGISTRATION.md"
+          ],
+          "finding": "Trace seeds, code, software, commands and split exposure per run and record access scope for raw and processed data.",
+          "items": [
+            "Data leakage prevention protocols",
+            "RNG and seed register",
+            "Experimental artifact version register",
+            "Computational environment specification",
+            "Experiment reproduction instructions",
+            "Automated reproduction scripts",
+            "Raw and processed data archives"
+          ]
+        },
+        {
+          "status": "MISSING",
+          "evidence": [
+            "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md"
+          ],
+          "finding": "Repository replays and fresh internal cohorts have their own verifiable scope. An independent operator report under CWC-L8 is pending.",
+          "items": [
+            "Independent replication reports"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 11,
+      "name": "Quality, risk and safety",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/ENGINEERING_ASSURANCE.md",
+            "docs/CWC_QUALITY_REPORT.md",
+            "docs/vnv/DEBT_REGISTER_2026-07-19.md",
+            "docs/risk/CAPABILITY_ASSESSMENT_AND_TRIGGER_LEVELS.md"
+          ],
+          "finding": "Existing checks and historical issues cover selected components. Bind failure conditions, owners, root causes and dispositions in the current research scope.",
+          "items": [
+            "Quality assurance plan",
+            "Quality control policy",
+            "Defect register",
+            "Technical debt register",
+            "Assumption register",
+            "Constraint register",
+            "Uncertainty register",
+            "Nonconformity register",
+            "Root Cause Analysis",
+            "Vulnerability register",
+            "Fail-Closed policy",
+            "Release-blocking criteria",
+            "Scientific and engineering readiness criteria"
+          ]
+        },
+        {
+          "status": "MISSING",
+          "evidence": [
+            "docs/vnv/DOCUMENT_STATUS_REGISTER.csv",
+            "docs/risk/CAPABILITY_ASSESSMENT_AND_TRIGGER_LEVELS.md"
+          ],
+          "finding": "The legacy trigger register or bounded keyword inventory does not provide these current-scope risk records. Research scope still warrants failure, threat and recovery analysis.",
+          "items": [
+            "Threat model",
+            "Disaster recovery plan"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/assurance/RESEARCH_RISK_AND_ACCEPTANCE.md"
+          ],
+          "finding": "Current scoped risks, fault branches and amendment controls are recorded. Reviewer disposition, operating history and measured recovery remain open.",
+          "items": [
+            "Risk register",
+            "Failure Mode and Effects Analysis",
+            "Fault Tree Analysis",
+            "Corrective and Preventive Actions"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 12,
+      "name": "Governance and operations",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "CWC_CLOSURE.md",
+            "experiments/cwc_closure/PLAN.json",
+            "AGENTS.md",
+            "CHANGELOG.md",
+            "docs/lab/LAB_NOTEBOOK.md"
+          ],
+          "finding": "The charter and policies exist. Bind responsibilities, resources, change approvals and milestones to actual planned work and evidence.",
+          "items": [
+            "Project charter",
+            "Development master plan",
+            "Development roadmap",
+            "Research activity plan",
+            "Configuration management plan",
+            "Change management plan",
+            "Resource management plan",
+            "Milestone register",
+            "Responsibility register",
+            "Decision register",
+            "Change log",
+            "Audit log",
+            "Version control policy",
+            "Integration and release policy"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md",
+            "docs/DGC_CONTINUOUS_ASSURANCE_v1.md",
+            "docs/vnv/DOCUMENT_STATUS_REGISTER.csv"
+          ],
+          "finding": "Research and conditional DGC operating procedures exist. Record incident handling and maintenance for actual repository operations; future production requires separate authority.",
+          "items": [
+            "Incident log",
+            "Operational procedures",
+            "Maintenance procedures",
+            "Decommissioning procedures"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 13,
+      "name": "Academic, ethical and legal documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/publication/references.bib",
+            "docs/publication/BIBLIOGRAPHY_VERIFICATION.json",
+            "docs/publication/SOURCE_TO_OBLIGATION.md",
+            "docs/publication/AUTHOR_FUNDING_COI_AND_AI_ASSISTANCE_DISCLOSURE.md"
+          ],
+          "finding": "Publisher metadata and historical disclosure exist. Confirm current inputs, contributor roles, AI assistance and claim-specific originality before submission.",
+          "items": [
+            "Bibliography",
+            "Primary source register",
+            "Academic integrity declaration",
+            "Scientific originality declaration",
+            "Conflict of interest declaration",
+            "Funding declaration",
+            "Author contribution declaration",
+            "AI usage disclosure"
+          ]
+        },
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "LICENSE",
+            "THIRD_PARTY_NOTICES.md",
+            "docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
+            "experiments/cwc_manifest_candidate/TERMS_AND_COMPUTE_REVIEW.md",
+            "docs/assurance/STANDARDS.json"
+          ],
+          "finding": "Code licensing and source terms are scoped. Record the real use purpose and applicable jurisdiction, data rights, personal data treatment and authoritative target requirements before claiming conformity.",
+          "items": [
+            "Research ethics protocol",
+            "Ethical review approval where required",
+            "Intellectual property documentation",
+            "Licensing documentation",
+            "Personal data protection documentation",
+            "Applicable regulatory requirements register",
+            "Academic and engineering standards compliance matrix"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 14,
+      "name": "Final scientific documentation",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/publication/CWC_TECHNICAL_REPORT.md",
+            "docs/vnv/VERIFICATION_RECORD.md",
+            "docs/vnv/VALIDATION_RECORD.md",
+            "CWC_CLOSURE.md"
+          ],
+          "finding": "Interim material and scoped qualification exist. A terminal report requires sealed evidence for each applicable track and a separate external audit if claimed.",
+          "items": [
+            "Interim scientific reports",
+            "Final scientific report",
+            "Final technical report",
+            "Final mathematical report",
+            "Final experimental report",
+            "Final verification report",
+            "Final validation report",
+            "Final falsification report",
+            "Scientific research paper",
+            "Publication supplementary materials",
+            "Scientific novelty assessment",
+            "Research results reliability assessment",
+            "Practical applicability assessment",
+            "Unresolved scientific questions register",
+            "Future research directions",
+            "Final system readiness passport"
+          ]
+        },
+        {
+          "status": "MISSING",
+          "evidence": [
+            "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+            "docs/publication/NEURIPS_2026_SUBMISSION_CHECKLIST.md"
+          ],
+          "finding": "No preprint or completed official review and external audit record was identified in the tracked publication material. Track submission or reviewer authority separately.",
+          "items": [
+            "Final independent audit report",
+            "Scientific preprint",
+            "Peer review and reviewer response register"
+          ]
+        }
+      ]
+    },
+    {
+      "category": 15,
+      "name": "Classification, traceability and acceptance",
+      "profiles": [
+        {
+          "status": "INCOMPLETE",
+          "evidence": [
+            "docs/assurance/DOCUMENTATION_AUDIT.md",
+            "docs/assurance/REQUIREMENTS.json",
+            "docs/assurance/STANDARDS.json",
+            "scripts/documentation_audit.py"
+          ],
+          "finding": "The register and fail-closed gate record scope, open findings and negative controls. Acceptance depends on outcome evidence, complete substantive review and externally issued records where applicable.",
+          "items": [
+            "Explicit six-state classification",
+            "Applicability justification",
+            "Unified documentation register",
+            "Canonical compliance register",
+            "Official institutional requirements",
+            "Adversarial verification and preserved negative results",
+            "Fail-closed acceptance",
+            "Traceable and falsifiable claim evidence"
+          ]
+        }
+      ]
+    }
+  ]
+}

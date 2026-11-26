@@ -10,7 +10,7 @@ No external funding. Compute is the author's local hardware (RTX 3050 4GiB).
 ## Conflicts of interest
 None declared.
 
-## AI assistance (full disclosure)
+## Historical AI assistance
 - **Model / tool:** Claude (Anthropic), via Claude Code, acting as an autonomous coding
   and analysis agent under the author's direction.
 - **Task types:** experiment implementation, running experiments, statistical analysis
@@ -28,3 +28,12 @@ None declared.
   has yet re-derived the results.
 - **Not independently verified:** cross-hardware behaviour, scale generalization, and any
   cloud-tier result (all marked NOT_TESTED).
+
+## Documentation-audit assistance
+
+Codex and delegated Codex reviewers performed source inspection, documentation
+analysis, edits, and GitHub-hosted verification for this audit. Historical
+statements above describe their recorded phase. Current funding, conflicts,
+author contributions and method-specific AI usage for any submission require
+the author's confirmation. Hosted CI and code review do not substitute for a
+third-party experiment or an externally issued acceptance.

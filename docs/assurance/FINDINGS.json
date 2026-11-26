@@ -1,0 +1,177 @@
+{
+  "schema": "cwc-documentation-findings-v1",
+  "baseline": "558dd8bdb2bf76a4d83fd41a04dc7e23a5c03fab",
+  "findings": [
+    {
+      "id": "F-01",
+      "path": "docs/methodology/CWC_MASTER_METHODOLOGY.md",
+      "baseline_blob_oid": "c495783bdfa6a620990fa6af5823aa7e754ace41",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Unconditional oracle-gap equality and universal model-seed unit overstate policy and experiment semantics.",
+      "falsifier": "Cross-check the inequality and protocol-defined unit against FORMAL_MODEL and REAL-TRANSFER-01."
+    },
+    {
+      "id": "F-02",
+      "path": "docs/methodology/STATISTICAL_ANALYSIS_PLAN.md",
+      "baseline_blob_oid": "5f3d41c5ae3f24e6c9d4f951932ea2f98a6e8307",
+      "status": "INVALID",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Project-wide five-corpus seed and CI rules conflict with the frozen two-family transfer protocol.",
+      "falsifier": "Review model-seed applicability, exact gates and descriptive case intervals against the frozen text."
+    },
+    {
+      "id": "F-03",
+      "path": "docs/data/DATA_MANAGEMENT_AND_SHARING_PLAN.md",
+      "baseline_blob_oid": "d2eeb0215b93c23b808c5f0f62f282f126305264",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Synthetic-only language persisted after frozen external source acquisition.",
+      "falsifier": "Compare #87 and #94 intake receipts and preserve source admission as pending."
+    },
+    {
+      "id": "F-04",
+      "path": "docs/data/DATASET_REGISTER.yaml",
+      "baseline_blob_oid": "8ede20e8eeabe01c9588d723171e771eef86524f",
+      "status": "INCOMPLETE",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "The declared synthetic dataset schema was absent from the tree.",
+      "falsifier": "Validate the synthetic YAML against schemas/dataset.schema.json. External families retain their separate source admission."
+    },
+    {
+      "id": "F-05",
+      "path": "docs/system_card/CWC_SYSTEM_CARD.md",
+      "baseline_blob_oid": "3b7b54effad57f1750df5f87b45d006210bb4036",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "The historical d920f79 profile could be read as current and repo-wide.",
+      "falsifier": "Identify the historical scope and reconcile the current data and risk documents."
+    },
+    {
+      "id": "F-06",
+      "path": "docs/vnv/REQUIREMENTS_TRACEABILITY_MATRIX.csv",
+      "baseline_blob_oid": "d07aeaf0a185a76674124c37ea0b23a82e3cbe54",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "WP4 had a broader status than its claim registry and modern contracts were omitted.",
+      "falsifier": "Compare REQ-008 with the registry and new obligations with cited code and receipts."
+    },
+    {
+      "id": "F-07",
+      "path": "docs/reproducibility/ARTIFACT_README.md",
+      "baseline_blob_oid": "24bb5cfa3a03301d310843dfa62a7defdd07786a",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "The archived suspension note conflicted with the public repository.",
+      "falsifier": "Verify actual public access, current artifact locations and separate persistent release status."
+    },
+    {
+      "id": "F-08",
+      "path": "docs/reproducibility/ARCHIVAL_AND_PERSISTENT_IDENTIFIER_PLAN.md",
+      "baseline_blob_oid": "dc483266f345369b08ada69ca5242f7305ee253b",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Availability and archive status were conflated with a historical suspension.",
+      "falsifier": "Resolve the public repository, releases and actual restore evidence separately."
+    },
+    {
+      "id": "F-09",
+      "path": "docs/reproducibility/CLEAN_ROOM_REPRODUCTION_PROTOCOL.md",
+      "baseline_blob_oid": "d52f5a93a81a1da196c25190255854ab48ef35fe",
+      "status": "INVALID",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Container recipes were called hermetic while CPU sync has a fallback and no clean restore is shown.",
+      "falsifier": "Compare the scoped description with containers/Dockerfile.cpu and the hosted locked workflow."
+    },
+    {
+      "id": "F-10",
+      "path": "docs/publication/ACM_ARTIFACT_EVALUATION_CHECKLIST.md",
+      "baseline_blob_oid": "0ebd4648412812d4cb98e3532072ee537f469853",
+      "status": "OUTDATED",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "Historical test counts and archival claims lacked a matching release or badge scope.",
+      "falsifier": "Confirm current scoped Actions evidence and distinguish venue badges from self-assessment."
+    },
+    {
+      "id": "F-11",
+      "path": "docs/publication/NEURIPS_2026_SUBMISSION_CHECKLIST.md",
+      "baseline_blob_oid": "ef751a1392f5df58abfdbe34500d96343b81aeb3",
+      "status": "INCOMPLETE",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "The historical self-assessment omitted topics from the official 16-question checklist.",
+      "falsifier": "Map all 16 rows to the official checklist, preserve disclosure and approval dependencies."
+    },
+    {
+      "id": "F-12",
+      "path": "docs/publication/AUTHOR_FUNDING_COI_AND_AI_ASSISTANCE_DISCLOSURE.md",
+      "baseline_blob_oid": "8791244c60157e040cbf7ec9b1a59e38f1fe3149",
+      "status": "INCOMPLETE",
+      "disposition": "REMEDIATED_IN_CANDIDATE",
+      "finding": "The historical Claude disclosure did not include the Codex documentation audit and exact verification boundaries.",
+      "falsifier": "Record observed contributions and retain claims requiring author confirmation."
+    },
+    {
+      "id": "F-13",
+      "path": "scripts/make_release.py",
+      "baseline_blob_oid": "b1088b0f6679181d87b4ae5f59bf664a745342e3",
+      "status": "INVALID",
+      "disposition": "OPEN",
+      "finding": "Working-tree bytes and wall-clock metadata can produce different archives under the same Git identity.",
+      "falsifier": "Adversarially test a dirty included file, repeat builds and exact path/blob/mode restoration."
+    },
+    {
+      "id": "F-14",
+      "path": "scripts/reproduce_primary.py",
+      "baseline_blob_oid": "21df67dd5a9c68cebb80da5c1817d526a47e42f4",
+      "status": "INCOMPLETE",
+      "disposition": "OPEN",
+      "finding": "Synthetic replay accepts its own regenerated outputs without validating the original WP4 archive in this entry point.",
+      "falsifier": "Apply one-byte archive corruption or remove a required manifest. Independent archive checks must reject it."
+    },
+    {
+      "id": "F-15",
+      "path": "experiments/real_transfer_01/evaluator.py",
+      "baseline_blob_oid": "4b8f041ba4a0ab03a7b09a1dd22863e4fc07cb63",
+      "status": "INVALID",
+      "disposition": "OPEN",
+      "finding": "Alignment checks IDs without shared-gold validation and resource totals admit invalid counters. Direct comparator handling needs frozen amendment consistency.",
+      "falsifier": "Run negative cases for mismatched gold, invalid counters and both one-eligible comparator configurations before any PRIMARY output."
+    },
+    {
+      "id": "F-16",
+      "path": "experiments/real_transfer_01/readiness.py",
+      "baseline_blob_oid": "991cf45518af8539e619a4dd4b86f5073f6d2f7a",
+      "status": "INCOMPLETE",
+      "disposition": "OPEN",
+      "finding": "Canonical source/model manifests and qualified execution inputs are absent in the audited tree.",
+      "falsifier": "Require authorized source admission and exact model, tokenization, template, calibration, policy and runner artifacts before execution."
+    },
+    {
+      "id": "F-17",
+      "path": "docs/risk/EXTERNAL_REVIEW_AND_INDEPENDENCE_PROTOCOL.md",
+      "baseline_blob_oid": "b86579e661be2f635254e9a810a8fa103a4b95f7",
+      "status": "INCOMPLETE",
+      "disposition": "OPEN",
+      "finding": "The protocol exists; a completed qualified external operator report is absent.",
+      "falsifier": "Require original issuer identity, exact frozen artifacts, behaviors, deviations and report digest."
+    },
+    {
+      "id": "F-18",
+      "path": "docs/DGC_CONTINUOUS_ASSURANCE_v1.md",
+      "baseline_blob_oid": "15b1adb61dcc4704cb620d557b17edf6f329fd13",
+      "status": "INCOMPLETE",
+      "disposition": "OPEN",
+      "finding": "The stated current FAIL rollback rule differs from the code path with missing mandatory human validation.",
+      "falsifier": "Test current FAIL plus absent mandatory approval, reconcile HOLD versus ROLLBACK with the owner before operational use."
+    },
+    {
+      "id": "F-19",
+      "path": "docs/publication/RELATED_WORK_AND_NOVELTY_REVIEW.md",
+      "baseline_blob_oid": "f78b5d0bbedbce59e1ba9f30911011d2b3756bc2",
+      "status": "INCOMPLETE",
+      "disposition": "OPEN",
+      "finding": "The targeted search has known forward-tracing and second-reviewer gaps.",
+      "falsifier": "Track the search update and candidate-vs-HEC objective alignment before broader novelty claims."
+    }
+  ]
+}

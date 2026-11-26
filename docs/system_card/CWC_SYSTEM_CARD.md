@@ -4,6 +4,15 @@ Structured after public system/model-card practice (OpenAI / DeepMind / xAI). Th
 an internal transparency document; it does **not** copy their claims or imply external
 approval.
 
+## Historical WP1 profile
+
+The table records the stated `d920f79` profile. Its runtimes, data, security and risk
+statements describe that historical scope. For the current programme, see
+[architecture](../architecture/CWC_ARCHITECTURE.md), the updated
+[data management plan](../data/DATA_MANAGEMENT_AND_SHARING_PLAN.md) and
+[open audit findings](../assurance/FINDINGS.json). External source intake exists.
+Its admission, privacy and risk assessments remain scoped and open as recorded.
+
 | # | Field | Value |
 |---|---|---|
 | 1 | System identity | Cognitive Wiring Core (CWC) |

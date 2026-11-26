@@ -1,0 +1,45 @@
+name: cwc-documentation-audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-audit-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Verify controls and emit the exact audit inventory
+        run: |
+          set -euo pipefail
+          python -B -m unittest discover -s tests -p test_documentation_audit.py -v
+          mkdir "$RUNNER_TEMP/cwc-documentation-audit"
+          report="$RUNNER_TEMP/cwc-documentation-audit/documentation-audit.json"
+          python -B scripts/documentation_audit.py --output "$report"
+          rc=0
+          python -B scripts/documentation_audit.py --accept || rc=$?
+          python -B -c 'import json, sys; r=json.load(open(sys.argv[1])); expected={"ACCEPTED":0,"BLOCKED":3}[r["acceptance"]]; sys.exit(0 if int(sys.argv[2])==expected else 1)' "$report" "$rc"
+          cd "$RUNNER_TEMP/cwc-documentation-audit"
+          sha256sum documentation-audit.json > SHA256SUMS
+          sha256sum --strict --check SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cwc-documentation-audit-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/cwc-documentation-audit/
+          if-no-files-found: error

@@ -21,7 +21,10 @@ and checks the synthetic verdict and tolerance. Retain the command log as a rece
 Use `verify-full` to include both operations in the wider test suite.
 
 ## Containers
-Hermetic builds in `containers/` (`Dockerfile.cpu`, `Dockerfile.cuda`, `apptainer.def`).
+The recipes in `containers/` retain their historical scope. The CPU recipe can fall
+back after a failed frozen sync. Container build, restore and clean-room evidence
+remain open. The [hosted expert workflow](../../.github/workflows/cwc-full-pr-gate.yml)
+records its locked CPU checkout separately.
 
 ## Status
 `make reproduce-primary` exists and regenerates the WP4 primary result. Full

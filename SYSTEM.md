@@ -10,6 +10,8 @@ Implementation references: [architecture](docs/architecture/CWC_ARCHITECTURE.md)
 [formal model](docs/architecture/FORMAL_MODEL.md),
 [test and CI coverage](docs/vnv/CWC_TEST_AND_CI_REFERENCE.md), and
 [sources and proof obligations](docs/publication/SOURCE_TO_OBLIGATION.md).
+The [documentation audit](docs/assurance/DOCUMENTATION_AUDIT.md) tracks scope,
+evidence bindings and acceptance blockers.
 
 ## What this system IS (honest one-line)
 A verified measurement substrate + falsification/governance runtime with multiple
