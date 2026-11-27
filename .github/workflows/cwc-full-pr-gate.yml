@@ -12,3 +12,10 @@ jobs:
     steps:
       - name: Deliberate rejection control on isolated test branch
         run: exit 1
+  full-verification:
+    name: Full verification, validation, and falsification
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Deliberate rejection control for the existing main check
+        run: exit 1
