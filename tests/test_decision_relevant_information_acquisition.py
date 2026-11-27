@@ -119,6 +119,13 @@ def test_order_invariance():
 
 
 def test_complementary_actions_reach_threshold_when_neither_alone_can() -> None:
+    historical = select_decision_relevant_information_action(
+        actions=[act("x", 1.0, {"m1": 2.0, "m2": 0.0}),
+                 act("y", 1.0, {"m1": 0.0, "m2": 2.0})],
+        candidate_decision="A", alternative_decisions={"m1": "B", "m2": "C"},
+        alpha=0.01, target_power=0.95, available_budget=2.0,
+    )
+    assert historical.state == "NO_DECISION_IDENTIFYING_INFORMATION_CHANNEL"
     actions = [
         PortfolioInformationAction("x", 1, 1, (2, 0), (2, 0)),
         PortfolioInformationAction("y", 1, 1, (0, 2), (0, 2)),
