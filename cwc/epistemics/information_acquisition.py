@@ -343,3 +343,102 @@ def select_decision_relevant_information_action(
             "not silently resolved. This is spend permission, not a sufficiency or truth certificate."
         ),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class PortfolioInformationAction:
+    """One spend option with additive integer bounds in a common information unit.
+
+    Rate vectors follow the declared alternative roster. Bounds are trusted inputs
+    from the caller's separate certification process.
+    """
+
+    action_id: str
+    unit_cost: int
+    max_units: int
+    lower: tuple[int, ...]
+    upper: tuple[int, ...] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class InformationPortfolioDecision:
+    state: str
+    lower_optimum: int
+    upper_optimum: int | None
+    single_action_lower_optimum: int
+    lower_witness: tuple[tuple[str, int], ...]
+    witness_cost: int
+
+
+def analyze_information_portfolio(
+    *,
+    actions: Sequence[PortfolioInformationAction],
+    alternatives: Sequence[str],
+    budget: int,
+    threshold: int,
+) -> InformationPortfolioDecision:
+    """Bound fixed, deterministic acquisition plans without inferring test power."""
+    if type(budget) is not int or not 0 <= budget <= 16:
+        raise ValueError("portfolio budget must be an integer between 0 and 16")
+    if type(threshold) is not int or threshold <= 0:
+        raise ValueError("positive integer threshold required")
+    roster = tuple(alternatives)
+    if (not 1 <= len(roster) <= 4 or any(type(m) is not str or not m.strip() for m in roster)
+            or len(set(roster)) != len(roster)):
+        raise ValueError("expected one to four distinct non-empty alternatives")
+    if not 1 <= len(actions) <= 4:
+        raise ValueError("expected one to four actions")
+    if any(type(a.action_id) is not str or not a.action_id.strip() for a in actions):
+        raise ValueError("non-empty action ids required")
+    ordered = tuple(sorted(actions, key=lambda action: action.action_id))
+    if len({action.action_id for action in ordered}) != len(ordered):
+        raise ValueError("duplicate action ids")
+    for action in ordered:
+        if type(action.unit_cost) is not int or action.unit_cost <= 0:
+            raise ValueError("positive integer unit cost required")
+        if type(action.max_units) is not int or not 0 <= action.max_units <= 16:
+            raise ValueError("integer action capacity in [0, 16] required")
+        vectors = (action.lower,) if action.upper is None else (action.lower, action.upper)
+        for vector in vectors:
+            if (type(vector) is not tuple or len(vector) != len(roster)
+                    or any(type(rate) is not int or rate < 0 for rate in vector)):
+                raise ValueError("complete non-negative integer rate vectors required")
+        if action.upper is not None and any(lo > hi for lo, hi in zip(action.lower, action.upper, strict=True)):
+            raise ValueError("upper information bound below lower bound")
+
+    lower = single = cheapest = 0
+    upper: int | None = 0
+    best_counts = (0,) * len(ordered)
+
+    def visit(index: int, remaining: int, counts: tuple[int, ...]) -> None:
+        nonlocal lower, upper, single, cheapest, best_counts
+        if index < len(ordered):
+            action = ordered[index]
+            for count in range(min(action.max_units, remaining // action.unit_cost) + 1):
+                visit(index + 1, remaining - count * action.unit_cost, counts + (count,))
+            return
+
+        used = [(action, n) for action, n in zip(ordered, counts, strict=True) if n]
+        guaranteed = min(sum(n * action.lower[m] for action, n in used) for m in range(len(roster)))
+        cost = budget - remaining
+        if (-guaranteed, cost, counts) < (-lower, cheapest, best_counts):
+            lower, cheapest, best_counts = guaranteed, cost, counts
+        if len(used) <= 1:
+            single = max(single, guaranteed)
+        if upper is not None:
+            bounded = [(action.upper, n) for action, n in used if action.upper is not None]
+            if len(bounded) != len(used):
+                upper = None
+            else:
+                possible = min(sum(n * vector[m] for vector, n in bounded) for m in range(len(roster)))
+                upper = max(upper, possible)
+
+    visit(0, budget, ())
+    state = "INFORMATION_THRESHOLD_UNRESOLVED"
+    if lower >= threshold:
+        state = "INFORMATION_THRESHOLD_CERTIFIED"
+    elif upper is not None and upper < threshold:
+        state = "INFORMATION_THRESHOLD_RULED_OUT"
+    witness = tuple((action.action_id, count)
+                    for action, count in zip(ordered, best_counts, strict=True) if count)
+    return InformationPortfolioDecision(state, lower, upper, single, witness, cheapest)
