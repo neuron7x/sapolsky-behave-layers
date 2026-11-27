@@ -5,6 +5,7 @@ on:
       - 'scripts/cneh_evidence_*.py'
       - 'scripts/cneh_promotion_gate.py'
       - 'tests/test_cneh_evidence_ratchet.py'
+      - 'tests/test_cneh_trace_diagnostics.py'
       - 'experiments/cneh_governance/**'
       - '.github/workflows/cneh-evidence-ratchet.yml'
   workflow_dispatch: {}
@@ -44,6 +45,8 @@ jobs:
         run: |
           git merge-base --is-ancestor 8331d734eda2e9fd6905eb1c1c995d7e462f8473 HEAD
           git show 8331d734eda2e9fd6905eb1c1c995d7e462f8473:experiments/cneh_governance/EVIDENCE_RATCHET_V2.md | cmp - experiments/cneh_governance/EVIDENCE_RATCHET_V2.md
+      - name: Test native trace admission and first-failure receipts
+        run: python -B -m unittest discover -s tests -p test_cneh_trace_diagnostics.py -v
       - name: Run all 168 named fault injections and clean controls
         run: |
           python -B -m scripts.cneh_evidence_ratchet --seed "${{ matrix.seed }}" --out /tmp/evidence-ratchet.json
