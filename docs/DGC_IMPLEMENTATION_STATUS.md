@@ -1,6 +1,8 @@
 # DGC Implementation Status — 2026-08-21
 
-Authority: repository execution state, not a scientific promotion document.
+Historical implementation snapshot from 2026-08-21.
+[Evidence status and replay](DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md#status-and-evidence)
+documents the later reference checkout and current inspection commands.
 
 | ACT | State | Executable evidence / blocker |
 |---|---|---|
@@ -33,7 +35,7 @@ Authority: repository execution state, not a scientific promotion document.
 | ACT-26 negative-result rule | PASS_AS_POLICY | dev evidence cannot promote; misspecification counterexample retained |
 | ACT-27 novelty review | IN_PROGRESS / NO_NOVELTY_CLAIM | related-work boundary exists; systematic novelty search incomplete |
 
-## Current executable anchors
+## Executable anchors at the snapshot
 
 - targeted DGC suite: `21/21 PASS` on the current local integration tree;
 - DGC fault injections: `10/10 KILLED`;

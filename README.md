@@ -51,6 +51,7 @@ make -f Makefile.cwc reproduce-primary
 
 [System map](SYSTEM.md) · [Architecture](docs/architecture/CWC_ARCHITECTURE.md) ·
 [Claim registry](claim_registry.json) · [Documentation audit](docs/assurance/DOCUMENTATION_AUDIT.md) ·
+[DGC evidence and replay](docs/DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md) ·
 [Research history](https://github.com/neuron7x/sapolsky-behave-layers/blob/033e5d470573c9818a20ea3dc4b48c7289ac566d/README.md)
 
 CWC by Yaroslav Vasylenko. Built on [Andrej Karpathy’s nanochat](https://github.com/karpathy/nanochat).

@@ -1,9 +1,57 @@
 # DGC Product Qualification — Execution Runbook v1
 
-Date: 2026-09-27
-Status: `EXECUTABLE_FRONTIER / EXTERNAL_EVIDENCE_REQUIRED`
+Protocol snapshot: 2026-09-27. Operational review: 2026-11-27.
 
-This runbook starts from the current canonical research/evidence architecture. It does not authorize skipping any gate or replacing missing external observations with synthetic evidence.
+## Status and evidence
+
+The reference checkout for this review is `78eed8b4a5516a9e4e44e4912011dd653b6127ae`.
+Recheck the checkout and replay the relevant gate when reviewing a later revision.
+
+| Scope | State at review | Authority |
+| --- | --- | --- |
+| Canonical source registry | Two frozen source identities replayed. The registry carries zero materialized and zero executed families. | [Registry](../artifacts/dgc-product-v1/external_source_authority.json) · [Source gate](../scripts/dgc_product_external_source_gate.py) |
+| Separate materialization replay | 500 SWE-bench Verified and 89 Terminal-Bench 2.1 tasks verified at the reference checkout. | [Receipt at draft #105 head](https://github.com/neuron7x/sapolsky-behave-layers/blob/d4a75d4edd184a8895d40a7500e9051395ad66d6/artifacts/dgc-product-v1/materialization-receipts/78eed8b.json) |
+| Synthetic financial experiment | The frozen synthetic threshold passed. Client verification and commercial authority are both false. | [Replay and limits](../artifacts/dgc-02-finance-confirmatory/RESULTS.md) |
+| Mechanism protocol | Cost and quality with exact matched coverage. External execution, fitted B2 and calibration-based sizing are outstanding. | [Mechanism protocol](DGC_PREINFERENCE_MECHANISM_LANE_v1.md) |
+| Product | The qualification pointer is inactive. The three-endpoint product plan requires a prespecified catastrophic-regret endpoint for each family. | [Pointer V3](../artifacts/dgc-product-v1/PRODUCT_QUALIFICATION_POINTER_V3.json) · [Closure executor](DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md) |
+
+[Draft #105](https://github.com/neuron7x/sapolsky-behave-layers/pull/105)
+also proposes the mechanism partition CLI, the V5.1 Route B decision and the
+tagged release checkout fix. [Draft #106](https://github.com/neuron7x/sapolsky-behave-layers/pull/106)
+proposes an offline maximin verification-value evaluator. Both changes were
+unmerged at review time. Their checks apply to the tested revisions.
+
+## Read-only preflight
+
+Run from the repository root with Git and Python 3.11 or newer. These checks
+use local repository records and require no provider credentials or images.
+
+```bash
+git rev-parse HEAD 'HEAD^{tree}'
+git status --porcelain=v1
+PYTHONPATH=. python -B scripts/dgc_product_external_source_gate.py
+PYTHONPATH=. python -B scripts/dgc_product_promotion_gate.py --require-stage RESEARCH_HYPOTHESIS
+PYTHONPATH=. python -B scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
+```
+
+On the reference checkout, the source gate reports `2/2` and exits 0, the
+research-stage check exits 0, and the final command exits 1 with
+`product qualification pointer is not activated`. A different failure message
+requires investigation. The nonterminal check validates the status mirror.
+The terminal check replays the qualification pointer and append-only packaging
+authority. To replay the local DGC contracts and synthetic finance controls:
+
+```bash
+umask 022
+make -f Makefile.cwc dgc-gate dgc-financial-gate PY=python
+```
+
+Use the repository test environment documented in the
+[test and CI reference](vnv/CWC_TEST_AND_CI_REFERENCE.md).
+
+The following sections describe the evidence prerequisites for completing an
+external generation. On the reference checkout the mechanism partition CLI
+and the product risk endpoints are still blockers.
 
 ## 0. Verify upstream source authority
 
@@ -22,20 +70,31 @@ Required before materialization:
 
 ## 1. Materialize both external workloads
 
-Install the dedicated materialization environment:
+Install the dedicated materialization environment from the repository root:
 
 ```bash
+python -m venv eval_bundle/dgc-materialization-venv
+source eval_bundle/dgc-materialization-venv/bin/activate
 python -m pip install -r dgc-external-requirements.txt
 ```
 
-Materialize into a fresh evidence generation:
+Use a clean checkout and a fresh generation ID. Keep these variables in the
+same shell through the materialization and reference steps. Git ignores the
+runtime directory.
 
 ```bash
+DGC_GENERATION=source-replay-001
+MATERIALIZATION_ROOT="eval_bundle/dgc-external/${DGC_GENERATION}"
+MATERIALIZATION_REFERENCE="eval_bundle/dgc-external/${DGC_GENERATION}-reference.json"
+
 PYTHONPATH=. python scripts/dgc_materialize_external_sources.py \
-  --output-root artifacts/dgc-materialized/gen-2026-08-23
+  --output-root "$MATERIALIZATION_ROOT"
 ```
 
 The command emits `MATERIALIZATION_RECEIPT.json` only after both families pass byte/Git identity checks. Receipt fields keep `execution_authorized=false` and `product_promotion_authorized=false`.
+For offline replay, pass `--swe-parquet` with the pinned Parquet file and
+`--terminal-repo` with a clean checkout of the pinned Git revision. Both
+options use the same identity checks. Use a new generation ID for a retry.
 
 ### SWE-bench Verified
 
@@ -49,7 +108,9 @@ Frozen parquet SHA-256:
 
 Expected: `500` unique `instance_id` values.
 
-Any hash/count/uniqueness mismatch => STOP and create a new evidence/preregistration generation.
+On a hash, count or uniqueness mismatch, stop and recover the pinned input.
+A deliberate source revision change requires a new source authority and
+preregistration before outcomes are inspected.
 
 ### Terminal-Bench 2.1
 
@@ -78,9 +139,6 @@ Any Git-object or manifest mismatch => STOP.
 The build and execution layers consume the verified reference, not the materialization directory by convention alone.
 
 ```bash
-MATERIALIZATION_ROOT=eval_bundle/dgc-external/materialization-gen-001
-MATERIALIZATION_REFERENCE=eval_bundle/dgc-external/materialization-reference-gen-001.json
-
 PYTHONPATH=. python scripts/dgc_import_materialization_reference.py \
   --generation-root "$MATERIALIZATION_ROOT" \
   --output "$MATERIALIZATION_REFERENCE"
@@ -93,6 +151,19 @@ Required result:
 - Terminal-Bench binding contains the frozen 89-task manifest and the exact `repo/tasks` workload-tree SHA-256;
 - no execution or product authority is created.
 
+To record both source stages in the closure ledger, keep the same Python
+environment on `PATH` and use the same generation:
+
+```bash
+PYTHONPATH=. python scripts/dgc_close_external_materialization.py \
+  --generation-id "$DGC_GENERATION" \
+  --generation-root "$MATERIALIZATION_ROOT"
+```
+
+The ledger and its reference are under
+`eval_bundle/dgc-evidence-closure/<generation-id>/`. The expected next stage
+is `EXECUTION_MANIFESTS_FROZEN`.
+
 ### 1.2 Build and freeze the Terminal-Bench task-scoped OCI population
 
 Terminal-Bench 2.1 does **not** have one global sandbox image. The frozen population contains 89 task environments, so each task must be bound to its own registry-resolved immutable OCI identity.
@@ -102,11 +173,12 @@ Use a fresh runtime output root and a registry namespace with no mutable tag:
 ```bash
 TERMINAL_TASKS="$MATERIALIZATION_ROOT/TERMINAL_BENCH_2_1/repo/tasks"
 SANDBOX_GENERATION=eval_bundle/dgc-terminal-sandboxes/gen-001
+: "${DGC_OCI_REGISTRY_PREFIX:?set the authorized OCI registry and namespace}"
 
 PYTHONPATH=. python scripts/dgc_build_terminal_sandbox_images.py \
   --tasks-root "$TERMINAL_TASKS" \
   --materialization-reference "$MATERIALIZATION_REFERENCE" \
-  --registry-prefix <registry>/<namespace>/dgc-terminal-bench-2-1 \
+  --registry-prefix "$DGC_OCI_REGISTRY_PREFIX" \
   --output-root "$SANDBOX_GENERATION"
 ```
 
@@ -185,6 +257,11 @@ The product freeze remains unchanged and still requires the risk endpoint.
 
 ## 3M. Mechanism lane: fit B2 on quality + cost only
 
+Before fitting B2, the mechanism lane needs a task-partition receipt bound to
+the risk-free execution freeze. The CLI on the reference checkout accepts
+the product freeze only. Stop at this dependency until a mechanism partition
+producer is available in the checkout. [Proposed CLI](https://github.com/neuron7x/sapolsky-behave-layers/pull/105)
+
 Do not feed synthetic or post-outcome risk labels into B2. Prepare `DGC_MECHANISM_B2_FIT_INPUT_V1` with:
 
 - frozen `MechanismLearnedRouterConfig`;
@@ -208,7 +285,7 @@ PYTHONPATH=. python scripts/dgc_authorize_mechanism_b2.py \
 
 Any `catastrophic_regret`, `risk`, `risk_score` or `risk_endpoint` field in mechanism B2 input => STOP.
 
-After mechanism sizing, freeze the final risk-free comparison harness:
+After B2 fit authority is available, freeze the final risk-free comparison harness:
 
 ```bash
 PYTHONPATH=. python scripts/dgc_build_mechanism_harness_freeze.py \
@@ -218,17 +295,21 @@ PYTHONPATH=. python scripts/dgc_build_mechanism_harness_freeze.py \
   --output eval_bundle/MECHANISM_HARNESS_FREEZE.json
 ```
 
-Only this mechanism-specific freeze/harness pair may feed `dgc_build_mechanism_execution_authority.py`.
+The execution-authority builder requires the mechanism-specific freeze, this
+harness, the matching partition and a calibration-bound sizing receipt.
+The [mechanism protocol](DGC_PREINFERENCE_MECHANISM_LANE_v1.md#frozen-mechanism-execution-authority)
+defines their evidence boundaries.
 
 ## 3. Fit B2 on calibration tasks only
 
-B0/B1/B3 are static policy contracts. B2 is a learned cost-quality router and must be fitted only after the task split is frozen.
+B0/B1/B3 use frozen policy contracts. Product B2 learns from quality, cost
+and catastrophic regret. Fit it only after the task split is frozen.
 
 Prepare `DGC_B2_FIT_INPUT_V1` containing:
 
 - frozen `LearnedRouterConfig`;
 - complete calibration `task × action` counterfactual table;
-- explicit forbidden/confirmatory task IDs;
+- explicit forbidden task IDs covering confirmatory and held-out tasks;
 - expected feature-schema SHA-256;
 - expected training-algorithm SHA-256.
 
@@ -236,8 +317,8 @@ Run:
 
 ```bash
 PYTHONPATH=. python scripts/dgc_fit_b2_baseline.py \
-  --input artifacts/dgc-calibration/B2_FIT_INPUT.json \
-  --output artifacts/dgc-calibration/B2_FIT_RECEIPT.json
+  --input "eval_bundle/dgc-calibration/$DGC_GENERATION/B2_FIT_INPUT.json" \
+  --output "eval_bundle/dgc-calibration/$DGC_GENERATION/B2_FIT_RECEIPT.json"
 ```
 
 The receipt binds:
@@ -282,8 +363,8 @@ Prepare `DGC_CLUSTER_AWARE_TRIAL_SIZING_INPUT_V1` with calibration observations,
 
 ```bash
 PYTHONPATH=. python scripts/dgc_freeze_trial_sizing.py \
-  --input artifacts/dgc-calibration/TRIAL_SIZING_INPUT.json \
-  --output artifacts/dgc-calibration/TRIAL_SIZING_RECEIPT.json
+  --input "eval_bundle/dgc-calibration/$DGC_GENERATION/TRIAL_SIZING_INPUT.json" \
+  --output "eval_bundle/dgc-calibration/$DGC_GENERATION/TRIAL_SIZING_RECEIPT.json"
 ```
 
 The V2 product plan retains:
@@ -375,7 +456,9 @@ For each family, require against **every B0-B3 baseline** on the same paired pop
 - full matched coverage;
 - identical paired population digest.
 
-Any baseline failure => no primary real-workload product claim.
+All baselines must pass both the exact-panel and V5.1 anytime-valid criteria.
+See the [P9 contract](DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md#6-confirmatoryp9-contract)
+for statistical scope and evidence requirements.
 
 On the same frozen option population also report CCF:
 
@@ -420,7 +503,7 @@ Populate the evidence bundle with real results, then generate `SHA256SUMS` and r
 ```bash
 PYTHONPATH=. python scripts/dgc_product_bundle_gate.py
 PYTHONPATH=. python scripts/dgc_product_promotion_gate.py --require-stage PRODUCT_QUALIFIED
-PYTHONPATH=. python scripts/dgc_release_repro_gate.py
+PYTHONPATH=. python scripts/dgc_release_repro_gate.py --require-product-qualified
 ```
 
 Only after all PASS may a `dgc-product-*` release tag be created.
@@ -435,7 +518,10 @@ After `PRODUCT_QUALIFIED`:
 4. bounded canary <=10% traffic with hard spend/tool/step/time/concurrency caps and automatic rollback;
 5. only then consider broader production control.
 
-## Current immediate blockers
+## Blocker records
+
+Read observations with their recorded revision or date. The 2026-09-27
+runbook captured the pre-execution and runner blockers for that snapshot.
 
 1. Source-materialization replay on `78eed8b4a5516a9e4e44e4912011dd653b6127ae`
    sealed 500 SWE-bench Verified and 89 Terminal-Bench 2.1 tasks across 1,104

@@ -38,6 +38,20 @@ to scientific promotion runs through `REAL-TRANSFER-01` and the
 decision-relevant epistemic-control line. [R1](artifacts/cwc-flagship-route-01/)
 · [R2](artifacts/cwc-flagship-route-02/) · [Programme decision](docs/vnv/CWC_PROGRAM_DECISION_2026-08-11.md)
 
+## DGC evidence and execution
+
+Decision-Gradient Computing (DGC) studies whether decision-relevant
+verification justifies its operational cost under fixed comparisons and explicit
+risk constraints. The mechanism
+protocol measures paired quality and cost with full coverage. Product
+qualification separately requires catastrophic-regret evidence, confirmatory
+execution, replication and terminal replay. The finite compute frontier is an
+offline comparator outside B0–B3.
+
+[Evidence status and replay](docs/DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md) ·
+[Mechanism protocol](docs/DGC_PREINFERENCE_MECHANISM_LANE_v1.md) ·
+[Product closure executor](docs/DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md)
+
 ## Causal-credit / counterfactual-model sub-line — current boundary
 
 - `CSCA-01`: exact counterfactual Shapley separates the controlled true cause from confounders/non-causes (`SUPPORTED_NARROWED`).

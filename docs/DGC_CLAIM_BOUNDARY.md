@@ -2,7 +2,9 @@
 
 **Programme:** Decision-Gradient Computing (DGC)  
 **Status:** `RESEARCH_HYPOTHESIS / ENGINEERING_CANDIDATE`  
-**Claim authority:** this file constrains language only; empirical authority remains `claim_registry.json`.
+**Claim authority:** this file defines the language boundary. Scoped results
+require their experiment protocol and replayable artifacts. Terminal product
+qualification requires the [V3 pointer and packaging replay](DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md).
 
 ## Allowed initial claim
 
@@ -48,4 +50,6 @@ The 30% target is an economic viability gate, not a novelty/frontier-superiority
 
 `RESEARCH_ONLY -> EXPERIMENTALLY_SUPPORTED -> SUPPORTED_GENERALIZING`
 
-Promotion requires the preregistered primary endpoint, untouched held-out seeds/workloads, and the exact negative-result rules in `docs/DGC_INTEGRATION_AND_VERIFICATION_PROTOCOL.md`.
+Promotion requires the preregistered primary endpoint, untouched held-out seeds/workloads, and the exact negative-result rules in the [integration protocol](DGC_INTEGRATION_AND_VERIFICATION_PROTOCOL.md).
+The [evidence runbook](DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md#status-and-evidence)
+links the applicable empirical and product checks.
