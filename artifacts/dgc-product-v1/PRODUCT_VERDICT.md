@@ -1,6 +1,6 @@
 # DGC Product v1 — Current Verdict
 
-Verdict date: 2026-08-22
+Verdict date: 2026-11-27
 
 `PRODUCT_QUALIFIED = FALSE`
 
@@ -12,7 +12,8 @@ The internal architecture contains substantial verified mathematical, governance
 
 Current blocking facts:
 
-- external workload repositories are source-frozen but task/scorer/environment bytes are not yet materialized and sealed;
+- both upstream task populations have a [materialization receipt](materialization-receipts/78eed8b.json). Task-scoped OCI environments, scorer bindings and the executable comparison frame remain pending;
+- V5.1 product confirmatory execution has been [retired for both benchmark families](../../docs/DGC_PREINFERENCE_MECHANISM_LANE_v1.md#pre-outcome-decision-for-issue-17). Product qualification requires a new preregistered generation with independent risk evidence;
 - B2 learned baseline has no calibration-task/fitted-model digest;
 - no frozen external confirmatory harness execution exists;
 - no production/client physical cost trace population exists;

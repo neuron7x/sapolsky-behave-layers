@@ -15,6 +15,27 @@ This lane preserves the existing product claim and creates a narrower external m
 
 This is not a product qualification claim.
 
+## Pre-outcome decision for issue #17
+
+Decision recorded 2026-11-27. Retire V5.1 product confirmatory execution for
+`SWE_BENCH_VERIFIED` (revision `03e151cf5560b1af6a4363c6a9d766deaaea6b56`) and
+`TERMINAL_BENCH_2_1` (revision `7131e4375048a0e408a8fb404b5f499d726b695b`).
+SWE-bench resolution measures test outcomes. Terminal-Bench native reward
+measures task performance. Neither source supplies an observation of consequence
+severity or a counterfactual loss under a reference action. There is no
+identified external catastrophic-regret estimand for these populations under V5.1.
+[SWE-bench Verified scoring](https://openai.com/index/introducing-swe-bench-verified/#background-on-swe-bench)
+· [Terminal-Bench 2.1 scope](https://github.com/harbor-framework/terminal-bench-2-1/blob/7131e4375048a0e408a8fb404b5f499d726b695b/README.md#L1-L5)
+
+The existing mechanism V1 protocol is the replacement path for these
+populations. It retains the fixed multiplicity allocation and quality margin
+below. Final sizing depends on future calibration-only observations.
+The product root builder and verifier reject both families under the retired
+product authority schema. The [V5.1 product protocol](../artifacts/dgc-product-v1/PREREGISTRATION.md)
+remains archived in place. Any renewed product claim requires a separate
+preregistered generation with independently justified risk evidence and a new
+authority contract.
+
 ## Frozen external families
 
 1. `SWE_BENCH_VERIFIED`
@@ -103,7 +124,12 @@ The mechanism lane has a separate execution authority and evidence bundle. It do
 
 Pre-outcome sequence:
 
-`materialize → partition → mechanism execution freeze (risk-free) → mechanism B2 calibration/authority → mechanism sizing → mechanism harness freeze → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
+`materialize → mechanism execution freeze (risk-free) → partition → mechanism B2 calibration/authority → mechanism sizing → mechanism harness freeze → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
+
+After materialization and the risk-free execution freeze, create the partition
+receipt with `scripts/dgc_freeze_task_partition.py --mechanism-execution-freeze`.
+The partition binds the task manifest, materialization reference and partition
+plan to the verified freeze before writing any task split.
 
 The mechanism sizing receipt is bound to the SHA-256 of the canonical calibration evidence artifact. It freezes the maximum required within-task repeat count across the exact eight baseline×endpoint comparisons.
 

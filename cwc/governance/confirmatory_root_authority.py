@@ -25,10 +25,22 @@ SCHEMA = "DGC_CONFIRMATORY_ROOT_AUTHORITY_V1"
 INPUT_SCHEMA = "DGC_CONFIRMATORY_ROOT_INPUT_V1"
 REFERENCE_SCHEMA = "DGC_EXTERNAL_EVIDENCE_REFERENCE_V2"
 REGISTRY_SCHEMA = "DGC_EXTERNAL_SOURCE_AUTHORITY_REGISTRY_V1"
+RETIRED_PRODUCT_FAMILIES = frozenset({"SWE_BENCH_VERIFIED", "TERMINAL_BENCH_2_1"})
 
 
 class ConfirmatoryRootAuthorityError(RuntimeError):
     pass
+
+
+def _require_product_family(family_id: object) -> str:
+    if not isinstance(family_id, str) or not family_id or family_id != family_id.strip():
+        raise ConfirmatoryRootAuthorityError("invalid product confirmatory family")
+    if family_id in RETIRED_PRODUCT_FAMILIES:
+        raise ConfirmatoryRootAuthorityError(
+            f"{family_id} product confirmatory authority is retired under issue #17; "
+            "the two-endpoint mechanism protocol has separate authority"
+        )
+    return family_id
 
 
 def _sha(name: str, value: object) -> str:
@@ -194,6 +206,7 @@ def build_confirmatory_root_authority(
     root_input_path: Path,
 ) -> ConfirmatoryRootAuthority:
     execution = verify_execution_manifest_freeze_document(Path(execution_manifest_freeze_path))
+    family = _require_product_family(execution.get("family_id"))
     harness = verify_harness_freeze_document(Path(harness_freeze_path))
     sizing = verify_trial_sizing_authority_document(Path(trial_sizing_authority_path))
     partition = verify_task_partition_document(Path(task_partition_path))
@@ -201,7 +214,6 @@ def build_confirmatory_root_authority(
     registry = _json(Path(source_registry_path), REGISTRY_SCHEMA)
     root_input = _json(Path(root_input_path), INPUT_SCHEMA)
 
-    family = str(execution.get("family_id", ""))
     execution_digest = _sha("execution freeze_digest", execution.get("freeze_digest"))
     harness_digest = _sha("harness_freeze_digest", harness.get("harness_freeze_digest"))
     sizing_digest = _sha("trial-sizing authority_digest", sizing.get("authority_digest"))
@@ -348,6 +360,7 @@ def build_confirmatory_root_authority(
 
 def verify_confirmatory_root_authority_document(path: Path) -> dict[str, object]:
     doc = _json(Path(path), SCHEMA)
+    _require_product_family(doc.get("family_id"))
     if doc.get("confirmatory_execution_authorized") is not True:
         raise ConfirmatoryRootAuthorityError("confirmatory root must explicitly authorize only the frozen execution population")
     if doc.get("product_promotion_authorized") is not False:
@@ -367,6 +380,8 @@ def verify_confirmatory_root_authority_document(path: Path) -> dict[str, object]
     spec = doc.get("distributed_spec")
     if not isinstance(root, Mapping) or not isinstance(spec, Mapping):
         raise ConfirmatoryRootAuthorityError("confirmatory root/spec payload missing")
+    if root.get("family_id") != doc.get("family_id"):
+        raise ConfirmatoryRootAuthorityError("nested confirmatory root family mismatch")
     if root.get("root_digest") != doc.get("root_digest"):
         raise ConfirmatoryRootAuthorityError("nested confirmatory root digest mismatch")
     if root.get("distributed_spec_digest") != doc.get("distributed_spec_digest"):
