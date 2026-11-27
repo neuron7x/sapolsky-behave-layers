@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from cwc.governance.execution_manifest_freeze import verify_execution_manifest_freeze_document
+from cwc.governance.mechanism_execution_freeze import verify_mechanism_execution_freeze_document
 from cwc.governance.product_statistical_plan import ProductStatisticalPlan
 from cwc.governance.task_partition import freeze_task_partition
 
@@ -33,12 +34,16 @@ def _runtime_output(value: str) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Freeze calibration/confirmatory task split before observing outcomes.")
     parser.add_argument("--generation-root", required=True)
-    parser.add_argument("--execution-freeze", required=True)
+    freeze = parser.add_mutually_exclusive_group(required=True)
+    freeze.add_argument("--execution-freeze")
+    freeze.add_argument("--mechanism-execution-freeze")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    execution_path = _repo_path(args.execution_freeze)
-    execution = verify_execution_manifest_freeze_document(execution_path)
+    if args.mechanism_execution_freeze is not None:
+        execution = verify_mechanism_execution_freeze_document(_repo_path(args.mechanism_execution_freeze))
+    else:
+        execution = verify_execution_manifest_freeze_document(_repo_path(args.execution_freeze))
     plan = ProductStatisticalPlan(**execution["statistical_plan"])
     reference = ROOT / str(execution["materialization_reference_path"])
     receipt = freeze_task_partition(

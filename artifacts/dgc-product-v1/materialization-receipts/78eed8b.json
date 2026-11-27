@@ -1,0 +1,61 @@
+{
+  "execution_authorized": false,
+  "families": [
+    {
+      "acquisition_mode": "LOCAL_VERIFIED_INPUT",
+      "authority_digest": "270eefd5c89232968d5d9c33a3e5159a7004dba1e0d62169a5c0ae7c87436667",
+      "family_id": "SWE_BENCH_VERIFIED",
+      "parquet": {
+        "bytes_size": 2480309,
+        "instance_id_manifest_sha256": "33e18be7a9bd9f674790b63ed4d0b3fb17c176994802e3062b7d5a430a4e7d16",
+        "row_count": 500,
+        "sha256": "bb5b123d29ce70107cc0951cf444894241c570a11d76aec452332c65b01e06d8"
+      },
+      "source_authority_digest": "31b9d9f756f8e07972c641016cb93aee09326debc9864752d352e2ab293a2798",
+      "stage": "MATERIALIZED_VERIFIED",
+      "workload_seal": {
+        "expected_task_count": 500,
+        "family_id": "SWE_BENCH_VERIFIED",
+        "file_count": 1,
+        "file_tree_sha256": "4463b630666a2f51ccc291d1a0bfb4af513d9a72d94151e48db30a5548edcc78",
+        "task_count": 500,
+        "task_manifest_sha256": "33e18be7a9bd9f674790b63ed4d0b3fb17c176994802e3062b7d5a430a4e7d16",
+        "total_bytes": 2480309
+      }
+    },
+    {
+      "acquisition_mode": "LOCAL_VERIFIED_INPUT",
+      "authority_digest": "f9e6abe3186d62d7e7ea1d4ce5a11fe0d74bca3d2eb92e7a323533c92c5d85cf",
+      "dataset_manifest": {
+        "dataset_name": "terminal-bench/terminal-bench-2-1",
+        "task_count": 89,
+        "task_name_digest_manifest_sha256": "473bbb7e2104ee226f3fd1bf7f3b8947f30fe45dbcf152d4db0eb568e4e4c959"
+      },
+      "family_id": "TERMINAL_BENCH_2_1",
+      "git_identity": {
+        "commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+        "dataset_manifest_blob": "6e7e030fd37a7cefdbd597badcf8560c8748d995",
+        "repository_tree": "ddbd9031e59804a04e24019fc408d51b56a4e773",
+        "tasks_tree": "2f0f5fdc68f0befd9b4745386eb8698264b00d8a"
+      },
+      "source_authority_digest": "f69953e9fcf862fce7ecc649d34e7eb2905321ea320ec72860a7608d2fd61513",
+      "stage": "MATERIALIZED_VERIFIED",
+      "workload_seal": {
+        "expected_task_count": 89,
+        "family_id": "TERMINAL_BENCH_2_1",
+        "file_count": 1037,
+        "file_tree_sha256": "2ccc1567429c3ea9d7881408a4a2641484cbe33f6632e06b102d051fa62313f4",
+        "task_count": 89,
+        "task_manifest_sha256": "884fc05cb01b42d19e75905817b58bf4e40982a6c614c0bd519b9d8202f9035f",
+        "total_bytes": 58354335
+      }
+    }
+  ],
+  "materializer_sha256": "5335bcfc04e13abb4322f68a462ad0c9d81b8d7b31ad45dc222fbf96cbab66cf",
+  "payload_manifest_sha256": "854af5bbe8fd2abde063b04adfeb5d46c1031ef08b575fda1677820325f58fc9",
+  "product_promotion_authorized": false,
+  "repository_commit": "78eed8b4a5516a9e4e44e4912011dd653b6127ae",
+  "repository_tree": "510cdf1d385083c130c31911b227fcda787e3732",
+  "schema": "DGC_EXTERNAL_MATERIALIZATION_RECEIPT_V2",
+  "source_registry_sha256": "7b13eaedb9b3214fb44ab628ad55b545ded94c10dd35406178bc0fb91327dae8"
+}

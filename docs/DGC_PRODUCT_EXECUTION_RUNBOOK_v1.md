@@ -437,12 +437,22 @@ After `PRODUCT_QUALIFIED`:
 
 ## Current immediate blockers
 
-1. External workload binary/Git materialization has not completed in the current sandbox; source identity is verified, materialization is not.
+1. Source-materialization replay on `78eed8b4a5516a9e4e44e4912011dd653b6127ae`
+   sealed 500 SWE-bench Verified and 89 Terminal-Bench 2.1 tasks across 1,104
+   files. [Materialization receipt](../artifacts/dgc-product-v1/materialization-receipts/78eed8b.json).
+   Publication manifest SHA-256
+   `c529eea4d521bee31e91ccd74d991859874608f557c60af955cc93ecfc433144`.
+   Independent verification reconstructed the Terminal Git tree and rejected a
+   one-byte change to the SWE-bench parquet. Execution manifests and
+   task-scoped OCI build receipts still need verified materialization for the
+   chosen execution host.
 2. No valid live provider confirmatory population has been executed in this environment.
 3. B2 has no external calibration fit receipt yet.
 4. Calibration-only between/within-task variance components and final repeat count are not yet measured externally.
-5. No external ConfirmatoryGenerationRoot has been minted.
-6. GitHub Actions continues to terminate before repository steps in the current environment; classify this as `CI_EXECUTION_UNAVAILABLE`.
+5. V5.1 product confirmatory execution for both external families is retired
+   under [issue #17](DGC_PREINFERENCE_MECHANISM_LANE_v1.md#pre-outcome-decision-for-issue-17).
+6. Hosted [DGC semantics and executor regressions](https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45770838909/job/139742825525)
+   passed on `0bebec18f51aabfc554dd35b6a74dd0e1021c989`. The tagged product release remains unexercised.
 7. Independent replication/review and real multi-node/cloud operational evidence are absent.
 
 None of these blockers may be replaced with synthetic traces, manually promoted status fields or prose claims.
