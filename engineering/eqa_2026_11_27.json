@@ -1,0 +1,43 @@
+{
+  "act": "ACT-CWC-EQA-2026-11-27",
+  "version": "1.0",
+  "baseline": {
+    "commit": "2cbee2e5feeb4dbc3557d58be9efc99a4362825c",
+    "tree": "af4ee14badf9c90743d99a76c88839ea928838ed"
+  },
+  "assessment_model": {
+    "obligation_weight_within_domain": 1,
+    "score_credit": "PASS with candidate-bound evidence only",
+    "code_minimum_tenths": 94,
+    "code_stronger_tenths": 97,
+    "code_domain_floor_percent": 90,
+    "architecture_minimum_tenths": 90,
+    "architecture_domain_floor_percent": 85,
+    "code": [
+      {"weight": 25, "requirements": ["T05_ACTION_IDENTITY", "T07_CERTIFICATE_SEMANTICS", "T10_REGRET_METAMORPHICS", "T10_INDEPENDENT_NUMERICAL_REFERENCE"]},
+      {"weight": 20, "requirements": ["T06_PACKAGE_MEMBERSHIP", "T06_FILESYSTEM_CONFINEMENT", "T06_OUTER_BINDING", "T07_CERTIFICATE_ENCODING", "T09_AUTHORITY_CONSUMERS"]},
+      {"weight": 20, "requirements": ["T02_TRACEABILITY", "T04_ROSTER_REJECTION", "T15_TEST_INVENTORY", "T15_COVERAGE_AND_TYPES", "T16_NEGATIVE_AND_GENERATED_CASES", "T16_MUTATION_MEASUREMENT"]},
+      {"weight": 15, "requirements": ["T03_BRANCH_ENFORCEMENT", "T04_REVISION_BINDING", "T17_DEPENDENCY_LOCKS", "T17_PERMISSION_CONFINEMENT"]},
+      {"weight": 10, "requirements": ["T01_SOURCE_AND_ENVIRONMENT_IDENTITY", "T18_DETERMINISTIC_RECONSTRUCTION", "T18_VERIFIED_PROVENANCE", "T19_FAILURE_DIAGNOSTICS"]},
+      {"weight": 10, "requirements": ["T01_SUPPORTED_SURFACE", "T12_OWNERS_AND_INTERFACES", "T14_VALID_BEHAVIOR_PRESERVATION", "T20_CLAIM_ALIGNMENT"]}
+    ],
+    "architecture": [
+      {"weight": 25, "requirements": ["T08_STATIC_IMPORT_CLOSURE", "T08_ROSTER_AND_DYNAMIC_SCOPE", "T12_DEPENDENCY_GRAPH"]},
+      {"weight": 25, "requirements": ["T06_FILESYSTEM_CONFINEMENT", "T07_CERTIFICATE_SEMANTICS", "T09_AUTHORITY_CONSUMERS", "T12_OWNERS_AND_INTERFACES"]},
+      {"weight": 20, "requirements": ["T13_PROVIDER_REPLACEMENT", "T14_CHANGE_IMPACT", "T14_VALID_BEHAVIOR_PRESERVATION"]},
+      {"weight": 15, "requirements": ["T11_FAILURE_TRANSITIONS", "T13_RECOVERY_AND_RESOURCE_SCENARIOS", "T19_RESOURCE_MEASUREMENTS"]},
+      {"weight": 15, "requirements": ["T02_TRACEABILITY", "T18_DETERMINISTIC_RECONSTRUCTION", "T19_FAILURE_DIAGNOSTICS", "T20_CLAIM_ALIGNMENT"]}
+    ],
+    "mandatory_gates": [
+      "All reproduced decision, evidence and architecture defects closed",
+      "Required integration checks enforced",
+      "All authoritative acceptance paths reject invalid evidence",
+      "Complete verification inventory executed",
+      "Clean reconstruction reproduces artifacts and verdicts",
+      "Qualified non-author review completed",
+      "Frozen protocols, negative results and claim boundaries preserved"
+    ]
+  },
+  "disposition": "BLOCKED",
+  "scores": null
+}

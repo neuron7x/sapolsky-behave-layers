@@ -83,6 +83,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.11"
@@ -108,6 +109,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.11"
@@ -123,3 +126,34 @@ jobs:
         run: uv sync --frozen --project experiments/fractal_multiscale --extra dev
       - name: Run its independent lint, type, protocol, and test gates
         run: uv run --frozen --project experiments/fractal_multiscale make -C experiments/fractal_multiscale verify
+
+  integration-acceptance:
+    name: CWC integration acceptance
+    if: always()
+    needs: [cneh-promotion-invariants, cneh-promotion-adversarial, full-verification, fractal-verification]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Test the admission predicate
+        id: admission-tests
+        run: python -B -m unittest discover -s tests -p test_eqa_integration_gate.py -v
+      - name: Bind job results to the actual source checkout
+        if: always()
+        env:
+          CWC_REQUIRED_JOB_RESULTS: ${{ toJSON(needs) }}
+          CWC_GATE_SELF_TEST_RESULT: ${{ steps.admission-tests.outcome }}
+        run: python -B scripts/eqa_integration_gate.py --output "$RUNNER_TEMP/cwc-integration-receipt.json"
+      - name: Preserve the integration receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cwc-integration-receipt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/cwc-integration-receipt.json
+          if-no-files-found: error

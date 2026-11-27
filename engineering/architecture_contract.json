@@ -1,53 +1,129 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "boundaries": [
     {
-      "root": "cwc/instrumentation",
-      "internal_namespace": "cwc",
+      "root": "cwc",
+      "allowed_prefixes": []
+    },
+    {
+      "root": "cwc/assurance",
       "allowed_prefixes": [
-        "cwc.instrumentation"
+        "cwc.assurance"
       ]
     },
     {
-      "root": "cwc/plasticity",
-      "internal_namespace": "cwc",
+      "root": "cwc/benchmarks",
       "allowed_prefixes": [
-        "cwc.plasticity"
-      ]
-    },
-    {
-      "root": "experiments/common",
-      "internal_namespace": "experiments",
-      "allowed_prefixes": [
-        "experiments.common",
-        "experiments.act_j_pilot.src.compute_matched"
+        "cwc.benchmarks",
+        "cwc.epistemics",
+        "cwc.replay"
       ]
     },
     {
       "root": "cwc/causal",
-      "internal_namespace": "cwc",
       "allowed_prefixes": [
         "cwc.causal"
       ]
     },
     {
+      "root": "cwc/counterfactual",
+      "allowed_prefixes": [
+        "cwc.causal",
+        "cwc.counterfactual"
+      ]
+    },
+    {
+      "root": "cwc/credit",
+      "allowed_prefixes": [
+        "cwc.counterfactual",
+        "cwc.credit"
+      ]
+    },
+    {
       "root": "cwc/epistemics",
-      "internal_namespace": "cwc",
+      "allowed_prefixes": [
+        "cwc.causal",
+        "cwc.epistemics",
+        "cwc.memory",
+        "cwc.planning",
+        "cwc.replay"
+      ]
+    },
+    {
+      "root": "cwc/evidence",
+      "allowed_prefixes": [
+        "cwc.evidence"
+      ]
+    },
+    {
+      "root": "cwc/governance",
       "allowed_prefixes": [
         "cwc.epistemics",
-        "cwc.causal",
-        "cwc.replay",
+        "cwc.governance"
+      ]
+    },
+    {
+      "root": "cwc/inference",
+      "allowed_prefixes": [
+        "cwc.counterfactual",
+        "cwc.credit",
+        "cwc.inference"
+      ]
+    },
+    {
+      "root": "cwc/instrumentation",
+      "allowed_prefixes": [
+        "cwc.instrumentation"
+      ]
+    },
+    {
+      "root": "cwc/memory",
+      "allowed_prefixes": [
+        "cwc.epistemics",
+        "cwc.memory"
+      ]
+    },
+    {
+      "root": "cwc/planning",
+      "allowed_prefixes": [
+        "cwc.epistemics",
         "cwc.memory",
         "cwc.planning"
       ]
     },
     {
-      "root": "cwc/governance",
-      "internal_namespace": "cwc",
+      "root": "cwc/plasticity",
       "allowed_prefixes": [
-        "cwc.governance",
-        "cwc.epistemics"
+        "cwc.plasticity"
+      ]
+    },
+    {
+      "root": "cwc/replay",
+      "allowed_prefixes": [
+        "cwc.credit",
+        "cwc.memory",
+        "cwc.replay"
+      ]
+    },
+    {
+      "root": "cwc/research_ops",
+      "allowed_prefixes": [
+        "cwc.research_ops"
+      ]
+    },
+    {
+      "root": "experiments/common",
+      "allowed_prefixes": [
+        "experiments.act_j_pilot.src.compute_matched",
+        "experiments.common"
+      ]
+    },
+    {
+      "root": "nanochat",
+      "allowed_prefixes": [
+        "nanochat"
       ]
     }
-  ]
+  ],
+  "declared_dynamic_imports": []
 }
