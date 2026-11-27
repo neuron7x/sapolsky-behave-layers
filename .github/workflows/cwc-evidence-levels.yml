@@ -1,20 +1,53 @@
-name: CWC evidence levels source pin
+name: CWC seven evidence levels
 on:
   pull_request:
     paths:
       - '.github/workflows/cwc-evidence-levels.yml'
+      - 'cwc/epistemics/evidence_sequential.py'
+      - 'cwc/epistemics/evidence_revision.py'
+      - 'experiments/cog_info_02/**'
+      - 'tests/test_evidence_levels.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cwc-evidence-levels.yml'
+      - 'cwc/epistemics/evidence_sequential.py'
+      - 'cwc/epistemics/evidence_revision.py'
+      - 'experiments/cog_info_02/**'
+      - 'tests/test_evidence_levels.py'
 permissions:
   contents: read
 jobs:
-  source-pin:
+  levels:
     runs-on: ubuntu-24.04
-    timeout-minutes: 4
+    timeout-minutes: 8
     steps:
-      - name: Acquire UCI source bytes without evaluating policies
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12.16'
+      - name: Execute exact controls and frozen UCI transfer twice
         shell: bash
         run: |
+          out="$RUNNER_TEMP/levels"
+          mkdir "$out"
           curl --fail --silent --show-error --location --retry 3 \
             'https://archive.ics.uci.edu/static/public/70/monk+s+problems.zip' \
             -o "$RUNNER_TEMP/monks.zip"
-          sha256sum "$RUNNER_TEMP/monks.zip"
-          unzip -Z1 "$RUNNER_TEMP/monks.zip"
+          echo '7501acef87251b1d427726d7c381a2488c166fbbf70ac4096e09f05951c30a29  monks.zip' > "$RUNNER_TEMP/monk.sha256"
+          (cd "$RUNNER_TEMP" && sha256sum -c monk.sha256)
+          python -B -m unittest discover -s tests -p test_evidence_levels.py -v 2>&1 | tee "$out/controls.log"
+          PYTHONHASHSEED=17 TZ=UTC python -B -m experiments.cog_info_02.monk_transfer "$RUNNER_TEMP/monks.zip" > "$out/monk.json"
+          PYTHONHASHSEED=491 TZ=Pacific/Honolulu python -B -m experiments.cog_info_02.monk_transfer "$RUNNER_TEMP/monks.zip" > "$RUNNER_TEMP/repeat.json"
+          cmp "$out/monk.json" "$RUNNER_TEMP/repeat.json"
+          cat "$out/monk.json"
+          git rev-parse HEAD > "$out/checkout.txt"
+          (cd "$out" && sha256sum controls.log monk.json checkout.txt > SHA256SUMS)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cwc-seven-evidence-levels
+          path: ${{ runner.temp }}/levels
+          if-no-files-found: error
+          retention-days: 30
