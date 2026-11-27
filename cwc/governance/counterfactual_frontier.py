@@ -4,6 +4,7 @@ import hashlib
 import json
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from fractions import Fraction
 
 
 def _require_nonnegative_int(name: str, value: int) -> int:
@@ -15,6 +16,80 @@ def _require_nonnegative_int(name: str, value: int) -> int:
 def _canonical_digest(payload: object) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class VerificationValue:
+    guaranteed_net_gain: Fraction
+    policy: tuple[int, ...] | None
+
+
+def robust_verification_value(
+    *,
+    state_action_gains: Sequence[Sequence[int]],
+    model_joint_weights: Sequence[Sequence[Sequence[int]]],
+    admissible_actions: Sequence[Sequence[int]],
+    candidate_policies: Iterable[Sequence[int]],
+    verification_cost: int,
+) -> VerificationValue:
+    """Evaluate one fixed signal-to-action policy across all declared models.
+
+    Matrices are state-major. Action zero is the no-verification fallback.
+    A missing policy in the result means the score did not clear the cost.
+    """
+    _require_nonnegative_int("verification_cost", verification_cost)
+    if not state_action_gains or not model_joint_weights or not admissible_actions:
+        raise ValueError("state, model and signal populations must be nonempty")
+    action_count = len(state_action_gains[0])
+    signal_count = len(admissible_actions)
+    for row in state_action_gains:
+        if (
+            not action_count
+            or len(row) != action_count
+            or any(type(gain) is not int for gain in row)
+            or row[0] != 0
+        ):
+            raise ValueError("gains require equal-width integer rows with zero fallback gain")
+    admitted: list[frozenset[int]] = []
+    for actions in admissible_actions:
+        for action in actions:
+            if _require_nonnegative_int("admissible action", action) >= action_count:
+                raise ValueError("admissible action outside gain matrix")
+        if 0 not in actions:
+            raise ValueError("fallback must be admissible for every signal")
+        admitted.append(frozenset(actions))
+    totals = []
+    for weights in model_joint_weights:
+        if len(weights) != len(state_action_gains) or any(len(row) != signal_count for row in weights):
+            raise ValueError("each joint model must cover the exact state and signal populations")
+        total = sum(_require_nonnegative_int("joint weight", weight) for row in weights for weight in row)
+        if total == 0:
+            raise ValueError("each joint model requires positive total weight")
+        totals.append(total)
+
+    best_gain = Fraction(-verification_cost)
+    best_policy = (0,) * signal_count
+    for candidate in candidate_policies:
+        policy = tuple(candidate)
+        if len(policy) != signal_count or any(
+            _require_nonnegative_int("policy action", action) not in actions
+            for action, actions in zip(policy, admitted, strict=True)
+        ):
+            raise ValueError("policy must select one admissible action per signal")
+        gain = min(
+            Fraction(
+                sum(
+                    weight * gains[policy[signal]]
+                    for row, gains in zip(weights, state_action_gains, strict=True)
+                    for signal, weight in enumerate(row)
+                ),
+                total,
+            )
+            for weights, total in zip(model_joint_weights, totals, strict=True)
+        ) - verification_cost
+        if (-gain, policy) < (-best_gain, best_policy):
+            best_gain, best_policy = gain, policy
+    return VerificationValue(best_gain, best_policy if best_gain > 0 else None)
 
 
 @dataclass(frozen=True, slots=True)

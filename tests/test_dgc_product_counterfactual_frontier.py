@@ -2,14 +2,65 @@ from __future__ import annotations
 
 import itertools
 import random
+from fractions import Fraction
 
 import pytest
 
 from cwc.governance.counterfactual_frontier import (
     CounterfactualOption,
+    VerificationValue,
     audit_policy_against_counterfactual_oracle,
+    robust_verification_value,
     solve_exact_counterfactual_allocation,
 )
+
+
+def test_verification_requires_one_policy_that_works_across_models():
+    first = ((1, 0), (0, 1))
+    reversed_signal = ((0, 1), (1, 0))
+    args = {
+        "state_action_gains": ((0, -10), (0, 10)),
+        "admissible_actions": ((0, 1), (0, 1)),
+        "candidate_policies": ((0, 1), (1, 0), (1, 1)),
+        "verification_cost": 1,
+    }
+    assert robust_verification_value(model_joint_weights=(first,), **args) == VerificationValue(Fraction(4), (0, 1))
+    assert robust_verification_value(model_joint_weights=(reversed_signal,), **args) == VerificationValue(Fraction(4), (1, 0))
+    assert robust_verification_value(model_joint_weights=(first, reversed_signal), **args) == VerificationValue(Fraction(-1), None)
+
+
+def test_perfect_signal_is_worthless_when_only_fallback_is_available():
+    assert robust_verification_value(
+        state_action_gains=((0, -10), (0, 10)),
+        model_joint_weights=(((1, 0), (0, 1)),),
+        admissible_actions=((0,), (0,)),
+        candidate_policies=(),
+        verification_cost=1,
+    ) == VerificationValue(Fraction(-1), None)
+
+
+@pytest.mark.parametrize(("cost", "gain", "policy"), [(1, Fraction(1, 3), (0, 1)), (3, Fraction(0), None)])
+def test_exact_cost_threshold(cost, gain, policy):
+    weights = ((1, 0), (0, 2)) if cost == 1 else ((1, 0), (0, 3))
+    utility = 2 if cost == 1 else 4
+    assert robust_verification_value(
+        state_action_gains=((0, -10), (0, utility)),
+        model_joint_weights=(weights,),
+        admissible_actions=((0, 1), (0, 1)),
+        candidate_policies=((0, 1),),
+        verification_cost=cost,
+    ) == VerificationValue(gain, policy)
+
+
+def test_verification_rejects_unadmitted_action_even_on_zero_mass_signal():
+    with pytest.raises(ValueError, match="admissible action"):
+        robust_verification_value(
+            state_action_gains=((0, 5),),
+            model_joint_weights=(((1, 0),),),
+            admissible_actions=((0, 1), (0,)),
+            candidate_policies=((1, 1),),
+            verification_cost=1,
+        )
 
 
 def _opts():
