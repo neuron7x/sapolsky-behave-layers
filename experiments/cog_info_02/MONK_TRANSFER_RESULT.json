@@ -1,0 +1,186 @@
+{
+  "schema": "cwc-evidence-monk-v1",
+  "source_sha256": "7501acef87251b1d427726d7c381a2488c166fbbf70ac4096e09f05951c30a29",
+  "tasks": [
+    {
+      "held_out": 308,
+      "policies": {
+        "adaptive": {
+          "one": 2,
+          "probe_id": "1",
+          "zero": {
+            "one": 1,
+            "probe_id": "0",
+            "zero": 0
+          }
+        },
+        "fixed": {
+          "one": 2,
+          "probe_id": "1",
+          "zero": {
+            "one": 1,
+            "probe_id": "0",
+            "zero": 0
+          }
+        },
+        "greedy": {
+          "one": 2,
+          "probe_id": "1",
+          "zero": {
+            "one": 1,
+            "probe_id": "0",
+            "zero": 0
+          }
+        }
+      },
+      "results": {
+        "adaptive": {
+          "abstained": 139,
+          "correct": 98,
+          "mean_net_utility": "-237/3080",
+          "probes": 507,
+          "wrong": 71
+        },
+        "fixed": {
+          "abstained": 139,
+          "correct": 98,
+          "mean_net_utility": "-237/3080",
+          "probes": 507,
+          "wrong": 71
+        },
+        "greedy": {
+          "abstained": 139,
+          "correct": 98,
+          "mean_net_utility": "-237/3080",
+          "probes": 507,
+          "wrong": 71
+        }
+      },
+      "task": 1,
+      "train": 124
+    },
+    {
+      "held_out": 263,
+      "policies": {
+        "adaptive": {
+          "one": {
+            "one": 1,
+            "probe_id": "2",
+            "zero": 2
+          },
+          "probe_id": "1",
+          "zero": {
+            "one": 2,
+            "probe_id": "2",
+            "zero": 1
+          }
+        },
+        "fixed": {
+          "one": {
+            "one": 1,
+            "probe_id": "2",
+            "zero": 2
+          },
+          "probe_id": "1",
+          "zero": {
+            "one": 2,
+            "probe_id": "2",
+            "zero": 1
+          }
+        },
+        "greedy": {
+          "one": {
+            "one": 1,
+            "probe_id": "1",
+            "zero": 2
+          },
+          "probe_id": "2",
+          "zero": {
+            "one": 2,
+            "probe_id": "1",
+            "zero": 1
+          }
+        }
+      },
+      "results": {
+        "adaptive": {
+          "abstained": 0,
+          "correct": 149,
+          "mean_net_utility": "-88/1315",
+          "probes": 526,
+          "wrong": 114
+        },
+        "fixed": {
+          "abstained": 0,
+          "correct": 149,
+          "mean_net_utility": "-88/1315",
+          "probes": 526,
+          "wrong": 114
+        },
+        "greedy": {
+          "abstained": 0,
+          "correct": 149,
+          "mean_net_utility": "-88/1315",
+          "probes": 526,
+          "wrong": 114
+        }
+      },
+      "task": 2,
+      "train": 169
+    },
+    {
+      "held_out": 310,
+      "policies": {
+        "adaptive": {
+          "one": 2,
+          "probe_id": "1",
+          "zero": 1
+        },
+        "fixed": {
+          "one": 2,
+          "probe_id": "1",
+          "zero": 1
+        },
+        "greedy": {
+          "one": {
+            "one": 2,
+            "probe_id": "1",
+            "zero": 1
+          },
+          "probe_id": "0",
+          "zero": {
+            "one": 2,
+            "probe_id": "1",
+            "zero": 1
+          }
+        }
+      },
+      "results": {
+        "adaptive": {
+          "abstained": 0,
+          "correct": 203,
+          "mean_net_utility": "13/62",
+          "probes": 310,
+          "wrong": 107
+        },
+        "fixed": {
+          "abstained": 0,
+          "correct": 203,
+          "mean_net_utility": "13/62",
+          "probes": 310,
+          "wrong": 107
+        },
+        "greedy": {
+          "abstained": 0,
+          "correct": 203,
+          "mean_net_utility": "17/155",
+          "probes": 620,
+          "wrong": 107
+        }
+      },
+      "task": 3,
+      "train": 122
+    }
+  ],
+  "transfer": "NOT_SUPPORTED_ON_PANEL"
+}

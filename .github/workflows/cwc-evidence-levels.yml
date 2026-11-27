@@ -42,6 +42,7 @@ jobs:
           PYTHONHASHSEED=17 TZ=UTC python -B -m experiments.cog_info_02.monk_transfer "$RUNNER_TEMP/monks.zip" > "$out/monk.json"
           PYTHONHASHSEED=491 TZ=Pacific/Honolulu python -B -m experiments.cog_info_02.monk_transfer "$RUNNER_TEMP/monks.zip" > "$RUNNER_TEMP/repeat.json"
           cmp "$out/monk.json" "$RUNNER_TEMP/repeat.json"
+          cmp "$out/monk.json" experiments/cog_info_02/MONK_TRANSFER_RESULT.json
           cat "$out/monk.json"
           git rev-parse HEAD > "$out/checkout.txt"
           (cd "$out" && sha256sum controls.log monk.json checkout.txt > SHA256SUMS)
