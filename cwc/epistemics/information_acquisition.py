@@ -382,6 +382,8 @@ def analyze_information_portfolio(
         raise ValueError("portfolio budget must be an integer between 0 and 16")
     if type(threshold) is not int or threshold <= 0:
         raise ValueError("positive integer threshold required")
+    if isinstance(alternatives, str):
+        raise ValueError("alternative roster must be a sequence of ids")
     roster = tuple(alternatives)
     if (not 1 <= len(roster) <= 4 or any(type(m) is not str or not m.strip() for m in roster)
             or len(set(roster)) != len(roster)):
