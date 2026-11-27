@@ -1,12 +1,14 @@
 # DGC CI Execution Blocker — 2026-08-22
 
-Status: **CI_EXECUTION_UNAVAILABLE / EXTERNAL REPOSITORY-ACTIONS AUTHORITY REQUIRED**.
+Historical incident status: **CI_EXECUTION_UNAVAILABLE** on the recorded jobs.
+For later CI evidence keyed to exact commits, see the
+[verification execution state](DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md#19-verification-execution-state).
 
 ## Observed facts
 
 For PR #9 head-family runs, GitHub creates workflow runs/jobs but terminates them before any declared job step executes.
 
-Representative current evidence:
+Representative incident evidence:
 
 - workflow: `cwc-quality`, run `32557986090`;
 - job: `96995108157`;
@@ -20,11 +22,12 @@ The same pre-step pattern has occurred across `cwc-quality`, `cwc-full-pr-gate`,
 
 ## Classification
 
-This evidence is sufficient to classify the current GitHub Actions execution channel as unavailable **before repository test execution**. It is not evidence that pytest, ruff, mypy, CodeQL analysis, or a DGC assertion failed.
+This evidence classifies those jobs as unavailable before repository test
+execution. A code verdict requires repository steps and their results.
 
-The repository must not translate this state into PASS. PR #9 remains draft.
+The incident classification carries no PASS for the affected jobs.
 
-## Required external action
+## Recovery procedure for this failure mode
 
 Restore GitHub Actions execution authority for the repository/account (repository Actions enablement, account/billing/plan or policy state as applicable), then rerun the existing workflows without weakening any gate. The available connector does not expose repository Actions-enablement/billing policy mutation, so this cannot be repaired honestly from the code branch itself.
 

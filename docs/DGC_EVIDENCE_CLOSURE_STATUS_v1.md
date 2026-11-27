@@ -2,6 +2,10 @@
 
 Date: 2026-08-23
 
+Historical design and evidence snapshot. For an operational status check and
+its exact reference revision, use the
+[evidence runbook](DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md#status-and-evidence).
+
 This matrix separates **implementation/protocol closure** from **empirical product evidence**. A coded gate is not evidence that the gate has passed; upstream source verification is not local materialization or execution; a distributed control primitive is not evidence of frontier-scale operation; an implemented learned baseline is not a fitted external baseline; and a deterministic release builder is not a product-qualified release.
 
 | Phase | Protocol / engineering state | Empirical evidence state | Canonical interpretation |

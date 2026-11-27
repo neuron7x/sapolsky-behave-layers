@@ -126,8 +126,8 @@ While verifier source/tests are changing, the canonical Plan V4 must not be froz
 
 Readiness command:
 
-```text
-python scripts/dgc_p19_external_verifier_freeze_readiness.py
+```bash
+PYTHONPATH=. python scripts/dgc_p19_external_verifier_freeze_readiness.py
 ```
 
 Once stable, an immutable **inactive** Plan V4 may be materialized. Activation is separate and requires a canonical Git-bound regression receipt plus two independent external signatures under the frozen trust policy and successful replay of `DGC_P19_EXTERNAL_VERIFIER_ACTIVATION_AUTHORITY_V1`.
@@ -206,22 +206,16 @@ Qualified release emits separate deterministic execution-source and packaging-ev
 
 The focused verifier/closure surface is wired into `.github/workflows/dgc-product-evidence.yml`, including Plan V4, regression/activation, freeze readiness, eight-check replay, P19 V3 and Bundle V7 falsifiers. The workflow also fingerprints the full governance Python runtime surface before attempting canonical regression receipt generation.
 
-Recent GitHub Actions jobs repeatedly terminated before repository steps with:
+The [August incident](DGC_CI_EXECUTION_BLOCKER.md) records jobs that stopped
+before any repository step. Classify that failure mode as
+`CI_EXECUTION_UNAVAILABLE`. Read the executed job steps to assign a code verdict.
 
-```text
-steps = null
-logs_url = null
-```
-
-Until a current-head run actually executes:
-
-```text
-CI_EXECUTION_UNAVAILABLE
-focused_pytest_execution = UNKNOWN
-canonical_verifier_regression_execution = UNKNOWN
-```
-
-This is neither code PASS nor a demonstrated code regression.
+On 2026-11-26, [main run 45770838909](https://github.com/neuron7x/sapolsky-behave-layers/actions/runs/45770838909/job/139742825525)
+passed DGC contract checks and generated a verifier regression receipt on
+`0bebec18f51aabfc554dd35b6a74dd0e1021c989`. The tagged release job was skipped.
+The [evidence runbook](DGC_PRODUCT_EXECUTION_RUNBOOK_v1.md#status-and-evidence)
+records the later review scope. Bind each PASS to its tested commit, job and
+executed steps. The regression receipt verifies the regression fixtures.
 
 ## 20. Current truth
 
