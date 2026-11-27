@@ -103,7 +103,7 @@ The mechanism lane has a separate execution authority and evidence bundle. It do
 
 Pre-outcome sequence:
 
-`materialize → mechanism execution freeze (risk-free) → partition → mechanism B2 calibration/authority → mechanism sizing → mechanism harness freeze → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
+`materialize → partition → mechanism execution freeze (risk-free) → mechanism B2 calibration/authority → mechanism sizing → mechanism harness freeze → mechanism authority → mechanism execution bundle → mechanism Pareto certificate`
 
 The mechanism sizing receipt is bound to the SHA-256 of the canonical calibration evidence artifact. It freezes the maximum required within-task repeat count across the exact eight baseline×endpoint comparisons.
 

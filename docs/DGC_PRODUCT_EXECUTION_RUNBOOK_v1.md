@@ -108,7 +108,9 @@ Frozen parquet SHA-256:
 
 Expected: `500` unique `instance_id` values.
 
-Any hash/count/uniqueness mismatch => STOP and create a new evidence/preregistration generation.
+On a hash, count or uniqueness mismatch, stop and recover the pinned input.
+A deliberate source revision change requires a new source authority and
+preregistration before outcomes are inspected.
 
 ### Terminal-Bench 2.1
 
@@ -300,13 +302,14 @@ defines their evidence boundaries.
 
 ## 3. Fit B2 on calibration tasks only
 
-B0/B1/B3 are static policy contracts. B2 is a learned cost-quality router and must be fitted only after the task split is frozen.
+B0/B1/B3 use frozen policy contracts. Product B2 learns from quality, cost
+and catastrophic regret. Fit it only after the task split is frozen.
 
 Prepare `DGC_B2_FIT_INPUT_V1` containing:
 
 - frozen `LearnedRouterConfig`;
 - complete calibration `task × action` counterfactual table;
-- explicit forbidden/confirmatory task IDs;
+- explicit forbidden task IDs covering confirmatory and held-out tasks;
 - expected feature-schema SHA-256;
 - expected training-algorithm SHA-256.
 
@@ -314,8 +317,8 @@ Run:
 
 ```bash
 PYTHONPATH=. python scripts/dgc_fit_b2_baseline.py \
-  --input artifacts/dgc-calibration/B2_FIT_INPUT.json \
-  --output artifacts/dgc-calibration/B2_FIT_RECEIPT.json
+  --input "eval_bundle/dgc-calibration/$DGC_GENERATION/B2_FIT_INPUT.json" \
+  --output "eval_bundle/dgc-calibration/$DGC_GENERATION/B2_FIT_RECEIPT.json"
 ```
 
 The receipt binds:
@@ -360,8 +363,8 @@ Prepare `DGC_CLUSTER_AWARE_TRIAL_SIZING_INPUT_V1` with calibration observations,
 
 ```bash
 PYTHONPATH=. python scripts/dgc_freeze_trial_sizing.py \
-  --input artifacts/dgc-calibration/TRIAL_SIZING_INPUT.json \
-  --output artifacts/dgc-calibration/TRIAL_SIZING_RECEIPT.json
+  --input "eval_bundle/dgc-calibration/$DGC_GENERATION/TRIAL_SIZING_INPUT.json" \
+  --output "eval_bundle/dgc-calibration/$DGC_GENERATION/TRIAL_SIZING_RECEIPT.json"
 ```
 
 The V2 product plan retains:
@@ -453,7 +456,9 @@ For each family, require against **every B0-B3 baseline** on the same paired pop
 - full matched coverage;
 - identical paired population digest.
 
-Any baseline failure => no primary real-workload product claim.
+All baselines must pass both the exact-panel and V5.1 anytime-valid criteria.
+See the [P9 contract](DGC_EVIDENCE_CLOSURE_EXECUTOR_v1.md#6-confirmatoryp9-contract)
+for statistical scope and evidence requirements.
 
 On the same frozen option population also report CCF:
 
@@ -513,7 +518,10 @@ After `PRODUCT_QUALIFIED`:
 4. bounded canary <=10% traffic with hard spend/tool/step/time/concurrency caps and automatic rollback;
 5. only then consider broader production control.
 
-## Historical blocker snapshot, 2026-09-27
+## Blocker records
+
+Read observations with their recorded revision or date. The 2026-09-27
+runbook captured the pre-execution and runner blockers for that snapshot.
 
 1. External workload binary/Git materialization has not completed in the current sandbox; source identity is verified, materialization is not.
 2. No valid live provider confirmatory population has been executed in this environment.
