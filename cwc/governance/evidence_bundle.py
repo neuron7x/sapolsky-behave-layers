@@ -5,7 +5,7 @@ import os
 import re
 import stat
 from collections.abc import Iterator
-from contextlib import ExitStack, contextmanager
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
@@ -98,38 +98,48 @@ def _regular_file_at(directory: int, name: str) -> bool:
 
 
 @contextmanager
+def _payload_parent(directory: int, parts: list[str]) -> Iterator[int]:
+    if not parts:
+        yield directory
+        return
+
+    part = parts[0]
+    child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
+    try:
+        observed = os.fstat(child)
+        with _payload_parent(child, parts[1:]) as parent:
+            yield parent
+        current = os.stat(part, dir_fd=directory, follow_symlinks=False)
+        if not stat.S_ISDIR(current.st_mode) or (current.st_dev, current.st_ino) != (
+            observed.st_dev, observed.st_ino,
+        ):
+            raise _InvalidBundle("payload parent changed while reading")
+    finally:
+        os.close(child)
+
+
+@contextmanager
 def _open_payload(directory: int, name: str, byte_limit: int) -> Iterator[BinaryIO]:
     parts = name.split("/")
-    parents: list[tuple[int, str, os.stat_result]] = []
-    with ExitStack() as cleanup:
-        for part in parts[:-1]:
-            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
-            cleanup.callback(os.close, child)
-            parents.append((directory, part, os.fstat(child)))
-            directory = child
-
+    with _payload_parent(directory, parts[:-1]) as parent:
         leaf = parts[-1]
-        metadata = os.stat(leaf, dir_fd=directory, follow_symlinks=False)
+        metadata = os.stat(leaf, dir_fd=parent, follow_symlinks=False)
         if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_size > byte_limit:
             raise _InvalidBundle("payload must be a bounded, unaliased regular file")
-        fd = os.open(leaf, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
-        cleanup.callback(os.close, fd)
-        expected = _file_fingerprint(metadata)
-        if _file_fingerprint(os.fstat(fd)) != expected:
-            raise _InvalidBundle("payload changed while opening")
-        handle = cleanup.enter_context(os.fdopen(fd, "rb", closefd=False))
-        yield handle
-        if (
-            _file_fingerprint(os.fstat(fd)) != expected
-            or _file_fingerprint(os.stat(leaf, dir_fd=directory, follow_symlinks=False)) != expected
-        ):
-            raise _InvalidBundle("payload changed while reading")
-        for parent, part, observed in parents:
-            current = os.stat(part, dir_fd=parent, follow_symlinks=False)
-            if not stat.S_ISDIR(current.st_mode) or (current.st_dev, current.st_ino) != (
-                observed.st_dev, observed.st_ino,
+        fd = os.open(leaf, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+        try:
+            expected = _file_fingerprint(metadata)
+            if _file_fingerprint(os.fstat(fd)) != expected:
+                raise _InvalidBundle("payload changed while opening")
+            with os.fdopen(fd, "rb", closefd=False) as handle:
+                yield handle
+            if (
+                _file_fingerprint(os.fstat(fd)) != expected
+                or _file_fingerprint(os.stat(leaf, dir_fd=parent, follow_symlinks=False)) != expected
             ):
-                raise _InvalidBundle("payload parent changed while reading")
+                raise _InvalidBundle("payload changed while reading")
+        finally:
+            os.close(fd)
 
 
 def _hash_payload(handle: BinaryIO, limit: int) -> tuple[str, int]:

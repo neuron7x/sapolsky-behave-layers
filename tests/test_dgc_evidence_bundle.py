@@ -1,3 +1,4 @@
+import errno
 import hashlib
 import os
 import random
@@ -69,6 +70,44 @@ def test_v1_canonical_extensions_and_permutations(tmp_path):
         assert result.manifest_profile == "cwc-dgc-sha256sums/1"
         observed.add(digest)
     assert len(observed) == 8
+
+
+@pytest.mark.parametrize("failing_entry", ["inner", "results.json"])
+def test_closes_descriptors_when_fstat_fails(tmp_path, monkeypatch, failing_entry):
+    manifest, rows = _seal(tmp_path)
+    payload = tmp_path / "outer" / "inner" / "results.json"
+    payload.parent.mkdir(parents=True)
+    payload.write_bytes(b"{}\n")
+    manifest.write_text("".join(rows) + f"{_sha(payload)}  outer/inner/results.json\n")
+    real_open, real_fstat, real_close = os.open, os.fstat, os.close
+    opened = {}
+    faults = []
+
+    def record_open(path, flags, *, dir_fd=None):
+        fd = real_open(path, flags, dir_fd=dir_fd)
+        assert fd not in opened
+        opened[fd] = path
+        return fd
+
+    def fail_fstat(fd):
+        if opened.get(fd) == failing_entry:
+            faults.append(failing_entry)
+            raise OSError(errno.EIO, "injected fstat failure")
+        return real_fstat(fd)
+
+    def record_close(fd):
+        real_close(fd)
+        del opened[fd]
+
+    with monkeypatch.context() as patch:
+        patch.setattr(evidence_bundle.os, "open", record_open)
+        patch.setattr(evidence_bundle.os, "fstat", fail_fstat)
+        patch.setattr(evidence_bundle.os, "close", record_close)
+        result = verify_evidence_bundle(tmp_path)
+    assert faults == [failing_entry]
+    assert result.hash_mismatches == ("outer/inner/results.json",)
+    assert not result.complete
+    assert opened == {}
 
 
 @pytest.mark.parametrize(
