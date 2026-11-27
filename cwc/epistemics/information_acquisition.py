@@ -417,7 +417,7 @@ def analyze_information_portfolio(
         if index < len(ordered):
             action = ordered[index]
             for count in range(min(action.max_units, remaining // action.unit_cost) + 1):
-                visit(index + 1, remaining - count * action.unit_cost, counts + (count,))
+                visit(index + 1, remaining - count * action.unit_cost, (*counts, count))
             return
 
         used = [(action, n) for action, n in zip(ordered, counts, strict=True) if n]
